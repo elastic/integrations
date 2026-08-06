@@ -1,39 +1,46 @@
 ---
 description: Ingest pipeline for Varonis DatAdvantage syslog messages
 processors:
-############
-# ECS Fields
-############
+  ############
+  # ECS Fields
+  ############
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
 
   - append:
+      tag: append_event_category_21118bf1
       field: event.category
       value: configuration
       allow_duplicates: false
 
   - append:
+      tag: append_event_type_3f43a39d
       field: event.type
       value: info
       allow_duplicates: false
 
   - set:
+      tag: set_event_dataset_39c036f7
       field: event.dataset
       value: varonis.logs
 
   - set:
+      tag: set_event_module_e368f376
       field: event.module
       value: varonis
 
-############
-# syslog Fields
-############
+  ############
+  # syslog Fields
+  ############
   - script:
+      tag: script_c7dc2b32
       lang: painless
       description: Create new fields for the custom string label and its value only if value is present
       source: >
@@ -54,8 +61,8 @@ processors:
         }
 
         changeLabelsToKeys(ctx.cef.extensions);
-
   - rename:
+      tag: rename_cef_extensions_to_varonis_logs_7fa995fa
       field: cef.extensions
       target_field: varonis.logs
 
@@ -95,12 +102,14 @@ processors:
 
   # processor to lowercase the value of event.outcome
   - lowercase:
+      tag: lowercase_event_outcome_to_event_outcome_87e3ea0b
       field: event.outcome
       target_field: event.outcome
       ignore_missing: true
 
   # script to create a new field to assign label to event.severity
   - script:
+      tag: script_634a0353
       description: Convert event severity to their text meaning using params
       lang: painless
       params:
@@ -125,6 +134,7 @@ processors:
   ## Cleanup Fields ##
   ####################
   - remove:
+      tag: remove_74e42b7e
       field:
         - cef
         - log
@@ -151,3 +161,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

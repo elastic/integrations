@@ -2,6 +2,7 @@
 description: Pipeline for parsing Zoom chat_channel webhooks
 processors:
 - append:
+    tag: append_event_type_52ff4ec2
     field: event.type
     value: user
     if: >-
@@ -11,22 +12,27 @@ processors:
         'chat_channel.member_left'
       ].contains(ctx.event?.action)
 - append:
+    tag: append_event_type_c355095e
     field: event.type
     value: creation
     if: ctx.event?.action == 'chat_channel.created'
 - append:
+    tag: append_event_type_4851c1c8
     field: event.type
     value: deletion
     if: ctx.event?.action == 'chat_channel.deleted'
 - append:
+    tag: append_event_type_2088d670
     field: event.type
     value: change
     if: ctx.event?.action == 'chat_channel.updated'
 - rename:
+    tag: rename_zoom_object_to_zoom_chat_channel_80ebc995
     field: zoom.object
     target_field: zoom.chat_channel
     ignore_missing: true
 - date:
+    tag: date_zoom_chat_channel_timestamp_to_timestamp_defca978
     field: zoom.chat_channel.timestamp
     target_field: '@timestamp'
     formats:
@@ -34,10 +40,12 @@ processors:
     if: ctx.zoom?.chat_channel?.timestamp != null
     ignore_failure: true
 - remove:
+    tag: remove_zoom_chat_channel_date_time_645e2537
     field: zoom.chat_channel.date_time
     ignore_missing: true
     if: ctx.zoom?.chat_channel?.timestamp != null
 - date:
+    tag: date_zoom_chat_channel_date_time_to_timestamp_e1e7aaf7
     field: zoom.chat_channel.date_time
     target_field: '@timestamp'
     formats:
@@ -45,10 +53,12 @@ processors:
     if: ctx.zoom?.chat_channel?.date_time != null && ctx.zoom?.chat_channel?.timestamp == null
     ignore_failure: true
 - remove:
+    tag: remove_zoom_chat_channel_timestamp_19b84f1f
     field: zoom.chat_channel.timestamp
     ignore_missing: true
     if: ctx.zoom?.chat_channel?.timestamp != null
 - foreach:
+    tag: foreach_zoom_chat_channel_members_d72bc679
     field: zoom.chat_channel.members
     ignore_missing: true
     processor:
@@ -58,6 +68,7 @@ processors:
         allow_duplicates: false
 # Removing to prevent nested values, added to related.user above
 - remove:
+    tag: remove_zoom_chat_channel_members_946268fc
     field: zoom.chat_channel.members
     ignore_missing: true
 on_failure:
@@ -67,3 +78,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

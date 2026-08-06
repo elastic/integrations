@@ -9,9 +9,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0d181bdd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_license_count_59d3b1a5
             field: ses.license.count
             ignore_missing: true
   - date:
@@ -24,9 +26,11 @@ processors:
       if: ctx.ses?.license?.end_time != null && ctx.ses.license.end_time != ''
       on_failure:
         - append:
+            tag: append_error_message_8c2b63fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_license_end_time_7089e918
             field: ses.license.end_time
             ignore_missing: true
   - date:
@@ -39,9 +43,11 @@ processors:
       if: ctx.ses?.license?.start_time != null && ctx.ses.license.start_time != ''
       on_failure:
         - append:
+            tag: append_error_message_0162ae9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_license_start_time_b4416025
             field: ses.license.start_time
             ignore_missing: true
   - convert:
@@ -52,17 +58,23 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_096da375
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_license_type_id_a8ff2cba
             field: ses.license.type_id
             ignore_missing: true
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
-        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

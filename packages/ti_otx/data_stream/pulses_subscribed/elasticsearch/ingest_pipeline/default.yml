@@ -5,18 +5,23 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_4cc22c32
       field: event.category
       value: threat
   - append:
+      tag: append_event_type_7779ef85
       field: event.type
       value: indicator
   - set:
+      tag: set_threat_indicator_provider_fb6fe083
       field: threat.indicator.provider
       value: OTX
 
@@ -40,7 +45,7 @@ processors:
       field: event.original
       target_field: otx
       tag: json_event_original
-# Add default expiration to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
+  # Add default expiration to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
   - script:
       lang: painless
       tag: script-default-expiration
@@ -78,6 +83,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c17a5769
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -257,6 +263,7 @@ processors:
   # Base ECS Field - Tags #
   #########################
   - foreach:
+      tag: foreach_otx_pulse_tags_54ad760e
       field: otx.pulse.tags
       if: "ctx.otx?.pulse?.tags instanceof List && ctx.otx.pulse.tags.size() > 0"
       processor:
@@ -275,6 +282,7 @@ processors:
       if: ctx.threat?.indicator?.type == null
       tag: set_threat_indicator_type_null
   - script:
+      tag: script_f541a1c3
       lang: painless
       if: ctx.otx != null
       source: |
@@ -299,26 +307,31 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_e4b0336f
       field:
         - otx.content
       ignore_missing: true
       if: ctx.otx?.content == ""
   - remove:
+      tag: remove_fcc33869
       field:
         - otx.description
       ignore_missing: true
       if: ctx.otx?.description == ""
   - remove:
+      tag: remove_d636cafd
       field:
         - otx.title
       ignore_missing: true
       if: ctx.otx?.title == ""
   - remove:
+      tag: remove_2b57e28c
       field:
         - otx.pulse.adversary
       ignore_missing: true
       if: ctx.otx?.pulse?.adversary == ""
   - remove:
+      tag: remove_207e438c
       field:
         - otx.type
         - otx.pulse.tags
@@ -327,6 +340,7 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
+      tag: remove_f80cc633
       field:
         - otx
       ignore_missing: true

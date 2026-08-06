@@ -2,45 +2,56 @@
 description: Pipeline for parsing Zoom recording webhooks
 processors:
 - append:
+    tag: append_event_type_8a66ccaa
     field: event.type
     value: info
 - append:
+    tag: append_event_type_e38090e1
     field: event.type
     value: creation
     if: ctx.event?.action == 'recording.registration_created'
 - append:
+    tag: append_event_type_9a0bfc31
     field: event.type
     value: allowed
     if: ctx.event?.action == 'recording.registration_approved'
 - append:
+    tag: append_event_type_94006db2
     field: event.type
     value: denied
     if: ctx.event?.action == 'recording.registration_denied'
 - append:
+    tag: append_event_type_d0b0803f
     field: event.type
     value: deletion
     if: "['recording.deleted', 'recording.trashed'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_975baf91
     field: event.type
     value: change
     if: "['recording.paused', 'recording.resumed', 'recording.renamed', 'recording.recovered'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_3c3dc7b5
     field: event.type
     value: start
     if: ctx.event?.action == 'recording.started'
 - append:
+    tag: append_event_type_46ac72ed
     field: event.type
     value: end
     if: "['recording.stopped', 'recording.completed', 'recording.transcript_completed'].contains(ctx.event?.action)"
 - rename:
+    tag: rename_zoom_object_to_zoom_recording_8e9e65b4
     field: zoom.object
     target_field: zoom.recording
     ignore_missing: true
 - rename:
+    tag: rename_zoom_recording_share_url_to_url_full_3ceb1f0f
     field: zoom.recording.share_url
     target_field: url.full
     ignore_missing: true
 - date:
+    tag: date_zoom_time_stamp_to_timestamp_8e38582f
     field: zoom.time_stamp
     target_field: '@timestamp'
     formats:
@@ -48,22 +59,27 @@ processors:
     if: ctx.event?.action == 'recording.renamed'
     ignore_failure: true
 - remove:
+    tag: remove_zoom_recording_recording_file_recording_start_9713468c
     field: zoom.recording.recording_file.recording_start
     if: ctx.zoom?.recording?.recording_file?.recording_start == ""
 - remove:
+    tag: remove_zoom_recording_recording_file_recording_end_9e782120
     field: zoom.recording.recording_file.recording_end
     if: ctx.zoom?.recording?.recording_file?.recording_end == ""
 - set:
+    tag: set_event_start_e76a27d9
     field: event.start
     value: '{{{ zoom.recording.recording_file.recording_start }}}'
     ignore_empty_value: true
     if: ctx.event?.action == 'recording.started'
 - set:
+    tag: set_event_end_e418daa5
     field: event.end
     value: '{{{ zoom.recording.recording_file.recording_end }}}'
     ignore_empty_value: true
     if: ctx.event?.action == 'recording.stopped'
 - script:
+    tag: script_641d0109
     lang: painless
     if: ctx.event?.end != null && ctx.event?.start != null && ctx.event?.action == 'recording.stopped'
     source: >-
@@ -71,6 +87,7 @@ processors:
       ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
       ctx.event.duration = ChronoUnit.NANOS.between(start, end);
 - date:
+    tag: date_zoom_recording_recording_file_recording_start_to_timestamp_406fc6cf
     field: zoom.recording.recording_file.recording_start
     target_field: '@timestamp'
     formats:
@@ -78,33 +95,40 @@ processors:
     if: ctx.zoom?.recording?.recording_file?.recording_start != null && ctx.event?.action == 'recording.started'
     ignore_failure: true
 - append:
+    tag: append_related_user_15dc1c95
     field: related.user
     value: "{{{zoom.recording.host_id}}}"
     if: ctx.zoom?.recording?.host_id != null
 - append:
+    tag: append_related_user_7befbb87
     field: related.user
     value: "{{{zoom.registrant.id}}}"
     if: ctx.zoom?.registrant?.id != null
 - remove:
+    tag: remove_zoom_time_stamp_a1681412
     field: zoom.time_stamp
     ignore_missing: true
     if: ctx.event?.action == 'recording.renamed'
 - set:
+    tag: set_user_email_e3a51b54
     field: 'user.email'
     value: '{{{zoom.registrant.email}}}'
     ignore_empty_value: true
     if: ctx.user?.id == null && ctx.zoom?.registrant != null
 - set:
+    tag: set_user_full_name_0f93091b
     field: 'user.full_name'
     value: '{{{zoom.registrant.first_name}}} {{{zoom.registrant.last_name}}}'
     ignore_empty_value: true
     if: ctx.user?.id == null && ctx.zoom?.registrant != null
 - set:
+    tag: set_user_id_b8bf83aa
     field: 'user.id'
     value: '{{{zoom.registrant.id}}}'
     ignore_empty_value: true
     if: ctx.user?.id == null && ctx.zoom?.registrant != null
 - set:
+    tag: set_user_id_37410158
     field: 'user.id'
     value: '{{{zoom.recording.host_id}}}'
     ignore_empty_value: true
@@ -116,3 +140,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

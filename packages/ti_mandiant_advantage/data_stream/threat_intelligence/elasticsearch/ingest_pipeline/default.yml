@@ -2,6 +2,7 @@
 description: Pipeline for processing Mandiant IOCs.
 processors:
 - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -13,34 +14,44 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
 - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: ["indicator"]
 - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
 - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: ["threat"]
 - set:
+      tag: set_event_module_20865547
       field: event.module
       value: ti_mandiant_advantage_threat_intelligence
 - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
 - drop:
+      tag: drop_122084ef
       if: ctx.json?.content != null && ctx.json.content.isEmpty()
 - set:
+    tag: set_threat_feed_name_ff0ca62a
     field: threat.feed.name
     value: "Mandiant Threat Intelligence"
 - rename:
+      tag: rename_json_last_updated_to_json_last_update_date_0e322551
       field: json.last_updated
       target_field: json.last_update_date
       ignore_missing: true
 - date:
+      tag: date_json_last_update_date_to_threat_indicator_modified_at_59f3b67b
       field: json.last_update_date
       target_field: threat.indicator.modified_at
       if: ctx.json?.last_update_date != null
@@ -48,38 +59,47 @@ processors:
       - ISO8601
       on_failure:
         - append:
+              tag: append_error_message_b0f9f2b6
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_last_update_date_fc3fc3ba
               field: json.last_update_date
 - set:
+      tag: set_timestamp_e0ce2fa0
       field: '@timestamp'
       copy_from: threat.indicator.modified_at
       on_failure:
         - set:
+              tag: set_timestamp_1c5a4ae5
               field: '@timestamp'
               copy_from: _ingest.timestamp
 - uri_parts:
+      tag: uri_parts_json_value_to_threat_indicator_url_e5fd8b28
       field: json.value
       target_field: threat.indicator.url
       if: ctx.json?.type == 'url'
       on_failure:
         - set:
+              tag: set_threat_indicator_url_original_c718b60d
               field: threat.indicator.url.original
               value: '{{{json.value}}}'
               ignore_empty_value: true
               if: ctx.json?.type == 'url' && !ctx.containsKey('threat.indicator.url')
               ignore_failure: true
 - set:
+      tag: set_threat_indicator_url_full_989896dd
       field: threat.indicator.url.full
       value: '{{{threat.indicator.url.original}}}'
       ignore_empty_value: true
       ignore_failure: true
 - set:
+      tag: set_threat_indicator_type_4c4de8ae
       field: threat.indicator.type
       value: url
       if: ctx.json?.type == 'url'
 - script:
+      tag: script_09caca11
       lang: painless
       if: ctx.json?.type != null
       description: Maps IOC type field to Mandiant Threat Intelligence values (threat.indicator.type).
@@ -114,10 +134,12 @@ processors:
           set(ctx, mapping.target, value);
       on_failure:
         - append:
+              tag: append_error_message_866ecdf2
               field: error.message
               value: >-
                   Unable to determine indicator type from "{{{json.type}}}": {{{_ingest.on_failure_message}}}
 - script:
+    tag: script_f82a4c24
     lang: painless
     if: "ctx.json?.type == 'md5' && ctx.json?.associated_hashes instanceof List && ctx.json?.associated_hashes.size() > 0"
     description: Populates SHA1 and SHA256 hash values for hash indicator types, if they exist
@@ -143,36 +165,44 @@ processors:
       ctx.json.hashes = hashes;
     on_failure:
     - append:
+        tag: append_error_message_c2e06d02
         field: error.message
         value: >-
           Unable to extract sha1 and sha256 information for "{{{json.type}}}": {{{_ingest.on_failure_message}}}
 - convert:
+      tag: convert_threat_indicator_ip_040fab24
       field: threat.indicator.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+              tag: append_error_message_3dba9b55
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_f04bcd23
               field:
               - threat.indicator.ip
               - json.value
 - append:
+      tag: append_related_ip_a4a5f6ea
       field: related.ip
       value: '{{{threat.indicator.ip}}}'
       ignore_failure: true
       allow_duplicates: false
 - rename:
+      tag: rename_json_hashes_to_related_hash_4b102667
       field: json.hashes
       target_field: related.hash
       ignore_missing: true
 - geoip:
+      tag: geoip_threat_indicator_ip_to_threat_indicator_geo_3c7e56e7
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
       ignore_failure: true
 - geoip:
+      tag: geoip_threat_indicator_ip_to_threat_indicator_as_2b14140e
       field: threat.indicator.ip
       target_field: threat.indicator.as
       database_file: GeoLite2-ASN.mmdb
@@ -182,26 +212,32 @@ processors:
       ignore_missing: true
       ignore_failure: true
 - rename:
+      tag: rename_threat_indicator_as_asn_to_threat_indicator_as_number_3cdd79f1
       field: threat.indicator.as.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
 - rename:
+      tag: rename_threat_indicator_as_organization_name_to_threat_indicator_as_organization_name_dcd73ab7
       field: threat.indicator.as.organization_name
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
 - convert:
+      tag: convert_json_mscore_to_event_risk_score_b0103f5e
       field: json.mscore
       target_field: event.risk_score
       ignore_missing: true
       type: float
       on_failure:
         - append:
+              tag: append_error_message_cf5f0eaf
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_mscore_f2de3c85
               field: json.mscore
 
 - date:
+      tag: date_json_last_seen_to_threat_indicator_last_seen_badf6f7d
       field: json.last_seen
       target_field: threat.indicator.last_seen
       if: ctx.json?.last_seen != null
@@ -209,11 +245,14 @@ processors:
       - ISO8601
       on_failure:
         - append:
+              tag: append_error_message_f8167606
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_last_seen_419e121f
               field: json.last_seen
 - date:
+      tag: date_json_first_seen_to_threat_indicator_first_seen_df2e48a3
       field: json.first_seen
       target_field: threat.indicator.first_seen
       if: ctx.json?.first_seen != null
@@ -221,18 +260,22 @@ processors:
       - ISO8601
       on_failure:
         - append:
+              tag: append_error_message_a14f68d4
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_first_seen_e459748d
               field: json.first_seen
 
 - set:
+      tag: set_threat_indicator_confidence_7cf33a12
       field: threat.indicator.confidence
       copy_from: json.mscore
       ignore_empty_value: true
       ignore_failure: true
 
 - script:
+    tag: script_7e9fec7a
     if: "ctx.json?.sources != null && ctx.json?.sources instanceof List && ctx.json?.sources.size() > 0"
     lang: painless
     description: "Extract providers, categories and TLP from source"
@@ -273,6 +316,7 @@ processors:
         ctx.tlp_color = "RED";
       }
 - script:
+    tag: script_1c60f6d2
     if: "ctx.json?.attributed_associations != null && ctx.json?.attributed_associations instanceof List && ctx.json?.attributed_associations.size() > 0"
     lang: painless
     description: "Extract threat group and malware information from source"
@@ -316,6 +360,7 @@ processors:
         ctx.threat.software.name = software;
       }
 - script:
+    tag: script_d5345b37
     lang: painless
     description: Restructure MISP fields
     if: ctx.json?.misp != null
@@ -334,28 +379,34 @@ processors:
       ctx.json["misp_warning_list_hits"] = positive;
       ctx.json["misp_warning_list_misses"] = negative;
 - remove:
+    tag: remove_json_misp_44968dbe
     field: json.misp
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_to_mandiant_threat_intelligence_ioc_bf5cc1ba
     field: json
     target_field: mandiant.threat_intelligence.ioc
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_indicator_categories_to_mandiant_threat_intelligence_ioc_categories_c044cb8c
     field: indicator_categories
     target_field: mandiant.threat_intelligence.ioc.categories
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_tlp_color_to_threat_indicator_marking_tlp_3c4e580f
     field: tlp_color
     target_field: threat.indicator.marking.tlp
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_threat_indicator_marking_tlp_version_56751535
     field: threat.indicator.marking.tlp_version
     value: "2.0"
 - script:
+      tag: script_29f5bec4
       lang: painless
       if: ctx.threat?.indicator?.confidence != null
       description: Normalize confidence level.
@@ -376,6 +427,7 @@ processors:
           }
       ignore_failure: true
 - script:
+      tag: script_4f9a1bb0
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: >
@@ -394,6 +446,7 @@ processors:
           drop(ctx);
       ignore_failure: true
 - fingerprint:
+      tag: fingerprint_ba893b07
       description: >
         Fingerprint the event.original value in attempt to prevent the same
         event from being indexed more than once under connection failures or
@@ -406,11 +459,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
 - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
 - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

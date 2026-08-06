@@ -3,15 +3,18 @@ description: Build ECS fields from an OpenCTI autonomous system observable
 processors:
 
   - set:
+      tag: set__tmp_as_number_8a3bcf5e
       field: _tmp_as.number
       value: "{{{_ingest._value.number}}}"
 
   - set:
+      tag: set__tmp_as_organization_name_15a2780f
       field: _tmp_as.organization.name
       value: "{{{_ingest._value.name}}}"
 
   # append object
   - script:
+      tag: script_0b2e52c8
       description: Append to the destination
       lang: painless
       source: |
@@ -21,4 +24,5 @@ processors:
         ctx.threat.indicator.as.add(ctx._tmp_as);
 
   - remove:
+      tag: remove__tmp_as_d25e9972
       field: _tmp_as

@@ -5,21 +5,26 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
   ######################
   # General ECS fields #
   ######################
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -31,21 +36,27 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_otx_1c274153
       field: event.original
       target_field: otx
   - drop:
+      tag: drop_d3762fab
       if: ctx.otx?.count == 0
   - rename:
+      tag: rename_otx_results_to_results_edf2c7d9
       field: otx.results
       target_field: results
       ignore_missing: true
   - remove:
+      tag: remove_otx_c5ce4e18
       field: otx
   - rename:
+      tag: rename_results_to_otx_1353cd23
       field: results
       target_field: otx
       ignore_missing: true
   - fingerprint:
+      tag: fingerprint_33695492
       fields:
         - otx.id
       target_field: "_id"
@@ -54,110 +65,132 @@ processors:
   #####################
   ## File indicator operations
   - set:
+      tag: set_threat_indicator_type_12796541
       field: threat.indicator.type
       value: file
       if: "ctx.otx?.type.startsWith('FileHash') || ctx.otx?.type == 'filepath'"
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_file_hash_md5_56bfa4b2
       field: otx.indicator
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-MD5'"
   - append:
+      tag: append_related_hash_2c58bf41
       field: related.hash
       value: '{{{threat.indicator.file.hash.md5}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.md5 != null
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_file_hash_sha1_ea1b7768
       field: otx.indicator
       target_field: threat.indicator.file.hash.sha1
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-SHA1'"
   - append:
+      tag: append_related_hash_9547e54b
       field: related.hash
       value: '{{{threat.indicator.file.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.sha1 != null
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_file_hash_sha256_2c73f6e8
       field: otx.indicator
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-SHA256'"
   - append:
+      tag: append_related_hash_6b12a43f
       field: related.hash
       value: '{{{threat.indicator.file.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.sha256 != null
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_file_hash_pehash_59e29e48
       field: otx.indicator
       target_field: threat.indicator.file.hash.pehash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-PEHASH'"
   - append:
+      tag: append_related_hash_426ea87f
       field: related.hash
       value: '{{{threat.indicator.file.hash.pehash}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.pehash != null
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_file_hash_imphash_5f929c46
       field: otx.indicator
       target_field: threat.indicator.file.hash.imphash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-IMPHASH'"
   - append:
+      tag: append_related_hash_01964fd5
       field: related.hash
       value: '{{{threat.indicator.file.hash.imphash}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.imphash != null
   ## IP indicator operations
   - set:
+      tag: set_threat_indicator_type_adf261d9
       field: threat.indicator.type
       value: ipv4-addr
       if: ctx.otx?.type == 'IPv4'
   - set:
+      tag: set_threat_indicator_type_3517ba15
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.otx?.type == 'IPv6'
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_ip_80b21b08
       field: otx.indicator
       target_field: threat.indicator.ip
       ignore_missing: true
       if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - append:
+      tag: append_related_ip_29b99a22
       field: related.ip
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.ip != null
   ## URL indicator operations
   - set:
+      tag: set_threat_indicator_type_148af834
       field: threat.indicator.type
       value: url
       if: "ctx.threat?.indicator?.type == null && ['URL', 'URI'].contains(ctx.otx?.type)"
   - uri_parts:
+      tag: uri_parts_otx_indicator_to_threat_indicator_url_557c8020
       field: otx.indicator
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
       if: ctx.threat?.indicator?.type == 'url'
   - set:
+      tag: set_threat_indicator_url_full_d63e164d
       field: threat.indicator.url.full
       value: "{{{threat.indicator.url.original}}}"
       ignore_empty_value: true
       if: "ctx.otx?.type == 'URL'"
   ## Email indicator operations
   - set:
+      tag: set_threat_indicator_type_7219cef1
       field: threat.indicator.type
       value: email-addr
       if: ctx.otx?.type == 'email'
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_email_address_0bf659e8
       field: otx.indicator
       target_field: threat.indicator.email.address
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'email-addr'"
   ## Domain indicator operations
   - set:
+      tag: set_threat_indicator_type_0a6f3d57
       field: threat.indicator.type
       value: domain-name
       if: "ctx.threat?.indicator?.type == null && ['domain', 'hostname'].contains(ctx.otx?.type)"
   - rename:
+      tag: rename_otx_indicator_to_threat_indicator_url_domain_0939e6b4
       field: otx.indicator
       target_field: threat.indicator.url.domain
       ignore_missing: true
@@ -166,10 +199,12 @@ processors:
   # Cleanup processors #
   ######################
   - set:
+      tag: set_threat_indicator_type_ac7917ab
       field: threat.indicator.type
       value: unknown
       if: ctx.threat?.indicator?.type == null
   - script:
+      tag: script_7fe0bb5b
       lang: painless
       if: ctx.otx != null
       source: |
@@ -194,11 +229,13 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_e4b0336f
       field:
         - otx.content
       ignore_missing: true
       if: ctx.otx?.content == ""
   - remove:
+      tag: remove_84c8826a
       field:
         - otx.type
         - otx.id
@@ -209,6 +246,7 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
+      tag: remove_f80cc633
       field:
         - otx
       ignore_missing: true

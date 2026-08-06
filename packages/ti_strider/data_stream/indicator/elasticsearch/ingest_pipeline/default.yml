@@ -5,49 +5,61 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
 
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
 
   - rename:
+      tag: rename_md5_to_ti_strider_indicator_md5_3cf786e1
       field: md5
       target_field: ti_strider.indicator.md5
-      
+
   - rename:
+      tag: rename_riskSignal_to_ti_strider_indicator_risk_signal_e4a50c92
       field: riskSignal
       target_field: ti_strider.indicator.risk_signal
-      
+
   - rename:
+      tag: rename_itemType_to_ti_strider_indicator_type_7caf5cde
       field: itemType
       target_field: ti_strider.indicator.type
-      
+
   - rename:
+      tag: rename_itemNamePrimary_to_ti_strider_indicator_name_primary_92b3f80f
       field: itemNamePrimary
       target_field: ti_strider.indicator.name_primary
-     
+
   - rename:
+      tag: rename_itemNameSecondary_to_ti_strider_indicator_name_secondary_raw_b3ff38cc
       field: itemNameSecondary
       target_field: ti_strider.indicator.name_secondary_raw
-      
+
   - rename:
+      tag: rename_dates_added_to_ti_strider_indicator_dates_added_8e5fc051
       field: dates_added
       target_field: ti_strider.indicator.dates_added
-      
+
   - rename:
+      tag: rename_isNew_to_ti_strider_indicator_is_new_cd97098e
       field: isNew
       target_field: ti_strider.indicator.is_new
   - script:
@@ -59,15 +71,19 @@ processors:
           ctx.ti_strider.indicator.is_new = (ctx.ti_strider.indicator.is_new == 1);
         }
       
+
   - rename:
+      tag: rename_changes_to_ti_strider_indicator_changes_0c179a2d
       field: changes
       target_field: ti_strider.indicator.changes
   - rename:
+      tag: rename_archive_to_ti_strider_indicator_archive_89afc19e
       field: archive
       target_field: ti_strider.indicator.archive
       ignore_missing: true
 
   - json:
+      tag: json_ti_strider_indicator_name_secondary_raw_to_ti_strider_indicator_name_secondary_1d0f95ab
       field: ti_strider.indicator.name_secondary_raw
       target_field: ti_strider.indicator.name_secondary
       add_to_root: false
@@ -85,9 +101,12 @@ processors:
           ctx.ti_strider.indicator.expires_at = now.plusDays(90);
         }
       
+
   - remove:
+      tag: remove_ti_strider_indicator_name_secondary_raw_626fc082
       field: ti_strider.indicator.name_secondary_raw
   - remove:
+      tag: remove_event_original_86d11a95
       field: event.original
       if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
       ignore_missing: true

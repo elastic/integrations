@@ -26,35 +26,43 @@ processors:
       if: ctx.event?.original != null
       on_failure:
       - append:
+          tag: append_error_message_c2e0d185
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       description: Parses the `event.original` field as JSON and stores the result in the `audit` field. If the JSON parsing fails, an error message is appended to the `error.message` field.
   - rename:
+      tag: rename_tencent_cloud_audit_userIdentity_accountId_to_cloud_account_id_57937f82
       ignore_missing: true
       field: tencent_cloud.audit.userIdentity.accountId
       target_field: cloud.account.id
   - rename:
+      tag: rename_tencent_cloud_audit_userIdentity_userName_to_user_name_081fd1f3
       ignore_missing: true
       field: tencent_cloud.audit.userIdentity.userName
       target_field: user.name
   - rename:
+      tag: rename_tencent_cloud_audit_eventRegion_to_cloud_region_671fe61c
       ignore_missing: true
       ignore_failure: true
       field: tencent_cloud.audit.eventRegion
       target_field: cloud.region
   - rename:
+      tag: rename_tencent_cloud_audit_errorCode_to_error_code_f1146470
       ignore_missing: true
       field: tencent_cloud.audit.errorCode
       target_field: error.code
   - rename:
+      tag: rename_tencent_cloud_audit_requestID_to_event_id_1d873ab7
       ignore_missing: true
       field: tencent_cloud.audit.requestID
       target_field: event.id
   - rename:
+      tag: rename_tencent_cloud_audit_httpMethod_to_http_request_method_3cc57be3
       ignore_missing: true
       field: tencent_cloud.audit.httpMethod
       target_field: http.request.method
   - rename:
+      tag: rename_tencent_cloud_audit_userAgent_to_user_agent_original_d7663ea0
       ignore_missing: true
       field: tencent_cloud.audit.userAgent
       target_field: user_agent.original
@@ -76,14 +84,17 @@ processors:
       formats:
         - UNIX
   - rename:
+      tag: rename_tencent_cloud_audit_sourceIPAddress_to_source_ip_cef20126
       ignore_missing: true
       field: tencent_cloud.audit.sourceIPAddress
       target_field: source.ip
   - rename:
+      tag: rename_tencent_cloud_audit_eventName_to_event_action_e4be29a7
       ignore_missing: true
       field: tencent_cloud.audit.eventName
       target_field: event.action
   - rename:
+      tag: rename_tencent_cloud_audit_eventSource_to_event_provider_45e08fc4
       ignore_missing: true
       field: tencent_cloud.audit.eventSource
       target_field: event.provider
@@ -140,10 +151,12 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
   - json:
+      tag: json_tencent_cloud_audit_requestParameters_to_tencent_cloud_audit_requestParameters_0f8559d2
       ignore_failure: true
       field: tencent_cloud.audit.requestParameters
       target_field: tencent_cloud.audit.requestParameters
   - json:
+      tag: json_tencent_cloud_audit_userIdentity_to_tencent_cloud_audit_userIdentity_23bfc35a
       ignore_failure: true
       field: tencent_cloud.audit.userIdentity
       target_field: tencent_cloud.audit.userIdentity
@@ -153,6 +166,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

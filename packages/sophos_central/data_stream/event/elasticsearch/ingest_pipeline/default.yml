@@ -2,18 +2,23 @@
 description: Pipeline for processing Events logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - append:
+      tag: append_event_kind_76cb4414
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_ba9b1d84
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -25,15 +30,19 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_90c6475f
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_45b808be
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_e852b96b
       if: ctx.json?.items != null && ctx.json.items.isEmpty()
   - fingerprint:
+      tag: fingerprint_58d12716
       fields:
         - json.id
         - json.created_at
@@ -41,6 +50,7 @@ processors:
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_created_at_to_sophos_central_event_created_at_75c6dcd0
       field: json.created_at
       target_field: sophos_central.event.created_at
       if: ctx.json?.created_at != null
@@ -48,176 +58,218 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_19c5a4f1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_created_20927917
       field: event.created
       copy_from: sophos_central.event.created_at
       ignore_empty_value: true
   - rename:
+      tag: rename_json_id_to_sophos_central_event_id_aeb952ee
       field: json.id
       target_field: sophos_central.event.id
       ignore_missing: true
   - set:
+      tag: set_event_id_38e70623
       field: event.id
       copy_from: sophos_central.event.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_name_to_sophos_central_event_name_f015d522
       field: json.name
       target_field: sophos_central.event.name
       ignore_missing: true
   - set:
+      tag: set_event_action_b5ed991c
       field: event.action
       copy_from: sophos_central.event.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_appSha256_to_sophos_central_event_app_sha256_91c38f2f
       field: json.appSha256
       target_field: sophos_central.event.app_sha256
       ignore_missing: true
   - set:
+      tag: set_process_hash_sha256_daed2dce
       field: process.hash.sha256
       copy_from: sophos_central.event.app_sha256
       ignore_empty_value: true
   - rename:
+      tag: rename_json_amsi_threat_data_parentProcessPath_to_sophos_central_event_amsi_threat_data_parent_process_path_f0ad32ef
       field: json.amsi_threat_data.parentProcessPath
       target_field: sophos_central.event.amsi_threat_data.parent_process.path
       ignore_missing: true
   - set:
+      tag: set_process_parent_executable_29c24121
       field: process.parent.executable
       copy_from: sophos_central.event.amsi_threat_data.parent_process.path
       ignore_empty_value: true
   - rename:
+      tag: rename_json_amsi_threat_data_processName_to_sophos_central_event_amsi_threat_data_process_name_b8f23ea8
       field: json.amsi_threat_data.processName
       target_field: sophos_central.event.amsi_threat_data.process.name
       ignore_missing: true
   - set:
+      tag: set_process_name_341c3f9f
       field: process.name
       copy_from: sophos_central.event.amsi_threat_data.process.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_amsi_threat_data_processPath_to_sophos_central_event_amsi_threat_data_process_path_ceccd770
       field: json.amsi_threat_data.processPath
       target_field: sophos_central.event.amsi_threat_data.process.path
       ignore_missing: true
   - set:
+      tag: set_process_working_directory_971a922b
       field: process.working_directory
       copy_from: sophos_central.event.amsi_threat_data.process.path
       ignore_empty_value: true
   - rename:
+      tag: rename_json_amsi_threat_data_parentProcessId_to_sophos_central_event_amsi_threat_data_parent_process_id_18b53e87
       field: json.amsi_threat_data.parentProcessId
       target_field: sophos_central.event.amsi_threat_data.parent_process.id
       ignore_missing: true
   - convert:
+      tag: convert_json_ips_threat_data_executablePid_to_sophos_central_event_ips_threat_data_executable_pid_4ea4a828
       field: json.ips_threat_data.executablePid
       target_field: sophos_central.event.ips_threat_data.executable.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f11ed46d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_pid_83a083d4
       field: process.pid
       copy_from: sophos_central.event.ips_threat_data.executable.pid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_ips_threat_data_executableName_to_sophos_central_event_ips_threat_data_executable_name_3a279c1a
       field: json.ips_threat_data.executableName
       target_field: sophos_central.event.ips_threat_data.executable.name
       ignore_missing: true
   - rename:
+      tag: rename_json_ips_threat_data_executablePath_to_sophos_central_event_ips_threat_data_executable_path_dafcac7a
       field: json.ips_threat_data.executablePath
       target_field: sophos_central.event.ips_threat_data.executable.path
       ignore_missing: true
   - set:
+      tag: set_process_executable_43fc0be5
       field: process.executable
       copy_from: sophos_central.event.ips_threat_data.executable.path
       ignore_empty_value: true
   - convert:
+      tag: convert_json_source_info_ip_to_sophos_central_event_source_info_ip_fc918e1f
       field: json.source_info.ip
       target_field: sophos_central.event.source_info.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b4b5c39c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_ip_3dc7c6be
       field: source.ip
       copy_from: sophos_central.event.source_info.ip
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_edede77f
       field: related.ip
       value: '{{{sophos_central.event.source_info.ip}}}'
       if: ctx.sophos_central?.event?.source_info?.ip != null
       allow_duplicates: false
   - convert:
+      tag: convert_json_ips_threat_data_localPort_to_sophos_central_event_ips_threat_data_local_port_a96156e3
       field: json.ips_threat_data.localPort
       target_field: sophos_central.event.ips_threat_data.local_port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c9e076de
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_port_2d3052d4
       field: source.port
       copy_from: sophos_central.event.ips_threat_data.local_port
       ignore_empty_value: true
   - rename:
+      tag: rename_json_threat_to_sophos_central_event_threat_3515b974
       field: json.threat
       target_field: sophos_central.event.threat
       ignore_missing: true
   - set:
+      tag: set_threat_feed_name_d67dd45a
       field: threat.feed.name
       copy_from: sophos_central.event.threat
       ignore_empty_value: true
   - rename:
+      tag: rename_json_user_id_to_sophos_central_event_user_id_a8771f1e
       field: json.user_id
       target_field: sophos_central.event.user_id
       ignore_missing: true
   - set:
+      tag: set_user_id_d8d0e396
       field: user.id
       copy_from: sophos_central.event.user_id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_customer_id_to_sophos_central_event_customer_id_e9ea76da
       field: json.customer_id
       target_field: sophos_central.event.customer_id
       ignore_missing: true
   - set:
+      tag: set_organization_id_72f177d5
       field: organization.id
       copy_from: sophos_central.event.customer_id
       ignore_empty_value: true
   - convert:
+      tag: convert_json_ips_threat_data_remoteIp_to_sophos_central_event_ips_threat_data_remote_ip_77865d97
       field: json.ips_threat_data.remoteIp
       target_field: sophos_central.event.ips_threat_data.remote.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e4dc9806
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_destination_ip_f3c60e2b
       field: destination.ip
       copy_from: sophos_central.event.ips_threat_data.remote.ip
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_2600b58a
       field: related.ip
       value: '{{{sophos_central.event.ips_threat_data.remote.ip}}}'
       if: ctx.sophos_central?.event?.ips_threat_data?.remote?.ip != null
       allow_duplicates: false
   - convert:
+      tag: convert_json_ips_threat_data_remotePort_to_sophos_central_event_ips_threat_data_remote_port_9e8a1ba6
       field: json.ips_threat_data.remotePort
       target_field: sophos_central.event.ips_threat_data.remote.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_eb548ce7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_destination_port_8def2057
       field: destination.port
       copy_from: sophos_central.event.ips_threat_data.remote.port
       ignore_empty_value: true
   - date:
+      tag: date_json_when_to_sophos_central_event_when_f9322930
       field: json.when
       target_field: sophos_central.event.when
       if: ctx.json?.when != null
@@ -225,84 +277,104 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_72d4f115
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_sophos_central_event_when_67310c21
       field: sophos_central.event.when
       if: ctx.sophos_central?.event?.when != null
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_72fa4d24
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_endpoint_id_to_sophos_central_event_endpoint_id_a6f604a3
       field: json.endpoint_id
       target_field: sophos_central.event.endpoint.id
       ignore_missing: true
   - rename:
+      tag: rename_json_endpoint_type_to_sophos_central_event_endpoint_type_2cbb9da7
       field: json.endpoint_type
       target_field: sophos_central.event.endpoint.type
       ignore_missing: true
   - rename:
+      tag: rename_json_location_to_sophos_central_event_location_adfc3196
       field: json.location
       target_field: sophos_central.event.location
       ignore_missing: true
   - rename:
+      tag: rename_json_group_to_sophos_central_event_group_8da97b66
       field: json.group
       target_field: sophos_central.event.group
       ignore_missing: true
   - rename:
+      tag: rename_json_origin_to_sophos_central_event_origin_6d4bb4b4
       field: json.origin
       target_field: sophos_central.event.origin
       ignore_missing: true
   - rename:
+      tag: rename_json_appCerts_to_sophos_central_event_app_certs_9e533bc7
       field: json.appCerts
       target_field: sophos_central.event.app_certs
       ignore_missing: true
   - rename:
+      tag: rename_json_ips_threat_data_techSupportId_to_sophos_central_event_ips_threat_data_tech_support_id_de7e5dc0
       field: json.ips_threat_data.techSupportId
       target_field: sophos_central.event.ips_threat_data.tech_support_id
       ignore_missing: true
   - convert:
+      tag: convert_json_ips_threat_data_detectionType_to_sophos_central_event_ips_threat_data_detection_type_342147b3
       field: json.ips_threat_data.detectionType
       target_field: sophos_central.event.ips_threat_data.detection_type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_28019eb2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ips_threat_data_executableVersion_to_sophos_central_event_ips_threat_data_executable_version_ba959e14
       field: json.ips_threat_data.executableVersion
       target_field: sophos_central.event.ips_threat_data.executable.version
       ignore_missing: true
   - grok:
+      tag: grok_json_source_de1bbd9e
       field: json.source
       patterns:
         - '^(?:%{DATA:sophos_central.event.source.domain.name}\\)?%{GREEDYDATA:sophos_central.event.source.user.name}$'
       if: ctx.json?.source != null
       on_failure:
         - append:
+            tag: append_error_message_f46c4b1f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_source_to_sophos_central_event_source_original_83a7e7a5
       field: json.source
       target_field: sophos_central.event.source.original
       ignore_missing: true
   - set:
+      tag: set_user_domain_26bf0da6
       field: user.domain
       copy_from: sophos_central.event.source.domain.name
       ignore_empty_value: true
   - set:
+      tag: set_user_name_ed21835c
       field: user.name
       copy_from: sophos_central.event.source.user.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_amsi_threat_data_processId_to_sophos_central_event_amsi_threat_data_process_id_99b86784
       field: json.amsi_threat_data.processId
       target_field: sophos_central.event.amsi_threat_data.process.id
       ignore_missing: true
   - foreach:
+      tag: foreach_json_core_remedy_items_items_e2627859
       field: json.core_remedy_items.items
       if: ctx.json?.core_remedy_items?.items instanceof List
       processor:
@@ -311,6 +383,7 @@ processors:
           target_field: _ingest._value.sophos_pid
           ignore_missing: true
   - foreach:
+      tag: foreach_json_core_remedy_items_items_efe2b503
       field: json.core_remedy_items.items
       if: ctx.json?.core_remedy_items?.items instanceof List
       processor:
@@ -319,6 +392,7 @@ processors:
           target_field: _ingest._value.suspend_result
           ignore_missing: true
   - foreach:
+      tag: foreach_json_core_remedy_items_items_e586f093
       field: json.core_remedy_items.items
       if: ctx.json?.core_remedy_items?.items instanceof List
       processor:
@@ -327,27 +401,33 @@ processors:
           target_field: _ingest._value.process_path
           ignore_missing: true
   - rename:
+      tag: rename_json_core_remedy_items_items_to_sophos_central_event_core_remedy_items_1abc091f
       field: json.core_remedy_items.items
       target_field: sophos_central.event.core_remedy.items
       ignore_missing: true
   - convert:
+      tag: convert_json_core_remedy_items_totalItems_to_sophos_central_event_core_remedy_total_items_6372a81a
       field: json.core_remedy_items.totalItems
       target_field: sophos_central.event.core_remedy.total_items
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3d604157
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_severity_to_sophos_central_event_severity_8f36b392
       field: json.severity
       target_field: sophos_central.event.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_sophos_central_event_type_8cf85bac
       field: json.type
       target_field: sophos_central.event.type
       ignore_missing: true
   - grok:
+      tag: grok_json_ips_threat_data_rawData_e7587d1d
       field: json.ips_threat_data.rawData
       if: ctx.json?.ips_threat_data?.rawData != null
       patterns:
@@ -357,52 +437,64 @@ processors:
         - '^%{GREEDYDATA:sophos_central.event.ips_threat_data.raw_data.message}$'
       on_failure:
         - append:
+            tag: append_error_message_d1835c02
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ips_threat_data_rawData_to_sophos_central_event_ips_threat_data_raw_data_original_891a7e8c
       field: json.ips_threat_data.rawData
       target_field: sophos_central.event.ips_threat_data.raw_data.original
       ignore_missing: true
   - gsub:
+      tag: gsub_temp_local_mac_81b472eb
       field: temp.local_mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_temp_local_mac_15949693
       field: temp.local_mac
       ignore_missing: true
   - rename:
+      tag: rename_temp_local_mac_to_sophos_central_event_ips_threat_data_raw_data_local_mac_d66bc1d6
       field: temp.local_mac
       target_field: sophos_central.event.ips_threat_data.raw_data.local.mac
       ignore_missing: true
   - gsub:
+      tag: gsub_temp_remote_mac_901f100e
       field: temp.remote_mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_temp_remote_mac_997f561a
       field: temp.remote_mac
       ignore_missing: true
   - rename:
+      tag: rename_temp_remote_mac_to_sophos_central_event_ips_threat_data_raw_data_remote_mac_a021b3ac
       field: temp.remote_mac
       target_field: sophos_central.event.ips_threat_data.raw_data.remote.mac
       ignore_missing: true
   - append:
+      tag: append_related_hash_ae9cc4d9
       field: related.hash
       value: '{{{sophos_central.event.ips_threat_data.raw_data.sha_256}}}'
       if: ctx.sophos_central?.event?.ips_threat_data?.raw_data?.sha_256 != null
       allow_duplicates: false
   - append:
+      tag: append_event_kind_6384ca6b
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
+      tag: remove_aef48326
       field:
         - json
         - temp
       ignore_missing: true
   - remove:
+      tag: remove_5d818571
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - sophos_central.event.created_at
@@ -427,6 +519,7 @@ processors:
         - sophos_central.event.when
       ignore_missing: true
   - script:
+      tag: script_cec02ff7
       description: Drops null/empty values recursively.
       lang: painless
       source: |

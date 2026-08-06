@@ -2,6 +2,7 @@
 description: Pipeline for processing x509 events
 processors:
   - foreach:
+      tag: foreach_eti__patterns_d41880bb
       field: eti._patterns
       processor:
         grok:
@@ -20,6 +21,7 @@ processors:
           ignore_failure: true
 
   - date:
+      tag: date_threat_indicator_x509_not_after_to_threat_indicator_x509_not_after_ca425494
       field: threat.indicator.x509.not_after
       target_field: threat.indicator.x509.not_after
       formats:
@@ -27,6 +29,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ssz"
       if: "ctx.threat?.indicator?.x509?.not_after != null"
   - date:
+      tag: date_threat_indicator_x509_not_before_to_threat_indicator_x509_not_before_1a73a88f
       field: threat.indicator.x509.not_before
       target_field: threat.indicator.x509.not_before
       formats:
@@ -35,6 +38,7 @@ processors:
       if: "ctx.threat?.indicator?.x509?.not_before != null"
 
   - kv:
+      tag: kv_threat_indicator_x509_issuer_distinguished_name_to_eti__issuer_fields_3437b170
       field: threat.indicator.x509.issuer.distinguished_name
       target_field: eti._issuer_fields
       field_split: "(?<!\\\\),"
@@ -44,39 +48,48 @@ processors:
       if: ctx.threat?.indicator?.x509?.issuer?.distinguished_name != null
 
   - append:
+      tag: append_threat_indicator_x509_issuer_common_name_a80755d2
       field: threat.indicator.x509.issuer.common_name
       value: "{{{eti._issuer_fields.CN}}}"
       if: ctx.eti?._issuer_fields?.CN != null
   - append:
+      tag: append_threat_indicator_x509_issuer_country_c6b57a15
       field: threat.indicator.x509.issuer.country
       value: "{{{eti._issuer_fields.C}}}"
       if: ctx.eti?._issuer_fields?.C != null
   - append:
+      tag: append_threat_indicator_x509_issuer_locality_bae084a8
       field: threat.indicator.x509.issuer.locality
       value: "{{{eti._issuer_fields.L}}}"
       if: ctx.eti?._issuer_fields?.L != null
   - append:
+      tag: append_threat_indicator_x509_issuer_organization_7c0995e2
       field: threat.indicator.x509.issuer.organization
       value: "{{{eti._issuer_fields.O}}}"
       if: ctx.eti?._issuer_fields?.O != null
   - append:
+      tag: append_threat_indicator_x509_issuer_organizational_unit_8daa0fbc
       field: threat.indicator.x509.issuer.organizational_unit
       value: "{{{eti._issuer_fields.OU}}}"
       if: ctx.eti?._issuer_fields?.OU != null
   - append:
+      tag: append_threat_indicator_x509_issuer_state_or_province_41d638a3
       field: threat.indicator.x509.issuer.state_or_province
       value: "{{{eti._issuer_fields.S}}}"
       if: ctx.eti?._issuer_fields?.S != null
   - append:
+      tag: append_threat_indicator_x509_issuer_state_or_province_db924e2b
       field: threat.indicator.x509.issuer.state_or_province
       value: "{{{eti._issuer_fields.ST}}}"
       if: ctx.eti?._issuer_fields?.ST != null
   - append:
+      tag: append_threat_indicator_x509_issuer_state_or_province_c7ce52ff
       field: threat.indicator.x509.issuer.state_or_province
       value: "{{{eti._issuer_fields.P}}}"
       if: ctx.eti?._issuer_fields?.P != null
 
   - kv:
+      tag: kv_threat_indicator_x509_subject_distinguished_name_to_eti__subject_fields_1e2ef977
       field: threat.indicator.x509.subject.distinguished_name
       target_field: eti._subject_fields
       field_split: "(?<!\\\\),"
@@ -86,34 +99,42 @@ processors:
       if: ctx.threat?.indicator?.x509?.subject?.distinguished_name != null
 
   - append:
+      tag: append_threat_indicator_x509_subject_common_name_d8d5a391
       field: threat.indicator.x509.subject.common_name
       value: "{{{eti._subject_fields.CN}}}"
       if: ctx.eti?._subject_fields?.CN != null
   - append:
+      tag: append_threat_indicator_x509_subject_country_f9d37014
       field: threat.indicator.x509.subject.country
       value: "{{{eti._subject_fields.C}}}"
       if: ctx.eti?._subject_fields?.C != null
   - append:
+      tag: append_threat_indicator_x509_subject_locality_204177d1
       field: threat.indicator.x509.subject.locality
       value: "{{{eti._subject_fields.L}}}"
       if: ctx.eti?._subject_fields?.L != null
   - append:
+      tag: append_threat_indicator_x509_subject_organization_2134ef19
       field: threat.indicator.x509.subject.organization
       value: "{{{eti._subject_fields.O}}}"
       if: ctx.eti?._subject_fields?.O != null
   - append:
+      tag: append_threat_indicator_x509_subject_organizational_unit_cf23af81
       field: threat.indicator.x509.subject.organizational_unit
       value: "{{{eti._subject_fields.OU}}}"
       if: ctx.eti?._subject_fields?.OU != null
   - append:
+      tag: append_threat_indicator_x509_subject_state_or_province_3b633df2
       field: threat.indicator.x509.subject.state_or_province
       value: "{{{eti._subject_fields.S}}}"
       if: ctx.eti?._subject_fields?.S != null
   - append:
+      tag: append_threat_indicator_x509_subject_state_or_province_a8240418
       field: threat.indicator.x509.subject.state_or_province
       value: "{{{eti._subject_fields.ST}}}"
       if: ctx.eti?._subject_fields?.ST != null
   - append:
+      tag: append_threat_indicator_x509_subject_state_or_province_2d7a9da4
       field: threat.indicator.x509.subject.state_or_province
       value: "{{{eti._subject_fields.P}}}"
       if: ctx.eti?._subject_fields?.P != null

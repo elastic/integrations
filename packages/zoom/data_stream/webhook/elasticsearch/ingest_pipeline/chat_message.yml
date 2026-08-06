@@ -2,29 +2,36 @@
 description: Pipeline for parsing Zoom chat_message webhooks
 processors:
 - append:
+    tag: append_event_type_8a66ccaa
     field: event.type
     value: info
 - append:
+    tag: append_event_type_fab38d9a
     field: event.type
     value: creation
     if: ctx.event?.action == 'chat_message.sent'
 - append:
+    tag: append_event_type_e4bab824
     field: event.type
     value: deletion
     if: ctx.event?.action == 'chat_message.deleted'
 - append:
+    tag: append_event_type_afa2c76c
     field: event.type
     value: change
     if: ctx.event?.action == 'chat_message.updated'
 - rename:
+    tag: rename_zoom_object_to_zoom_chat_message_4af4b529
     field: zoom.object
     target_field: zoom.chat_message
     ignore_missing: true
 - append:
+    tag: append_related_user_58d5f09d
     field: related.user
     value: "{{{zoom.chat_message.contact_id}}}"
     if: ctx.zoom?.chat_message?.contact_id != null
 - date:
+    tag: date_zoom_chat_message_timestamp_to_timestamp_88ef8c1c
     field: zoom.chat_message.timestamp
     target_field: '@timestamp'
     formats:
@@ -32,10 +39,12 @@ processors:
     if: ctx.zoom?.chat_message?.timestamp != null
     ignore_failure: true
 - remove:
+    tag: remove_zoom_chat_message_date_time_54fe0f57
     field: zoom.chat_message.date_time
     ignore_missing: true
     if: ctx.zoom?.chat_message?.timestamp != null
 - date:
+    tag: date_zoom_chat_message_date_time_to_timestamp_33d6b6c4
     field: zoom.chat_message.date_time
     target_field: '@timestamp'
     formats:
@@ -43,9 +52,11 @@ processors:
     if: ctx.zoom?.chat_message?.timestamp == null
     ignore_failure: true
 - remove:
+    tag: remove_zoom_chat_message_timestamp_bf78b1d1
     field: zoom.chat_message.timestamp
     ignore_missing: true
 - remove:
+    tag: remove_zoom_chat_message_message_91b0c3c9
     if: ctx.zoom?.chat_message?.message == null
     field: zoom.chat_message.message
     ignore_missing: true
@@ -56,3 +67,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

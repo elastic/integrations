@@ -6,6 +6,7 @@ processors:
       tag: set_ecs_version
       value: 8.17.0
   - drop:
+      tag: drop_d6785451
       description: Ignore want_more placeholder message.
       if: ctx.message == "want_more"
   - terminate:
@@ -37,6 +38,7 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - fingerprint:
+      tag: fingerprint_02243b84
       fields:
         - event.original
       target_field: _id
@@ -48,13 +50,16 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_172a37eb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dissect:
+      tag: dissect_splunk_alert__raw_976cb800
       field: splunk.alert._raw
       pattern: "%{splunk.alert.raw_timestamp}, %{_temp.alert}"
       ignore_failure: true
   - kv:
+      tag: kv__temp_alert_to_splunk_alert_48bdc1e8
       field: _temp.alert
       target_field: splunk.alert
       field_split: ', '
@@ -67,6 +72,7 @@ processors:
         the top-level `_time` and turn `splunk.alert._time` (and therefore
         `@timestamp`) into an array, which Elasticsearch rejects.
   - kv:
+      tag: kv__temp_alert_to__temp_key_751b2047
       field: _temp.alert
       target_field: _temp.key
       field_split: ', '
@@ -100,9 +106,11 @@ processors:
       if: ctx.splunk?.alert?.raw_timestamp instanceof String && ctx.splunk.alert.raw_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_3e7c1d09
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_raw_timestamp_fc8ac4df
             field: splunk.alert.raw_timestamp
   - foreach:
       field: splunk.alert.time
@@ -132,9 +140,11 @@ processors:
       if: ctx.splunk?.alert?.time instanceof String && ctx.splunk.alert.time != ''
       on_failure:
         - append:
+            tag: append_error_message_8f5dfee9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_time_3c0ba27f
             field: splunk.alert.time
   - convert:
       field: splunk.alert.EventCode
@@ -143,9 +153,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5804200b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_EventCode_860fa31d
             field: splunk.alert.EventCode
   - date:
       field: splunk.alert.Last_Login_Time
@@ -159,9 +171,11 @@ processors:
       if: ctx.splunk?.alert?.Last_Login_Time instanceof String && ctx.splunk.alert.Last_Login_Time != ''
       on_failure:
         - append:
+            tag: append_error_message_81d764f3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_Last_Login_Time_a19012dc
             field: splunk.alert.Last_Login_Time
   - convert:
       field: splunk.alert.Logon_Type
@@ -170,9 +184,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3b7f9cfe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_Logon_Type_1659237d
             field: splunk.alert.Logon_Type
   - foreach:
       field: splunk.alert.Time
@@ -204,9 +220,11 @@ processors:
       if: ctx.splunk?.alert?.Time instanceof String && ctx.splunk.alert.Time != ''
       on_failure:
         - append:
+            tag: append_error_message_25b835af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_Time_ccb667f9
             field: splunk.alert.Time
   - set:
       field: event.action
@@ -225,6 +243,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -234,6 +253,7 @@ processors:
       if: ctx.event?.action != null
       on_failure:
         - append:
+            tag: append_error_message_f136491d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -248,9 +268,11 @@ processors:
       if: ctx.splunk?.alert?.activity_timestamp instanceof String && ctx.splunk.alert.activity_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_11fac357
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_activity_timestamp_575c27cc
             field: splunk.alert.activity_timestamp
   - append:
       field: threat.tactic.name
@@ -298,9 +320,11 @@ processors:
       if: ctx.splunk?.alert?.breach_date instanceof String && ctx.splunk.alert.breach_date != ''
       on_failure:
         - append:
+            tag: append_error_message_907cd843
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_breach_date_2a417240
             field: splunk.alert.breach_date
   - convert:
       field: splunk.alert.breach_id
@@ -324,9 +348,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cbd479db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_cci_f6e2126d
             field: splunk.alert.cci
   - convert:
       field: splunk.alert.connection_id
@@ -340,9 +366,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4a3f7f05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_count_3886eb65
             field: splunk.alert.count
   - convert:
       field: splunk.alert.craction
@@ -351,9 +379,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3e83cfdf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_craction_66dad4c7
             field: splunk.alert.craction
   - date:
       field: splunk.alert.creation_timestamp
@@ -367,9 +397,11 @@ processors:
       if: ctx.splunk?.alert?.creation_timestamp instanceof String && ctx.splunk.alert.creation_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_561cc0d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_creation_timestamp_2fc48ce8
             field: splunk.alert.creation_timestamp
   - set:
       field: event.created
@@ -383,9 +415,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a13df8d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_crscore_e25fa6bd
             field: splunk.alert.crscore
   - date:
       field: splunk.alert.ctime
@@ -399,9 +433,11 @@ processors:
       if: ctx.splunk?.alert?.ctime instanceof String && ctx.splunk.alert.ctime != ''
       on_failure:
         - append:
+            tag: append_error_message_e12425bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_ctime_03035f02
             field: splunk.alert.ctime
   - convert:
       field: splunk.alert.date_hour
@@ -410,9 +446,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_78e9acd1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_date_hour_dbe43c3d
             field: splunk.alert.date_hour
   - convert:
       field: splunk.alert.date_mday
@@ -421,9 +459,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9cd28354
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_date_mday_bfeaa80b
             field: splunk.alert.date_mday
   - convert:
       field: splunk.alert.date_minute
@@ -432,9 +472,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_32843f43
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_date_minute_5c86774d
             field: splunk.alert.date_minute
   - convert:
       field: splunk.alert.date_second
@@ -443,9 +485,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a2011e3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_date_second_231db701
             field: splunk.alert.date_second
   - convert:
       field: splunk.alert.date_year
@@ -454,9 +498,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_16affc5e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_date_year_dbda582b
             field: splunk.alert.date_year
   - convert:
       field: splunk.alert.date_zone
@@ -465,9 +511,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1a6acf41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_date_zone_bde22079
             field: splunk.alert.date_zone
   - convert:
       field: splunk.alert.dayDiff
@@ -476,9 +524,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c2a3326f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dayDiff_40c4793d
             field: splunk.alert.dayDiff
   - convert:
       field: splunk.alert.day_count
@@ -487,9 +537,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c11fc7ac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_day_count_78ee858f
             field: splunk.alert.day_count
   - convert:
       field: splunk.alert.delta
@@ -498,9 +550,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_53011f3c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_delta_9d5e65eb
             field: splunk.alert.delta
   - convert:
       field: splunk.alert.dest
@@ -510,6 +564,7 @@ processors:
       if: ctx.splunk?.alert?.dest != ''
       on_failure:
         - set:
+            tag: set__temp_dest_faa33d04
             field: _temp.dest
             value: splunk.alert.dest
   - append:
@@ -525,9 +580,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_07e6d7a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dest_count_3b935bc5
             field: splunk.alert.dest_count
   - convert:
       field: splunk.alert.dest_ip
@@ -537,9 +594,11 @@ processors:
       if: ctx.splunk?.alert?.dest_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_e82b6d1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dest_ip_2ad08434
             field: splunk.alert.dest_ip
   - append:
       field: destination.ip
@@ -554,9 +613,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0fbe50c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dest_port_ac195ff7
             field: splunk.alert.dest_port
   - append:
       field: destination.port
@@ -591,9 +652,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_25a5c25f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dlp_rule_count_265ad2bb
             field: splunk.alert.dlp_rule_count
   - set:
       field: source.domain
@@ -607,9 +670,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3dc1c4fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dst_latitude_58946815
             field: splunk.alert.dst_latitude
   - set:
       field: destination.geo.city_name
@@ -623,9 +688,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b6cbbe6f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dst_longitude_f974e13d
             field: splunk.alert.dst_longitude
   - convert:
       field: splunk.alert.dstip
@@ -635,9 +702,11 @@ processors:
       if: ctx.splunk?.alert?.dstip != ''
       on_failure:
         - append:
+            tag: append_error_message_9a41fbf5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dstip_1017aa1e
             field: splunk.alert.dstip
   - append:
       field: destination.ip
@@ -662,9 +731,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2bc9bf86
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_dstport_a2d754b3
             field: splunk.alert.dstport
   - append:
       field: destination.port
@@ -684,9 +755,11 @@ processors:
       if: ctx.splunk?.alert?.ef_received_at instanceof String && ctx.splunk.alert.ef_received_at != ''
       on_failure:
         - append:
+            tag: append_error_message_f83e8c3f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_ef_received_at_e6b93095
             field: splunk.alert.ef_received_at
   - append:
       field: user.email
@@ -724,9 +797,11 @@ processors:
       if: ctx.splunk?.alert?.eventtime instanceof String && ctx.splunk.alert.eventtime != ''
       on_failure:
         - append:
+            tag: append_error_message_74350a4f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_eventtime_5539ace5
             field: splunk.alert.eventtime
   - convert:
       field: splunk.alert.external_email
@@ -735,9 +810,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9c646eb2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_external_email_627d2345
             field: splunk.alert.external_email
   - append:
       field: file.hash.sha256
@@ -762,9 +839,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e77fdf20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_file_size_f4f61c6b
             field: splunk.alert.file_size
   - set:
       field: file.size
@@ -788,9 +867,11 @@ processors:
       if: ctx.splunk?.alert?.firstTime instanceof String && ctx.splunk.alert.firstTime != ''
       on_failure:
         - append:
+            tag: append_error_message_1b788261
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_firstTime_af2434f9
             field: splunk.alert.firstTime
   - convert:
       field: splunk.alert.gef_meta._tenant_id
@@ -814,9 +895,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2bd76087
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_gef_meta_schema_version_dfb19d42
             field: splunk.alert.gef_meta.schema_version
   - date:
       field: splunk.alert.gef_meta.timestamp
@@ -830,11 +913,14 @@ processors:
       if: ctx.splunk?.alert?.gef_meta?.timestamp instanceof String && ctx.splunk.alert.gef_meta.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_1ce35239
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_gef_meta_timestamp_2cf4f802
             field: splunk.alert.gef_meta.timestamp
   - convert:
+      tag: convert_splunk_alert_host_to__temp_host_ip_a32a2ef2
       field: splunk.alert.host
       type: ip
       target_field: _temp.host_ip
@@ -846,6 +932,7 @@ processors:
       allow_duplicates: false
       if: ctx._temp?.host_ip instanceof String
   - geoip:
+      tag: geoip_host_ip_to_host_geo_d8a29594
       field: host.ip
       target_field: host.geo
       ignore_missing: true
@@ -856,6 +943,7 @@ processors:
       ignore_empty_value: true
       if: ctx.host?.geo != null
   - geoip:
+      tag: geoip_host_ip_to_source_as_343a65dc
       database_file: GeoLite2-ASN.mmdb
       field: host.ip
       target_field: source.as
@@ -864,10 +952,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -927,9 +1017,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_56f0fa05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_incidentserialno_b43866e3
             field: splunk.alert.incidentserialno
   - date:
       field: splunk.alert._indextime
@@ -943,9 +1035,11 @@ processors:
       if: ctx.splunk?.alert?._indextime instanceof String && ctx.splunk.alert._indextime != ''
       on_failure:
         - append:
+            tag: append_error_message_c3e74154
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert__indextime_2f379485
             field: splunk.alert._indextime
   - foreach:
       field: splunk.alert.infected_hosts
@@ -967,7 +1061,7 @@ processors:
   - foreach:
       field: splunk.alert.infected_hosts
       if: ctx.splunk?.alert?.infected_hosts instanceof List
-      tag: foreach_infected_hosts
+      tag: foreach_splunk_alert_infected_hosts_ea3121d1
       processor:
         append:
           field: related.hosts
@@ -981,9 +1075,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6cdca8ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_infection_count_eee17381
             field: splunk.alert.infection_count
   - foreach:
       field: splunk.alert.info_max_time
@@ -1015,11 +1111,12 @@ processors:
       if: ctx.splunk?.alert?.info_max_time instanceof String && ctx.splunk.alert.info_max_time != ''
       on_failure: # info_max_time may contain "infinity".
         - remove:
+            tag: remove_splunk_alert_info_max_time_146b78eb
             field: splunk.alert.info_max_time
   - foreach:
       field: splunk.alert.info_min_time
       if: ctx.splunk?.alert?.info_min_time instanceof List
-      tag: foreach_alert_info_min_Time
+      tag: foreach_splunk_alert_info_min_time_b4b38c56
       processor:
         date:
           field: _ingest._value
@@ -1046,6 +1143,7 @@ processors:
       if: ctx.splunk?.alert?.info_min_time instanceof String && ctx.splunk.alert.info_min_time != ''
       on_failure: # info_min_time may contain "infinity".
         - remove:
+            tag: remove_splunk_alert_info_min_time_1a319ac5
             field: splunk.alert.info_min_time
   - date:
       field: splunk.alert.info_search_time
@@ -1059,9 +1157,11 @@ processors:
       if: ctx.splunk?.alert?.info_search_time instanceof String && ctx.splunk.alert.info_search_time != ''
       on_failure:
         - append:
+            tag: append_error_message_d62a0203
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_info_search_time_1a8e84f3
             field: splunk.alert.info_search_time
   - date:
       field: splunk.alert.insertion_epoch_timestamp
@@ -1075,9 +1175,11 @@ processors:
       if: ctx.splunk?.alert?.insertion_epoch_timestamp instanceof String && ctx.splunk.alert.insertion_epoch_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_5c19d993
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_insertion_epoch_timestamp_e0514c9e
             field: splunk.alert.insertion_epoch_timestamp
   - convert:
       field: splunk.alert.ip
@@ -1087,9 +1189,11 @@ processors:
       if: ctx.splunk?.alert?.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_f4b903af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_ip_9b506e01
             field: splunk.alert.ip
   - append:
       field: destination.ip
@@ -1098,10 +1202,12 @@ processors:
       allow_duplicates: false
       if: ctx.splunk?.alert?.ip instanceof String
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -1110,10 +1216,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -1129,9 +1237,11 @@ processors:
       if: ctx.splunk?.alert?.isotimestamp instanceof String && ctx.splunk.alert.isotimestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_40e92af3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_isotimestamp_55333af3
             field: splunk.alert.isotimestamp
   - date:
       field: splunk.alert.lastTime
@@ -1146,9 +1256,11 @@ processors:
       if: ctx.splunk?.alert?.lastTime instanceof String && ctx.splunk.alert.lastTime != ''
       on_failure:
         - append:
+            tag: append_error_message_3dda14eb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_lastTime_d96e63f1
             field: splunk.alert.lastTime
   - date:
       field: splunk.alert.last_seen
@@ -1162,9 +1274,11 @@ processors:
       if: ctx.splunk?.alert?.last_seen instanceof String && ctx.splunk.alert.last_seen != ''
       on_failure:
         - append:
+            tag: append_error_message_9528485b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_last_seen_3c5e7ca8
             field: splunk.alert.last_seen
   - convert:
       field: splunk.alert.linecount
@@ -1173,9 +1287,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dd873dab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_linecount_a71cc8d1
             field: splunk.alert.linecount
   - convert:
       field: splunk.alert.logid
@@ -1189,11 +1305,13 @@ processors:
       allow_duplicates: false
       if: ctx.splunk?.alert?.mac instanceof String
   - gsub:
+      tag: gsub_host_mac_d1faae6a
       field: host.mac
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_host_mac_73cd4413
       field: host.mac
       ignore_missing: true
   - set:
@@ -1214,9 +1332,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1e4845a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_orig_linecount_8f04121b
             field: splunk.alert.orig_linecount
   - append:
       field: related.hosts
@@ -1252,9 +1372,11 @@ processors:
       if: ctx.splunk?.alert?.orig_time instanceof String && ctx.splunk.alert.orig_time != ''
       on_failure:
         - append:
+            tag: append_error_message_605e4a91
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_orig_time_4c647511
             field: splunk.alert.orig_time
   - convert:
       field: splunk.alert.orig_timeendpos
@@ -1263,9 +1385,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b3147bf8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_orig_timeendpos_8d7a8df7
             field: splunk.alert.orig_timeendpos
   - convert:
       field: splunk.alert.orig_timestartpos
@@ -1274,9 +1398,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d0ce6e57
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_orig_timestartpos_dd806b71
             field: splunk.alert.orig_timestartpos
   - set:
       field: host.os.name
@@ -1300,9 +1426,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e5678f8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_outer_doc_type_169d242f
             field: splunk.alert.outer_doc_type
   - convert:
       field: splunk.alert.policyid
@@ -1316,9 +1444,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_003421e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_port_ae40c91f
             field: splunk.alert.port
   - convert:
       field: splunk.alert.product_version
@@ -1341,6 +1471,7 @@ processors:
               protocol number. When it is not numeric, keep it as ECS
               `network.transport` instead of failing the conversion and dropping it.
         - remove:
+            tag: remove_splunk_alert_proto_95b07e6b
             field: splunk.alert.proto
             ignore_missing: true
   - script:
@@ -1424,9 +1555,11 @@ processors:
       if: ctx.splunk?.alert?.raw_event_inserted_at instanceof String && ctx.splunk.alert.raw_event_inserted_at != ''
       on_failure:
         - append:
+            tag: append_error_message_27ad9e43
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_raw_event_inserted_at_2cea94e8
             field: splunk.alert.raw_event_inserted_at
   - set:
       field: event.reason
@@ -1445,9 +1578,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c863e4d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_risk_score_34f3df9b
             field: splunk.alert.risk_score
   - set:
       field: event.risk_score
@@ -1483,12 +1618,13 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_5da0d170
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: script_5330c403
       if: ctx.splunk?.alert?.event?.SeverityName instanceof String && ctx.event?.severity == null
       source: |-
         def severity = ctx.splunk.alert.event.SeverityName.toLowerCase();
@@ -1503,6 +1639,7 @@ processors:
           }
       on_failure:
         - append:
+            tag: append_error_message_f61dd8f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -1533,6 +1670,7 @@ processors:
       copy_from: splunk.alert.src
       ignore_empty_value: true
   - convert:
+      tag: convert_source_address_to__temp_ip_b2123125
       field: source.address
       type: ip
       target_field: _temp.ip
@@ -1540,6 +1678,7 @@ processors:
       if: ctx.source?.address != ''
       on_failure:
         - set:
+            tag: set__temp_host_0a4cfff3
             field: _temp.host
             copy_from: source.address
   - append:
@@ -1567,9 +1706,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fbe39b9d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_src_employee_no_632d95d5
             field: splunk.alert.src_employee_no
   - convert:
       field: splunk.alert.src_ip
@@ -1579,9 +1720,11 @@ processors:
       if: ctx.splunk?.alert?.src_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_365448e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_src_ip_6b1da612
             field: splunk.alert.src_ip
   - append:
       field: source.ip
@@ -1596,9 +1739,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_82ad97df
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_src_latitude_c3dbb383
             field: splunk.alert.src_latitude
   - set:
       field: source.geo.city_name
@@ -1612,9 +1757,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9567823e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_src_longitude_678f226b
             field: splunk.alert.src_longitude
   - set:
       field: source.mac
@@ -1622,11 +1769,13 @@ processors:
       copy_from: splunk.alert.src_mac
       ignore_empty_value: true
   - gsub:
+      tag: gsub_source_mac_aba488b3
       field: source.mac
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
   - convert:
@@ -1636,9 +1785,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8ec27422
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_src_port_a7df6dc9
             field: splunk.alert.src_port
   - set:
       field: source.port
@@ -1657,9 +1808,11 @@ processors:
       if: ctx.splunk?.alert?.src_time instanceof String && ctx.splunk.alert.src_time != ''
       on_failure:
         - append:
+            tag: append_error_message_ac6062ef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_src_time_dbc812e0
             field: splunk.alert.src_time
   - set:
       field: source.user.email
@@ -1667,6 +1820,7 @@ processors:
       copy_from: splunk.alert.src_user_email
       ignore_empty_value: true
   - user_agent:
+      tag: user_agent_splunk_alert_useragent_2f713d56
       field: splunk.alert.useragent
       ignore_missing: true
   - append:
@@ -1705,9 +1859,11 @@ processors:
       if: ctx.splunk?.alert?.srcip != ''
       on_failure:
         - append:
+            tag: append_error_message_f205a3af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_srcip_3c6b91c7
             field: splunk.alert.srcip
   - append:
       field: source.ip
@@ -1722,13 +1878,15 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_67c3821f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_srcport_7c2cf865
             field: splunk.alert.srcport
   - date:
       field: splunk.alert._time
-      tag: date_time
+      tag: date_splunk_alert__time_to_splunk_alert__time_535b41ce
       target_field: splunk.alert._time
       formats:
         - ISO8601
@@ -1738,9 +1896,11 @@ processors:
       if: ctx.splunk?.alert?._time instanceof String && ctx.splunk.alert._time != ''
       on_failure:
         - append:
+            tag: append_error_message_b64f20cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert__time_2b1b2d5b
             field: splunk.alert._time
   - set:
       field: '@timestamp'
@@ -1754,9 +1914,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_250211f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_timeendpos_0d8c7939
             field: splunk.alert.timeendpos
   - convert:
       field: splunk.alert.timestartpos
@@ -1765,9 +1927,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_449632bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_timestartpos_7ee55163
             field: splunk.alert.timestartpos
   - convert:
       field: splunk.alert.transaction_id
@@ -1786,9 +1950,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a897f824
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_tz_496a1a45
             field: splunk.alert.tz
   - set:
       field: url.full
@@ -1808,9 +1974,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4df4ba0b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_user_count_bfc5774f
             field: splunk.alert.user_count
   - append:
       field: user.email
@@ -1847,9 +2015,11 @@ processors:
       if: ctx.splunk?.alert?.userip != ''
       on_failure:
         - append:
+            tag: append_error_message_4a1ccdad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_userip_f0e88412
             field: splunk.alert.userip
   - append:
       field: source.ip
@@ -1890,9 +2060,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f5f4ebbe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_alert_weight_a917b8f1
             field: splunk.alert.weight
   - append:
       field: related.user
@@ -1955,6 +2127,7 @@ processors:
       allow_duplicates: false
       if: ctx.splunk?.alert?.user_nick instanceof String
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
@@ -2039,6 +2212,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

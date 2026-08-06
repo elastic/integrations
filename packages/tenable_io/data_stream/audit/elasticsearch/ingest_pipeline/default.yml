@@ -2,6 +2,7 @@
 description: Pipeline for processing Tenable Vulnerability Management audit logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - terminate:
@@ -38,6 +39,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -225,9 +227,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_tenable_io_audit_is_failure_43e446f5
             field: tenable_io.audit.is_failure
             ignore_missing: true
         - append:
+            tag: append_error_message_27af75e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -249,9 +253,11 @@ processors:
       if: ctx.tenable_io?.audit?.received != null && ctx.tenable_io.audit.received != ''
       on_failure:
         - remove:
+            tag: remove_tenable_io_audit_received_a5bee3cb
             field: tenable_io.audit.received
             ignore_missing: true
         - append:
+            tag: append_error_message_e61fadb2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -271,9 +277,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_tenable_io_audit_is_anonymous_941cb349
             field: tenable_io.audit.is_anonymous
             ignore_missing: true
         - append:
+            tag: append_error_message_9089715f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -368,6 +376,7 @@ processors:
         ctx.tenable_io.audit.fields = fields;
       on_failure:
         - append:
+            tag: append_error_message_5a818cea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
@@ -378,6 +387,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bae18b43
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
@@ -385,6 +395,7 @@ processors:
       tag: trim_x_forwarded_for
       ignore_missing: true
   - foreach:
+      tag: foreach_tenable_io_audit_fields_x_forwarded_for_64c98a99
       field: tenable_io.audit.fields.x_forwarded_for
       if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
       processor:
@@ -401,6 +412,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_ip_50b87e3f
       field: source.ip
       value: "{{{tenable_io.audit.fields.x_forwarded_for.0}}}"
       ignore_failure: true
@@ -431,6 +443,7 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - foreach:
+      tag: foreach_tenable_io_audit_fields_x_forwarded_for_78df2994
       field: tenable_io.audit.fields.x_forwarded_for
       if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
       processor:
@@ -479,6 +492,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

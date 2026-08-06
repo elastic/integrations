@@ -23,73 +23,89 @@ processors:
   - remove:
       ignore_missing: true
       tag: remove_message
-      field: 
+      field:
         - message
   - json:
       tag: json_original
       field: event.original
       target_field: tencent_cloud.clb
   - rename:
+      tag: rename_tencent_cloud_clb_bytes_sent_to_http_response_body_bytes_b82b76c6
       ignore_missing: true
       field: tencent_cloud.clb.bytes_sent
       target_field: http.response.body.bytes
   - rename:
+      tag: rename_tencent_cloud_clb_http_host_to_url_domain_adaa3dc0
       ignore_missing: true
       field: tencent_cloud.clb.http_host
       target_field: url.domain
   - rename:
+      tag: rename_tencent_cloud_clb_http_referer_to_http_request_referrer_74ce7cba
       ignore_missing: true
       field: tencent_cloud.clb.http_referer
       target_field: http.request.referrer
   - rename:
+      tag: rename_tencent_cloud_clb_http_user_agent_to_user_agent_original_25b60938
       ignore_missing: true
       field: tencent_cloud.clb.http_user_agent
       target_field: user_agent.original
   - rename:
+      tag: rename_tencent_cloud_clb_http_x_forwarded_for_to_network_forwarded_ip_9f0a9324
       ignore_missing: true
       field: tencent_cloud.clb.http_x_forwarded_for
       target_field: network.forwarded_ip
   - rename:
+      tag: rename_tencent_cloud_clb_protocol_type_to_network_protocol_513f339d
       ignore_missing: true
       field: tencent_cloud.clb.protocol_type
       target_field: network.protocol
   - rename:
+      tag: rename_tencent_cloud_clb_remote_addr_to_source_ip_3ac38a36
       ignore_missing: true
       field: tencent_cloud.clb.remote_addr
       target_field: source.ip
   - rename:
+      tag: rename_tencent_cloud_clb_remote_port_to_source_port_7f671930
       ignore_missing: true
       field: tencent_cloud.clb.remote_port
       target_field: source.port
   - rename:
+      tag: rename_tencent_cloud_clb_request_length_to_http_request_body_bytes_ddf8d9b0
       ignore_missing: true
       field: tencent_cloud.clb.request_length
       target_field: http.request.body.bytes
   - rename:
+      tag: rename_tencent_cloud_clb_request_method_to_http_request_method_3094e301
       ignore_missing: true
       field: tencent_cloud.clb.request_method
       target_field: http.request.method
   - rename:
+      tag: rename_tencent_cloud_clb_server_addr_to_destination_ip_2c0e37fe
       ignore_missing: true
       field: tencent_cloud.clb.server_addr
       target_field: destination.ip
   - rename:
+      tag: rename_tencent_cloud_clb_server_name_to_server_domain_593d4708
       ignore_missing: true
       field: tencent_cloud.clb.server_name
       target_field: server.domain
   - rename:
+      tag: rename_tencent_cloud_clb_server_port_to_destination_port_7118fca0
       ignore_missing: true
       field: tencent_cloud.clb.server_port
       target_field: destination.port
   - rename:
+      tag: rename_tencent_cloud_clb_server_protocol_to_http_version_f3f8aae8
       ignore_missing: true
       field: tencent_cloud.clb.server_protocol
       target_field: http.version
   - rename:
+      tag: rename_tencent_cloud_clb_status_to_http_response_status_code_53c1f691
       ignore_missing: true
       field: tencent_cloud.clb.status
       target_field: http.response.status_code
   - rename:
+      tag: rename_tencent_cloud_clb_stgw_request_id_to_event_id_b73c2c88
       ignore_missing: true
       field: tencent_cloud.clb.stgw_request_id
       target_field: event.id
@@ -101,14 +117,17 @@ processors:
       formats:
         - dd/MMM/yyyy:HH:mm:ss Z
   - rename:
+      tag: rename_tencent_cloud_clb_upstream_addr_to_destination_address_5bb2d241
       ignore_missing: true
       field: tencent_cloud.clb.upstream_addr
       target_field: destination.address
   - rename:
+      tag: rename_tencent_cloud_clb_upstream_connect_time_to_event_duration_036ae178
       ignore_missing: true
       field: tencent_cloud.clb.upstream_connect_time
       target_field: event.duration
   - rename:
+      tag: rename_tencent_cloud_clb_uri_to_url_path_6661db02
       ignore_missing: true
       field: tencent_cloud.clb.uri
       target_field: url.path
@@ -174,38 +193,45 @@ processors:
       field: destination.as.asn
       target_field: destination.as.number
   - append:
+      tag: append_event_category_e523855f
       field: event.category
       value:
         - web
       allow_duplicates: false
   - append:
+      tag: append_event_type_ef273cf7
       field: event.type
       value:
         - access
       allow_duplicates: false
   - append:
+      tag: append_event_type_e534b58e
       if: ctx.http?.response?.status_code == 200
       field: event.type
       value:
         - info
       allow_duplicates: false
   - append:
+      tag: append_event_type_7aed4739
       if: ctx.http?.response?.status_code == 405
       field: event.type
       value:
         - error
       allow_duplicates: false
   - append:
+      tag: append_event_category_2c5cae23
       field: event.category
       value:
         - network
       allow_duplicates: false
   - append:
+      tag: append_event_type_51c0ba95
       field: event.type
       value:
         - connection
       allow_duplicates: false
   - append:
+      tag: append_event_category_5cc734b9
       if: >-
         ctx.http?.request?.method == 'GET' || ctx.http?.request?.method ==
         'POST'
@@ -214,12 +240,14 @@ processors:
         - database
       allow_duplicates: false
   - append:
+      tag: append_event_type_31baa515
       if: ctx.http?.request?.method == 'GET'
       field: event.type
       value:
         - access
       allow_duplicates: false
   - append:
+      tag: append_event_type_8eba498e
       if: >-
         ctx.http?.request?.method == 'POST' || ctx.http?.request?.method ==
         'PUT' || ctx.http?.request?.method == 'PATCH' ||
@@ -229,32 +257,38 @@ processors:
         - access
       allow_duplicates: false
   - append:
+      tag: append_event_type_e3fb4def
       if: ctx.http?.request?.method == 'HEAD'
       field: event.type
       value:
         - info
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8121c591
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       if: ctx.destination?.ip != null
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_0d61ac03
       if: ctx.network?.forwarded_ip != null
       field: related.ip
       value: '{{{network.forwarded_ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_e5210c4d
       if: ctx.url?.domain != null
       field: related.hosts
       value: '{{{url.domain}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_2ab61e3f
       if: ctx.server?.domain != null
       field: related.hosts
       value: '{{{server.domain}}}'
@@ -267,7 +301,7 @@ processors:
   - remove:
       ignore_missing: true
       tag: remove_fields
-      field: 
+      field:
         - tencent_cloud.clb.__FILENAME__
         - tencent_cloud.clb.__TIMESTAMP__
   - remove:

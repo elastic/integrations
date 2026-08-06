@@ -5,15 +5,19 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
 
@@ -21,6 +25,7 @@ processors:
   # General ECS fields #
   ######################
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
@@ -33,11 +38,14 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_611f8335
       if: ctx.json?.response != null && ctx.json.response.isEmpty()
   - fingerprint:
+      tag: fingerprint_9c373f34
       fields:
         - json.Event.timestamp
         - json.Event.Attribute.first_seen
@@ -46,14 +54,17 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - rename:
+      tag: rename_json_Event_to_misp_event_02bdc641
       field: json.Event
       target_field: misp.event
       ignore_missing: true
   - set:
+      tag: set_threat_indicator_provider_d5baa92a
       field: threat.indicator.provider
       value: misp
       if: ctx.misp?.event?.Orgc?.local != 'false'
   - set:
+      tag: set_threat_indicator_provider_8ba36aa8
       field: threat.indicator.provider
       value: "{{{misp.event.Orgc.name}}}"
       if: ctx.misp?.event?.Orgc?.local == 'false'
@@ -61,6 +72,7 @@ processors:
 
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
+      tag: remove_7e9d1749
       field:
         - misp.event.ShadowAttribute
         - misp.event.RelatedEvent
@@ -73,11 +85,13 @@ processors:
         - misp.event.Object.ObjectReference
       ignore_missing: true
   - remove:
+      tag: remove_2e0f4cd7
       field:
         - misp.event.Attribute
       ignore_missing: true
       if: 'ctx.misp?.event?.Attribute != null && ctx.misp.event.Attribute.size() == 0'
   - remove:
+      tag: remove_034f44ba
       field:
         - misp.event.Object
       ignore_missing: true
@@ -90,9 +104,11 @@ processors:
       if: ctx.misp?.event?.timestamp != null
       on_failure:
         - append:
+            tag: append_error_message_c98980d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_misp_event_publish_timestamp_to_misp_event_publish_timestamp_5bd8525a
       if: ctx.misp?.event?.publish_timestamp != null
       field: misp.event.publish_timestamp
       target_field: misp.event.publish_timestamp
@@ -100,33 +116,41 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_5c265c55
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_misp_event_Attribute_to_misp_attribute_c9e50be2
       field: misp.event.Attribute
       target_field: misp.attribute
       ignore_missing: true
   - rename:
+      tag: rename_misp_event_Object_to_misp_object_eef7b0ac
       field: misp.event.Object
       target_field: misp.object
       ignore_missing: true
   - rename:
+      tag: rename_misp_object_Attribute_to_misp_object_attribute_073971aa
       field: misp.object.Attribute
       target_field: misp.object.attribute
       ignore_missing: true
   - rename:
+      tag: rename_misp_object_meta-category_to_misp_object_meta_category_4c6efa70
       field: misp.object.meta-category
       target_field: misp.object.meta_category
       ignore_missing: true
   - rename:
+      tag: rename_misp_event_Orgc_to_misp_orgc_7810b8e8
       field: misp.event.Orgc
       target_field: misp.orgc
       ignore_missing: true
   - rename:
+      tag: rename_misp_event_Org_to_misp_org_118c50a6
       field: misp.event.Org
       target_field: misp.org
       ignore_missing: true
   - rename:
+      tag: rename_misp_event_Tag_to_misp_tag_a94ec86e
       field: misp.event.Tag
       target_field: misp.tag
       ignore_missing: true
@@ -135,11 +159,13 @@ processors:
   # # Make the Object.Attribute field primary if it exists, but keep the
   # # outer Attribute as context.
   - rename:
+      tag: rename_misp_attribute_to_misp_context_attribute_51777c7d
       field: misp.attribute
       target_field: misp.context.attribute
       ignore_missing: true
       if: ctx.misp?.object != null
   - rename:
+      tag: rename_misp_object_attribute_to_misp_attribute_190f5225
       field: misp.object.attribute
       target_field: misp.attribute
       ignore_missing: true
@@ -154,9 +180,11 @@ processors:
       if: ctx.misp?.attribute?.timestamp != null
       on_failure:
         - remove:
+            tag: remove_misp_attribute_timestamp_7140877a
             field: misp.attribute.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_065c3cbd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -168,9 +196,11 @@ processors:
       if: ctx.misp?.context?.attribute?.timestamp != null
       on_failure:
         - remove:
+            tag: remove_misp_context_attribute_timestamp_05d97596
             field: misp.context.attribute.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_92e977de
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -182,9 +212,11 @@ processors:
       if: ctx.misp?.object?.timestamp != null
       on_failure:
         - remove:
+            tag: remove_misp_object_timestamp_652822d0
             field: misp.object.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_87019432
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -192,70 +224,84 @@ processors:
   # Threat ECS Fields #
   #####################
   - set:
+      tag: set_threat_feed_name_8cf7acd4
       field: threat.feed.name
       value: "MISP"
   - rename:
+      tag: rename_misp_attribute_first_seen_to_threat_indicator_first_seen_24cded34
       field: misp.attribute.first_seen
       target_field: threat.indicator.first_seen
       ignore_missing: true
   - rename:
+      tag: rename_misp_attribute_last_seen_to_threat_indicator_last_seen_b6c86cec
       field: misp.attribute.last_seen
       target_field: threat.indicator.last_seen
       ignore_missing: true
   - convert:
+      tag: convert_misp_event_analysis_to_threat_indicator_scanner_stats_ed023325
       field: misp.event.analysis
       type: long
       target_field: threat.indicator.scanner_stats
       ignore_missing: true
   - convert:
+      tag: convert_misp_event_threat_level_id_9e82dc31
       field: misp.event.threat_level_id
       type: long
       ignore_missing: true
 
   ## File/Hash indicator operations
   - set:
+      tag: set_threat_indicator_type_89140251
       field: threat.indicator.type
       value: file
       if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp.attribute.type) || ctx.misp.attribute.type.startsWith('filename'))"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_file_hash_{{{misp_attribute_type}}}_a4b3456a
       field: misp.attribute.value
       target_field: "threat.indicator.file.hash.{{{misp.attribute.type}}}"
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp.attribute.type.startsWith('filename')"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_file_name_c3961696
       field: misp.attribute.value
       target_field: threat.indicator.file.name
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type == 'filename'"
   - grok:
+      tag: grok_misp_attribute_type_21c8a824
       field: misp.attribute.type
       patterns:
         - "%{WORD}\\|%{WORD:_tmp.hashtype}"
       ignore_missing: true
       if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - grok:
+      tag: grok_misp_attribute_value_3d19507a
       field: misp.attribute.value
       patterns:
         - "%{DATA:threat.indicator.file.name}\\|%{GREEDYDATA:_tmp.hashvalue}"
       ignore_missing: true
       if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - set:
+      tag: set_threat_indicator_file_hash_{{{_tmp_hashtype}}}_762c57ed
       field: threat.indicator.file.hash.{{{_tmp.hashtype}}}
       value: "{{{_tmp.hashvalue}}}"
       if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|') && ctx._tmp?.hashvalue != null && ctx._tmp.hashtype != null"
 
   ## URL/URI indicator operations
   - set:
+      tag: set_threat_indicator_type_9ba446ef
       field: threat.indicator.type
       value: url
       if: "ctx.misp?.attribute?.type != null && ['url', 'link', 'uri'].contains(ctx.misp.attribute.type)"
   - uri_parts:
+      tag: uri_parts_misp_attribute_value_to_threat_indicator_url_b87ee464
       field: misp.attribute.value
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
       if: ctx.threat?.indicator?.type == 'url' && ctx.misp?.attribute?.type != 'uri'
   - set:
+      tag: set_threat_indicator_url_full_2f30b058
       field: threat.indicator.url.full
       value: "{{{threat.indicator.url.original}}}"
       ignore_empty_value: true
@@ -263,15 +309,18 @@ processors:
 
   ## Regkey indicator operations
   - set:
+      tag: set_threat_indicator_type_a75d94a5
       field: threat.indicator.type
       value: windows-registry-key
       if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('regkey')"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_registry_key_ae4bdbdc
       field: misp.attribute.value
       target_field: threat.indicator.registry.key
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'windows-registry-key' && ctx.misp?.attribute?.type == 'regkey'"
   - grok:
+      tag: grok_misp_attribute_value_8de8c7e5
       field: misp.attribute.value
       patterns:
         - "%{DATA:threat.indicator.registry.key}\\|%{DATA:threat.indicator.registry.value}"
@@ -280,10 +329,12 @@ processors:
 
   ## AS indicator operations
   - set:
+      tag: set_threat_indicator_type_e057ca5b
       field: threat.indicator.type
       value: autonomous-system
       if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'AS'"
   - convert:
+      tag: convert_misp_attribute_value_to_threat_indicator_as_number_27b7ded8
       field: misp.attribute.value
       type: long
       target_field: threat.indicator.as.number
@@ -292,30 +343,36 @@ processors:
 
   ## Domain/IP/Port indicator operations
   - set:
+      tag: set_threat_indicator_type_00b0fb73
       field: threat.indicator.type
       value: domain-name
       if: "ctx.misp?.attribute?.type != null && (ctx.misp.attribute.type == 'hostname' || ctx.misp.attribute.type.startsWith('domain'))"
   - set:
+      tag: set_threat_indicator_type_52733118
       field: threat.indicator.type
       value: ipv4-addr
       if: "ctx.misp?.attribute?.type != null && ['ip-src', 'ip-src|port', 'ip-dst', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_url_domain_5790200c
       field: misp.attribute.value
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'domain-name' && ctx.misp.attribute.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_ip_93ce6570
       field: misp.attribute.value
       target_field: threat.indicator.ip
       ignore_missing: true
       if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'ipv4-addr' && !['domain|ip', 'ip-src|port', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - grok:
+      tag: grok_misp_attribute_value_49054478
       field: misp.attribute.value
       patterns:
         - "%{DATA:threat.indicator.url.domain}\\|%{IP:threat.indicator.ip}"
       ignore_missing: true
       if: ctx.misp?.attribute?.type == 'domain|ip' && ctx.threat?.indicator?.url?.domain == null
   - grok:
+      tag: grok_misp_attribute_value_6772acac
       field: misp.attribute.value
       patterns:
         - "%{IP:threat.indicator.ip}\\|%{NUMBER:threat.indicator.port}"
@@ -325,33 +382,40 @@ processors:
   ## Email indicator operations
   # Currently this ignores email-message, except setting the type it will leave the rest of the fields under misp.
   - set:
+      tag: set_threat_indicator_type_a0074c12
       field: threat.indicator.type
       value: email-addr
       if: "ctx.misp?.attribute?.type != null && ['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - set:
+      tag: set_threat_indicator_type_f423a7ef
       field: threat.indicator.type
       value: email-message
       if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_email_address_68163bdc
       field: misp.attribute.value
       target_field: threat.indicator.email.address
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'email-addr'
   - rename:
+      tag: rename_misp_event_event_creator_email_to_user_email_2b7b63a0
       field: misp.event.event_creator_email
       target_field: user.email
       ignore_missing: true
   - append:
+      tag: append_user_roles_62bc04f5
       field: user.roles
       value: "reporting_user"
       if: ctx.user?.email != null
 
   ## MAC Address indicator operations
   - set:
+      tag: set_threat_indicator_type_3dacefb2
       field: threat.indicator.type
       value: mac-addr
       if: "ctx.misp?.attribute?.type != null && ['mac-address', 'mac-eui-64'].contains(ctx.misp.attribute.type)"
   - rename:
+      tag: rename_misp_attribute_value_to_threat_indicator_mac_95a5aabe
       field: misp.attribute.value
       target_field: threat.indicator.mac
       ignore_missing: true
@@ -362,6 +426,7 @@ processors:
   ###################
   # Stripping special characters from tags
   - script:
+      tag: script_73a44c9d
       lang: painless
       if: ctx.misp?.tag != null
       source: |
@@ -383,30 +448,37 @@ processors:
   # Convert types #
   #################
   - convert:
+      tag: convert_misp_event_distribution_46d9c46c
       field: misp.event.distribution
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_misp_object_distribution_3527ecd5
       field: misp.object.distribution
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_misp_context_event_distribution_0125ab7d
       field: misp.context.event.distribution
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_misp_attribute_distribution_2aa1547c
       field: misp.attribute.distribution
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_misp_context_attribute_distribution_e22ff4dd
       field: misp.context.attribute.distribution
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_threat_indicator_port_2f4b2def
       field: threat.indicator.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_misp_event_attribute_count_96d615e8
       field: misp.event.attribute_count
       type: long
       ignore_missing: true
@@ -415,6 +487,7 @@ processors:
   # Cleanup processors #
   ######################
   - script:
+      tag: script_dcbd06f3
       lang: painless
       if: ctx.misp != null
       source: |
@@ -440,11 +513,13 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
+      tag: remove_099d18da
       field:
         - misp.attribute.value
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
+      tag: remove_b3822a43
       field:
         - misp.event.Attribute.timestamp
         - misp.event.timestamp

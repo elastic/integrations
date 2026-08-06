@@ -8,27 +8,34 @@ processors:
       description: error message set and no data to process.
 
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_4cc22c32
       field: event.category
       value: threat
   - append:
+      tag: append_event_type_7779ef85
       field: event.type
       value: indicator
 
   - set:
+      tag: set_threat_feed_name_18d95eb4
       field: threat.feed.name
       copy_from: _conf.feed_name
       if: ctx._conf?.feed_name != null
   - set:
+      tag: set_threat_feed_reference_3c5612b8
       field: threat.feed.reference
       copy_from: _conf.feed_reference
       if: ctx._conf?.feed_reference != null
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -56,6 +63,7 @@ processors:
       tag: drop_no_stix_2_1
 
   - fingerprint:
+      tag: fingerprint_6db67ad0
       fields:
         - stix.id
         - stix.created
@@ -118,6 +126,7 @@ processors:
           ctx.threat.indicator.confidence = "Not Specified";
         }
   - foreach:
+      tag: foreach_stix_labels_ba882095
       field: stix.labels
       if: ctx.stix.labels != null
       processor:
@@ -128,9 +137,11 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_stix_labels_34842181
       field: stix.labels
       ignore_missing: true
   - gsub:
+      tag: gsub_tags_a0590d98
       field: tags
       pattern: '\\\"'
       replacement: '\"'
@@ -197,6 +208,7 @@ processors:
         ctx.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
+            tag: append_error_message_0ede3693
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -226,9 +238,11 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_ad4a1b1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - fail:
+            tag: fail_24af1a5a
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
@@ -238,38 +252,47 @@ processors:
       ignore_missing: true
 
   - set:
+      tag: set_threat_indicator_type_3bad5d67
       field: threat.indicator.type
       value: autonomous-system
       if: ctx.stix.pattern?.startsWith('[autonomous-system') == true
   - set:
+      tag: set_threat_indicator_type_fbf871e7
       field: threat.indicator.type
       value: domain-name
       if: ctx.stix.pattern?.startsWith('[domain-name') == true
   - set:
+      tag: set_threat_indicator_type_801eb121
       field: threat.indicator.type
       value: email-addr
       if: ctx.stix.pattern?.startsWith('[email') == true
   - set:
+      tag: set_threat_indicator_type_be40d66d
       field: threat.indicator.type
       value: file
       if: ctx.stix.pattern?.startsWith('[file') == true
   - set:
+      tag: set_threat_indicator_type_276a5ad7
       field: threat.indicator.type
       value: ipv4-addr
       if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
+      tag: set_threat_indicator_type_d7b33577
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.stix.pattern?.startsWith('[ipv6-addr') == true
   - set:
+      tag: set_threat_indicator_type_60ba33af
       field: threat.indicator.type
       value: url
       if: ctx.stix.pattern?.startsWith('[url') == true
   - set:
+      tag: set_threat_indicator_type_51c6b09f
       field: threat.indicator.type
       value: windows-registry-key
       if: ctx.stix.pattern?.startsWith('[windows-registry-key') == true
   - set:
+      tag: set_threat_indicator_type_fe051667
       field: threat.indicator.type
       value: x509-certificate
       if: ctx.stix.pattern?.startsWith('[x509') == true
@@ -282,6 +305,7 @@ processors:
       tag: split_pattern
 
   - foreach:
+      tag: foreach_stix__patterns_77f0cb1c
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'autonomous-system'
       ignore_missing: true
@@ -289,6 +313,7 @@ processors:
         pipeline:
           name: '{{ IngestPipeline "indicator-asn" }}'
   - foreach:
+      tag: foreach_threat_indicator_as_number_cf4eaae5
       field: threat.indicator.as.number
       ignore_missing: true
       processor:
@@ -298,6 +323,7 @@ processors:
           ignore_missing: true
 
   - foreach:
+      tag: foreach_stix__patterns_6bd37c40
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
@@ -306,6 +332,7 @@ processors:
           name: '{{ IngestPipeline "indicator-domain-name" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_504f513e
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'email-addr'
       ignore_missing: true
@@ -314,6 +341,7 @@ processors:
           name: '{{ IngestPipeline "indicator-email" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_9191d88a
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'file'
       ignore_missing: true
@@ -322,6 +350,7 @@ processors:
           name: '{{ IngestPipeline "indicator-file" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_00f5a031
       field: stix._patterns
       if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
@@ -330,6 +359,7 @@ processors:
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_f9bd611a
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
@@ -338,6 +368,7 @@ processors:
           name: '{{ IngestPipeline "indicator-url" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_83b44ec0
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'windows-registry-key'
       ignore_missing: true
@@ -346,6 +377,7 @@ processors:
           name: '{{ IngestPipeline "indicator-windows-registry" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_1252c628
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'x509-certificate'
       ignore_missing: true
@@ -354,6 +386,7 @@ processors:
           name: '{{ IngestPipeline "indicator-x509" }}'
 
   - remove:
+      tag: remove_3f098879
       field:
         - _conf
         - stix._patterns
@@ -384,7 +417,6 @@ processors:
           }
         }
         unescape(ctx);
-
   - script:
       lang: painless
       description: Drops null/empty values recursively.

@@ -2,6 +2,7 @@
 description: Pipeline for Tenable.sc plugin logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,29 +17,35 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_modifiedTime_c89837c0
       field: json.modifiedTime
       if: ctx.json?.modifiedTime != null
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_143fba85
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_d5acc81e
       fields:
         - json.modifiedTime
         - json.id
@@ -63,185 +70,228 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_json_id_to_tenable_sc_plugin_id_6ebad027
       field: json.id
       target_field: tenable_sc.plugin.id
       ignore_missing: true
   - rename:
+      tag: rename_json_name_to_tenable_sc_plugin_name_17174497
       field: json.name
       target_field: tenable_sc.plugin.name
       ignore_missing: true
   - rename:
+      tag: rename_json_description_to_tenable_sc_plugin_description_f9f84613
       field: json.description
       target_field: tenable_sc.plugin.description
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_tenable_sc_plugin_type_8aafa25b
       field: json.type
       target_field: tenable_sc.plugin.type
       ignore_missing: true
   - rename:
+      tag: rename_json_copyright_to_tenable_sc_plugin_copyright_82d99d81
       field: json.copyright
       target_field: tenable_sc.plugin.copyright
       ignore_missing: true
   - convert:
+      tag: convert_json_version_to_tenable_sc_plugin_version_a87d3bde
       field: json.version
       target_field: tenable_sc.plugin.version
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_70dfb9a7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_sourceFile_to_tenable_sc_plugin_source_file_30d6faf6
       field: json.sourceFile
       target_field: tenable_sc.plugin.source_file
       ignore_missing: true
   - split:
+      tag: split_json_dependencies_to_tenable_sc_plugin_dependencies_b53ad6b2
       field: json.dependencies
       target_field: tenable_sc.plugin.dependencies
       separator: ','
       ignore_missing: true
   - rename:
+      tag: rename_json_requiredPorts_to_tenable_sc_plugin_required_ports_7d5c5756
       field: json.requiredPorts
       target_field: tenable_sc.plugin.required_ports
       ignore_missing: true
   - rename:
+      tag: rename_json_requiredUDPPorts_to_tenable_sc_plugin_required_udp_ports_5c8f0705
       field: json.requiredUDPPorts
       target_field: tenable_sc.plugin.required_udp_ports
       ignore_missing: true
   - split:
+      tag: split_json_cpe_to_tenable_sc_plugin_cpe_3bc296ea
       field: json.cpe
       target_field: tenable_sc.plugin.cpe
       separator: '\n'
       ignore_missing: true
   - rename:
+      tag: rename_json_srcPort_to_tenable_sc_plugin_src_port_a799149e
       field: json.srcPort
       target_field: tenable_sc.plugin.src_port
       ignore_missing: true
   - rename:
+      tag: rename_json_dstPort_to_tenable_sc_plugin_dst_port_7ee982d0
       field: json.dstPort
       target_field: tenable_sc.plugin.dst_port
       ignore_missing: true
   - rename:
+      tag: rename_json_protocol_to_tenable_sc_plugin_protocol_f74ee117
       field: json.protocol
       target_field: tenable_sc.plugin.protocol
       ignore_missing: true
   - set:
+      tag: set_network_transport_f20d01fe
       field: network.transport
       copy_from: tenable_sc.plugin.protocol
       ignore_failure: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
   - rename:
+      tag: rename_json_riskFactor_to_tenable_sc_plugin_risk_factor_db3d5ea4
       field: json.riskFactor
       target_field: tenable_sc.plugin.risk_factor
       ignore_missing: true
   - rename:
+      tag: rename_json_solution_to_tenable_sc_plugin_solution_079f91db
       field: json.solution
       target_field: tenable_sc.plugin.solution
       ignore_missing: true
   - split:
+      tag: split_json_seeAlso_to_tenable_sc_plugin_see_also_5bb885bb
       field: json.seeAlso
       target_field: tenable_sc.plugin.see_also
       separator: '\n'
       ignore_missing: true
   - rename:
+      tag: rename_json_synopsis_to_tenable_sc_plugin_synopsis_66f2f0e3
       field: json.synopsis
       target_field: tenable_sc.plugin.synopsis
       ignore_missing: true
   - rename:
+      tag: rename_json_checkType_to_tenable_sc_plugin_check_type_e94019cd
       field: json.checkType
       target_field: tenable_sc.plugin.check_type
       if: ctx.json?.checkType != ''
       ignore_missing: true
   - rename:
+      tag: rename_json_exploitEase_to_tenable_sc_plugin_exploit_ease_8b5505a5
       field: json.exploitEase
       target_field: tenable_sc.plugin.exploit.ease
       ignore_missing: true
   - rename:
+      tag: rename_json_exploitAvailable_to_tenable_sc_plugin_exploit_is_available_c7fbdd50
       field: json.exploitAvailable
       target_field: tenable_sc.plugin.exploit.is_available
       ignore_missing: true
   - rename:
+      tag: rename_json_exploitFrameworks_to_tenable_sc_plugin_exploit_frameworks_d132f115
       field: json.exploitFrameworks
       target_field: tenable_sc.plugin.exploit.frameworks
       ignore_missing: true
   - rename:
+      tag: rename_json_cvssVector_to_tenable_sc_plugin_cvss_vector_c22f9d91
       field: json.cvssVector
       target_field: tenable_sc.plugin.cvss_vector
       if: ctx.json?.cvssVector != ''
       ignore_missing: true
   - rename:
+      tag: rename_json_cvssVectorBF_to_tenable_sc_plugin_cvss_vector_bf_cc29e8de
       field: json.cvssVectorBF
       target_field: tenable_sc.plugin.cvss_vector_bf
       if: ctx.json?.cvssVectorBF != '0'
       ignore_missing: true
   - convert:
+      tag: convert_json_baseScore_to_tenable_sc_plugin_base_score_45408b39
       field: json.baseScore
       target_field: tenable_sc.plugin.base_score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bb448642
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_temporalScore_to_tenable_sc_plugin_temporal_score_c0fd5389
       field: json.temporalScore
       target_field: tenable_sc.plugin.temporal_score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d096846a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_cvssV3Vector_to_tenable_sc_plugin_cvssv3_vector_6d288f36
       field: json.cvssV3Vector
       target_field: tenable_sc.plugin.cvssv3_vector
       if: ctx.json?.cvssV3Vector != ''
       ignore_missing: true
   - rename:
+      tag: rename_json_cvssV3VectorBF_to_tenable_sc_plugin_cvssv3_vector_bf_9ecd1d8b
       field: json.cvssV3VectorBF
       target_field: tenable_sc.plugin.cvssv3_vector_bf
       if: ctx.json?.cvssV3VectorBF != '0'
       ignore_missing: true
   - convert:
+      tag: convert_json_cvssV3BaseScore_to_tenable_sc_plugin_cvssv3_base_score_9ffd7f52
       field: json.cvssV3BaseScore
       target_field: tenable_sc.plugin.cvssv3_base_score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_65c6f477
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_cvssV3TemporalScore_to_tenable_sc_plugin_cvssv3_temporal_score_7ef29ce4
       field: json.cvssV3TemporalScore
       target_field: tenable_sc.plugin.cvssv3_temporal_score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_61c8fd7d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_vprScore_to_tenable_sc_plugin_vpr_score_d6af79f8
       field: json.vprScore
       target_field: tenable_sc.plugin.vpr.score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0fc145e7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - json:
+      tag: json_json_vprContext_to_json_vprContext_9d03a4ba
       field: json.vprContext
       target_field: json.vprContext
       ignore_failure: true
   - script:
+      tag: script_62bae9b7
       if: ctx.json?.vprContext != null
       lang: painless
       source: >-
@@ -255,20 +305,24 @@ processors:
           ctx.tenable_sc.plugin.vpr.context._original = parts;
         }
   - rename:
+      tag: rename_json_stigSeverity_to_tenable_sc_plugin_stig_severity_138fef3c
       field: json.stigSeverity
       target_field: tenable_sc.plugin.stig_severity
       ignore_missing: true
   - set:
+      tag: set_tenable_sc_plugin_is_plugin_published_7da8f5ae
       field: tenable_sc.plugin.is_plugin_published
       value: false
       if: ctx.json?.pluginPubDate != null
       ignore_failure: true
   - set:
+      tag: set_tenable_sc_plugin_is_plugin_published_45bd4cae
       field: tenable_sc.plugin.is_plugin_published
       value: true
       if: ctx.json?.pluginPubDate != '-1'
       ignore_failure: true
   - date:
+      tag: date_json_pluginPubDate_to_tenable_sc_plugin_plugin_pub_date_b1e3c45a
       field: json.pluginPubDate
       target_field: tenable_sc.plugin.plugin_pub_date
       if: ctx.json?.pluginPubDate != null && ctx.json.pluginPubDate != '-1'
@@ -276,19 +330,23 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_2d167eb1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_tenable_sc_plugin_is_plugin_modified_3e01005c
       field: tenable_sc.plugin.is_plugin_modified
       value: false
       if: ctx.json?.pluginModDate != null
       ignore_failure: true
   - set:
+      tag: set_tenable_sc_plugin_is_plugin_modified_e147a6d8
       field: tenable_sc.plugin.is_plugin_modified
       value: true
       if: ctx.json?.pluginModDate != '-1'
       ignore_failure: true
   - date:
+      tag: date_json_pluginModDate_to_tenable_sc_plugin_plugin_mod_date_fb2fa770
       field: json.pluginModDate
       target_field: tenable_sc.plugin.plugin_mod_date
       if: ctx.json?.pluginModDate != null && ctx.json.pluginModDate != '-1'
@@ -296,19 +354,23 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_3d5cb67b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_tenable_sc_plugin_is_patch_published_b9e3a31a
       field: tenable_sc.plugin.is_patch_published
       value: false
       if: ctx.json?.patchPubDate != null
       ignore_failure: true
   - set:
+      tag: set_tenable_sc_plugin_is_patch_published_ca1a062a
       field: tenable_sc.plugin.is_patch_published
       value: true
       if: ctx.json?.patchPubDate != '-1'
       ignore_failure: true
   - date:
+      tag: date_json_patchPubDate_to_tenable_sc_plugin_patch_pub_date_6b92224c
       field: json.patchPubDate
       target_field: tenable_sc.plugin.patch_pub_date
       if: ctx.json?.patchPubDate != null && ctx.json.patchPubDate != '-1'
@@ -316,19 +378,23 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_0b3ed56b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_tenable_sc_plugin_is_patch_modified_116d5f20
       field: tenable_sc.plugin.is_patch_modified
       value: false
       if: ctx.json?.patchModDate != null
       ignore_failure: true
   - set:
+      tag: set_tenable_sc_plugin_is_patch_modified_70344fcc
       field: tenable_sc.plugin.is_patch_modified
       value: true
       if: ctx.json?.patchModDate != '-1'
       ignore_failure: true
   - date:
+      tag: date_json_patchModDate_to_tenable_sc_plugin_patch_mod_date_400c071e
       field: json.patchModDate
       target_field: tenable_sc.plugin.patch_mod_date
       if: ctx.json?.patchModDate != null && ctx.json.patchModDate != '-1'
@@ -336,19 +402,23 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_3e92c4a9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_tenable_sc_plugin_is_vulnerability_published_9375f0b5
       field: tenable_sc.plugin.is_vulnerability_published
       value: false
       if: ctx.json?.vulnPubDate != null
       ignore_failure: true
   - set:
+      tag: set_tenable_sc_plugin_is_vulnerability_published_8d82860f
       field: tenable_sc.plugin.is_vulnerability_published
       value: true
       if: ctx.json?.vulnPubDate != '-1'
       ignore_failure: true
   - date:
+      tag: date_json_vulnPubDate_to_tenable_sc_plugin_vuln_pub_date_ec437b6e
       field: json.vulnPubDate
       target_field: tenable_sc.plugin.vuln_pub_date
       if: ctx.json?.vulnPubDate != null && ctx.json.vulnPubDate != '-1'
@@ -356,9 +426,11 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_35fe2105
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_modifiedTime_to_tenable_sc_plugin_modified_time_917d6700
       field: json.modifiedTime
       if: ctx.json?.modifiedTime != null
       target_field: tenable_sc.plugin.modified_time
@@ -366,40 +438,49 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_b4f95bf3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_md5_to_tenable_sc_plugin_md5_bb61cadb
       field: json.md5
       target_field: tenable_sc.plugin.md5
       ignore_missing: true
   - split:
+      tag: split_json_xrefs_to_tenable_sc_plugin_xrefs_68e2c30a
       field: json.xrefs
       target_field: tenable_sc.plugin.xrefs
       separator: ', '
       ignore_missing: true
   - rename:
+      tag: rename_json_source_to_tenable_sc_plugin_source_b4dcecb7
       field: json.source
       target_field: tenable_sc.plugin.source
       ignore_missing: true
   - rename:
+      tag: rename_json_family_id_to_tenable_sc_plugin_family_id_eac0a9c5
       field: json.family.id
       target_field: tenable_sc.plugin.family.id
       ignore_missing: true
   - rename:
+      tag: rename_json_family_name_to_tenable_sc_plugin_family_name_8a936bc5
       field: json.family.name
       target_field: tenable_sc.plugin.family.name
       ignore_missing: true
   - rename:
+      tag: rename_json_family_type_to_tenable_sc_plugin_family_type_137f9bc7
       field: json.family.type
       target_field: tenable_sc.plugin.family.type
       ignore_missing: true
   - append:
+      tag: append_related_hash_8ee5a5d6
       field: related.hash
       value: '{{{tenable_sc.plugin.md5}}}'
       if: ctx.tenable_sc?.plugin?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - script:
+      tag: script_6b63214f
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -417,6 +498,7 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:

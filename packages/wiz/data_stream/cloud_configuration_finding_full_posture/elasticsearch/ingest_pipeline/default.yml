@@ -24,6 +24,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_d18f0a7c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -97,6 +98,7 @@ processors:
       if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_6d94fccb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -113,6 +115,7 @@ processors:
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_e1377758
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -213,7 +216,7 @@ processors:
       tag: set_resource_id_from_resource_id
       copy_from: wiz.cloud_configuration_finding_full_posture.resource.id
       ignore_empty_value: true
-      override: false  # This ensures the value isn't overwritten if already set
+      override: false # This ensures the value isn't overwritten if already set
   - rename:
       field: json.resource.name
       tag: rename_resource_name
@@ -407,6 +410,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

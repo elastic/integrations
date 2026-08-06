@@ -202,7 +202,6 @@ processors:
         ctx.ti_socradar_taxii.stix.ioc_expiration_date == null &&
         ctx.ti_socradar_taxii.stix.revoked != null &&
         ctx.ti_socradar_taxii.stix.revoked == true
-
   - script:
       tag: script_conf_ioc_expiration
       lang: painless
@@ -249,6 +248,7 @@ processors:
         ctx.ti_socradar_taxii.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
+            tag: append_error_message_d042a0a6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -279,9 +279,11 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_79aadd8d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - fail:
+            tag: fail_9faa048a
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
@@ -465,7 +467,6 @@ processors:
           }
         }
         if (ctx.event != null && saved_original != null) ctx.event['original'] = saved_original;
-
   - remove:
       field: event.original
       tag: remove_event_original
@@ -496,6 +497,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,6 +2,7 @@
 description: Pipeline for Tenable.sc asset logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,38 +17,47 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_timestamp_eab81b12
       field: json.timestamp
       if: ctx.json?.timestamp != null
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_15e8915f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_871e09cf
       field: event.kind
       value: state
   - set:
+      tag: set_event_category_ba9b1d84
       field: event.category
       value: [host]
   - script:
+      tag: script_5525d82d
       if: ctx.json?.uniqueness != null && ctx.json.uniqueness != ''
       lang: painless
       source: >-
@@ -66,138 +76,168 @@ processors:
         }
         ctx.tenable_sc.asset.custom_hash = uniqueKey;
   - fingerprint:
+      tag: fingerprint_aaae9dec
       fields:
         - tenable_sc.asset.custom_hash
       target_field: tenable_sc.asset.custom_hash
       method: SHA-256
       ignore_missing: true
   - convert:
+      tag: convert_json_ip_to_tenable_sc_asset_ip_367fbcdb
       field: json.ip
       target_field: tenable_sc.asset.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_56dfe2e0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_3de0a8c3
       field: related.ip
       value: '{{{tenable_sc.asset.ip}}}'
       if: ctx.tenable_sc?.asset?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_host_ip_88984354
       field: host.ip
       value: '{{{tenable_sc.asset.ip}}}'
       if: ctx.tenable_sc?.asset?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_uuid_to_tenable_sc_asset_uuid_9b54ec66
       field: json.uuid
       target_field: tenable_sc.asset.uuid
       ignore_missing: true
   - convert:
+      tag: convert_json_score_to_tenable_sc_asset_score_7bf7ca82
       field: json.score
       target_field: tenable_sc.asset.score
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c9467da9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_total_to_tenable_sc_asset_total_b51f9eb2
       field: json.total
       target_field: tenable_sc.asset.total
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_99112485
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_severityInfo_to_tenable_sc_asset_severity_info_7b849c4c
       field: json.severityInfo
       target_field: tenable_sc.asset.severity.info
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bc0032fd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_severityLow_to_tenable_sc_asset_severity_low_5c8a5f16
       field: json.severityLow
       target_field: tenable_sc.asset.severity.low
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_801463c3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_severityMedium_to_tenable_sc_asset_severity_medium_12b8ddfa
       field: json.severityMedium
       target_field: tenable_sc.asset.severity.medium
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d093cd4b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_severityHigh_to_tenable_sc_asset_severity_high_15b31fe4
       field: json.severityHigh
       target_field: tenable_sc.asset.severity.high
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1dd56735
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_severityCritical_to_tenable_sc_asset_severity_critical_afa5a956
       field: json.severityCritical
       target_field: tenable_sc.asset.severity.critical
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2c315f23
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - gsub:
+      tag: gsub_json_macAddress_341bf324
       field: json.macAddress
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_json_macAddress_6e07215f
       field: json.macAddress
       ignore_missing: true
   - append:
+      tag: append_host_mac_6951b863
       if: ctx.json?.macAddress != null
       field: host.mac
       value: '{{{json.macAddress}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_macAddress_to_tenable_sc_asset_mac_c071f822
       field: json.macAddress
       target_field: tenable_sc.asset.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_policyName_to_tenable_sc_asset_policy_name_b2adbd66
       field: json.policyName
       target_field: tenable_sc.asset.policy.name
       ignore_missing: true
   - rename:
+      tag: rename_json_pluginSet_to_tenable_sc_asset_plugin_set_f97a445f
       field: json.pluginSet
       target_field: tenable_sc.asset.plugin_set
       ignore_missing: true
   - set:
+      tag: set_tenable_sc_asset_netbios_name_a4ec6d28
       field: tenable_sc.asset.netbios.name
       copy_from: json.netbiosName
       ignore_failure: true
   - set:
+      tag: set_host_hostname_bcffbf83
       field: host.hostname
       copy_from: json.dnsName
       ignore_failure: true
   - set:
+      tag: set_tenable_sc_asset_dns_name_11c3ae0e
       field: tenable_sc.asset.dns.name
       copy_from: json.dnsName
       ignore_failure: true
   - script:
+      tag: script_a1f4efd8
       lang: painless
       if: ctx.json?.dnsName != null && ctx.json.dnsName != ''
       source: |
@@ -211,73 +251,90 @@ processors:
           ctx.host.domain = domain;
         }
   - append:
+      tag: append_related_hosts_10e4eab1
       field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_f122171f
       field: related.hosts
       value: '{{{host.name}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_abbc8931
       field: related.hosts
       value: '{{{json.netbiosName}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_osCPE_to_tenable_sc_asset_os_cpe_45cc708b
       field: json.osCPE
       target_field: tenable_sc.asset.os_cpe
       ignore_missing: true
   - rename:
+      tag: rename_json_biosGUID_to_tenable_sc_asset_bios_guid_b2ddc6cc
       field: json.biosGUID
       target_field: tenable_sc.asset.bios.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_tpmID_to_tenable_sc_asset_tpm_id_db52d93e
       field: json.tpmID
       target_field: tenable_sc.asset.tpm.id
       ignore_missing: true
   - rename:
+      tag: rename_json_mcafeeGUID_to_tenable_sc_asset_mcafee_guid_c854cf10
       field: json.mcafeeGUID
       target_field: tenable_sc.asset.mcafee.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_lastAuthRun_to_tenable_sc_asset_last_auth_run_9bb680e8
       field: json.lastAuthRun
       target_field: tenable_sc.asset.last_auth_run
       ignore_missing: true
   - rename:
+      tag: rename_json_lastUnauthRun_to_tenable_sc_asset_last_unauth_run_6f635e9e
       field: json.lastUnauthRun
       target_field: tenable_sc.asset.last_unauth_run
       ignore_missing: true
   - rename:
+      tag: rename_json_hostUniqueness_to_tenable_sc_asset_host_uniqueness_872ffedb
       field: json.hostUniqueness
       target_field: tenable_sc.asset.host_uniqueness
       ignore_missing: true
   - rename:
+      tag: rename_json_uniqueness_to_tenable_sc_asset_uniqueness_b95f541c
       field: json.uniqueness
       target_field: tenable_sc.asset.uniqueness
       ignore_missing: true
   - rename:
+      tag: rename_json_repository_id_to_tenable_sc_asset_repository_id_32b979da
       field: json.repository.id
       target_field: tenable_sc.asset.repository.id
       ignore_missing: true
   - rename:
+      tag: rename_json_repository_name_to_tenable_sc_asset_repository_name_bbab22ce
       field: json.repository.name
       target_field: tenable_sc.asset.repository.name
       ignore_missing: true
   - rename:
+      tag: rename_json_repository_description_to_tenable_sc_asset_repository_description_7cd50738
       field: json.repository.description
       target_field: tenable_sc.asset.repository.description
       ignore_missing: true
   - rename:
+      tag: rename_json_repository_sciID_to_tenable_sc_asset_repository_sci_id_4bcfc6f4
       field: json.repository.sciID
       target_field: tenable_sc.asset.repository.sci.id
       ignore_missing: true
   - rename:
+      tag: rename_json_repository_dataFormat_to_tenable_sc_asset_repository_data_format_8b037eef
       field: json.repository.dataFormat
       target_field: tenable_sc.asset.repository.data_format
       ignore_missing: true
   - script:
+      tag: script_6b63214f
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -295,6 +352,7 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:

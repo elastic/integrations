@@ -44,9 +44,11 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_d3783e79
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_67f874cc
       target_field: _id
       fields:
         - recordedfuture.triggered_alert.id
@@ -63,6 +65,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_394ef3a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -84,8 +87,10 @@ processors:
       if: ctx.recordedfuture?.triggered_alert?.log?.note_date != null && ctx.recordedfuture.triggered_alert.log.note_date != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_triggered_alert_log_note_date_98010705
             field: recordedfuture.triggered_alert.log.note_date
         - append:
+            tag: append_error_message_ee3fedb9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -114,8 +119,10 @@ processors:
       if: ctx.recordedfuture?.triggered_alert?.log?.status_date != null && ctx.recordedfuture.triggered_alert.log.status_date != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_triggered_alert_log_status_date_70ebe38b
             field: recordedfuture.triggered_alert.log.status_date
         - append:
+            tag: append_error_message_81d66ef1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -127,8 +134,10 @@ processors:
       if: ctx.recordedfuture?.triggered_alert?.log?.triggered != null && ctx.recordedfuture.triggered_alert.log.triggered != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_triggered_alert_log_triggered_d18110d5
             field: recordedfuture.triggered_alert.log.triggered
         - append:
+            tag: append_error_message_27f811a1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -222,6 +231,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

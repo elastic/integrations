@@ -2,46 +2,57 @@
 description: Pipeline for parsing Zoom meeting webhooks
 processors:
 - append:
+    tag: append_event_type_2ed810a0
     field: event.type
     value: info
     if: ctx.event?.action != 'meeting.alert'
 - append:
+    tag: append_event_type_988f36de
     field: event.type
     value: error
     if: ctx.event?.action == 'meeting.alert'
 - append:
+    tag: append_event_type_298b533b
     field: event.type
     value: allowed
     if: ctx.event?.action == 'meeting.registration_approved'
 - append:
+    tag: append_event_type_11cd93fe
     field: event.type
     value: creation
     if: "['meeting.registration_created', 'meeting.created'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_e645dfab
     field: event.type
     value: deletion
     if: ctx.event?.action == 'meeting.deleted'
 - append:
+    tag: append_event_type_3c9410d7
     field: event.type
     value: change
     if: ctx.event?.action == 'meeting.updated'
 - append:
+    tag: append_event_type_8945fcb4
     field: event.type
     value: start
     if: "['meeting.started', 'meeting.sharing_started'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_f479b811
     field: event.type
     value: end
     if: "['meeting.ended', 'meeting.sharing_ended'].contains(ctx.event?.action)"
 - rename:
+    tag: rename_zoom_object_to_zoom_meeting_abcfcbaa
     field: zoom.object
     target_field: zoom.meeting
     ignore_missing: true
 - rename:
+    tag: rename_zoom_meeting_join_url_to_url_full_f369fb9e
     field: zoom.meeting.join_url
     target_field: url.full
     ignore_missing: true
 - rename:
+    tag: rename_zoom_registrant_join_url_to_url_full_5b122738
     field: zoom.registrant.join_url
     target_field: url.full
     ignore_missing: true
@@ -51,19 +62,23 @@ processors:
 # Set user.* from participant, if any.
 #
 - remove:
+    tag: remove_cb807b6f
     field:
       - user
     ignore_missing: true
     if: ctx.zoom?.participant != null
 - set:
+    tag: set_user_id_5726d509
     field: user.id
     value: '{{{zoom.participant.id}}}'
     ignore_empty_value: true
 - set:
+    tag: set_user_full_name_716136a1
     field: user.full_name
     value: '{{{zoom.participant.user_name}}}'
     ignore_empty_value: true
 - set:
+    tag: set_user_email_e19c22c6
     field: user.email
     copy_from: zoom.participant.email
     ignore_empty_value: true
@@ -72,6 +87,7 @@ processors:
 # Set user.id to be the meeting's host, unless already set.
 #
 - set:
+    tag: set_user_id_2ed3fc09
     field: user.id
     value: '{{{zoom.meeting.host_id}}}'
     ignore_empty_value: true
@@ -81,45 +97,54 @@ processors:
 # Append to related.user
 #
 - append:
+    tag: append_related_user_2068ad2e
     field: related.user
     value: "{{{zoom.participant.id}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.id != null
 - append:
+    tag: append_related_user_abb29256
     field: related.user
     value: "{{{zoom.participant.user_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.user_id != null
 - append:
+    tag: append_related_user_59473576
     field: related.user
     value: "{{{zoom.participant.participant_uuid}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.participant_uuid != null
 - append:
+    tag: append_related_user_66a7e856
     field: related.user
     value: "{{{zoom.meeting.host_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.meeting?.host_id != null
 
 - convert:
+    tag: convert_zoom_participant_public_ip_to_source_ip_18e1d5b3
     field: zoom.participant.public_ip
     target_field: source.ip
     type: ip
     if: ctx.zoom?.participant?.public_ip != null && ctx.zoom.participant.public_ip != ''
     ignore_failure: true
 - append:
+    tag: append_related_ip_8121c591
     field: related.ip
     value: '{{{source.ip}}}'
     if: ctx.source?.ip != null
     allow_duplicates: false
 - remove:
+    tag: remove_zoom_participant_public_ip_8c802041
     field: zoom.participant.public_ip
     ignore_missing: true
 - geoip:
+    tag: geoip_source_ip_to_source_geo_da2e41b2
     field: source.ip
     target_field: source.geo
     ignore_missing: true
 - geoip:
+    tag: geoip_source_ip_to_source_as_28d69883
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -128,15 +153,18 @@ processors:
       - organization_name
     ignore_missing: true
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 
 - date:
+    tag: date_zoom_meeting_start_time_to_event_start_0d9af31c
     field: zoom.meeting.start_time
     target_field: event.start
     formats:
@@ -144,6 +172,7 @@ processors:
     if: ctx.event?.action == 'meeting.started'
     ignore_failure: true
 - date:
+    tag: date_zoom_participant_sharing_details_date_time_to_timestamp_718e144a
     field: zoom.participant.sharing_details.date_time
     target_field: '@timestamp'
     formats:
@@ -151,6 +180,7 @@ processors:
     if: ctx.event?.action == 'meeting.sharing_started'
     ignore_failure: true
 - date:
+    tag: date_zoom_participant_date_time_to_timestamp_7fcc80be
     field: zoom.participant.date_time
     target_field: '@timestamp'
     formats:
@@ -163,6 +193,7 @@ processors:
       ].contains(ctx.event?.action)
     ignore_failure: true
 - date:
+    tag: date_zoom_participant_join_time_to_timestamp_d00ec5a0
     field: zoom.participant.join_time
     target_field: '@timestamp'
     formats:
@@ -170,6 +201,7 @@ processors:
     if: ctx.event?.action == 'meeting.participant_joined'
     ignore_failure: true
 - date:
+    tag: date_zoom_participant_leave_time_to_timestamp_93575a93
     field: zoom.participant.leave_time
     target_field: '@timestamp'
     formats:
@@ -177,6 +209,7 @@ processors:
     if: ctx.event?.action == 'meeting.participant_left'
     ignore_failure: true
 - date:
+    tag: date_zoom_time_stamp_to_timestamp_776e784c
     field: zoom.time_stamp
     target_field: '@timestamp'
     formats:
@@ -184,23 +217,28 @@ processors:
     if: ctx.event?.action == 'meeting.updated'
     ignore_failure: true
 - script:
+    tag: script_e6e3936c
     lang: painless
     if: ctx.zoom?.meeting?.duration != null
     source: >-
       ctx.event.duration = ctx.zoom.meeting.duration * 60L * 1000000000L;
 - remove:
+    tag: remove_zoom_meeting_start_time_dc171613
     field: zoom.meeting.start_time
     ignore_missing: true
     if: ctx.event?.action == 'meeting.started'
 - remove:
+    tag: remove_zoom_meeting_duration_e066d4e8
     field: zoom.meeting.duration
     ignore_missing: true
     if: ctx.event?.duration != null
 - remove:
+    tag: remove_zoom_participant_sharing_details_date_time_c6045597
     field: zoom.participant.sharing_details.date_time
     ignore_missing: true
     if: ctx.event?.action == 'meeting.sharing_started'
 - remove:
+    tag: remove_zoom_participant_date_time_4eefaaed
     field: zoom.participant.date_time
     ignore_missing: true
     if: >-
@@ -210,14 +248,17 @@ processors:
         'meeting.participant_left_waiting_room'
       ].contains(ctx.event?.action)
 - remove:
+    tag: remove_zoom_participant_join_time_3d0d87cb
     field: zoom.participant.join_time
     ignore_missing: true
     if: ctx.event?.action == 'meeting.participant_joined'
 - remove:
+    tag: remove_zoom_participant_leave_time_a6aac1e0
     field: zoom.participant.leave_time
     ignore_missing: true
     if: ctx.event?.action == 'meeting.participant_left'
 - remove:
+    tag: remove_zoom_time_stamp_68469d29
     field: zoom.time_stamp
     ignore_missing: true
     if: ctx.event?.action == 'meeting.updated'
@@ -228,3 +269,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

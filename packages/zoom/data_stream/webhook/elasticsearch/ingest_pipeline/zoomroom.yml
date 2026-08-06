@@ -2,18 +2,22 @@
 description: Pipeline for parsing Zoom zoom_room webhooks
 processors:
 - append:
+    tag: append_event_type_793652d4
     field: event.type
     value: info
     if: "['zoomroom.checked_in', 'zoomroom.checked_out'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_d6048c7a
     field: event.type
     value: start
     if: ctx.event?.action == 'zoomroom.checked_in'
 - append:
+    tag: append_event_type_67ea0bcc
     field: event.type
     value: end
     if: ctx.event?.action == 'zoomroom.checked_out'
 - rename:
+    tag: rename_zoom_object_to_zoom_zoomroom_3bac376f
     field: zoom.object
     target_field: zoom.zoomroom
     ignore_missing: true
@@ -24,3 +28,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

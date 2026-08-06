@@ -41,6 +41,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
@@ -51,6 +52,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -75,6 +77,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -84,6 +87,7 @@ processors:
       if: ctx.event?.action != null
       on_failure:
         - append:
+            tag: append_error_message_f136491d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -94,6 +98,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_531ab060
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -115,6 +120,7 @@ processors:
       if: ctx.json?.created_on != null && ctx.json.created_on != ''
       on_failure:
         - append:
+            tag: append_error_message_1face9cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -130,6 +136,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e5a67e31
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -150,6 +157,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0d10a0cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -160,6 +168,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f87dea39
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -200,6 +209,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_fff3a966
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -212,6 +222,7 @@ processors:
       if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
       on_failure:
         - append:
+            tag: append_error_message_bf6d79f0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -249,6 +260,7 @@ processors:
       if: ctx.json?.modified_on != null && ctx.json.modified_on != ''
       on_failure:
         - append:
+            tag: append_error_message_dfb89074
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -292,6 +304,7 @@ processors:
       target_field: ti_crowdstrike.ioc.type
       ignore_missing: true
   - script:
+      tag: script_01f49ccc
       lang: painless
       if: ctx.ti_crowdstrike?.ioc?.type != null
       description: >
@@ -325,6 +338,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_2850514a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -335,6 +349,7 @@ processors:
       if: ctx.ti_crowdstrike?.ioc?.value != '' && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
       on_failure:
         - append:
+            tag: append_error_message_fdb93136
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -388,6 +403,7 @@ processors:
       description: Drops null/empty values recursively.
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -397,6 +413,7 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

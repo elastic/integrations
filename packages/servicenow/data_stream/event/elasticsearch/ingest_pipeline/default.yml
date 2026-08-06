@@ -9,7 +9,7 @@ processors:
       tag: set_ecs_version
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: terminate_3c149bdd
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
@@ -32,6 +32,7 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_4907fbaf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -210,8 +211,10 @@ processors:
       if: ctx.servicenow?.event?.active?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_active_display_value_09ce22f0
             field: servicenow.event.active.display_value
         - append:
+            tag: append_error_message_910e62f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -222,8 +225,10 @@ processors:
       if: ctx.servicenow?.event?.active?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_active_value_3728581f
             field: servicenow.event.active.value
         - append:
+            tag: append_error_message_720de2e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -252,13 +257,15 @@ processors:
       if: ctx.servicenow?.event?.activity_due?.display_value != null && ctx.servicenow.event.activity_due.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_activity_due_display_value_0ee4aaec
             field: servicenow.event.activity_due.display_value
         - append:
+            tag: append_error_message_b18b175b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.activity_due.display_value
-      tag: date_activity_due_display_value
+      tag: date_servicenow_event_activity_due_display_value_to_servicenow_event_activity_due_display_value_281102e5
       target_field: servicenow.event.activity_due.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -282,8 +289,10 @@ processors:
       if: ctx.servicenow?.event?.activity_due?.display_value != null && ctx.servicenow.event.activity_due.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_activity_due_display_value_dcfc0d3c
             field: servicenow.event.activity_due.display_value
         - append:
+            tag: append_error_message_486393fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -311,13 +320,15 @@ processors:
       if: ctx.servicenow?.event?.activity_due?.value != null && ctx.servicenow.event.activity_due.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_activity_due_value_6bfdff79
             field: servicenow.event.activity_due.value
         - append:
+            tag: append_error_message_a00e9b81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.activity_due.value
-      tag: date_activity_due_value
+      tag: date_servicenow_event_activity_due_value_to_servicenow_event_activity_due_value_84597b90
       target_field: servicenow.event.activity_due.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -339,8 +350,10 @@ processors:
       if: ctx.servicenow?.event?.activity_due?.value != null && ctx.servicenow.event.activity_due.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_activity_due_value_52cfea7a
             field: servicenow.event.activity_due.value
         - append:
+            tag: append_error_message_ac3e9372
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -369,13 +382,15 @@ processors:
       if: ctx.servicenow?.event?.last_review_date?.display_value != null && ctx.servicenow.event.last_review_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_review_date_display_value_586d79f6
             field: servicenow.event.last_review_date.display_value
         - append:
+            tag: append_error_message_7e3d38a7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_review_date.display_value
-      tag: date_last_review_date_display_value
+      tag: date_servicenow_event_last_review_date_display_value_to_servicenow_event_last_review_date_display_value_fc3e5a89
       target_field: servicenow.event.last_review_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -399,8 +414,10 @@ processors:
       if: ctx.servicenow?.event?.last_review_date?.display_value != null && ctx.servicenow.event.last_review_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_review_date_display_value_feb14446
             field: servicenow.event.last_review_date.display_value
         - append:
+            tag: append_error_message_a6c582cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -428,13 +445,15 @@ processors:
       if: ctx.servicenow?.event?.last_review_date?.value != null && ctx.servicenow.event.last_review_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_review_date_value_6a93190f
             field: servicenow.event.last_review_date.value
         - append:
+            tag: append_error_message_2f98f8e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_review_date.value
-      tag: date_last_review_date_value
+      tag: date_servicenow_event_last_review_date_value_to_servicenow_event_last_review_date_value_a835b75c
       target_field: servicenow.event.last_review_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -456,8 +475,10 @@ processors:
       if: ctx.servicenow?.event?.last_review_date?.value != null && ctx.servicenow.event.last_review_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_review_date_value_104d8098
             field: servicenow.event.last_review_date.value
         - append:
+            tag: append_error_message_93a5f0ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -491,13 +512,15 @@ processors:
       if: ctx.servicenow?.event?.assigned?.display_value != null && ctx.servicenow.event.assigned.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_assigned_display_value_61864358
             field: servicenow.event.assigned.display_value
         - append:
+            tag: append_error_message_c5946187
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.assigned.display_value
-      tag: date_assigned_display_value
+      tag: date_servicenow_event_assigned_display_value_to_servicenow_event_assigned_display_value_a233c151
       target_field: servicenow.event.assigned.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -521,8 +544,10 @@ processors:
       if: ctx.servicenow?.event?.assigned?.display_value != null && ctx.servicenow.event.assigned.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_assigned_display_value_ad6071f8
             field: servicenow.event.assigned.display_value
         - append:
+            tag: append_error_message_38562517
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -550,13 +575,15 @@ processors:
       if: ctx.servicenow?.event?.assigned?.value != null && ctx.servicenow.event.assigned.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_assigned_value_75b29c55
             field: servicenow.event.assigned.value
         - append:
+            tag: append_error_message_4fbd2fd5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.assigned.value
-      tag: date_assigned_value
+      tag: date_servicenow_event_assigned_value_to_servicenow_event_assigned_value_3c4eb26c
       target_field: servicenow.event.assigned.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -578,8 +605,10 @@ processors:
       if: ctx.servicenow?.event?.assigned?.value != null && ctx.servicenow.event.assigned.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_assigned_value_061b088e
             field: servicenow.event.assigned.value
         - append:
+            tag: append_error_message_238ccc0e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -595,8 +624,10 @@ processors:
       if: ctx.servicenow?.event?.attested?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attested_display_value_a7f1b96e
             field: servicenow.event.attested.display_value
         - append:
+            tag: append_error_message_4f2d619b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -607,8 +638,10 @@ processors:
       if: ctx.servicenow?.event?.attested?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attested_value_e37fb24d
             field: servicenow.event.attested.value
         - append:
+            tag: append_error_message_447472b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -619,6 +652,7 @@ processors:
       if: ctx.servicenow?.event?.business_criticality?.value != ''
       on_failure:
         - rename:
+            tag: rename_servicenow_event_business_criticality_value_to_servicenow_event_business_criticality_text_value_8f8e85f7
             field: servicenow.event.business_criticality.value
             target_field: servicenow.event.business_criticality.text_value
             ignore_missing: true
@@ -649,13 +683,15 @@ processors:
       if: ctx.servicenow?.event?.attested_date?.display_value != null && ctx.servicenow.event.attested_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attested_date_display_value_d1778257
             field: servicenow.event.attested_date.display_value
         - append:
+            tag: append_error_message_e4e906bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.attested_date.display_value
-      tag: date_attested_date_display_value
+      tag: date_servicenow_event_attested_date_display_value_to_servicenow_event_attested_date_display_value_b2f1bd4d
       target_field: servicenow.event.attested_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -679,8 +715,10 @@ processors:
       if: ctx.servicenow?.event?.attested_date?.display_value != null && ctx.servicenow.event.attested_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attested_date_display_value_38a31947
             field: servicenow.event.attested_date.display_value
         - append:
+            tag: append_error_message_0b2c4c5b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -708,13 +746,15 @@ processors:
       if: ctx.servicenow?.event?.attested_date?.value != null && ctx.servicenow.event.attested_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attested_date_value_af53e5cc
             field: servicenow.event.attested_date.value
         - append:
+            tag: append_error_message_095e709f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.attested_date.value
-      tag: date_attested_date_value
+      tag: date_servicenow_event_attested_date_value_to_servicenow_event_attested_date_value_46f21de4
       target_field: servicenow.event.attested_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -736,8 +776,10 @@ processors:
       if: ctx.servicenow?.event?.attested_date?.value != null && ctx.servicenow.event.attested_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attested_date_value_bc62ba75
             field: servicenow.event.attested_date.value
         - append:
+            tag: append_error_message_b64c0afe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -765,13 +807,15 @@ processors:
       if: ctx.servicenow?.event?.business_duration?.value != null && ctx.servicenow.event.business_duration.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_business_duration_value_bccfe9ba
             field: servicenow.event.business_duration.value
         - append:
+            tag: append_error_message_c8e4c6d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.business_duration.value
-      tag: date_business_duration_value
+      tag: date_servicenow_event_business_duration_value_to_servicenow_event_business_duration_value_9a2951a4
       target_field: servicenow.event.business_duration.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -793,8 +837,10 @@ processors:
       if: ctx.servicenow?.event?.business_duration?.value != null && ctx.servicenow.event.business_duration.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_business_duration_value_2af007bf
             field: servicenow.event.business_duration.value
         - append:
+            tag: append_error_message_7fba57fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -822,13 +868,15 @@ processors:
       if: ctx.servicenow?.event?.calendar_duration?.value != null && ctx.servicenow.event.calendar_duration.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_calendar_duration_value_1d6c8dbe
             field: servicenow.event.calendar_duration.value
         - append:
+            tag: append_error_message_13e14383
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.calendar_duration.value
-      tag: date_calendar_duration_value
+      tag: date_servicenow_event_calendar_duration_value_to_servicenow_event_calendar_duration_value_4adfab34
       target_field: servicenow.event.calendar_duration.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -850,8 +898,10 @@ processors:
       if: ctx.servicenow?.event?.calendar_duration?.value != null && ctx.servicenow.event.calendar_duration.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_calendar_duration_value_459c3a3b
             field: servicenow.event.calendar_duration.value
         - append:
+            tag: append_error_message_61c4109e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -862,8 +912,10 @@ processors:
       if: ctx.servicenow?.event?.can_print?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_can_print_display_value_6dffed48
             field: servicenow.event.can_print.display_value
         - append:
+            tag: append_error_message_f0984447
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -874,8 +926,10 @@ processors:
       if: ctx.servicenow?.event?.can_print?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_can_print_value_107c7dd7
             field: servicenow.event.can_print.value
         - append:
+            tag: append_error_message_c24aae85
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -886,8 +940,10 @@ processors:
       if: ctx.servicenow?.event?.cd_rom?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cd_rom_display_value_d06fe430
             field: servicenow.event.cd_rom.display_value
         - append:
+            tag: append_error_message_452675b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -898,8 +954,10 @@ processors:
       if: ctx.servicenow?.event?.cd_rom?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cd_rom_value_3c3d7b0f
             field: servicenow.event.cd_rom.value
         - append:
+            tag: append_error_message_b332c889
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -910,8 +968,10 @@ processors:
       if: ctx.servicenow?.event?.cd_speed?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cd_speed_value_52b44ad6
             field: servicenow.event.cd_speed.value
         - append:
+            tag: append_error_message_2f3b0b29
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -927,8 +987,10 @@ processors:
       if: ctx.servicenow?.event?.cl_port?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cl_port_value_fa6acd26
             field: servicenow.event.cl_port.value
         - append:
+            tag: append_error_message_5af9c665
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -939,8 +1001,10 @@ processors:
       if: ctx.servicenow?.event?.percent_outage?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_percent_outage_value_787431ae
             field: servicenow.event.percent_outage.value
         - append:
+            tag: append_error_message_c52e6acb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -951,8 +1015,10 @@ processors:
       if: ctx.servicenow?.event?.total_vulnerable_items?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_total_vulnerable_items_value_fbcda337
             field: servicenow.event.total_vulnerable_items.value
         - append:
+            tag: append_error_message_8b111e0b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -963,8 +1029,10 @@ processors:
       if: ctx.servicenow?.event?.vulnerability_risk_score?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_total_vulnerability_risk_score_value_bfef60a2
             field: servicenow.event.total_vulnerability_risk_score.value
         - append:
+            tag: append_error_message_3f1293cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -975,8 +1043,10 @@ processors:
       if: ctx.servicenow?.event?.pid?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_pid_value_69b3edb0
             field: servicenow.event.pid.value
         - append:
+            tag: append_error_message_dd6220b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -987,8 +1057,10 @@ processors:
       if: ctx.servicenow?.event?.attestation_score?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_attestation_score_value_57d74222
             field: servicenow.event.attestation_score.value
         - append:
+            tag: append_error_message_1f6955bd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -999,8 +1071,10 @@ processors:
       if: ctx.servicenow?.event?.cpu_core_count?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cpu_core_count_value_14562989
             field: servicenow.event.cpu_core_count.value
         - append:
+            tag: append_error_message_4664322d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1011,8 +1085,10 @@ processors:
       if: ctx.servicenow?.event?.cpu_core_thread?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cpu_core_thread_value_28b28270
             field: servicenow.event.cpu_core_thread.value
         - append:
+            tag: append_error_message_2b32ec05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1023,8 +1099,10 @@ processors:
       if: ctx.servicenow?.event?.os_address_width?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_os_address_width_value_860622a7
             field: servicenow.event.os_address_width.value
         - append:
+            tag: append_error_message_c3f0bb11
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1035,8 +1113,10 @@ processors:
       if: ctx.servicenow?.event?.route_reason?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_route_reason_value_f35c6a93
             field: servicenow.event.route_reason.value
         - append:
+            tag: append_error_message_3044e429
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1047,8 +1127,10 @@ processors:
       if: ctx.servicenow?.event?.order?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_order_value_ea674eeb
             field: servicenow.event.order.value
         - append:
+            tag: append_error_message_698d4b3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1077,13 +1159,15 @@ processors:
       if: ctx.servicenow?.event?.closed_at?.display_value != null && ctx.servicenow.event.closed_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_closed_at_display_value_6082e6d6
             field: servicenow.event.closed_at.display_value
         - append:
+            tag: append_error_message_ed644d79
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.closed_at.display_value
-      tag: date_closed_at_display_value
+      tag: date_servicenow_event_closed_at_display_value_to_servicenow_event_closed_at_display_value_41a48cfb
       target_field: servicenow.event.closed_at.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -1107,8 +1191,10 @@ processors:
       if: ctx.servicenow?.event?.closed_at?.display_value != null && ctx.servicenow.event.closed_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_closed_at_display_value_f69bdd1e
             field: servicenow.event.closed_at.display_value
         - append:
+            tag: append_error_message_68e3d569
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1136,13 +1222,15 @@ processors:
       if: ctx.servicenow?.event?.closed_at?.value != null && ctx.servicenow.event.closed_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_closed_at_value_5ce82ac1
             field: servicenow.event.closed_at.value
         - append:
+            tag: append_error_message_8e35f045
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.closed_at.value
-      tag: date_closed_at_value
+      tag: date_servicenow_event_closed_at_value_to_servicenow_event_closed_at_value_462f61fa
       target_field: servicenow.event.closed_at.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -1164,8 +1252,10 @@ processors:
       if: ctx.servicenow?.event?.closed_at?.value != null && ctx.servicenow.event.closed_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_closed_at_value_9cbbabb0
             field: servicenow.event.closed_at.value
         - append:
+            tag: append_error_message_8dc63e5c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -1186,8 +1276,10 @@ processors:
       if: ctx.servicenow?.event?.cost?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cost_value_366abfd8
             field: servicenow.event.cost.value
         - append:
+            tag: append_error_message_b4fd41ad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1203,8 +1295,10 @@ processors:
       if: ctx.servicenow?.event?.cpu_count?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cpu_count_value_7d0f864f
             field: servicenow.event.cpu_count.value
         - append:
+            tag: append_error_message_91bab06d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1215,8 +1309,10 @@ processors:
       if: ctx.servicenow?.event?.cpu_speed?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_cpu_speed_value_d356411b
             field: servicenow.event.cpu_speed.value
         - append:
+            tag: append_error_message_2054b365
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1245,13 +1341,15 @@ processors:
       if: ctx.servicenow?.event?.delivery_date?.display_value != null && ctx.servicenow.event.delivery_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_delivery_date_display_value_27d956bf
             field: servicenow.event.delivery_date.display_value
         - append:
+            tag: append_error_message_24c78503
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.delivery_date.display_value
-      tag: date_delivery_date_display_value
+      tag: date_servicenow_event_delivery_date_display_value_to_servicenow_event_delivery_date_display_value_477892cd
       target_field: servicenow.event.delivery_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -1275,8 +1373,10 @@ processors:
       if: ctx.servicenow?.event?.delivery_date?.display_value != null && ctx.servicenow.event.delivery_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_delivery_date_display_value_1b55e21f
             field: servicenow.event.delivery_date.display_value
         - append:
+            tag: append_error_message_6108cb53
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1304,13 +1404,15 @@ processors:
       if: ctx.servicenow?.event?.delivery_date?.value != null && ctx.servicenow.event.delivery_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_delivery_date_value_d8412de4
             field: servicenow.event.delivery_date.value
         - append:
+            tag: append_error_message_e8734c23
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.delivery_date.value
-      tag: date_delivery_date_value
+      tag: date_servicenow_event_delivery_date_value_to_servicenow_event_delivery_date_value_5b7af714
       target_field: servicenow.event.delivery_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -1332,8 +1434,10 @@ processors:
       if: ctx.servicenow?.event?.delivery_date?.value != null && ctx.servicenow.event.delivery_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_delivery_date_value_88cb6381
             field: servicenow.event.delivery_date.value
         - append:
+            tag: append_error_message_e422d666
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1349,8 +1453,10 @@ processors:
       if: ctx.servicenow?.event?.disk_space?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_disk_space_value_616a73a1
             field: servicenow.event.disk_space.value
         - append:
+            tag: append_error_message_fc4238cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1389,13 +1495,15 @@ processors:
       if: ctx.servicenow?.event?.end_date?.display_value != null && ctx.servicenow.event.end_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_end_date_display_value_6ceff116
             field: servicenow.event.end_date.display_value
         - append:
+            tag: append_error_message_9abe1b13
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.end_date.display_value
-      tag: date_end_date_display_value
+      tag: date_servicenow_event_end_date_display_value_to_servicenow_event_end_date_display_value_d8439b7d
       target_field: servicenow.event.end_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -1419,8 +1527,10 @@ processors:
       if: ctx.servicenow?.event?.end_date?.display_value != null && ctx.servicenow.event.end_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_end_date_display_value_cfe26016
             field: servicenow.event.end_date.display_value
         - append:
+            tag: append_error_message_928a619b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1448,13 +1558,15 @@ processors:
       if: ctx.servicenow?.event?.end_date?.value != null && ctx.servicenow.event.end_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_end_date_value_ccff7163
             field: servicenow.event.end_date.value
         - append:
+            tag: append_error_message_c9b20a8d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.end_date.value
-      tag: date_end_date_value
+      tag: date_servicenow_event_end_date_value_to_servicenow_event_end_date_value_69c000a8
       target_field: servicenow.event.end_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -1476,8 +1588,10 @@ processors:
       if: ctx.servicenow?.event?.end_date?.value != null && ctx.servicenow.event.end_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_end_date_value_4d145128
             field: servicenow.event.end_date.value
         - append:
+            tag: append_error_message_e96c7922
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1494,8 +1608,10 @@ processors:
       if: ctx.servicenow?.event?.escalation?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_escalation_value_3435ce4c
             field: servicenow.event.escalation.value
         - append:
+            tag: append_error_message_f0f4cb85
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1506,8 +1622,10 @@ processors:
       if: ctx.servicenow?.event?.fault_count?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_fault_count_value_266d44e1
             field: servicenow.event.fault_count.value
         - append:
+            tag: append_error_message_554cc709
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1536,13 +1654,15 @@ processors:
       if: ctx.servicenow?.event?.first_discovered?.display_value != null && ctx.servicenow.event.first_discovered.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_first_discovered_display_value_4f7d868f
             field: servicenow.event.first_discovered.display_value
         - append:
+            tag: append_error_message_d50b0267
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.first_discovered.display_value
-      tag: date_first_discovered_display_value
+      tag: date_servicenow_event_first_discovered_display_value_to_servicenow_event_first_discovered_display_value_ca763219
       target_field: servicenow.event.first_discovered.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -1566,8 +1686,10 @@ processors:
       if: ctx.servicenow?.event?.first_discovered?.display_value != null && ctx.servicenow.event.first_discovered.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_first_discovered_display_value_f139284f
             field: servicenow.event.first_discovered.display_value
         - append:
+            tag: append_error_message_6804c747
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1595,13 +1717,15 @@ processors:
       if: ctx.servicenow?.event?.first_discovered?.value != null && ctx.servicenow.event.first_discovered.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_first_discovered_value_37f37682
             field: servicenow.event.first_discovered.value
         - append:
+            tag: append_error_message_87b53ed1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.first_discovered.value
-      tag: date_first_discovered_value
+      tag: date_servicenow_event_first_discovered_value_to_servicenow_event_first_discovered_value_02b3fb38
       target_field: servicenow.event.first_discovered.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -1623,8 +1747,10 @@ processors:
       if: ctx.servicenow?.event?.first_discovered?.value != null && ctx.servicenow.event.first_discovered.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_first_discovered_value_ba078f31
             field: servicenow.event.first_discovered.value
         - append:
+            tag: append_error_message_459d05ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1640,8 +1766,10 @@ processors:
       if: ctx.servicenow?.event?.impact?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_impact_value_1cb9fb1b
             field: servicenow.event.impact.value
         - append:
+            tag: append_error_message_34105b11
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1652,8 +1780,10 @@ processors:
       if: ctx.servicenow?.event?.install_status?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_install_status_value_b3524f4f
             field: servicenow.event.install_status.value
         - append:
+            tag: append_error_message_538874e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1664,8 +1794,10 @@ processors:
       if: ctx.servicenow?.event?.internet_facing?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_internet_facing_display_value_3e6ed212
             field: servicenow.event.internet_facing.display_value
         - append:
+            tag: append_error_message_9c621f9f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1676,8 +1808,10 @@ processors:
       if: ctx.servicenow?.event?.internet_facing?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_internet_facing_value_c1b89839
             field: servicenow.event.internet_facing.value
         - append:
+            tag: append_error_message_cfcdbda5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1688,8 +1822,10 @@ processors:
       if: ctx.servicenow?.event?.ip_address?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_ip_address_display_value_d9dcfcd4
             field: servicenow.event.ip_address.display_value
         - append:
+            tag: append_error_message_6489ef67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -1706,8 +1842,10 @@ processors:
       if: ctx.servicenow?.event?.ip_address?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_ip_address_value_8ac555ff
             field: servicenow.event.ip_address.value
         - append:
+            tag: append_error_message_69149989
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1718,8 +1856,10 @@ processors:
       if: ctx.servicenow?.event?.is_clustered?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_is_clustered_display_value_f45b7d1e
             field: servicenow.event.is_clustered.display_value
         - append:
+            tag: append_error_message_89647aab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1730,8 +1870,10 @@ processors:
       if: ctx.servicenow?.event?.is_clustered?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_is_clustered_value_2ef0c595
             field: servicenow.event.is_clustered.value
         - append:
+            tag: append_error_message_ca36e2e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1742,8 +1884,10 @@ processors:
       if: ctx.servicenow?.event?.knowledge?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_knowledge_display_value_52fb4ebe
             field: servicenow.event.knowledge.display_value
         - append:
+            tag: append_error_message_b333766b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1754,8 +1898,10 @@ processors:
       if: ctx.servicenow?.event?.knowledge?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_knowledge_value_3931a74d
             field: servicenow.event.knowledge.value
         - append:
+            tag: append_error_message_8ffe2de1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1784,13 +1930,15 @@ processors:
       if: ctx.servicenow?.event?.last_discovered?.display_value != null && ctx.servicenow.event.last_discovered.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_discovered_display_value_2bf7b84d
             field: servicenow.event.last_discovered.display_value
         - append:
+            tag: append_error_message_be038d03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_discovered.display_value
-      tag: date_last_discovered_display_value
+      tag: date_servicenow_event_last_discovered_display_value_to_servicenow_event_last_discovered_display_value_97b2b49d
       target_field: servicenow.event.last_discovered.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -1814,8 +1962,10 @@ processors:
       if: ctx.servicenow?.event?.last_discovered?.display_value != null && ctx.servicenow.event.last_discovered.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_discovered_display_value_e4df176d
             field: servicenow.event.last_discovered.display_value
         - append:
+            tag: append_error_message_15f04b5b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1843,13 +1993,15 @@ processors:
       if: ctx.servicenow?.event?.last_discovered?.value != null && ctx.servicenow.event.last_discovered.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_discovered_value_ba615512
             field: servicenow.event.last_discovered.value
         - append:
+            tag: append_error_message_52227e87
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_discovered.value
-      tag: date_last_discovered_value
+      tag: date_servicenow_event_last_discovered_value_to_servicenow_event_last_discovered_value_0202580c
       target_field: servicenow.event.last_discovered.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -1871,8 +2023,10 @@ processors:
       if: ctx.servicenow?.event?.last_discovered?.value != null && ctx.servicenow.event.last_discovered.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_discovered_value_1de92a63
             field: servicenow.event.last_discovered.value
         - append:
+            tag: append_error_message_33a2a746
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1888,8 +2042,10 @@ processors:
       if: ctx.servicenow?.event?.made_sla?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_made_sla_display_value_9641b116
             field: servicenow.event.made_sla.display_value
         - append:
+            tag: append_error_message_8e4eb49b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
@@ -1901,6 +2057,7 @@ processors:
       if: ctx.servicenow?.event?.roles?.display_value instanceof String
       on_failure:
         - append:
+            tag: append_error_message_7ee1599d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1911,8 +2068,10 @@ processors:
       if: ctx.servicenow?.event?.made_sla?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_made_sla_value_9404841d
             field: servicenow.event.made_sla.value
         - append:
+            tag: append_error_message_f7c44645
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1938,8 +2097,10 @@ processors:
       if: ctx.servicenow?.event?.monitor?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_monitor_display_value_ff9f8468
             field: servicenow.event.monitor.display_value
         - append:
+            tag: append_error_message_20d0fd6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1950,8 +2111,10 @@ processors:
       if: ctx.servicenow?.event?.monitor?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_monitor_value_b6d61177
             field: servicenow.event.monitor.value
         - append:
+            tag: append_error_message_1abc1139
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1962,8 +2125,10 @@ processors:
       if: ctx.servicenow?.event?.on_hold?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_on_hold_display_value_8363ce55
             field: servicenow.event.on_hold.display_value
         - append:
+            tag: append_error_message_d390bf47
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1974,8 +2139,10 @@ processors:
       if: ctx.servicenow?.event?.on_hold?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_on_hold_value_85b90c42
             field: servicenow.event.on_hold.value
         - append:
+            tag: append_error_message_9c707e1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2004,13 +2171,15 @@ processors:
       if: ctx.servicenow?.event?.opened_at?.display_value != null && ctx.servicenow.event.opened_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_opened_at_display_value_4a00b34d
             field: servicenow.event.opened_at.display_value
         - append:
+            tag: append_error_message_7cd05983
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.opened_at.display_value
-      tag: date_opened_at_display_value
+      tag: date_servicenow_event_opened_at_display_value_to_servicenow_event_opened_at_display_value_5321274d
       target_field: servicenow.event.opened_at.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2034,8 +2203,10 @@ processors:
       if: ctx.servicenow?.event?.opened_at?.display_value != null && ctx.servicenow.event.opened_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_opened_at_display_value_44bbf13d
             field: servicenow.event.opened_at.display_value
         - append:
+            tag: append_error_message_c9e516bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2063,13 +2234,15 @@ processors:
       if: ctx.servicenow?.event?.opened_at?.value != null && ctx.servicenow.event.opened_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_opened_at_value_f40c949e
             field: servicenow.event.opened_at.value
         - append:
+            tag: append_error_message_1134ccab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.opened_at.value
-      tag: date_opened_at_value
+      tag: date_servicenow_event_opened_at_value_to_servicenow_event_opened_at_value_bb52b064
       target_field: servicenow.event.opened_at.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2091,8 +2264,10 @@ processors:
       if: ctx.servicenow?.event?.opened_at?.value != null && ctx.servicenow.event.opened_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_opened_at_value_9b1aab03
             field: servicenow.event.opened_at.value
         - append:
+            tag: append_error_message_5b12f38e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -2126,13 +2301,15 @@ processors:
       if: ctx.servicenow?.event?.work_end?.display_value != null && ctx.servicenow.event.work_end.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_end_display_value_e99a21e1
             field: servicenow.event.work_end.display_value
         - append:
+            tag: append_error_message_22fea2a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.work_end.display_value
-      tag: date_work_end_display_value
+      tag: date_servicenow_event_work_end_display_value_to_servicenow_event_work_end_display_value_70033b1d
       target_field: servicenow.event.work_end.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2156,8 +2333,10 @@ processors:
       if: ctx.servicenow?.event?.work_end?.display_value != null && ctx.servicenow.event.work_end.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_end_display_value_0214caf1
             field: servicenow.event.work_end.display_value
         - append:
+            tag: append_error_message_0597e90b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2185,13 +2364,15 @@ processors:
       if: ctx.servicenow?.event?.work_end?.value != null && ctx.servicenow.event.work_end.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_end_value_d3fd3dcc
             field: servicenow.event.work_end.value
         - append:
+            tag: append_error_message_760218f1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.work_end.value
-      tag: date_work_end_value
+      tag: date_servicenow_event_work_end_value_to_servicenow_event_work_end_value_76ed296c
       target_field: servicenow.event.work_end.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2213,8 +2394,10 @@ processors:
       if: ctx.servicenow?.event?.work_end?.value != null && ctx.servicenow.event.work_end.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_end_value_45ba9f27
             field: servicenow.event.work_end.value
         - append:
+            tag: append_error_message_96453ebe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2243,13 +2426,15 @@ processors:
       if: ctx.servicenow?.event?.approval_set?.display_value != null && ctx.servicenow.event.approval_set.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_approval_set_display_value_8c4c7f5c
             field: servicenow.event.approval_set.display_value
         - append:
+            tag: append_error_message_2365de73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.approval_set.display_value
-      tag: date_approval_set_display_value
+      tag: date_servicenow_event_approval_set_display_value_to_servicenow_event_approval_set_display_value_197a6c3d
       target_field: servicenow.event.approval_set.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2273,8 +2458,10 @@ processors:
       if: ctx.servicenow?.event?.approval_set?.display_value != null && ctx.servicenow.event.approval_set.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_approval_set_display_value_9804490c
             field: servicenow.event.approval_set.display_value
         - append:
+            tag: append_error_message_c5061c33
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2302,13 +2489,15 @@ processors:
       if: ctx.servicenow?.event?.approval_set?.value != null && ctx.servicenow.event.approval_set.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_approval_set_value_86fd4889
             field: servicenow.event.approval_set.value
         - append:
+            tag: append_error_message_63b09679
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.approval_set.value
-      tag: date_approval_set_value
+      tag: date_servicenow_event_approval_set_value_to_servicenow_event_approval_set_value_024be5b0
       target_field: servicenow.event.approval_set.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2330,8 +2519,10 @@ processors:
       if: ctx.servicenow?.event?.approval_set?.value != null && ctx.servicenow.event.approval_set.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_approval_set_value_3a876452
             field: servicenow.event.approval_set.value
         - append:
+            tag: append_error_message_f337bfc2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2360,13 +2551,15 @@ processors:
       if: ctx.servicenow?.event?.work_start?.display_value != null && ctx.servicenow.event.work_start.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_start_display_value_413c8ab6
             field: servicenow.event.work_start.display_value
         - append:
+            tag: append_error_message_0dc86feb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.work_start.display_value
-      tag: date_work_start_display_value
+      tag: date_servicenow_event_work_start_display_value_to_servicenow_event_work_start_display_value_0eb93d55
       target_field: servicenow.event.work_start.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2390,8 +2583,10 @@ processors:
       if: ctx.servicenow?.event?.work_start?.display_value != null && ctx.servicenow.event.work_start.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_start_display_value_44501ee6
             field: servicenow.event.work_start.display_value
         - append:
+            tag: append_error_message_947001e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2419,13 +2614,15 @@ processors:
       if: ctx.servicenow?.event?.work_start?.value != null && ctx.servicenow.event.work_start.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_start_value_09390edb
             field: servicenow.event.work_start.value
         - append:
+            tag: append_error_message_b8c0ec0d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.work_start.value
-      tag: date_work_start_value
+      tag: date_servicenow_event_work_start_value_to_servicenow_event_work_start_value_70e48900
       target_field: servicenow.event.work_start.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2447,8 +2644,10 @@ processors:
       if: ctx.servicenow?.event?.work_start?.value != null && ctx.servicenow.event.work_start.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_work_start_value_6b383d80
             field: servicenow.event.work_start.value
         - append:
+            tag: append_error_message_399f97da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2477,13 +2676,15 @@ processors:
       if: ctx.servicenow?.event?.follow_up?.display_value != null && ctx.servicenow.event.follow_up.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_follow_up_display_value_df250831
             field: servicenow.event.follow_up.display_value
         - append:
+            tag: append_error_message_6ca8e87b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.follow_up.display_value
-      tag: date_follow_up_display_value
+      tag: date_servicenow_event_follow_up_display_value_to_servicenow_event_follow_up_display_value_9e8a83e5
       target_field: servicenow.event.follow_up.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2507,8 +2708,10 @@ processors:
       if: ctx.servicenow?.event?.follow_up?.display_value != null && ctx.servicenow.event.follow_up.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_follow_up_display_value_50611c11
             field: servicenow.event.follow_up.display_value
         - append:
+            tag: append_error_message_4a247543
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2536,13 +2739,15 @@ processors:
       if: ctx.servicenow?.event?.follow_up?.value != null && ctx.servicenow.event.follow_up.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_follow_up_value_2774da0e
             field: servicenow.event.follow_up.value
         - append:
+            tag: append_error_message_e398cbbf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.follow_up.value
-      tag: date_follow_up_value
+      tag: date_servicenow_event_follow_up_value_to_servicenow_event_follow_up_value_595a34f4
       target_field: servicenow.event.follow_up.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2564,8 +2769,10 @@ processors:
       if: ctx.servicenow?.event?.follow_up?.value != null && ctx.servicenow.event.follow_up.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_follow_up_value_c09d1b37
             field: servicenow.event.follow_up.value
         - append:
+            tag: append_error_message_0de5baae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2594,13 +2801,15 @@ processors:
       if: ctx.servicenow?.event?.expected_start?.display_value != null && ctx.servicenow.event.expected_start.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_expected_start_display_value_5a2bf5d5
             field: servicenow.event.expected_start.display_value
         - append:
+            tag: append_error_message_1ebe4e1b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.expected_start.display_value
-      tag: date_expected_start_display_value
+      tag: date_servicenow_event_expected_start_display_value_to_servicenow_event_expected_start_display_value_8a103ff5
       target_field: servicenow.event.expected_start.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2624,13 +2833,15 @@ processors:
       if: ctx.servicenow?.event?.expected_start?.display_value != null && ctx.servicenow.event.expected_start.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_expected_start_display_value_d5e0f615
             field: servicenow.event.expected_start.display_value
         - append:
+            tag: append_error_message_029233d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.expected_start.value
-      tag: date_follow_up_value
+      tag: date_servicenow_event_expected_start_value_to_servicenow_event_expected_start_value_6ee4b815
       target_field: servicenow.event.expected_start.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2653,13 +2864,15 @@ processors:
       if: ctx.servicenow?.event?.expected_start?.value != null && ctx.servicenow.event.expected_start.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_expected_start_value_3bf23e18
             field: servicenow.event.expected_start.value
         - append:
+            tag: append_error_message_d10aa35f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.expected_start.value
-      tag: date_follow_up_value
+      tag: date_servicenow_event_expected_start_value_to_servicenow_event_expected_start_value_d43d64a8
       target_field: servicenow.event.expected_start.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2681,8 +2894,10 @@ processors:
       if: ctx.servicenow?.event?.expected_start?.value != null && ctx.servicenow.event.expected_start.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_expected_start_value_dee3390d
             field: servicenow.event.expected_start.value
         - append:
+            tag: append_error_message_8b767e62
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2711,13 +2926,15 @@ processors:
       if: ctx.servicenow?.event?.due_date?.display_value != null && ctx.servicenow.event.due_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_date_display_value_93b6c93d
             field: servicenow.event.due_date.display_value
         - append:
+            tag: append_error_message_214e5b2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.due_date.display_value
-      tag: date_due_date_display_value
+      tag: date_servicenow_event_due_date_display_value_to_servicenow_event_due_date_display_value_072d801d
       target_field: servicenow.event.due_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2741,8 +2958,10 @@ processors:
       if: ctx.servicenow?.event?.due_date?.display_value != null && ctx.servicenow.event.due_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_date_display_value_f4f82bfd
             field: servicenow.event.due_date.display_value
         - append:
+            tag: append_error_message_5103fb73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2770,13 +2989,15 @@ processors:
       if: ctx.servicenow?.event?.due_date?.value != null && ctx.servicenow.event.due_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_date_value_a9007118
             field: servicenow.event.due_date.value
         - append:
+            tag: append_error_message_dcbe5781
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.due_date.value
-      tag: date_due_date_value
+      tag: date_servicenow_event_due_date_value_to_servicenow_event_due_date_value_af9cabcc
       target_field: servicenow.event.due_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2798,8 +3019,10 @@ processors:
       if: ctx.servicenow?.event?.due_date?.value != null && ctx.servicenow.event.due_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_date_value_1c5c5d73
             field: servicenow.event.due_date.value
         - append:
+            tag: append_error_message_6d772436
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2828,13 +3051,15 @@ processors:
       if: ctx.servicenow?.event?.checked_out?.display_value != null && ctx.servicenow.event.checked_out.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_out_display_value_a58fb9c0
             field: servicenow.event.checked_out.display_value
         - append:
+            tag: append_error_message_bf1d80d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.checked_out.display_value
-      tag: date_checked_out_display_value
+      tag: date_servicenow_event_checked_out_display_value_to_servicenow_event_checked_out_display_value_7db4820f
       target_field: servicenow.event.checked_out.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2858,8 +3083,10 @@ processors:
       if: ctx.servicenow?.event?.checked_out?.display_value != null && ctx.servicenow.event.checked_out.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_out_display_value_6b7d86a8
             field: servicenow.event.checked_out.display_value
         - append:
+            tag: append_error_message_ef1f67cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2887,13 +3114,15 @@ processors:
       if: ctx.servicenow?.event?.checked_out?.value != null && ctx.servicenow.event.checked_out.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_out_value_493a34e7
             field: servicenow.event.checked_out.value
         - append:
+            tag: append_error_message_d008363d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.checked_out.value
-      tag: date_checked_out_value
+      tag: date_servicenow_event_checked_out_value_to_servicenow_event_checked_out_value_8241f6ce
       target_field: servicenow.event.checked_out.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -2915,8 +3144,10 @@ processors:
       if: ctx.servicenow?.event?.checked_out?.value != null && ctx.servicenow.event.checked_out.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_out_value_e20966ea
             field: servicenow.event.checked_out.value
         - append:
+            tag: append_error_message_14182320
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -2945,13 +3176,15 @@ processors:
       if: ctx.servicenow?.event?.checked_in?.display_value != null && ctx.servicenow.event.checked_in.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_in_display_value_9785c67b
             field: servicenow.event.checked_in.display_value
         - append:
+            tag: append_error_message_11be2f27
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.checked_in.display_value
-      tag: date_checked_in_display_value
+      tag: date_servicenow_event_checked_in_display_value_to_servicenow_event_checked_in_display_value_ba2106e9
       target_field: servicenow.event.checked_in.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -2975,8 +3208,10 @@ processors:
       if: ctx.servicenow?.event?.checked_in?.display_value != null && ctx.servicenow.event.checked_in.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_in_display_value_74ca7b5b
             field: servicenow.event.checked_in.display_value
         - append:
+            tag: append_error_message_85fd9d37
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3004,13 +3239,15 @@ processors:
       if: ctx.servicenow?.event?.checked_in?.value != null && ctx.servicenow.event.checked_in.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_in_value_43838206
             field: servicenow.event.checked_in.value
         - append:
+            tag: append_error_message_7345d2e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.checked_in.value
-      tag: date_checked_in_value
+      tag: date_servicenow_event_checked_in_value_to_servicenow_event_checked_in_value_a59600a8
       target_field: servicenow.event.checked_in.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3032,8 +3269,10 @@ processors:
       if: ctx.servicenow?.event?.checked_in?.value != null && ctx.servicenow.event.checked_in.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_checked_in_value_5dc042dd
             field: servicenow.event.checked_in.value
         - append:
+            tag: append_error_message_e15dc26a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3062,13 +3301,15 @@ processors:
       if: ctx.servicenow?.event?.due?.display_value != null && ctx.servicenow.event.due.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_display_value_be421794
             field: servicenow.event.due.display_value
         - append:
+            tag: append_error_message_8a38e54d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.due.display_value
-      tag: date_due_display_value
+      tag: date_servicenow_event_due_display_value_to_servicenow_event_due_display_value_c802ef87
       target_field: servicenow.event.due.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -3092,8 +3333,10 @@ processors:
       if: ctx.servicenow?.event?.due?.display_value != null && ctx.servicenow.event.due.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_display_value_b6e15cfc
             field: servicenow.event.due.display_value
         - append:
+            tag: append_error_message_53060a45
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3121,13 +3364,15 @@ processors:
       if: ctx.servicenow?.event?.due?.value != null && ctx.servicenow.event.due.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_value_7f7349b3
             field: servicenow.event.due.value
         - append:
+            tag: append_error_message_fb51c949
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.due.value
-      tag: date_due_value
+      tag: date_servicenow_event_due_value_to_servicenow_event_due_value_f816a4ce
       target_field: servicenow.event.due.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3149,8 +3394,10 @@ processors:
       if: ctx.servicenow?.event?.due?.value != null && ctx.servicenow.event.due.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_due_value_40625912
             field: servicenow.event.due.value
         - append:
+            tag: append_error_message_6a0bd1d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3179,13 +3426,15 @@ processors:
       if: ctx.servicenow?.event?.planned_end_date?.display_value != null && ctx.servicenow.event.planned_end_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_end_date_display_value_852c273f
             field: servicenow.event.planned_end_date.display_value
         - append:
+            tag: append_error_message_181ce69f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.planned_end_date.display_value
-      tag: date_planned_end_date_display_value
+      tag: date_servicenow_event_planned_end_date_display_value_to_servicenow_event_planned_end_date_display_value_6b3ef551
       target_field: servicenow.event.planned_end_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -3209,8 +3458,10 @@ processors:
       if: ctx.servicenow?.event?.planned_end_date?.display_value != null && ctx.servicenow.event.planned_end_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_end_date_display_value_9493b4af
             field: servicenow.event.planned_end_date.display_value
         - append:
+            tag: append_error_message_c4e70a0f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3238,13 +3489,15 @@ processors:
       if: ctx.servicenow?.event?.planned_end_date?.value != null && ctx.servicenow.event.planned_end_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_end_date_value_460707a6
             field: servicenow.event.planned_end_date.value
         - append:
+            tag: append_error_message_f85b8225
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.planned_end_date.value
-      tag: date_planned_end_date_value
+      tag: date_servicenow_event_planned_end_date_value_to_servicenow_event_planned_end_date_value_d4b5b790
       target_field: servicenow.event.planned_end_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3266,8 +3519,10 @@ processors:
       if: ctx.servicenow?.event?.planned_end_date?.value != null && ctx.servicenow.event.planned_end_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_end_date_value_50878929
             field: servicenow.event.planned_end_date.value
         - append:
+            tag: append_error_message_ddac02b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3296,13 +3551,15 @@ processors:
       if: ctx.servicenow?.event?.planned_start_date?.display_value != null && ctx.servicenow.event.planned_start_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_start_date_display_value_b28d2452
             field: servicenow.event.planned_start_date.display_value
         - append:
+            tag: append_error_message_3667081b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.planned_start_date.display_value
-      tag: date_planned_start_date_display_value
+      tag: date_servicenow_event_planned_start_date_display_value_to_servicenow_event_planned_start_date_display_value_2a7f4c1d
       target_field: servicenow.event.planned_start_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -3326,8 +3583,10 @@ processors:
       if: ctx.servicenow?.event?.planned_start_date?.display_value != null && ctx.servicenow.event.planned_start_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_start_date_display_value_879a1d92
             field: servicenow.event.planned_start_date.display_value
         - append:
+            tag: append_error_message_05c9e333
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3355,13 +3614,15 @@ processors:
       if: ctx.servicenow?.event?.planned_start_date?.value != null && ctx.servicenow.event.planned_start_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_start_date_value_0b8a8c48
             field: servicenow.event.planned_start_date.value
         - append:
+            tag: append_error_message_5f08ae4e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.planned_start_date.value
-      tag: date_planned_start_date_date_value
+      tag: date_servicenow_event_planned_start_date_value_to_servicenow_event_planned_start_date_value_9d30a0b1
       target_field: servicenow.event.planned_start_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3383,8 +3644,10 @@ processors:
       if: ctx.servicenow?.event?.planned_start_date?.value != null && ctx.servicenow.event.planned_start_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_planned_start_date_value_6e8dca95
             field: servicenow.event.planned_start_date.value
         - append:
+            tag: append_error_message_3a2477db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -3400,8 +3663,10 @@ processors:
       if: ctx.servicenow?.event?.operational_status?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_operational_status_value_25ff2826
             field: servicenow.event.operational_status.value
         - append:
+            tag: append_error_message_428b3f39
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3430,13 +3695,15 @@ processors:
       if: ctx.servicenow?.event?.order_date?.display_value != null && ctx.servicenow.event.order_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_order_date_display_value_79f95697
             field: servicenow.event.order_date.display_value
         - append:
+            tag: append_error_message_7b7ad803
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.order_date.display_value
-      tag: date_order_date_display_value
+      tag: date_servicenow_event_order_date_display_value_to_servicenow_event_order_date_display_value_855e148d
       target_field: servicenow.event.order_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -3460,8 +3727,10 @@ processors:
       if: ctx.servicenow?.event?.order_date?.display_value != null && ctx.servicenow.event.order_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_order_date_display_value_9a6739c7
             field: servicenow.event.order_date.display_value
         - append:
+            tag: append_error_message_5047dd43
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3489,13 +3758,15 @@ processors:
       if: ctx.servicenow?.event?.order_date?.value != null && ctx.servicenow.event.order_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_order_date_value_4ab3057a
             field: servicenow.event.order_date.value
         - append:
+            tag: append_error_message_4128123d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.order_date.value
-      tag: date_order_date_value
+      tag: date_servicenow_event_order_date_value_to_servicenow_event_order_date_value_765840f4
       target_field: servicenow.event.order_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3517,8 +3788,10 @@ processors:
       if: ctx.servicenow?.event?.order_date?.value != null && ctx.servicenow.event.order_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_order_date_value_0717cdc9
             field: servicenow.event.order_date.value
         - append:
+            tag: append_error_message_f780fdbe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -3549,8 +3822,10 @@ processors:
       if: ctx.servicenow?.event?.priority?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_priority_value_8c2ce921
             field: servicenow.event.priority.value
         - append:
+            tag: append_error_message_6e2e41ad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3578,13 +3853,15 @@ processors:
       if: ctx.servicenow?.event?.purchase_date?.display_value != null && ctx.servicenow.event.purchase_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_purchase_date_display_value_5b085a3a
             field: servicenow.event.purchase_date.display_value
         - append:
+            tag: append_error_message_c2b95e65
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.purchase_date.display_value
-      tag: date_purchase_date_display_value
+      tag: date_servicenow_event_purchase_date_display_value_to_servicenow_event_purchase_date_display_value_f5eeac6b
       target_field: servicenow.event.purchase_date.display_value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3607,8 +3884,10 @@ processors:
       if: ctx.servicenow?.event?.purchase_date?.display_value != null && ctx.servicenow.event.purchase_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_purchase_date_display_value_e22a5cb2
             field: servicenow.event.purchase_date.display_value
         - append:
+            tag: append_error_message_4321b635
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3636,13 +3915,15 @@ processors:
       if: ctx.servicenow?.event?.purchase_date?.value != null && ctx.servicenow.event.purchase_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_purchase_date_value_cd33d811
             field: servicenow.event.purchase_date.value
         - append:
+            tag: append_error_message_b1f4ba05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.purchase_date.value
-      tag: date_purchase_date_value
+      tag: date_servicenow_event_purchase_date_value_to_servicenow_event_purchase_date_value_df2f05fa
       target_field: servicenow.event.purchase_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3664,8 +3945,10 @@ processors:
       if: ctx.servicenow?.event?.purchase_date?.value != null && ctx.servicenow.event.purchase_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_purchase_date_value_1685b7d0
             field: servicenow.event.purchase_date.value
         - append:
+            tag: append_error_message_143b20bc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -3676,8 +3959,10 @@ processors:
       if: ctx.servicenow?.event?.quantity?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_quantity_value_d3be9378
             field: servicenow.event.quantity.value
         - append:
+            tag: append_error_message_d445f1b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -3688,8 +3973,10 @@ processors:
       if: ctx.servicenow?.event?.ram?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_ram_value_e674c799
             field: servicenow.event.ram.value
         - append:
+            tag: append_error_message_72a9e2a9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -3700,8 +3987,10 @@ processors:
       if: ctx.servicenow?.event?.reassignment_count?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_reassignment_count_value_1e2b0715
             field: servicenow.event.reassignment_count.value
         - append:
+            tag: append_error_message_480a1895
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -3712,8 +4001,10 @@ processors:
       if: ctx.servicenow?.event?.reopen_count?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_reopen_count_value_a52b7b58
             field: servicenow.event.reopen_count.value
         - append:
+            tag: append_error_message_35aba98d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3742,13 +4033,15 @@ processors:
       if: ctx.servicenow?.event?.resolved_at?.display_value != null && ctx.servicenow.event.resolved_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_resolved_at_display_value_936b55b6
             field: servicenow.event.resolved_at.display_value
         - append:
+            tag: append_error_message_e5c57501
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.resolved_at.display_value
-      tag: date_resolved_at_display_value
+      tag: date_servicenow_event_resolved_at_display_value_to_servicenow_event_resolved_at_display_value_9e68c9cb
       target_field: servicenow.event.resolved_at.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -3772,8 +4065,10 @@ processors:
       if: ctx.servicenow?.event?.resolved_at?.display_value != null && ctx.servicenow.event.resolved_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_resolved_at_display_value_0c9d20ee
             field: servicenow.event.resolved_at.display_value
         - append:
+            tag: append_error_message_5c4aeb91
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3801,13 +4096,15 @@ processors:
       if: ctx.servicenow?.event?.resolved_at?.value != null && ctx.servicenow.event.resolved_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_resolved_at_value_b607b855
             field: servicenow.event.resolved_at.value
         - append:
+            tag: append_error_message_73e673a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.resolved_at.value
-      tag: date_resolved_at_value
+      tag: date_servicenow_event_resolved_at_value_to_servicenow_event_resolved_at_value_e5a3db62
       target_field: servicenow.event.resolved_at.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3829,8 +4126,10 @@ processors:
       if: ctx.servicenow?.event?.resolved_at?.value != null && ctx.servicenow.event.resolved_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_resolved_at_value_435bd7cc
             field: servicenow.event.resolved_at.value
         - append:
+            tag: append_error_message_cb4f6adc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -3841,8 +4140,10 @@ processors:
       if: ctx.servicenow?.event?.skip_sync?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_skip_sync_display_value_8c19af9d
             field: servicenow.event.skip_sync.display_value
         - append:
+            tag: append_error_message_8d79f217
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -3853,8 +4154,10 @@ processors:
       if: ctx.servicenow?.event?.skip_sync?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_skip_sync_value_931f75e2
             field: servicenow.event.skip_sync.value
         - append:
+            tag: append_error_message_583f62f5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -3888,13 +4191,15 @@ processors:
       if: ctx.servicenow?.event?.start_date?.display_value != null && ctx.servicenow.event.start_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_start_date_display_value_f11540eb
             field: servicenow.event.start_date.display_value
         - append:
+            tag: append_error_message_492a1f8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.start_date.display_value
-      tag: date_start_date_display_value
+      tag: date_servicenow_event_start_date_display_value_to_servicenow_event_start_date_display_value_f8ca4589
       target_field: servicenow.event.start_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -3918,8 +4223,10 @@ processors:
       if: ctx.servicenow?.event?.start_date?.display_value != null && ctx.servicenow.event.start_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_start_date_display_value_250b743b
             field: servicenow.event.start_date.display_value
         - append:
+            tag: append_error_message_9e3de30f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -3947,13 +4254,15 @@ processors:
       if: ctx.servicenow?.event?.start_date?.value != null && ctx.servicenow.event.start_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_start_date_value_751da08a
             field: servicenow.event.start_date.value
         - append:
+            tag: append_error_message_f825e865
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.start_date.value
-      tag: date_start_date_value
+      tag: date_servicenow_event_start_date_value_to_servicenow_event_start_date_value_bf7f93a8
       target_field: servicenow.event.start_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -3975,8 +4284,10 @@ processors:
       if: ctx.servicenow?.event?.start_date?.value != null && ctx.servicenow.event.start_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_start_date_value_2255a6e5
             field: servicenow.event.start_date.value
         - append:
+            tag: append_error_message_202e2562
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -4005,13 +4316,15 @@ processors:
       if: ctx.servicenow?.event?.sys_created_on?.display_value != null && ctx.servicenow.event.sys_created_on.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_created_on_display_value_2e3bacd2
             field: servicenow.event.sys_created_on.display_value
         - append:
+            tag: append_error_message_b5a6180b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.sys_created_on.display_value
-      tag: date_sys_created_on_display_value
+      tag: date_servicenow_event_sys_created_on_display_value_to_servicenow_event_sys_created_on_display_value_de144075
       target_field: servicenow.event.sys_created_on.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -4035,8 +4348,10 @@ processors:
       if: ctx.servicenow?.event?.sys_created_on?.display_value != null && ctx.servicenow.event.sys_created_on.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_created_on_display_value_81685ad2
             field: servicenow.event.sys_created_on.display_value
         - append:
+            tag: append_error_message_8d734463
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -4064,13 +4379,15 @@ processors:
       if: ctx.servicenow?.event?.sys_created_on?.value != null && ctx.servicenow.event.sys_created_on.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_created_on_value_4d2a5b0f
             field: servicenow.event.sys_created_on.value
         - append:
+            tag: append_error_message_af82cea5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.sys_created_on.value
-      tag: date_sys_created_on_value
+      tag: date_servicenow_event_sys_created_on_value_to_servicenow_event_sys_created_on_value_8a73a258
       target_field: servicenow.event.sys_created_on.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -4092,8 +4409,10 @@ processors:
       if: ctx.servicenow?.event?.sys_created_on?.value != null && ctx.servicenow.event.sys_created_on.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_created_on_value_02bb5e3c
             field: servicenow.event.sys_created_on.value
         - append:
+            tag: append_error_message_b28e9372
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -4127,13 +4446,15 @@ processors:
       if: ctx.servicenow?.event?.install_date?.display_value != null && ctx.servicenow.event.install_date.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_install_date_display_value_4c37174c
             field: servicenow.event.install_date.display_value
         - append:
+            tag: append_error_message_5d702ed7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.install_date.display_value
-      tag: date_install_date_display_value
+      tag: date_servicenow_event_install_date_display_value_to_servicenow_event_install_date_display_value_3addbca9
       target_field: servicenow.event.install_date.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -4157,8 +4478,10 @@ processors:
       if: ctx.servicenow?.event?.install_date?.display_value != null && ctx.servicenow.event.install_date.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_install_date_display_value_18f5b44c
             field: servicenow.event.install_date.display_value
         - append:
+            tag: append_error_message_dcc84647
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -4186,13 +4509,15 @@ processors:
       if: ctx.servicenow?.event?.install_date?.value != null && ctx.servicenow.event.install_date.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_install_date_value_6576a095
             field: servicenow.event.install_date.value
         - append:
+            tag: append_error_message_f719ef59
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.install_date.value
-      tag: date_install_date_value
+      tag: date_servicenow_event_install_date_value_to_servicenow_event_install_date_value_2ec9a614
       target_field: servicenow.event.install_date.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -4214,8 +4539,10 @@ processors:
       if: ctx.servicenow?.event?.install_date?.value != null && ctx.servicenow.event.install_date.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_install_date_value_0ddb6d92
             field: servicenow.event.install_date.value
         - append:
+            tag: append_error_message_5dcd84ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -4231,8 +4558,10 @@ processors:
       if: ctx.servicenow?.event?.sys_mod_count?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_mod_count_value_f2b769fb
             field: servicenow.event.sys_mod_count.value
         - append:
+            tag: append_error_message_cce8f1a9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -4267,13 +4596,15 @@ processors:
       if: ctx.servicenow?.event?.sys_updated_on?.display_value != null && ctx.servicenow.event.sys_updated_on.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_updated_on_display_value_0804a70d
             field: servicenow.event.sys_updated_on.display_value
         - append:
+            tag: append_error_message_1f58e04b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.sys_updated_on.display_value
-      tag: date_sys_updated_on_display_value
+      tag: date_servicenow_event_sys_updated_on_display_value_to_servicenow_event_sys_updated_on_display_value_20c31b2d
       target_field: servicenow.event.sys_updated_on.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -4297,8 +4628,10 @@ processors:
       if: ctx.servicenow?.event?.sys_updated_on?.display_value != null && ctx.servicenow.event.sys_updated_on.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_updated_on_display_value_199117cd
             field: servicenow.event.sys_updated_on.display_value
         - append:
+            tag: append_error_message_cdc1c9d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -4326,13 +4659,15 @@ processors:
       if: ctx.servicenow?.event?.sys_updated_on?.value != null && ctx.servicenow.event.sys_updated_on.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_updated_on_value_5f41856c
             field: servicenow.event.sys_updated_on.value
         - append:
+            tag: append_error_message_8af5e6b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.sys_updated_on.value
-      tag: date_sys_updated_on_value
+      tag: date_servicenow_event_sys_updated_on_value_to_servicenow_event_sys_updated_on_value_ca09c0b4
       target_field: servicenow.event.sys_updated_on.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -4354,8 +4689,10 @@ processors:
       if: ctx.servicenow?.event?.sys_updated_on?.value != null && ctx.servicenow.event.sys_updated_on.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_sys_updated_on_value_c159f9bb
             field: servicenow.event.sys_updated_on.value
         - append:
+            tag: append_error_message_e365368e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -4376,8 +4713,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_servicenow_event_port_value_a63f3752
             field: servicenow.event.port.value
         - append:
+            tag: append_error_message_2291a7e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -4423,10 +4762,10 @@ processors:
             keep_original: false
             on_failure:
               - append:
+                  tag: append_error_message_23e89e6f
                   field: error.message
-                  value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag
-                    {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}}
-                    failed with message: {{{_ingest.on_failure_message}}}'
+                  value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
         - set:
             tag: set_uri_original_if_url_decode_succeeds
             if: ctx.url != null
@@ -4434,6 +4773,7 @@ processors:
             field: url.original
             copy_from: servicenow.event.url.display_value
         - remove:
+            tag: remove__tmp_url_3a6e79b6
             description: remove the temporary url field
             field: _tmp_url
   - set:
@@ -4451,8 +4791,10 @@ processors:
       if: ctx.servicenow?.event?.unverified?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_unverified_display_value_dd8f9fcd
             field: servicenow.event.unverified.display_value
         - append:
+            tag: append_error_message_402810bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4463,8 +4805,10 @@ processors:
       if: ctx.servicenow?.event?.unverified?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_unverified_value_64752552
             field: servicenow.event.unverified.value
         - append:
+            tag: append_error_message_e7f43da9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4475,8 +4819,10 @@ processors:
       if: ctx.servicenow?.event?.urgency?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_urgency_value_eea04fd6
             field: servicenow.event.urgency.value
         - append:
+            tag: append_error_message_4d6722cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4487,8 +4833,10 @@ processors:
       if: ctx.servicenow?.event?.virtual?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_virtual_display_value_e491ada5
             field: servicenow.event.virtual.display_value
         - append:
+            tag: append_error_message_76b0d07f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4499,8 +4847,10 @@ processors:
       if: ctx.servicenow?.event?.virtual?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_virtual_value_9363787a
             field: servicenow.event.virtual.value
         - append:
+            tag: append_error_message_bf8f95e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -4528,13 +4878,15 @@ processors:
       if: ctx.servicenow?.event?.warranty_expiration?.display_value != null && ctx.servicenow.event.warranty_expiration.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_warranty_expiration_display_value_539d7946
             field: servicenow.event.warranty_expiration.display_value
         - append:
+            tag: append_error_message_ead106f1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.warranty_expiration.display_value
-      tag: date_warranty_expiration_display_value
+      tag: date_servicenow_event_warranty_expiration_display_value_to_servicenow_event_warranty_expiration_display_value_a79463af
       target_field: servicenow.event.warranty_expiration.display_value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -4557,8 +4909,10 @@ processors:
       if: ctx.servicenow?.event?.warranty_expiration?.display_value != null && ctx.servicenow.event.warranty_expiration.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_warranty_expiration_display_value_baf3881e
             field: servicenow.event.warranty_expiration.display_value
         - append:
+            tag: append_error_message_722d4201
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -4586,13 +4940,15 @@ processors:
       if: ctx.servicenow?.event?.warranty_expiration?.value != null && ctx.servicenow.event.warranty_expiration.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_warranty_expiration_value_43e40931
             field: servicenow.event.warranty_expiration.value
         - append:
+            tag: append_error_message_d25c3495
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.warranty_expiration.value
-      tag: date_warranty_expiration_value
+      tag: date_servicenow_event_warranty_expiration_value_to_servicenow_event_warranty_expiration_value_1cc71d86
       target_field: servicenow.event.warranty_expiration.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -4614,8 +4970,10 @@ processors:
       if: ctx.servicenow?.event?.warranty_expiration?.value != null && ctx.servicenow.event.warranty_expiration.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_warranty_expiration_value_c6f07344
             field: servicenow.event.warranty_expiration.value
         - append:
+            tag: append_error_message_b04e6430
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4626,8 +4984,10 @@ processors:
       if: ctx.servicenow?.event?.hyper_threading?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_hyper_threading_display_value_fbcd297b
             field: servicenow.event.hyper_threading.display_value
         - append:
+            tag: append_error_message_7cdc6cdf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4638,8 +4998,10 @@ processors:
       if: ctx.servicenow?.event?.hyper_threading?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_hyper_threading_value_5bf20e98
             field: servicenow.event.hyper_threading.value
         - append:
+            tag: append_error_message_87c9d2cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -4650,8 +5012,10 @@ processors:
       if: ctx.servicenow?.event?.total_memory?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_total_memory_value_1cb44835
             field: servicenow.event.total_memory.value
         - append:
+            tag: append_error_message_5a0a1045
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -4834,13 +5198,15 @@ processors:
       if: ctx.containsKey('@timestamp') && ctx['@timestamp'] != null && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_timestamp_0e66ccd3
             field: '@timestamp'
         - append:
+            tag: append_error_message_e3697f81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: '@timestamp'
-      tag: date_timestamp
+      tag: date_timestamp_5a7b37cb
       timezone: '{{{event.timezone}}}'
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -4864,8 +5230,10 @@ processors:
       if: ctx.containsKey('@timestamp') && ctx['@timestamp'] != null && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_timestamp_5d2a0d23
             field: '@timestamp'
         - append:
+            tag: append_error_message_3b929be9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -4959,6 +5327,7 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

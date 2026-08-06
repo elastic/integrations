@@ -2,6 +2,7 @@
 description: Pipeline for processing Alert logs.
 processors:
   - drop:
+      tag: drop_38a062da
       description: Ignore retry placeholder document.
       if: ctx.retry == true
   - set:
@@ -37,6 +38,7 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - fingerprint:
+      tag: fingerprint_02243b84
       fields:
         - event.original
       target_field: _id
@@ -48,9 +50,11 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_add4987b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dot_expander:
+      tag: dot_expander_*_9713e4d5
       field: "*"
       path: splunk.search.ecs_result
       if: ctx.splunk?.search?.ecs_result instanceof Map && ctx.splunk.search.ecs_result.size() != 0
@@ -80,6 +84,7 @@ processors:
         ctx.splunk.search.remove("ecs_result");
       on_failure:
         - append:
+            tag: append_error_message_f6426474
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -94,35 +99,43 @@ processors:
       if: ctx.splunk?.search?._time instanceof String && ctx.splunk.search._time != ''
       on_failure:
         - append:
+            tag: append_error_message_9136411e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_splunk_search__time_83fa8f77
             field: splunk.search._time
   - set:
+      tag: set_timestamp_3e07f34b
       field: '@timestamp'
       copy_from: splunk.search.result._time
       ignore_empty_value: true
   - dissect:
+      tag: dissect_splunk_search_result__raw_994cbb19
       field: splunk.search.result._raw
       pattern: "%{}, %{message}"
       ignore_failure: true
   - set:
+      tag: set_message_3d78f369
       field: message
       copy_from: splunk.search.result._raw
       ignore_empty_value: true
       if: ctx.message == null
 
   - append:
+      tag: append_related_user_5b770e4f
       field: related.user
       value: '{{{splunk.search.author}}}'
       if: ctx.splunk?.search?.author != null && ctx.splunk.search.author != ''
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_555b812b
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_f290754b
       field: related.hosts
       value: '{{{splunk.search.result.splunk_server}}}'
       if: ctx.splunk?.search?.result?.splunk_server != null && ctx.splunk.search.result.splunk_server != ''
@@ -169,6 +182,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,23 +2,29 @@
 description: Initial pipeline for parsing ETI TAXII2 feed
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_5a2092f1
       field: event.category
       value: threat
       allow_duplicates: false
   - append:
+      tag: append_event_type_46bf75e8
       field: event.type
       value: indicator
       allow_duplicates: false
   - set:
+      tag: set_threat_indicator_provider_7fa63b87
       field: threat.indicator.provider
       value: eset
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -30,30 +36,37 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_eti_561d07d4
       field: event.original
       target_field: eti
   - drop:
+      tag: drop_5a415bbc
       if: ctx.eti?.type != 'indicator'
   - set:
+      tag: set_threat_feed_name_8644d7d8
       field: threat.feed.name
       value: "ESET APT stix 2.1"
   - date:
+      tag: date_eti_created_to_timestamp_0ff57497
       field: eti.created
       target_field: "@timestamp"
       formats:
         - "ISO8601"
       if: "ctx.eti?.created != null"
   - date:
+      tag: date_eti_modified_to_threat_indicator_last_seen_64ffa1f2
       field: eti.modified
       target_field: threat.indicator.last_seen
       formats:
         - "ISO8601"
       if: "ctx.eti?.modified != null"
   - set:
+      tag: set_threat_indicator_modified_at_5a74d882
       field: threat.indicator.modified_at
       copy_from: threat.indicator.last_seen
       if: "ctx.threat?.indicator?.last_seen != null"
   - script:
+      tag: script_debb72e0
       lang: painless
       source: >-
         if (ctx.eset == null) {
@@ -64,11 +77,13 @@ processors:
       if: "ctx['@timestamp'] != null"
 
   - rename:
+      tag: rename_eti_id_to_eset_id_e33c480b
       field: eti.id
       target_field: eset.id
       ignore_missing: true
 
   - foreach:
+      tag: foreach_eti_labels_08710eb5
       field: eti.labels
       if: ctx.eti?.labels != null
       processor:
@@ -82,24 +97,29 @@ processors:
             ignore_failure: true
 
   - set:
+      tag: set_threat_indicator_type_3f5f2daa
       field: threat.indicator.type
       value: x509-certificate
       if: "ctx.eset?.name == 'x509'"
   - set:
+      tag: set_threat_indicator_type_bcfdc48d
       field: threat.indicator.type
       value: domain-name
       if: ctx.eset?.name != null && ctx.eset?.name.startsWith('domain')
   - set:
+      tag: set_threat_indicator_type_44c52e5b
       field: threat.indicator.type
       value: file
       if: |
         ctx.eset?.name == 'file' ||
         ctx.eset?.meta_category == 'file'
   - set:
+      tag: set_threat_indicator_type_60d922ee
       field: threat.indicator.type
       value: url
       if: ctx.eset?.name == 'url'
   - set:
+      tag: set_threat_indicator_type_72b14b89
       field: threat.indicator.type
       value: email-addr
       if: |
@@ -107,30 +127,38 @@ processors:
         (ctx.eset?.type != null && ctx.eset?.type?.startsWith('email'))
 
   - split:
+      tag: split_eti_pattern_to_eti__patterns_d3f9790f
       field: eti.pattern
       target_field: eti._patterns
       separator: ' AND '
       if: ctx.eti?.pattern != null
 
   - pipeline:
+      tag: pipeline_aab695bc
       name: '{{ IngestPipeline "pipeline-file" }}'
       if: ctx.threat?.indicator?.type == 'file'
   - pipeline:
+      tag: pipeline_a540ec38
       name: '{{ IngestPipeline "pipeline-email" }}'
       if: ctx.threat?.indicator?.type == 'email-addr'
   - pipeline:
+      tag: pipeline_14c91c84
       name: '{{ IngestPipeline "pipeline-url" }}'
       if: ctx.threat?.indicator?.type == 'url'
   - pipeline:
+      tag: pipeline_8f49d364
       name: '{{ IngestPipeline "pipeline-domain-ip" }}'
       if: ctx.threat?.indicator?.type == 'domain-name'
   - pipeline:
+      tag: pipeline_177b9dec
       name: '{{ IngestPipeline "pipeline-cert" }}'
       if: ctx.threat?.indicator?.type == 'x509-certificate'
   - set:
+      tag: set_threat_indicator_confidence_60021119
       field: threat.indicator.confidence
       value: High
   - remove:
+      tag: remove_a0758d9e
       field:
         - eti
       ignore_missing: true
@@ -153,11 +181,13 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -32,9 +32,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6b2b2e07
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_threat_id_6947468a
             field: ses.threat.id
             ignore_missing: true
   - append:
@@ -62,9 +64,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_80ef6033
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_threat_risk_id_202f5fea
             field: ses.threat.risk_id
             ignore_missing: true
   - script:
@@ -88,6 +92,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_7bdb4b6a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -103,9 +108,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_eb354e3f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_threat_sub_id_cc583459
             field: ses.threat.sub_id
             ignore_missing: true
   - convert:
@@ -116,9 +123,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_47b7c26f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_threat_type_id_a169350f
             field: ses.threat.type_id
             ignore_missing: true
   - script:
@@ -142,6 +151,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_297fac36
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -294,3 +304,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -20,6 +20,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -30,9 +31,11 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_21f296d7
       fields:
         - json.document_id
         - json.severity
@@ -52,6 +55,7 @@ processors:
       if: ctx.json?.account_login_time != null && ctx.json.account_login_time != ''
       on_failure:
         - append:
+            tag: append_error_message_cf7c7f73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -63,6 +67,7 @@ processors:
       if: ctx.json?.account_modification_time != null && ctx.json.account_modification_time != ''
       on_failure:
         - append:
+            tag: append_error_message_e0dd3d96
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -74,6 +79,7 @@ processors:
       if: ctx.json?.account_signup_time != null && ctx.json.account_signup_time != ''
       on_failure:
         - append:
+            tag: append_error_message_541e7b5e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -268,6 +274,7 @@ processors:
       if: ctx.json?.infected_time != null && ctx.json.infected_time != ''
       on_failure:
         - append:
+            tag: append_error_message_622ed4b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -276,6 +283,7 @@ processors:
       target_field: spycloud.breach_record.ip_addresses
       ignore_missing: true
   - foreach:
+      tag: foreach_spycloud_breach_record_ip_addresses_5f6a5c64
       field: spycloud.breach_record.ip_addresses
       if: ctx.spycloud?.breach_record?.ip_addresses instanceof List
       processor:
@@ -292,10 +300,12 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_host_ip_2337298a
       field: host.ip
       copy_from: spycloud.breach_record.ip_addresses
       ignore_empty_value: true
   - set:
+      tag: set_related_ip_7bd14449
       field: related.ip
       copy_from: spycloud.breach_record.ip_addresses
       ignore_empty_value: true
@@ -355,6 +365,7 @@ processors:
       if: ctx.json?.record_addition_date != null && ctx.json.record_addition_date != ''
       on_failure:
         - append:
+            tag: append_error_message_aaa33211
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -366,6 +377,7 @@ processors:
       if: ctx.json?.record_cracked_date != null && ctx.json.record_cracked_date != ''
       on_failure:
         - append:
+            tag: append_error_message_8aa1915e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -377,6 +389,7 @@ processors:
       if: ctx.json?.record_modification_date != null && ctx.json.record_modification_date != ''
       on_failure:
         - append:
+            tag: append_error_message_7ba35e75
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -392,6 +405,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_95c6a05f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -407,6 +421,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5a97ec7b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -429,6 +444,7 @@ processors:
       if: ctx.json?.spycloud_publish_date != null && ctx.json.spycloud_publish_date != ''
       on_failure:
         - append:
+            tag: append_error_message_20a47db5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -478,6 +494,7 @@ processors:
       if: ctx.url?.full != null
       on_failure:
         - append:
+            tag: append_error_message_2f672efa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -623,6 +640,7 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

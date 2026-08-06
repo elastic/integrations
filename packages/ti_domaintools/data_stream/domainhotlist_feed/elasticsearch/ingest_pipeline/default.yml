@@ -2,6 +2,7 @@
 description: Pipeline for processing domaindiscovery feed
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
 
@@ -11,6 +12,7 @@ processors:
       description: error message set and no data to process.
 
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -23,6 +25,7 @@ processors:
       if: ctx.event?.original != null
 
   - json:
+      tag: json_event_original_to_domaintools_4eea6ad1
       field: event.original
       target_field: domaintools
 
@@ -31,9 +34,11 @@ processors:
     ############################
 
   - set:
+      tag: set_threat_indicator_type_b65d5b6f
       field: threat.indicator.type
       value: domain-name
   - set:
+      tag: set_threat_indicator_name_1bc8d54d
       if: ctx.domaintools?.domain != null
       field: threat.indicator.name
       copy_from: domaintools.domain
@@ -42,15 +47,19 @@ processors:
     # Event ECS fields #
     ####################
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: ['threat']
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: ['indicator']
   - set:
+      tag: set_source_domain_bcf6e15b
       field: source.domain
       copy_from: domaintools.domain
       ignore_empty_value: true

@@ -20,6 +20,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -30,9 +31,11 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_21f296d7
       fields:
         - json.document_id
         - json.severity
@@ -259,6 +262,7 @@ processors:
       if: ctx.json?.infected_time != null && ctx.json.infected_time != ''
       on_failure:
         - append:
+            tag: append_error_message_9d94fa29
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -267,6 +271,7 @@ processors:
       target_field: spycloud.compass.ip_addresses
       ignore_missing: true
   - foreach:
+      tag: foreach_spycloud_compass_ip_addresses_6e380984
       field: spycloud.compass.ip_addresses
       if: ctx.spycloud?.compass?.ip_addresses instanceof List
       processor:
@@ -283,10 +288,12 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_host_ip_3d0040d5
       field: host.ip
       copy_from: spycloud.compass.ip_addresses
       ignore_empty_value: true
   - set:
+      tag: set_related_ip_072a42cc
       field: related.ip
       copy_from: spycloud.compass.ip_addresses
       ignore_empty_value: true
@@ -373,6 +380,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6136b0a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -406,6 +414,7 @@ processors:
       if: ctx.json?.spycloud_publish_date != null && ctx.json.spycloud_publish_date != ''
       on_failure:
         - append:
+            tag: append_error_message_45d28590
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -461,6 +470,7 @@ processors:
       if: ctx.url?.full != null
       on_failure:
         - append:
+            tag: append_error_message_2f672efa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -607,6 +617,7 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
