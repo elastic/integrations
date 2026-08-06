@@ -27,11 +27,11 @@ The minimum **kibana.version** required is **9.5.0**, and the minimum Elastic Ag
 
 ## Setup
 
-### Agentless deployment
+### Elastic Managed deployment
 
-This integration supports agentless deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
+This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
 
-When deploying agentlessly, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
+When using Elastic Managed deployment, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
 
 ### Collect data from Okta
 

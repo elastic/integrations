@@ -16,11 +16,11 @@ Elastic Agent must be installed for standard deployments. For more details, chec
 
 ## Setup
 
-### Agentless deployment
+### Elastic Managed deployment
 
-This integration supports agentless deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
 
-When deploying agentlessly, the **request tracer** option is not available because it writes to the agent's local filesystem.
+When using Elastic Managed deployment, the **request tracer** option is not available because it writes to the agent's local filesystem.
 
 ### Collect data from Microsoft Graph REST API
 

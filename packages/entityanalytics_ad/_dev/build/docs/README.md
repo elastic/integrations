@@ -22,17 +22,17 @@ Elastic Agent must be installed for standard deployments. For more details, chec
 
 ## Setup
 
-### Agentless deployment
+### Elastic Managed deployment
 
-This integration supports agentless deployment, where the collection agent runs in Elastic's cloud rather than inside your network. Because the agent must still speak LDAP to an Active Directory server, the server must be reachable over the public internet on TCP port 636 (LDAPS). Plain LDAP on port 389 is not accepted in this configuration.
+This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. Because the agent must still speak LDAP to an Active Directory server, the server must be reachable over the public internet on TCP port 636 (LDAPS). Plain LDAP on port 389 is not accepted in this configuration.
 
-Agentless deployment works with:
+Elastic Managed deployment works with:
 
 - **Microsoft Entra Domain Services (Azure AD DS)** — when the "Allow secure LDAP access over the internet" option is enabled on the managed domain, the domain is assigned a public IP address on port 636. Microsoft recommends restricting inbound access to known source IP ranges using an NSG rule. See [Configure secure LDAP for Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/tutorial-configure-ldaps) for setup instructions. Check Elastic's documentation for the current agentless egress IP ranges to use in your NSG rule.
 - **JumpCloud Cloud LDAP** — `ldap.jumpcloud.com:636` is a public endpoint and requires no additional configuration.
 - **Okta LDAP Interface** — `<org>.ldap.okta.com:636` is a public endpoint and requires no additional configuration.
 
-Agentless deployment does **not** work without additional network connectivity for:
+Elastic Managed deployment does **not** work without additional network connectivity for:
 
 - Traditional on-premises Active Directory domain controllers (not internet-exposed)
 - AWS Managed Microsoft AD (VPC-internal only)
