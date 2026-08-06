@@ -2,12 +2,14 @@
 description: Pipeline for Jamf Compliance Reporter signal event logs.
 processors:
   - convert:
+      tag: convert_json_signal_event_info_signal_to_jamf_compliance_reporter_log_signal_event_info_signal_6e4a5cde
       field: json.signal_event_info.signal
       target_field: jamf_compliance_reporter.log.signal_event_info.signal
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7019edf1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 on_failure:
@@ -17,3 +19,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

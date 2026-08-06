@@ -35,11 +35,13 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
+      tag: drop_41e92579
       if: ctx.event?.original != null && ctx.event.original.isEmpty()
   - json:
       field: event.original
@@ -47,9 +49,11 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_a6e0e953
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_b06962fb
       fields:
         - json.id
         - json.lastUpdated
@@ -76,6 +80,7 @@ processors:
       target_field: prisma_cloud.alert.attribution.event_list
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_attribution_event_list_3c03235c
       field: prisma_cloud.alert.attribution.event_list
       if: ctx.prisma_cloud?.alert?.attribution?.event_list instanceof List
       ignore_failure: true
@@ -86,6 +91,7 @@ processors:
           target_field: _ingest._value.value
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_attribution_event_list_bbe8c5c3
       field: prisma_cloud.alert.attribution.event_list
       if: ctx.prisma_cloud?.alert?.attribution?.event_list instanceof List
       ignore_failure: true
@@ -100,6 +106,7 @@ processors:
                 field: _ingest._value.event_ts
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_attribution_event_list_37e26abf
       field: prisma_cloud.alert.attribution.event_list
       if: ctx.prisma_cloud?.alert?.attribution?.event_list instanceof List
       ignore_failure: true
@@ -110,6 +117,7 @@ processors:
           value: '{{{_ingest._value.username}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_alert_attribution_event_list_a4b786e4
       field: prisma_cloud.alert.attribution.event_list
       if: ctx.prisma_cloud?.alert?.attribution?.event_list instanceof List
       ignore_failure: true
@@ -133,6 +141,7 @@ processors:
       if: ctx.prisma_cloud?.alert?.attribution?.resourceCreatedOn != null && ctx.prisma_cloud.alert.attribution.resourceCreatedOn != ''
       on_failure:
         - append:
+            tag: append_error_message_90edef5a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -144,6 +153,7 @@ processors:
       if: ctx.json?.alertCount != ''
       on_failure:
         - append:
+            tag: append_error_message_0c2b6a2c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -155,6 +165,7 @@ processors:
       if: ctx.json?.alertTime != null && ctx.json.alertTime != ''
       on_failure:
         - append:
+            tag: append_error_message_dc33fa29
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -176,6 +187,7 @@ processors:
       if: ctx.json?.dismissalUntilTs != null && ctx.json.dismissalUntilTs != ''
       on_failure:
         - append:
+            tag: append_error_message_a8abfa89
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -192,6 +204,7 @@ processors:
       if: ctx.json?.eventOccurred != null && ctx.json.eventOccurred != ''
       on_failure:
         - append:
+            tag: append_error_message_560f47b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -203,6 +216,7 @@ processors:
       if: ctx.json?.firstSeen != null && ctx.json.firstSeen != ''
       on_failure:
         - append:
+            tag: append_error_message_aebac8a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -216,6 +230,7 @@ processors:
       target_field: prisma_cloud.alert.history
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_history_1efa7e16
       field: prisma_cloud.alert.history
       if: ctx.prisma_cloud?.alert?.history instanceof List
       ignore_failure: true
@@ -226,6 +241,7 @@ processors:
           target_field: _ingest._value.modified_by
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_history_5c64b818
       field: prisma_cloud.alert.history
       if: ctx.prisma_cloud?.alert?.history instanceof List
       ignore_failure: true
@@ -240,6 +256,7 @@ processors:
                 field: _ingest._value.modifiedOn
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_history_32e585d2
       field: prisma_cloud.alert.history
       if: ctx.prisma_cloud?.alert?.history instanceof List
       ignore_failure: true
@@ -268,6 +285,7 @@ processors:
       if: ctx.json?.lastSeen != null && ctx.json.lastSeen != ''
       on_failure:
         - append:
+            tag: append_error_message_874a0ad9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -283,17 +301,19 @@ processors:
       if: ctx.json?.lastUpdated != null && ctx.json.lastUpdated != ''
       on_failure:
         - append:
+            tag: append_error_message_0e94af82
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.lastUpdated
-      tag: date_lastUpdated
+      tag: date_json_lastUpdated_to_prisma_cloud_alert_last_updated_721aee6c
       target_field: prisma_cloud.alert.last.updated
       formats:
         - UNIX_MS
       if: ctx.json?.lastUpdated != null && ctx.json.lastUpdated != ''
       on_failure:
         - append:
+            tag: append_error_message_d668a8e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -312,6 +332,7 @@ processors:
       target_field: prisma_cloud.alert.policy.compliance_metadata
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_6197d587
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -322,6 +343,7 @@ processors:
           target_field: _ingest._value.compliance_id
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_667408fe
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -340,6 +362,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_cb3914ae
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -350,6 +373,7 @@ processors:
           target_field: _ingest._value.policy_id
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_cd664f71
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -360,6 +384,7 @@ processors:
           target_field: _ingest._value.requirement.description
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_beb0e0dc
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -370,6 +395,7 @@ processors:
           target_field: _ingest._value.requirement.id
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_bfc75a6a
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -380,6 +406,7 @@ processors:
           target_field: _ingest._value.requirement.name
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_586a421d
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -390,6 +417,7 @@ processors:
           target_field: _ingest._value.section.description
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_c5d8af94
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -400,6 +428,7 @@ processors:
           target_field: _ingest._value.section.id
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_cce22159
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -410,6 +439,7 @@ processors:
           target_field: _ingest._value.section.label
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_73ff6bfc
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -428,6 +458,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_3ca99d14
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -446,6 +477,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_f20f72ba
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -464,6 +496,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_160659ff
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -474,6 +507,7 @@ processors:
           target_field: _ingest._value.standard.description
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_916502e0
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -484,6 +518,7 @@ processors:
           target_field: _ingest._value.standard.id
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_7cfeaad2
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -494,6 +529,7 @@ processors:
           target_field: _ingest._value.standard.name
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_policy_compliance_metadata_4e496ee2
       field: prisma_cloud.alert.policy.compliance_metadata
       if: ctx.prisma_cloud?.alert?.policy?.compliance_metadata instanceof List
       ignore_failure: true
@@ -520,6 +556,7 @@ processors:
       if: ctx.json?.policy?.createdOn != null && ctx.json.policy.createdOn != ''
       on_failure:
         - append:
+            tag: append_error_message_a60faac7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -531,6 +568,7 @@ processors:
       if: ctx.json?.policy?.deleted != ''
       on_failure:
         - append:
+            tag: append_error_message_6d4cc8bd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -547,6 +585,7 @@ processors:
       if: ctx.json?.policy?.enabled != ''
       on_failure:
         - append:
+            tag: append_error_message_035d87ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -573,6 +612,7 @@ processors:
       if: ctx.json?.policy?.lastModifiedOn != null && ctx.json.policy.lastModifiedOn != ''
       on_failure:
         - append:
+            tag: append_error_message_c2fb6161
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -609,6 +649,7 @@ processors:
       if: ctx.json?.policy?.remediable != ''
       on_failure:
         - append:
+            tag: append_error_message_6039b439
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -630,6 +671,7 @@ processors:
       if: ctx.json?.policy?.restrictAlertDismissal != ''
       on_failure:
         - append:
+            tag: append_error_message_e3b49250
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -644,7 +686,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.policy.rule.cloudType
-      tag: rename_cloudType
+      tag: rename_json_policy_rule_cloudType_to_prisma_cloud_alert_policy_rule_cloud_type_02ef601e
       target_field: prisma_cloud.alert.policy.rule.cloud.type
       ignore_missing: true
   - rename:
@@ -701,6 +743,7 @@ processors:
       if: ctx.json?.policy?.ruleLastModifiedOn != null && ctx.json.policy.ruleLastModifiedOn != ''
       on_failure:
         - append:
+            tag: append_error_message_d152fc21
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -717,11 +760,12 @@ processors:
       if: ctx.json?.policy?.systemDefault != ''
       on_failure:
         - append:
+            tag: append_error_message_82625ee3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.policyId
-      tag: rename_policyId
+      tag: rename_json_policyId_to_prisma_cloud_alert_policy_id_58efa8fb
       target_field: prisma_cloud.alert.policy_id
       ignore_missing: true
   - rename:
@@ -781,7 +825,7 @@ processors:
       ignore_empty_value: true
   - rename:
       field: prisma_cloud.alert.resource.cloudType
-      tag: rename_cloudType
+      tag: rename_prisma_cloud_alert_resource_cloudType_to_prisma_cloud_alert_resource_cloud_type_c43ebf0a
       target_field: prisma_cloud.alert.resource.cloud.type
       ignore_missing: true
   - set:
@@ -813,6 +857,7 @@ processors:
       if: ctx.prisma_cloud?.alert?.resource?.resourceConfigJsonAvailable != ''
       on_failure:
         - append:
+            tag: append_error_message_cbe6541e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -824,6 +869,7 @@ processors:
       if: ctx.prisma_cloud?.alert?.resource?.resourceDetailsAvailable != ''
       on_failure:
         - append:
+            tag: append_error_message_5866f0c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -840,11 +886,12 @@ processors:
       if: ctx.prisma_cloud?.alert?.resource?.resourceTs != null && ctx.prisma_cloud.alert.resource.resourceTs != ''
       on_failure:
         - append:
+            tag: append_error_message_6fb14aed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: prisma_cloud.alert.resource.resourceType
-      tag: rename_resourceType
+      tag: rename_prisma_cloud_alert_resource_resourceType_to_prisma_cloud_alert_resource_type_dbbb90ab
       target_field: prisma_cloud.alert.resource.type
       ignore_missing: true
   - rename:
@@ -858,6 +905,7 @@ processors:
       if: ctx.prisma_cloud?.alert?.resource?.url != null
       on_failure:
         - append:
+            tag: append_error_message_4685ce0d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -871,6 +919,7 @@ processors:
       target_field: prisma_cloud.alert.risk_detail.policy_scores
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_a90398f6
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -881,6 +930,7 @@ processors:
           target_field: _ingest._value.cloud_type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_13a88f4d
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -891,6 +941,7 @@ processors:
           target_field: _ingest._value.compliance_metadata
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_561e9c28
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -905,6 +956,7 @@ processors:
               target_field: _ingest._value.compliance_id
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_4ea63eb1
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -927,6 +979,7 @@ processors:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_e719ebe6
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -941,6 +994,7 @@ processors:
               target_field: _ingest._value.policy.id
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_7c5caaac
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -955,6 +1009,7 @@ processors:
               target_field: _ingest._value.requirement.description
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_352fb955
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -969,6 +1024,7 @@ processors:
               target_field: _ingest._value.requirement.id
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_92b02933
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -983,6 +1039,7 @@ processors:
               target_field: _ingest._value.requirement.name
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_f1ddc704
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -997,6 +1054,7 @@ processors:
               target_field: _ingest._value.section.description
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_79893455
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1011,6 +1069,7 @@ processors:
               target_field: _ingest._value.section.id
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_1bf8d450
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1025,6 +1084,7 @@ processors:
               target_field: _ingest._value.section.label
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_b6231f30
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1039,6 +1099,7 @@ processors:
               target_field: _ingest._value.standard.description
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_12ea5a97
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1053,6 +1114,7 @@ processors:
               target_field: _ingest._value.standard.id
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_48b54ab9
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1067,6 +1129,7 @@ processors:
               target_field: _ingest._value.standard.name
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_3b717880
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1081,6 +1144,7 @@ processors:
               ignore_missing: true
               tag: remove_prisma_cloud_alert_risk_detail_policy_scores_compliance_metadata_customAssigned
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_155d4995
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1091,6 +1155,7 @@ processors:
           target_field: _ingest._value.created.by
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_11f2f51f
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1105,6 +1170,7 @@ processors:
                 field: _ingest._value.createdOn
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_ebf2bef1
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1122,6 +1188,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_332fa1c5
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1139,6 +1206,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_ddf9ada7
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1149,6 +1217,7 @@ processors:
           target_field: _ingest._value.finding_types
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_b0a1c2b1
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1159,6 +1228,7 @@ processors:
           target_field: _ingest._value.last_modified.by
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_2af72b23
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1173,6 +1243,7 @@ processors:
                 field: _ingest._value.lastModifiedOn
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_272e9a49
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1190,6 +1261,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_36a2bd83
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1200,6 +1272,7 @@ processors:
           target_field: _ingest._value.policy.id
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_1a02fdc5
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1210,6 +1283,7 @@ processors:
           target_field: _ingest._value.policy.subtypes
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_3cc68442
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1220,6 +1294,7 @@ processors:
           target_field: _ingest._value.policy.type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_38a894a5
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1230,6 +1305,7 @@ processors:
           target_field: _ingest._value.policy.upi
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_46849a26
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1247,6 +1323,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_061079b1
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1257,6 +1334,7 @@ processors:
           target_field: _ingest._value.remediation.cli_script_template
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_7186b610
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1275,6 +1353,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_6e26b9f9
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1293,6 +1372,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_ca96c7ae
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1311,6 +1391,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_78bd225d
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1321,6 +1402,7 @@ processors:
           target_field: _ingest._value.rule.api_name
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_e02c00ba
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1331,6 +1413,7 @@ processors:
           target_field: _ingest._value.rule.cloud.account
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_0a4228ab
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1341,6 +1424,7 @@ processors:
           target_field: _ingest._value.rule.cloud.type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_6223f910
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1351,6 +1435,7 @@ processors:
           target_field: _ingest._value.rule.data_criteria
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_2b2aec78
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1361,6 +1446,7 @@ processors:
           target_field: _ingest._value.rule.data_criteria.classification_result
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_b17e97cf
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1371,6 +1457,7 @@ processors:
           target_field: _ingest._value.rule.resource.id_path
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_b2693638
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1381,6 +1468,7 @@ processors:
           target_field: _ingest._value.rule.resource.type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_2915a80e
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1395,6 +1483,7 @@ processors:
                 field: _ingest._value.ruleLastModifiedOn
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_59fa0eb6
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1413,6 +1502,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_alert_risk_detail_policy_scores_cfeeeeb5
       field: prisma_cloud.alert.risk_detail.policy_scores
       if: ctx.prisma_cloud?.alert?.risk_detail?.policy_scores instanceof List
       ignore_failure: true
@@ -1436,6 +1526,7 @@ processors:
       if: ctx.prisma_cloud?.alert?.risk_detail?.riskScore?.maxScore != ''
       on_failure:
         - append:
+            tag: append_error_message_0ffc731b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1447,11 +1538,12 @@ processors:
       if: ctx.prisma_cloud?.alert?.risk_detail?.riskScore?.score != ''
       on_failure:
         - append:
+            tag: append_error_message_e974f7c4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.saveSearchId
-      tag: rename_saveSearchId
+      tag: rename_json_saveSearchId_to_prisma_cloud_alert_save_search_id_a8e32b4d
       target_field: prisma_cloud.alert.save_search_id
       ignore_missing: true
   - rename:
@@ -1506,6 +1598,7 @@ processors:
       description: Drops null/empty values recursively.
       on_failure:
         - append:
+            tag: append_error_message_7ab3f1a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1514,6 +1607,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

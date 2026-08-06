@@ -2,18 +2,22 @@
 description: Pipeline for parsing GCP Firestore metrics.
 processors:
   - rename:
+      tag: rename_gcp_metrics_document_delete_count_to_gcp_firestore_document_delete_count_fabdfb5e
       field: gcp.metrics.document.delete.count
       target_field: gcp.firestore.document.delete.count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_document_read_count_to_gcp_firestore_document_read_count_89516988
       field: gcp.metrics.document.read.count
       target_field: gcp.firestore.document.read.count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_document_write_count_to_gcp_firestore_document_write_count_2b376100
       field: gcp.metrics.document.write.count
       target_field: gcp.firestore.document.write.count
       ignore_missing: true
   - remove:
+      tag: remove_ab6e04c7
       field:
         - gcp.metrics
       ignore_missing: true
@@ -24,3 +28,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,32 +2,41 @@
 description: Pipeline for Jamf Protect Telemetry logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_30bfc018
       field: message
       target_field: event.original
       ignore_missing: true
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - pipeline:
+      tag: pipeline_7e82d0ee
       name: '{{ IngestPipeline "pipeline_system_performance_metrics" }}'
       if: ctx.json?.header?.event_name == 'SYSTEM_PERFORMANCE_METRICS'
   - pipeline:
+      tag: pipeline_49135f14
       name: '{{ IngestPipeline "pipeline_audit" }}'
       if: ctx.json?.header?.event_name != null && ctx.json?.header?.event_name.startsWith('AUE_')
   - pipeline:
+      tag: pipeline_4ed89c5e
       name: '{{ IngestPipeline "pipeline_bios_firmware_versions" }}'
       if: ctx.json?.header?.event_name == 'BIOS_FIRMWARE_VERSIONS'
   - pipeline:
+      tag: pipeline_b277b479
       name: '{{ IngestPipeline "pipeline_event" }}'
       if: "['FILE_COLLECTION_EVENT','PLAINTEXT_LOG_COLLECTION'].contains(ctx.json?.header?.event_name)"
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -48,3 +57,11 @@ on_failure:
   - set:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

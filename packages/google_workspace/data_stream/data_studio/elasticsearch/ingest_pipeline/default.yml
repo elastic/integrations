@@ -48,6 +48,7 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -79,9 +80,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a6a18bcc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_json_events_parameters_2eab3501
       field: json.events.parameters
       ignore_missing: true
   - rename:
@@ -130,6 +133,7 @@ processors:
         ctx.event.put('category', category);
       on_failure:
         - append:
+            tag: append_error_message_17895c18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -165,6 +169,7 @@ processors:
         ctx.event.put('type', type);
       on_failure:
         - append:
+            tag: append_error_message_45d39e40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -172,7 +177,8 @@ processors:
       tag: rename_json_kind
       target_field: google_workspace.kind
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_json_ownerDomain_to_google_workspace_organization_domain_6580cd7d
       field: json.ownerDomain
       target_field: google_workspace.organization.domain
       ignore_missing: true
@@ -203,6 +209,7 @@ processors:
       pattern: '%{source.user.name}@%{source.user.domain}'
       on_failure:
         - append:
+            tag: append_error_message_b1c3b26d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -255,6 +262,7 @@ processors:
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       on_failure:
         - append:
+            tag: append_error_message_de0bed15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -281,6 +289,7 @@ processors:
       if: ctx.json?.ipAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_4cb1517b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -303,10 +312,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -332,6 +343,7 @@ processors:
       pattern: '%{user.target.name}@%{user.target.domain}'
       on_failure:
         - append:
+            tag: append_error_message_3d41b0fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -351,6 +363,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_cfa0331f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -360,6 +373,7 @@ processors:
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -430,6 +444,7 @@ processors:
         drop(ctx);
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -438,6 +453,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

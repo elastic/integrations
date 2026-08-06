@@ -3,10 +3,12 @@ description: Process inventory data from the Jamf Pro API
 processors:
 
 - rename:
+    tag: rename_message_to_jamf_pro_inventory_d5de13ec
     field: message
     target_field: jamf_pro.inventory
 
 - script:
+    tag: script_a3eb5add
     description: Drops null/empty values recursively.
     lang: painless
     source: |
@@ -59,41 +61,49 @@ processors:
       }
 
 - fingerprint:
+    tag: fingerprint_a6dde3e1
     fields:
       - jamf_pro.inventory.udid
       - jamf_pro.inventory.general.report_date
     target_field: "_id"
 
 - geoip:
+    tag: geoip_jamf_pro_inventory_general_last_ip_address_to_jamf_pro_inventory_general_last_ip_address_geo_51eed0b8
     field: jamf_pro.inventory.general.last_ip_address
     target_field: jamf_pro.inventory.general.last_ip_address_geo
     ignore_missing: true
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
+
 
 ##############
 # ECS compat #
 ##############
-
 - append:
+    tag: append_host_ip_036ddbf2
     if: "ctx.jamf_pro.inventory.general != null && ctx.jamf_pro.inventory.general.last_ip_address != ''"
     field: host.ip
     value: '{{{jamf_pro.inventory.general.last_ip_address}}}'
     ignore_failure: true
 - set:
+    tag: set_host_id_d9f48262
     field: host.id
     copy_from: jamf_pro.inventory.udid
     ignore_empty_value: true
 - set:
+    tag: set_host_name_3e068ef3
     field: host.name
     copy_from: jamf_pro.inventory.general.name
     ignore_empty_value: true
 - set:
+    tag: set_host_address_8760bf68
     field: host.address
     copy_from: host.ip
     ignore_empty_value: true
 - append:
+    tag: append_host_mac_bcfc0ce8
     if: "ctx.jamf_pro.inventory.hardware != null && ctx.jamf_pro.inventory.hardware.mac_address != ''"
     field: host.mac
     value: '{{{jamf_pro.inventory.hardware.mac_address}}}'
@@ -106,9 +116,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_host_mac_27cf896f
           field: host.mac
           ignore_missing: true
       - append:
+          tag: append_error_message_1031db47
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - uppercase:
@@ -118,25 +130,31 @@ processors:
     if: ctx.host?.mac != ''
     on_failure:
       - remove:
+          tag: remove_host_mac_762f8874
           field: host.mac
           ignore_missing: true
       - append:
+          tag: append_error_message_6b5e084c
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
+    tag: set_host_geo_9f1f0bd4
     field: host.geo
     copy_from: jamf_pro.inventory.general.last_ip_address_geo
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_host_entity_attributes_managed_bfbdd343
     field: host.entity.attributes.managed
     copy_from: jamf_pro.inventory.general.remote_management.managed
     ignore_empty_value: true
 - set:
+    tag: set_host_entity_lifecycle_last_activity_6e6e376f
     field: host.entity.lifecycle.last_activity
     copy_from: jamf_pro.inventory.general.last_contact_time
     ignore_empty_value: true
 - set:
+    tag: set_host_os_name_382c3eba
     field: host.os.name
     copy_from: jamf_pro.inventory.operating_system.name
     ignore_empty_value: true
@@ -213,26 +231,32 @@ processors:
         ctx.host.os.full = name;
       }
 - set:
+    tag: set_host_os_version_167e76e0
     field: host.os.version
     copy_from: jamf_pro.inventory.operating_system.version
     ignore_empty_value: true
 - set:
+    tag: set_host_os_platform_f077c83b
     field: host.os.platform
     copy_from: jamf_pro.inventory.general.platform
     ignore_empty_value: true
 - set:
+    tag: set_user_name_78d20b57
     field: user.name
     copy_from: jamf_pro.inventory.user_and_location.name
     ignore_empty_value: true
 - set:
+    tag: set_user_email_41e85901
     field: user.email
     copy_from: jamf_pro.inventory.user_and_location.email
     ignore_empty_value: true
 - set:
+    tag: set_user_full_name_4beacbed
     field: user.full_name
     copy_from: jamf_pro.inventory.user_and_location.realname
     ignore_empty_value: true
 - foreach:
+    tag: foreach_jamf_pro_inventory_group_memberships_b5a5a3a2
     field: jamf_pro.inventory.group_memberships
     if: ctx.jamf_pro.inventory?.group_memberships != null
     processor:
@@ -243,6 +267,7 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - foreach:
+    tag: foreach_jamf_pro_inventory_group_memberships_3a061922
     field: jamf_pro.inventory.group_memberships
     if: ctx.jamf_pro.inventory?.group_memberships != null
     processor:
@@ -253,29 +278,34 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - append:
+    tag: append_related_user_93408443
     field: related.user
     value: '{{{user.email}}}'
     if: ctx.user?.email != null && ctx.user.email != ""
     allow_duplicates: false
 - set:
+    tag: set_related_ip_3008f8de
     field: related.ip
     copy_from: host.ip
     ignore_empty_value: true
 
+
 ####################
 # Asset definition #
 ####################
-
 - set:
+    tag: set_event_kind_18c57bf4
     field: event.kind
     value: asset
 
 - append:
+    tag: append_event_type_7a1a4ee6
     field: event.type
     value: user
     if: ctx.jamf_pro.inventory.user_and_location != null
     allow_duplicates: false
 - append:
+    tag: append_event_type_2e1f55b2
     field: event.type
     value: info
     if: ctx.jamf_pro.inventory.hardware != null

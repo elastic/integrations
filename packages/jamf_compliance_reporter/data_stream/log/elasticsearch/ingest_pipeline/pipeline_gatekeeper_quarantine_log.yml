@@ -2,6 +2,7 @@
 description: Pipeline for Jamf Compliance Reporter gatekeeper quarantine event logs.
 processors:
   - foreach:
+      tag: foreach_json_event_attributes_attributes_4045f89c
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -10,6 +11,7 @@ processors:
           target_field: _ingest._value.quarantine.agent_bundle_identifier
           ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_attributes_eb2970c3
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -18,6 +20,7 @@ processors:
           target_field: _ingest._value.quarantine.agent_name
           ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_attributes_328ffe70
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -26,6 +29,7 @@ processors:
           target_field: _ingest._value.quarantine.data_url_string
           ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_attributes_1b46db15
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -34,6 +38,7 @@ processors:
           target_field: _ingest._value.quarantine.event_identifier
           ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_attributes_16239074
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -42,6 +47,7 @@ processors:
           target_field: _ingest._value.quarantine.origin_url_string
           ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_attributes_177014c6
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -58,6 +64,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_event_attributes_attributes_affd4261
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -65,10 +72,12 @@ processors:
           field: _ingest._value.QuarantineTimeStamp
           ignore_failure: true
   - rename:
+      tag: rename_json_event_attributes_attributes_to_jamf_compliance_reporter_log_event_attributes_attributes_12fda942
       field: json.event_attributes.attributes
       target_field: jamf_compliance_reporter.log.event_attributes.attributes
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_path_to_jamf_compliance_reporter_log_event_attributes_path_f06dbbf2
       field: json.event_attributes.path
       target_field: jamf_compliance_reporter.log.event_attributes.path
       ignore_missing: true
@@ -79,3 +88,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

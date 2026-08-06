@@ -2,39 +2,48 @@
 description: Pipeline for Jamf Protect Telemetry aue_posix_spawn audit logs.
 processors:
   - convert:
+      tag: convert_json_arguments_child_PID_to_jamf_protect_telemetry_arguments_child_pid_c34b7804
       field: json.arguments.child_PID
       target_field: jamf_protect.telemetry.arguments.child.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cbc59557
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_exec_args_args_to_json_args_c2752467
       field: json.exec_args.args
       target_field: json.args
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_args_args_compiled_to_jamf_protect_telemetry_exec_args_args_compiled_acb1ed1b
       field: json.exec_args.args_compiled
       target_field: jamf_protect.telemetry.exec_args.args_compiled
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_XPC_FLAGS_to_jamf_protect_telemetry_exec_env_env_xpc_flags_57d43742
       field: json.exec_env.env.XPC_FLAGS
       target_field: jamf_protect.telemetry.exec_env.env.xpc.flags
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_compiled_to_jamf_protect_telemetry_exec_env_env_compiled_7ed739de
       field: json.exec_env.env_compiled
       target_field: jamf_protect.telemetry.exec_env.env.compiled
       ignore_missing: true
   - rename:
+      tag: rename_json_path_to_jamf_protect_telemetry_path_4323bfb1
       field: json.path
       target_field: jamf_protect.telemetry.path
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_chain_parent_uuid_to_jamf_protect_telemetry_exec_chain_parent_uuid_2d280d91
       field: json.exec_chain_parent.uuid
       target_field: jamf_protect.telemetry.exec_chain_parent.uuid
       ignore_missing: true
   - script:
+      tag: script_e6cd1664
       description: Convert Object into Array.
       lang: painless
       source: |
@@ -44,4 +53,5 @@ processors:
           ctx.process?.args.add(m.getValue());
         }
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'

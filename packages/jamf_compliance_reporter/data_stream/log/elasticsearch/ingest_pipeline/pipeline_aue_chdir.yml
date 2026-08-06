@@ -2,67 +2,80 @@
 description: Pipeline for Jamf Compliance Reporter aue_chdir audit logs.
 processors:
   - convert:
+      tag: convert_json_attributes_device_to_jamf_compliance_reporter_log_attributes_device_d89a67d9
       field: json.attributes.device
       target_field: jamf_compliance_reporter.log.attributes.device
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attributes_file_access_mode_to_json_file_access_mode_3515c381
       field: json.attributes.file_access_mode
       target_field: json.file_access_mode
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_file_system_id_to_jamf_compliance_reporter_log_attributes_file_system_id_cc879847
       field: json.attributes.file_system_id
       target_field: jamf_compliance_reporter.log.attributes.file.system.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_node_id_to_jamf_compliance_reporter_log_attributes_node_id_38b0771e
       field: json.attributes.node_id
       target_field: jamf_compliance_reporter.log.attributes.node.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_owner_group_id_to_user_group_id_f8a03798
       field: json.attributes.owner_group_id
       target_field: user.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attributes_owner_group_name_to_user_group_name_834f090f
       field: json.attributes.owner_group_name
       target_field: user.group.name
       ignore_missing: true
   - convert:
+      tag: convert_json_attributes_owner_user_id_58bbc519
       field: json.attributes.owner_user_id
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_id_f10ea64d
       field: user.id
       value: '{{{json.attributes.owner_user_id}}}'
       if: ctx.json?.attributes?.owner_user_id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_user_name_2ba08467
       field: user.name
       value: '{{{json.attributes.owner_user_name}}}'
       if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_0321d5d7
       field: related.user
       value: '{{{json.attributes.owner_user_name}}}'
       if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - rename:
+      tag: rename_json_path_to_jamf_compliance_reporter_log_path_dcaf10e2
       field: json.path
       target_field: jamf_compliance_reporter.log.path
       ignore_missing: true
   - script:
+      tag: script_fbc9f1e5
       description: Convert Decimal into Octal.
       lang: painless
       if: ctx.json?.file_access_mode != null
@@ -76,3 +89,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

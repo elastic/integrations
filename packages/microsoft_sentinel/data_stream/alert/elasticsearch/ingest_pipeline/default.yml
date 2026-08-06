@@ -10,7 +10,8 @@ processors:
       tag: set_event_kind_alert
       value: alert
   - remove:
-      field: 
+      tag: remove_8f6a9bf0
+      field:
         - oberver.product
         - oberver.vendor
       ignore_missing: true
@@ -53,6 +54,7 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -152,6 +154,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fc05ea48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -178,6 +181,7 @@ processors:
       if: ctx.json?.properties?.endTimeUtc != null && ctx.json.properties.endTimeUtc != ''
       on_failure:
         - append:
+            tag: append_error_message_e03b1c37
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -204,6 +208,7 @@ processors:
       if: ctx.json?.properties?.processingEndTime != null && ctx.json.properties.processingEndTime != ''
       on_failure:
         - append:
+            tag: append_error_message_acf21bfc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -274,6 +279,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c41d93cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -285,6 +291,7 @@ processors:
       if: ctx.json?.properties?.startTimeUtc != null && ctx.json.properties.startTimeUtc != ''
       on_failure:
         - append:
+            tag: append_error_message_436eb920
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -303,6 +310,7 @@ processors:
         ctx.event['duration'] = ChronoUnit.NANOS.between(event_start, event_end);
       on_failure:
         - append:
+            tag: append_error_message_16889e98
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -321,6 +329,7 @@ processors:
       target_field: microsoft_sentinel.alert.properties.tactics
       ignore_missing: true
   - foreach:
+      tag: foreach_microsoft_sentinel_alert_properties_tactics_33144fe0
       field: microsoft_sentinel.alert.properties.tactics
       if: ctx.microsoft_sentinel?.alert?.properties?.tactics instanceof List
       processor:
@@ -338,6 +347,7 @@ processors:
       if: ctx.json?.properties?.timeGenerated != null && ctx.json.properties.timeGenerated != ''
       on_failure:
         - append:
+            tag: append_error_message_816df8e4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -359,6 +369,7 @@ processors:
       if: ctx.json?.systemData?.createdAt != null && ctx.json.systemData.createdAt != ''
       on_failure:
         - append:
+            tag: append_error_message_f7fc51e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -392,6 +403,7 @@ processors:
       if: ctx.json?.systemData?.lastModifiedAt != null && ctx.json.systemData.lastModifiedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_aa229d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -406,7 +418,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_related_user_3562a589
       value: '{{{microsoft_sentinel.alert.system_data.last_modified_by}}}'
       allow_duplicates: false
       if: ctx.microsoft_sentinel?.alert?.system_data?.last_modified_by != null && ctx.microsoft_sentinel?.alert?.system_data?.last_modified_by_type?.toLowerCase() == "user"
@@ -455,6 +467,7 @@ processors:
       description: Drops null/empty values recursively.
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -463,6 +476,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

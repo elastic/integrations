@@ -2,19 +2,24 @@
 description: Pipeline for processing DNS Event logs.
 processors:
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_7d9b55a0
       field: event.type
       value: [info, protocol]
   - set:
+      tag: set_event_action_e66a1ba5
       field: event.action
       value: [lookup_requested]
   - rename:
+      tag: rename_json_event_dns_request_to_sentinel_one_cloud_funnel_event_dns_request_4086bfdc
       field: json.event.dns.request
       target_field: sentinel_one_cloud_funnel.event.dns.request
       ignore_missing: true
   - rename:
+      tag: rename_json_event_dns_response_to_sentinel_one_cloud_funnel_event_dns_response_6302b082
       field: json.event.dns.response
       target_field: sentinel_one_cloud_funnel.event.dns.response
       ignore_missing: true
@@ -159,10 +164,12 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a04dea1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - foreach:
+      tag: foreach_dns_answers_3b0b739d
       field: dns.answers
       if: ctx.dns?.answers instanceof List
       ignore_failure: true
@@ -172,6 +179,7 @@ processors:
           pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
           replacement: '$1'
   - foreach:
+      tag: foreach_dns_resolved_ip_0d1a1469
       field: dns.resolved_ip
       if: ctx.dns?.resolved_ip instanceof List
       ignore_failure: true
@@ -181,6 +189,7 @@ processors:
           pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
           replacement: '$1'
   - foreach:
+      tag: foreach_dns_resolved_ip_c85eb87d
       field: dns.resolved_ip
       if: ctx.dns?.resolved_ip instanceof List
       ignore_failure: true
@@ -201,3 +210,11 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

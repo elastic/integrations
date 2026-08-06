@@ -3,6 +3,7 @@ description: Pipeline for processing Mimecast ttp_ap_logs.
 processors:
   # Generic event/ecs fields we always want to populate.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -30,137 +31,165 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
   - drop:
+      tag: drop_6ce7222a
       if: ctx.mimecast?.date == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
   - fingerprint:
+      tag: fingerprint_27d21f1f
       fields:
         - mimecast.messageId
         - mimecast.date
       target_field: "_id"
       ignore_missing: true
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
   - set:
+      tag: set_event_kind_964c251d
       field: event.kind
       value: alert
       if: ctx.mimecast?.result == 'malicious'
 
   - date:
+      tag: date_mimecast_date_88412148
       description: Use 'mimecast.date' as the '@timestamp'
       field: mimecast.date
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
   - append:
+      tag: append_email_from_address_090cee64
       field: email.from.address
       value: "{{{mimecast.senderAddress}}}"
       if: "ctx?.mimecast?.senderAddress != null"
       ignore_failure: true
   - append:
+      tag: append_email_to_address_9e646f4d
       field: email.to.address
       value: "{{{mimecast.recipientAddress}}}"
       if: "ctx?.mimecast?.recipientAddress != null"
       ignore_failure: true
   - dissect:
+      tag: dissect_email_from_address_969e2d4f
       field: email.from.address
       pattern: "<%{email.from.address}>"
       ignore_missing: true
       ignore_failure: true
   - gsub:
+       tag: gsub_email_from_address_6a1fe514
        field: email.from.address
        pattern: '<>'
        replacement: ''
        ignore_missing: true
        ignore_failure: true
   - dissect:
+      tag: dissect_email_to_address_3f03f6e9
       field: email.to.address
       pattern: "<%{email.to.address}>"
       ignore_missing: true
       ignore_failure: true
   - gsub:
+       tag: gsub_email_to_address_1726742b
        field: email.to.address
        pattern: '<>'
        replacement: ''
        ignore_missing: true
        ignore_failure: true
   - gsub:
+      tag: gsub_mimecast_actionTriggered_a8cd8df7
       field: mimecast.actionTriggered
       pattern: ","
       replacement: ""
       ignore_missing: true
   - gsub:
+      tag: gsub_mimecast_actionTriggered_e1aeb826
       field: mimecast.actionTriggered
       pattern: " "
       replacement: "_"
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_actionTriggered_to_event_action_63fa0a2f
       field: mimecast.actionTriggered
       target_field: event.action
       ignore_missing: true
       if: 'ctx?.mimecast?.actionTriggered !=null'
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_f6b733ff
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
       if: 'ctx?.mimecast?.subject !=null'
   - rename:
+      tag: rename_mimecast_messageId_to_email_message_id_eca64d12
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
       if: 'ctx?.mimecast?.messageId !=null'
   - rename:
+      tag: rename_mimecast_route_to_email_direction_880aaa48
       field: mimecast.route
       target_field: email.direction
       ignore_missing: true
       if: 'ctx?.mimecast?.route !=null'
   - rename:
+      tag: rename_mimecast_fileName_to_email_attachments_file_name_23af68fe
       field: mimecast.fileName
       target_field: email.attachments.file.name
       ignore_missing: true
       if: 'ctx?.mimecast?.fileName !=null'
   - rename:
+      tag: rename_mimecast_definition_to_rule_name_7efc08c8
       field: mimecast.definition
       target_field: rule.name
       ignore_missing: true
       if: 'ctx?.mimecast?.definition !=null'
   - rename:
+      tag: rename_mimecast_fileHash_to_email_attachments_file_hash_sha256_128dae7e
       field: mimecast.fileHash
       target_field: email.attachments.file.hash.sha256
       ignore_missing: true
       if: 'ctx.mimecast?.fileHash != null && ctx.mimecast.fileHash.length() == 64'
   - rename:
+      tag: rename_mimecast_fileType_to_email_attachments_file_mime_type_f6ee0660
       field: mimecast.fileType
       target_field: email.attachments.file.mime_type
       ignore_missing: true
       if: 'ctx?.mimecast?.fileType !=null'
   - set:
+      tag: set_event_created_db76d553
       field: event.created
       value: "{{{mimecast.date}}}"
       if: 'ctx?.mimecast?.date != null'
   - split:
+      tag: split_email_attachments_file_name_to_file_parts_9e1a7769
       field: email.attachments.file.name
       separator: "\\."
       target_field: file.parts
       if: 'ctx?.email?.attachments?.file?.name != null'
   - script:
+      tag: script_e4f15236
       lang: painless
       source: |
         ctx.email.attachments.file.extension = ctx.file.parts[ctx.file.parts.length-1];
       if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
   - append:
+      tag: append_related_hash_9b6ef41b
       field: related.hash
       value: "{{{email.attachments.file.hash.sha256}}}"
       allow_duplicates: false
       if: ctx.email?.attachments?.file?.hash?.sha256 != null
   - lowercase:
+      tag: lowercase_email_direction_569c0270
       field: email.direction
       ignore_missing: true
   ### Cleanup
   - remove:
+      tag: remove_d5765a6a
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast.date

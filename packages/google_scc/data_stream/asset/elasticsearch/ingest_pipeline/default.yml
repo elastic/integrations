@@ -35,6 +35,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -45,6 +46,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
@@ -70,6 +72,7 @@ processors:
       if: ctx.json?.window?.startTime != null && ctx.json.window.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_9993cb1a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -120,7 +123,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message
+      tag: set_message_7c33cbce
       copy_from: google_scc.asset.service_perimeter.description
       ignore_empty_value: true
   - set:
@@ -184,6 +187,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

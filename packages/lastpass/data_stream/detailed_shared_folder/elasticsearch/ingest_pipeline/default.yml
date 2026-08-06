@@ -2,9 +2,11 @@
 description: Pipeline for processing Detailed Shared Folder logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,19 +18,24 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_871e09cf
       field: event.kind
       value: state
   - rename:
+      tag: rename_json_sharedfoldername_to_lastpass_detailed_shared_folder_name_e272d13b
       field: json.sharedfoldername
       target_field: lastpass.detailed_shared_folder.name
       ignore_missing: true
   - convert:
+      tag: convert_json_deleted_to_lastpass_detailed_shared_folder_deleted_a8b5f3fe
       field: json.deleted
       target_field: lastpass.detailed_shared_folder.deleted
       if: ctx.json?.deleted != ''
@@ -36,9 +43,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7a3a7145
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - convert:
+      tag: convert_json_score_to_lastpass_detailed_shared_folder_score_1c783122
       field: json.score
       target_field: lastpass.detailed_shared_folder.score
       if: ctx.json?.score != ''
@@ -46,21 +55,26 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0bc2580f
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - rename:
+      tag: rename_json_id_to_lastpass_detailed_shared_folder_shared_folder_id_679caa80
       field: json.id
       target_field: lastpass.detailed_shared_folder.shared_folder.id
       ignore_missing: true
   - rename:
+      tag: rename_json_users_username_to_lastpass_detailed_shared_folder_user_name_d11bae96
       field: json.users.username
       target_field: lastpass.detailed_shared_folder.user.name
       ignore_missing: true
   - set:
+      tag: set_user_email_affa1168
       field: user.email
       copy_from: lastpass.detailed_shared_folder.user.name
       ignore_empty_value: true
   - convert:
+      tag: convert_json_users_superadmin_to_lastpass_detailed_shared_folder_user_super_admin_121bfbf0
       field: json.users.superadmin
       target_field: lastpass.detailed_shared_folder.user.super_admin
       if: ctx.json?.users?.superadmin != ''
@@ -68,9 +82,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_54e13303
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - convert:
+      tag: convert_json_users_readonly_to_lastpass_detailed_shared_folder_user_read_only_3779f3a0
       field: json.users.readonly
       target_field: lastpass.detailed_shared_folder.user.read_only
       if: ctx.json?.users?.readonly != ''
@@ -78,9 +94,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1edb1f73
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - convert:
+      tag: convert_json_users_give_to_lastpass_detailed_shared_folder_user_give_f0ad47e6
       field: json.users.give
       target_field: lastpass.detailed_shared_folder.user.give
       if: ctx.json?.users?.give != ''
@@ -88,9 +106,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a6665d93
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - convert:
+      tag: convert_json_users_can_administer_to_lastpass_detailed_shared_folder_user_can_administer_f6a5a702
       field: json.users.can_administer
       target_field: lastpass.detailed_shared_folder.user.can_administer
       if: ctx.json?.users?.can_administer != ''
@@ -98,29 +118,35 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2407f1c7
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - rename:
+      tag: rename_json_users_sites_to_lastpass_detailed_shared_folder_user_site_ee573ae0
       field: json.users.sites
       target_field: lastpass.detailed_shared_folder.user.site
       ignore_missing: true
   - append:
+      tag: append_related_user_36d4b55a
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_b906fe69
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - lastpass.detailed_shared_folder.user.name
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_e2ccbdd7
         description: Drops null/empty values recursively.
         lang: painless
         source: |

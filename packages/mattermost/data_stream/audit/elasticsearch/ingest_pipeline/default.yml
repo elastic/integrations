@@ -2,88 +2,108 @@
 description: Pipeline for processing Mattermost audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - fail:
+      tag: fail_74459f8f
       if: "!(ctx.json instanceof Map)"
       message: Missing JSON object
   - date:
+      tag: date_json_timestamp_to_timestamp_c024a8df
       field: json.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS 'Z'
       timezone: UTC
       target_field: "@timestamp"
   - rename:
+      tag: rename_json_event_to_event_action_947fc404
       field: json.event
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_err_to_error_code_6b1447e6
       field: json.err
       target_field: error.code
       ignore_missing: true
   - rename:
+      tag: rename_json_errors_to_mattermost_audit_error_message_b6f15f90
       field: json.errors
       target_field: mattermost.audit.error.message
       ignore_missing: true
       if: ctx.json.errors != "[]"
   - gsub:
+      tag: gsub_mattermost_audit_error_message_317838ce
       field: mattermost.audit.error.message
       pattern: "(\\[|\\])"
       replacement: ""
       ignore_missing: true
   - split:
+      tag: split_mattermost_audit_error_message_49aecd34
       field: mattermost.audit.error.message
       separator: ",\\s+"
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_outcome_20f1cdfe
       field: event.outcome
       value: success
       if: ctx.json.status == "success"
   - set:
+      tag: set_event_outcome_091b384f
       field: event.outcome
       value: failure
       if: ctx.json.status == "fail" || ctx.mattermost?.audit?.error?.message != null
   - set:
+      tag: set_event_outcome_5ffb44a5
       field: event.outcome
       value: unknown
       if: ctx.event.outcome == null
   - rename:
+      tag: rename_json_user_id_to_user_id_4eee742f
       field: json.user_id
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_user_id_to_user_id_4eee742f
       field: json.user_id
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_login_id_to_user_id_80c33d61
       field: json.login_id
       target_field: user.id
       ignore_missing: true
       if: ctx.user?.id == null
   - rename:
+      tag: rename_json_ip_address_to_source_address_1490d4b5
       field: json.ip_address
       target_field: source.address
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_f5632a20
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -92,99 +112,123 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_client_to_user_agent_c81d6fef
       field: json.client
       target_field: user_agent
       ignore_missing: true
   - rename:
+      tag: rename_json_api_path_to_mattermost_audit_api_path_eecf6eef
       field: json.api_path
       target_field: mattermost.audit.api_path
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_mattermost_audit_api_path_2a14bf06
       field: mattermost.audit.api_path
       ignore_failure: true
   - rename:
+      tag: rename_json_session_id_to_mattermost_audit_session_id_a07c2c76
       field: json.session_id
       target_field: mattermost.audit.session.id
       ignore_missing: true
   - rename:
+      tag: rename_json_device_id_to_mattermost_audit_device_id_9fa3394e
       field: json.device_id
       target_field: mattermost.audit.device.id
       ignore_missing: true
   - rename:
+      tag: rename_json_cluster_id_to_mattermost_audit_cluster_id_2b6d299a
       field: json.cluster_id
       target_field: mattermost.audit.cluster.id
       ignore_missing: true
   - rename:
+      tag: rename_json_user_id_to_user_target_id_391b4f99
       field: json.user.id
       target_field: user.target.id
       ignore_missing: true
   - rename:
+      tag: rename_json_user_name_to_user_target_name_2e89dc61
       field: json.user.name
       target_field: user.target.name
       ignore_missing: true
   - rename:
+      tag: rename_json_user_roles_to_user_target_roles_9ee510c1
       field: json.user.roles
       target_field: user.target.roles
       ignore_missing: true
   - split:
+      tag: split_user_target_roles_411917ca
       field: user.target.roles
       separator: \s+
       ignore_missing: true
   - rename:
+      tag: rename_json_remove_user_id_to_user_target_id_9efc768b
       field: json.remove_user_id
       target_field: user.target.id
       ignore_missing: true
   - gsub:
+      tag: gsub_json_user_ids_7142ff32
       field: json.user_ids
       pattern: "(\\[|\\])"
       replacement: ""
       ignore_missing: true
   - split:
+      tag: split_json_user_ids_00c0dc92
       field: json.user_ids
       separator: \s+
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_user_ids_to_user_target_id_157040a3
       field: json.user_ids
       target_field: user.target.id
       ignore_missing: true
   - rename:
+      tag: rename_json_team_to_mattermost_audit_team_c9209f35
       field: json.team
       target_field: mattermost.audit.team
       ignore_missing: true
   - rename:
+      tag: rename_json_code_to_http_response_status_code_b30a39c8
       field: json.code
       target_field: http.response.status_code
       ignore_missing: true
   - rename:
+      tag: rename_json_post_to_mattermost_audit_post_ebb40d6f
       field: json.post
       target_field: mattermost.audit.post
       ignore_missing: true
   - rename:
+      tag: rename_mattermost_audit_post_channel_id_to_mattermost_audit_post_channel_id_a48e1e69
       field: mattermost.audit.post.channel_id
       target_field: mattermost.audit.post.channel.id
       ignore_missing: true
   - rename:
+      tag: rename_json_patch_to_mattermost_audit_patch_8500553b
       field: json.patch
       target_field: mattermost.audit.patch
       ignore_missing: true
   - rename:
+      tag: rename_json_patched_to_mattermost_audit_patch_1e007f18
       field: json.patched
       target_field: mattermost.audit.patch
       ignore_missing: true
   - rename:
+      tag: rename_json_channel_to_mattermost_audit_channel_d79aa57f
       field: json.channel
       target_field: mattermost.audit.channel
       ignore_missing: true
   - rename:
+      tag: rename_json_channeld_to_mattermost_audit_channel_13b89b9f
       field: json.channeld
       target_field: mattermost.audit.channel
       ignore_missing: true
@@ -321,6 +365,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
+      tag: script_b86d15c2
       lang: painless
       description: Add ECS User fields
       if: ctx.event.category.contains('iam')
@@ -360,26 +405,31 @@ processors:
           ctx.user.target.group.put("id", ctx.mattermost?.audit?.team?.id);
         }
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_d2acb44a
       field: related.user
       value: '{{{user.changes.name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.name != null
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
+      tag: append_related_user_0b822a80
       field: related.user
       value: '{{{user.target.id}}}'
       allow_duplicates: false
       if: ctx.user?.target?.id instanceof String
   - foreach:
+      tag: foreach_user_target_id_dcd3a36b
       field: user.target.id
       processor:
         append:
@@ -389,30 +439,36 @@ processors:
       ignore_missing: true
       if: ctx.user?.target?.id instanceof List
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
+      tag: append_mattermost_audit_related_channel_abecccbd
       field: mattermost.audit.related.channel
       value: '{{{mattermost.audit.post.channel.id}}}'
       allow_duplicates: false
       if: ctx.mattermost?.audit?.post?.channel?.id != null
   - append:
+      tag: append_mattermost_audit_related_channel_1bdbcbaa
       field: mattermost.audit.related.channel
       value: '{{{mattermost.audit.channel.id}}}'
       allow_duplicates: false
       if: ctx.mattermost?.audit?.channel?.id != null
   - append:
+      tag: append_mattermost_audit_related_team_8fed3d9e
       field: mattermost.audit.related.team
       value: '{{{mattermost.audit.team.id}}}'
       allow_duplicates: false
       if: ctx.mattermost?.audit?.team?.id != null
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |

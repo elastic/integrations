@@ -24,6 +24,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -132,6 +133,7 @@ processors:
       if: ctx.json?.connection?.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_ffa1d6d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -189,6 +191,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4e5b9d9a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -232,6 +235,7 @@ processors:
       target_field: proofpoint_on_demand.message.envelope.from_hashed
       ignore_missing: true
   - foreach:
+      tag: foreach_json_envelope_rcpts_ad228241
       field: json.envelope.rcpts
       if: ctx.json?.envelope?.rcpts instanceof List
       processor:
@@ -251,6 +255,7 @@ processors:
       target_field: proofpoint_on_demand.message.envelope.rcpts_hashed
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_actions_da0faab2
       field: json.filter.actions
       if: ctx.json?.filter?.actions instanceof List
       processor:
@@ -268,6 +273,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_filter_actions_869eb3d6
       field: json.filter.actions
       if: ctx.json?.filter?.actions instanceof List
       processor:
@@ -299,6 +305,7 @@ processors:
       if: ctx.json?.filter?.startTime != null && ctx.json.filter.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_b2665f4a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -314,6 +321,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ae454a24
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -329,6 +337,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_af4e7b6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -339,6 +348,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2ca8326f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -349,6 +359,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c68767d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -367,6 +378,7 @@ processors:
       target_field: proofpoint_on_demand.message.filter.modules.av.virus_names
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dkimv_c2185086
       field: json.filter.modules.dkimv
       if: ctx.json?.filter?.modules?.dkimv instanceof List
       processor:
@@ -381,6 +393,7 @@ processors:
       target_field: proofpoint_on_demand.message.filter.modules.dkimv
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_alignment_f56a6eb7
       field: json.filter.modules.dmarc.alignment
       if: ctx.json?.filter?.modules?.dmarc?.alignment instanceof List
       processor:
@@ -390,6 +403,7 @@ processors:
           target_field: _ingest._value.from_domain
           ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_alignment_9add4e41
       field: json.filter.modules.dmarc.alignment
       if: ctx.json?.filter?.modules?.dmarc?.alignment instanceof List
       processor:
@@ -399,6 +413,7 @@ processors:
           value: '{{{_ingest._value.from_domain}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_alignment_de06bf97
       field: json.filter.modules.dmarc.alignment
       if: ctx.json?.filter?.modules?.dmarc?.alignment instanceof List
       processor:
@@ -416,6 +431,7 @@ processors:
       target_field: proofpoint_on_demand.message.filter.modules.dmarc.alignment
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_bbc3eeeb
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
@@ -425,6 +441,7 @@ processors:
           path: _ingest._value.emailIdentities
           ignore_failure: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_be2797e4
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
@@ -434,6 +451,7 @@ processors:
           target_field: _ingest._value.email_identities
           ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_aed085d3
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
@@ -443,6 +461,7 @@ processors:
           target_field: _ingest._value.email_identities.smtp.mailfrom_hashed
           ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_4b203b2c
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
@@ -452,6 +471,7 @@ processors:
           value: '{{{_ingest._value.email_identities.header.from}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_8051eb1f
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
@@ -488,6 +508,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4e05f28d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -498,6 +519,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_929891ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -508,6 +530,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_067561ec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -523,6 +546,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_28d0159e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -564,6 +588,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_319c1ba9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -574,6 +599,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2b065470
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -584,6 +610,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9fd9e770
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -594,6 +621,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_64b3ed69
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -604,6 +632,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fad9bdc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -614,6 +643,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f8fa8b56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -624,6 +654,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bbc5d492
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -634,6 +665,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_eab0d7ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -644,6 +676,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ce4fe0f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -654,6 +687,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_355f0137
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -664,6 +698,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_61293ea8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -691,6 +726,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_af418a89
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -781,6 +817,7 @@ processors:
       if: ctx.json?.filter?.throttleIp != ''
       on_failure:
         - append:
+            tag: append_error_message_fffdff0d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -790,6 +827,7 @@ processors:
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.filter?.throttle_ip != null
   - foreach:
+      tag: foreach_json_filter_verified_rcpts_a1eb2943
       field: json.filter.verified.rcpts
       if: ctx.json?.filter?.verified?.rcpts instanceof List
       processor:
@@ -924,6 +962,7 @@ processors:
       override: true
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_msg_header_cc_fcc9adee
       field: json.msg.header.cc
       if: ctx.json?.msg?.header?.cc instanceof List
       processor:
@@ -933,6 +972,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_header_cc_505baafb
       field: json.msg.header.cc
       if: ctx.json?.msg?.header?.cc instanceof List
       processor:
@@ -947,6 +987,7 @@ processors:
       target_field: proofpoint_on_demand.message.msg.header.cc
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_header_from_ce990724
       field: json.msg.header.from
       if: ctx.json?.msg?.header?.from instanceof List
       processor:
@@ -956,6 +997,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_header_from_732a05b5
       field: json.msg.header.from
       if: ctx.json?.msg?.header?.from instanceof List
       processor:
@@ -980,6 +1022,7 @@ processors:
       target_field: proofpoint_on_demand.message.msg.header.message_id
       ignore_missing: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_header_message_id_e736fa11
       field: proofpoint_on_demand.message.msg.header.message_id
       if: ctx.proofpoint_on_demand?.message?.msg?.header?.message_id instanceof List
       processor:
@@ -994,6 +1037,7 @@ processors:
       target_field: proofpoint_on_demand.message.msg.header.reply_to
       ignore_missing: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_header_reply_to_0d006883
       field: proofpoint_on_demand.message.msg.header.reply_to
       if: ctx.proofpoint_on_demand?.message?.msg?.header?.reply_to instanceof List
       processor:
@@ -1003,6 +1047,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_header_reply_to_48f1c4ea
       field: proofpoint_on_demand.message.msg.header.reply_to
       if: ctx.proofpoint_on_demand?.message?.msg?.header?.reply_to instanceof List
       processor:
@@ -1017,6 +1062,7 @@ processors:
       target_field: proofpoint_on_demand.message.msg.header.return_path
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_header_subject_120d9c67
       field: json.msg.header.subject
       if: ctx.json?.msg?.header?.subject instanceof List
       processor:
@@ -1031,6 +1077,7 @@ processors:
       target_field: proofpoint_on_demand.message.msg.header.subject
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_header_to_290a8045
       field: json.msg.header.to
       if: ctx.json?.msg?.header?.to instanceof List
       processor:
@@ -1040,6 +1087,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_header_to_426bf0ca
       field: json.msg.header.to
       if: ctx.json?.msg?.header?.to instanceof List
       processor:
@@ -1094,6 +1142,7 @@ processors:
       target_field: proofpoint_on_demand.message.msg.normalized_header
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_parsedAddresses_cc_1da6fd65
       field: json.msg.parsedAddresses.cc
       if: ctx.json?.msg?.parsedAddresses?.cc instanceof List
       processor:
@@ -1103,6 +1152,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_parsedAddresses_from_f8f706af
       field: json.msg.parsedAddresses.from
       if: ctx.json?.msg?.parsedAddresses?.from instanceof List
       processor:
@@ -1117,6 +1167,7 @@ processors:
       target_field: json.msg.parsedAddresses.from_hashed
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_parsedAddresses_to_e964c83a
       field: json.msg.parsedAddresses.to
       if: ctx.json?.msg?.parsedAddresses?.to instanceof List
       processor:
@@ -1143,11 +1194,12 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_08f577b6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      description: Map msgParts fields. 
+      description: Map msgParts fields.
       if: ctx.json?.msgParts instanceof List
       params:
         'dataBase64': 'database64'
@@ -1278,9 +1330,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c5dec0a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_email_attachments_7f15a33e
       field: email.attachments
       if: ctx.email?.attachments instanceof List
       processor:
@@ -1297,6 +1351,7 @@ processors:
       if: ctx.json?.ts != null && ctx.json.ts != ''
       on_failure:
         - append:
+            tag: append_error_message_db669455
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1305,6 +1360,7 @@ processors:
       copy_from: proofpoint_on_demand.message.ts
       ignore_empty_value: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_parts_d7fae032
       field: proofpoint_on_demand.message.msg_parts
       if: ctx.proofpoint_on_demand?.message?.msg_parts instanceof List
       processor:
@@ -1317,6 +1373,7 @@ processors:
               ignore_missing: true
               if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_parts_b5798d82
       field: proofpoint_on_demand.message.msg_parts
       if: ctx.proofpoint_on_demand?.message?.msg_parts instanceof List
       processor:
@@ -1381,6 +1438,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

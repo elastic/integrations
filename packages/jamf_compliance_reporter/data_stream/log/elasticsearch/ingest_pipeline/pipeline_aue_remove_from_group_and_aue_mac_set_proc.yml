@@ -2,12 +2,15 @@
 description: Pipeline for Jamf Compliance Reporter aue_remove_from_group and aue_mac_set_proc audit logs.
 processors:
   - rename:
+      tag: rename_json_texts_to_jamf_compliance_reporter_log_texts_e75677b2
       field: json.texts
       target_field: jamf_compliance_reporter.log.texts
       ignore_missing: true
   - pipeline:
+      tag: pipeline_75de012d
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:
@@ -16,3 +19,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

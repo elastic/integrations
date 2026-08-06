@@ -2,8 +2,10 @@
 description: Pipeline for Jamf Compliance Reporter aue_logout audit logs.
 processors:
   - pipeline:
+      tag: pipeline_75de012d
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:
@@ -12,3 +14,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -23,6 +23,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -37,6 +38,7 @@ processors:
       tag: json_event_original
       on_failure:
         - append:
+            tag: append_error_message_a6e0e953
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -48,6 +50,7 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_16455195
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -58,6 +61,7 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_697545f1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -79,6 +83,7 @@ processors:
       if: ctx.json?.protoPayload?.requestMetadata?.destinationAttributes?.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_7e5f4057
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -101,6 +106,7 @@ processors:
       if: ctx.json?.protoPayload?.requestMetadata?.destinationAttributes?.port != ''
       on_failure:
         - append:
+            tag: append_error_message_07c58d16
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -137,6 +143,7 @@ processors:
       if: ctx.json?.protoPayload?.requestMetadata?.requestAttributes?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_000e3aa2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -205,6 +212,7 @@ processors:
         ctx.google_scc.audit.severity.put('code',params.get(ctx.google_scc.audit.severity.value));
       on_failure:
         - append:
+            tag: append_error_message_be1cfaca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -221,6 +229,7 @@ processors:
       if: ctx.json?.sourceLocation?.line != ''
       on_failure:
         - append:
+            tag: append_error_message_b6d9b29e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -293,6 +302,7 @@ processors:
       tag: rename_request_metadata_caller_supplied_user_agent
       ignore_missing: true
   - user_agent:
+      tag: user_agent_google_scc_audit_proto_payload_request_metadata_caller_supplied_user_agent_a6dffcb2
       field: google_scc.audit.proto_payload.request_metadata.caller.supplied_user_agent
       ignore_missing: true
   - convert:
@@ -304,6 +314,7 @@ processors:
       if: ctx.json?.httpRequest?.cacheFillBytes != ''
       on_failure:
         - append:
+            tag: append_error_message_31789f79
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -315,6 +326,7 @@ processors:
       if: ctx.json?.httpRequest?.cacheHit != ''
       on_failure:
         - append:
+            tag: append_error_message_f97c1bd5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -326,6 +338,7 @@ processors:
       if: ctx.json?.httpRequest?.cacheLookup != ''
       on_failure:
         - append:
+            tag: append_error_message_29deea99
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -337,6 +350,7 @@ processors:
       if: ctx.json?.httpRequest?.cacheValidatedWithOriginServer != ''
       on_failure:
         - append:
+            tag: append_error_message_d167f2b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -363,6 +377,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_152ba461
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -385,6 +400,7 @@ processors:
       if: ctx.json?.httpRequest?.requestSize != ''
       on_failure:
         - append:
+            tag: append_error_message_e6d97b3c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -401,6 +417,7 @@ processors:
       if: ctx.json?.httpRequest?.responseSize != ''
       on_failure:
         - append:
+            tag: append_error_message_9370f804
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
@@ -412,6 +429,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5d0f9e1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -429,6 +447,7 @@ processors:
       if: ctx.json?.httpRequest?.status != ''
       on_failure:
         - append:
+            tag: append_error_message_96ae8de4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -450,6 +469,7 @@ processors:
       if: ctx.json?.operation?.first != ''
       on_failure:
         - append:
+            tag: append_error_message_1d5c5866
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -466,6 +486,7 @@ processors:
       if: ctx.json?.operation?.last != ''
       on_failure:
         - append:
+            tag: append_error_message_392732ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -484,6 +505,7 @@ processors:
       tag: rename_authentication_info_principal_subject
       ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_4f0760aa
       field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
       if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
       ignore_failure: true
@@ -494,6 +516,7 @@ processors:
           tag: rename_authentication_info_service_account_delegation_info_first_party_principal_email
           ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_7071bd42
       field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
       if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
       ignore_failure: true
@@ -504,6 +527,7 @@ processors:
           tag: rename_authentication_info_service_account_delegation_info_first_party_principal_service_metadata
           ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_de79d797
       field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
       if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
       ignore_failure: true
@@ -514,6 +538,7 @@ processors:
           tag: rename_authentication_info_service_account_delegation_info_principal_subject
           ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_be538c91
       field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
       if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
       ignore_failure: true
@@ -531,7 +556,7 @@ processors:
   - rename:
       field: json.protoPayload.authenticationInfo.serviceAccountKeyName
       target_field: google_scc.audit.proto_payload.authentication_info.service_account_key_name
-      tag: rename_authentication_info_service_account_key_name
+      tag: rename_json_protoPayload_authenticationInfo_serviceAccountKeyName_to_google_scc_audit_proto_payload_authentication_info_service_account_key_name_c8b37f59
       ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
@@ -539,6 +564,7 @@ processors:
       tag: rename_authentication_info_third_party_principal
       ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_99757976
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -556,6 +582,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_368b576c
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -571,6 +598,7 @@ processors:
                 field: _ingest._value.resourceAttributes.createTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_a885d65e
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -586,6 +614,7 @@ processors:
                 field: _ingest._value.resourceAttributes.deleteTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_c3e3bb22
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -601,6 +630,7 @@ processors:
                 field: _ingest._value.resourceAttributes.updateTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_43410c15
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -611,6 +641,7 @@ processors:
           tag: rename_authorization_info_resource_attributes_display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_e51aed96
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -623,6 +654,7 @@ processors:
           ignore_missing: true
           tag: remove_authorization_info_resource_attributes_fields
   - foreach:
+      tag: foreach_json_protoPayload_authorizationInfo_b7c91650
       field: json.protoPayload.authorizationInfo
       if: ctx.json?.protoPayload?.authorizationInfo instanceof List
       ignore_failure: true
@@ -651,6 +683,7 @@ processors:
       if: ctx.json?.protoPayload?.numResponseItems != ''
       on_failure:
         - append:
+            tag: append_error_message_16961f54
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -782,6 +815,7 @@ processors:
       if: ctx.json?.protoPayload?.requestMetadata?.requestAttributes?.time != null && ctx.json.protoPayload.requestMetadata.requestAttributes.time != ''
       on_failure:
         - append:
+            tag: append_error_message_6df0af89
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -823,6 +857,7 @@ processors:
       if: ctx.json?.protoPayload?.status?.code != ''
       on_failure:
         - append:
+            tag: append_error_message_65d96254
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -849,6 +884,7 @@ processors:
       if: ctx.json?.receiveTimestamp != null && ctx.json.receiveTimestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_7742568c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -875,6 +911,7 @@ processors:
       if: ctx.json?.split?.index != ''
       on_failure:
         - append:
+            tag: append_error_message_2be1a3fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -886,6 +923,7 @@ processors:
       if: ctx.json?.split?.totalSplits != ''
       on_failure:
         - append:
+            tag: append_error_message_0b57e3da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -907,6 +945,7 @@ processors:
       if: ctx.json?.traceSampled != ''
       on_failure:
         - append:
+            tag: append_error_message_47bdb898
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -961,6 +1000,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

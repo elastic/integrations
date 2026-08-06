@@ -2,77 +2,93 @@
 description: Pipeline for Jamf Protect Telemetry aue_execve audit logs.
 processors:
   - convert:
+      tag: convert_json_attributes_device_to_jamf_protect_telemetry_attributes_device_5738d4f4
       field: json.attributes.device
       target_field: jamf_protect.telemetry.attributes.device
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attributes_file_access_mode_to_json_file_access_mode_3515c381
       field: json.attributes.file_access_mode
       target_field: json.file_access_mode
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_file_system_id_to_jamf_protect_telemetry_attributes_file_system_id_5b5d2ea2
       field: json.attributes.file_system_id
       target_field: jamf_protect.telemetry.attributes.file.system.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_node_id_to_jamf_protect_telemetry_attributes_node_id_78f34dc5
       field: json.attributes.node_id
       target_field: jamf_protect.telemetry.attributes.node.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_owner_group_id_to_user_group_id_f8a03798
       field: json.attributes.owner_group_id
       target_field: user.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attributes_owner_group_name_to_user_group_name_834f090f
       field: json.attributes.owner_group_name
       target_field: user.group.name
       ignore_missing: true
   - convert:
+      tag: convert_json_attributes_owner_user_id_58bbc519
       field: json.attributes.owner_user_id
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_id_f10ea64d
       field: user.id
       value: '{{{json.attributes.owner_user_id}}}'
       if: ctx.json?.attributes?.owner_user_id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_user_name_2ba08467
       field: user.name
       value: '{{{json.attributes.owner_user_name}}}'
       if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_0321d5d7
       field: related.user
       value: '{{{json.attributes.owner_user_name}}}'
       if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - rename:
+      tag: rename_json_path_to_jamf_protect_telemetry_path_4323bfb1
       field: json.path
       target_field: jamf_protect.telemetry.path
       ignore_missing: true
   - pipeline:
+      tag: pipeline_75de012d
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - rename:
+      tag: rename_json_exec_args_args_to_json_args_c2752467
       field: json.exec_args.args
       target_field: json.args
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_args_args_compiled_to_jamf_protect_telemetry_exec_args_args_compiled_acb1ed1b
       field: json.exec_args.args_compiled
       target_field: jamf_protect.telemetry.exec_args.args_compiled
       ignore_missing: true
   - script:
+      tag: script_fdd491a2
       lang: painless
       if: ctx.json?.exec_env?.env?.ARCH != null && ctx.json.exec_env.env.ARCH != ''
       params:
@@ -105,26 +121,32 @@ processors:
         ctx.host.os.put('type', ctx.json.exec_env.env.ARCH);
         ctx.json.exec_env.env.remove('ARCH');
   - rename:
+      tag: rename_json_exec_env_env_CPU_to_host_architecture_a6731bc7
       field: json.exec_env.env.CPU
       target_field: host.architecture
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_PATH_to_jamf_protect_telemetry_exec_env_env_path_368c684b
       field: json.exec_env.env.PATH
       target_field: jamf_protect.telemetry.exec_env.env.path
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_XPC_FLAGS_to_jamf_protect_telemetry_exec_env_env_xpc_flags_57d43742
       field: json.exec_env.env.XPC_FLAGS
       target_field: jamf_protect.telemetry.exec_env.env.xpc.flags
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_XPC_SERVICE_NAME_to_jamf_protect_telemetry_exec_env_env_xpc_service_name_ac6aa5d2
       field: json.exec_env.env.XPC_SERVICE_NAME
       target_field: jamf_protect.telemetry.exec_env.env.xpc.service_name
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_compiled_to_jamf_protect_telemetry_exec_env_env_compiled_7ed739de
       field: json.exec_env.env_compiled
       target_field: jamf_protect.telemetry.exec_env.env.compiled
       ignore_missing: true
   - script:
+      tag: script_e6cd1664
       description: Convert Object into Array.
       lang: painless
       source: |
@@ -134,6 +156,7 @@ processors:
           ctx.process?.args.add(m.getValue());
         }
   - script:
+      tag: script_7f4421a4
       description: Convert Decimal into Octal.
       lang: painless
       source: |

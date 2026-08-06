@@ -2,39 +2,47 @@
 description: Pipeline for Jamf Compliance Reporter audio video device event logs.
 processors:
   - rename:
+      tag: rename_json_audio_video_device_info_audio_device_creator_to_jamf_compliance_reporter_log_audio_video_device_info_audio_device_creator_7723b83b
       field: json.audio_video_device_info.audio_device_creator
       target_field: jamf_compliance_reporter.log.audio_video_device_info.audio_device.creator
       ignore_missing: true
   - convert:
+      tag: convert_json_audio_video_device_info_audio_device_hog_mode_to_jamf_compliance_reporter_log_audio_video_device_info_audio_device_hog_mode_e6c2c650
       field: json.audio_video_device_info.audio_device_hog_mode
       target_field: jamf_compliance_reporter.log.audio_video_device_info.audio_device.hog_mode
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_audio_video_device_info_audio_device_id_to_jamf_compliance_reporter_log_audio_video_device_info_audio_device_id_f1572ca4
       field: json.audio_video_device_info.audio_device_id
       target_field: jamf_compliance_reporter.log.audio_video_device_info.audio_device.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_audio_video_device_info_audio_device_manufacturer_to_jamf_compliance_reporter_log_audio_video_device_info_audio_device_manufacturer_c2a67e77
       field: json.audio_video_device_info.audio_device_manufacturer
       target_field: jamf_compliance_reporter.log.audio_video_device_info.audio_device.manufacturer
       ignore_missing: true
   - convert:
+      tag: convert_json_audio_video_device_info_audio_device_running_to_jamf_compliance_reporter_log_audio_video_device_info_audio_device_running_acb6af65
       field: json.audio_video_device_info.audio_device_running
       target_field: jamf_compliance_reporter.log.audio_video_device_info.audio_device.running
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7489ac52
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_audio_video_device_info_audio_device_uuid_to_jamf_compliance_reporter_log_audio_video_device_info_audio_device_uuid_2322bf13
       field: json.audio_video_device_info.audio_device_uuid
       target_field: jamf_compliance_reporter.log.audio_video_device_info.audio_device.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_audio_video_device_info_device_status_to_jamf_compliance_reporter_log_audio_video_device_info_device_status_5ff9ae3a
       field: json.audio_video_device_info.device_status
       target_field: jamf_compliance_reporter.log.audio_video_device_info.device_status
       ignore_missing: true
@@ -45,3 +53,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -3,6 +3,7 @@ description: Pipeline for processing Mimecast dlp_logs.
 processors:
   # Generic event/ecs fields we always want to populate.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -30,12 +31,15 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
   - drop:
+      tag: drop_dd4ed123
       if: ctx.mimecast?.eventTime == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
   - fingerprint:
+      tag: fingerprint_45ad06db
       fields:
         - mimecast.messageId
         - mimecast.action
@@ -43,14 +47,17 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
   - set:
+      tag: set_event_kind_0ab7b65f
       field: event.kind
       value: alert
       if: ctx._conf?.alerting instanceof List && ctx._conf.alerting.contains(ctx.mimecast?.action)
 
   - date:
+      tag: date_mimecast_eventTime_a835a222
       description: Use 'mimecast.eventTime' as the '@timestamp'
       field: mimecast.eventTime
       timezone: UTC
@@ -59,71 +66,85 @@ processors:
 
   ###
   - append:
+      tag: append_email_from_address_d80318fb
       field: email.from.address
       value: "{{{mimecast.senderAddress}}}"
       if: "ctx?.mimecast?.senderAddress != null"
   - append:
+      tag: append_email_to_address_281f192c
       field: email.to.address
       value: "{{{mimecast.recipientAddress}}}"
       if: "ctx?.mimecast?.recipientAddress != null"
   - dissect:
+       tag: dissect_email_from_address_969e2d4f
        field: email.from.address
        pattern: "<%{email.from.address}>"
        ignore_missing: true
        ignore_failure: true
   - gsub:
+       tag: gsub_email_from_address_6a1fe514
        field: email.from.address
        pattern: '<>'
        replacement: ''
        ignore_missing: true
        ignore_failure: true
   - dissect:
+       tag: dissect_email_to_address_3f03f6e9
        field: email.to.address
        pattern: "<%{email.to.address}>"
        ignore_missing: true
-       ignore_failure: true  
+       ignore_failure: true
   - gsub:
+       tag: gsub_email_to_address_1726742b
        field: email.to.address
        pattern: '<>'
        replacement: ''
        ignore_missing: true
        ignore_failure: true
   - rename:
+      tag: rename_mimecast_action_to_event_action_187d1a3d
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
       if: 'ctx?.mimecast?.action !=null'
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_f6b733ff
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
       if: 'ctx?.mimecast?.subject !=null'
   - rename:
+      tag: rename_mimecast_messageId_to_email_message_id_eca64d12
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
       if: 'ctx?.mimecast?.messageId !=null'
   - rename:
+      tag: rename_mimecast_route_to_email_direction_880aaa48
       field: mimecast.route
       target_field: email.direction
       ignore_missing: true
       if: 'ctx?.mimecast?.route !=null'
   - rename:
+      tag: rename_mimecast_policy_to_rule_name_8cd791ba
       field: mimecast.policy
       target_field: rule.name
       ignore_missing: true
       if: 'ctx?.mimecast?.policy !=null'
   - set:
+      tag: set_event_created_6dbfe9df
       field: event.created
       value: "{{{mimecast.eventTime}}}"
       if: 'ctx?.mimecast?.eventTime != null'
   - lowercase:
+      tag: lowercase_email_direction_569c0270
       field: email.direction
       ignore_missing: true
   # Cleanup
   - remove:
+      tag: remove_f8e318fb
       description: Cleanup of repeated/unwanted/temporary fields.
-      field: 
+      field:
         - mimecast
         - _conf
       ignore_missing: true
@@ -156,6 +177,7 @@ processors:
         }
         handleMap(ctx);
       
+
 # Error handling
 on_failure:
   - set:

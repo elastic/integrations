@@ -2,6 +2,7 @@
 description: Pipeline for parsing keycloak logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
@@ -11,19 +12,23 @@ processors:
       if: ctx.event?.original == null
       tag: rename_event_original
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - dot_expander:
+      tag: dot_expander_*_add55d98
       field: "*"
       path: json
       if: ctx.json != null
   - rename:
+      tag: rename_event_original_to_json_event_original_a7fe9915
       field: event.original
       target_field: json.event.original
       ignore_missing: true
       if: ctx.json != null
   - remove:
+      tag: remove__tmp_tz_offset_705bc198
       field: _tmp.tz_offset
       if: ctx.json != null
   - grok:

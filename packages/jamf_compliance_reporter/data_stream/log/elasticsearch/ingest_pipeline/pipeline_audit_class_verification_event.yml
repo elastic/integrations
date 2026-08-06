@@ -2,29 +2,35 @@
 description: Pipeline for Jamf Compliance Reporter audit class verification event logs.
 processors:
   - rename:
+      tag: rename_json_audit_class_verification_info_contents_to_jamf_compliance_reporter_log_audit_class_verification_info_contents_72d5edba
       field: json.audit_class_verification_info.contents
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.contents
       ignore_missing: true
   - rename:
+      tag: rename_json_audit_class_verification_info_osversion_to_jamf_compliance_reporter_log_audit_class_verification_info_os_version_bed69b0c
       field: json.audit_class_verification_info.osversion
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.os.version
       ignore_missing: true
   - convert:
+      tag: convert_json_audit_class_verification_info_restored_default_to_jamf_compliance_reporter_log_audit_class_verification_info_restored_default_664e7cd0
       field: json.audit_class_verification_info.restored_default
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.restored_default
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_19b98c19
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_audit_class_verification_info_status_to_jamf_compliance_reporter_log_audit_class_verification_info_status_527dc7eb
       field: json.audit_class_verification_info.status
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.status
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_audit_class_verification_info_status_str_to_jamf_compliance_reporter_log_audit_class_verification_info_status_str_9d29f242
       field: json.audit_class_verification_info.status_str
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.status_str
       ignore_missing: true
@@ -35,3 +41,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

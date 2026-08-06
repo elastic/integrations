@@ -2,18 +2,21 @@
 description: Pipeline for Jamf Compliance Reporter aue_session_start, aue_session_end, aue_session_update and aue_session_close audit logs.
 processors:
   - convert:
+      tag: convert_json_arguments_am_failure_to_jamf_compliance_reporter_log_arguments_am_failure_9070e193
       field: json.arguments.am_failure
       target_field: jamf_compliance_reporter.log.arguments.am_failure
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_am_success_to_jamf_compliance_reporter_log_arguments_am_success_2aaf72fd
       field: json.arguments.am_success
       target_field: jamf_compliance_reporter.log.arguments.am_success
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_sflags_to_jamf_compliance_reporter_log_arguments_sflags_5ced041d
       field: json.arguments.sflags
       target_field: jamf_compliance_reporter.log.arguments.sflags
       type: string
@@ -26,3 +29,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

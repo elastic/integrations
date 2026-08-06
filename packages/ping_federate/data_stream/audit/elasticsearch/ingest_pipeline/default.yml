@@ -110,8 +110,10 @@ processors:
       if: ctx.ping_federate?.audit?.severity != ''
       on_failure:
         - remove:
+            tag: remove_ping_federate_audit_severity_3e863faa
             field: ping_federate.audit.severity
         - append:
+            tag: append_error_message_f58e56f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -158,8 +160,10 @@ processors:
       if: ctx.cef?.extensions?.deviceReceiptTime != null && ctx.cef.extensions.deviceReceiptTime != '' && ctx.event?.timezone == null
       on_failure:
         - remove:
+            tag: remove_ping_federate_audit_response_time_20b60949
             field: ping_federate.audit.response_time
         - append:
+            tag: append_error_message_d8c923f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -172,11 +176,14 @@ processors:
       if: ctx.cef?.extensions?.deviceReceiptTime != null && ctx.cef.extensions.deviceReceiptTime != '' && ctx.event?.timezone != null
       on_failure:
         - remove:
+            tag: remove_ping_federate_audit_response_time_e6c012d3
             field: ping_federate.audit.response_time
         - append:
+            tag: append_error_message_63fc07b6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_cb3d46d6
       field: '@timestamp'
       copy_from: ping_federate.audit.response_time
       ignore_empty_value: true
@@ -191,6 +198,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a25582d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -231,7 +239,7 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_local_user_id_to_related_user
+      tag: append_related_user_5a8fbae8
       value: '{{{ping_federate.audit.subject}}}'
       allow_duplicates: false
       if: ctx.ping_federate?.audit?.subject != null
@@ -259,14 +267,12 @@ processors:
       field: event.outcome
       tag: set_event_outcome_success
       value: success
-      if: ctx.ping_federate?.audit?.status != null && 
-          ctx.ping_federate.audit.status.toLowerCase().contains("success")
+      if: ctx.ping_federate?.audit?.status != null && ctx.ping_federate.audit.status.toLowerCase().contains("success")
   - set:
       field: event.outcome
       tag: set_event_outcome_failure
       value: failure
-      if: ctx.ping_federate?.audit?.status != null && 
-          ctx.ping_federate.audit.status.toLowerCase().contains("fail")
+      if: ctx.ping_federate?.audit?.status != null && ctx.ping_federate.audit.status.toLowerCase().contains("fail")
   - set:
       field: ping_federate.audit.role
       tag: set_role_from_deviceCustomString4
@@ -279,11 +285,14 @@ processors:
       separator: ','
       on_failure:
         - remove:
+            tag: remove_ping_federate_audit_role_6dd3a91d
             field: ping_federate.audit.role
         - append:
+            tag: append_error_message_42e6c8e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ping_federate_audit_role_0480d47b
       field: ping_federate.audit.role
       if: ctx.ping_federate?.audit?.role instanceof List
       ignore_failure: true
@@ -309,8 +318,10 @@ processors:
       if: ctx.ping_federate?.audit?.ip != ''
       on_failure:
         - remove:
+            tag: remove_ping_federate_audit_ip_a526a83c
             field: ping_federate.audit.ip
         - append:
+            tag: append_error_message_179b437b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:

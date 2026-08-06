@@ -2,10 +2,12 @@
 description: Pipeline for processing Mimecast siem_logs.
 processors:
   - drop:
+      tag: drop_d6785451
       description: Ignore want_more placeholder message.
       if: ctx.message == "want_more"
 
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -33,12 +35,15 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
   - drop:
+      tag: drop_9635d6e8
       if: ctx.mimecast?.datetime == null && ctx.mimecast?.timestamp == null
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
 
@@ -49,7 +54,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "v2_pipeline" }}'
       if: ctx.mimecast?.timestamp != null
-      tag: v1_pipeline
+      tag: pipeline_ccc9936e
 
   # Cleanup
   - script:

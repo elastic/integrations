@@ -4,23 +4,28 @@ description: "Agentless pipeline for processing Keeper Security audit events"
 processors:
   # Set ECS version
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: "8.17.0"
 
   # Set basic event fields
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
 
   - set:
+      tag: set_event_category_78b61ddc
       field: event.category
       value: ["authentication", "web"]
   - set:
+      tag: set_event_type_60726f2a
       field: event.type
       value: ["access", "info"]
 
   # Handle timestamp conversion - support multiple formats
   - date:
+      tag: date_timestamp_to_timestamp_b79e2b56
       field: timestamp
       target_field: '@timestamp'
       formats:
@@ -34,65 +39,75 @@ processors:
       if: ctx.timestamp != null
       on_failure:
         - append:
+            tag: append_error_message_0c68e68d
             field: error.message
             value: "Failed to parse timestamp: {{{timestamp}}}"
- 
+
   - set:
+      tag: set_user_name_dd8f018f
       field: user.name
       copy_from: username
       ignore_empty_value: true
       description: "Set user name from username"
 
   - set:
-      field: user.email  
+      tag: set_user_email_440d48a9
+      field: user.email
       copy_from: username
       if: ctx.username != null && ctx.username.contains("@")
       description: "If username looks like email, set user.email"
 
   - set:
+      tag: set_source_ip_0ebd235b
       field: source.ip
       copy_from: remote_address
       ignore_empty_value: true
       description: "Set source IP from remote_address"
 
   - geoip:
+      tag: geoip_source_ip_to_source_geo_d3aff80c
       field: source.ip
       target_field: source.geo
       on_failure:
         - append:
+            tag: append_error_message_8118ef25
             field: error.message
             value: "GeoIP lookup failed for source.ip={{{source.ip}}}"
       description: "GeoIP enrichment -> ECS source.geo.*"
 
   - set:
+      tag: set_event_action_7e62b17b
       field: event.action
       copy_from: audit_event
       ignore_empty_value: true
       description: "Set event action from audit_event"
 
   - convert:
+      tag: convert_enterprise_id_to_organization_id_4d2a7a07
       field: enterprise_id
       type: string
       target_field: organization.id
       ignore_missing: true
       ignore_failure: true
       description: "Convert enterprise_id to organization fields"
-  
+
   - set:
+      tag: set_user_agent_original_0ba25c09
       field: user_agent.original
       value: "Keeper/{{{client_version}}}"
       ignore_empty_value: true
       description: "Set user agent from client_version"
 
-      
   # Build related fields for correlation
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
       allow_duplicates: false
-      
+
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
@@ -100,16 +115,19 @@ processors:
 
   # Set event outcome based on category or audit_event
   - set:
+      tag: set_event_outcome_bf4fe1b8
       field: event.outcome
       value: "success"
       if: ctx.category != null && !ctx.category.contains("fail")
-  
+
   - set:
+      tag: set_event_outcome_5831a510
       field: event.outcome
       value: "failure"
       if: ctx.category != null && ctx.category.contains("fail")
 
   - remove:
+      tag: remove_timestamp_29d0d912
       field: timestamp
       ignore_missing: true
       description: "Clean up - remove original timestamp to avoid confusion"
@@ -120,6 +138,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

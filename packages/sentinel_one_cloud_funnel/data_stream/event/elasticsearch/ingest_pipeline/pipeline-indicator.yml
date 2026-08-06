@@ -10,25 +10,31 @@ processors:
       if: ctx.json?.src?.process?.tid != ''
       on_failure:
         - append:
+            tag: append_error_message_114b3353
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_thread_id_95a0158f
       field: process.thread.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.tid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_indicator_category_to_sentinel_one_cloud_funnel_event_indicator_category_cb846a94
       field: json.indicator.category
       target_field: sentinel_one_cloud_funnel.event.indicator.category
       ignore_missing: true
   - rename:
+      tag: rename_json_indicator_description_to_sentinel_one_cloud_funnel_event_indicator_description_2c9c5a20
       field: json.indicator.description
       target_field: sentinel_one_cloud_funnel.event.indicator.description
       ignore_missing: true
   - rename:
+      tag: rename_json_indicator_metadata_to_sentinel_one_cloud_funnel_event_indicator_metadata_2189b464
       field: json.indicator.metadata
       target_field: sentinel_one_cloud_funnel.event.indicator.metadata
       ignore_missing: true
   - rename:
+      tag: rename_json_indicator_name_to_sentinel_one_cloud_funnel_event_indicator_name_d837b6a0
       field: json.indicator.name
       target_field: sentinel_one_cloud_funnel.event.indicator.name
       ignore_missing: true
@@ -41,6 +47,7 @@ processors:
       if: ctx.json?.src?.process != null && ctx.json.src.process['isStoryline™Root'] != ''
       on_failure:
         - append:
+            tag: append_error_message_4efa3827
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -52,13 +59,16 @@ processors:
       if: ctx.json?.src?.process?.parent != null && ctx.json.src.process.parent['isStoryline™Root'] != ''
       on_failure:
         - append:
+            tag: append_error_message_88005829
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_Storyline™_id_to_sentinel_one_cloud_funnel_event_src_process_parent_storyline_tm_id_9a709a5f
       field: json.src.process.parent.Storyline™.id
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.storyline_tm_id
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_Storyline™_id_to_sentinel_one_cloud_funnel_event_src_process_storyline_tm_id_f075c2d7
       field: json.src.process.Storyline™.id
       target_field: sentinel_one_cloud_funnel.event.src.process.storyline_tm_id
       ignore_missing: true
@@ -69,3 +79,11 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,21 +2,26 @@
 description: Pipeline for Lyve Cloud
 processors:
   - drop:
+      tag: drop_e829390e
       description: Drop any logs that are not audit.
       if: ctx?.log?.file?.path == null || !ctx.log.file.path.contains("/S3")
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: "message"
       target_field: "event.original"
       ignore_missing: true
       if: ctx.event?.original == null
   - pipeline:
+      tag: pipeline_cc3554b9
       description: Sends audit logs to their pipeline.
       name: '{{ IngestPipeline "audit_lc" }}'
       if: ctx?.log?.file?.path != null && ctx.log.file.path.contains("/S3")
   - fingerprint:
+      tag: fingerprint_d8228bd1
       description: Create a custom document id for deduplication.
       target_field: _id
       fields:

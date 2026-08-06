@@ -13,6 +13,7 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_a6172163
       description: Use 'event.original' if present (e.g. when reprocessing), otherwise 'message'.
       field: message
       target_field: event.original
@@ -25,25 +26,32 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
+      tag: append_event_category_557b9332
       field: event.category
       value: malware
       allow_duplicates: false
   - append:
+      tag: append_event_type_3f43a39d
       field: event.type
       value: info
       allow_duplicates: false
   - json:
+      tag: json_event_original_to_panw_cortex_xdr_8d2b549c
       field: event.original
       target_field: panw_cortex.xdr
   - drop:
+      tag: drop_c1f77990
       if: ctx.panw_cortex?.xdr?.reply?.result_count == 0
   - fingerprint:
+      tag: fingerprint_5573d0b8
       fields:
         - panw_cortex.xdr.creation_time
         - panw_cortex.xdr.modification_time
@@ -51,84 +59,102 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - date:
+      tag: date_panw_cortex_xdr_creation_time_to_panw_cortex_xdr_creation_time_666fca52
       field: panw_cortex.xdr.creation_time
       target_field: panw_cortex.xdr.creation_time
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.creation_time != null
   - date:
+      tag: date_panw_cortex_xdr_resolved_timestamp_to_panw_cortex_xdr_resolved_timestamp_90489354
       field: panw_cortex.xdr.resolved_timestamp
       target_field: panw_cortex.xdr.resolved_timestamp
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.resolved_timestamp != null
   - date:
+      tag: date_panw_cortex_xdr_modification_time_to_panw_cortex_xdr_modification_time_92a41899
       field: panw_cortex.xdr.modification_time
       target_field: panw_cortex.xdr.modification_time
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
+      tag: set_event_created_f24032fa
       field: event.created
       copy_from: panw_cortex.xdr.creation_time
   - set:
+      tag: set_timestamp_271c16de
       field: "@timestamp"
       copy_from: panw_cortex.xdr.modification_time
       if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
+      tag: set_event_severity_8fa551aa
       field: event.severity
       value: 0
       if: ctx.panw_cortex?.xdr?.severity == "unknown"
   - set:
+      tag: set_event_severity_dc82f1ca
       field: event.severity
       value: 1
       if: ctx.panw_cortex?.xdr?.severity == "informational"
   - set:
+      tag: set_event_severity_4987ec40
       field: event.severity
       value: 2
       if: ctx.panw_cortex?.xdr?.severity == "low"
   - set:
+      tag: set_event_severity_337f7362
       field: event.severity
       value: 3
       if: ctx.panw_cortex?.xdr?.severity == "medium"
   - set:
+      tag: set_event_severity_a870e6fa
       field: event.severity
       value: 4
       if: ctx.panw_cortex?.xdr?.severity == "high"
   - set:
+      tag: set_event_severity_b1bedd26
       field: event.severity
       value: 5
       if: ctx.panw_cortex?.xdr?.severity == "critical"
   - rename:
+      tag: rename_panw_cortex_xdr_incident_id_to_event_id_cad292d1
       field: panw_cortex.xdr.incident_id
       target_field: event.id
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_description_to_event_reason_91664e45
       field: panw_cortex.xdr.description
       target_field: event.reason
       ignore_missing: true
       if: ctx.panw_cortex?.xdr?.description instanceof String
       override: true
   - set:
+      tag: set_related_hosts_7b889fc4
       field: related.hosts
       copy_from: panw_cortex.xdr.hosts
       if: ctx.panw_cortex?.xdr?.hosts != null
   - set:
+      tag: set_related_user_4f2c73e6
       field: related.user
       copy_from: panw_cortex.xdr.users
       if: ctx.panw_cortex?.xdr?.users != null
   - gsub:
+      tag: gsub_related_hosts_8c0d27ac
       field: related.hosts
       pattern: ":.*"
       replacement: ""
       if: ctx.related?.hosts != null
   - gsub:
+      tag: gsub_related_user_caf99d20
       field: related.user
       pattern: '.*\\'
       replacement: ""
       if: ctx.related?.user != null
   - script:
+      tag: script_93c0aaf9
       if: ctx.panw_cortex?.xdr?.mitre_techniques_ids_and_names != null
       lang: painless
       description: "Extract Mitre Techniques and append it to Threat ECS fields"
@@ -157,6 +183,7 @@ processors:
           addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
         }
   - script:
+      tag: script_98eae421
       if: ctx.panw_cortex?.xdr?.mitre_tactics_ids_and_names != null
       lang: painless
       description: "Extract Mitre Tactics and append it to Threat ECS fields"
@@ -185,20 +212,24 @@ processors:
             addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
         }
   - set:
+      tag: set_threat_framework_5b18ca5e
       field: threat.framework
       value: "MITRE ATT&CK"
       if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_host_979ac57c
       field: related.host
       value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - foreach:
+      tag: foreach_panw_cortex_xdr_tags_071d6bfe
       field: panw_cortex.xdr.tags
       if: ctx.panw_cortex?.xdr?.tags != null
       processor:
@@ -207,6 +238,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - script:
+      tag: script_7e38081f
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -224,6 +256,7 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_55e6d391
       field:
         - panw_cortex.xdr.severity
         - panw_cortex.xdr.tags
