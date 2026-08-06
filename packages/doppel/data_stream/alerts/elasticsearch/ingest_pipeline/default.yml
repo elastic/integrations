@@ -12,22 +12,26 @@ processors:
       tag: remove_agentless_metadata
 
   - rename:
+      tag: rename_message_to_raw_message_d5239467
       field: message
       target_field: raw_message
       ignore_missing: true
 
   - set:
+      tag: set_event_original_1d0bcc35
       field: event.original
       copy_from: raw_message
       ignore_failure: true
       ignore_empty_value: true
 
   - json:
+      tag: json_raw_message_1c41aed4
       field: raw_message
       add_to_root: true
       ignore_failure: true
 
   - script:
+      tag: script_6c432215
       if: ctx.tags instanceof List
       lang: painless
       ignore_failure: true
@@ -41,9 +45,7 @@ processors:
           }
         }
         ctx.tags = flatTags;
-
-
-# --- SEVERITY CONVERSION ---
+  # --- SEVERITY CONVERSION ---
   - script:
       tag: convert_severity
       if: ctx.severity instanceof String
@@ -66,9 +68,9 @@ processors:
           ctx.event.severity = 5; 
           ctx.labels.severity = 'Unknown';
         }
-
   # --- TIMESTAMP LOGIC 
   - date:
+      tag: date_last_activity_timestamp_to_timestamp_792d0ad3
       if: ctx.last_activity_timestamp != null
       field: last_activity_timestamp
       target_field: "@timestamp"
@@ -79,6 +81,7 @@ processors:
       ignore_failure: true
 
   - date:
+      tag: date_last_activity_timestamp_to_doppel_alert_updated_at_9f810625
       if: ctx.last_activity_timestamp != null
       field: last_activity_timestamp
       target_field: "doppel.alert_updated_at"
@@ -89,6 +92,7 @@ processors:
       ignore_failure: true
 
   - date:
+      tag: date_created_at_to_event_created_e58e05fb
       if: ctx.created_at != null
       field: created_at
       target_field: "event.created"
@@ -98,9 +102,9 @@ processors:
         - ISO8601
       ignore_failure: true
 
-
   # --- Message Logic ---
   - set:
+      tag: set_doppel_notes_675f0342
       if: ctx.notes != null
       field: doppel.notes
       copy_from: notes
@@ -109,99 +113,115 @@ processors:
 
   # --- MAPPING DIRECTLY 
   - set:
+      tag: set_event_id_7d92b20a
       field: event.id
       copy_from: id
       ignore_failure: true
-      ignore_empty_value: true 
-# --- Conditional Entity Mapping based on Product ---
-  - set: 
+      ignore_empty_value: true
+  # --- Conditional Entity Mapping based on Product ---
+  - set:
+      tag: set_threat_indicator_name_5a9b85ad
       if: ctx.product == 'telco'
       field: threat.indicator.name
       copy_from: entity
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
-  - set: 
+  - set:
+      tag: set_threat_indicator_url_full_a8a973e4
       if: ctx.product != 'telco'
       field: threat.indicator.url.full
       copy_from: entity
       ignore_failure: true
       ignore_empty_value: true
-      
+
   - set:
+      tag: set_organization_name_f3f02be5
       field: organization.name
       copy_from: brand
       ignore_failure: true
       ignore_empty_value: true
- 
+
   - set:
+      tag: set_doppel_queue_state_02a43be4
       field: doppel.queue_state
       copy_from: queue_state
       ignore_failure: true
       ignore_empty_value: true
- 
+
   - set:
+      tag: set_doppel_entity_state_1d08d47e
       field: doppel.entity_state
       copy_from: entity_state
       ignore_failure: true
       ignore_empty_value: true
- 
+
   - set:
+      tag: set_doppel_product_06734478
       field: doppel.product
       copy_from: product
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
   - set:
+      tag: set_doppel_platform_b5e51d4e
       field: doppel.platform
       copy_from: platform
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
   - set:
+      tag: set_event_provider_ab04c6ca
       field: event.provider
       copy_from: source
       ignore_failure: true
       ignore_empty_value: true
- 
+
   - set:
+      tag: set_event_reference_a6116527
       field: event.reference
       copy_from: screenshot_url
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
   - set:
+      tag: set_event_risk_score_3bd573ae
       field: event.risk_score
       copy_from: score
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
   - set:
+      tag: set_doppel_assignee_d7b86b92
       field: doppel.assignee
       copy_from: assignee
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
   - set:
+      tag: set_event_url_cd1bff04
       field: event.url
       copy_from: doppel_link
       ignore_failure: true
       ignore_empty_value: true
- 
+
   - set:
+      tag: set_doppel_uploaded_by_aa2f79da
       field: doppel.uploaded_by
       copy_from: uploaded_by
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
   - set:
+      tag: set_labels_audit_logs_7757ad41
       field: labels.audit_logs
       copy_from: audit_logs
       ignore_failure: true
-      ignore_empty_value: true 
+      ignore_empty_value: true
 
-# --- Base Fallback: Preserve Raw Content ---
+  # --- Base Fallback: Preserve Raw Content ---
   - set:
+      tag: set_labels_entity_content_1df8b3e1
       field: labels.entity_content
       copy_from: entity_content
       ignore_failure: true
@@ -210,6 +230,7 @@ processors:
   # --- Dynamic Entity Content Mapping ---
   # 1. Domains (root_domain)
   - set:
+      tag: set_threat_indicator_url_domain_c69d34a4
       field: threat.indicator.url.domain
       copy_from: entity_content.root_domain.domain
       ignore_failure: true
@@ -229,11 +250,13 @@ processors:
       if: ctx.threat?.indicator?.ip != null
 
   - set:
+      tag: set_doppel_domain_registrar_24afc58c
       field: doppel.domain.registrar
       copy_from: entity_content.root_domain.registrar
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_doppel_domain_hosting_provider_ed5494dc
       field: doppel.domain.hosting_provider
       copy_from: entity_content.root_domain.hosting_provider
       ignore_failure: true
@@ -241,50 +264,57 @@ processors:
 
   # 2. Telco
   - set:
+      tag: set_doppel_telco_country_code_e1765623
       field: doppel.telco.country_code
       copy_from: entity_content.telco.country_code
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_telco_provider_96cd707f
       field: doppel.telco.provider
       copy_from: entity_content.telco.telco_provider
       ignore_failure: true
       ignore_empty_value: true
 
-
   # 3. Social Media User (Mapped to ECS User fields)
   - set:
+      tag: set_user_name_18913cc8
       field: user.name
       copy_from: entity_content.social_media_user.slug
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_user_full_name_e59833fb
       field: user.full_name
       copy_from: entity_content.social_media_user.profile_display_name
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_user_id_59c8ff92
       field: user.id
       copy_from: entity_content.social_media_user.profile_id
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_social_profile_url_8f3cb83f
       field: doppel.social.profile_url
       copy_from: entity_content.social_media_user.profile_display_url
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_social_profile_image_url_8c74b074
       field: doppel.social.profile_image_url
       copy_from: entity_content.social_media_user.profile_image_url
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_social_num_followers_e26ea514
       field: doppel.social.num_followers
       copy_from: entity_content.social_media_user.num_followers
       ignore_failure: true
@@ -292,24 +322,28 @@ processors:
 
   # 4. Mobile App
   - set:
+      tag: set_doppel_app_title_e70c9130
       field: doppel.app.title
       copy_from: entity_content.mobile_app.title
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_app_platform_eb4d73f2
       field: doppel.app.platform
       copy_from: entity_content.mobile_app.platform_name
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_app_bundle_id_73b09568
       field: doppel.app.bundle_id
       copy_from: entity_content.mobile_app.bundle_id
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_app_developer_name_063c1902
       field: doppel.app.developer_name
       copy_from: entity_content.mobile_app.developer_name
       ignore_failure: true
@@ -317,24 +351,28 @@ processors:
 
   # 5. Ecommerce
   - set:
+      tag: set_doppel_ecommerce_title_47d84e23
       field: doppel.ecommerce.title
       copy_from: entity_content.ecommerce.title
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_ecommerce_seller_name_79585dd9
       field: doppel.ecommerce.seller_name
       copy_from: entity_content.ecommerce.seller_name
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_ecommerce_price_3b306cb1
       field: doppel.ecommerce.price
       copy_from: entity_content.ecommerce.price
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_ecommerce_num_units_5c3a32e7
       field: doppel.ecommerce.num_units
       copy_from: entity_content.ecommerce.num_units
       ignore_failure: true
@@ -342,53 +380,63 @@ processors:
 
   # 6. darkweb mapping
   - set:
+      tag: set_user_email_5dba0b43
       field: user.email
       copy_from: entity_content.cred_leaks.email
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_darkweb_credential_url_30669b96
       field: doppel.darkweb.credential_url
       copy_from: entity_content.cred_leaks.credential_url
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_darkweb_leak_name_477e8d68
       field: doppel.darkweb.leak_name
       copy_from: entity_content.cred_leaks.leak_name
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_doppel_darkweb_cred_leaks_password_f94d2f22
       field: doppel.darkweb.cred_leaks_password
       value: "[REDACTED]"
       if: ctx?.entity_content?.cred_leaks?.password != null
 
   # --- Hardcoded ECS Values ---
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
 
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
 
   - set:
+      tag: set_event_dataset_09bb3f1b
       field: event.dataset
       value: "doppel.alerts"
 
   - set:
+      tag: set_event_module_8fdeba6e
       field: event.module
       value: "doppel"
 
   # --- Additional routing for dashboarding ---
   - set:
+      tag: set_url_original_dd35b10b
       field: url.original
       copy_from: entity
       ignore_failure: true
       ignore_empty_value: true
 
   - set:
+      tag: set_url_domain_d9c6d90b
       field: url.domain
       copy_from: entity_content.root_domain.domain
       ignore_failure: true
@@ -407,14 +455,16 @@ processors:
 
   # --- (Ledger Style: Creates new row on update) ---
   - fingerprint:
+      tag: fingerprint_3e374f5f
       fields:
         - event.id
         - last_activity_timestamp
       target_field: _id
       method: SHA-256
 
-# --- Safely preserve Doppel's real tags ---
+  # --- Safely preserve Doppel's real tags ---
   - set:
+      tag: set_doppel_tags_f7c28957
       if: ctx.containsKey('tags') && ctx.tags != null
       field: doppel.tags
       copy_from: tags
@@ -423,6 +473,7 @@ processors:
 
   # --- Give Elastic the root tags array for its system requirements ---
   - set:
+      tag: set_tags_3a411f0d
       field: tags
       value:
         - preserve_original_event
@@ -430,6 +481,7 @@ processors:
 
   # --- Final Cleanup ---
   - remove:
+      tag: remove_ed249bf5
       field:
         - raw_message
         - id

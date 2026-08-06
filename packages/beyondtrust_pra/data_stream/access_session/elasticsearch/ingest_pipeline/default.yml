@@ -39,6 +39,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -114,6 +115,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aca9662b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -136,6 +138,7 @@ processors:
       if: ctx.json?.destination?.private_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_95f2cce3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -151,6 +154,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_703899d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -173,6 +177,7 @@ processors:
       if: ctx.json?.destination?.public_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_6b261a7f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -193,6 +198,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1da7a49a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -227,6 +233,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a93501ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -281,6 +288,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -290,13 +298,14 @@ processors:
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: map_event_category_and_event_type_from_event_action
       lang: painless
       description: Map event.category and event.type from event.action
-      if : ctx.event?.action != null
+      if: ctx.event?.action != null
       params:
         'command-shell-session-started':
           category:
@@ -310,18 +319,18 @@ processors:
             - user
         'conference-member-departed':
           category:
-            -  iam
+            - iam
           type:
-            -  user
+            - user
         'conference-member-state-changed':
           category:
-            -  iam
+            - iam
           type:
             - user
             - change
-        'conference-owner-changed':	
+        'conference-owner-changed':
           category:
-            -  iam
+            - iam
           type:
             - admin
             - change
@@ -379,7 +388,7 @@ processors:
           type:
             - access
         'registry-imported':
-          category: 
+          category:
             - registry
           type:
             - access
@@ -422,14 +431,14 @@ processors:
           category:
             - configuration
             - iam
-          type: 
+          type:
             - access
         'session-end':
           type:
             - end
         'session-start':
           type:
-            - start 
+            - start
         'system-information-retrieved':
           category:
             - intrusion_detection
@@ -455,6 +464,7 @@ processors:
         ctx.event.category = event_category
       on_failure:
         - append:
+            tag: append_error_message_0a19d334
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -475,6 +485,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_41a41c21
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -551,6 +562,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bfc24c27
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -573,6 +585,7 @@ processors:
       if: ctx.json?.performed_by?.private_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_249704ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -588,6 +601,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_da3294f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -610,6 +624,7 @@ processors:
       if: ctx.json?.performed_by?.public_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_004d21cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -625,6 +640,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b38cf330
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -674,6 +690,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d947a534
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -707,6 +724,7 @@ processors:
       target_field: beyondtrust_pra.access_session.session.command_shell_recordings.command_shell_recording
       ignore_missing: true
   - foreach:
+      tag: foreach_json_session_custom_attributes_custom_attribute_37e09da5
       field: json.session.custom_attributes.custom_attribute
       if: ctx.json?.session?.custom_attributes instanceof Map && ctx.json.session.custom_attributes.custom_attribute instanceof List
       ignore_failure: true
@@ -740,6 +758,7 @@ processors:
       if: ctx.beyondtrust_pra?.access_session?.session?.end_time?.text != null && ctx.beyondtrust_pra.access_session.session.end_time.text != ''
       on_failure:
         - append:
+            tag: append_error_message_4091d4db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -751,6 +770,7 @@ processors:
       if: ctx.json?.session?.end_time?.timestamp != null && ctx.json.session.end_time.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_a0b95b44
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -761,6 +781,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f3a146f3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -771,6 +792,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b05a3385
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -781,6 +803,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_381aa7ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -881,6 +904,7 @@ processors:
       if: ctx.beyondtrust_pra?.access_session?.session?.start_time?.text != null && ctx.beyondtrust_pra.access_session.session.start_time.text != ''
       on_failure:
         - append:
+            tag: append_error_message_c14323df
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -892,9 +916,11 @@ processors:
       if: ctx.json?.session?.start_time?.timestamp != null && ctx.json.session.start_time.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_4801e499
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_system_information_category_3b76d9c4
       field: json.system_information.category
       if: ctx.json?.system_information?.category instanceof List
       ignore_failure: true
@@ -913,6 +939,7 @@ processors:
                   target_field: _ingest._value.text
                   ignore_missing: true
   - foreach:
+      tag: foreach_json_system_information_category_6c1bd1a9
       field: json.system_information.category
       if: ctx.json?.system_information?.category instanceof List
       ignore_failure: true
@@ -930,7 +957,7 @@ processors:
       field: json.system_information.category
       tag: rename_system_information_category
       target_field: beyondtrust_pra.access_session.system_information.category
-      ignore_missing: true  
+      ignore_missing: true
   - date:
       field: json.timestamp
       tag: date_timestamp
@@ -941,6 +968,7 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_7db9b735
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -959,56 +987,67 @@ processors:
       target_field: beyondtrust_pra.access_session.data.name
       ignore_missing: true
   - append:
+      tag: append_related_ip_24525297
       field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip !=null
   - append:
+      tag: append_related_ip_0785bf68
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.nat?.ip !=null
   - append:
+      tag: append_related_ip_76834e46
       field: related.ip
       value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip !=null
   - append:
+      tag: append_related_ip_c95594d3
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip !=null
   - append:
+      tag: append_related_hosts_143ad629
       field: related.hosts
       value: "{{{destination.domain}}}"
       allow_duplicates: false
       if: ctx.destination?.domain !=null
   - append:
+      tag: append_related_hosts_2ff121b3
       field: related.hosts
       value: "{{{source.domain}}}"
       allow_duplicates: false
       if: ctx.source?.domain !=null
   - append:
+      tag: append_related_user_1baad34a
       field: related.user
       value: "{{{destination.user.id}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.id !=null
   - append:
+      tag: append_related_user_0aa39d32
       field: related.user
       value: "{{{destination.user.name}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.name !=null
   - append:
+      tag: append_related_user_279060b5
       field: related.user
       value: "{{{beyondtrust_pra.access_session.performed_by.display_name}}}"
       allow_duplicates: false
       if: ctx.beyondtrust_pra?.access_session?.performed_by?.display_name !=null
   - append:
+      tag: append_related_user_a55dfd52
       field: related.user
       value: "{{{source.user.id}}}"
       allow_duplicates: false
       if: ctx.source?.user?.id !=null
   - append:
+      tag: append_related_user_24d2b2a6
       field: related.user
       value: "{{{source.user.name}}}"
       allow_duplicates: false

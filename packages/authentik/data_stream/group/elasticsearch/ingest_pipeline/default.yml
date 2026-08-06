@@ -28,6 +28,7 @@ processors:
       target_field: authentik.group
       on_failure:
         - append:
+            tag: append_error_message_c2b69e07
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -72,9 +73,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_authentik_group_num_pk_69ed78fc
             field: authentik.group.num_pk
             ignore_missing: true
         - append:
+            tag: append_error_message_f698f937
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -89,12 +92,15 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_authentik_group_is_superuser_fb42b9da
             field: authentik.group.is_superuser
             ignore_missing: true
         - append:
+            tag: append_error_message_b44a071a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_authentik_group_users_f3f6f127
       field: authentik.group.users
       if: ctx.authentik?.group?.users instanceof List
       processor:
@@ -104,6 +110,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_authentik_group_users_5db5f83e
       field: authentik.group.users
       if: ctx.authentik?.group?.users instanceof List
       processor:
@@ -113,6 +120,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_authentik_group_users_8515e5a4
       field: authentik.group.users
       if: ctx.authentik?.group?.users instanceof List
       processor:
@@ -153,6 +161,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

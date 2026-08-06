@@ -2,42 +2,51 @@
 description: Pipeline for parsing Microsoft Entra ID Identity Protection logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - script:
+      tag: script_b08e84a2
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_azure_identityprotection_83fd63ce
       field: event.original
       target_field: azure.identityprotection
   - drop:
+      tag: drop_65d642d2
       description: Drop events that are not AD Identity Protection logs.
       if: ctx?.azure?.identityprotection?.category == null || ctx.azure.identityprotection.category != 'RiskyUsers' && ctx.azure.identityprotection.category != 'UserRiskEvents'
   #
   # Common fields
   #   
   - date:
+      tag: date_azure_identityprotection_time_to_timestamp_a7cbedcf
       field: azure.identityprotection.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -46,39 +55,46 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - ISO8601
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
+      tag: remove_azure_identityprotection_time_7c14431f
       field: azure.identityprotection.time
       ignore_missing: true
   - rename:
+      tag: rename_azure_identityprotection_resourceId_to_azure_resource_id_59af4624
       field: azure.identityprotection.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - convert:
+        tag: convert_azure_identityprotection_callerIpAddress_to_source_ip_5256c97d
         field: azure.identityprotection.callerIpAddress
         target_field: source.ip
         type: ip
         ignore_missing: true
         on_failure:
-        - rename: 
+        - rename:
+            tag: rename_azure_identityprotection_callerIpAddress_to_source_address_4a469f82
             field: azure.identityprotection.callerIpAddress
             target_field: source.address
-            ignore_missing: true 
+            ignore_missing: true
             ignore_failure: true
   - remove:
+      tag: remove_azure_identityprotection_callerIpAddress_ae8bc5b4
       field: azure.identityprotection.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -87,101 +103,122 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - rename:
+      tag: rename_azure_identityprotection_durationMs_to_event_duration_504eaf80
       field: azure.identityprotection.durationMs
       target_field: event.duration
       ignore_missing: true
   - script:
+      tag: script_7f8b9902
       lang: painless
-      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
-        * params.param_nano;}
+      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration * params.param_nano;}
       params:
         param_nano: 1000000
       ignore_failure: true
   - rename:
+      tag: rename_azure_identityprotection_operationName_to_azure_identityprotection_operation_name_9321d5ed
       field: azure.identityprotection.operationName
       target_field: azure.identityprotection.operation_name
       ignore_missing: true
   - convert:
+      tag: convert_azure_identityprotection_operation_name_to_event_action_d07c3cc5
       field: azure.identityprotection.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_azure_identityprotection_operationVersion_to_azure_identityprotection_operation_version_45735e75
       field: azure.identityprotection.operationVersion
       target_field: azure.identityprotection.operation_version
       ignore_missing: true
   - rename:
+      tag: rename_azure_identityprotection_tenantId_to_azure_tenant_id_ea202cb4
       field: azure.identityprotection.tenantId
       target_field: azure.tenant_id
       ignore_missing: true
   - remove:
+      tag: remove_azure_identityprotection_identity_abedabbf
       field: azure.identityprotection.identity
       description: "identity is undocumented, removing it until we know what it is"
       ignore_missing: true
   - remove:
+      tag: remove_azure_identityprotection_Level_bce997d5
       field: azure.identityprotection.Level
       description: "Level is undocumented, removing it until we know what it is"
       ignore_missing: true
   - remove:
+      tag: remove_azure_identityprotection_location_4234cceb
       field: azure.identityprotection.location
       description: "location is undocumented, removing it until we know what it is"
       ignore_missing: true
   - rename:
+      tag: rename_azure_identityprotection_resultSignature_to_azure_identityprotection_result_signature_f9dbf8d5
       field: azure.identityprotection.resultSignature
       target_field: azure.identityprotection.result_signature
       ignore_missing: true
   - rename:
+      tag: rename_azure_identityprotection_correlationId_to_azure_correlation_id_8dd7fbce
       field: azure.identityprotection.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_isDeleted_to_azure_identityprotection_properties_is_deleted_0ebc80c1
      field: azure.identityprotection.properties.isDeleted
      target_field: azure.identityprotection.properties.is_deleted
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_isGuest_to_azure_identityprotection_properties_is_guest_acc6a29d
      field: azure.identityprotection.properties.isGuest
      target_field: azure.identityprotection.properties.is_guest
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_isProcessing_to_azure_identityprotection_properties_is_processing_fb31def9
      field: azure.identityprotection.properties.isProcessing
      target_field: azure.identityprotection.properties.is_processing
      ignore_missing: true
 
   # Risk-related fields   
   - rename:
+     tag: rename_azure_identityprotection_properties_riskType_to_azure_identityprotection_properties_risk_type_8067d557
      field: azure.identityprotection.properties.riskType
      target_field: azure.identityprotection.properties.risk_type
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_riskEventType_to_azure_identityprotection_properties_risk_event_type_7ae6b75d
      field: azure.identityprotection.properties.riskEventType
      target_field: azure.identityprotection.properties.risk_event_type
      description: The type of risk event detected. For more information about each value, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskeventtype-values values.
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_riskState_to_azure_identityprotection_properties_risk_state_1899a423
      field: azure.identityprotection.properties.riskState
      target_field: azure.identityprotection.properties.risk_state
      description: "The state of a detected risky user or sign-in. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue."
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_riskLevel_to_azure_identityprotection_properties_risk_level_aafb2856
      field: azure.identityprotection.properties.riskLevel
      target_field: azure.identityprotection.properties.risk_level
      description: "Level of the detected risk. Possible values are: low, medium, high, hidden, none, unknownFutureValue."
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_riskDetail_to_azure_identityprotection_properties_risk_detail_4177c5e0
      field: azure.identityprotection.properties.riskDetail
      target_field: azure.identityprotection.properties.risk_detail
      ignore_missing: true
      description: "Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue."
   - date:
+      tag: date_azure_identityprotection_properties_lastUpdatedDateTime_to_azure_identityprotection_properties_last_updated_datetime_58940efd
       field: azure.identityprotection.properties.lastUpdatedDateTime
       target_field: azure.identityprotection.properties.last_updated_datetime
       ignore_failure: true
@@ -191,16 +228,18 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
       - "M/d/yyyy h:mm:ss a XXX"
       - "M/d/yyyy h:mm:ss a"
       - "M/d/yyyy H:mm:ss"
   - remove:
+      tag: remove_azure_identityprotection_properties_lastUpdatedDateTime_9fc859f3
       field: azure.identityprotection.properties.lastUpdatedDateTime
       ignore_missing: true
   - date:
+      tag: date_azure_identityprotection_properties_riskLastUpdatedDateTime_to_azure_identityprotection_properties_risk_last_updated_datetime_9b7aaca3
       field: azure.identityprotection.properties.riskLastUpdatedDateTime
       target_field: azure.identityprotection.properties.risk_last_updated_datetime
       ignore_failure: true
@@ -210,42 +249,49 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
       - "M/d/yyyy h:mm:ss a XXX"
       - "M/d/yyyy h:mm:ss a"
       - "M/d/yyyy H:mm:ss"
   - remove:
+      tag: remove_azure_identityprotection_properties_riskLastUpdatedDateTime_e039c168
       field: azure.identityprotection.properties.riskLastUpdatedDateTime
       ignore_missing: true
   #
   # User-related fields
   #
   - rename:
+     tag: rename_azure_identityprotection_properties_userId_to_azure_identityprotection_properties_user_id_563af63c
      field: azure.identityprotection.properties.userId
      target_field: azure.identityprotection.properties.user_id
      description: "Unique ID of the user."
      ignore_missing: true
   - remove:
+     tag: remove_azure_identityprotection_properties_user_id_f4d11262
      description: Drop user_id field if value is null.
      if: ctx?.azure?.identityprotection?.properties?.user_id == null
      field: azure.identityprotection.properties.user_id
      ignore_missing: true
   - set:
+     tag: set_user_id_4fa4875f
      field: user.id
      copy_from: azure.identityprotection.properties.user_id
      ignore_empty_value: true
   - rename:
+     tag: rename_azure_identityprotection_properties_userDisplayName_to_azure_identityprotection_properties_user_display_name_a5beecba
      field: azure.identityprotection.properties.userDisplayName
      target_field: azure.identityprotection.properties.user_display_name
      description: "The user principal name (UPN) of the user."
      ignore_missing: true
   - set:
+     tag: set_user_full_name_8a173d82
      field: user.full_name
      copy_from: azure.identityprotection.properties.user_display_name
      ignore_empty_value: true
   - rename:
+     tag: rename_azure_identityprotection_properties_userPrincipalName_to_azure_identityprotection_properties_user_principal_name_a2fdc28a
      field: azure.identityprotection.properties.userPrincipalName
      target_field: azure.identityprotection.properties.user_principal_name
      description: "The user principal name (UPN) of the user."
@@ -263,24 +309,28 @@ processors:
   # Don't dissect the user email into <user.name>@<user.domain>
   # as the parts are meaningless on their own
   - append:
+      tag: append_related_user_3b2f7fde
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_a621a20e
       field: related.user
       value: '{{{user.full_name}}}'
       if: ctx.user?.full_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+     tag: rename_azure_identityprotection_properties_userType_to_azure_identityprotection_properties_user_type_09ef6e7b
      field: azure.identityprotection.properties.userType
      target_field: azure.identityprotection.properties.user_type
      ignore_missing: true
@@ -288,6 +338,7 @@ processors:
   # Event-related fields
   #
   - date:
+      tag: date_azure_identityprotection_properties_activityDateTime_to_azure_identityprotection_properties_activity_datetime_d85481c5
       field: azure.identityprotection.properties.activityDateTime
       target_field: azure.identityprotection.properties.activity_datetime
       ignore_failure: true
@@ -296,17 +347,19 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
       - "M/d/yyyy h:mm:ss a XXX"
       - "M/d/yyyy h:mm:ss a"
       - "M/d/yyyy H:mm:ss"
   - remove:
+      tag: remove_azure_identityprotection_properties_activityDateTime_8b0a20dd
       field: azure.identityprotection.properties.activityDateTime
       ignore_missing: true
 
   - date:
+      tag: date_azure_identityprotection_properties_detectedDateTime_to_azure_identityprotection_properties_detected_datetime_da7c69d3
       field: azure.identityprotection.properties.detectedDateTime
       target_field: azure.identityprotection.properties.detected_datetime
       ignore_failure: true
@@ -315,40 +368,48 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
       - "M/d/yyyy h:mm:ss a XXX"
       - "M/d/yyyy h:mm:ss a"
       - "M/d/yyyy H:mm:ss"
   - remove:
+      tag: remove_azure_identityprotection_properties_detectedDateTime_ebd288ec
       field: azure.identityprotection.properties.detectedDateTime
       ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_detectionTimingType_to_azure_identityprotection_properties_detection_timing_type_0ca517c8
      field: azure.identityprotection.properties.detectionTimingType
      target_field: azure.identityprotection.properties.detection_timing_type
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_requestId_to_azure_identityprotection_properties_request_id_bbb22055
      field: azure.identityprotection.properties.requestId
      target_field: azure.identityprotection.properties.request_id
      ignore_missing: true
   - rename:
+      tag: rename_azure_identityprotection_properties_correlationId_to_azure_identityprotection_properties_correlation_id_0130fd73
       field: azure.identityprotection.properties.correlationId
       target_field: azure.identityprotection.properties.correlation_id
       ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_tokenIssuerType_to_azure_identityprotection_properties_token_issuer_type_d68d01b8
      field: azure.identityprotection.properties.tokenIssuerType
      target_field: azure.identityprotection.properties.token_issuer_type
      ignore_missing: true
   - rename:
+     tag: rename_azure_identityprotection_properties_ipAddress_to_azure_identityprotection_properties_ip_address_468ce90f
      field: azure.identityprotection.properties.ipAddress
      target_field: azure.identityprotection.properties.ip_address
      ignore_missing: true
   - json:
+      tag: json_azure_identityprotection_properties_additionalInfo_to_azure_identityprotection_properties_additional_info_f2448ee5
       field: azure.identityprotection.properties.additionalInfo
       target_field: azure.identityprotection.properties.additional_info
       ignore_failure: true
   - remove:
+      tag: remove_azure_identityprotection_properties_additionalInfo_bf643f20
       field: azure.identityprotection.properties.additionalInfo
       ignore_missing: true
       if: ctx?.azure.identityprotection.properties?.additional_info != null
@@ -362,19 +423,24 @@ processors:
   # add them back later if needed.
   #
   - remove:
+     tag: remove_azure_identityprotection_properties_resourceTenantId_903d88d6
      field: azure.identityprotection.properties.resourceTenantId
      ignore_missing: true
   - remove:
+     tag: remove_azure_identityprotection_properties_homeTenantId_08b08a9f
      field: azure.identityprotection.properties.homeTenantId
      ignore_missing: true
   - remove:
+     tag: remove_azure_identityprotection_properties_crossTenantAccessType_241f009b
      field: azure.identityprotection.properties.crossTenantAccessType
      ignore_missing: true
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - pipeline:
+      tag: pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
   - set:

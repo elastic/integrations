@@ -29,15 +29,14 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
       tag: append_event_category
       value: iam
-      if: ctx.json?.action?.type != null && !(
-          ctx.json.action.type.contains('APP') || ctx.json.action.type.contains('EXPORT') || ctx.json.action.type.contains('DESIGN')
-          )
+      if: ctx.json?.action?.type != null && !( ctx.json.action.type.contains('APP') || ctx.json.action.type.contains('EXPORT') || ctx.json.action.type.contains('DESIGN') )
   - script:
       description: Append action type values to the event type.
       tag: script_to_append_event_type
@@ -65,6 +64,7 @@ processors:
         ctx.event.put('type', eventType);
       on_failure:
         - append:
+            tag: append_error_message_7a8062a9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -149,6 +149,7 @@ processors:
         ctx.json.action.put('changes', changeArray);
       on_failure:
         - append:
+            tag: append_error_message_5cf6984a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -261,6 +262,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a154cda0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -269,6 +271,7 @@ processors:
       target_field: canva.audit.action.emails
       ignore_missing: true
   - foreach:
+      tag: foreach_canva_audit_action_emails_4ce3bd33
       field: canva.audit.action.emails
       if: ctx.canva?.audit?.action?.emails instanceof List
       processor:
@@ -286,6 +289,7 @@ processors:
         ctx.event.duration = (ctx.json.action.end_timestamp - ctx.json.action.start_timestamp) * 1000000;
       on_failure:
         - append:
+            tag: append_error_message_23d78e1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -298,6 +302,7 @@ processors:
       if: ctx.json?.action?.end_timestamp != null && ctx.json.action.end_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_91191f3e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -371,6 +376,7 @@ processors:
       target_field: canva.audit.action.new_role
       ignore_missing: true
   - foreach:
+      tag: foreach_json_action_oauth_accounts_7143e7c9
       field: json.action.oauth_accounts
       if: ctx.json?.action?.oauth_accounts != null
       processor:
@@ -473,6 +479,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b877a561
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -485,6 +492,7 @@ processors:
       if: ctx.json?.action?.start_timestamp != null && ctx.json.action.start_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_914d3d8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -546,6 +554,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_04dbf96b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -570,6 +579,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -579,6 +589,7 @@ processors:
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -736,6 +747,7 @@ processors:
       if: ctx.json?.context?.ip_address != null && ctx.json.context.ip_address != ''
       on_failure:
         - append:
+            tag: append_error_message_c2f5c15a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -744,6 +756,7 @@ processors:
       copy_from: canva.audit.context.ip_address
       ignore_empty_value: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
@@ -810,11 +823,13 @@ processors:
       value: unknown
       if: ctx.canva?.audit?.outcome?.result != null
   - set:
+      tag: set_event_outcome_69ac48db
       field: event.outcome
       value: failure
       if: ctx.canva?.audit?.outcome?.result == 'DENIED'
       override: true
   - set:
+      tag: set_event_outcome_68e46ea3
       field: event.outcome
       value: success
       if: ctx.canva?.audit?.outcome?.result == 'PERMITTED'
@@ -987,6 +1002,7 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_03cbfc02
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1049,6 +1065,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

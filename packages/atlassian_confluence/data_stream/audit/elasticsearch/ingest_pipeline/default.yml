@@ -2,9 +2,11 @@
 description: Pipeline for processing Atlassian Confluence audit logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,11 +18,14 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_3b8f7055
       if: (ctx.json?.entities instanceof List && ctx.json.entities.length == 0) || (ctx.json?.results instanceof List && ctx.json.results.length == 0)
   - script:
+      tag: script_813978ed
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -46,21 +51,26 @@ processors:
         }
         handleMap(ctx.json);
   - pipeline:
+      tag: pipeline_a9467602
       name: '{{ IngestPipeline "cloud" }}'
       if: "ctx._config?.atlassian_cloud != null"
   - pipeline:
+      tag: pipeline_601611b9
       name: '{{ IngestPipeline "self-hosted" }}'
       if: "ctx._config?.atlassian_cloud == null"
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -69,14 +79,17 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - script:
+      tag: script_321eb5ed
       lang: painless
       description: Add ECS categorization
       params:
@@ -298,6 +311,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
+      tag: script_a2f1bb87
       lang: painless
       description: Add ECS User fields
       if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey) || ['Users and groups'].contains(ctx.confluence?.audit?.type?.category)"
@@ -408,32 +422,38 @@ processors:
           }
         }
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_be5e9d5c
       field: related.user
       value: '{{{user.target.name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
+      tag: append_related_user_d2acb44a
       field: related.user
       value: '{{{user.changes.name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.name != null
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - remove:
+      tag: remove_66a033dd
       field:
         - json
         - _tmp
         - _config
       ignore_missing: true
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |

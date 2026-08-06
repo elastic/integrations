@@ -10,51 +10,59 @@ processors:
 ##############################################################
 
 - append:
+    tag: append_event_category_7ba2f996
     field: event.category
     value: network
     allow_duplicates: false
     media_type: text/plain
 
 - append:
+    tag: append_event_type_9f934114
     field: event.type
     value: info
     allow_duplicates: false
     media_type: text/plain
 
+
 #############################################################
 # https://www.elastic.co/guide/en/ecs/current/ecs-host.html #
 #############################################################
-
 - set:
+    tag: set_host_name_87851a2e
     if: ctx.bbot?.host != null
     copy_from: bbot.host
     field: host.name
     ignore_empty_value: true
 
 - set:
+    tag: set_host_name_4fa64527
     if: ctx.bbot?.data?.DNS_NAME != null
     copy_from: bbot.data.DNS_NAME
     field: host.name
     ignore_empty_value: true
 
 - set:
+    tag: set__tmp_host_90233318
     if: ctx.bbot?.data?.DNS_NAME != null
     copy_from: bbot.data.DNS_NAME
     field: _tmp.host
     ignore_empty_value: true
 
 - append:
+    tag: append_host_ip_974bcf8b
     field: host.ip
     value: '{{{bbot.data.IP_ADDRESS}}}'
     if: ctx.bbot?.data?.IP_ADDRESS != null
     allow_duplicates: false
 
 - geoip:
+    tag: geoip_bbot_data_IP_ADDRESS_to_host_geo_f8ea822e
     field: bbot.data.IP_ADDRESS
     target_field: host.geo
     ignore_missing: true
 
 - geoip:
+    tag: geoip_bbot_data_IP_ADDRESS_to_host_as_8b7e1ff9
     database_file: GeoLite2-ASN.mmdb
     field: bbot.data.IP_ADDRESS
     target_field: host.as
@@ -64,11 +72,13 @@ processors:
     ignore_missing: true
 
 - rename:
+    tag: rename_host_as_asn_to_host_as_number_7622e953
     field: host.as.asn
     target_field: host.as.number
     ignore_missing: true
 
 - rename:
+    tag: rename_host_as_organization_name_to_host_as_organization_name_7b13ca3d
     field: host.as.organization_name
     target_field: host.as.organization.name
     ignore_missing: true
@@ -80,30 +90,35 @@ processors:
 # NOTE: Kibana dashboard "BBOT Dashboard" currently displays related.hosts and assumes this is both host names and IP's
 # TODO: split names (related.hosts) and IP's (related.ip) and adjust visualisation to combine related.hosts and related.ip?
 - set:
+    tag: set_related_hosts_7bc526d1
     if: ctx.bbot?.resolved_hosts != null
     copy_from: bbot.resolved_hosts
     field: related.hosts
     ignore_empty_value: true
 
 - append:
+    tag: append_related_hosts_018c6d37
     field: related.hosts
     value: '{{{bbot.host}}}'
     if: ctx.bbot?.host != null
     allow_duplicates: false
 
 - append:
+    tag: append_related_hosts_a943f334
     field: related.hosts
     value: '{{{bbot.data.DNS_NAME}}}'
     if: ctx.bbot?.data?.DNS_NAME != null
     allow_duplicates: false
 
 - append:
+    tag: append_related_ip_c81e38ac
     field: related.ip
     value: '{{{bbot.data.IP_ADDRESS}}}'
     if: ctx.bbot?.data?.IP_ADDRESS != null
     allow_duplicates: false
 
 - foreach:
+    tag: foreach_bbot_dns_children_A_dc01ee03
     field: bbot.dns_children.A
     processor:
         append:
@@ -113,6 +128,7 @@ processors:
     ignore_missing: true
 
 - foreach:
+    tag: foreach_bbot_dns_children_AAAA_43d266ba
     field: bbot.dns_children.AAAA
     processor:
         append:
@@ -122,6 +138,7 @@ processors:
     ignore_missing: true
 
 - foreach:
+    tag: foreach_bbot_dns_children_CNAME_50473e6c
     field: bbot.dns_children.CNAME
     processor:
         append:
@@ -131,6 +148,7 @@ processors:
     ignore_missing: true
 
 - foreach:
+    tag: foreach_bbot_dns_children_MX_6e6021fb
     field: bbot.dns_children.MX
     processor:
         append:
@@ -140,6 +158,7 @@ processors:
     ignore_missing: true
 
 - foreach:
+    tag: foreach_bbot_dns_children_NS_c84c4d95
     field: bbot.dns_children.NS
     processor:
         append:
@@ -149,6 +168,7 @@ processors:
     ignore_missing: true
 
 - foreach:
+    tag: foreach_bbot_dns_children_PTR_116fe738
     field: bbot.dns_children.PTR
     processor:
         append:
@@ -158,6 +178,7 @@ processors:
     ignore_missing: true
 
 - foreach:
+    tag: foreach_bbot_dns_children_SOA_81cc0c1d
     field: bbot.dns_children.SOA
     processor:
         append:
@@ -172,18 +193,21 @@ processors:
 
 # NOTE: this should probably be a convert not a set.
 - set:
+    tag: set_url_port_9e989e3b
     if: ctx.bbot?.data?.PROTOCOL?.port != null
     copy_from: bbot.data.PROTOCOL.port
     field: url.port
     ignore_empty_value: true
 
 - set:
+    tag: set__tmp_url_042aef15
     field: _tmp.url
     value: '{{{bbot.data.URL}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.URL != null
 
 - set:
+    tag: set__tmp_url_4d0436c5
     field: _tmp.url
     value: '{{{bbot.data.URL_UNVERIFIED}}}'
     media_type: 'text/plain'
@@ -191,47 +215,55 @@ processors:
 
 # TODO: iterate a list of known event types and extract bbot.data.EVENT_TYPE.url
 - set:
+    tag: set__tmp_url_28a39488
     field: _tmp.url
     value: '{{{bbot.data.FINDING.url}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.FINDING?.url != null
 
 - set:
+    tag: set__tmp_url_20422220
     field: _tmp.url
     value: '{{{bbot.data.SOCIAL.url}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.SOCIAL?.url != null
 
 - set:
+    tag: set__tmp_url_10c2e60a
     field: _tmp.url
     value: '{{{bbot.data.STORAGE_BUCKET.url}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.STORAGE_BUCKET?.url != null
 
 - set:
+    tag: set__tmp_url_c8931a7e
     field: _tmp.url
     value: '{{{bbot.data.TECHNOLOGY.url}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.TECHNOLOGY?.url != null
 
 - set:
+    tag: set__tmp_url_5108d764
     field: _tmp.url
     value: '{{{bbot.data.VULNERABILITY.url}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.VULNERABILITY?.url != null
 
 - set:
+    tag: set__tmp_url_f561d660
     field: _tmp.url
     value: '{{{bbot.data.WAF.url}}}'
     media_type: 'text/plain'
     if: ctx.bbot?.data?.WAF?.url != null
 
 - set:
+    tag: set__tmp_url_ff0a2593
     field: _tmp.url
     value: '{{{bbot.data.WEBSCREENSHOT.url}}}'
     if: ctx.bbot?.data?.WEBSCREENSHOT?.url != null
 
 - uri_parts:
+    tag: uri_parts__tmp_url_to_url_3292804a
     field: _tmp.url
     target_field: url
     keep_original: true
@@ -239,6 +271,7 @@ processors:
 
 # NOTE: Kibana dashboard "BBOT Dashboard" currently displays url.domain and url.full
 - append:
+    tag: append_url_full_2862611f
     field: url.full
     value: '{{{url.original}}}'
     if: ctx.url?.original != null
@@ -246,6 +279,7 @@ processors:
 
 # TODO: iterate a list of event types and extract bbot.data.EVENT_TYPE.host
 - set:
+    tag: set__tmp_host_b9125d9b
     field: _tmp.host
     description: Extract host name from FINDING events
     value: '{{{bbot.data.FINDING.host}}}'
@@ -253,6 +287,7 @@ processors:
     if: ctx.bbot?.data?.FINDING?.host != null
 
 - set:
+    tag: set__tmp_host_f27adeb6
     field: _tmp.host
     description: Extract host name from PROTOCOL events
     value: '{{{bbot.data.PROTOCOL.host}}}'
@@ -260,6 +295,7 @@ processors:
     if: ctx.bbot?.data?.PROTOCOL?.host != null
 
 - set:
+    tag: set__tmp_host_4a7e76f8
     field: _tmp.host
     description: Extract host name from TECHNOLOGY events
     value: '{{{bbot.data.TECHNOLOGY.host}}}'
@@ -267,6 +303,7 @@ processors:
     if: ctx.bbot?.data?.TECHNOLOGY?.host != null
 
 - set:
+    tag: set__tmp_host_78e4d19a
     description: Extract host name from VULNERABILITY events
     field: _tmp.host
     value: '{{{bbot.data.VULNERABILITY.host}}}'
@@ -274,6 +311,7 @@ processors:
     if: ctx.bbot?.data?.VULNERABILITY?.host != null
 
 - set:
+    tag: set__tmp_host_a8483c5a
     description: Extract host name from WAF events
     field: _tmp.host
     value: '{{{bbot.data.WAF.host}}}'
@@ -283,18 +321,21 @@ processors:
 # NOTE: Kibana dashboard "BBOT Dashboard" currently displays url.domain
 # TODO: migrate use of url.domain to host.name or more appropriate ECS field?
 - set:
+    tag: set_url_domain_1e0382b8
     field: url.domain
     value: '{{{_tmp.host}}}'
     media_type: 'text/plain'
     if: ctx._tmp?.host != null
 
 - append:
+    tag: append_related_hosts_e5210c4d
     field: related.hosts
     value: '{{{url.domain}}}'
     if: ctx.url?.domain != null
     allow_duplicates: false
 
 - registered_domain:
+    tag: registered_domain_url_domain_to_url_ca99c8cd
     field: url.domain
     target_field: url
     ignore_missing: true
@@ -305,6 +346,7 @@ processors:
 
 # NOTE: Kibana dashboard "BBOT Dashboard" currently displays vulnerability.severity
 - set:
+    tag: set_vulnerability_severity_5d577936
     if: ctx.bbot?.data?.VULNERABILITY?.severity != null
     copy_from: bbot.data.VULNERABILITY.severity
     field: vulnerability.severity

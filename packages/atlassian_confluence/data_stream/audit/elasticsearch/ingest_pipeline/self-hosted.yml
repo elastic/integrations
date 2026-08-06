@@ -2,31 +2,38 @@
 description: Pipeline for processing self-hosted Atlassian Confluence audit logs.
 processors:
 - set:
+    tag: set__tmp_timestamp_241b1bef
     field: _tmp.timestamp
     copy_from: json.timestamp
     if: ctx.json?.timestamp != null && ctx.json.timestamp instanceof String
 - set:
+    tag: set__tmp_timestamp_50f4e06f
     field: _tmp.timestamp
     value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
     if: ctx.json?.timestamp != null && ctx.json.timestamp instanceof Map && ctx.json.timestamp?.epochSecond != null && ctx.json.timestamp?.nano != null
 - date:
+    tag: date__tmp_timestamp_af8e73bf
     field: _tmp.timestamp
     formats:
       - UNIX
       - ISO8601
 - rename:
+    tag: rename_json_source_to_source_address_091b5798
     field: json.source
     target_field: source.address
     ignore_missing: true
 - rename:
+    tag: rename_json_author_id_to_user_id_cf7e3d88
     field: json.author.id
     target_field: user.id
     ignore_missing: true
 - rename:
+    tag: rename_json_author_name_to_user_full_name_7170e414
     field: json.author.name
     target_field: user.full_name
     ignore_missing: true
 - grok:
+    tag: grok_json_author_uri_cf5fba4a
     field: json.author.uri
     ignore_missing: true
     ignore_failure: true
@@ -34,48 +41,62 @@ processors:
     patterns:
       - '\?username=%{USER:user.name}$'
 - rename:
+    tag: rename_json_auditType_to_confluence_audit_type_a2af353e
     field: json.auditType
     target_field: confluence.audit.type
     ignore_missing: true
 - rename:
+    tag: rename_json_type_to_confluence_audit_type_49308bab
     field: json.type
     target_field: confluence.audit.type
     ignore_missing: true
 - rename:
+    tag: rename_json_method_to_confluence_audit_method_1edde5a1
     field: json.method
     target_field: confluence.audit.method
     ignore_missing: true
 - rename:
+    tag: rename_json_system_to_service_address_67c6f11c
     field: json.system
     target_field: service.address
     ignore_missing: true
 - uri_parts:
+    tag: uri_parts_service_address_to__tmp_service_9d835542
     field: service.address
     target_field: _tmp.service
     ignore_failure: true
     if: ctx.service?.address != null
 - rename:
+    tag: rename_json_extraAttributes_to_confluence_audit_extra_attributes_5d1c0250
     field: json.extraAttributes
     target_field: confluence.audit.extra_attributes
     ignore_missing: true
 - rename:
+    tag: rename_json_changedValues_to_confluence_audit_changed_values_258b0a5e
     field: json.changedValues
     target_field: confluence.audit.changed_values
     ignore_missing: true
 - rename:
+    tag: rename_json_affectedObjects_to_confluence_audit_affected_objects_a38bf904
     field: json.affectedObjects
     target_field: confluence.audit.affected_objects
     ignore_missing: true
 - set:
+    tag: set_event_action_a25126f9
     field: event.action
     copy_from: confluence.audit.type.actionI18nKey
     ignore_empty_value: true
 - append:
+    tag: append_related_hosts_95c097cc
     field: related.hosts
     value: '{{{_tmp.service.domain}}}'
     allow_duplicates: false
     if: ctx._tmp?.service?.domain != null
 on_failure:
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - set:
     field: event.kind
     value: pipeline_error

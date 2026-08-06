@@ -3,44 +3,54 @@ description: Pipeline for CyberArk PTA
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_action_aa112b9f
       field: event.action
       value: "{{{cef.extensions.deviceCustomString5}}}"
       if: "ctx?.cef?.extensions?.deviceCustomString5 != null && ctx?.cef?.extensions?.deviceCustomString5 != ''"
   - set:
+      tag: set_timestamp_678507ba
       field: '@timestamp'
       value: "{{{cef.extensions.deviceCustomDate1}}}"
       ignore_empty_value: true
       override: true
   - set:
+      tag: set_event_id_407f48a3
       field: event.id
       value: "{{{cef.extensions.deviceCustomString2}}}"
       if: "ctx?.cef?.extensions?.deviceCustomString2 != null && ctx?.cef?.extensions?.deviceCustomString2 != ''"
   - set:
+      tag: set_event_reference_84272f90
       field: event.reference
       value: "{{{cef.extensions.deviceCustomString3}}}"
       if: "ctx?.cef?.extensions?.deviceCustomString3 != null && ctx?.cef?.extensions?.deviceCustomString3 != ''"
   - set:
+      tag: set_event_url_477050af
       field: event.url
       value: "{{{cef.extensions.deviceCustomString4}}}"
       if: "ctx?.cef?.extensions?.deviceCustomString4 != null && ctx?.cef?.extensions?.deviceCustomString4 != ''"
-  - set: 
+  - set:
+      tag: set_cyberark_pta_log_event_type_19b30ce3
       field: cyberark_pta.log.event_type
       value: "{{{cef.device.event_class_id}}}"
       if: "ctx?.cef?.device?.event_class_id != null && ctx?.cef?.device?.event_class_id != ''"
   - grok:
+      tag: grok_event_original_4a41b996
       field: event.original
       patterns:
         - '^%{SYSLOGTIMESTAMP} (?:%{IP:observer.ip}|%{HOSTNAME:observer.hostname}) CEF'
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_cef1a3c3
       if: ctx.observer?.ip instanceof String
       source: |-
         ctx.observer.ip = Collections.singletonList(ctx.observer.ip);
   - rename:
+      tag: rename_message_to_event_reason_4ee13e12
       field: message
       target_field: event.reason
       if: 'ctx.event?.reason == null'
@@ -54,7 +64,8 @@ processors:
 
   # cleanup 'None' for source or destination ip
   - remove:
-      field: 
+      tag: remove_985cdc9b
+      field:
         - error
       if: "ctx?.cef?.extensions?.sourceAddress == null || ctx?.cef?.extensions?.destinationAddress == null"
 
@@ -72,12 +83,14 @@ processors:
       ignore_failure: true
       if: ctx.source?.user?.name == null
   - append:
+      tag: append_related_user_fb2b187b
       field: related.user
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_f290fda3
       field: related.user
       value: '{{{source.user.email}}}'
       if: ctx.source?.user?.email != null
@@ -96,12 +109,14 @@ processors:
       ignore_failure: true
       if: ctx.destination?.user?.name == null
   - append:
+      tag: append_related_user_dde3fb8f
       field: related.user
       value: '{{{destination.user.name}}}'
       if: ctx.destination?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_85cabb37
       field: related.user
       value: '{{{destination.user.email}}}'
       if: ctx.destination?.user?.email != null

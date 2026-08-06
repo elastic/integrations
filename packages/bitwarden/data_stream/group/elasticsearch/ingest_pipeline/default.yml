@@ -2,9 +2,11 @@
 description: Pipeline for processing event logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -21,24 +23,31 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_ee497bfd
       field: event.category
       value: [iam]
   - set:
+      tag: set_event_type_36444be3
       field: event.type
       value: [group]
   - drop:
+      tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - rename:
+      tag: rename_json_name_to_bitwarden_group_name_107d13d3
       field: json.name
       target_field: bitwarden.group.name
       ignore_missing: true
   - set:
+      tag: set_group_name_d229c237
       field: group.name
       copy_from: bitwarden.group.name
       ignore_empty_value: true
@@ -51,21 +60,26 @@ processors:
       if: ctx.json?.accessAll != ''
       on_failure:
         - append:
+            tag: append_error_message_01b050d1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_externalId_to_bitwarden_group_external_id_e8373301
       field: json.externalId
       target_field: bitwarden.group.external.id
       ignore_missing: true
   - rename:
+      tag: rename_json_object_to_bitwarden_object_ecec642a
       field: json.object
       target_field: bitwarden.object
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_bitwarden_group_id_7cbde8bb
       field: json.id
       target_field: bitwarden.group.id
       ignore_missing: true
   - set:
+      tag: set_group_id_d83c25c7
       field: group.id
       copy_from: bitwarden.group.id
       ignore_empty_value: true
@@ -87,6 +101,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_collections_ad9e46a7
       field: json.collections
       if: ctx.json?.collections instanceof List
       processor:
@@ -96,20 +111,24 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_collections_to_bitwarden_group_collection_202ea706
       field: json.collections
       target_field: bitwarden.group.collection
       ignore_missing: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_58e26204
       field:
         - bitwarden.group.name
         - bitwarden.group.id
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
+      tag: script_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -127,10 +146,12 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

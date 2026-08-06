@@ -2,47 +2,58 @@
 description: Pipeline for processing Atlassian Confluence Cloud audit logs.
 processors:
 - date:
+    tag: date_json_creationDate_732167e2
     field: json.creationDate
     if: ctx.json?.creationDate != null
     formats:
       - UNIX_MS
 - rename:
+    tag: rename_json_remoteAddress_to_source_address_c865f307
     field: json.remoteAddress
     target_field: source.address
     ignore_missing: true
 - rename:
+    tag: rename_json_author_accountId_to_user_id_1cfdc3b3
     field: json.author.accountId
     target_field: user.id
     ignore_missing: true
 - rename:
+    tag: rename_json_author_displayName_to_user_full_name_20c7f6f6
     field: json.author.displayName
     target_field: user.full_name
     ignore_missing: true
 - rename:
+    tag: rename_json_author_externalCollaborator_to_confluence_audit_external_collaborator_475818eb
     field: json.author.externalCollaborator
     target_field: confluence.audit.external_collaborator
     ignore_missing: true
 - rename:
+    tag: rename_json_category_to_confluence_audit_type_category_dc708b77
     field: json.category
     target_field: confluence.audit.type.category
     ignore_missing: true
 - rename:
+    tag: rename_json_summary_to_confluence_audit_type_action_e885e92b
     field: json.summary
     target_field: confluence.audit.type.action
     ignore_missing: true
 - set:
+    tag: set_event_action_ec6bbb52
     field: event.action
     copy_from: confluence.audit.type.action
     ignore_empty_value: true
 - rename:
+    tag: rename_json_associatedObjects_to_confluence_audit_affected_objects_40bcb37a
     field: json.associatedObjects
     target_field: confluence.audit.affected_objects
     ignore_missing: true
 - rename:
+    tag: rename_json_changedValues_to_confluence_audit_changed_values_258b0a5e
     field: json.changedValues
     target_field: confluence.audit.changed_values
     ignore_missing: true
 - script:
+    tag: script_36fd60b5
     lang: painless
     description: Modify data to match Self Hosted
     if: ctx.confluence?.audit != null
@@ -81,6 +92,10 @@ processors:
             }
         }
 on_failure:
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - set:
     field: event.kind
     value: pipeline_error

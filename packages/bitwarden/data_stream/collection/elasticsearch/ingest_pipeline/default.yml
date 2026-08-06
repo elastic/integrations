@@ -2,9 +2,11 @@
 description: Pipeline for processing collection logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -21,37 +23,47 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_json_externalId_to_bitwarden_collection_external_id_54b7703c
       field: json.externalId
       target_field: bitwarden.collection.external.id
       ignore_missing: true
   - rename:
+      tag: rename_json_object_to_bitwarden_object_ecec642a
       field: json.object
       target_field: bitwarden.object
       ignore_missing: true
   - rename:
+      tag: rename_json_groups_to_bitwarden_collection_groups_f0dbc94c
       field: json.groups
       target_field: bitwarden.collection.groups
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_bitwarden_collection_id_bcb4fa76
       field: json.id
       target_field: bitwarden.collection.id
       ignore_missing: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -69,10 +81,12 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

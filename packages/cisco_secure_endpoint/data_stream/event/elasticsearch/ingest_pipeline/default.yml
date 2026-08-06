@@ -2,9 +2,11 @@
 description: Pipeline for parsing Cisco Secure Endpoint logs
 processors:
   - remove:
+      tag: remove_host_f7e07790
       field: host
       ignore_missing: true
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,15 +18,18 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_2aaeae93
       field: event.original
       target_field: json
       if: ctx.json == null
   - drop:
+      tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   #########################
   ## ECS General Mapping ##
   #########################
   - fingerprint:
+      tag: fingerprint_97baa791
       fields:
         - "json.data.timestamp"
         - "json.data.timestamp_nanoseconds"
@@ -35,10 +40,12 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - rename:
+      tag: rename_json_data_to_cisco_secure_endpoint_012cb0b8
       field: json.data
       target_field: cisco.secure_endpoint
       ignore_missing: true
   - date:
+      tag: date_cisco_secure_endpoint_timestamp_d2036d68
       field: cisco.secure_endpoint.timestamp
       formats:
         - UNIX
@@ -47,10 +54,12 @@ processors:
   ## ECS Error Mapping ##
   #######################
   - rename:
+      tag: rename_cisco_secure_endpoint_error_error_code_to_error_code_f9451f6d
       field: cisco.secure_endpoint.error.error_code
       target_field: error.code
       ignore_missing: true
   - convert:
+      tag: convert_error_code_5bcb9be1
       field: error.code
       type: string
       ignore_missing: true
@@ -58,54 +67,67 @@ processors:
   ## ECS Event Mapping ##
   #######################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - convert:
+      tag: convert_cisco_secure_endpoint_id_to_event_id_f26ab374
       field: cisco.secure_endpoint.id
       target_field: event.id
       type: string
       ignore_missing: true
   - append:
+      tag: append_event_category_a317e46a
       field: event.category
       value: file
       if: ctx.cisco?.secure_endpoint?.file?.file_name != null
   - append:
+      tag: append_event_category_beeb4a37
       field: event.category
       value: malware
       if: 'ctx.cisco?.secure_endpoint?.file?.disposition == "Malicious"'
   - rename:
+      tag: rename_cisco_secure_endpoint_event_type_to_event_action_15aee72b
       field: cisco.secure_endpoint.event_type
       target_field: event.action
       ignore_missing: true
   - convert:
+      tag: convert_cisco_secure_endpoint_event_type_id_to_event_code_983349ca
       field: cisco.secure_endpoint.event_type_id
       target_field: event.code
       type: string
       ignore_missing: true
   - set:
+      tag: set_event_severity_96ece459
       field: event.severity
       value: 1
       if: ctx.cisco?.secure_endpoint?.severity == 'Low'
   - set:
+      tag: set_event_severity_8e65acbd
       field: event.severity
       value: 2
       if: ctx.cisco?.secure_endpoint?.severity == 'Medium'
   - set:
+      tag: set_event_severity_0e955685
       field: event.severity
       value: 3
       if: ctx.cisco?.secure_endpoint?.severity == 'High'
   - set:
+      tag: set_event_severity_4e24faf5
       field: event.severity
       value: 4
       if: ctx.cisco?.secure_endpoint?.severity == 'Critical'
   - set:
+      tag: set_event_severity_7c2fdf59
       field: event.severity
       value: 0
       if: ctx.cisco?.secure_endpoint?.severity == null
   - date:
+      tag: date_cisco_secure_endpoint_start_timestamp_to_event_start_64e5808d
       field: cisco.secure_endpoint.start_timestamp
       target_field: event.start
       formats:
@@ -113,14 +135,17 @@ processors:
       ignore_failure: true
       if: ctx.cisco?.secure_endpoint?.start_timestamp != null
   - rename:
+      tag: rename_cisco_secure_endpoint_techniques_to_threat_technique_id_f12f042b
       field: cisco.secure_endpoint.techniques
       target_field: threat.technique.id
       if: "ctx.cisco?.secure_endpoint?.techniques != null && ctx.cisco?.secure_endpoint?.techniques.length > 0 && ctx.cisco?.secure_endpoint?.techniques[0] instanceof String"
   - rename:
+      tag: rename_cisco_secure_endpoint_tactics_to_threat_tactic_id_c771c629
       field: cisco.secure_endpoint.tactics
       target_field: threat.tactic.id
       if: "ctx.cisco?.secure_endpoint?.tactics != null && ctx.cisco?.secure_endpoint?.tactics.length > 0 && ctx.cisco?.secure_endpoint?.tactics[0] instanceof String"
   - script:
+      tag: script_740d5658
       lang: painless
       source: |
         if (ctx.threat == null) {
@@ -157,6 +182,7 @@ processors:
         }
       if: ctx.cisco?.secure_endpoint?.tactics != null
   - script:
+      tag: script_e26efdd8
       lang: painless
       source: |
         if (ctx.threat == null) {
@@ -196,6 +222,7 @@ processors:
   ## ECS Group Mapping ##
   #######################
   - rename:
+      tag: rename_cisco_secure_endpoint_group_guids_to_group_id_7764dd1a
       field: cisco.secure_endpoint.group_guids
       target_field: group.id
       ignore_missing: true
@@ -203,15 +230,18 @@ processors:
   ## ECS Host Mapping ##
   ######################
   - rename:
+      tag: rename_cisco_secure_endpoint_computer_hostname_to_host_name_b84be027
       field: cisco.secure_endpoint.computer.hostname
       target_field: host.name
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_hostname_to_host_name_2b722b11
       field: cisco.secure_endpoint.hostname
       target_field: host.name
       ignore_missing: true
       if: ctx.host?.name == null
   - script:
+      tag: script_64f4a8c0
       lang: painless
       if: 'ctx.host?.name != null && ctx.host?.name.contains(".")'
       source: |
@@ -228,14 +258,17 @@ processors:
             ctx.host.domain = domain; 
         }
   - set:
+      tag: set_host_hostname_a9b4c9cc
       field: host.hostname
       copy_from: host.name
       ignore_empty_value: true
       if: ctx.host?.hostname == null
   - lowercase:
+      tag: lowercase_host_name_c780fa50
       field: host.name
       if: ctx.host?.name != null
   - script:
+      tag: script_a496ad39
       lang: painless
       source: |
         if (ctx.host == null) {
@@ -262,6 +295,7 @@ processors:
         }
       if: ctx.cisco?.secure_endpoint?.computer?.network_addresses != null
   - rename:
+      tag: rename_cisco_secure_endpoint_computer_connector_guid_to_host_id_6dfaa295
       field: cisco.secure_endpoint.computer.connector_guid
       target_field: host.id
       ignore_missing: true
@@ -269,6 +303,7 @@ processors:
   ## ECS User Mapping ##
   ######################
   - remove:
+      tag: remove_cisco_secure_endpoint_computer_user_83ae78e6
       field: cisco.secure_endpoint.computer.user
       if: ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco.secure_endpoint.computer.user == "Not Available"
   - grok:
@@ -288,14 +323,17 @@ processors:
   ## ECS Network Mapping ##
   #########################
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_nfm_protocol_to_network_transport_349d6a35
       field: cisco.secure_endpoint.network_info.nfm.protocol
       target_field: network.transport
       ignore_missing: true
   - set:
+      tag: set_network_direction_e155a303
       field: network.direction
       value: egress
       if: "ctx.cisco?.secure_endpoint?.network_info?.nfm?.direction == 'Outgoing connection from'"
   - set:
+      tag: set_network_direction_8357ccc2
       field: network.direction
       value: ingress
       if: "ctx.cisco?.secure_endpoint?.network_info?.nfm?.direction != null && ctx.cisco?.secure_endpoint?.network_info?.nfm?.direction != 'Outgoing connection from'"
@@ -303,12 +341,14 @@ processors:
   ## ECS URL Mapping ##
   #####################
   - uri_parts:
+      tag: uri_parts_cisco_secure_endpoint_network_info_dirty_url_to_url_d5e8634b
       field: cisco.secure_endpoint.network_info.dirty_url
       target_field: url
       keep_original: true
       remove_if_successful: true
       if: ctx.cisco?.secure_endpoint?.network_info?.dirty_url != null
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_dirty_url_to_url_original_71552fc7
       field: cisco.secure_endpoint.network_info.dirty_url
       target_field: url.original
       ignore_missing: true
@@ -316,10 +356,12 @@ processors:
   ## ECS Source Mapping ##
   ########################
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_local_ip_to_source_ip_5c154874
       field: cisco.secure_endpoint.network_info.local_ip
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_local_port_to_source_port_db6cf608
       field: cisco.secure_endpoint.network_info.local_port
       target_field: source.port
       ignore_missing: true
@@ -327,10 +369,12 @@ processors:
   ## ECS Destination Mapping ##
   #############################
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_remote_ip_to_destination_ip_9b6c0dec
       field: cisco.secure_endpoint.network_info.remote_ip
       target_field: destination.ip
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_remote_port_to_destination_port_0badc394
       field: cisco.secure_endpoint.network_info.remote_port
       target_field: destination.port
       ignore_missing: true
@@ -338,22 +382,27 @@ processors:
   ## ECS File Mapping ##
   ######################
   - rename:
+      tag: rename_cisco_secure_endpoint_file_file_name_to_file_name_f884e0a9
       field: cisco.secure_endpoint.file.file_name
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_file_path_to_file_path_4f72bffd
       field: cisco.secure_endpoint.file.file_path
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_identity_sha256_to_file_hash_sha256_3a142dce
       field: cisco.secure_endpoint.file.identity.sha256
       target_field: file.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_identity_sha1_to_file_hash_sha1_e74354be
       field: cisco.secure_endpoint.file.identity.sha1
       target_field: file.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_identity_md5_to_file_hash_md5_ab03bb20
       field: cisco.secure_endpoint.file.identity.md5
       target_field: file.hash.md5
       ignore_missing: true
@@ -361,10 +410,12 @@ processors:
   ## ECS OS Mapping ##
   #####################
   - set:
+      tag: set_host_os_family_99eaeaf1
       field: host.os.family
       value: windows
       if: 'ctx.file?.path != null && ctx.file?.path.contains("\\\\")'
   - set:
+      tag: set_host_os_platform_974b5aca
       field: host.os.platform
       value: windows
       if: 'ctx.file?.path != null && ctx.file?.path.contains("\\\\")'
@@ -372,46 +423,57 @@ processors:
   ## ECS Process Mapping ##
   #########################
   - rename:
+      tag: rename_cisco_secure_endpoint_file_parent_process_id_to_process_pid_d7574883
       field: cisco.secure_endpoint.file.parent.process_id
       target_field: process.pid
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_parent_process_id_to_process_pid_c6f496b2
       field: cisco.secure_endpoint.network_info.parent.process_id
       target_field: process.pid
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_parent_file_name_to_process_name_79c2131e
       field: cisco.secure_endpoint.file.parent.file_name
       target_field: process.name
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_parent_identity_sha256_to_process_hash_sha256_ed4e05e1
       field: cisco.secure_endpoint.file.parent.identity.sha256
       target_field: process.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_parent_identity_sha1_to_process_hash_sha1_fbe79a09
       field: cisco.secure_endpoint.file.parent.identity.sha1
       target_field: process.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_parent_identity_md5_to_process_hash_md5_16aec6bb
       field: cisco.secure_endpoint.file.parent.identity.md5
       target_field: process.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_file_parent_identity_md5_to_process_hash_md5_16aec6bb
       field: cisco.secure_endpoint.file.parent.identity.md5
       target_field: process.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_parent_file_name_to_process_name_62d6541f
       field: cisco.secure_endpoint.network_info.parent.file_name
       target_field: process.name
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_parent_identity_sha256_to_process_hash_sha256_b4fd25fa
       field: cisco.secure_endpoint.network_info.parent.identity.sha256
       target_field: process.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_parent_identity_sha1_to_process_hash_sha1_e4751f02
       field: cisco.secure_endpoint.network_info.parent.identity.sha1
       target_field: process.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_cisco_secure_endpoint_network_info_parent_identity_md5_to_process_hash_md5_effd305c
       field: cisco.secure_endpoint.network_info.parent.identity.md5
       target_field: process.hash.md5
       ignore_missing: true
@@ -451,81 +513,97 @@ processors:
   ## ECS Related Mapping ##
   #########################
   - append:
+      tag: append_related_user_981c7fa7
       field: related.user
       value: "{{{ user.name }}}"
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_2ba74bf3
       field: related.user
       value: "{{{ user.email }}}"
       if: ctx.user?.email != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_daba9bfc
       field: related.hash
       value: "{{{ process.hash.sha256 }}}"
       if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_acb43c18
       field: related.hash
       value: "{{{ process.hash.md5 }}}"
       if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_4fd3fe30
       field: related.hash
       value: "{{{ process.hash.sha1 }}}"
       if: ctx.process?.parent?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_cdcd36b7
       field: related.hash
       value: "{{{ file.hash.sha256 }}}"
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_3192774f
       field: related.hash
       value: "{{{ file.hash.md5 }}}"
       if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_3777cc13
       field: related.hash
       value: "{{{ file.hash.sha1 }}}"
       if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_ca954f02
       field: related.hash
       value: "{{{ cisco.secure_endpoint.network_info.parent.identity.sha256 }}}"
       if: ctx.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_1865a12e
       field: related.hash
       value: "{{{ cisco.secure_endpoint.network_info.parent.identity.md5 }}}"
       if: ctx.cisco?.secure_endpoint?.network_info?.parent?.identity?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_48d098f6
       field: related.hash
       value: "{{{ cisco.secure_endpoint.network_info.parent.identity.sha1 }}}"
       if: ctx.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_ca1f0453
       field: related.hosts
       value: "{{{ host.name }}}"
       if: ctx.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_0793d2d9
       field: related.ip
       value: "{{{ source.ip }}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_9e75d6b5
       field: related.ip
       value: "{{{ destination.ip }}}"
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_e7a5b38b
       field: related.ip
       value: "{{{ cisco.secure_endpoint.computer.external_ip }}}"
       if: ctx.cisco?.secure_endpoint?.computer?.external_ip != null
       allow_duplicates: false
   - script:
+      tag: script_d142f2a6
       lang: painless
       source: |
         if (ctx.related == null) {
@@ -543,6 +621,7 @@ processors:
         }
       if: ctx.cisco?.secure_endpoint?.computer?.network_addresses != null
   - script:
+      tag: script_17e8920f
       lang: painless
       source: |
         if (ctx.cisco?.secure_endpoint?.related == null) {
@@ -561,6 +640,7 @@ processors:
         }
       if: ctx.cisco?.secure_endpoint?.computer?.network_addresses != null
   - foreach:
+      tag: foreach_cisco_secure_endpoint_vulnerabilities_c9cca9be
       field: cisco.secure_endpoint.vulnerabilities
       processor:
         append:
@@ -572,16 +652,19 @@ processors:
   ## GeoIP ##
   #############
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0e79e8a4
       field: source.ip
       target_field: source.geo
       ignore_missing: true
       if: "ctx.source?.geo == null"
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_2f67bd6f
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
       if: "ctx.destination?.geo == null"
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -590,6 +673,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -598,18 +682,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -617,6 +705,7 @@ processors:
   ## Cleanup ##
   #############
   - date:
+      tag: date_cisco_secure_endpoint_threat_hunting_incident_start_time_to_cisco_secure_endpoint_threat_hunting_incident_start_time_39b4676b
       field: cisco.secure_endpoint.threat_hunting.incident_start_time
       target_field: cisco.secure_endpoint.threat_hunting.incident_start_time
       formats:
@@ -624,6 +713,7 @@ processors:
       ignore_failure: true
       if: ctx.cisco?.secure_endpoint?.threat_hunting?.incident_start_time != null
   - date:
+      tag: date_cisco_secure_endpoint_threat_hunting_incident_end_time_to_cisco_secure_endpoint_threat_hunting_incident_end_time_eb2f315a
       field: cisco.secure_endpoint.threat_hunting.incident_end_time
       target_field: cisco.secure_endpoint.threat_hunting.incident_end_time
       formats:
@@ -631,10 +721,11 @@ processors:
       ignore_failure: true
       if: ctx.cisco?.secure_endpoint?.threat_hunting?.incident_end_time != null
   - script:
+      tag: script_65cd3e9e
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.
       if: ctx.json != null
-      source: | 
+      source: |
         boolean dropEmptyFields(Object object) {
             if (object == null || object == '') {
             return true;
@@ -649,6 +740,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_0ce3f95c
       field:
         - cisco.secure_endpoint.computer.hostname
         - cisco.secure_endpoint.computer.links

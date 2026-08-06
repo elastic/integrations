@@ -2,15 +2,18 @@
 description: Pipeline for processing Model Breach Alert logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - grok:
+      tag: grok_message_eed680aa
       field: message
       patterns:
         - "^%{FIELD:log.syslog.appname}\\s*%{GREEDYDATA:message}$"
       pattern_definitions:
         FIELD: "[a-zA-Z]*"
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -22,9 +25,11 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - fingerprint:
+      tag: fingerprint_1cec355f
       fields:
         - json.time
         - json.creationTime
@@ -33,36 +38,33 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_kind_e0df4b58
       field: event.kind
       value: alert
       if: (['critical','suspicious'].contains(ctx.json?.model?.category?.toLowerCase()))
   - set:
+      tag: set_event_kind_7fba37b2
       field: event.kind
       value: event
       if: (['compliance','informational'].contains(ctx.json?.model?.category?.toLowerCase()))
   - set:
+      tag: set_event_category_5ce3ed31
       field: event.category
       value: [threat]
       if: ctx.event?.kind == 'alert'
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - script:
+      tag: script_b1769ed3
       description: Dynamically map event.* fields from metric label.
       lang: painless
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
-      source:
-        for (component in ctx.json.triggeredComponents) {
-          if (component?.metric?.label?.toLowerCase().contains('connection')) {
-            ctx.event?.type?.add('connection');
-            if (ctx.event.category == null) {
-              ctx.event.category = new ArrayList();
-            }
-            ctx.event.category.add('network');
-          }
-        }
+      source: for (component in ctx.json.triggeredComponents) { if (component?.metric?.label?.toLowerCase().contains('connection')) { ctx.event?.type?.add('connection'); if (ctx.event.category == null) { ctx.event.category = new ArrayList(); } ctx.event.category.add('network'); } }
   - foreach:
+      tag: foreach_json_aianalystData_2927adf8
       field: json.aianalystData
       if: ctx.json?.aianalystData instanceof List
       ignore_failure: true
@@ -81,34 +83,42 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_aianalystData_to_darktrace_model_breach_alert_aianalyst_data_1760670a
       field: json.aianalystData
       target_field: darktrace.model_breach_alert.aianalyst_data
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_json_breachUrl_to_darktrace_model_breach_alert_breach_url_0f363fc0
       field: json.breachUrl
       target_field: darktrace.model_breach_alert.breach_url
       if: ctx.json?.breachUrl != null
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_breachUrl_91dde25e
             field: json.breachUrl
         - append:
+            tag: append_error_message_18e7c465
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_url_3503b29a
       field: event.url
       copy_from: darktrace.model_breach_alert.breach_url.original
       ignore_failure: true
   - convert:
+      tag: convert_json_commentCount_to_darktrace_model_breach_alert_comment_count_0eae2227
       field: json.commentCount
       target_field: darktrace.model_breach_alert.comment.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_04cfd80e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_creationTime_to_darktrace_model_breach_alert_creation_time_13ac7e45
       field: json.creationTime
       target_field: darktrace.model_breach_alert.creation_time
       formats:
@@ -118,53 +128,66 @@ processors:
       if: ctx.json?.creationTime != null
       on_failure:
         - remove:
+            tag: remove_json_creationTime_7a9e39ec
             field: json.creationTime
             ignore_missing: true
         - append:
+            tag: append_error_message_a3ea2fb0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_created_e2e60ee4
       field: event.created
       copy_from: darktrace.model_breach_alert.creation_time
       ignore_failure: true
   - convert:
+      tag: convert_json_devicescore_to_darktrace_model_breach_alert_device_score_c4964e61
       field: json.devicescore
       target_field: darktrace.model_breach_alert.device_score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f7460f94
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_device_credentials_to_darktrace_model_breach_alert_device_credentials_19c5104f
       field: json.device.credentials
       target_field: darktrace.model_breach_alert.device.credentials
       ignore_missing: true
   - convert:
+      tag: convert_json_device_did_to_darktrace_model_breach_alert_device_did_eb399145
       field: json.device.did
       target_field: darktrace.model_breach_alert.device.did
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ca07ea12
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_darktrace_model_breach_alert_device_did_2c792203
       field: darktrace.model_breach_alert.device.did
       ignore_missing: true
       if: ctx.darktrace?.model_breach_alert?.device?.did != null && ctx.darktrace?.model_breach_alert?.device?.did < 0
   - convert:
+      tag: convert_darktrace_model_breach_alert_device_did_to_host_id_b105a158
       field: darktrace.model_breach_alert.device.did
       target_field: host.id
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_darktrace_model_breach_alert_device_did_f66f90f8
             field: darktrace.model_breach_alert.device.did
         - append:
+            tag: append_error_message_0bc26eb9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_device_firstSeen_to_darktrace_model_breach_alert_device_first_seen_82dea494
       field: json.device.firstSeen
       target_field: darktrace.model_breach_alert.device.first_seen
       formats:
@@ -174,68 +197,83 @@ processors:
       if: ctx.json?.device?.firstSeen != null
       on_failure:
         - remove:
+            tag: remove_json_device_firstseen_bf8523d6
             field: json.device.firstseen
             ignore_missing: true
         - append:
+            tag: append_error_message_8bb495d7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_device_hostname_to_json_device__temp__hostname_ip_128c4eab
       field: json.device.hostname
       target_field: json.device._temp_.hostname_ip
       type: ip
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_host_hostname_56abd46e
             field: host.hostname
             copy_from: json.device.hostname
             ignore_failure: true
   - append:
+      tag: append_related_ip_0b4c5ccb
       field: related.ip
       value: '{{{json.device._temp_.hostname_ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_device_hostname_to_darktrace_model_breach_alert_device_hostname_c823cdd7
       field: json.device.hostname
       target_field: darktrace.model_breach_alert.device.hostname
       ignore_missing: true
   - append:
+      tag: append_related_hosts_10e4eab1
       field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_device_ip_to_darktrace_model_breach_alert_device__temp__ip_b7a3f63f
       field: json.device.ip
       target_field: darktrace.model_breach_alert.device._temp_.ip
       type: ip
       ignore_failure: true
   - append:
+      tag: append_host_ip_7dfd23bd
       field: host.ip
       value: '{{{darktrace.model_breach_alert.device._temp_.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_device_ip6_to_darktrace_model_breach_alert_device__temp__ip6_a3c8d8b9
       field: json.device.ip6
       target_field: darktrace.model_breach_alert.device._temp_.ip6
       type: ip
       ignore_failure: true
   - append:
+      tag: append_host_ip_65574bdb
       field: host.ip
       value: '{{{darktrace.model_breach_alert.device._temp_.ip6}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_device_ip_to_darktrace_model_breach_alert_device_ip_f0adc1c7
       field: json.device.ip
       target_field: darktrace.model_breach_alert.device.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_device_ip6_to_darktrace_model_breach_alert_device_ip6_d0a89fc5
       field: json.device.ip6
       target_field: darktrace.model_breach_alert.device.ip6
       ignore_missing: true
   - remove:
+      tag: remove_d35e873b
       field:
         - darktrace.model_breach_alert.device._temp_
       ignore_missing: true
   - foreach:
+      tag: foreach_host_ip_55e267bd
       field: host.ip
       if: ctx.host?.ip instanceof List
       ignore_failure: true
@@ -246,6 +284,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_device_ips_ebc8b98f
       field: json.device.ips
       if: ctx.json?.device?.ips instanceof List
       ignore_failure: true
@@ -256,6 +295,7 @@ processors:
           type: ip
           ignore_failure: true
   - foreach:
+      tag: foreach_json_device_ips_39d91a8f
       field: json.device.ips
       if: ctx.json?.device?.ips instanceof List
       ignore_failure: true
@@ -266,6 +306,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_device_ips_4ba8c56d
       field: json.device.ips
       if: ctx.json?.device?.ips instanceof List
       ignore_failure: true
@@ -282,6 +323,7 @@ processors:
                 field: _ingest._value.timems
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_device_ips_768bcff5
       field: json.device.ips
       if: ctx.json?.device?.ips instanceof List
       ignore_failure: true
@@ -299,6 +341,7 @@ processors:
                 field: _ingest._value.time
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_device_ips_c346913d
       field: json.device.ips
       if: ctx.json?.device?.ips instanceof List
       ignore_failure: true
@@ -314,6 +357,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_ips_52425bb4
       field: json.device.ips
       if: ctx.json?.device?.ips instanceof List
       ignore_failure: true
@@ -322,10 +366,12 @@ processors:
           field: _ingest._value._temp_
           ignore_missing: true
   - rename:
+      tag: rename_json_device_ips_to_darktrace_model_breach_alert_device_ips_a813dc47
       field: json.device.ips
       target_field: darktrace.model_breach_alert.device.ips
       ignore_missing: true
   - date:
+      tag: date_json_device_lastSeen_to_darktrace_model_breach_alert_device_last_seen_629555fc
       field: json.device.lastSeen
       target_field: darktrace.model_breach_alert.device.last_seen
       formats:
@@ -335,34 +381,42 @@ processors:
       if: ctx.json?.device?.lastSeen != null
       on_failure:
         - remove:
+            tag: remove_json_device_lastseen_e10efdaa
             field: json.device.lastseen
             ignore_missing: true
         - append:
+            tag: append_error_message_a37c059b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - gsub:
+      tag: gsub_json_device_macaddress_to_darktrace_model_breach_alert_device_mac_address_0d0c2102
       field: json.device.macaddress
       target_field: darktrace.model_breach_alert.device.mac_address
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_darktrace_model_breach_alert_device_mac_address_e0e1e201
       field: darktrace.model_breach_alert.device.mac_address
       ignore_missing: true
   - append:
+      tag: append_host_mac_1a6d339d
       field: host.mac
       value: '{{{darktrace.model_breach_alert.device.mac_address}}}'
       if: ctx.darktrace?.model_breach_alert?.device?.mac_address != null && ctx.darktrace.model_breach_alert.device.mac_address != ''
   - convert:
+      tag: convert_json_device_sid_to_darktrace_model_breach_alert_device_sid_19f6db75
       field: json.device.sid
       target_field: darktrace.model_breach_alert.device.sid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_985969c2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_3e46c8b5
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -378,6 +432,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_36e4f719
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -393,6 +448,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_23a88619
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -408,6 +464,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_4d80f1bd
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -423,6 +480,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_9fca2c52
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -439,6 +497,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_8cf2bfd9
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -454,6 +513,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_785b4aaf
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -469,6 +529,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_device_tags_07790b35
       field: json.device.tags
       if: ctx.json?.device?.tags instanceof List
       ignore_failure: true
@@ -477,26 +538,32 @@ processors:
           field: _ingest._value.isReferenced
           ignore_missing: true
   - rename:
+      tag: rename_json_device_tags_to_darktrace_model_breach_alert_device_tags_74358eb3
       field: json.device.tags
       target_field: darktrace.model_breach_alert.device.tags
       ignore_missing: true
   - rename:
+      tag: rename_json_device_typelabel_to_darktrace_model_breach_alert_device_type_label_c7f3fcb0
       field: json.device.typelabel
       target_field: darktrace.model_breach_alert.device.type_label
       ignore_missing: true
   - rename:
+      tag: rename_json_device_typename_to_darktrace_model_breach_alert_device_type_name_9156e014
       field: json.device.typename
       target_field: darktrace.model_breach_alert.device.type_name
       ignore_missing: true
   - set:
+      tag: set_host_type_f1713661
       field: host.type
       copy_from: darktrace.model_breach_alert.device.type_name
       ignore_failure: true
   - rename:
+      tag: rename_json_device_vendor_to_darktrace_model_breach_alert_device_vendor_170d8aeb
       field: json.device.vendor
       target_field: darktrace.model_breach_alert.device.vendor
       ignore_missing: true
   - foreach:
+      tag: foreach_json_mitreTechniques_38abfeda
       field: json.mitreTechniques
       if: ctx.json?.mitreTechniques instanceof List
       ignore_failure: true
@@ -506,6 +573,7 @@ processors:
           target_field: _ingest._value.id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_mitreTechniques_80ae6b29
       field: json.mitreTechniques
       if: ctx.json?.mitreTechniques instanceof List
       ignore_failure: true
@@ -515,10 +583,12 @@ processors:
           target_field: _ingest._value.name
           ignore_missing: true
   - rename:
+      tag: rename_json_mitreTechniques_to_darktrace_model_breach_alert_mitre_techniques_71e66528
       field: json.mitreTechniques
       target_field: darktrace.model_breach_alert.mitre_techniques
       ignore_missing: true
   - foreach:
+      tag: foreach_darktrace_model_breach_alert_mitre_techniques_bf889806
       field: darktrace.model_breach_alert.mitre_techniques
       if: ctx.darktrace?.model_breach_alert?.mitre_techniques instanceof List
       ignore_failure: true
@@ -529,6 +599,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_darktrace_model_breach_alert_mitre_techniques_91ce5ac6
       field: darktrace.model_breach_alert.mitre_techniques
       if: ctx.darktrace?.model_breach_alert?.mitre_techniques instanceof List
       ignore_failure: true
@@ -539,135 +610,166 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - rename:
+      tag: rename_json_model_actions_antigena_action_to_darktrace_model_breach_alert_model_actions_antigena_action_faec3c7b
       field: json.model.actions.antigena.action
       target_field: darktrace.model_breach_alert.model.actions.antigena.action
       ignore_missing: true
   - set:
+      tag: set_event_action_3a636926
       field: event.action
       copy_from: darktrace.model_breach_alert.model.actions.antigena.action
       ignore_failure: true
   - convert:
+      tag: convert_json_model_actions_antigena_duration_to_darktrace_model_breach_alert_model_actions_antigena_duration_a18bbc99
       field: json.model.actions.antigena.duration
       target_field: darktrace.model_breach_alert.model.actions.antigena.duration
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1bbbe792
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_antigena_confirm_to_darktrace_model_breach_alert_model_actions_antigena_is_confirm_by_human_operator_dcc9a6fb
       field: json.model.actions.antigena.confirm
       target_field: darktrace.model_breach_alert.model.actions.antigena.is_confirm_by_human_operator
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_61dba0cc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_antigena_threshold_to_darktrace_model_breach_alert_model_actions_antigena_threshold_dee64769
       field: json.model.actions.antigena.threshold
       target_field: darktrace.model_breach_alert.model.actions.antigena.threshold
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aa8d8016
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_alert_to_darktrace_model_breach_alert_model_actions_is_alerting_9c84c712
       field: json.model.actions.alert
       target_field: darktrace.model_breach_alert.model.actions.is_alerting
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0cc1daf7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_breach_to_darktrace_model_breach_alert_model_actions_is_breach_790b4da0
       field: json.model.actions.breach
       target_field: darktrace.model_breach_alert.model.actions.is_breach
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2a6702fb
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_setPriority_to_darktrace_model_breach_alert_model_actions_is_priority_set_b966f75d
       field: json.model.actions.setPriority
       target_field: darktrace.model_breach_alert.model.actions.is_priority_set
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3ca781c4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_setTag_to_darktrace_model_breach_alert_model_actions_is_tag_set_eab58091
       field: json.model.actions.setTag
       target_field: darktrace.model_breach_alert.model.actions.is_tag_set
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_31847e3c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_setType_to_darktrace_model_breach_alert_model_actions_is_type_set_7a93c659
       field: json.model.actions.setType
       target_field: darktrace.model_breach_alert.model.actions.is_type_set
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b4564704
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_actions_model_to_darktrace_model_breach_alert_model_actions_model_b0b79b5d
       field: json.model.actions.model
       target_field: darktrace.model_breach_alert.model.actions.model
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_eeada8b8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_activeTimes_version_2f6777e2
       field: json.model.activeTimes.version
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_activeTimes_version_264d8f0b
             field: json.model.activeTimes.version
         - append:
+            tag: append_error_message_99405ee5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_model_activeTimes_to_darktrace_model_breach_alert_model_active_times_c350d55c
       field: json.model.activeTimes
       target_field: darktrace.model_breach_alert.model.active_times
       ignore_missing: true
   - rename:
+      tag: rename_json_model_behaviour_to_darktrace_model_breach_alert_model_behaviour_6ce1c3cf
       field: json.model.behaviour
       target_field: darktrace.model_breach_alert.model.behaviour
       ignore_missing: true
   - rename:
+      tag: rename_json_model_category_to_darktrace_model_breach_alert_model_category_f5352ecd
       field: json.model.category
       target_field: darktrace.model_breach_alert.model.category
       ignore_missing: true
   - set:
+      tag: set_rule_category_4035e098
       field: rule.category
       copy_from: darktrace.model_breach_alert.model.category
       ignore_failure: true
   - rename:
+      tag: rename_json_model_created_by_to_darktrace_model_breach_alert_model_created_by_fc5fe207
       field: json.model.created.by
       target_field: darktrace.model_breach_alert.model.created.by
       ignore_missing: true
   - append:
+      tag: append_related_user_8c091b5b
       field: related.user
       value: '{{{darktrace.model_breach_alert.model.created.by}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_rule_author_8d506d0b
       field: rule.author
       value: '{{{darktrace.model_breach_alert.model.created.by}}}'
       allow_duplicates: false
       if: ctx.darktrace?.model_breach_alert?.model?.created?.by != null
   - foreach:
+      tag: foreach_json_model_defeats_80d9a00a
       field: json.model.defeats
       if: ctx.json?.model?.defeats instanceof List
       ignore_failure: true
@@ -678,6 +780,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_json_model_defeats_4e01a2d6
       field: json.model.defeats
       if: ctx.json?.model?.defeats instanceof List
       ignore_failure: true
@@ -686,6 +789,7 @@ processors:
           field: _ingest._value.defeatID
           ignore_missing: true
   - foreach:
+      tag: foreach_json_model_defeats_e86eb50e
       field: json.model.defeats
       if: ctx.json?.model?.defeats instanceof List
       ignore_failure: true
@@ -706,6 +810,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_model_defeats_990d6572
       field: json.model.defeats
       if: ctx.json?.model?.defeats instanceof List
       ignore_failure: true
@@ -719,108 +824,132 @@ processors:
               ignore_missing: true
 
   - rename:
+      tag: rename_json_model_defeats_to_darktrace_model_breach_alert_model_defeats_515b67ab
       field: json.model.defeats
       target_field: darktrace.model_breach_alert.model.defeats
       ignore_missing: true
   - convert:
+      tag: convert_json_model_delay_to_darktrace_model_breach_alert_model_delay_3881a2ef
       field: json.model.delay
       target_field: darktrace.model_breach_alert.model.delay
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b49782dc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_model_description_to_darktrace_model_breach_alert_model_description_c2c9e007
       field: json.model.description
       target_field: darktrace.model_breach_alert.model.description
       ignore_missing: true
   - set:
+      tag: set_rule_description_e484c340
       field: rule.description
       copy_from: darktrace.model_breach_alert.model.description
       ignore_failure: true
   - rename:
+      tag: rename_json_model_edited_by_to_darktrace_model_breach_alert_model_edited_by_48aff127
       field: json.model.edited.by
       target_field: darktrace.model_breach_alert.model.edited.by
       ignore_missing: true
   - append:
+      tag: append_related_user_8b064592
       field: related.user
       value: '{{{darktrace.model_breach_alert.model.edited.by}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_model_compliance_to_darktrace_model_breach_alert_model_in_compliance_behavior_category_3e4c0dad
       field: json.model.compliance
       target_field: darktrace.model_breach_alert.model.in_compliance_behavior_category
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7559e63e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_interval_to_darktrace_model_breach_alert_model_interval_16e36be1
       field: json.model.interval
       target_field: darktrace.model_breach_alert.model.interval
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_055a7b7e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_active_to_darktrace_model_breach_alert_model_is_active_68ab7b5a
       field: json.model.active
       target_field: darktrace.model_breach_alert.model.is_active
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1f742ebd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_autoSuppress_to_darktrace_model_breach_alert_model_is_auto_suppress_03443799
       field: json.model.autoSuppress
       target_field: darktrace.model_breach_alert.model.is_auto_suppress
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ffb30d98
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_autoUpdatable_to_darktrace_model_breach_alert_model_is_auto_updatable_9784c437
       field: json.model.autoUpdatable
       target_field: darktrace.model_breach_alert.model.is_auto_updatable
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_18d3c1a2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_autoUpdate_to_darktrace_model_breach_alert_model_is_auto_update_a33faf71
       field: json.model.autoUpdate
       target_field: darktrace.model_breach_alert.model.is_auto_update
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b9dfb018
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_sequenced_to_darktrace_model_breach_alert_model_is_sequenced_e0322c58
       field: json.model.sequenced
       target_field: darktrace.model_breach_alert.model.is_sequenced
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f5ea7713
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_sharedEndpoints_to_darktrace_model_breach_alert_model_is_shared_endpoints_bbd1dc1f
       field: json.model.sharedEndpoints
       target_field: darktrace.model_breach_alert.model.is_shared_endpoints
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6f3b5e26
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_5418b37b
       description: Dynamically map model.logic.data array using model.logic.type field.
       if: ctx.json?.model?.logic?.data instanceof List
       lang: painless
@@ -828,73 +957,81 @@ processors:
       params:
         componentList: data_component_list
         weightedComponentList: data_weighted_component_list
-      source:
-        def data = ctx.json.model.logic.data;
-        if (ctx.json.model.logic?.type != null) {
-          if (['componentList', 'weightedComponentList'].contains(ctx.json.model.logic?.type)) {
-            ctx["json"]["model"]["logic"][params.get(ctx.json.model.logic?.type)] = data;
-          } else {
-            ctx["json"]["model"]["logic"]["data_" + ctx.json.model.logic?.type] = data;
-          }
-        }
-        ctx.json.model.logic.remove("data");
+      source: def data = ctx.json.model.logic.data; if (ctx.json.model.logic?.type != null) { if (['componentList', 'weightedComponentList'].contains(ctx.json.model.logic?.type)) { ctx["json"]["model"]["logic"][params.get(ctx.json.model.logic?.type)] = data; } else { ctx["json"]["model"]["logic"]["data_" + ctx.json.model.logic?.type] = data; } } ctx.json.model.logic.remove("data");
   - convert:
+      tag: convert_json_model_logic_data_component_list_1aed19b2
       field: json.model.logic.data_component_list
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_logic_data_component_list_ef635b58
             field: json.model.logic.data_component_list
         - append:
+            tag: append_error_message_c7c11015
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_logic_data_weighted_component_list_cid_e7600d42
       field: json.model.logic.data_weighted_component_list.cid
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_logic_data_weighted_component_list_cid_a2fce336
             field: json.model.logic.data_weighted_component_list.cid
         - append:
+            tag: append_error_message_52641cfd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_logic_data_weighted_component_list_weight_e1d5c852
       field: json.model.logic.data_weighted_component_list.weight
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_logic_data_weighted_component_list_weight_eba4f720
             field: json.model.logic.data_weighted_component_list.weight
         - append:
+            tag: append_error_message_515c0995
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_logic_version_71f8140a
       field: json.model.logic.version
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_logic_version_8b73e0c9
             field: json.model.logic.version
         - append:
+            tag: append_error_message_22fa3dfd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_logic_targetScore_to_json_model_logic_target_score_9e4d4f6d
       field: json.model.logic.targetScore
       target_field: json.model.logic.target_score
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c2c43c0c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_json_model_logic_targetScore_cc83b6f0
       field: json.model.logic.targetScore
       ignore_missing: true
   - rename:
+      tag: rename_json_model_logic_to_darktrace_model_breach_alert_model_logic_47fff55b
       field: json.model.logic
       target_field: darktrace.model_breach_alert.model.logic
       ignore_missing: true
   - date:
+      tag: date_json_model_modified_to_darktrace_model_breach_alert_model_modified_1956b9f1
       field: json.model.modified
       target_field: darktrace.model_breach_alert.model.modified
       formats:
@@ -905,149 +1042,183 @@ processors:
       if: ctx.json?.model?.modified != null
       on_failure:
         - remove:
+            tag: remove_json_model_modified_c58ec892
             field: json.model.modified
             ignore_missing: true
         - append:
+            tag: append_error_message_febd0efc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_model_name_to_darktrace_model_breach_alert_model_name_eaa3c19f
       field: json.model.name
       target_field: darktrace.model_breach_alert.model.name
       ignore_missing: true
   - set:
+      tag: set_rule_name_9683c4e8
       field: rule.name
       copy_from: darktrace.model_breach_alert.model.name
       ignore_failure: true
   - convert:
+      tag: convert_json_model_phid_to_darktrace_model_breach_alert_model_phid_390fe649
       field: json.model.phid
       target_field: darktrace.model_breach_alert.model.phid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0d32096e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_pid_to_darktrace_model_breach_alert_model_pid_77036fff
       field: json.model.pid
       target_field: darktrace.model_breach_alert.model.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3cc30c14
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_priority_to_darktrace_model_breach_alert_model_priority_8e77e93e
       field: json.model.priority
       target_field: darktrace.model_breach_alert.model.priority
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_priority_b3bc6007
             field: json.model.priority
         - append:
+            tag: append_error_message_eba46f3f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_severity_07fc4159
       field: event.severity
       copy_from: darktrace.model_breach_alert.model.priority
       ignore_failure: true
   - rename:
+      tag: rename_json_model_tags_to_darktrace_model_breach_alert_model_tags_c97a503b
       field: json.model.tags
       target_field: darktrace.model_breach_alert.model.tags
       ignore_missing: true
   - set:
+      tag: set_rule_ruleset_ce798c69
       field: rule.ruleset
       copy_from: darktrace.model_breach_alert.model.tags
       ignore_failure: true
   - convert:
+      tag: convert_json_model_throttle_to_darktrace_model_breach_alert_model_throttle_408b2f49
       field: json.model.throttle
       target_field: darktrace.model_breach_alert.model.throttle
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_279fdbb6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_model_userID_to_darktrace_model_breach_alert_model_userid_65226be9
       field: json.model.userID
       target_field: darktrace.model_breach_alert.model.userid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_49084b9e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_model_uuid_to_darktrace_model_breach_alert_model_uuid_c93639c7
       field: json.model.uuid
       target_field: darktrace.model_breach_alert.model.uuid
       ignore_missing: true
   - set:
+      tag: set_rule_uuid_3978bee4
       field: rule.uuid
       copy_from: darktrace.model_breach_alert.model.uuid
       ignore_failure: true
   - convert:
+      tag: convert_json_model_version_to_darktrace_model_breach_alert_model_version_de8f4a64
       field: json.model.version
       target_field: darktrace.model_breach_alert.model.version
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_model_version_dde3ff1b
             field: json.model.version
         - append:
+            tag: append_error_message_45e82c67
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_darktrace_model_breach_alert_model_version_to_rule_version_bb0c3e83
       field: darktrace.model_breach_alert.model.version
       target_field: rule.version
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_darktrace_model_breach_alert_model_version_abf00379
             field: darktrace.model_breach_alert.model.version
         - append:
+            tag: append_error_message_d9160840
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_pbscore_to_darktrace_model_breach_alert_pb_score_157b8425
       field: json.pbscore
       target_field: darktrace.model_breach_alert.pb_score
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ab5b5bd4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_pbid_to_darktrace_model_breach_alert_pbid_81b769e9
       field: json.pbid
       target_field: darktrace.model_breach_alert.pbid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ecd245ae
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_score_to_darktrace_model_breach_alert_score_b8a9731a
       field: json.score
       target_field: darktrace.model_breach_alert.score
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_score_0db5b3fc
             field: json.score
         - append:
+            tag: append_error_message_485909fd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_risk_score_3c0b9c1d
       field: event.risk_score
       copy_from: darktrace.model_breach_alert.score
       ignore_failure: true
   - script:
+      tag: script_93e44b08
       description: Normalize event.risk_score to event.risk_score_norm
       lang: painless
       if: ctx.event?.risk_score != null
-      source:
-        def normalizedRiskScore = ctx.event.risk_score * 100.0;
-        ctx.event.risk_score_norm = normalizedRiskScore;
+      source: def normalizedRiskScore = ctx.event.risk_score * 100.0; ctx.event.risk_score_norm = normalizedRiskScore;
   - date:
+      tag: date_json_time_to_darktrace_model_breach_alert_time_86f53a40
       field: json.time
       target_field: darktrace.model_breach_alert.time
       formats:
@@ -1057,16 +1228,20 @@ processors:
       if: ctx.json?.time != null
       on_failure:
         - remove:
+            tag: remove_json_time_80b7fa1e
             field: json.time
             ignore_missing: true
         - append:
+            tag: append_error_message_bd6def57
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_3776c81a
       field: '@timestamp'
       copy_from: darktrace.model_breach_alert.time
       ignore_failure: true
   - rename:
+      tag: rename_json_acknowledged_to_darktrace_model_breach_alert_acknowledged_cc1c12db
       field: json.acknowledged
       target_field: darktrace.model_breach_alert.acknowledged
       ignore_missing: true
@@ -1081,9 +1256,11 @@ processors:
       if: ctx.darktrace?.model_breach_alert?.acknowledged instanceof Map && ctx.darktrace.model_breach_alert.acknowledged.time != null
       on_failure:
         - remove:
+            tag: remove_darktrace_model_breach_alert_acknowledged_time_9b9ade02
             field: darktrace.model_breach_alert.acknowledged.time
             ignore_missing: true
         - append:
+            tag: append_error_message_8f0d182a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
@@ -1117,6 +1294,7 @@ processors:
         ctx.darktrace.model_breach_alert.is_acknowledged = ZonedDateTime.parse(acknowledged).isBefore(ZonedDateTime.parse(time));
       on_failure:
         - append:
+            tag: append_error_message_85ef8ff5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -1133,6 +1311,7 @@ processors:
       ignore_failure: true
       if: ctx.darktrace?.model_breach_alert?.acknowledged instanceof Map && ctx.darktrace.model_breach_alert.acknowledged.username != null
   - foreach:
+      tag: foreach_json_triggeredComponents_4560d350
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1148,6 +1327,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_ef63cdbc
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1163,6 +1343,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_dbdd45d6
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1178,6 +1359,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_2b61ec66
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1193,15 +1375,14 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_a7a5c9e8
       description: Stringify logic.data field of triggeredComponents array.
       lang: painless
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
-      source:
-        for (component in ctx.json.triggeredComponents) {
-          component.logic.data = component?.logic?.data.toString();
-        }
+      source: for (component in ctx.json.triggeredComponents) { component.logic.data = component?.logic?.data.toString(); }
   - foreach:
+      tag: foreach_json_triggeredComponents_b1dd0192
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1217,6 +1398,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_3f2ff2a6
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1232,6 +1414,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_a2a7b05e
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1247,6 +1430,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_b3e48dd2
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1263,6 +1447,7 @@ processors:
                 field: _ingest._value.time
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_triggeredComponents_3e6e58b2
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1273,6 +1458,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_triggeredComponents_030ecdac
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1292,6 +1478,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_1304b8df
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1305,6 +1492,7 @@ processors:
               target_field: _ingest._value.comparator_type
               ignore_missing: true
   - foreach:
+      tag: foreach_json_triggeredComponents_16f39857
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1318,6 +1506,7 @@ processors:
               target_field: _ingest._value.filter_type
               ignore_missing: true
   - foreach:
+      tag: foreach_json_triggeredComponents_7f9856c8
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1337,6 +1526,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_e8d1f862
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1356,6 +1546,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_545482ea
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1375,6 +1566,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_c72b3647
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1395,6 +1587,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_e97a92d8
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1414,6 +1607,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_416c2afa
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1433,6 +1627,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_6d6305e2
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1452,6 +1647,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_triggeredComponents_2ffc5bec
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1464,6 +1660,7 @@ processors:
               field: _ingest._value.trigger.tag.isReferenced
               ignore_missing: true
   - foreach:
+      tag: foreach_json_triggeredComponents_4de88faf
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
@@ -1473,13 +1670,16 @@ processors:
           target_field: _ingest._value.triggered_filters
           ignore_missing: true
   - rename:
+      tag: rename_json_triggeredComponents_to_darktrace_model_breach_alert_triggered_components_77fcb322
       field: json.triggeredComponents
       target_field: darktrace.model_breach_alert.triggered_components
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_b48797f2
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - darktrace.model_breach_alert.time
@@ -1501,6 +1701,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - foreach:
+      tag: foreach_darktrace_model_breach_alert_triggered_components_841ab340
       field: darktrace.model_breach_alert.triggered_components
       if: ctx.darktrace?.model_breach_alert?.triggered_components instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
@@ -1511,6 +1712,7 @@ processors:
           ignore_missing: true
           ignore_failure: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
