@@ -2,6 +2,10 @@
 // or more contributor license agreements. Licensed under the Elastic License;
 // you may not use this file except in compliance with the Elastic License.
 
+// Copied from dev/gitutil/git.go. Kept as a local copy so that
+// cmd/backport remains a self-contained sub-module that can be synced onto
+// backport branches without carrying dev/gitutil and its dependencies.
+
 package gitutil
 
 import (
