@@ -45,7 +45,7 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
 
-This option requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+This option requires the Event Hub processor v2 (**Processor version** set to `v2`, which is the default) and Elastic Agent 8.19.10, 9.2.4, or later.
 
 #### Default Logging
 
