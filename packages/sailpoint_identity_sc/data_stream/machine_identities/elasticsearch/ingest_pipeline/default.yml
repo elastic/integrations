@@ -83,8 +83,27 @@ processors:
               failed: {{{_ingest.on_failure_message}}}
   - date:
       field: json.created
-      tag: parse_event_created
-      target_field: event.created
+      tag: parse_timestamp_created_fallback
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.modified == null && ctx.json?.created != null
+      on_failure:
+        - remove:
+            field: json.created
+            ignore_missing: true
+            tag: remove_invalid_created_fallback
+        - append:
+            field: error.message
+            tag: append_error_created_fallback
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+  - date:
+      field: json.created
+      tag: parse_machine_identity_created
+      target_field: sailpoint_identity_sc.machine_identity.created
       formats:
         - ISO8601
       if: ctx.json?.created != null
@@ -207,15 +226,10 @@ processors:
       tag: rename_manually_created
       ignore_missing: true
   - set:
-      field: sailpoint_identity_sc.machine_identity.created
-      tag: set_custom_created
-      copy_from: event.created
-      if: ctx.event?.created != null
-  - set:
       field: sailpoint_identity_sc.machine_identity.modified
       tag: set_custom_modified
       copy_from: '@timestamp'
-      if: ctx['@timestamp'] != null
+      if: ctx.json?.modified != null
   - rename:
       field: json.owners.primaryIdentity.id
       target_field: sailpoint_identity_sc.machine_identity.owners.primary.id
@@ -231,11 +245,24 @@ processors:
       target_field: sailpoint_identity_sc.machine_identity.owners.secondary
       tag: rename_secondary_owners
       ignore_missing: true
-  - rename:
+  - foreach:
       field: json.userEntitlements
-      target_field: sailpoint_identity_sc.machine_identity.user_entitlements
-      tag: rename_user_entitlements
+      tag: foreach_user_entitlements_snake_case
+      if: ctx.json?.userEntitlements instanceof List
       ignore_missing: true
+      processor:
+        append:
+          field: sailpoint_identity_sc.machine_identity.user_entitlements
+          tag: append_user_entitlement
+          allow_duplicates: false
+          value:
+            source_id: '{{{_ingest._value.sourceId}}}'
+            entitlement_id: '{{{_ingest._value.entitlementId}}}'
+            display_name: '{{{_ingest._value.displayName}}}'
+            source:
+              id: '{{{_ingest._value.source.id}}}'
+              name: '{{{_ingest._value.source.name}}}'
+              type: '{{{_ingest._value.source.type}}}'
 
   # --- Cleanup ---
   - remove:

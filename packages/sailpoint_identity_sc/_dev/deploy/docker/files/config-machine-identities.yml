@@ -24,12 +24,8 @@ rules:
             "expires_in": 3600,
             "token_type": "Bearer"
           }
-  # Round 2, Page 1 (offset=0) — cursor resume after Round 1 completes.
-  # Same as Round 1 Page 1. Returns 2 records, pagination will continue.
-  # Rule ordering: Round 2 termination (offset=2) is placed BEFORE this rule
-  # so the more specific offset=2 rule matches before the fallback.
-  # This rule uses a separate response block to indicate Round 2; response
-  # data is identical to Round 1 Page 1 (full scan restarted).
+  # Page 1 (offset=0): returns 2 records (== batch_size), so the CEL program
+  # requests the next page. Every collection cycle restarts here (full scan, no cursor).
   - path: /v2026/machine-identities
     methods:
       - GET

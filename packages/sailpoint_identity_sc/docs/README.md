@@ -22,7 +22,7 @@ This integration uses OAuth2 `client_credentials` to authenticate against the Sa
 1. Log in to the SailPoint ISC admin console.
 2. Navigate to **Admin → Security Settings → API Management**.
 3. Click **Create API Client**, select **Client Credentials** as grant type, and grant the following scopes:
-   - `sp:search:read` — required for the `events` and `identities` data streams
+   - `sp:search:read` — required for the `events` data stream
    - `idn:mis-identity:read` and `idn:mis-identity:manage` — required for the `machine_identities` data stream (experimental API)
 4. Note the generated **Client ID** and **Client Secret** for use in the integration configuration.
 
@@ -41,24 +41,24 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "b6ceb572-1179-4497-84df-0207501ecaeb",
-        "id": "f0a879aa-5075-4959-a069-27ed3f2fcca1",
-        "name": "elastic-agent-20285",
+        "ephemeral_id": "e52e6872-ae09-4772-a2b3-23a7613bc824",
+        "id": "d635c018-9415-4c3f-b52f-60d8be70bdaf",
+        "name": "elastic-agent-10126",
         "type": "filebeat",
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.events",
-        "namespace": "75813",
+        "namespace": "51638",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f0a879aa-5075-4959-a069-27ed3f2fcca1",
+        "id": "d635c018-9415-4c3f-b52f-60d8be70bdaf",
         "snapshot": false,
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -66,7 +66,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_sc.events",
-        "ingested": "2026-07-17T12:44:00Z",
+        "ingested": "2026-08-06T14:07:40Z",
         "kind": "event",
         "module": "sailpoint_identity_sc",
         "type": [
@@ -164,7 +164,7 @@ An example event for `events` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -281,33 +281,32 @@ An example event for `machine_identities` looks as following:
 {
     "@timestamp": "2025-01-10T08:45:00.000Z",
     "agent": {
-        "ephemeral_id": "91246a6a-985b-4132-a247-04499d1761e4",
-        "id": "0c85dfcd-a83d-47a1-9426-84c2c4b0a534",
-        "name": "elastic-agent-56306",
+        "ephemeral_id": "1ada4b2c-6ce1-4d7e-9390-1b6bd376bbca",
+        "id": "c910306a-0e45-4b02-8dd2-d978ffc0a314",
+        "name": "elastic-agent-53628",
         "type": "filebeat",
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.machine_identities",
-        "namespace": "18203",
+        "namespace": "46738",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "0c85dfcd-a83d-47a1-9426-84c2c4b0a534",
+        "id": "c910306a-0e45-4b02-8dd2-d978ffc0a314",
         "snapshot": false,
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2024-01-15T10:30:00.000Z",
         "dataset": "sailpoint_identity_sc.machine_identities",
-        "ingested": "2026-07-17T17:57:50Z",
+        "ingested": "2026-08-06T14:08:30Z",
         "kind": "asset",
         "module": "sailpoint_identity_sc",
         "original": "{\"attributes\":{\"env\":\"production\",\"team\":\"Platform\"},\"created\":\"2024-01-15T10:30:00Z\",\"datasetId\":\"ds-id-aabbccdd-1111-2222-3333-000000000001\",\"description\":\"Example service account for integration tests.\",\"id\":\"mi-id-aabbccdd-1111-2222-3333-000000000001\",\"manuallyCreated\":false,\"manuallyEdited\":false,\"modified\":\"2025-01-10T08:45:00Z\",\"name\":\"svc-example-service\",\"nativeIdentity\":\"svc-example:prod:00001\",\"owners\":{\"primaryIdentity\":{\"id\":\"00000000000000000000000000000001\",\"name\":\"alice.example\",\"type\":\"IDENTITY\"},\"secondaryIdentities\":[]},\"source\":{\"id\":\"src-id-aabbccdd-1111-2222-3333-000000000001\",\"name\":\"Example Directory\",\"type\":\"SOURCE\"},\"sourceId\":\"src-id-aabbccdd-1111-2222-3333-000000000001\",\"subtype\":\"Application\",\"userEntitlements\":[],\"uuid\":\"uuid-aabbccdd-1111-2222-3333-000000000001\"}",
@@ -372,7 +371,7 @@ An example event for `machine_identities` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in machine_identities documents:
 
@@ -386,7 +385,6 @@ The following non-ECS fields are used in machine_identities documents:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
@@ -410,12 +408,12 @@ The following non-ECS fields are used in machine_identities documents:
 | sailpoint_identity_sc.machine_identity.source.id | ID of the source system associated with this machine identity. | keyword |
 | sailpoint_identity_sc.machine_identity.source.name | Name of the source system associated with this machine identity. | keyword |
 | sailpoint_identity_sc.machine_identity.source_id | Plain source ID string from the machine identity record. | keyword |
-| sailpoint_identity_sc.machine_identity.user_entitlements.displayName | Display name of the entitlement. | keyword |
-| sailpoint_identity_sc.machine_identity.user_entitlements.entitlementId | ID of the entitlement held by this machine identity. | keyword |
+| sailpoint_identity_sc.machine_identity.user_entitlements.display_name | Display name of the entitlement. | keyword |
+| sailpoint_identity_sc.machine_identity.user_entitlements.entitlement_id | ID of the entitlement held by this machine identity. | keyword |
 | sailpoint_identity_sc.machine_identity.user_entitlements.source.id | ID of the entitlement source. | keyword |
 | sailpoint_identity_sc.machine_identity.user_entitlements.source.name | Name of the entitlement source. | keyword |
 | sailpoint_identity_sc.machine_identity.user_entitlements.source.type | Type of the entitlement source. | keyword |
-| sailpoint_identity_sc.machine_identity.user_entitlements.sourceId | ID of the source system providing this entitlement. | keyword |
+| sailpoint_identity_sc.machine_identity.user_entitlements.source_id | ID of the source system providing this entitlement. | keyword |
 | sailpoint_identity_sc.machine_identity.uuid | UUID of the machine identity on the source system. | keyword |
 | service.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
 | service.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
