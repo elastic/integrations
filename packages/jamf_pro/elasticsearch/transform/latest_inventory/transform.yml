@@ -1,0 +1,36 @@
+source:
+  index:
+    - "logs-jamf_pro.inventory-*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-jamf_pro_latest.dest_inventory-1"
+  aliases:
+    - alias: "logs-jamf_pro_latest.inventory"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - host.id
+  sort: "@timestamp"
+description: >-
+  Latest inventory from Jamf Pro. Retains only the most recent document per device.
+frequency: 30s
+settings:
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 30d
+_meta:
+  managed: false
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
