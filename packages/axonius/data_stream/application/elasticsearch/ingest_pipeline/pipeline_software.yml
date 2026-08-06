@@ -12,9 +12,11 @@ processors:
       if: ctx.axonius?.application?.approval_status_meta?.last_modified != null && ctx.axonius.application.approval_status_meta.last_modified != ''
       on_failure:
         - remove:
+            tag: remove_axonius_application_approval_status_meta_last_modified_27b886be
             field: axonius.application.approval_status_meta.last_modified
             ignore_missing: true
         - append:
+            tag: append_error_message_8b19f0b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -113,9 +115,11 @@ processors:
       if: ctx.axonius?.application?.last_used_date != null && ctx.axonius.application.last_used_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_application_last_used_date_a7331f83
             field: axonius.application.last_used_date
             ignore_missing: true
         - append:
+            tag: append_error_message_4e926eea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
@@ -129,3 +133,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

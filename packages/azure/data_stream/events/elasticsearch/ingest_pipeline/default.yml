@@ -2,18 +2,22 @@
 description: Pipeline for parsing Azure logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
   # TODO: we can remove this processor when https://github.com/elastic/beats/issues/40561
   # is fixed and released.
   - rename:
+      tag: rename_azure_to_azure-eventhub_504dc9ac
       field: azure
       target_field: azure-eventhub
       if: "ctx.azure?.eventhub != null"
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
+
 
   #
   # Set `event.dataset` value based on the event category.
@@ -23,13 +27,14 @@ processors:
   # `event.dataset` value to route the event to
   # the appropriate data stream.
   #
-
   - json:
+      tag: json_message_to_tmp_json_3430dc7f
       field: message
       target_field: tmp_json
       description: "Parses the message field as JSON and stores it in a temporary field to identify the event dataset."
 
   - rename:
+      tag: rename_tmp_json_category_to_routing_category_615f4cf5
       field: tmp_json.category
       target_field: routing.category
       ignore_missing: true
@@ -45,6 +50,7 @@ processors:
   #
   # [1]: https://learn.microsoft.com/en-us/azure/azure-monitor/platform/resource-logs-schema#top-level-common-schema
   - rename:
+      tag: rename_tmp_json_Category_to_routing_category_7043ca18
       field: tmp_json.Category
       target_field: routing.category
       if: "ctx.routing?.category == null"
@@ -60,6 +66,7 @@ processors:
   # Refs;
   # - https://github.com/elastic/integrations/issues/15206
   - rename:
+      tag: rename_tmp_json_CategoryValue_to_routing_category_8944cf60
       field: tmp_json.CategoryValue
       target_field: routing.category
       if: ctx.routing?.category == null
@@ -68,60 +75,73 @@ processors:
 
   # Remove the temporary field used to identify the event dataset.
   - remove:
+      tag: remove_tmp_json_26da7c12
       field: tmp_json
       ignore_missing: true
       description: "Removes the temporary field used to identify the event dataset."
 
   # Defaults to azure.events if the `category` field is not present.
   - set:
+      tag: set_event_dataset_399792c5
       field: event.dataset
       value: azure.events
       description: "Sets the default event dataset."
 
   # Sets the event dataset based on the `category` field.
   - set:
+      tag: set_event_dataset_3108a4dc
       field: event.dataset
       value: azure.platformlogs
       if: "ctx.routing?.category != null"
       description: "If the event has a category field, we consider it a platform log."
   - set:
+      tag: set_event_dataset_e68343d7
       field: event.dataset
       value: azure.activitylogs
       if: 'ctx.routing?.category == "Administrative" || ctx.routing?.category == "Security" || ctx.routing?.category == "ServiceHealth" || ctx.routing?.category == "Alert" || ctx.routing?.category == "Recommendation" || ctx.routing?.category == "Policy" || ctx.routing?.category == "Autoscale" || ctx.routing?.category == "ResourceHealth"'
   - set:
+      tag: set_event_dataset_2706eee5
       field: event.dataset
       value: azure.application_gateway
       if: 'ctx.routing?.category == "ApplicationGatewayFirewallLog" || ctx.routing?.category == "ApplicationGatewayAccessLog"'
   - set:
+      tag: set_event_dataset_4a996d04
       field: event.dataset
       value: azure.auditlogs
       if: 'ctx.routing?.category == "AuditLogs"'
   - set:
+      tag: set_event_dataset_bf1d2218
       field: event.dataset
       value: azure.firewall_logs
       if: 'ctx.routing?.category == "AzureFirewallApplicationRule" || ctx.routing?.category == "AzureFirewallNetworkRule" || ctx.routing?.category == "AzureFirewallDnsProxy" || ctx.routing?.category == "AZFWApplicationRule" || ctx.routing?.category == "AZFWNetworkRule" || ctx.routing?.category == "AZFWNatRule" || ctx.routing?.category == "AZFWDnsQuery"'
   - set:
+      tag: set_event_dataset_45eff638
       field: event.dataset
       value: azure.graphactivitylogs
       if: 'ctx.routing?.category == "MicrosoftGraphActivityLogs"'
   - set:
+      tag: set_event_dataset_d6cc7040
       field: event.dataset
       value: azure.aadgraphactivitylogs
       if: 'ctx.routing?.category == "AzureADGraphActivityLogs"'
   - set:
+      tag: set_event_dataset_2ae326bb
       field: event.dataset
       value: azure.identity_protection
       if: 'ctx.routing?.category == "RiskyUsers" || ctx.routing?.category == "UserRiskEvents"'
   - set:
+      tag: set_event_dataset_06657b91
       field: event.dataset
       value: azure.provisioning
       if: 'ctx.routing?.category == "ProvisioningLogs"'
   - set:
+      tag: set_event_dataset_1fa68c06
       field: event.dataset
       value: azure.signinlogs
       # Use same logic as the `signinlogs` stream that drops any document that doesn't end with `SignInLogs`.
       if: 'ctx.routing?.category != null && ctx.routing?.category.endsWith("SignInLogs")'
   - set:
+      tag: set_event_dataset_b85b3e65
       field: event.dataset
       value: azure.springcloudlogs
       if: 'ctx.routing?.category == "SystemLogs" || ctx.routing?.category == "ApplicationConsole" || ctx.routing?.category == "IngressLogs" || ctx.routing?.category == "BuildLogs" || ctx.routing?.category == "ContainerEventLogs"'

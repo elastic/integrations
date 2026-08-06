@@ -2,6 +2,7 @@
 description: Pipeline for parsing cisco_duo trust monitor logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,6 +17,7 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
@@ -25,6 +27,7 @@ processors:
       if: ctx.event?.original == null
       tag: rename_event_original
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -35,9 +38,11 @@ processors:
       tag: json_event_original
       on_failure:
         - set:
+            tag: set_event_kind_e68181f1
             field: event.kind
             value: pipeline_error
         - append:
+            tag: append_error_message_4fe07283
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
@@ -48,6 +53,7 @@ processors:
         - UNIX_MS
       on_failure:
         - append:
+            tag: append_error_message_0c6ab3e3
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
@@ -174,6 +180,7 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:

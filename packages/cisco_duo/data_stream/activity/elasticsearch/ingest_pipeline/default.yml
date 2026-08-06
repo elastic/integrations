@@ -2,6 +2,7 @@
 description: Pipeline for parsing cisco_duo trust monitor logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,6 +17,7 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
@@ -25,6 +27,7 @@ processors:
       if: ctx.event?.original == null
       tag: rename_event_original
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -35,9 +38,11 @@ processors:
       tag: json_event_original
       on_failure:
         - set:
+            tag: set_event_kind_e68181f1
             field: event.kind
             value: pipeline_error
         - append:
+            tag: append_error_message_4fe07283
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
@@ -48,6 +53,7 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_74ca6d98
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
@@ -73,17 +79,21 @@ processors:
       tag: convert_ip_address
       on_failure:
         - append:
+            tag: append_error_message_48c94e3d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_cisco_duo_activity_access_device_ip_address_to_cisco_duo_activity_access_device_geo_ac378715
       field: cisco_duo.activity.access_device.ip.address
       target_field: cisco_duo.activity.access_device.geo
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_894aae0c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_cisco_duo_activity_access_device_ip_address_to_cisco_duo_activity_access_device_as_be8e62da
       database_file: GeoLite2-ASN.mmdb
       field: cisco_duo.activity.access_device.ip.address
       target_field: cisco_duo.activity.access_device.as
@@ -93,6 +103,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5e3c9c67
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -259,6 +270,7 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:

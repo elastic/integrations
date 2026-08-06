@@ -28,6 +28,7 @@ processors:
       target_field: authentik.user
       on_failure:
         - append:
+            tag: append_error_message_f85559b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -105,9 +106,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_authentik_user_is_active_e9649870
             field: authentik.user.is_active
             ignore_missing: true
         - append:
+            tag: append_error_message_26ae279e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -119,9 +122,11 @@ processors:
       if: ctx.authentik?.user?.last_login != null && ctx.authentik.user.last_login != ''
       on_failure:
         - remove:
+            tag: remove_authentik_user_last_login_00ec77dc
             field: authentik.user.last_login
             ignore_missing: true
         - append:
+            tag: append_error_message_e64ec0c5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -131,12 +136,15 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_authentik_user_is_superuser_1b516ad4
             field: authentik.user.is_superuser
             ignore_missing: true
         - append:
+            tag: append_error_message_e049c5e4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_authentik_user_groups_21ee97a3
       field: authentik.user.groups
       if: ctx.authentik?.user?.groups instanceof List
       processor:
@@ -211,6 +219,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

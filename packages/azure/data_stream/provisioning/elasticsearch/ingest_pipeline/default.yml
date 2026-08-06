@@ -2,42 +2,51 @@
 description: Pipeline for parsing Azure Provisioning logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - script:
+      tag: script_b08e84a2
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_azure_provisioning_3df18f2a
       field: event.original
       target_field: azure.provisioning
   - drop:
+      tag: drop_03a2cc82
       description: Drop events that are not Azure Provisioning logs.
       if: ctx?.azure?.provisioning?.category == null || ctx.azure.provisioning.category != 'ProvisioningLogs'
   #
   # Common fields
   #      
   - date:
+      tag: date_azure_provisioning_time_to_timestamp_417b9e0f
       field: azure.provisioning.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -46,39 +55,46 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - ISO8601
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
+      tag: remove_azure_provisioning_time_3f544ce7
       field: azure.provisioning.time
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_resourceId_to_azure_resource_id_cf4da914
       field: azure.provisioning.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - convert:
+        tag: convert_azure_provisioning_callerIpAddress_to_source_ip_a66089a5
         field: azure.provisioning.callerIpAddress
         target_field: source.ip
         type: ip
         ignore_missing: true
         on_failure:
-        - rename: 
+        - rename:
+            tag: rename_azure_provisioning_callerIpAddress_to_source_address_70d06e02
             field: azure.provisioning.callerIpAddress
             target_field: source.address
-            ignore_missing: true 
+            ignore_missing: true
             ignore_failure: true
   - remove:
+      tag: remove_azure_provisioning_callerIpAddress_f0c3a8cc
       field: azure.provisioning.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -87,51 +103,61 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_durationMs_to_event_duration_63215b30
       field: azure.provisioning.durationMs
       target_field: event.duration
       ignore_missing: true
   - script:
+      tag: script_7f8b9902
       lang: painless
-      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
-        * params.param_nano;}
+      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration * params.param_nano;}
       params:
         param_nano: 1000000
       ignore_failure: true
   - rename:
+      tag: rename_azure_provisioning_resultType_to_azure_provisioning_result_type_da835cff
       field: azure.provisioning.resultType
       target_field: azure.provisioning.result_type
       ignore_missing: true
   - convert:
+      tag: convert_azure_provisioning_result_type_to_event_outcome_1f3fb57b
       field: azure.provisioning.result_type
       target_field: event.outcome
       type: string
       if: "ctx?.azure?.provisioning?.result_type != null && ctx.azure.provisioning.result_type instanceof String && (ctx.azure.provisioning.result_type.toLowerCase() == 'success' || ctx.azure.provisioning.result_type.toLowerCase() == 'failure')"
   - rename:
+      tag: rename_azure_provisioning_operationName_to_azure_provisioning_operation_name_77abfce1
       field: azure.provisioning.operationName
       target_field: azure.provisioning.operation_name
       ignore_missing: true
   - convert:
+      tag: convert_azure_provisioning_operation_name_to_event_action_24da7fa1
       field: azure.provisioning.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_operationVersion_to_azure_provisioning_operation_version_56b77bcd
       field: azure.provisioning.operationVersion
       target_field: azure.provisioning.operation_version
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_tenantId_to_azure_tenant_id_42ed15e4
       field: azure.provisioning.tenantId
       target_field: azure.tenant_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_Level_to_azure_provisioning_level_4a611750
       field: azure.provisioning.Level
       target_field: azure.provisioning.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_resultSignature_to_azure_provisioning_result_signature_39ad9245
       field: azure.provisioning.resultSignature
       target_field: azure.provisioning.result_signature
       ignore_missing: true
   - rename:
+      tag: rename_azure_provisioning_correlationId_to_azure_correlation_id_25b6c3fe
       field: azure.provisioning.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
@@ -139,97 +165,120 @@ processors:
   # Provisioning-related fields
   #
   - rename:
+     tag: rename_azure_provisioning_properties_tenantId_to_azure_provisioning_properties_tenant_id_be6a6c21
      field: azure.provisioning.properties.tenantId
      target_field: azure.provisioning.properties.tenant_id
-     ignore_missing: true  
+     ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_activityDateTime_to_azure_provisioning_properties_activity_datetime_87f90255
      field: azure.provisioning.properties.activityDateTime
      target_field: azure.provisioning.properties.activity_datetime
-     ignore_missing: true  
+     ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_changeId_to_azure_provisioning_properties_change_id_5fcc4a09
      field: azure.provisioning.properties.changeId
      target_field: azure.provisioning.properties.change_id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_cycleId_to_azure_provisioning_properties_cycle_id_a28c36db
      field: azure.provisioning.properties.cycleId
      target_field: azure.provisioning.properties.cycle_id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_durationInMilliseconds_to_azure_provisioning_properties_duration_ms_ab27e08a
      field: azure.provisioning.properties.durationInMilliseconds
      target_field: azure.provisioning.properties.duration_ms
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_initiatedBy_to_azure_provisioning_properties_initiated_by_63e87785
      field: azure.provisioning.properties.initiatedBy
      target_field: azure.provisioning.properties.initiated_by
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_initiated_by_Id_to_azure_provisioning_properties_initiated_by_id_8626a438
      field: azure.provisioning.properties.initiated_by.Id
      target_field: azure.provisioning.properties.initiated_by.id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_initiated_by_Name_to_azure_provisioning_properties_initiated_by_name_355e5c0c
      field: azure.provisioning.properties.initiated_by.Name
      target_field: azure.provisioning.properties.initiated_by.name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_initiated_by_Type_to_azure_provisioning_properties_initiated_by_type_f84ba0fa
      field: azure.provisioning.properties.initiated_by.Type
      target_field: azure.provisioning.properties.initiated_by.type
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_jobId_to_azure_provisioning_properties_job_id_8266bead
      field: azure.provisioning.properties.jobId
      target_field: azure.provisioning.properties.job_id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_modifiedProperties_to_azure_provisioning_properties_modified_properties_580c1391
      field: azure.provisioning.properties.modifiedProperties
      target_field: azure.provisioning.properties.modified_properties
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_modified_properties_displayName_to_azure_provisioning_properties_modified_properties_display_name_1ec9e76d
      field: azure.provisioning.properties.modified_properties.displayName
      target_field: azure.provisioning.properties.modified_properties.display_name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_modified_properties_newValue_to_azure_provisioning_properties_modified_properties_new_value_549178eb
      field: azure.provisioning.properties.modified_properties.newValue
      target_field: azure.provisioning.properties.modified_properties.new_value
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_modified_properties_oldValue_to_azure_provisioning_properties_modified_properties_old_value_a12cdf47
      field: azure.provisioning.properties.modified_properties.oldValue
      target_field: azure.provisioning.properties.modified_properties.old_value
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_provisioningAction_to_azure_provisioning_properties_provisioning_action_428e5dc3
      field: azure.provisioning.properties.provisioningAction
      target_field: azure.provisioning.properties.provisioning_action
      ignore_missing: true
   # provisioningStatusInfo
   # https://docs.microsoft.com/en-us/graph/api/resources/provisioningerrorinfo?view=graph-rest-1.0     
   - rename:
+     tag: rename_azure_provisioning_properties_provisioningStatusInfo_to_azure_provisioning_properties_provisioning_status_info_eea451ce
      field: azure.provisioning.properties.provisioningStatusInfo
      target_field: azure.provisioning.properties.provisioning_status_info
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_provisioning_status_info_Status_to_azure_provisioning_properties_provisioning_status_info_status_b5485b52
      field: azure.provisioning.properties.provisioning_status_info.Status
      target_field: azure.provisioning.properties.provisioning_status_info.status
      ignore_missing: true
   - remove:
+     tag: remove_azure_provisioning_properties_provisioning_status_info_errorInformation_2a4b987f
      field: azure.provisioning.properties.provisioning_status_info.errorInformation
      ignore_missing: true
      if: "ctx?.azure?.provisioning?.properties?.provisioning_status_info?.errorInformation == null"
      description: "Remove errorInformation if it is null to avoid field value parsing errors"
   - rename:
+     tag: rename_azure_provisioning_properties_provisioning_status_info_errorInformation_to_azure_provisioning_properties_provisioning_status_info_error_information_56cf6f7f
      field: azure.provisioning.properties.provisioning_status_info.errorInformation
      target_field: azure.provisioning.properties.provisioning_status_info.error_information
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_provisioning_status_info_error_information_additionalDetails_to_azure_provisioning_properties_provisioning_status_info_error_information_additional_details_9d100249
      field: azure.provisioning.properties.provisioning_status_info.error_information.additionalDetails
      target_field: azure.provisioning.properties.provisioning_status_info.error_information.additional_details
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_provisioning_status_info_error_information_errorCategory_to_azure_provisioning_properties_provisioning_status_info_error_information_error_category_7b021083
      field: azure.provisioning.properties.provisioning_status_info.error_information.errorCategory
      target_field: azure.provisioning.properties.provisioning_status_info.error_information.error_category
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_provisioning_status_info_error_information_errorCode_to_azure_provisioning_properties_provisioning_status_info_error_information_error_code_6dc10051
      field: azure.provisioning.properties.provisioning_status_info.error_information.errorCode
      target_field: azure.provisioning.properties.provisioning_status_info.error_information.error_code
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_provisioning_status_info_error_information_recommendedAction_to_azure_provisioning_properties_provisioning_status_info_error_information_recommended_action_2c9f1cbf
      field: azure.provisioning.properties.provisioning_status_info.error_information.recommendedAction
      target_field: azure.provisioning.properties.provisioning_status_info.error_information.recommended_action
      ignore_missing: true
@@ -237,122 +286,150 @@ processors:
   # servicePrincipal
   # https://docs.microsoft.com/en-us/graph/api/resources/provisioningserviceprincipal?view=graph-rest-1.0
   - rename:
+     tag: rename_azure_provisioning_properties_servicePrincipal_to_azure_provisioning_properties_service_principal_eb983385
      field: azure.provisioning.properties.servicePrincipal
      target_field: azure.provisioning.properties.service_principal
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_service_principal_Id_to_azure_provisioning_properties_service_principal_id_9315bd7c
      field: azure.provisioning.properties.service_principal.Id
      target_field: azure.provisioning.properties.service_principal.id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_service_principal_Name_to_azure_provisioning_properties_service_principal_name_c8a44b54
      field: azure.provisioning.properties.service_principal.Name
      target_field: azure.provisioning.properties.service_principal.name
      ignore_missing: true
   # sourceIdentity
   # https://docs.microsoft.com/en-us/graph/api/resources/provisionedidentity?view=graph-rest-1.0
   - rename:
+     tag: rename_azure_provisioning_properties_sourceIdentity_to_azure_provisioning_properties_source_identity_7511b48f
      field: azure.provisioning.properties.sourceIdentity
      target_field: azure.provisioning.properties.source_identity
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_identity_Id_to_azure_provisioning_properties_source_identity_id_f850c7b8
      field: azure.provisioning.properties.source_identity.Id
      target_field: azure.provisioning.properties.source_identity.id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_identity_Name_to_azure_provisioning_properties_source_identity_name_1137cb24
      field: azure.provisioning.properties.source_identity.Name
      target_field: azure.provisioning.properties.source_identity.name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_identity_identityType_to_azure_provisioning_properties_source_identity_identity_type_8bf89ad7
      field: azure.provisioning.properties.source_identity.identityType
      target_field: azure.provisioning.properties.source_identity.identity_type
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_identity_details_DisplayName_to_azure_provisioning_properties_source_identity_details_display_name_e028ac8b
      field: azure.provisioning.properties.source_identity.details.DisplayName
      target_field: azure.provisioning.properties.source_identity.details.display_name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_identity_details_UserPrincipalName_to_azure_provisioning_properties_source_identity_details_user_principal_name_38f05a68
      field: azure.provisioning.properties.source_identity.details.UserPrincipalName
      target_field: azure.provisioning.properties.source_identity.details.user_principal_name
      ignore_missing: true
   # targetIdentity
   # https://docs.microsoft.com/en-us/graph/api/resources/provisionedidentity?view=graph-rest-1.0
   - rename:
+     tag: rename_azure_provisioning_properties_targetIdentity_to_azure_provisioning_properties_target_identity_e3382b8b
      field: azure.provisioning.properties.targetIdentity
      target_field: azure.provisioning.properties.target_identity
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_identity_Id_to_azure_provisioning_properties_target_identity_id_a9487f74
      field: azure.provisioning.properties.target_identity.Id
      target_field: azure.provisioning.properties.target_identity.id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_identity_Name_to_azure_provisioning_properties_target_identity_name_df571708
      field: azure.provisioning.properties.target_identity.Name
      target_field: azure.provisioning.properties.target_identity.name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_identity_identityType_to_azure_provisioning_properties_target_identity_identity_type_293a9607
      field: azure.provisioning.properties.target_identity.identityType
      target_field: azure.provisioning.properties.target_identity.identity_type
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_identity_details_DisplayName_to_azure_provisioning_properties_target_identity_details_display_name_23b08a6f
      field: azure.provisioning.properties.target_identity.details.DisplayName
      target_field: azure.provisioning.properties.target_identity.details.display_name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_identity_details_UserPrincipalName_to_azure_provisioning_properties_target_identity_details_user_principal_name_3584f750
      field: azure.provisioning.properties.target_identity.details.UserPrincipalName
      target_field: azure.provisioning.properties.target_identity.details.user_principal_name
      ignore_missing: true
   # sourceSystem
   # https://docs.microsoft.com/en-us/graph/api/resources/provisioningsystem?view=graph-rest-1.0
   - rename:
+     tag: rename_azure_provisioning_properties_sourceSystem_to_azure_provisioning_properties_source_system_a5f8fb85
      field: azure.provisioning.properties.sourceSystem
      target_field: azure.provisioning.properties.source_system
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_system_Id_to_azure_provisioning_properties_source_system_id_7ec429b4
      field: azure.provisioning.properties.source_system.Id
      target_field: azure.provisioning.properties.source_system.id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_system_Name_to_azure_provisioning_properties_source_system_name_03d6fd4c
      field: azure.provisioning.properties.source_system.Name
      target_field: azure.provisioning.properties.source_system.name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_system_details_ApplicationId_to_azure_provisioning_properties_source_system_details_application_id_1f0c5af5
      field: azure.provisioning.properties.source_system.details.ApplicationId
      target_field: azure.provisioning.properties.source_system.details.application_id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_system_details_ServicePrincipalDisplayName_to_azure_provisioning_properties_source_system_details_dervice_principal_display_name_14fbe592
      field: azure.provisioning.properties.source_system.details.ServicePrincipalDisplayName
      target_field: azure.provisioning.properties.source_system.details.dervice_principal_display_name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_source_system_details_ServicePrincipalId_to_azure_provisioning_properties_source_system_details_service_principal_id_e8c0e36c
      field: azure.provisioning.properties.source_system.details.ServicePrincipalId
      target_field: azure.provisioning.properties.source_system.details.service_principal_id
      ignore_missing: true
   # targetSystem
   # https://docs.microsoft.com/en-us/graph/api/resources/provisioningsystem?view=graph-rest-1.0
   - rename:
+     tag: rename_azure_provisioning_properties_targetSystem_to_azure_provisioning_properties_target_system_9ea829ad
      field: azure.provisioning.properties.targetSystem
      target_field: azure.provisioning.properties.target_system
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_system_Id_to_azure_provisioning_properties_target_system_id_e5a757cc
      field: azure.provisioning.properties.target_system.Id
      target_field: azure.provisioning.properties.target_system.id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_system_Name_to_azure_provisioning_properties_target_system_name_e1f0e984
      field: azure.provisioning.properties.target_system.Name
      target_field: azure.provisioning.properties.target_system.name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_system_details_ApplicationId_to_azure_provisioning_properties_target_system_details_application_id_97005df5
      field: azure.provisioning.properties.target_system.details.ApplicationId
      target_field: azure.provisioning.properties.target_system.details.application_id
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_system_details_ServicePrincipalDisplayName_to_azure_provisioning_properties_target_system_details_dervice_principal_display_name_f9066446
      field: azure.provisioning.properties.target_system.details.ServicePrincipalDisplayName
      target_field: azure.provisioning.properties.target_system.details.dervice_principal_display_name
      ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_target_system_details_ServicePrincipalId_to_azure_provisioning_properties_target_system_details_service_principal_id_3b99ded8
      field: azure.provisioning.properties.target_system.details.ServicePrincipalId
      target_field: azure.provisioning.properties.target_system.details.service_principal_id
      ignore_missing: true
   - remove:
+     tag: remove_azure_provisioning_properties_statusInfo_08041800
      field: azure.provisioning.properties.statusInfo
      description: |
         It looks like statusInfo contains the same information as provisioningStatusInfo, so we remove it. The statusInfo field is not documented at https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadprovisioninglogs.
@@ -360,10 +437,12 @@ processors:
   # provisioningSteps
   # https://docs.microsoft.com/en-us/graph/api/resources/provisioningstep?view=graph-rest-1.0
   - rename:
+     tag: rename_azure_provisioning_properties_provisioningSteps_to_azure_provisioning_properties_provisioning_steps_44105d93
      field: azure.provisioning.properties.provisioningSteps
      target_field: azure.provisioning.properties.provisioning_steps
      ignore_missing: true
   - foreach:
+      tag: foreach_azure_provisioning_properties_provisioning_steps_a6edf4bd
       field: azure.provisioning.properties.provisioning_steps
       ignore_missing: true
       processor:
@@ -372,13 +451,16 @@ processors:
           target_field: _ingest._value.provisioning_step_type
           ignore_missing: true
   - rename:
+     tag: rename_azure_provisioning_properties_activityDateTime_to_azure_provisioning_properties_activity_datetime_87f90255
      field: azure.provisioning.properties.activityDateTime
      target_field: azure.provisioning.properties.activity_datetime
      ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - pipeline:
+      tag: pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
   - set:

@@ -2,6 +2,7 @@
 description: Pipeline for parsing cisco_duo offline enrollment logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,28 +17,35 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_287f93e5
       field: event.original
       target_field: json
       on_failure:
         - set:
+            tag: set_event_kind_1ba30fcd
             field: event.kind
             value: pipeline_error
         - append:
+            tag: append_error_message_4a5082e0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_3d6db8e0
       if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
+      tag: fingerprint_a2286fac
       fields:
         - json.timestamp
         - json.action
@@ -47,62 +55,76 @@ processors:
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_timestamp_eab81b12
       field: json.timestamp
       if: ctx.json?.timestamp != null
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_15e8915f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - json:
+      tag: json_json_description_to_json_description_f7980175
       field: json.description
       target_field: json_description
       ignore_failure: true
   - set:
+      tag: set_user_name_4f57d202
       field: user.name
       copy_from: json.username
       ignore_failure: true
   - rename:
+      tag: rename_json_action_to_cisco_duo_offline_enrollment_action_af796e5e
       field: json.action
       target_field: cisco_duo.offline_enrollment.action
       ignore_missing: true
   - rename:
+      tag: rename_json_description_hostname_to_cisco_duo_offline_enrollment_description_hostname_b07c9f3b
       field: json_description.hostname
       target_field: cisco_duo.offline_enrollment.description.hostname
       ignore_missing: true
   - rename:
+      tag: rename_json_description_user_agent_to_cisco_duo_offline_enrollment_description_user_agent_9ca1cf5b
       field: json_description.user_agent
       target_field: cisco_duo.offline_enrollment.description.user_agent
       ignore_missing: true
   - rename:
+      tag: rename_json_description_factor_to_cisco_duo_offline_enrollment_description_factor_a6609b9f
       field: json_description.factor
       target_field: cisco_duo.offline_enrollment.description.factor
       ignore_missing: true
   - rename:
+      tag: rename_json_object_to_cisco_duo_offline_enrollment_object_04933930
       field: json.object
       target_field: cisco_duo.offline_enrollment.object
       ignore_missing: true
   - rename:
+      tag: rename_json_username_to_cisco_duo_offline_enrollment_user_name_350b7f16
       field: json.username
       target_field: cisco_duo.offline_enrollment.user.name
       ignore_missing: true
   - append:
+      tag: append_related_hosts_011328bc
       field: related.hosts
       value: '{{{cisco_duo.offline_enrollment.description.hostname}}}'
       if: ctx.cisco_duo?.offline_enrollment?.description?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_json_8e8e919a
       field: json
       if: ctx.json != null
   - remove:
+      tag: remove_json_description_006c2d9a
       field: json_description
       if: ctx.json_description != null
 on_failure:

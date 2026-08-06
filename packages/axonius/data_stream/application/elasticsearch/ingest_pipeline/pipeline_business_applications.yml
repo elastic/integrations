@@ -19,9 +19,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_devices_count_72f68727
             field: axonius.application.devices_count
             ignore_missing: true
         - append:
+            tag: append_error_message_c953dc96
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -135,3 +137,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

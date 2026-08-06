@@ -2,26 +2,33 @@
 description: Pipeline for processing azure frontdoor waf logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_8fd37e4e
       field: event.type
       value: [connection]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - set:
+      tag: set_cloud_provider_136a398d
       field: cloud.provider
       value: azure
   - drop:
+      tag: drop_99bd585e
       description: Drop if invalid json
       if: 'ctx.event?.original != null && ctx.event.original.contains("records")'
   - json:
+      tag: json_event_original_to_azure_frontdoor_waf_84dc0ff2
       field: event.original
       target_field: azure.frontdoor.waf
   - script:
@@ -51,58 +58,72 @@ processors:
         }
         handleMap(ctx);
   - rename:
+      tag: rename_azure_frontdoor_waf_resourceId_to_azure_frontdoor_resource_id_ea3d29b5
       field: azure.frontdoor.waf.resourceId
       target_field: azure.frontdoor.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_operationName_to_azure_frontdoor_operation_name_bc6d44b3
       field: azure.frontdoor.waf.operationName
       target_field: azure.frontdoor.operation_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_trackingReference_to_azure_frontdoor_tracking_reference_7453de92
       field: azure.frontdoor.waf.properties.trackingReference
       target_field: azure.frontdoor.tracking_reference
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_category_to_azure_frontdoor_category_a838eea8
       field: azure.frontdoor.waf.category
       target_field: azure.frontdoor.category
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_clientIP_to_client_ip_7bc6d557
       field: azure.frontdoor.waf.properties.clientIP
       target_field: client.ip
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_clientPort_to_client_port_7978465b
       field: azure.frontdoor.waf.properties.clientPort
       target_field: client.port
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_action_to_event_action_f0703c87
       field: azure.frontdoor.waf.properties.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_socketIP_to_client_address_c402653a
       field: azure.frontdoor.waf.properties.socketIP
       target_field: client.address
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_ruleName_to_rule_name_011db803
       field: azure.frontdoor.waf.properties.ruleName
       target_field: rule.name
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_details_to_azure_frontdoor_waf_details_bd668b1b
       field: azure.frontdoor.waf.properties.details
       target_field: azure.frontdoor.waf.details
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_host_to_url_domain_2f959158
       field: azure.frontdoor.waf.properties.host
       target_field: url.domain
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_policy_to_azure_frontdoor_waf_policy_8d4218a9
       field: azure.frontdoor.waf.properties.policy
       target_field: azure.frontdoor.waf.policy
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_policyMode_to_azure_frontdoor_waf_policy_mode_37b4d3a6
       field: azure.frontdoor.waf.properties.policyMode
       target_field: azure.frontdoor.waf.policy_mode
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_properties_requestUri_to_url_original_821134bc
       field: azure.frontdoor.waf.properties.requestUri
       target_field: url.original
       ignore_missing: true
@@ -112,14 +133,17 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8a1a3eb8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_url_full_61fd98e5
       field: url.full
       copy_from: url.original
       ignore_empty_value: true
   # handle identity field
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_to_azure_frontdoor_waf_identity_name_1e01d2f8
       field: azure.frontdoor.waf.identity
       if: ctx.azure?.frontdoor?.waf?.identity instanceof String
       target_field: azure.frontdoor.waf.identity_name
@@ -130,25 +154,31 @@ processors:
       if: ctx.azure?.frontdoor?.waf?.identity instanceof String
       on_failure:
         - append:
+            tag: append_error_message_e241f21c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_authorization_evidence_roleAssignmentScope_to_azure_frontdoor_waf_identity_authorization_evidence_role_assignment_scope_3800fd30
       field: azure.frontdoor.waf.identity.authorization.evidence.roleAssignmentScope
       target_field: azure.frontdoor.waf.identity.authorization.evidence.role_assignment_scope
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_authorization_evidence_roleDefinitionId_to_azure_frontdoor_waf_identity_authorization_evidence_role_definition_id_eee513cc
       field: azure.frontdoor.waf.identity.authorization.evidence.roleDefinitionId
       target_field: azure.frontdoor.waf.identity.authorization.evidence.role_definition_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_authorization_evidence_roleAssignmentId_to_azure_frontdoor_waf_identity_authorization_evidence_role_assignment_id_0ebdc880
       field: azure.frontdoor.waf.identity.authorization.evidence.roleAssignmentId
       target_field: azure.frontdoor.waf.identity.authorization.evidence.role_assignment_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_authorization_evidence_principalId_to_azure_frontdoor_waf_identity_authorization_evidence_principal_id_afa34589
       field: azure.frontdoor.waf.identity.authorization.evidence.principalId
       target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_authorization_evidence_principalType_to_azure_frontdoor_waf_identity_authorization_evidence_principal_type_a8da1579
       field: azure.frontdoor.waf.identity.authorization.evidence.principalType
       target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_type
       ignore_missing: true
@@ -169,6 +199,7 @@ processors:
         ctx.azure.frontdoor.waf.identity.claims = convertDotsToUnderscore(ctx.azure.frontdoor.waf.identity.claims);
       on_failure:
         - append:
+            tag: append_error_message_975817fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -199,9 +230,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_1d6dea2a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
+      tag: grok_azure_frontdoor_waf_identity_claims_initiated_by_user_name_f40c8f53
       field: azure.frontdoor.waf.identity.claims_initiated_by_user.name
       patterns:
         - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -209,68 +242,82 @@ processors:
       ignore_failure: true
   # set user.email to the original name if the above grok succeeded.
   - set:
+      tag: set_user_email_fb6f8b93
       field: user.email
       value: '{{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}}'
       ignore_empty_value: true
       if: 'ctx.user?.name != null'
   # set user.name to the original name if the above grok failed (name format is not an email).
   - set:
+      tag: set_user_name_17e19d40
       field: user.name
       value: '{{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}}'
       ignore_empty_value: true
       if: 'ctx.user?.name == null'
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_claims_initiated_by_user_fullname_to_user_full_name_fd80cf09
       field: azure.frontdoor.waf.identity.claims_initiated_by_user.fullname
       target_field: user.full_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_claims_initiated_by_user_objectidentifier_to_user_id_d48a7bd7
       field: azure.frontdoor.waf.identity.claims_initiated_by_user.objectidentifier
       target_field: user.id
       ignore_missing: true
   - append:
+      tag: append_user_roles_13cfc744
       field: user.roles
       value: '{{{azure.frontdoor.waf.identity.authorization.evidence.role}}}'
       allow_duplicates: false
       if: ctx.azure?.frontdoor?.waf?.identity?.authorization?.evidence?.role != null
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: 'ctx.user?.name != null'
   - append:
+      tag: append_related_user_7021abb5
       field: related.user
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: 'ctx.user?.full_name != null'
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: 'ctx.user?.id != null'
   - rename:
+      tag: rename_azure_frontdoor_waf_identity_claims_initiated_by_user_tenantid_to_cloud_account_id_cbb67d95
       field: azure.frontdoor.waf.identity.claims_initiated_by_user.tenantid
       target_field: cloud.account.id
       ignore_missing: true
   - convert:
+      tag: convert_client_port_997d639f
       field: client.port
       type: long
       ignore_missing: true
   - date:
+      tag: date_azure_frontdoor_waf_time_to_timestamp_123e7eea
       field: azure.frontdoor.waf.time
       target_field: "@timestamp"
       formats:
         - ISO8601
   - remove:
+      tag: remove_41919eb9
       field:
         - azure.frontdoor.waf.time
         - azure.frontdoor.waf.properties
         - azure.frontdoor.waf.details.matches
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_source_geo_cb29dbcc
       field: client.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_source_as_156f0c05
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: source.as
@@ -279,10 +326,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true

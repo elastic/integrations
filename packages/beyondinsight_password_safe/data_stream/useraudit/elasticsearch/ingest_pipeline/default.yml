@@ -2,6 +2,7 @@
 description: Pipeline for processing BeyondInsight User Audit events.
 processors:
   - set:
+      tag: set_ecs_version_c157feff
       field: ecs.version
       value: '9.1.0'
   - terminate:
@@ -9,6 +10,7 @@ processors:
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      tag: fingerprint_4f7ab4db
       description: >-
         The fingerprint prevents some duplication of user audit events in cases
         of retransmission on connection failures.
@@ -20,6 +22,7 @@ processors:
       tag: json_event_original
       target_field: beyondinsight_password_safe.useraudit
   - script:
+      tag: script_c96d5f07
       description: Remove null values and empty strings from beyondinsight_password_safe.useraudit.
       lang: painless
       source: |
@@ -67,61 +70,75 @@ processors:
         }
         ctx.beyondinsight_password_safe.useraudit = renamedFields;
   - date:
+      tag: date_beyondinsight_password_safe_useraudit_create_date_to_beyondinsight_password_safe_useraudit_create_date_8410dd26
       if: ctx.beyondinsight_password_safe?.useraudit?.create_date != null
       field: beyondinsight_password_safe.useraudit.create_date
       target_field: beyondinsight_password_safe.useraudit.create_date
       formats:
         - ISO8601
   - set:
+      tag: set_timestamp_66099b46
       if: ctx.beyondinsight_password_safe?.useraudit?.create_date != null
       copy_from: beyondinsight_password_safe.useraudit.create_date
       field: "@timestamp"
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_576de059
       field: event.category
       value: iam
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_event_id_48353edb
       field: event.id
       copy_from: ctx.beyondinsight_password_safe.useraudit.audit_id
       ignore_empty_value: true
   - set:
+      tag: set_user_id_cc5e42bb
       if: ctx.beyondinsight_password_safe?.useraudit?.user_id != "-1"
       field: user.id
       copy_from: beyondinsight_password_safe.useraudit.user_id
       ignore_empty_value: true
   - set:
+      tag: set_user_name_dc046b2f
       field: user.name
       copy_from: beyondinsight_password_safe.useraudit.user_name
       ignore_empty_value: true
   - gsub:
+      tag: gsub_beyondinsight_password_safe_useraudit_ip_address_15119fc4
       if: ctx.beyondinsight_password_safe?.useraudit?.ip_address != null
       description: Remove leading zeros from IP address octets.
       field: beyondinsight_password_safe.useraudit.ip_address
       pattern: '\b0+(\d)'
       replacement: '$1'
   - convert:
+      tag: convert_beyondinsight_password_safe_useraudit_ip_address_79c295b6
       if: ctx.beyondinsight_password_safe.useraudit?.ip_address != null
       field: beyondinsight_password_safe.useraudit.ip_address
       type: ip
       on_failure:
         - remove:
+            tag: remove_beyondinsight_password_safe_useraudit_ip_address_38c9d023
             field: beyondinsight_password_safe.useraudit.ip_address
   - append:
+      tag: append_host_ip_910be90d
       if: ctx.beyondinsight_password_safe?.useraudit?.ip_address != null
       field: host.ip
       value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
       allow_duplicates: false
   - geoip:
+      tag: geoip_host_ip_to_host_geo_b6f95445
       field: host.ip
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_user_name_86cd2d9b
       copy_from: beyondinsight_password_safe.useraudit.user
       field: user.name
       ignore_empty_value: true
@@ -137,21 +154,25 @@ processors:
       pattern: '%{user.name}@%{user.domain}'
       ignore_failure: true
   - append:
+      tag: append_related_ip_d382acbe
       if: ctx.beyondinsight_password_safe?.useraudit?.ip_address != null
       field: related.ip
       value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
       allow_duplicates: false
   - append:
+      tag: append_related_user_837e080f
       if: ctx.user?.name != null
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       if: ctx.user?.email != null
       field: related.user
       value: "{{{user.email}}}"
       allow_duplicates: false
   - append:
+      tag: append_related_user_4e75570c
       if: ctx.beyondinsight_password_safe.useraudit?.user_id != "-1"
       field: related.user
       value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
@@ -166,3 +187,7 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

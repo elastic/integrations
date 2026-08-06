@@ -2,12 +2,14 @@
 description: Pipeline for parsing CarbonBlack EDR logs
 processors:
 - set:
+    tag: set_ecs_version_0f7334bb
     field: ecs.version
     value: '8.11.0'
 
 # Validate that the input document conforms to the expected format
 # to avoid repetitive checks.
 - fail:
+    tag: fail_fe8eb0b5
     description: 'Validates input document format'
     message: 'json object is missing from event'
     if: 'ctx.json == null'
@@ -17,11 +19,13 @@ processors:
 # CB Event Forwarded splits an input event with multiple docs into multiple
 # output events with a single doc each.
 - fail:
+    tag: fail_75776c22
     description: 'Validates that docs field contains a single document'
     message: 'docs array has more than one entry, this is unsupported. Use CB Event Forwarder as source of events'
     if: 'ctx.json.docs != null && ctx.json.docs instanceof List && ctx.json.docs.size() > 1'
 
 - script:
+    tag: script_7aeeb654
     description: 'Selects a single document from docs input field'
     lang: painless
     if: 'ctx.json.docs != null'
@@ -37,6 +41,7 @@ processors:
       ctx.json.remove("docs");
     on_failure:
       - append:
+          tag: append_error_message_cbace0c8
           field: error.message
           value: 'Failed extracting docs field: {{{ _ingest.on_failure_message }}}'
 
@@ -46,108 +51,126 @@ processors:
 # https://github.com/elastic/beats/issues/27382
 #
 - convert:
+    tag: convert_json_compressed_size_6319efa3
     field: json.compressed_size
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_emet_timestamp_d1ce4ba6
     field: json.emet_timestamp
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_event_timestamp_be977772
     field: json.event_timestamp
     type: double
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_feed_id_b6d4a1fa
     field: json.feed_id
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_local_port_7cce3b23
     field: json.local_port
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_parent_create_time_2d8de5bb
     field: json.parent_create_time
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_pid_39d137c9
     field: json.pid
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_doc_process_pid_8561088b
     field: json.doc.process_pid
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_doc_parent_pid_d8aca7a8
     field: json.doc.parent_pid
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_port_deab740f
     field: json.port
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_remote_port_3f2f6442
     field: json.remote_port
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_requested_access_0dea90ef
     field: json.requested_access
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_size_681c73cd
     field: json.size
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_doc_orig_mod_len_3612dd08
     field: json.doc.orig_mod_len
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_scores_alliance_score_virustotal_0c62d01d
     field: json.scores.alliance_score_virustotal
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_target_create_time_f401c030
     field: json.target_create_time
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_target_pid_39ab780f
     field: json.target_pid
     type: long
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_json_timestamp_cb98a8cb
     field: json.timestamp
     type: double
     ignore_missing: true
@@ -157,11 +180,13 @@ processors:
 # This flag is used to signal that it can write to host.* fields.
 #
 - set:
+    tag: set__tmp_forwarded_d17bb385
     field: _tmp.forwarded
     value: true
     if: 'ctx.host?.name == null'
 
 - script:
+    tag: script_e4134e8a
     description: 'Removes empty string fields'
     lang: painless
     source: |-
@@ -172,6 +197,7 @@ processors:
       removeEmptyStr(ctx.json.doc);
 
 - rename:
+    tag: rename_json_type_to_event_action_8a9f8811
     description: 'Renames type field to ECS event action'
     field: json.type
     target_field: event.action
@@ -183,167 +209,169 @@ processors:
       #    field: error.message
       #    value: 'type field not present in document'
       - set:
+          tag: set_event_action_7e2f1a2c
           field: event.action
           value: unknown
 
 - script:
+    tag: script_9a32e22c
     description: 'Sets ECS categorisation fields from EDR Event ID.'
     lang: painless
     params:
       "alert.watchlist.hit.ingress.host":
         kind: alert
-        category: [ host ]
-        type: [ info ]
+        category: [host]
+        type: [info]
 
       "alert.watchlist.hit.ingress.binary":
         kind: alert
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "alert.watchlist.hit.ingress.process":
         kind: alert
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "alert.watchlist.hit.query.binary":
         kind: alert
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "alert.watchlist.hit.query.process":
         kind: alert
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "binaryinfo.host.observed":
         kind: event
-        category: [ host ]
-        type: [ info ]
+        category: [host]
+        type: [info]
 
       "binaryinfo.group.observed":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "binaryinfo.observed":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "binarystore.file.added":
         kind: event
-        category: [ file ]
-        type: [ creation ]
+        category: [file]
+        type: [creation]
 
       "feed.ingress.hit.host":
         kind: event
-        category: [ host ]
-        type: [ info ]
+        category: [host]
+        type: [info]
 
       "feed.ingress.hit.binary":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "feed.ingress.hit.process":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "feed.query.hit.binary":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "feed.query.hit.process":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "feed.storage.hit.binary":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "feed.storage.hit.process":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "watchlist.hit.process":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "watchlist.hit.binary":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "watchlist.storage.hit.binary":
         kind: event
-        category: [ file ]
-        type: [ info ]
+        category: [file]
+        type: [info]
 
       "watchlist.storage.hit.process":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "ingress.event.regmod":
         kind: event
-        category: [ registry ]
-        type: [ change ]
+        category: [registry]
+        type: [change]
 
       "ingress.event.filemod":
         kind: event
-        category: [ file ]
-        type: [ change ]
+        category: [file]
+        type: [change]
 
       "ingress.event.netconn":
         kind: event
-        category: [ network ]
-        type: [ connection, start ]
+        category: [network]
+        type: [connection, start]
 
       "ingress.event.module":
         kind: event
-        category: [ process ]
-        type: [ start, info ]
+        category: [process]
+        type: [start, info]
 
       "ingress.event.childproc":
         kind: event
-        category: [ process ]
-        type: [ start, info ]
+        category: [process]
+        type: [start, info]
 
       "ingress.event.process":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "ingress.event.crossprocopen":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "ingress.event.remotethread":
         kind: event
-        category: [ process ]
-        type: [ info ]
+        category: [process]
+        type: [info]
 
       "ingress.event.emetmitigation":
         kind: event
-        category: [ process ]
-        type: [ info, end ]
+        category: [process]
+        type: [info, end]
 
       "ingress.event.processblock":
         kind: event
-        category: [ process ]
-        type: [ info, end ]
+        category: [process]
+        type: [info, end]
 
       "ingress.event.tamper":
         kind: event
-        category: [ process, driver ]
-        type: [ info ]
+        category: [process, driver]
+        type: [info]
 
       "unknown":
         kind: event
@@ -379,28 +407,34 @@ processors:
 # Set observer fields.
 #
 - set:
+    tag: set_observer_vendor_be0b9c28
     field: observer.vendor
     value: 'VMWare'
 
 - set:
+    tag: set_observer_product_8cb6923a
     field: observer.product
     value: 'Carbon Black EDR'
 
 - set:
+    tag: set_observer_type_d173ab65
     field: observer.type
     value: 'edr'
 
 - rename:
+    tag: rename_json_cb_version_to_observer_version_e0de09f8
     field: json.cb_version
     target_field: observer.version
     ignore_missing: true
 
 - rename:
+    tag: rename_json_cb_server_to_observer_name_19f1c5a8
     field: json.cb_server
     target_field: observer.name
     ignore_missing: true
 
 - rename:
+    tag: rename_json_server_name_to_observer_name_5dc43948
     field: json.server_name
     target_field: observer.name
     ignore_missing: true
@@ -410,6 +444,7 @@ processors:
 # Some events use ioc_attrs instead of ioc_attr.
 #
 - rename:
+    tag: rename_json_ioc_attrs_to_json_ioc_attr_b7e9c21d
     field: json.ioc_attrs
     target_field: json.ioc_attr
     ignore_missing: true
@@ -419,29 +454,35 @@ processors:
 # instead of an object.
 #
 - json:
+    tag: json_json_ioc_attr_e234f7b1
     field: json.ioc_attr
     if: 'ctx.json.ioc_attr != null && ctx.json.ioc_attr instanceof String'
     on_failure:
       - append:
+          tag: append_error_message_d63910aa
           field: error.message
           value: 'Failed to parse string field ioc_attr as JSON (value:{{{ json.ioc_attr }}}): {{{ _ingest.on_failure_message }}}'
       # Remove field to prevent ingest failure.
       - remove:
+          tag: remove_json_ioc_attr_1e3b92d6
           field: json.ioc_attr
 #
 # Parse @timestamp from a few possible timestamp fields.
 #
 - convert:
+    tag: convert_json_timestamp_to__tmp_timestamp_7c8d548f
     field: json.timestamp
     target_field: _tmp.timestamp
     type: double
     ignore_missing: true
     on_failure:
       - append:
+          tag: append_error_message_af3aa086
           field: error.message
           value: 'failed to convert numeric timestamp (value: {{{json.timestamp}}}): {{{_ingest.on_failure_message}}}'
 
 - convert:
+    tag: convert_json_event_timestamp_to__tmp_timestamp_4c45077c
     field: json.event_timestamp
     target_field: _tmp.timestamp
     type: double
@@ -449,16 +490,19 @@ processors:
     if: 'ctx._tmp?.timestamp == null'
     on_failure:
       - append:
+          tag: append_error_message_614ee90f
           field: error.message
           value: 'failed to convert numeric event_timestamp (value: {{{json.event_timestamp}}}): {{{_ingest.on_failure_message}}}'
 
 - set:
+    tag: set__tmp_timestamp_7cd8536a
     field: _tmp.timestamp
     value: '{{{ json.doc.timestamp }}}'
     ignore_empty_value: true
     if: 'ctx._tmp?.timestamp == null'
 
 - date:
+    tag: date__tmp_timestamp_b5645c5f
     field: _tmp.timestamp
     formats:
       - UNIX
@@ -466,6 +510,7 @@ processors:
     if: 'ctx._tmp?.timestamp != null'
     on_failure:
       - append:
+          tag: append_error_message_ae3525f7
           field: error.message
           value: 'failed to parse timestamp (value: {{{ _tmp.timestamp }}}): {{{_ingest.on_failure_message}}}'
 
@@ -473,18 +518,21 @@ processors:
 # Rule fields
 #
 - convert:
+    tag: convert_json_watchlist_id_to_rule_id_0f5a9f16
     field: json.watchlist_id
     target_field: rule.id
     ignore_missing: true
     type: string
 
 - rename:
+    tag: rename_json_watchlist_name_to_rule_name_d58e8d8c
     field: json.watchlist_name
     target_field: rule.name
     ignore_missing: true
 
 # Most of the time doc.endpoint is an array. Convert it to array otherwise.
 - script:
+    tag: script_4578d809
     description: 'Converts doc.endpoint to an array'
     lang: painless
     source: |-
@@ -497,18 +545,21 @@ processors:
 # Set host.name when unset from Filebeat (forwarded events).
 #
 - rename:
+    tag: rename_json_doc_hostname_to_host_name_49db037b
     field: json.doc.hostname
     target_field: host.name
     ignore_missing: true
     if: 'ctx.host?.name == null'
 
 - rename:
+    tag: rename_json_hostname_to_host_name_e0d79333
     field: json.hostname
     target_field: host.name
     ignore_missing: true
     if: 'ctx.host?.name == null'
 
 - foreach:
+    tag: foreach_json_doc_endpoint_93a42fa5
     description: 'Sets host.name from docs.endpoint field'
     field: json.doc.endpoint
     ignore_missing: true
@@ -528,16 +579,19 @@ processors:
 # Digital signature fields
 #
 - rename:
+    tag: rename_json_doc_digsig_subject_to_file_code_signature_subject_name_1ff1cab8
     field: json.doc.digsig_subject
     target_field: file.code_signature.subject_name
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_digsig_status_to_file_code_signature_status_409e29f0
     field: json.doc.digsig_status
     target_field: file.code_signature.status
     ignore_missing: true
 
 - set:
+    tag: set_file_code_signature_exists_a204c320
     field: file.code_signature.exists
     value: true
     if: 'ctx.file_signature != null'
@@ -546,22 +600,26 @@ processors:
 # Source os_type can be Windows, Linux or Osx
 #
 - lowercase:
+    tag: lowercase_json_doc_os_type_to_host_os_type_b11957fa
     field: json.doc.os_type
     target_field: host.os.type
     ignore_missing: true
     if: 'ctx._tmp?.forwarded != null'
 
 - set:
+    tag: set_host_os_type_4871cb02
     field: host.os.type
     value: macos
     if: 'ctx._tmp?.forwarded != null && ctx.host?.os?.type == "osx"'
 
 # Ensures that only accepted values are introduced in os.type.
 - remove:
+    tag: remove_host_os_type_941ad231
     field: host.os.type
     if: 'ctx._tmp?.forwarded != null && ctx.json.doc?.os_type != null && !["windows","linux","macos"].contains(ctx.host.os.type)'
 
 - rename:
+    tag: rename_json_doc_os_name_to_host_os_name_8819ea5b
     field: json.doc.os_name
     target_field: host.os.name
     ignore_missing: true
@@ -571,16 +629,19 @@ processors:
 # Assorted fields
 #
 - append:
+    tag: append_file_attributes_24fe5e36
     field: file.attributes
     value: 'executable'
     if: 'ctx.json.doc?.is_executable_image == true || ctx.json.doc?.is_executable_image == "true"'
 
 - lowercase:
+    tag: lowercase_json_doc_md5_to_file_hash_md5_a4701031
     field: json.doc.md5
     target_field: file.hash.md5
     ignore_missing: true
 
 - foreach:
+    tag: foreach_json_doc_observed_filename_f29059bf
     field: json.doc.observed_filename
     ignore_missing: true
     processor:
@@ -589,11 +650,13 @@ processors:
         value: '{{{ _ingest._value }}}'
 
 - rename:
+    tag: rename_json_file_path_to_file_path_e068199d
     field: json.file_path
     target_field: file.path
     ignore_missing: true
 
 - grok:
+    tag: grok_json_path_70ed8aca
     description: 'Extract registry path'
     field: json.path
     patterns:
@@ -603,47 +666,56 @@ processors:
     if: 'ctx.event?.action == "ingress.event.regmod"'
 
 - rename:
+    tag: rename_json_doc_orig_mod_len_to_file_size_2fcb798f
     field: json.doc.orig_mod_len
     target_field: file.size
     ignore_missing: true
 
 - rename:
+    tag: rename_json_size_to_file_size_ace43307
     field: json.size
     target_field: file.size
     ignore_missing: true
     if: 'ctx.file?.size == null'
 
 - rename:
+    tag: rename_json_doc_cmdline_to_process_command_line_d313a7b1
     field: json.doc.cmdline
     target_field: process.command_line
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_path_to_process_executable_2fb29ab8
     field: json.doc.path
     target_field: process.executable
     ignore_missing: true
 
 - lowercase:
+    tag: lowercase_json_doc_process_md5_to_process_hash_md5_0dccf86a
     field: json.doc.process_md5
     target_field: process.hash.md5
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_process_name_to_process_name_db3f1c67
     field: json.doc.process_name
     target_field: process.name
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_process_pid_to_process_pid_315d061d
     field: json.doc.process_pid
     target_field: process.pid
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_unique_id_to_process_entity_id_39ffb183
     field: json.doc.unique_id
     target_field: process.entity_id
     ignore_missing: true
 
 - date:
+    tag: date_json_doc_start_to_process_start_4b245e6b
     field: json.doc.start
     target_field: process.start
     formats:
@@ -652,73 +724,88 @@ processors:
     if: 'ctx.json.doc?.start != null'
     on_failure:
       - append:
+          tag: append_error_message_046bc2dc
           field: error.message
           value: 'failed to parse process start timestamp (value: {{{ doc.start }}}): {{{_ingest.on_failure_message}}}'
 
 - rename:
+    tag: rename_json_doc_parent_name_to_process_parent_name_00f3fec4
     field: json.doc.parent_name
     target_field: process.parent.name
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_parent_pid_to_process_parent_pid_376e497e
     field: json.doc.parent_pid
     target_field: process.parent.pid
     ignore_missing: true
 
 - rename:
+    tag: rename_json_doc_parent_unique_id_to_process_parent_entity_id_65f2700e
     field: json.doc.parent_unique_id
     target_field: process.parent.entity_id
     ignore_missing: true
 
 - lowercase:
+    tag: lowercase_json_doc_parent_md5_to_process_parent_hash_md5_f0eb1a7d
     field: json.doc.parent_md5
     target_field: process.parent.hash.md5
     ignore_missing: true
 
 - convert:
+    tag: convert_json_doc_is_64bit_c39cefdf
     field: json.doc.is_64bit
     type: boolean
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_json_doc_is_64bit_036cf183
           field: json.doc.is_64bit
 
 - set:
+    tag: set_file_pe_architecture_e004dbad
     field: file.pe.architecture
     value: x64
     if: 'ctx.json.doc?.is_64bit == true'
 
 - set:
+    tag: set_file_pe_architecture_ca9181f8
     field: file.pe.architecture
     value: x86
     if: 'ctx.json.doc?.is_64bit == false'
 
 - rename:
+    tag: rename_json_utf8_file_description_to_file_pe_description_0d9d32da
     field: json.utf8_file_description
     target_field: file.pe.description
     ignore_missing: true
 
 - rename:
+    tag: rename_json_utf8_company_name_to_file_pe_company_81edb961
     field: json.utf8_company_name
     target_field: file.pe.company
     ignore_missing: true
 
 - rename:
+    tag: rename_json_utf8_product_to_file_pe_product_name_6b9492c7
     field: json.utf8_product
     target_field: file.pe.product_name
     ignore_missing: true
 
 - rename:
+    tag: rename_json_utf8_product_name_to_file_pe_product_697451c1
     field: json.utf8_product_name
     target_field: file.pe.product
     ignore_missing: true
 
 - rename:
+    tag: rename_json_utf8_original_file_name_to_file_pe_original_file_name_f84f0665
     field: json.utf8_original_file_name
     target_field: file.pe.original_file_name
     ignore_missing: true
 
 - rename:
+    tag: rename_json_utf8_file_version_to_file_pe_file_version_02f9058d
     field: json.utf8_file_version
     target_field: file.pe.file_version
     ignore_missing: true
@@ -727,6 +814,7 @@ processors:
 # Map ioc_type field to STIX 2.0 Cyber Observable values (threat.indicator.type).
 #
 - script:
+    tag: script_d42d724f
     lang: painless
     if: 'ctx.json.ioc_type != null'
     description: >
@@ -767,75 +855,89 @@ processors:
       ctx["_tmp_ioc_done"] = true;
     on_failure:
       - append:
+          tag: append_error_message_d7765476
           field: error.message
           value: 'Unable to determine indicator type from "{{{ json.ioc_type }}}": {{{ _ingest.on_failure_message }}}'
 - remove:
+    tag: remove_7996caea
     if: 'ctx._tmp_ioc_done == true'
     field:
       - _tmp_ioc_done
       - json.ioc_type
       - json.ioc_value
 - lowercase:
+    tag: lowercase_threat_indicator_file_hash_md5_77a44bec
     field: threat.indicator.file.hash.md5
     ignore_missing: true
 
 - convert:
+    tag: convert_json_ioc_attr_port_to_threat_indicator_port_24eee10f
     field: json.ioc_attr.port
     target_field: threat.indicator.port
     type: long
     ignore_missing: true
 
 - lowercase:
+    tag: lowercase_json_ioc_attr_direction_to_network_direction_fd349c56
     field: json.ioc_attr.direction
     target_field: network.direction
     ignore_missing: true
 
 - lowercase:
+    tag: lowercase_json_ioc_attr_protocol_to_network_transport_ce78ae51
     field: json.ioc_attr.protocol
     target_field: network.transport
     ignore_missing: true
 
 - convert:
+    tag: convert_json_protocol_to_network_iana_number_31b89887
     field: json.protocol
     target_field: network.iana_number
     type: string
     ignore_missing: true
 - set:
+    tag: set_tls_client_ja3_5e2a041b
     field: tls.client.ja3
     copy_from: json.ja3
     ignore_empty_value: true
 - set:
+    tag: set_tls_server_ja3s_8e63abcf
     field: tls.server.ja3s
     copy_from: json.ja3s
     ignore_empty_value: true
 
+
 #
 # Related fields
 #
-
 - append:
+    tag: append_related_hash_3192774f
     field: related.hash
     value: '{{{ file.hash.md5 }}}'
     allow_duplicates: false
     if: 'ctx.file?.hash?.md5 != null'
 
 - append:
+    tag: append_related_hash_b15be8ef
     field: related.hash
     value: '{{{ process.hash.md5 }}}'
     allow_duplicates: false
     if: 'ctx.process?.hash?.md5 != null'
 
 - append:
+    tag: append_related_hash_47a5f06c
     field: related.hash
     value: '{{{ process.parent.hash.md5 }}}'
     allow_duplicates: false
     if: 'ctx.process?.parent?.hash?.md5 != null'
 
 - append:
+    tag: append_related_hash_3cb6ef23
     field: related.hash
     value: "{{{tls.server.ja3s}}}"
     if: "ctx?.tls?.server?.ja3s != null"
 - append:
+    tag: append_related_hash_c48aa022
     field: related.hash
     value: "{{{tls.client.ja3}}}"
     if: "ctx?.tls?.client?.ja3 != null"
@@ -844,6 +946,7 @@ processors:
 # Remove unneeded fields
 #
 - remove:
+    tag: remove_91f35213
     field:
     - message
     - _tmp
@@ -862,6 +965,7 @@ processors:
 # Save payload fields as to custom fields under carbonblack.edr.
 #
 - rename:
+    tag: rename_json_to_carbonblack_edr_e1f7f583
     field: json
     target_field: carbonblack.edr
     ignore_missing: true

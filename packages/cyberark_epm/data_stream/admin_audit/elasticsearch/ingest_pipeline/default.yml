@@ -31,6 +31,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -133,6 +134,7 @@ processors:
       if: ctx.json?.EventTime != null && ctx.json.EventTime != ''
       on_failure:
         - append:
+            tag: append_error_message_90aed4a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -159,6 +161,7 @@ processors:
       if: ctx.json?.LoggedFrom != ''
       on_failure:
         - append:
+            tag: append_error_message_00bf7dd3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -182,6 +185,7 @@ processors:
       target_field: cyberark_epm.admin_audit.administrator
       ignore_missing: true
   - grok:
+      tag: grok_cyberark_epm_admin_audit_administrator_db47b092
       field: cyberark_epm.admin_audit.administrator
       patterns:
         - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -231,6 +235,7 @@ processors:
       if: ctx.json?.LoggedAt != null && ctx.json.LoggedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_ff2941f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -280,6 +285,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,9 +2,11 @@
 description: Pipeline for parsing Azure shared log fields.
 processors:
   - set:
+      tag: set_cloud_provider_136a398d
       field: cloud.provider
       value: azure
   - grok:
+      tag: grok_azure_resource_id_8ef5a053
       field: azure.resource_id
       patterns:
       - /TENANTS/%{TENANTID:azure.tenant_id}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}
@@ -14,10 +16,12 @@ processors:
         PROVIDERNAME: .+
       ignore_failure: true
   - rename:
+      tag: rename_azure_resource_id_to_azure_resource_id_4a05dbed
       field: azure.resource_id
       target_field: azure.resource.id
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_outcome_eb9dfc47
       field: event.outcome
       ignore_missing: true
 on_failure:
