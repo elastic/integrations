@@ -74,7 +74,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - Initial Interval
    - Interval
    - (Optional) Query to add custom query filtering on relationship, GTI score, and positives. (not applicable to IOC Stream)
-   - (Optional, Vulnerability only) Filter to add custom query filtering on the collected vulnerabilities. By default, this is set to `origin:"Google Threat Intelligence" cvss_3x_base_score:5`, which limits collection to vulnerabilities curated by Google Threat Intelligence with a CVSS v3 base score of at least 5. Clear this setting to collect all vulnerabilities instead.
+   - (Optional, Vulnerability only) Filter to add custom query filtering on the collected vulnerabilities. By default, this is set to `origin:"Google Threat Intelligence" cvss_3x_base_score:5+`, which limits collection to vulnerabilities curated by Google Threat Intelligence with a CVSS v3 base score of at least 5. Clear this setting to collect all vulnerabilities instead.
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
