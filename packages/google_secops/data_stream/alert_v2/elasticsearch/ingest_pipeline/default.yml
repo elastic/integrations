@@ -9,6 +9,17 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
 
   # parse the event JSON
   - rename:
@@ -616,8 +627,8 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
   # network.*
+  - set:
       field: network.transport
       tag: set_network_transport_from_alert_event_network_ip_protocol
       copy_from: google_secops.alert_v2.event.network.ip_protocol
@@ -644,8 +655,8 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
-  - foreach:
   # related.*
+  - foreach:
       field: google_secops.alert_v2.event.principal.asset.ip
       tag: foreach_google_secops_alert_event_principal_asset_ip_related
       if: ctx.google_secops?.alert_v2?.event?.principal?.asset?.ip instanceof List
@@ -701,8 +712,8 @@ processors:
       value: '{{{google_secops.alert_v2.event.src.asset.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert_v2?.event?.src?.asset?.hostname != null
-  - set:
   # file.*
+  - set:
       field: file.path
       tag: set_file_path_from_alert_event_principal_file_full_path
       copy_from: google_secops.alert_v2.event.principal.file.full_path
@@ -745,8 +756,8 @@ processors:
       tag: set_user_group_name_from_alert_event_principal_group_group_display_name
       copy_from: google_secops.alert_v2.event.principal.group.group_display_name
       ignore_empty_value: true
-  - set:
   # host.*
+  - set:
       field: host.hostname
       tag: set_host_hostname_from_alert_event_principal_hostname
       copy_from: google_secops.alert_v2.event.principal.hostname
@@ -929,10 +940,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # process.*
   - set:
       field: process.command_line
       tag: set_process_command_line_from_alert_event_principal_process_command_line
-  # process.*
       copy_from: google_secops.alert_v2.event.principal.process.command_line
       ignore_empty_value: true
   - set:
@@ -1150,8 +1161,8 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
-  - set:
   # user.*
+  - set:
       field: user.name
       tag: set_user_name_from_alert_event_principal_user_user_display_name
       copy_from: google_secops.alert_v2.event.principal.user.user_display_name
@@ -1242,8 +1253,8 @@ processors:
       value: '{{{google_secops.alert_v2.event.target.asset.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert_v2?.event?.target?.asset?.hostname != null
-  - set:
   # source.*
+  - set:
       field: source.domain
       tag: set_source_domain_from_alert_event_src_hostname
       copy_from: google_secops.alert_v2.event.src.hostname
@@ -1423,8 +1434,8 @@ processors:
       value: '{{{google_secops.alert_v2.event.target.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert_v2?.event?.target?.file?.sha256 != null
-  - set:
   # destination.*
+  - set:
       field: destination.domain
       tag: set_destination_domain_from_alert_event_target_hostname
       copy_from: google_secops.alert_v2.event.target.hostname
