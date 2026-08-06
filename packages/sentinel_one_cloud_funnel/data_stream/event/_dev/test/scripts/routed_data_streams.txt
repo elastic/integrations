@@ -25,19 +25,19 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENT_DS
 
 # The file event should remain in the event data stream (reroute_file not enabled).
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m ${EVENT_DS}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 5s -timeout 5m ${EVENT_DS}
 cp stdout event_docs.json
 exec jq '.hits.hits[0]._source.sentinel_one_cloud_funnel.event.category' event_docs.json
 stdout 'file'
 
 # DNS events should be routed to the dns data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 2m logs-sentinel_one_cloud_funnel.dns-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 5s -timeout 2m logs-sentinel_one_cloud_funnel.dns-*
 cp stdout dns_docs.json
 exec jq -c '[.hits.hits[]._source.sentinel_one_cloud_funnel.event.category] | unique' dns_docs.json
 stdout '\["dns"\]'
 
 # Process events should be routed to the process data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 2m logs-sentinel_one_cloud_funnel.process-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 5s -timeout 2m logs-sentinel_one_cloud_funnel.process-*
 cp stdout proc_docs.json
 exec jq '.hits.hits[0]._source.sentinel_one_cloud_funnel.event.category' proc_docs.json
 stdout 'process'
