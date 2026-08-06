@@ -198,12 +198,13 @@ func backportPRNumber(repository, sha string) (string, error) {
 	return "", nil
 }
 
-// existingSyncPR returns the URL of an existing PR (open or closed) with the
-// given head branch, or "" when none is found.
+// existingSyncPR returns the URL of an open PR with the given head branch,
+// or "" when none is found. Only open PRs block creation of a new sync PR —
+// merged and closed PRs are transparent; the versionInMain check in Collect
+// handles the "already synced" case by finding no new entries to apply.
 func existingSyncPR(workingBranch string) (string, error) {
 	stdout, _, err := gh.Exec("pr", "list",
 		"--head", workingBranch,
-		"--state", "all",
 		"--json", "number,url",
 		"--jq", ".[0].url // empty",
 	)
