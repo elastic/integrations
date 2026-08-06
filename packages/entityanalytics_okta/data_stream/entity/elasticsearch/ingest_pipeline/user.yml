@@ -15,6 +15,7 @@ processors:
           ctx.event.original = stringified_orig;
         }
   - remove:
+      tag: remove_event_action_9b3969af
       field: event.action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
@@ -29,7 +30,7 @@ processors:
   - set:
       field: event.type
       tag: set_event_type
-      value: ['user','info']
+      value: ['user', 'info']
   - set:
       field: asset.category
       tag: set_asset_category
@@ -80,6 +81,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_1c58f509
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -106,8 +108,10 @@ processors:
       if: ctx.okta?.created != null && ctx.okta.created != ''
       on_failure:
         - remove:
+            tag: remove_okta_created_400119ef
             field: okta.created
         - append:
+            tag: append_error_message_5d1ccd5d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -129,8 +133,10 @@ processors:
       if: ctx.okta?.activated != null && ctx.okta.activated != ''
       on_failure:
         - remove:
+            tag: remove_okta_activated_69d3eb42
             field: okta.activated
         - append:
+            tag: append_error_message_30c21dc1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -147,8 +153,10 @@ processors:
       if: ctx.okta?.statusChanged != null && ctx.okta.statusChanged != ''
       on_failure:
         - remove:
+            tag: remove_okta_statusChanged_00bd900d
             field: okta.statusChanged
         - append:
+            tag: append_error_message_46c91e09
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -170,8 +178,10 @@ processors:
       if: ctx.okta?.lastLogin != null && ctx.okta.lastLogin != ''
       on_failure:
         - remove:
+            tag: remove_okta_lastLogin_740fca4e
             field: okta.lastLogin
         - append:
+            tag: append_error_message_b32060bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -193,14 +203,16 @@ processors:
       if: ctx.okta?.lastUpdated != null && ctx.okta.lastUpdated != ''
       on_failure:
         - remove:
+            tag: remove_okta_lastUpdated_d6ba9ca0
             field: okta.lastUpdated
         - append:
+            tag: append_error_message_6bf8bd67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.last_updated
       copy_from: entityanalytics_okta.user.last_updated
-      tag: set_asset_last_seen
+      tag: set_asset_last_updated_011f75e3
       ignore_empty_value: true
   - date:
       field: okta.passwordChanged
@@ -211,8 +223,10 @@ processors:
       if: ctx.okta?.passwordChanged != null && ctx.okta.passwordChanged != ''
       on_failure:
         - remove:
+            tag: remove_okta_passwordChanged_6bace184
             field: okta.passwordChanged
         - append:
+            tag: append_error_message_0bfc9bbf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -231,6 +245,7 @@ processors:
       tag: rename_user_groups
       ignore_missing: true
   - foreach:
+      tag: foreach_entityanalytics_okta_groups_4f84bc86
       field: entityanalytics_okta.groups
       if: ctx.entityanalytics_okta?.groups != null
       processor:
@@ -239,6 +254,7 @@ processors:
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_entityanalytics_okta_groups_43144c3f
       field: entityanalytics_okta.groups
       if: ctx.entityanalytics_okta?.groups != null
       processor:
@@ -252,6 +268,7 @@ processors:
       tag: rename_user_roles
       ignore_missing: true
   - foreach:
+      tag: foreach_entityanalytics_okta_roles_5b1ce602
       field: entityanalytics_okta.roles
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
@@ -260,6 +277,7 @@ processors:
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_entityanalytics_okta_roles_bd8589f1
       field: entityanalytics_okta.roles
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
@@ -268,6 +286,7 @@ processors:
           value: '{{{_ingest._value.label}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_entityanalytics_okta_roles_66618195
       field: entityanalytics_okta.roles
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
@@ -277,6 +296,7 @@ processors:
           tag: rename_user_roles.assignmentType
           ignore_missing: true
   - foreach:
+      tag: foreach_entityanalytics_okta_roles_6fb80d55
       field: entityanalytics_okta.roles
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
@@ -286,6 +306,7 @@ processors:
           tag: rename_user_roles.assignmentType
           ignore_missing: true
   - foreach:
+      tag: foreach_entityanalytics_okta_roles_6a1b3c29
       field: entityanalytics_okta.roles
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
@@ -301,6 +322,7 @@ processors:
                 target_field: _ingest._value.lastUpdated
                 ignore_failure: true
   - foreach:
+      tag: foreach_entityanalytics_okta_roles_1d898d7a
       field: entityanalytics_okta.roles
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
@@ -774,10 +796,12 @@ processors:
       allow_duplicates: false
       if: ctx.entityanalytics_okta?.user?.profile?.manager?.name != null
   - set:
+      tag: set_okta_credentials_recovery_question_is_set_a6e69872
       field: okta.credentials.recovery_question.is_set
       value: true
       if: ctx.okta?.credentials?.recovery_question != null
   - set:
+      tag: set_okta_credentials_recovery_question_is_set_12a22165
       field: okta.credentials.recovery_question.is_set
       value: false
       if: ctx.okta?.credentials?.recovery_question == null

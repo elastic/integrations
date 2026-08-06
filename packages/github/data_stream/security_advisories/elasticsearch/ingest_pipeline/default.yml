@@ -48,6 +48,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -75,6 +76,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_de29c875
             field: error.message
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -98,6 +100,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2a7f5299
             field: error.message
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -116,6 +119,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1218d582
             field: error.message
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -147,6 +151,7 @@ processors:
       type: float
       on_failure:
         - append:
+            tag: append_error_message_ddddf548
             field: error.message
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -161,6 +166,7 @@ processors:
       type: float
       on_failure:
         - append:
+            tag: append_error_message_c650efae
             field: error.message
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -184,14 +190,17 @@ processors:
       copy_from: github.security_advisory.json.html_url
       ignore_empty_value: true
   - uri_parts:
+      tag: uri_parts_json_html_url_b5189973
       field: json.html_url
       if: ctx.json?.html_url != null && ctx.json.html_url != ''
       on_failure:
         - set:
+            tag: set_url_original_296a54e4
             field: url.original
             value: '{{{json.html_url}}}'
             if: ctx.json?.html_url != null && ctx.json.html_url != ''
   - set:
+      tag: set_url_full_8a0b2565
       field: url.full
       value: '{{{url.original}}}'
       if: ctx.url?.original != null && ctx.url.original != ''
@@ -280,7 +289,7 @@ processors:
       tag: remove_json
       field:
         - json
-  
+
   # Cleanup
   - script:
       tag: script_to_drop_null_values
@@ -301,10 +310,12 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

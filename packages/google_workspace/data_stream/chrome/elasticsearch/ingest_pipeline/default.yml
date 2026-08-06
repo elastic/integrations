@@ -48,6 +48,7 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -79,6 +80,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_bb1a78dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -114,6 +116,7 @@ processors:
         ctx.event.outcome = params.get(ctx.google_workspace.chrome.event_result.toLowerCase());
       on_failure:
         - append:
+            tag: append_error_message_0df94f18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -122,6 +125,7 @@ processors:
       copy_from: google_workspace.chrome.url
       ignore_empty_value: true
   - uri_parts:
+      tag: uri_parts_url_full_62b0b3a9
       field: url.full
       ignore_failure: true
   - script:
@@ -156,6 +160,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_5b17d1f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -191,6 +196,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a0d69b22
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -220,8 +226,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_is_encrypted_f9bcb9b2
             field: google_workspace.chrome.is_encrypted
         - append:
+            tag: append_error_message_e6d9bddc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
@@ -232,6 +240,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0591a88f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
@@ -239,6 +248,7 @@ processors:
       tag: trim_local_ip
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_chrome_local_ip_329b4ed8
       field: google_workspace.chrome.local_ip
       if: ctx.google_workspace?.chrome?.local_ip instanceof List
       processor:
@@ -262,6 +272,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c19aaaa6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
@@ -269,6 +280,7 @@ processors:
       tag: trim_remote_ip
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_chrome_remote_ip_0c6f0b5f
       field: google_workspace.chrome.remote_ip
       if: ctx.google_workspace?.chrome?.remote_ip instanceof List
       processor:
@@ -293,6 +305,7 @@ processors:
       if: ctx.json?.ipAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_6938c880
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -305,6 +318,7 @@ processors:
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       on_failure:
         - append:
+            tag: append_error_message_6b9eb14c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -350,8 +364,10 @@ processors:
       if: ctx.google_workspace?.chrome?.is_federated != ''
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_is_federated_e0eaa08c
             field: google_workspace.chrome.is_federated
         - append:
+            tag: append_error_message_73e5a522
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -362,8 +378,10 @@ processors:
       if: ctx.google_workspace?.chrome?.content_size != ''
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_content_size_16f38772
             field: google_workspace.chrome.content_size
         - append:
+            tag: append_error_message_2953473c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -376,8 +394,10 @@ processors:
       if: ctx.google_workspace?.chrome?.timestamp != null && ctx.google_workspace.chrome.timestamp != ''
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_timestamp_500aab99
             field: google_workspace.chrome.timestamp
         - append:
+            tag: append_error_message_45a9f91c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -423,6 +443,7 @@ processors:
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.ip_address != null
   - foreach:
+      tag: foreach_google_workspace_chrome_local_ip_8c40385f
       field: google_workspace.chrome.local_ip
       if: ctx.google_workspace?.chrome?.local_ip instanceof List
       processor:
@@ -432,6 +453,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_workspace_chrome_remote_ip_75f2424c
       field: google_workspace.chrome.remote_ip
       if: ctx.google_workspace?.chrome?.remote_ip instanceof List
       processor:
@@ -491,6 +513,7 @@ processors:
       copy_from: google_workspace.chrome.device_id
       ignore_empty_value: true
   - user_agent:
+      tag: user_agent_google_workspace_chrome_user_agent_5e327613
       field: google_workspace.chrome.user_agent
       ignore_missing: true
   - set:
@@ -556,6 +579,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -565,6 +589,7 @@ processors:
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -592,10 +617,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -665,6 +692,7 @@ processors:
         drop(ctx);
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -677,6 +705,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

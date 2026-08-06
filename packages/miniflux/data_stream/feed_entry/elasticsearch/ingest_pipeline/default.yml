@@ -5,7 +5,7 @@ processors:
         field: ecs.version
         tag: set_ecs_version
         value: 8.17.0
-    
+
     - terminate:
         tag: data_collection_error
         if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -41,6 +41,7 @@ processors:
         target_field: json
         on_failure:
             - append:
+                tag: append_error_message_cea45f41
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - rename:
@@ -141,7 +142,7 @@ processors:
         field: json.feed.hide_globally
         tag: rename_feed_hide_globally
         target_field: miniflux.feed.hide_globally
-    - rename: 
+    - rename:
         field: json.feed.icon.feed_id
         tag: rename_feed_icon_feed_id
         target_field: miniflux.feed.icon.feed_id
@@ -253,13 +254,14 @@ processors:
         target_field: miniflux.feed.webhook_url
     - rename:
         field: json.feed_id
-        tag: rename_feed_id
+        tag: rename_json_feed_id_to_miniflux_feed_id_a1e93bde
         target_field: miniflux.feed_id
     - rename:
         field: json.hash
         tag: rename_hash
         target_field: miniflux.hash
     - append:
+        tag: append_related_hash_808cebe9
         field: related.hash
         value: "{{{miniflux.hash}}}"
     - rename:
@@ -297,14 +299,17 @@ processors:
         tag: rename_title
         target_field: miniflux.title
     - uri_parts:
+        tag: uri_parts_json_url_514cc9d1
         field: json.url
         if: ctx.json?.url != null && ctx.json.url != ''
         on_failure:
             - set:
+                tag: set_url_original_f46e88d0
                 field: url.original
                 copy_from: url.original
                 if: ctx.json?.url != null && ctx.json.url != ''
     - set:
+        tag: set_url_full_adb622a8
         field: url.full
         copy_from: url.original
         if: ctx.url?.original != null && ctx.url.original != ''
@@ -320,7 +325,7 @@ processors:
     # Cleanup
     - remove:
         tag: remove_json
-        field: 
+        field:
             - json
     - script:
         tag: script_to_drop_null_values
@@ -346,6 +351,7 @@ processors:
         value: pipeline_error
         if: ctx.error?.message != null
     - append:
+        tag: append_tags_9fe66b2c
         field: tags
         value: preserve_original_event
         allow_duplicates: false

@@ -2,9 +2,11 @@
 description: Pipeline for JumpCloud Events
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,9 +18,11 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -36,12 +40,15 @@ processors:
         }
         dropEmptyFields(ctx);
   - fail:
+      tag: fail_d1247e5f
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: missing json object in input document
   - rename:
+      tag: rename_json_to_jumpcloud_event_d676b966
       field: json
       target_field: jumpcloud.event
   - fingerprint:
+      tag: fingerprint_3fc41178
       description: "Generate a unique document ID using the unique JumpCloud event ID and timestamp"
       fields:
         - jumpcloud.event.id
@@ -50,46 +57,55 @@ processors:
       method: MurmurHash3
       ignore_missing: true
   - date:
+      tag: date_jumpcloud_event_timestamp_c832a28c
       field: jumpcloud.event.timestamp
       formats: ["ISO8601"]
       if: ctx.jumpcloud?.event?.timestamp != null && ctx.jumpcloud?.event?.timestamp != ""
   - convert:
+      tag: convert_jumpcloud_event_client_ip_to_client_ip_674a2272
       field: jumpcloud.event.client_ip
       type: ip
       target_field: client.ip
       ignore_missing: true
   - convert:
+      tag: convert_jumpcloud_event_src_ip_to_source_ip_0b3d327d
       field: jumpcloud.event.src_ip
       type: ip
       target_field: source.ip
       ignore_missing: true
   - append:
+      tag: append_event_category_1a04a01a
       field: event.category
       value: authentication
       if: ctx.jumpcloud?.event?.event_type != null && ['ldap_bind', 'user_login_attempt', 'sso_auth', 'admin_login_attempt'].contains(ctx.jumpcloud.event.event_type)
       allow_duplicates: false
   - append:
+      tag: append_event_type_e9398a56
       field: event.type
       value:
         - info
       if: ctx.jumpcloud?.event?.event_type != null && ['ldap_bind', 'user_login_attempt', 'sso_auth', 'admin_login_attempt'].contains(ctx.jumpcloud.event.event_type)
       allow_duplicates: false
   - append:
+      tag: append_event_category_1bc99d0a
       field: event.category
       value: iam
       if: ctx.jumpcloud?.event?.event_type != null && ['user_password_warning_email', 'user_password_reset_request', 'user_activation_email', 'user_unlocked'].contains(ctx.jumpcloud.event.event_type)
       allow_duplicates: false
   - append:
+      tag: append_event_type_f53c4aff
       field: event.type
       value:
         - info
       if: ctx.jumpcloud?.event?.event_type != null && ['user_password_warning_email', 'user_password_reset_request', 'user_activation_email', 'user_unlocked'].contains(ctx.jumpcloud.event.event_type)
       allow_duplicates: false
   - set:
+      tag: set_event_id_c308d5dc
       copy_from: jumpcloud.event.id
       field: event.id
       ignore_empty_value: true
   - set:
+      tag: set_message_1d0a92e4
       copy_from: jumpcloud.event.message
       field: message
       ignore_empty_value: true
@@ -115,97 +131,119 @@ processors:
       ignore_missing: true
   ### utilise host fields if they exist
   - set:
+      tag: set_host_id_d195da7b
       copy_from: jumpcloud.event.system.id
       field: host.id
       ignore_empty_value: true
   - set:
+      tag: set_host_hostname_ae3a3b27
       copy_from: jumpcloud.event.system.hostname
       field: host.hostname
       ignore_empty_value: true
   ### utilise user agent fields if they exist
   - set:
+      tag: set_source_user_id_8cf8bbb1
       copy_from: jumpcloud.event.initiated_by.id
       field: source.user.id
       ignore_empty_value: true
   - set:
+      tag: set_source_user_email_64781173
       copy_from: jumpcloud.event.initiated_by.email
       field: source.user.email
       ignore_empty_value: true
   - set:
+      tag: set_source_user_name_e52ffab2
       copy_from: jumpcloud.event.initiated_by.username
       field: source.user.name
       ignore_empty_value: true
   - set:
+      tag: set_user_name_934915fc
       copy_from: jumpcloud.event.username
       field: user.name
       ignore_empty_value: true
   ### utilise user agent fields if they exist
   - set:
+      tag: set_user_agent_device_name_9c984054
       copy_from: jumpcloud.event.useragent.device
       field: user_agent.device.name
       ignore_empty_value: true
   - set:
+      tag: set_user_agent_name_e0721eed
       copy_from: jumpcloud.event.useragent.name
       field: user_agent.name
       ignore_empty_value: true
   - set:
+      tag: set_user_agent_version_369b0727
       copy_from: jumpcloud.event.useragent.version
       field: user_agent.version
       ignore_empty_value: true
   - set:
+      tag: set_user_agent_os_name_96303e4a
       copy_from: jumpcloud.event.useragent.os_name
       field: user_agent.os.name
       ignore_empty_value: true
   - set:
+      tag: set_user_agent_os_full_02866b62
       copy_from: jumpcloud.event.useragent.os_full
       field: user_agent.os.full
       ignore_empty_value: true
   - set:
+      tag: set_user_agent_os_version_e1252192
       copy_from: jumpcloud.event.useragent.os_version
       field: user_agent.os.version
       ignore_empty_value: true
   ### event action
   - set:
+      tag: set_event_action_7eccfd51
       copy_from: jumpcloud.event.event_type
       field: event.action
       ignore_empty_value: true
   ### event module
   - set:
+      tag: set_event_module_e99896d1
       copy_from: jumpcloud.event.service
       field: event.module
       ignore_empty_value: true
   ### process name
   - set:
+      tag: set_process_name_d3b9e9ef
       copy_from: jumpcloud.event.process_name
       field: process.name
       ignore_empty_value: true
   ### event outcome
   - set:
+      tag: set_event_outcome_82c7155e
       field: event.outcome
       value: unknown
   - set:
+      tag: set_event_outcome_d3fb9fd5
       field: event.outcome
       value: success
       if: ctx.jumpcloud?.event?.sso_token_success == true
   - set:
+      tag: set_event_outcome_d72217f5
       field: event.outcome
       value: failure
       if: ctx.jumpcloud?.event?.sso_token_success == false
   - set:
+      tag: set_event_outcome_adf50dab
       field: event.outcome
       value: success
       if: ctx.jumpcloud?.event?.success == true
   - set:
+      tag: set_event_outcome_4ea51fb7
       field: event.outcome
       value: failure
       if: ctx.jumpcloud?.event?.success == false
   ### geoip enrichment
   - geoip:
+      tag: geoip_source_ip_to_source_geo_859b1031
       field: source.ip
       target_field: source.geo
       ignore_missing: true
       if: ctx.source?.geo == null && ctx.source?.ip != null
   - geoip:
+      tag: geoip_source_ip_to_source_as_5a30a433
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -215,19 +253,23 @@ processors:
       ignore_missing: true
       if: ctx.source?.ip != null
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_client_geo_c8162a11
       field: client.ip
       target_field: client.geo
       ignore_missing: true
       if: ctx.client?.geo == null && ctx.client?.ip != null
   - geoip:
+      tag: geoip_client_ip_to_client_as_0a1b2b55
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -237,65 +279,78 @@ processors:
       ignore_missing: true
       if: ctx.client?.ip != null
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
   ### relateds
   - append:
+      tag: append_related_ip_121e62cf
       field: related.ip
       value: "{{{jumpcloud.event.jumpcloud_protect_device.ip}}}"
       if: "ctx.jumpcloud?.event?.jumpcloud_protect_device?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_client_ip_a848f9e9
       field: client.ip
       value: "{{{client.ip}}}"
       if: "ctx.client?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: "{{{destination.ip}}}"
       if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c3acf835
       field: related.ip
       value: "{{{server.ip}}}"
       if: "ctx.server?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_user_f745a124
       field: related.user
       value: "{{{source.user.name}}}"
       if: "ctx.source?.user?.name != null"
       allow_duplicates: false
   - append:
+      tag: append_related_user_8f37bc82
       field: related.user
       value: "{{{destination.user.name}}}"
       if: "ctx.destination?.user?.name != null"
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_aa05bed9
       field: related.hosts
       value: "{{{destination.address}}}"
       if: "ctx.destination?.address != null"
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_439b2767
       field: related.hosts
       value: "{{{source.address}}}"
       if: "ctx.source?.address != null"
       allow_duplicates: false
   - remove:
+      tag: remove_615a3966
       description: Cleanup temporary and other garbage fields
       field:
         - _tmp
       ignore_missing: true
   - remove:
+      tag: remove_4d2032e2
       description: Remove jumpcloud fields that are no longer needed as they were mapped to ECS, unless instructed not to
       field:
         - jumpcloud.event.timestamp

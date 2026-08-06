@@ -2,36 +2,43 @@
 description: Pipeline for Jamf Compliance Reporter identity_object audit logs.
 processors:
   - rename:
+      tag: rename_json_identity_cd_hash_to_jamf_compliance_reporter_log_identity_cd_hash_a91be7b4
       field: json.identity.cd_hash
       target_field: jamf_compliance_reporter.log.identity.cd_hash
       ignore_missing: true
   - append:
+      tag: append_related_hash_04fe9d31
       field: related.hash
       value: '{{{jamf_compliance_reporter.log.identity.cd_hash}}}'
       if: ctx.jamf_compliance_reporter?.log?.identity?.cd_hash != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_identity_signer_id_to_jamf_compliance_reporter_log_identity_signer_id_8ee25a7d
       field: json.identity.signer_id
       target_field: jamf_compliance_reporter.log.identity.signer.id
       ignore_missing: true
   - convert:
+      tag: convert_json_identity_signer_id_truncated_to_jamf_compliance_reporter_log_identity_signer_id_truncated_7d4200ce
       field: json.identity.signer_id_truncated
       target_field: jamf_compliance_reporter.log.identity.signer.id_truncated
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_signer_type_to_jamf_compliance_reporter_log_identity_signer_type_779a9f36
       field: json.identity.signer_type
       target_field: jamf_compliance_reporter.log.identity.signer.type
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_identity_team_id_to_jamf_compliance_reporter_log_identity_team_id_cc9f74b3
       field: json.identity.team_id
       target_field: jamf_compliance_reporter.log.identity.team.id
       ignore_missing: true
   - convert:
+      tag: convert_json_identity_team_id_truncated_to_jamf_compliance_reporter_log_identity_team_id_truncated_20bad62c
       field: json.identity.team_id_truncated
       target_field: jamf_compliance_reporter.log.identity.team.id_truncated
       type: string
@@ -44,3 +51,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

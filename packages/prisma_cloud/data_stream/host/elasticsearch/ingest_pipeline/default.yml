@@ -35,11 +35,13 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
+      tag: drop_41e92579
       if: ctx.event?.original != null && ctx.event.original.isEmpty()
   - json:
       field: event.original
@@ -47,6 +49,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_a6e0e953
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -68,6 +71,7 @@ processors:
       if: ctx.json?.agentless != ''
       on_failure:
         - append:
+            tag: append_error_message_27ec182e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -81,6 +85,7 @@ processors:
       target_field: prisma_cloud.host.all_compliance.data
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_all_compliance_data_f625a6e3
       field: prisma_cloud.host.all_compliance.data
       if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List
       ignore_failure: true
@@ -91,6 +96,7 @@ processors:
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_all_compliance_data_9be42a81
       field: prisma_cloud.host.all_compliance.data
       if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List
       ignore_failure: true
@@ -122,9 +128,11 @@ processors:
       if: ctx.prisma_cloud?.host?.all_compliance?.enabled != ''
       on_failure:
         - remove:
+            tag: remove_prisma_cloud_host_all_compliance_enabled_ea65b8d4
             field: prisma_cloud.host.all_compliance.enabled
             ignore_missing: true
         - append:
+            tag: append_error_message_9712a4b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -136,6 +144,7 @@ processors:
       if: ctx.json?.appEmbedded != ''
       on_failure:
         - append:
+            tag: append_error_message_3cf4a1d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -144,6 +153,7 @@ processors:
       target_field: prisma_cloud.host.applications
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_applications_9974f877
       field: prisma_cloud.host.applications
       if: ctx.prisma_cloud?.host?.applications instanceof List
       ignore_failure: true
@@ -162,6 +172,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_applications_340b9df2
       field: prisma_cloud.host.applications
       if: ctx.prisma_cloud?.host?.applications instanceof List
       ignore_failure: true
@@ -180,6 +191,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_applications_0f4785a0
       field: prisma_cloud.host.applications
       if: ctx.prisma_cloud?.host?.applications instanceof List
       ignore_failure: true
@@ -194,6 +206,7 @@ processors:
                 field: _ingest._value.layerTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_applications_0017f337
       field: prisma_cloud.host.applications
       if: ctx.prisma_cloud?.host?.applications instanceof List
       ignore_failure: true
@@ -211,6 +224,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_applications_de4b8a9e
       field: prisma_cloud.host.applications
       if: ctx.prisma_cloud?.host?.applications instanceof List
       ignore_failure: true
@@ -233,6 +247,7 @@ processors:
       target_field: prisma_cloud.host.binaries
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_b08b6015
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -250,6 +265,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_4c46880e
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -268,6 +284,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_f8914cc8
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -286,6 +303,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_3ab38422
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -296,6 +314,7 @@ processors:
           target_field: _ingest._value.function_layer
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_5ae627be
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -314,6 +333,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_d6ca9ad3
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -324,6 +344,7 @@ processors:
           target_field: _ingest._value.pkg_root_dir
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_binaries_621a7555
       field: prisma_cloud.host.binaries
       if: ctx.prisma_cloud?.host?.binaries instanceof List
       ignore_failure: true
@@ -361,6 +382,7 @@ processors:
       target_field: prisma_cloud.host.cloud_metadata.labels
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_cloud_metadata_labels_c8c15eb7
       field: prisma_cloud.host.cloud_metadata.labels
       if: ctx.prisma_cloud?.host?.cloud_metadata?.labels instanceof List
       ignore_failure: true
@@ -371,6 +393,7 @@ processors:
           target_field: _ingest._value.source.name
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_cloud_metadata_labels_76e34322
       field: prisma_cloud.host.cloud_metadata.labels
       if: ctx.prisma_cloud?.host?.cloud_metadata?.labels instanceof List
       ignore_failure: true
@@ -381,6 +404,7 @@ processors:
           target_field: _ingest._value.source.type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_cloud_metadata_labels_8200e181
       field: prisma_cloud.host.cloud_metadata.labels
       if: ctx.prisma_cloud?.host?.cloud_metadata?.labels instanceof List
       ignore_failure: true
@@ -463,6 +487,7 @@ processors:
       if: ctx.json?.complianceDistribution?.critical != ''
       on_failure:
         - append:
+            tag: append_error_message_99509d33
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -474,6 +499,7 @@ processors:
       if: ctx.json?.complianceDistribution?.high != ''
       on_failure:
         - append:
+            tag: append_error_message_b26ebc0f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -485,6 +511,7 @@ processors:
       if: ctx.json?.complianceDistribution?.low != ''
       on_failure:
         - append:
+            tag: append_error_message_245b416d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -496,6 +523,7 @@ processors:
       if: ctx.json?.complianceDistribution?.medium != ''
       on_failure:
         - append:
+            tag: append_error_message_5c2d30d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -507,6 +535,7 @@ processors:
       if: ctx.json?.complianceDistribution?.total != ''
       on_failure:
         - append:
+            tag: append_error_message_63604aa5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -515,6 +544,7 @@ processors:
       target_field: prisma_cloud.host.compliance_issues.data
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_compliance_issues_data_085ebd2b
       field: prisma_cloud.host.compliance_issues.data
       if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List
       ignore_failure: true
@@ -525,6 +555,7 @@ processors:
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_compliance_issues_data_3bef114d
       field: prisma_cloud.host.compliance_issues.data
       if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List
       ignore_failure: true
@@ -543,6 +574,7 @@ processors:
       if: ctx.json?.complianceIssuesCount != ''
       on_failure:
         - append:
+            tag: append_error_message_5c83c7a6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -568,6 +600,7 @@ processors:
       if: ctx.json?.complianceRiskScore != ''
       on_failure:
         - append:
+            tag: append_error_message_cc9de48c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -579,6 +612,7 @@ processors:
       if: ctx.json?.creationTime != null && ctx.json.creationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_7f8b0f84
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -607,6 +641,7 @@ processors:
       target_field: prisma_cloud.host.external_labels
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_external_labels_252722db
       field: prisma_cloud.host.external_labels
       if: ctx.prisma_cloud?.host?.external_labels instanceof List
       ignore_failure: true
@@ -617,6 +652,7 @@ processors:
           target_field: _ingest._value.source.name
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_external_labels_620e1e26
       field: prisma_cloud.host.external_labels
       if: ctx.prisma_cloud?.host?.external_labels instanceof List
       ignore_failure: true
@@ -627,6 +663,7 @@ processors:
           target_field: _ingest._value.source.type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_external_labels_70e1e014
       field: prisma_cloud.host.external_labels
       if: ctx.prisma_cloud?.host?.external_labels instanceof List
       ignore_failure: true
@@ -646,6 +683,7 @@ processors:
       target_field: prisma_cloud.host.files
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_files_c62cd889
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -656,6 +694,7 @@ processors:
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_4c86901c
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -666,6 +705,7 @@ processors:
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_d3fade54
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -676,6 +716,7 @@ processors:
           value: '{{{_ingest._value.path}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_490cffe5
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -686,6 +727,7 @@ processors:
           value: '{{{_ingest._value.sha1}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_a17236f8
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -696,6 +738,7 @@ processors:
           value: '{{{_ingest._value.sha1}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_71feeb64
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -706,6 +749,7 @@ processors:
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_cf92b710
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List
       ignore_failure: true
@@ -716,16 +760,17 @@ processors:
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_files_a715c7d0
       field: prisma_cloud.host.files
       if: ctx.prisma_cloud?.host?.files instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
           field:
-            -  _ingest._value.md5
-            -  _ingest._value.path
-            -  _ingest._value.sha1
-            -  _ingest._value.sha256
+            - _ingest._value.md5
+            - _ingest._value.path
+            - _ingest._value.sha1
+            - _ingest._value.sha256
           ignore_missing: true
           tag: remove_file_hash_fields_ecs_duplicate
   - rename:
@@ -741,9 +786,11 @@ processors:
       if: ctx.prisma_cloud?.host?.firewall_protection?.enabled != ''
       on_failure:
         - remove:
+            tag: remove_prisma_cloud_host_firewall_protection_enabled_c7f78ea4
             field: prisma_cloud.host.firewall_protection.enabled
             ignore_missing: true
         - append:
+            tag: append_error_message_8bd8c5c9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -759,9 +806,11 @@ processors:
       if: ctx.prisma_cloud?.host?.firewall_protection?.ports != ''
       on_failure:
         - remove:
+            tag: remove_prisma_cloud_host_firewall_protection_ports_3e135d49
             field: prisma_cloud.host.firewall_protection.ports
             ignore_missing: true
         - append:
+            tag: append_error_message_628e3123
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -772,9 +821,11 @@ processors:
       if: ctx.prisma_cloud?.host?.firewall_protection?.supported != ''
       on_failure:
         - remove:
+            tag: remove_prisma_cloud_host_firewall_protection_supported_99575fe3
             field: prisma_cloud.host.firewall_protection.supported
             ignore_missing: true
         - append:
+            tag: append_error_message_db2e6acf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -786,9 +837,11 @@ processors:
       if: ctx.prisma_cloud?.host?.firewall_protection?.tlsPorts != ''
       on_failure:
         - remove:
+            tag: remove_prisma_cloud_host_firewall_protection_tlsPorts_c29934e0
             field: prisma_cloud.host.firewall_protection.tlsPorts
             ignore_missing: true
         - append:
+            tag: append_error_message_bb03c559
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -797,6 +850,7 @@ processors:
       target_field: prisma_cloud.host.firewall_protection.unprotected_processes
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_firewall_protection_unprotected_processes_7c00d7e3
       field: prisma_cloud.host.firewall_protection.unprotected_processes
       if: ctx.prisma_cloud?.host?.firewall_protection?.unprotected_processes instanceof List
       ignore_failure: true
@@ -814,6 +868,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_firewall_protection_unprotected_processes_8156d57e
       field: prisma_cloud.host.firewall_protection.unprotected_processes
       if: ctx.prisma_cloud?.host?.firewall_protection?.unprotected_processes instanceof List
       ignore_failure: true
@@ -839,6 +894,7 @@ processors:
       if: ctx.json?.firstScanTime != null && ctx.json.firstScanTime != ''
       on_failure:
         - append:
+            tag: append_error_message_94b0ffc9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -847,6 +903,7 @@ processors:
       target_field: prisma_cloud.host.history
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_history_f55179fd
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -865,6 +922,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_history_79dfb037
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -883,6 +941,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_history_a0169543
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -897,6 +956,7 @@ processors:
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_history_da815e65
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -915,6 +975,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_history_ed028f3f
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -927,6 +988,7 @@ processors:
           tag: remove_history_fields_duplicate
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_history_612a91b7
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -941,6 +1003,7 @@ processors:
               value: '{{{_ingest._value.cve}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_history_6e54b5d3
       field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
@@ -976,6 +1039,7 @@ processors:
       target_field: prisma_cloud.host.devices
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_devices_be010083
       field: prisma_cloud.host.devices
       if: ctx.prisma_cloud?.host?.devices instanceof List
       ignore_failure: true
@@ -993,6 +1057,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_devices_c467290a
       field: prisma_cloud.host.devices
       if: ctx.prisma_cloud?.host?.devices instanceof List
       ignore_failure: true
@@ -1003,6 +1068,7 @@ processors:
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_devices_20df14f2
       field: prisma_cloud.host.devices
       if: ctx.prisma_cloud?.host?.devices instanceof List
       ignore_failure: true
@@ -1013,6 +1079,7 @@ processors:
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_devices_c467290a
       field: prisma_cloud.host.devices
       if: ctx.prisma_cloud?.host?.devices instanceof List
       ignore_failure: true
@@ -1023,6 +1090,7 @@ processors:
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_devices_5393c8b2
       field: prisma_cloud.host.devices
       if: ctx.prisma_cloud?.host?.devices instanceof List
       ignore_failure: true
@@ -1033,14 +1101,15 @@ processors:
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_devices_ec5a137c
       field: prisma_cloud.host.devices
       if: ctx.prisma_cloud?.host?.devices instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
           field:
-            -  _ingest._value.ip
-            -  _ingest._value.name
+            - _ingest._value.ip
+            - _ingest._value.name
           ignore_missing: true
           tag: foreach_remove_ecs_duplicate_devices_fields
   - rename:
@@ -1068,6 +1137,7 @@ processors:
       if: ctx.json?.hostRuntimeEnabled != ''
       on_failure:
         - append:
+            tag: append_error_message_144f16fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1077,7 +1147,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_json_id_to_prisma_cloud_host_id_076caa5a
       target_field: prisma_cloud.host.id
       ignore_missing: true
   - date:
@@ -1089,6 +1159,7 @@ processors:
       if: ctx.json?.image?.created != null && ctx.json.image.created != ''
       on_failure:
         - append:
+            tag: append_error_message_00858304
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1110,6 +1181,7 @@ processors:
       if: ctx.json?.image?.healthcheck != ''
       on_failure:
         - append:
+            tag: append_error_message_e5d49d7e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1118,6 +1190,7 @@ processors:
       target_field: prisma_cloud.host.image.history
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_8e041a90
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1136,6 +1209,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_f635dcf4
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1154,6 +1228,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_bf11b0be
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1168,6 +1243,7 @@ processors:
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_9df7820a
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1186,6 +1262,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_b7b3fe17
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1198,6 +1275,7 @@ processors:
           tag: foreach_remove_image_history_duplicate_fields
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_626eb359
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1212,6 +1290,7 @@ processors:
               value: '{{{_ingest._value.cve}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_image_history_a8162a14
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
@@ -1290,6 +1369,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.agentless != ''
       on_failure:
         - append:
+            tag: append_error_message_1c865dc2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1316,11 +1396,12 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.awsCloud != ''
       on_failure:
         - append:
+            tag: append_error_message_ad8dc5ec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.installedProducts.clusterType
-      tag: rename_clusterType
+      tag: rename_json_installedProducts_clusterType_to_prisma_cloud_host_installed_products_cluster_type_b683e043
       target_field: prisma_cloud.host.installed_products.cluster_type
       ignore_missing: true
   - convert:
@@ -1332,6 +1413,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.crio != ''
       on_failure:
         - append:
+            tag: append_error_message_a515a84e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1343,6 +1425,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.dockerEnterprise != ''
       on_failure:
         - append:
+            tag: append_error_message_c90fdbb5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1354,6 +1437,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.hasPackageManager != ''
       on_failure:
         - append:
+            tag: append_error_message_170b220c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1365,6 +1449,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sApiServer != ''
       on_failure:
         - append:
+            tag: append_error_message_3f427ee6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1376,6 +1461,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sControllerManager != ''
       on_failure:
         - append:
+            tag: append_error_message_700721f8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1387,6 +1473,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sEtcd != ''
       on_failure:
         - append:
+            tag: append_error_message_e81e262b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1398,6 +1485,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sFederationApiServer != ''
       on_failure:
         - append:
+            tag: append_error_message_04737abb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1409,6 +1497,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sFederationControllerManager != ''
       on_failure:
         - append:
+            tag: append_error_message_640f3689
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1420,6 +1509,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sKubelet != ''
       on_failure:
         - append:
+            tag: append_error_message_0b0cacff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1431,6 +1521,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sProxy != ''
       on_failure:
         - append:
+            tag: append_error_message_a9c54953
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1442,6 +1533,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.k8sScheduler != ''
       on_failure:
         - append:
+            tag: append_error_message_313c973b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1458,6 +1550,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.openshift != ''
       on_failure:
         - append:
+            tag: append_error_message_5fbd2942
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1479,6 +1572,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.serverless != ''
       on_failure:
         - append:
+            tag: append_error_message_d974b384
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1490,6 +1584,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.swarmManager != ''
       on_failure:
         - append:
+            tag: append_error_message_26d0d2f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1501,6 +1596,7 @@ processors:
       if: ctx.prisma_cloud?.host?.installed_products?.swarmNode != ''
       on_failure:
         - append:
+            tag: append_error_message_b83e1ef4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1509,6 +1605,7 @@ processors:
       target_field: prisma_cloud.host.instances
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_instances_d44981a5
       field: prisma_cloud.host.instances
       if: ctx.prisma_cloud?.host?.instances instanceof List
       ignore_failure: true
@@ -1531,6 +1628,7 @@ processors:
       if: ctx.json?.isARM64 != ''
       on_failure:
         - append:
+            tag: append_error_message_ae364c61
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1552,6 +1650,7 @@ processors:
       if: ctx.json?.malwareAnalyzedTime != null && ctx.json.malwareAnalyzedTime != ''
       on_failure:
         - append:
+            tag: append_error_message_38e72d97
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1563,6 +1662,7 @@ processors:
       if: ctx.json?.missingDistroVulnCoverage != ''
       on_failure:
         - append:
+            tag: append_error_message_7031ddb3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1572,7 +1672,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.osDistro
-      tag: rename_osDistro
+      tag: rename_json_osDistro_to_prisma_cloud_host_os_distro_value_a5b45a0e
       target_field: prisma_cloud.host.os_distro.value
       ignore_missing: true
   - set:
@@ -1609,6 +1709,7 @@ processors:
       if: ctx.json?.packageCorrelationDone != ''
       on_failure:
         - append:
+            tag: append_error_message_1ad10c1b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1620,6 +1721,7 @@ processors:
       if: ctx.json?.packageManager != ''
       on_failure:
         - append:
+            tag: append_error_message_d37c0338
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1628,6 +1730,7 @@ processors:
       target_field: prisma_cloud.host.packages
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_6547d6b8
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1638,6 +1741,7 @@ processors:
           target_field: _ingest._value.pkgs_type
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_cff5f086
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1648,16 +1752,18 @@ processors:
           value: '{{{_ingest._value.pkgs_type}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_a114b8c1
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
           field:
-            -  _ingest._value.pkgs_type
+            - _ingest._value.pkgs_type
           ignore_missing: true
           tag: foreach_remove_packages_ecs_duplicate_fields
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_bbe11bb5
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1680,6 +1786,7 @@ processors:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_1587b8ac
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1694,6 +1801,7 @@ processors:
               target_field: _ingest._value.binary_pkgs
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_82f50bcb
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1716,6 +1824,7 @@ processors:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_e3ff87bf
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1738,6 +1847,7 @@ processors:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_c22a8a65
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1752,6 +1862,7 @@ processors:
               target_field: _ingest._value.function_layer
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_3fbfbb89
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1774,6 +1885,7 @@ processors:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_24a2020e
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1788,6 +1900,7 @@ processors:
               target_field: _ingest._value.jar_identifier
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_d96e37c1
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1806,6 +1919,7 @@ processors:
                     field: _ingest._value.layerTime
                     ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_f6875b18
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1820,6 +1934,7 @@ processors:
               value: '{{{_ingest._value.license}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_0172836d
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1834,6 +1949,7 @@ processors:
               value: '{{{_ingest._value.name}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_5974a2c4
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1848,6 +1964,7 @@ processors:
               value: '{{{_ingest._value.path}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_6bcecf6b
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1862,6 +1979,7 @@ processors:
               value: '{{{_ingest._value.version}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_af927871
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
@@ -1872,13 +1990,14 @@ processors:
           processor:
             remove:
               field:
-                -  _ingest._value.license
-                -  _ingest._value.name
-                -  _ingest._value.path
-                -  _ingest._value.version
+                - _ingest._value.license
+                - _ingest._value.name
+                - _ingest._value.path
+                - _ingest._value.version
               ignore_missing: true
               tag: remove_packages_ecs_duplicate_fields_custom
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_47635b1d
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1901,6 +2020,7 @@ processors:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_packages_e23e2952
       field: prisma_cloud.host.packages
       if: ctx.prisma_cloud?.host?.packages instanceof List
       ignore_failure: true
@@ -1928,6 +2048,7 @@ processors:
       if: ctx.json?.pullDuration != ''
       on_failure:
         - append:
+            tag: append_error_message_53217ef5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1939,6 +2060,7 @@ processors:
       if: ctx.json?.pushTime != null && ctx.json.pushTime != ''
       on_failure:
         - append:
+            tag: append_error_message_7aef63bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1950,6 +2072,7 @@ processors:
       if: ctx.json?.redHatNonRPMImage != ''
       on_failure:
         - append:
+            tag: append_error_message_7ab137d2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -2017,6 +2140,7 @@ processors:
       if: ctx.json?.scanBuildDate != null && ctx.json.scanBuildDate != ''
       on_failure:
         - append:
+            tag: append_error_message_ce18e172
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2028,6 +2152,7 @@ processors:
       if: ctx.json?.scanDuration != ''
       on_failure:
         - append:
+            tag: append_error_message_bb2ec710
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -2044,6 +2169,7 @@ processors:
       if: ctx.json?.scanTime != null && ctx.json.scanTime != ''
       on_failure:
         - append:
+            tag: append_error_message_0de5a779
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -2080,6 +2206,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_startup_binaries_acd71f06
       field: prisma_cloud.host.startup_binaries
       if: ctx.prisma_cloud?.host?.startup_binaries instanceof List
       ignore_failure: true
@@ -2098,6 +2225,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_startup_binaries_f033bd40
       field: prisma_cloud.host.startup_binaries
       if: ctx.prisma_cloud?.host?.startup_binaries instanceof List
       ignore_failure: true
@@ -2116,6 +2244,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_startup_binaries_dd6e30b5
       field: prisma_cloud.host.startup_binaries
       ignore_failure: true
       processor:
@@ -2125,6 +2254,7 @@ processors:
           target_field: _ingest._value.function_layer
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_startup_binaries_75cd0d26
       field: prisma_cloud.host.startup_binaries
       if: ctx.prisma_cloud?.host?.startup_binaries instanceof List
       ignore_failure: true
@@ -2143,6 +2273,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_startup_binaries_2dcc13ec
       field: prisma_cloud.host.startup_binaries
       ignore_failure: true
       processor:
@@ -2152,6 +2283,7 @@ processors:
           target_field: _ingest._value.pkg_root_dir
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_startup_binaries_8e63914e
       field: prisma_cloud.host.startup_binaries
       if: ctx.prisma_cloud?.host?.startup_binaries instanceof List
       ignore_failure: true
@@ -2172,6 +2304,7 @@ processors:
       if: ctx.json?.stopped != ''
       on_failure:
         - append:
+            tag: append_error_message_01542d46
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -2195,6 +2328,7 @@ processors:
       target_field: prisma_cloud.host.trust_result.groups
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_8c5a1fa2
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List
       ignore_failure: true
@@ -2205,6 +2339,7 @@ processors:
           value: '{{{_ingest._value._id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_3f7ff0b3
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List
       ignore_failure: true
@@ -2222,6 +2357,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_6a14b9e2
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List
       ignore_failure: true
@@ -2236,6 +2372,7 @@ processors:
                 field: _ingest._value.modified
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_4b6651b1
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List
       ignore_failure: true
@@ -2246,6 +2383,7 @@ processors:
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_b9babc0f
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List
       ignore_failure: true
@@ -2256,18 +2394,20 @@ processors:
           value: '{{{_ingest._value.owner}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_2a5d5bd3
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
           field:
-            -  _ingest._value.id
-            -  _ingest._value.name
-            -  _ingest._value.owner
+            - _ingest._value.id
+            - _ingest._value.name
+            - _ingest._value.owner
           ignore_missing: true
           tag: foreach_remove_ecs_mapped_trustResult_fields
   - foreach:
+      tag: foreach_prisma_cloud_host_trust_result_groups_4af10e88
       field: prisma_cloud.host.trust_result.groups
       if: ctx.prisma_cloud?.host?.trust_result?.groups instanceof List
       ignore_failure: true
@@ -2291,6 +2431,7 @@ processors:
       if: ctx.json?.twistlockImage != ''
       on_failure:
         - append:
+            tag: append_error_message_8d3c1b1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -2309,6 +2450,7 @@ processors:
       target_field: prisma_cloud.host.vulnerabilities.data
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_vulnerabilities_data_1d48868b
       field: prisma_cloud.host.vulnerabilities.data
       if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List
       ignore_failure: true
@@ -2319,6 +2461,7 @@ processors:
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_vulnerabilities_data_b05c7b97
       field: prisma_cloud.host.vulnerabilities.data
       if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List
       ignore_failure: true
@@ -2337,6 +2480,7 @@ processors:
       if: ctx.json?.vulnerabilitiesCount != ''
       on_failure:
         - append:
+            tag: append_error_message_44730caa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -2362,6 +2506,7 @@ processors:
       if: ctx.json?.vulnerabilityDistribution?.critical != ''
       on_failure:
         - append:
+            tag: append_error_message_f7e3a768
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2373,6 +2518,7 @@ processors:
       if: ctx.json?.vulnerabilityDistribution?.high != ''
       on_failure:
         - append:
+            tag: append_error_message_898c5168
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2384,6 +2530,7 @@ processors:
       if: ctx.json?.vulnerabilityDistribution?.low != ''
       on_failure:
         - append:
+            tag: append_error_message_570abe88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2395,6 +2542,7 @@ processors:
       if: ctx.json?.vulnerabilityDistribution?.medium != ''
       on_failure:
         - append:
+            tag: append_error_message_ed4d0778
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2406,6 +2554,7 @@ processors:
       if: ctx.json?.vulnerabilityDistribution?.total != ''
       on_failure:
         - append:
+            tag: append_error_message_2d61ed94
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2417,6 +2566,7 @@ processors:
       if: ctx.json?.vulnerabilityRiskScore != ''
       on_failure:
         - append:
+            tag: append_error_message_770f9953
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2428,6 +2578,7 @@ processors:
       if: ctx.json?.wildFireUsage?.bytes != ''
       on_failure:
         - append:
+            tag: append_error_message_ba7be936
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2439,6 +2590,7 @@ processors:
       if: ctx.json?.wildFireUsage?.queries != ''
       on_failure:
         - append:
+            tag: append_error_message_81bab600
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2450,6 +2602,7 @@ processors:
       if: ctx.json?.wildFireUsage?.uploads != ''
       on_failure:
         - append:
+            tag: append_error_message_13926758
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -2510,6 +2663,7 @@ processors:
       tag: script_drop_null_values
       on_failure:
         - append:
+            tag: append_error_message_d707d903
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -2518,6 +2672,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

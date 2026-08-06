@@ -2,6 +2,7 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
   - rename:
@@ -18,22 +19,28 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_github_dependabot_a52b24cb
       field: event.original
       target_field: github.dependabot
   - fail:
+      tag: fail_1e9d0cfa
       if: "!(ctx.github.dependabot instanceof Map)"
       message: Missing JSON object
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - set:
+      tag: set__temp_updated_at_b3c03583
       field: _temp.updated_at
       value: "{{{_ingest.timestamp}}}"
   - rename:
+      tag: rename_github_dependabot_createdAt_to_github_dependabot_created_at_dfab9887
       field: github.dependabot.createdAt
       target_field: github.dependabot.created_at
       ignore_missing: true
   - date:
+      tag: date_github_dependabot_created_at_to_event_created_ce5d5d95
       field: github.dependabot.created_at
       formats:
         - ISO8601
@@ -41,30 +48,37 @@ processors:
       target_field: "event.created"
       if: ctx.github.dependabot.created_at != null
   - rename:
+      tag: rename_github_dependabot_dependabotUpdate_to_github_dependabot_dependabot_update_91dddec9
       field: github.dependabot.dependabotUpdate
       target_field: github.dependabot.dependabot_update
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_dependabot_update_error_errorType_to_github_dependabot_dependabot_update_error_error_type_028d84bb
       field: github.dependabot.dependabot_update.error.errorType
       target_field: github.dependabot.dependabot_update.error.error_type
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_dependencyScope_to_github_dependabot_dependency_scope_520708a7
       field: github.dependabot.dependencyScope
       target_field: github.dependabot.dependency_scope
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_dismissReason_to_github_dependabot_dismiss_reason_ec6d7b4f
       field: github.dependabot.dismissReason
       target_field: github.dependabot.dismiss_reason
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_dismissedAt_to_github_dependabot_dismissed_at_7993e785
       field: github.dependabot.dismissedAt
       target_field: github.dependabot.dismissed_at
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_fixedAt_to_github_dependabot_fixed_at_6ce642bb
       field: github.dependabot.fixedAt
       target_field: github.dependabot.fixed_at
       ignore_missing: true
   - date:
+      tag: date_github_dependabot_created_at_to_timestamp_6c3f387b
       field: github.dependabot.created_at
       formats:
         - ISO8601
@@ -72,6 +86,7 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.dependabot.created_at != null
   - date:
+      tag: date_github_dependabot_dismissed_at_to_timestamp_4d46df53
       field: github.dependabot.dismissed_at
       formats:
         - ISO8601
@@ -79,6 +94,7 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.dependabot.dismissed_at != null
   - date:
+      tag: date_github_dependabot_fixed_at_to_timestamp_a9249217
       field: github.dependabot.fixed_at
       formats:
         - ISO8601
@@ -86,53 +102,66 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.dependabot.fixed_at != null
   - append:
+      tag: append_event_type_8cb07c5b
       field: event.type
       value: creation
       if: ctx.github?.dependabot?.fixed_at == null && ctx.github?.dependabot?.dismissed_at == null
   - append:
+      tag: append_event_type_d62d79ba
       field: event.type
       value: deletion
       if: ctx.github?.dependabot?.fixed_at != null || ctx.github?.dependabot?.dismissed_at != null
   - rename:
+      tag: rename_github_dependabot_repository_isInOrganization_to_github_dependabot_repository_is_in_organization_0bce7d18
       field: github.dependabot.repository.isInOrganization
       target_field: github.dependabot.repository.is_in_organization
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_repository_isPrivate_to_github_dependabot_repository_private_de1397fc
       field: github.dependabot.repository.isPrivate
       target_field: github.dependabot.repository.private
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_securityAdvisory_to_github_dependabot_security_advisory_146907e9
       field: github.dependabot.securityAdvisory
       target_field: github.dependabot.security_advisory
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_advisory_cvss_vectorString_to_github_dependabot_security_advisory_cvss_vector_string_2985e277
       field: github.dependabot.security_advisory.cvss.vectorString
       target_field: github.dependabot.security_advisory.cvss.vector_string
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_advisory_ghsaId_to_github_dependabot_security_advisory_ghsa_id_1d6f6805
       field: github.dependabot.security_advisory.ghsaId
       target_field: github.dependabot.security_advisory.ghsa_id
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_advisory_publishedAt_to_github_dependabot_security_advisory_published_at_e9fdb73b
       field: github.dependabot.security_advisory.publishedAt
       target_field: github.dependabot.security_advisory.published_at
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_advisory_updatedAt_to_github_dependabot_security_advisory_updated_at_e27aeab5
       field: github.dependabot.security_advisory.updatedAt
       target_field: github.dependabot.security_advisory.updated_at
       ignore_missing: true
   - set:
+      tag: set__temp_cwes_2c9da423
       field: _temp.cwes
       copy_from: github.dependabot.security_advisory.cwes.nodes
       if: ctx.github.dependabot.security_advisory?.cwes?.nodes != null
   - remove:
+      tag: remove_github_dependabot_security_advisory_cwes_ba600c65
       field: github.dependabot.security_advisory.cwes
       ignore_missing: true
   - set:
+      tag: set_github_dependabot_security_advisory_cwes_2ac54574
       field: github.dependabot.security_advisory.cwes
       copy_from: _temp.cwes
       if: ctx._temp?.cwes != null
   - foreach:
+      tag: foreach_github_dependabot_security_advisory_cwes_a8a78acc
       field: github.dependabot.security_advisory.cwes
       if: ctx.github?.dependabot?.security_advisory?.cwes instanceof List
       ignore_failure: true
@@ -143,30 +172,37 @@ processors:
           target_field: _ingest._value.cwe_id
           ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_securityVulnerability_to_github_dependabot_security_vulnerability_4ce3d9a1
       field: github.dependabot.securityVulnerability
       target_field: github.dependabot.security_vulnerability
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_vulnerability_firstPatchedVersion_to_github_dependabot_security_vulnerability_first_patched_version_0099fe22
       field: github.dependabot.security_vulnerability.firstPatchedVersion
       target_field: github.dependabot.security_vulnerability.first_patched_version
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_vulnerability_updatedAt_to_github_dependabot_security_vulnerability_updated_at_467422f1
       field: github.dependabot.security_vulnerability.updatedAt
       target_field: github.dependabot.security_vulnerability.updated_at
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_vulnerability_vulnerableVersionRange_to_github_dependabot_security_vulnerability_vulnerable_version_range_e6bc3aac
       field: github.dependabot.security_vulnerability.vulnerableVersionRange
       target_field: github.dependabot.security_vulnerability.vulnerable_version_range
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_vulnerableManifestFilename_to_github_dependabot_vulnerable_manifest_filename_f1209858
       field: github.dependabot.vulnerableManifestFilename
       target_field: github.dependabot.vulnerable_manifest_filename
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_vulnerableManifestPath_to_github_dependabot_vulnerable_manifest_path_774ac49c
       field: github.dependabot.vulnerableManifestPath
       target_field: github.dependabot.vulnerable_manifest_path
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_vulnerableRequirements_to_github_dependabot_vulnerable_requirements_7858ba9b
       field: github.dependabot.vulnerableRequirements
       target_field: github.dependabot.vulnerable_requirements
       ignore_missing: true
@@ -174,13 +210,16 @@ processors:
       # Vulnerability ECS Fields #
       ############################
   - set:
+      tag: set_vulnerability_classification_8b34b171
       field: vulnerability.classification
       value: "CVSS"
   - rename:
+      tag: rename_github_dependabot_security_advisory_description_to_vulnerability_description_38a0cb37
       target_field: vulnerability.description
       field: github.dependabot.security_advisory.description
       ignore_missing: true
   - script:
+      tag: script_637353c2
       lang: painless
       description: Set vulnerability.enumeration and vulnerability.id ECS fields. Defaults to GHSA
       if: ctx.github.dependabot.security_advisory?.identifiers != null
@@ -198,6 +237,7 @@ processors:
         ctx.vulnerability.enumeration = enumeration;
         ctx.vulnerability.id = id;
   - script:
+      tag: script_ab0150c5
       lang: painless
       description: Set vulnerability.reference ECS field
       if: ctx.github.dependabot.security_advisory?.references != null
@@ -209,19 +249,24 @@ processors:
         }
         ctx.vulnerability.reference = references;
   - remove:
+      tag: remove_github_dependabot_security_advisory_references_4cfb9e25
       field: github.dependabot.security_advisory.references
       ignore_missing: true
   - set:
+      tag: set_vulnerability_scanner_vendor_743a33e3
       field: vulnerability.scanner.vendor
       value: "Github"
   - convert:
+      tag: convert_github_dependabot_security_advisory_cvss_score_87a16248
       field: github.dependabot.security_advisory.cvss.score
       type: float
   - rename:
+      tag: rename_github_dependabot_security_advisory_cvss_score_to_vulnerability_score_base_568e6f7b
       target_field: vulnerability.score.base
       field: github.dependabot.security_advisory.cvss.score
       ignore_missing: true
   - kv:
+      tag: kv_github_dependabot_security_advisory_cvss_vector_string_to__temp_score_version_e89cab09
       field: github.dependabot.security_advisory.cvss.vector_string
       target_field: "_temp.score.version"
       field_split: "/"
@@ -229,10 +274,12 @@ processors:
       include_keys: ["CVSS"]
       ignore_missing: true
   - rename:
+      tag: rename__temp_score_version_CVSS_to_vulnerability_score_version_e75a2f2a
       target_field: vulnerability.score.version
       field: _temp.score.version.CVSS
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_security_vulnerability_severity_to_vulnerability_severity_5230e8b2
       field: github.dependabot.security_vulnerability.severity
       target_field: vulnerability.severity
       ignore_missing: true
@@ -240,18 +287,22 @@ processors:
       # Event ECS Fields #
       ############################
   - set:
+      tag: set_event_start_0f086898
       field: "event.start"
       copy_from: github.dependabot.created_at
       if: ctx.github.dependabot.created_at != null
   - set:
+      tag: set_event_end_f390ee2b
       field: "event.end"
       copy_from: github.dependabot.fixed_at
       if: ctx.github.dependabot.fixed_at != null
   - set:
+      tag: set_event_end_cbb283a7
       field: "event.end"
       copy_from: github.dependabot.dismissed_at
       if: ctx.event?.end == null && ctx.github.dependabot.dismissed_at != null
   - script:
+      tag: script_363d2d06
       lang: painless
       description: Calculate time taken to resolve the alerts
       if: ctx.event?.start != null && ctx.event?.end != null
@@ -261,16 +312,20 @@ processors:
       # For GitHub Overview Dashboard #
       #################################
   - lowercase:
+      tag: lowercase_github_dependabot_state_503175bf
       field: github.dependabot.state
       ignore_missing: true
   - lowercase:
+      tag: lowercase_vulnerability_severity_2092d4dc
       field: vulnerability.severity
       ignore_missing: true
   - rename:
+      tag: rename_github_dependabot_repository_to_github_repository_bc24b0a4
       field: github.dependabot.repository
       target_field: github.repository
       ignore_missing: true
   - fingerprint:
+      tag: fingerprint_eca23086
       fields:
         - github.repository.owner.login
         - github.repository.name
@@ -284,10 +339,12 @@ processors:
       # Cleanup #
       ###########
   - remove:
+      tag: remove_1f8c5875
       field:
         - _temp
       ignore_missing: true
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |

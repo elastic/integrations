@@ -31,11 +31,13 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
+      tag: drop_41e92579
       if: ctx.event?.original != null && ctx.event.original.isEmpty()
   - json:
       field: event.original
@@ -43,9 +45,11 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_f3d9ca7e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_cce993bd
       fields:
         - json.action
         - json.timestamp
@@ -60,6 +64,7 @@ processors:
       if: ctx.json?.ipAddress != '' && ctx.json?.ipAddress != 'RedLock Internal IP'
       on_failure:
         - append:
+            tag: append_error_message_3251dda5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -93,6 +98,7 @@ processors:
       if: ctx.user?.email != null
       on_failure:
         - append:
+            tag: append_error_message_5e1446ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -125,6 +131,7 @@ processors:
       if: ctx.prisma_cloud?.audit?.action?.type != ''
       on_failure:
         - append:
+            tag: append_error_message_480c0009
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
@@ -134,6 +141,7 @@ processors:
       if: ctx.event?.action != null && ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_b5187eaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -143,6 +151,7 @@ processors:
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_93eae4e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -181,6 +190,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_39b2060b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -191,20 +201,23 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_724a2153
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timestamp
-      tag: 'date_rename_timestamp_to_custom_name'
+      tag: date_json_timestamp_to_prisma_cloud_audit_timestamp_289110dc
       target_field: prisma_cloud.audit.timestamp
       formats:
         - UNIX_MS
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_4243fa74
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
@@ -219,6 +232,7 @@ processors:
         - prisma_cloud.audit.result
         - prisma_cloud.audit.timestamp
   - script:
+      tag: script_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -236,10 +250,12 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,6 +2,7 @@
 description: Pipeline for processing Mimecast siem_logs from v2 API.
 processors:
   - date:
+      tag: date_mimecast_timestamp_2f9b8186
       description: Use 'mimecast.timestamp' as the '@timestamp'
       field: mimecast.timestamp
       if: ctx.mimecast?.timestamp != null
@@ -9,12 +10,14 @@ processors:
       formats:
         - UNIX_MS
   - set:
+      tag: set_event_created_3b69f632
       field: event.created
       copy_from: '@timestamp'
       if: ctx['@timestamp'] != null
 
   ### NOTE LOG TYPE
   - script:
+      tag: script_2d3bdcf4
       lang: painless
       params:
         'av': 'avlog'
@@ -40,6 +43,7 @@ processors:
       if: ctx.tags?.contains('preserve_duplicate_custom_fields') == true
 
   - fingerprint:
+      tag: fingerprint_5cae5d9e
       fields:
         - mimecast.messageId
         - mimecast.processingId
@@ -54,6 +58,7 @@ processors:
 
   ### Common
   - foreach:
+      tag: foreach_mimecast_recipients_d346f855
       if: ctx.mimecast?.recipients instanceof List
       field: mimecast.recipients
       processor:
@@ -62,6 +67,7 @@ processors:
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
   - append:
+      tag: append_email_to_address_0cfb7a4a
       field: email.to.address
       value: '{{{mimecast.recipients}}}'
       allow_duplicates: false
@@ -69,122 +75,150 @@ processors:
 
   ### RECEIPT LOGS
   - rename:
+      tag: rename_mimecast_action_to_event_action_75b859cd
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_tlsCipher_to_tls_cipher_8ff1bb23
       field: mimecast.tlsCipher
       target_field: tls.cipher
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_direction_to_email_direction_624c8c4d
       field: mimecast.direction
       target_field: email.direction
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_receiptErrors_to_error_message_2c144233
       field: mimecast.receiptErrors
       target_field: error.message
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_senderIp_to_source_ip_e17dfbc5
       field: mimecast.senderIp
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_messageId_to_email_message_id_a8ab0b64
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
   - append:
+      tag: append_email_from_address_0cbef6e5
       field: email.from.address
       value: '{{{mimecast.senderHeader}}}'
       allow_duplicates: false
       if: ctx.mimecast?.senderHeader != null
   - rename:
+      tag: rename_mimecast_rejectionCode_to_error_code_39daeafa
       field: mimecast.rejectionCode
       target_field: error.code
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_rejectionInfo_to_event_reason_fae81034
       field: mimecast.rejectionInfo
       target_field: event.reason
       ignore_missing: true
   - set:
+      tag: set_event_kind_dee3962d
       field: event.kind
       value: alert
       if: ctx.mimecast?.rejectionType != null && ctx.mimecast.rejectionType != ''
   - rename:
+      tag: rename_mimecast_rejectionType_to_error_type_00719f72
       field: mimecast.rejectionType
       target_field: error.type
       ignore_missing: true
   - append:
+      tag: append_email_from_address_3477ed67
       field: email.from.address
       value: '{{{mimecast.senderEnvelope}}}'
       allow_duplicates: false
       if: ctx.mimecast?.senderEnvelope != null
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_3c7206f3
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_tlsVer_to_tls_version_c151af6a
       field: mimecast.tlsVer
       target_field: tls.version
       ignore_missing: true
 
   ### PROCESS LOGS
   - rename:
+      tag: rename_mimecast_totalSizeAttachments_to_email_attachments_file_size_d3e9fcbf
       field: mimecast.totalSizeAttachments
       target_field: email.attachments.file.size
       ignore_missing: true
   - convert:
+      tag: convert_email_attachments_file_size_to_email_attachments_file_size_36c6954a
       field: email.attachments.file.size
       target_field: email.attachments.file.size
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_email_attachments_file_size_08a06211
             field: email.attachments.file.size
   - rename:
+      tag: rename_mimecast_attachments_to_email_attachments_file_name_e8d63fdc
       field: mimecast.attachments
       target_field: email.attachments.file.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_a51a4ef9
       field: event.kind
       value: alert
       if: ctx.mimecast?.Hld != null && ctx.mimecast.Hld != ''
   - rename:
+      tag: rename_mimecast_holdReason_to_event_reason_4ab378fe
       field: mimecast.holdReason
       target_field: event.reason
       ignore_missing: true
 
   ### DELIVERY LOGS
   - rename:
+      tag: rename_mimecast_destinationIp_to_destination_ip_d24d88c9
       field: mimecast.destinationIp
       target_field: destination.ip
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_deliveryErrors_to_error_message_9deacf97
       field: mimecast.deliveryErrors
       target_field: error.message
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_tlsUsed_to_tls_established_2da09b42
       field: mimecast.tlsUsed
       target_field: tls.established
       ignore_missing: true
   - set:
+      tag: set_tls_established_ee2a9e9b
       field: tls.established
       value: true
       if: ctx.tls?.established instanceof String && ctx.tls.established.equalsIgnoreCase('yes')
   - set:
+      tag: set_tls_established_acef8b40
       field: tls.established
       value: false
       if: ctx.tls?.established instanceof String && ctx.tls.established.equalsIgnoreCase('no')
 
   ### AV LOGS
   - set:
+      tag: set_event_kind_d195129d
       field: event.kind
       value: alert
       if: ctx.mimecast?.fileExtension != null && ctx.mimecast.fileExtension != ''
   - rename:
+      tag: rename_mimecast_fileExtension_to_email_attachments_file_extension_41a48113
       field: mimecast.fileExtension
       target_field: email.attachments.file.extension
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_md5_to_email_attachments_file_hash_md5_639a4925
       field: mimecast.md5
       target_field: email.attachments.file.hash.md5
       ignore_missing: true
@@ -195,57 +229,70 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_mimecast_senderDomainInternal_24f7b9bd
             field: mimecast.senderDomainInternal
         - append:
+            tag: append_error_message_113297ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_mimecast_sha1_to_email_attachments_file_hash_sha1_69b825ff
       field: mimecast.sha1
       target_field: email.attachments.file.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_sha256_to_email_attachments_file_hash_sha256_3d63dd5b
       field: mimecast.sha256
       target_field: email.attachments.file.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_fileName_to_email_attachments_file_name_93c938f3
       field: mimecast.fileName
       target_field: email.attachments.file.name
       ignore_missing: true
 
   ### SPAM EVENT THREAD LOGS
   - set:
+      tag: set_event_kind_265b6393
       field: event.kind
       value: alert
       if: ctx.mimecast?.senderIp != null && ctx.mimecast.senderIp != ''
   - rename:
+      tag: rename_mimecast_senderIp_to_source_ip_e17dfbc5
       field: mimecast.senderIp
       target_field: source.ip
       ignore_missing: true
 
   ### SIEM Email Protect Logs
   - set:
+      tag: set_event_kind_0f82209d
       field: event.kind
       value: alert
       if: ctx.mimecast?.url != null && ctx.mimecast.url != ''
   - rename:
+      tag: rename_mimecast_url_to_url_full_90397fbc
       field: mimecast.url
       target_field: url.full
       ignore_missing: true
 
   ### SIEM Impersonation logs                       
   - set:
+      tag: set_event_kind_770897fb
       field: event.kind
       value: alert
       if: ctx.mimecast?.taggedMalicious == true || ctx.mimecast?.taggedMalicious == 'true'
   - rename:
+      tag: rename_mimecast_action_to_event_action_75b859cd
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_policyDefinition_to_rule_name_ca38c3b3
       field: mimecast.policyDefinition
       target_field: rule.name
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_newDomain_to_source_domain_61e7b24c
       field: mimecast.newDomain
       target_field: source.domain
       ignore_missing: true
@@ -256,8 +303,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_mimecast_taggedExternal_770fc1ce
             field: mimecast.taggedExternal
         - append:
+            tag: append_error_message_7e9097aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -267,70 +316,87 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_mimecast_taggedMalicious_1189f190
             field: mimecast.taggedMalicious
         - append:
+            tag: append_error_message_4a758765
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   ### SIEM TTP Url Logs
   - rename:
+      tag: rename_mimecast_blockReason_to_event_reason_49d8adfa
       field: mimecast.blockReason
       target_field: event.reason
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_route_to_email_direction_8174b78e
       field: mimecast.route
       target_field: email.direction
       ignore_missing: true
       if: ctx.email?.direction == null
   - append:
+      tag: append_email_from_address_fe6e5273
       field: email.from.address
       value: "{{{mimecast.sender}}}"
       allow_duplicates: false
       if: ctx.mimecast?.sender != null
   - rename:
+      tag: rename_mimecast_senderDomain_to_source_domain_df51fd3f
       field: mimecast.senderDomain
       target_field: source.domain
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_sourceIp_to_source_ip_a8821cb9
       field: mimecast.sourceIp
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_3c7206f3
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_url_to_url_full_90397fbc
       field: mimecast.url
       target_field: url.full
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_action_to_event_action_75b859cd
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_Delivered_to_event_outcome_3a0307db
       field: mimecast.Delivered
       target_field: event.outcome
       ignore_missing: true
   - set:
+      tag: set_event_outcome_7b299714
       field: event.outcome
       value: "success"
       if: ctx.event?.outcome == true
   - set:
+      tag: set_event_outcome_48eb961a
       field: event.outcome
       value: "failure"
       if: ctx.event?.outcome == false
   - set:
+      tag: set_event_outcome_6f947b7c
       field: event.outcome
       value: "unknown"
       if: ctx.event?.outcome == null
   - lowercase:
+      tag: lowercase_email_direction_569c0270
       field: email.direction
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -339,18 +405,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -359,10 +429,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -424,11 +496,13 @@ processors:
 
   # Cleanup
   - rename:
+      tag: rename_original_to_mimecast_5b6791aa
       field: original
       target_field: mimecast
       override: true
       ignore_missing: true
   - remove:
+      tag: remove_0a5321eb
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast._offset
@@ -444,3 +518,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

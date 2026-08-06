@@ -54,7 +54,6 @@ processors:
         - yyyy-MM-dd HH:mm:ss.SSSSSS
       ignore_failure: true
 
-
   ##################################
   ## Determine basic event fields ##
   ##################################
@@ -84,7 +83,7 @@ processors:
   - set:
       if: ctx.opencanary?.logtype != null && ctx.opencanary.logtype >= 2000
       description: Set event.category as a network/IDS event if it is of an approriate logtype
-      tag: set_event_category
+      tag: set_event_category_e22e799a
       field: event.category
       value:
         - network
@@ -194,7 +193,6 @@ processors:
         } else {
           ctx.log['logger'] = params.get(logType);
         }
-
   - set:
       if: ctx.opencanary?.logtype == null
       description: Set log.logger to LOG_BASE_ERROR as previous script process will have been skipped
@@ -439,7 +437,7 @@ processors:
   # TFTP Events
   - rename:
       description: Rename TFTP FILENAME field to opencanary.tftp.filename
-      tag: rename_opencanary_logdata_FILENAME
+      tag: rename_opencanary_logdata_FILENAME_to_opencanary_tftp_filename_0b2e7468
       if: ctx.log?.logger == 'LOG_TFTP'
       field: opencanary.logdata.FILENAME
       target_field: opencanary.tftp.filename
@@ -495,8 +493,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
-
-
   # NTP events
   - rename:
       description: Rename NTP command field to opencanary.ntp.cmd
@@ -530,7 +526,6 @@ processors:
       copy_from: '@timestamp'
       ignore_failure: true
 
-
   ######################################
   ## Parse Destination Details to ECS ##
   ######################################
@@ -558,6 +553,7 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_destination_domain_2a110a87
             copy_from: destination.address
             field: destination.domain
             override: true
@@ -569,7 +565,6 @@ processors:
       field: destination.domain
       ignore_empty_value: true
 
-
   ###############################
   ## Parse Host Details to ECS ##
   ###############################
@@ -579,7 +574,6 @@ processors:
       copy_from: opencanary.logdata.HOSTNAME
       field: host.name
       ignore_empty_value: true
-
 
   #################################
   ## Parse Source Details to ECS ##
@@ -608,6 +602,7 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_source_domain_829b7f23
             copy_from: source.address
             field: source.domain
             override: true
@@ -628,7 +623,7 @@ processors:
       ignore_failure: true
   - grok:
       description: Parse source and destination MAC addresses from opencanary.logdata.MAC if present
-      tag: gsub_opencanary_logdata_MAC
+      tag: grok_opencanary_logdata_MAC_95eba733
       field: opencanary.logdata.MAC
       patterns:
         - "%{MAC:destination.mac}-%{MAC:source.mac}%{GREEDYDATA}"
@@ -648,7 +643,6 @@ processors:
       copy_from: opencanary.logdata.REMOTENAME
       field: source.domain
       ignore_empty_value: true
-
 
   ##################################
   ## Parse Network Details to ECS ##
@@ -797,12 +791,14 @@ processors:
   ## GeoIP Enrichment ##
   ######################
   - geoip:
+      tag: geoip_source_ip_to_source_geo_5b302835
       description: "Enrich event with source IP GeoIP data"
       field: source.ip
       target_field: source.geo
       ignore_missing: true
 
   - geoip:
+      tag: geoip_source_ip_to_source_as_9e053401
       description: "Enrich event with source IP GeoIP ASN contextual data"
       field: source.ip
       target_field: source.as
@@ -813,23 +809,26 @@ processors:
       ignore_missing: true
 
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
 
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
-
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_46a31e70
       description: "Enrich event with destination IP GeoIP data"
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
 
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_08af3990
       description: "Enrich event with destination IP GeoIP ASN contextual data"
       field: destination.ip
       target_field: destination.as
@@ -840,15 +839,16 @@ processors:
       ignore_missing: true
 
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
 
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
 
   ##############
   ## Clean Up ##
@@ -925,10 +925,12 @@ processors:
         dropEmptyFields(ctx);
 
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,262 +2,315 @@
 description: Pipeline for Jamf Compliance Reporter prohibited app blocked event logs.
 processors:
   - rename:
+      tag: rename_json_header_action_to_jamf_compliance_reporter_log_header_action_4e424232
       field: json.header.action
       target_field: jamf_compliance_reporter.log.header.action
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_args_args_to_json_args_c2752467
       field: json.exec_args.args
       target_field: json.args
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_args_args_compiled_to_jamf_compliance_reporter_log_exec_args_args_compiled_6e9208ee
       field: json.exec_args.args_compiled
       target_field: jamf_compliance_reporter.log.exec_args.args_compiled
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_PATH_to_jamf_compliance_reporter_log_exec_env_env_path_66b7d43e
       field: json.exec_env.env.PATH
       target_field: jamf_compliance_reporter.log.exec_env.env.path
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_SHELL_to_jamf_compliance_reporter_log_exec_env_env_shell_b8736590
       field: json.exec_env.env.SHELL
       target_field: jamf_compliance_reporter.log.exec_env.env.shell
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_SSH_AUTH_SOCK_to_jamf_compliance_reporter_log_exec_env_env_ssh_auth_sock_586b6f74
       field: json.exec_env.env.SSH_AUTH_SOCK
       target_field: jamf_compliance_reporter.log.exec_env.env.ssh_auth_sock
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_TMPDIR_to_jamf_compliance_reporter_log_exec_env_env_tmpdir_630f97d2
       field: json.exec_env.env.TMPDIR
       target_field: jamf_compliance_reporter.log.exec_env.env.tmpdir
       ignore_missing: true
   - append:
+      tag: append_user_name_b215dbf8
       field: user.name
       value: '{{{json.exec_env.env.USER}}}'
       if: ctx.json?.exec_env?.env?.USER != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_1af882e8
       field: related.user
       value: '{{{json.exec_env.env.USER}}}'
       if: ctx.json?.exec_env?.env?.USER != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_exec_env_env_XPC_FLAGS_to_jamf_compliance_reporter_log_exec_env_env_xpc_flags_10e3a485
       field: json.exec_env.env.XPC_FLAGS
       target_field: jamf_compliance_reporter.log.exec_env.env.xpc.flags
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_XPC_SERVICE_NAME_to_jamf_compliance_reporter_log_exec_env_env_xpc_service_name_b71ea807
       field: json.exec_env.env.XPC_SERVICE_NAME
       target_field: jamf_compliance_reporter.log.exec_env.env.xpc.service_name
       ignore_missing: true
   - rename:
+      tag: rename_json_exec_env_env_compiled_to_jamf_compliance_reporter_log_exec_env_env_compiled_42f5d016
       field: json.exec_env.env_compiled
       target_field: jamf_compliance_reporter.log.exec_env.env_compiled
       ignore_missing: true
   - rename:
+      tag: rename_json_identity_cd_hash_to_jamf_compliance_reporter_log_identity_cd_hash_a91be7b4
       field: json.identity.cd_hash
       target_field: jamf_compliance_reporter.log.identity.cd_hash
       ignore_missing: true
   - append:
+      tag: append_related_hash_04fe9d31
       field: related.hash
       value: '{{{jamf_compliance_reporter.log.identity.cd_hash}}}'
       if: ctx.jamf_compliance_reporter?.log?.identity?.cd_hash != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_signer_id_to_jamf_compliance_reporter_log_identity_signer_id_55e24284
       field: json.identity.signer_id
       target_field: jamf_compliance_reporter.log.identity.signer.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_signer_id_truncated_to_jamf_compliance_reporter_log_identity_signer_id_truncated_7d4200ce
       field: json.identity.signer_id_truncated
       target_field: jamf_compliance_reporter.log.identity.signer.id_truncated
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_signer_type_to_jamf_compliance_reporter_log_identity_signer_type_779a9f36
       field: json.identity.signer_type
       target_field: jamf_compliance_reporter.log.identity.signer.type
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_team_id_to_jamf_compliance_reporter_log_identity_team_id_26560692
       field: json.identity.team_id
       target_field: jamf_compliance_reporter.log.identity.team.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_team_id_truncated_to_jamf_compliance_reporter_log_identity_team_id_truncated_20bad62c
       field: json.identity.team_id_truncated
       target_field: jamf_compliance_reporter.log.identity.team.id_truncated
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_audit_id_to_process_real_user_id_25b75fe6
       field: json.subject.audit_id
       target_field: process.real_user.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_audit_user_name_to_process_real_user_name_9efe64b1
       field: json.subject.audit_user_name
       target_field: process.real_user.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_effective_group_id_to_jamf_compliance_reporter_log_subject_effective_group_id_08ee1ee7
       field: json.subject.effective_group_id
       target_field: jamf_compliance_reporter.log.subject.effective.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_effective_group_name_to_jamf_compliance_reporter_log_subject_effective_group_name_c257af46
       field: json.subject.effective_group_name
       target_field: jamf_compliance_reporter.log.subject.effective.group.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_effective_user_id_to_user_effective_id_8561a1e7
       field: json.subject.effective_user_id
       target_field: user.effective.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_jamf_compliance_reporter_log_subject_effective_user_id_76b205b4
       field: jamf_compliance_reporter.log.subject.effective.user.id
       copy_from: user.effective.id
       ignore_failure: true
   - append:
+      tag: append_user_name_6426d56f
       field: user.name
       value: '{{{json.subject.effective_user_name}}}'
       if: ctx.json?.subject?.effective_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_6dba669f
       field: related.user
       value: '{{{json.subject.effective_user_name}}}'
       if: ctx.json?.subject?.effective_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_effective_user_name_to_user_effective_name_7f204018
       field: json.subject.effective_user_name
       target_field: user.effective.name
       ignore_missing: true
   - set:
+      tag: set_jamf_compliance_reporter_log_subject_effective_user_name_6c475540
       field: jamf_compliance_reporter.log.subject.effective.user.name
       copy_from: user.effective.name
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_group_id_to_user_group_id_6aa8aaab
       field: json.subject.group_id
       target_field: user.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_group_name_to_user_group_name_4989cf8e
       field: json.subject.group_name
       target_field: user.group.name
       ignore_missing: true
   - rename:
+      tag: rename_json_subject_process_hash_to_process_hash_sha1_ec183692
       field: json.subject.process_hash
       target_field: process.hash.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_8db6a16a
       field: related.hash
       value: '{{{process.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_process_id_to_jamf_compliance_reporter_log_subject_process_pid_c6218d3b
       field: json.subject.process_id
       target_field: jamf_compliance_reporter.log.subject.process.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b970a4a6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_subject_process_information_to_jamf_compliance_reporter_log_subject_process_information_a98a03c5
       field: json.subject.process_information
       target_field: jamf_compliance_reporter.log.subject.process.information
       ignore_missing: true
   - rename:
+      tag: rename_json_subject_process_name_to_process_name_1f8c84e1
       field: json.subject.process_name
       target_field: process.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_responsible_process_id_to_jamf_compliance_reporter_log_subject_responsible_process_id_396f9331
       field: json.subject.responsible_process_id
       target_field: jamf_compliance_reporter.log.subject.responsible.process.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_responsible_process_name_to_jamf_compliance_reporter_log_subject_responsible_process_name_f33bae38
       field: json.subject.responsible_process_name
       target_field: jamf_compliance_reporter.log.subject.responsible.process.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_session_id_to_jamf_compliance_reporter_log_subject_session_id_f51f0574
       field: json.subject.session_id
       target_field: jamf_compliance_reporter.log.subject.session.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_terminal_id_ip_address_to_json_subject_terminal_id_ip_address_690dae36
       field: json.subject.terminal_id.ip_address
       target_field: json.subject.terminal_id.ip_address
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_subject_terminal_id_ip_address_840b9479
             field: json.subject.terminal_id.ip_address
             ignore_missing: true
         - append:
+            tag: append_error_message_12e8ac6b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_e4f236dd
       field: host.ip
       value: '{{{json.subject.terminal_id.ip_address}}}'
       if: ctx.json?.subject?.terminal_id?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_8541d760
       field: related.ip
       value: '{{{json.subject.terminal_id.ip_address}}}'
       if: ctx.json?.subject?.terminal_id?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_terminal_id_port_to_jamf_compliance_reporter_log_subject_terminal_id_port_301d7d36
       field: json.subject.terminal_id.port
       target_field: jamf_compliance_reporter.log.subject.terminal_id.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9d728ff1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_subject_terminal_id_type_to_jamf_compliance_reporter_log_subject_terminal_id_type_8a893ed5
       field: json.subject.terminal_id.type
       target_field: jamf_compliance_reporter.log.subject.terminal_id.type
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_user_id_to_user_id_19eb600e
       field: json.subject.user_id
       target_field: user.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_name_11035ae3
       field: user.name
       value: '{{{json.subject.user_name}}}'
       if: ctx.json?.subject?.user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_acadb613
       field: related.user
       value: '{{{json.subject.user_name}}}'
       if: ctx.json?.subject?.user_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_texts_to_jamf_compliance_reporter_log_texts_e75677b2
       field: json.texts
       target_field: jamf_compliance_reporter.log.texts
       ignore_missing: true
   - script:
+      tag: script_721d76b6
       description: Convert Object into Array.
       lang: painless
       source: |
@@ -275,3 +328,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

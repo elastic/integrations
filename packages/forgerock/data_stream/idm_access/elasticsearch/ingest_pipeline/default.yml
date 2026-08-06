@@ -2,12 +2,15 @@
 description: Pipeline for ForgeRock idm-access audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_observer_vendor_a4252fc1
       field: observer.vendor
       value: ForgeRock Identity Platform
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -20,20 +23,25 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - rename:
+      tag: rename_json_payload_to_forgerock_12e49639
       field: json.payload
       target_field: forgerock
   - set:
+      tag: set_event_id_61b21b41
       field: event.id
       copy_from: forgerock._id
       ignore_failure: true
   - set:
+      tag: set_transaction_id_04cf8970
       field: transaction.id
       copy_from: forgerock.transactionId
       ignore_failure: true
   - date:
+      tag: date_forgerock_timestamp_to_timestamp_26758e33
       field: forgerock.timestamp
       formats:
         - ISO8601
@@ -41,66 +49,81 @@ processors:
       timezone: UTC
       on_failure:
         - append:
+            tag: append_error_message_e1edf820
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   # idm-access processing
   - set:
+      tag: set_event_type_24c7243c
       field: event.type
       value: [access]
   - convert:
+      tag: convert_forgerock_client_ip_to_client_ip_16f6010c
       field: forgerock.client.ip
       target_field: client.ip
       type: ip
       ignore_missing: true
   - set:
+      tag: set_client_port_43205056
       field: client.port
       copy_from: forgerock.client.port
       ignore_failure: true
   - set:
+      tag: set_server_domain_654f70fc
       field: server.domain
       copy_from: forgerock.server.host
       ignore_failure: true
   - convert:
+      tag: convert_forgerock_server_ip_to_server_ip_b8435e6c
       field: forgerock.server.ip
       target_field: server.ip
       type: ip
       ignore_missing: true
   - set:
+      tag: set_user_id_374bda8c
       field: user.id
       copy_from: forgerock.userId
       ignore_failure: true
   - set:
+      tag: set_http_request_method_023d8f1e
       field: http.request.method
       copy_from: forgerock.http.request.method
       ignore_failure: true
   - set:
+      tag: set_http_request_Path_d840b8d2
       field: http.request.Path
       copy_from: forgerock.http.request.path
       ignore_failure: true
   - convert:
+      tag: convert_forgerock_response_statusCode_to_http_response_status_code_f0bf401c
       target_field: http.response.status_code
       field: forgerock.response.statusCode
       type: integer
       ignore_failure: true
   - set:
+      tag: set_event_outcome_9d188049
       if: ctx.forgerock?.response?.status == "SUCCESSFUL"
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_88b951f3
       if: ctx.forgerock?.response?.status == "FAILED"
       field: event.outcome
       value: "failure"
       ignore_failure: true
   - convert:
+      tag: convert_forgerock_response_elapsedTime_1a480219
       field: forgerock.response.elapsedTime
       type: long
       ignore_failure: true
   - set:
+      tag: set_event_duration_769e42e1
       field: event.duration
       copy_from: forgerock.response.elapsedTime
       ignore_empty_value: true
   - script:
+      tag: script_37c8fd18
       lang: painless
       if: ctx.event?.duration != null && ctx.forgerock?.response?.elapsedTimeUnits == 'MILLISECONDS'
       params:
@@ -109,11 +132,13 @@ processors:
         ctx.event.duration *= params.MS_TO_NS;
   # cleaning up
   - remove:
+      tag: remove_ca120718
       field:
         - json.timestamp
         - json.type
       ignore_failure: true
   - remove:
+      tag: remove_b800ac2e
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - json
@@ -131,6 +156,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true

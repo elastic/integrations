@@ -2,55 +2,68 @@
 description: Pipeline for parsing GCP Cloud Run metrics.
 processors:
   - fingerprint:
+      tag: fingerprint_5c1d1252
       fields:
         - gcp.labels
       target_field: gcp.labels_fingerprint
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_billable_instance_time_value_to_gcp_cloudrun_metrics_container_billable_instance_time_208cc520
       field: gcp.metrics.container.billable_instance_time.value
       target_field: gcp.cloudrun_metrics.container.billable_instance_time
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_cpu_allocation_time_value_to_gcp_cloudrun_metrics_container_cpu_allocation_time_sec_b23e2f41
       field: gcp.metrics.container.cpu.allocation_time.value
       target_field: gcp.cloudrun_metrics.container.cpu.allocation_time.sec
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_cpu_utilizations_value_to_gcp_cloudrun_metrics_container_cpu_utilizations_9ff4fab0
       field: gcp.metrics.container.cpu.utilizations.value
       target_field: gcp.cloudrun_metrics.container.cpu.utilizations
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_instance_count_value_to_gcp_cloudrun_metrics_container_instance_count_89c9fd93
       field: gcp.metrics.container.instance_count.value
       target_field: gcp.cloudrun_metrics.container.instance.count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_max_request_concurrencies_value_to_gcp_cloudrun_metrics_container_max_request_concurrencies_c9418104
       field: gcp.metrics.container.max_request_concurrencies.value
       target_field: gcp.cloudrun_metrics.container.max_request_concurrencies
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_memory_allocation_time_value_to_gcp_cloudrun_metrics_container_memory_allocation_time_363f99d0
       field: gcp.metrics.container.memory.allocation_time.value
       target_field: gcp.cloudrun_metrics.container.memory.allocation_time
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_memory_utilizations_value_to_gcp_cloudrun_metrics_container_memory_utilizations_2144e944
       field: gcp.metrics.container.memory.utilizations.value
       target_field: gcp.cloudrun_metrics.container.memory.utilizations
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_network_received_bytes_count_value_to_gcp_cloudrun_metrics_container_network_received_bytes_aae7d5bf
       field: gcp.metrics.container.network.received_bytes_count.value
       target_field: gcp.cloudrun_metrics.container.network.received.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_container_network_sent_bytes_count_value_to_gcp_cloudrun_metrics_container_network_sent_bytes_0862a291
       field: gcp.metrics.container.network.sent_bytes_count.value
       target_field: gcp.cloudrun_metrics.container.network.sent.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_request_count_value_to_gcp_cloudrun_metrics_request_count_2cc26083
       field: gcp.metrics.request_count.value
       target_field: gcp.cloudrun_metrics.request.count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_request_latencies_value_to_gcp_cloudrun_metrics_request_latencies_8c0ec168
       field: gcp.metrics.request_latencies.value
       target_field: gcp.cloudrun_metrics.request_latencies
       ignore_missing: true
   - remove:
+      tag: remove_ab6e04c7
       field:
         - gcp.metrics
       ignore_missing: true
@@ -61,3 +74,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

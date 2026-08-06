@@ -2,26 +2,32 @@
 description: Pipeline for processing Cross Process Event logs.
 processors:
   - set:
+      tag: set_event_category_dffe0229
       field: event.category
       value: [process]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - rename:
+      tag: rename_json_k8sCluster_containerImage_sha256_to_sentinel_one_cloud_funnel_event_k8s_cluster_container_image_sha256_997132df
       field: json.k8sCluster.containerImage.sha256
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256
       ignore_missing: true
   - append:
+      tag: append_container_image_hash_all_7085001c
       field: container.image.hash.all
       value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256 != null
   - append:
+      tag: append_related_hash_fef1cce8
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256 != null
   - rename:
+      tag: rename_json_tgt_process_relation_to_sentinel_one_cloud_funnel_event_tgt_process_relation_3341485c
       field: json.tgt.process.relation
       target_field: sentinel_one_cloud_funnel.event.tgt.process.relation
       ignore_missing: true
@@ -34,33 +40,41 @@ processors:
       if: ctx.json?.tgt?.process?.accessRights != ''
       on_failure:
         - append:
+            tag: append_error_message_658ceeba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_activeContent_hash_to_sentinel_one_cloud_funnel_event_tgt_process_active_content_hash_7e5be2bd
       field: json.tgt.process.activeContent.hash
       target_field: sentinel_one_cloud_funnel.event.tgt.process.active_content.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_activeContent_id_to_sentinel_one_cloud_funnel_event_tgt_process_active_content_id_7796cb63
       field: json.tgt.process.activeContent.id
       target_field: sentinel_one_cloud_funnel.event.tgt.process.active_content.id
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_activeContent_path_to_sentinel_one_cloud_funnel_event_tgt_process_active_content_path_c97e7e9f
       field: json.tgt.process.activeContent.path
       target_field: sentinel_one_cloud_funnel.event.tgt.process.active_content.path
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_activeContent_signedStatus_to_sentinel_one_cloud_funnel_event_tgt_process_active_content_signed_status_b1e15fcc
       field: json.tgt.process.activeContent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.active_content.signed_status
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_activeContentType_to_sentinel_one_cloud_funnel_event_tgt_process_active_content_type_0e0027e7
       field: json.tgt.process.activeContentType
       target_field: sentinel_one_cloud_funnel.event.tgt.process.active_content.type
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_cmdline_to_sentinel_one_cloud_funnel_event_tgt_process_cmd_line_812ccb5d
       field: json.tgt.process.cmdline
       target_field: sentinel_one_cloud_funnel.event.tgt.process.cmd_line
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_displayName_to_sentinel_one_cloud_funnel_event_tgt_process_display_name_abf63e69
       field: json.tgt.process.displayName
       target_field: sentinel_one_cloud_funnel.event.tgt.process.display_name
       ignore_missing: true
@@ -73,40 +87,49 @@ processors:
       if: ctx.json?.tgt?.process?.image?.binaryIsExecutable != ''
       on_failure:
         - append:
+            tag: append_error_message_16263fcf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_image_md5_to_sentinel_one_cloud_funnel_event_tgt_process_image_md5_edb32ef0
       field: json.tgt.process.image.md5
       target_field: sentinel_one_cloud_funnel.event.tgt.process.image.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_e8d5a020
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.image.md5}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.image?.md5 != null
   - rename:
+      tag: rename_json_tgt_process_image_path_to_sentinel_one_cloud_funnel_event_tgt_process_image_path_f507d268
       field: json.tgt.process.image.path
       target_field: sentinel_one_cloud_funnel.event.tgt.process.image.path
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_image_sha1_to_sentinel_one_cloud_funnel_event_tgt_process_image_sha1_a2281558
       field: json.tgt.process.image.sha1
       target_field: sentinel_one_cloud_funnel.event.tgt.process.image.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_9e28d560
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.image.sha1}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.image?.sha1 != null
   - rename:
+      tag: rename_json_tgt_process_image_sha256_to_sentinel_one_cloud_funnel_event_tgt_process_image_sha256_a4a15668
       field: json.tgt.process.image.sha256
       target_field: sentinel_one_cloud_funnel.event.tgt.process.image.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_a2061640
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.image.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.image?.sha256 != null
   - rename:
+      tag: rename_json_tgt_process_integrityLevel_to_sentinel_one_cloud_funnel_event_tgt_process_integrity_level_1e2fbd25
       field: json.tgt.process.integrityLevel
       target_field: sentinel_one_cloud_funnel.event.tgt.process.integrity_level
       ignore_missing: true
@@ -119,6 +142,7 @@ processors:
       if: ctx.json?.tgt?.process?.isNative64Bit != ''
       on_failure:
         - append:
+            tag: append_error_message_7e1e78b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -130,6 +154,7 @@ processors:
       if: ctx.json?.tgt?.process?.isRedirectCmdProcessor != ''
       on_failure:
         - append:
+            tag: append_error_message_5387e536
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -141,9 +166,11 @@ processors:
       if: ctx.json?.tgt?.process?.isStorylineRoot != ''
       on_failure:
         - append:
+            tag: append_error_message_bd000a95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_name_to_sentinel_one_cloud_funnel_event_tgt_process_name_27916ab4
       field: json.tgt.process.name
       target_field: sentinel_one_cloud_funnel.event.tgt.process.name
       ignore_missing: true
@@ -156,13 +183,16 @@ processors:
       if: ctx.json?.tgt?.process?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_1dd51f92
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_publisher_to_sentinel_one_cloud_funnel_event_tgt_process_publisher_c8fa2f52
       field: json.tgt.process.publisher
       target_field: sentinel_one_cloud_funnel.event.tgt.process.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_reasonSignatureInvalid_to_sentinel_one_cloud_funnel_event_tgt_process_reason_signature_invalid_b95abc7c
       field: json.tgt.process.reasonSignatureInvalid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.reason_signature_invalid
       ignore_missing: true
@@ -175,9 +205,11 @@ processors:
       if: ctx.json?.tgt?.process?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_8efa60f1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_signedStatus_to_sentinel_one_cloud_funnel_event_tgt_process_signed_status_025c2f53
       field: json.tgt.process.signedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.signed_status
       ignore_missing: true
@@ -191,35 +223,43 @@ processors:
       if: ctx.json?.tgt?.process?.startTime != null && ctx.json.tgt.process.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_5fe39210
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_storyline_id_to_sentinel_one_cloud_funnel_event_tgt_process_storyline_id_e1588021
       field: json.tgt.process.storyline.id
       target_field: sentinel_one_cloud_funnel.event.tgt.process.storyline_id
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_subsystem_to_sentinel_one_cloud_funnel_event_tgt_process_subsystem_f2387370
       field: json.tgt.process.subsystem
       target_field: sentinel_one_cloud_funnel.event.tgt.process.subsystem
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_uid_to_sentinel_one_cloud_funnel_event_tgt_process_uid_d0b00836
       field: json.tgt.process.uid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_user_to_sentinel_one_cloud_funnel_event_tgt_process_user_name_b291e32f
       field: json.tgt.process.user
       target_field: sentinel_one_cloud_funnel.event.tgt.process.user.name
       ignore_missing: true
   - append:
+      tag: append_process_user_name_3d861cac
       field: process.user.name
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.user?.name != null
   - append:
+      tag: append_related_user_72cd47f9
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.user?.name != null
   - rename:
+      tag: rename_json_tgt_process_verifiedStatus_to_sentinel_one_cloud_funnel_event_tgt_process_verified_status_99559a2f
       field: json.tgt.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.verified_status
       ignore_missing: true
@@ -229,6 +269,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
@@ -240,3 +281,11 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

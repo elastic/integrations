@@ -2,70 +2,85 @@
 description: Pipeline for parsing specific fields related to GateKeeper events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - set:
+        tag: set_event_reason_a9f28ff4
         field: event.reason
         value: Gatekeeper controls were overridden
     - append:
+        tag: append_event_category_557b9332
         field: event.category
         value: malware
         allow_duplicates: false
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_file_path_to_file_path_1213b77d
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.path
         target_field: file.path
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_file_stat_st_size_to_file_size_2207a759
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_size
         target_field: file.size
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_file_stat_st_birthtimespec_to_file_created_61d99d8c
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_birthtimespec
         target_field: file.created
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_file_stat_st_atimespec_to_file_accessed_d2ab8e4b
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_atimespec
         target_field: file.accessed
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_gatekeeper_user_override_file_stat_st_uid_to_file_uid_c0dd826f
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_uid
         target_field: file.uid
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_gatekeeper_user_override_file_stat_st_gid_to_file_gid_69c0d2b7
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_gid
         target_field: file.gid
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_sha256_to_file_hash_sha256_7551d278
         field: jamf_protect.telemetry.event.gatekeeper_user_override.sha256
         target_field: file.hash.sha256
         if: ctx.jamf_protect?.telemetry?.event?.gatekeeper_user_override?.sha256 != "NULL"
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_signing_info_cdhash_to_file_hash_cdhash_837ce2d5
         field: jamf_protect.telemetry.event.gatekeeper_user_override.signing_info.cdhash
         target_field: file.hash.cdhash
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_signing_info_team_id_to_file_code_signature_team_id_1f7460f9
         field: jamf_protect.telemetry.event.gatekeeper_user_override.signing_info.team_id
         target_field: file.code_signature.team_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_gatekeeper_user_override_signing_info_signing_id_to_file_code_signature_signing_id_20b644d5
         field: jamf_protect.telemetry.event.gatekeeper_user_override.signing_info.signing_id
         target_field: file.code_signature.signing_id
         ignore_missing: true
     - append:
+        tag: append_threat_indicator_file_path_88c08c7f
         field: threat.indicator.file.path
         value: '{{{file.path}}}'
         if: ctx.file?.path != null && ctx.file.path != ''
         allow_duplicates: false
     - set:
+        tag: set_threat_indicator_type_e912359f
         field: threat.indicator.type
         value: file
-        
-##########################
-## ECS Process ##
-##########################
+
+    ##########################
+    ## ECS Process ##
+    ##########################
     - pipeline:
+        tag: pipeline_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

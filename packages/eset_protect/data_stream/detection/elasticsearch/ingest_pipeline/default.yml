@@ -28,6 +28,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - fingerprint:
@@ -147,6 +148,7 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_deviceInfo_primaryIp_fa012743
             field: json.deviceInfo.primaryIp
             ignore_missing: true
   - append:
@@ -169,6 +171,7 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_deviceInfo_publicIp_783fc47c
             field: json.deviceInfo.publicIp
             ignore_missing: true
   - append:
@@ -264,6 +267,7 @@ processors:
       if: ctx.eset_protect?.detection?.context?.process?.path != ''
       on_failure:
         - append:
+            tag: append_error_message_b5f5c8ad
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
@@ -283,6 +287,7 @@ processors:
       if: ctx.eset_protect?.detection?.context?.user_name != ''
       on_failure:
         - append:
+            tag: append_error_message_98c4956d
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
@@ -320,6 +325,7 @@ processors:
       if: ctx.json?.networkCommunication?.localIpAddress != null && ctx.json.networkCommunication.localIpAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_0747180d
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -365,6 +371,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e2967448
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -396,6 +403,7 @@ processors:
       if: ctx.json?.networkCommunication?.remoteIpAddress != null && ctx.json.networkCommunication.remoteIpAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_4126186a
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -441,6 +449,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_054d9ba5
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -503,6 +512,7 @@ processors:
       if: ctx.json?.occurTime != null && ctx.json.occurTime != ''
       on_failure:
         - append:
+            tag: append_error_message_f3654959
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -511,6 +521,7 @@ processors:
       copy_from: eset_protect.detection.occur_time
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_responses_382d0f1a
       field: json.responses
       if: ctx.json?.responses instanceof List
       processor:
@@ -528,6 +539,7 @@ processors:
                 field: error.message
                 value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - foreach:
+      tag: foreach_json_responses_2139ba6b
       field: json.responses
       if: ctx.json?.responses instanceof List
       processor:
@@ -537,6 +549,7 @@ processors:
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_responses_888ddb2c
       field: json.responses
       if: ctx.json?.responses instanceof List
       processor:
@@ -546,6 +559,7 @@ processors:
           target_field: _ingest._value.protection_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_responses_22da6fd4
       field: json.responses
       if: ctx.json?.responses instanceof List
       processor:
@@ -617,11 +631,13 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

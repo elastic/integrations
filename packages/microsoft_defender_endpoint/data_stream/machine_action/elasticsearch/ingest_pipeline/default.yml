@@ -39,6 +39,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -59,6 +60,7 @@ processors:
       target_field: microsoft_defender_endpoint.machine_action.type
       ignore_missing: true
   - set:
+      tag: set_event_action_96d6634e
       field: event.action
       copy_from: microsoft_defender_endpoint.machine_action.type
       ignore_failure: true
@@ -118,11 +120,13 @@ processors:
       target_field: microsoft_defender_endpoint.machine_action.status
       ignore_missing: true
   - set:
+      tag: set_event_outcome_3a585902
       field: event.outcome
       value: success
       if: ctx.microsoft_defender_endpoint?.machine_action?.status != null && ctx.microsoft_defender_endpoint.machine_action.status.toLowerCase() == 'succeeded'
       ignore_failure: true
   - set:
+      tag: set_event_outcome_df272abf
       field: event.outcome
       value: failure
       if: ctx.microsoft_defender_endpoint?.machine_action?.status != null && ctx.microsoft_defender_endpoint.machine_action.status.toLowerCase() == 'failed'
@@ -141,6 +145,7 @@ processors:
       if: ctx.json?.cancellationDateTimeUtc != null && ctx.json.cancellationDateTimeUtc != ''
       on_failure:
         - append:
+            tag: append_error_message_038f4e55
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -171,7 +176,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: host.hostname
-      tag: set_host_name_from_machine_action_computer_dns_name
+      tag: set_host_hostname_d388b1b4
       copy_from: microsoft_defender_endpoint.machine_action.computer_dns_name
       ignore_empty_value: true
   - append:
@@ -189,6 +194,7 @@ processors:
       if: ctx.json?.creationDateTimeUtc != null && ctx.json.creationDateTimeUtc != ''
       on_failure:
         - append:
+            tag: append_error_message_401a27c7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -209,6 +215,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fc41d848
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -241,6 +248,7 @@ processors:
       if: ctx.json?.lastUpdateDateTimeUtc != null && ctx.json.lastUpdateDateTimeUtc != ''
       on_failure:
         - append:
+            tag: append_error_message_cf43d1d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -284,7 +292,7 @@ processors:
       description: Set file.hash.sha1, file.hash.md5, file.hash.sha256.
       tag: script_set_file_hash_*
       lang: painless
-      if : ctx.microsoft_defender_endpoint?.machine_action?.related_file_info?.file_identifier_type != null
+      if: ctx.microsoft_defender_endpoint?.machine_action?.related_file_info?.file_identifier_type != null
       source: >
         ctx.file = ctx.file ?: [:];
         ctx.file.hash = ctx.file.hash ?: [:];
@@ -299,6 +307,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_389755e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -410,6 +419,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

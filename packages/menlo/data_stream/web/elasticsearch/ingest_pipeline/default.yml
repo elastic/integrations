@@ -2,6 +2,7 @@
 description: Mapping of Menlo Web Proxy Fields from API into ECS fields.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
@@ -17,6 +18,7 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - json:
@@ -32,168 +34,208 @@ processors:
       tag: date_timestamp_epoch
       on_failure:
         - append:
+            tag: append_error_message_a65d3437
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_event_severity_to_event_severity_e3a83e4f
       field: json.event.severity
       type: long
       target_field: event.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_event_full_session_id_to_event_id_88f11471
       field: json.event.full_session_id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_pe_action_to_event_action_a00661dc
       field: json.event.pe_action
       target_field: event.action
       ignore_missing: true
   - set:
+      tag: set_event_outcome_82c7155e
       field: event.outcome
       value: unknown
   - set:
+      tag: set_event_outcome_176b2308
       field: event.outcome
       value: failure
       if: ctx.event.action == 'block' || ctx.event.action == 'isolate' || ctx.event.action == 'ssl_exception'
   - set:
+      tag: set_event_outcome_0598fac0
       field: event.outcome
       value: success
       if: ctx.event.action == 'direct' || ctx.event.action == 'allow'
   - rename:
+      tag: rename_json_event_pe_reason_to_event_reason_4ae02444
       field: json.event.pe_reason
       target_field: event.reason
       ignore_missing: true
   - set:
+      tag: set_event_category_7a832770
       field: event.category
       value: web
   - append:
+      tag: append_event_category_7afdca3c
       field: event.category
       value: network
   - append:
+      tag: append_event_category_4cc22c32
       field: event.category
       value: threat
   - rename:
+      tag: rename_json_event_name_to_menlo_web_request_type_4c7adffc
       field: json.event.name
       target_field: menlo.web.request_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_soph_dlp_ref_to_event_reference_fff80ba8
       field: json.event.soph_dlp_ref
       target_field: event.reference
       if: ctx.json?.event?.soph_dlp_ref != "NA"
       ignore_missing: true
   - rename:
+      tag: rename_json_event_risk_score_to_menlo_web_risk_score_a6d3f05f
       field: json.event.risk_score
       target_field: menlo.web.risk_score
       ignore_missing: true
   - append:
+      tag: append_dns_answers_data_190583a6
       field: dns.answers.data
       value: '{{{json.event.dst}}}'
       allow_duplicates: false
   - rename:
+      tag: rename_json_event_product_to_observer_product_d119c06e
       field: json.event.product
       target_field: observer.product
       ignore_missing: true
   - rename:
+      tag: rename_json_event_vendor_to_observer_vendor_df71a640
       field: json.event.vendor
       target_field: observer.vendor
       ignore_missing: true
   - convert:
+      tag: convert_json_event_risk_tally_to_menlo_web_tally_0ef18826
       field: json.event.risk_tally
       type: long
       target_field: menlo.web.tally
       ignore_missing: true
   - convert:
+      tag: convert_json_event_has_password_to_menlo_web_has_password_a6b13894
       field: json.event.has_password
       type: boolean
       target_field: menlo.web.has_password
       if: ctx?.json?.event?.has_password != "NA"
       ignore_missing: true
   - convert:
+      tag: convert_json_event_x-client-ip_to_client_ip_e4296e31
       field: json.event.x-client-ip
       type: ip
       target_field: client.ip
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_event_origin_ip_to_server_ip_f8a7c5a4
       field: json.event.origin_ip
       type: ip
       target_field: server.ip
       ignore_failure: true
   - rename:
+      tag: rename_json_event_origin_country_to_server_geo_country_iso_code_b39bb1c3
       field: json.event.origin_country
       target_field: server.geo.country_iso_code
       ignore_failure: true
   - rename:
+      tag: rename_json_event_x-client-country_to_client_geo_country_iso_code_2f0b9507
       field: json.event.x-client-country
       target_field: client.geo.country_iso_code
       ignore_failure: true
   - rename:
+      tag: rename_json_event_egress_country_to_observer_geo_country_iso_code_2f689226
       field: json.event.egress_country
       target_field: observer.geo.country_iso_code
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_event_file_size_to_file_size_6d8d4d21
       field: json.event.file_size
       type: long
       target_field: file.size
       if: ctx.json?.event?.file_size != "NA"
       ignore_missing: true
   - append:
+      tag: append_observer_ip_fee8f961
       field: observer.ip
       value: '{{{json.event.egress_ip}}}'
       allow_duplicates: false
       if: ctx.json?.event?.egress_ip != "NA"
   - set:
+      tag: set_destination_bb802684
       field: destination
       copy_from: server
       ignore_empty_value: true
   - set:
+      tag: set_source_9aecde9f
       field: source
       copy_from: client
   - rename:
+      tag: rename_json_event_content-type_to_menlo_web_content_type_449b5225
       field: json.event.content-type
       target_field: menlo.web.content_type
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_event_user-agent_9ffed892
       field: json.event.user-agent
       ignore_missing: true
   - rename:
+      tag: rename_json_event_request_type_to_http_request_method_3d7bf26c
       field: json.event.request_type
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_json_event_ua_type_to_menlo_web_ua_type_f8dd36f9
       field: json.event.ua_type
       target_field: menlo.web.ua_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_version_to_observer_version_ee7a1daa
       field: json.event.version
       target_field: observer.version
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_json_event_url_c0d815a4
       field: json.event.url
       keep_original: true
       remove_if_successful: true
       ignore_failure: true
   - registered_domain:
+      tag: registered_domain_url_domain_to_url_5d82631c
       field: url.domain
       target_field: url
   - rename:
+      tag: rename_json_event_referer_to_http_request_referrer_2243fb3f
       field: json.event.referer
       target_field: http.request.referrer
       ignore_missing: true
   - rename:
+      tag: rename_json_event_userid_to_user_name_dc78ba9a
       field: json.event.userid
       target_field: user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
-      if: ctx.user?.name != null    
+      if: ctx.user?.name != null
   - rename:
+      tag: rename_json_event_protocol_to_network_protocol_81f122d4
       field: json.event.protocol
       target_field: network.protocol
       ignore_missing: true
   - convert:
+      tag: convert_json_event_response_code_to_http_response_status_code_679cc84d
       field: json.event.response_code
       type: long
       target_field: http.response.status_code
@@ -204,126 +246,156 @@ processors:
       field: cloud.region
       ignore_empty_value: true
   - rename:
+      tag: rename_json_event_filename_to_file_name_482c1acc
       field: json.event.filename
       target_field: file.name
       ignore_missing: true
       if: ctx.json?.event?.filename != "NA"
   - rename:
+      tag: rename_json_event_sha256_to_file_hash_sha256_916bbda2
       field: json.event.sha256
       target_field: file.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_017aef51
       field: related.hash
       value: "{{{file.hash.sha256}}}"
       allow_duplicates: false
-      if: ctx.file?.hash?.sha256 != null  
+      if: ctx.file?.hash?.sha256 != null
   - rename:
+      tag: rename_json_event_categories_to_menlo_web_categories_f756c68b
       field: json.event.categories
       target_field: menlo.web.categories
       ignore_missing: true
   - rename:
+      tag: rename_json_event_threats_to_menlo_web_threats_0734c689
       field: json.event.threats
       target_field: menlo.web.threats
       ignore_missing: true
   - rename:
+      tag: rename_json_event_threat_types_to_menlo_web_threat_types_96f979e3
       field: json.event.threat_types
       target_field: menlo.web.threat_types
       ignore_missing: true
   - rename:
+      tag: rename_json_event_is_iframe_to_menlo_web_is_iframe_8fe49fe1
       field: json.event.is_iframe
       target_field: menlo.web.is_iframe
       ignore_missing: true
   - rename:
+      tag: rename_json_event_product_to_observer_product_d119c06e
       field: json.event.product
       target_field: observer.product
       ignore_missing: true
   - rename:
+      tag: rename_json_event_protocol_to_network_protocol_81f122d4
       field: json.event.protocol
       target_field: network.protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_event_cached_to_menlo_web_cached_4a8a0c37
       field: json.event.cached
       target_field: menlo.web.cached
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_app_name_to_menlo_web_casb_app_name_8f422a81
       field: json.event.casb_app_name
       target_field: menlo.web.casb_app_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_cat_name_to_menlo_web_casb_cat_name_6ebe0d97
       field: json.event.casb_cat_name
       target_field: menlo.web.casb_cat_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_fun_name_to_menlo_web_casb_fun_name_89227c1d
       field: json.event.casb_fun_name
       target_field: menlo.web.casb_fun_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_org_name_to_menlo_web_casb_org_name_bcab44d3
       field: json.event.casb_org_name
       target_field: menlo.web.casb_org_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_profile_id_to_menlo_web_casb_profile_id_ef8363d1
       field: json.event.casb_profile_id
       target_field: menlo.web.casb_profile_id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_profile_name_to_menlo_web_casb_profile_name_4268d8c5
       field: json.event.casb_profile_name
       target_field: menlo.web.casb_profile_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_profile_type_to_menlo_web_casb_profile_type_6d7c4573
       field: json.event.casb_profile_type
       target_field: menlo.web.casb_profile_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_casb_risk_score_to_menlo_web_casb_risk_score_60773e53
       field: json.event.casb_risk_score
       target_field: menlo.web.casb_risk_score
       ignore_missing: true
   - rename:
+      tag: rename_json_event_connId_to_menlo_web_conn_id_08d02118
       field: json.event.connId
       target_field: menlo.web.conn_id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_reqId_to_menlo_web_req_id_c7080fd6
       field: json.event.reqId
       target_field: menlo.web.req_id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_proxyEventType_to_menlo_web_proxy_event_type_d0b219fb
       field: json.event.proxyEventType
       target_field: menlo.web.proxy_event_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_proxyEventDetail_to_menlo_web_proxy_event_detail_675b199f
       field: json.event.proxyEventDetail
       target_field: menlo.web.proxy_event_detail
       ignore_missing: true
   - rename:
+      tag: rename_json_event_sbox_to_menlo_web_sbox_36cd1413
       field: json.event.sbox
       target_field: menlo.web.sbox
       ignore_missing: true
   - rename:
+      tag: rename_json_event_sbox_mal_act_to_menlo_web_sbox_mal_act_e0597b03
       field: json.event.sbox_mal_act
       target_field: menlo.web.sbox_mal_act
       ignore_missing: true
   - rename:
+      tag: rename_json_event_soph_to_menlo_web_soph_694b78d7
       field: json.event.soph
       target_field: menlo.web.soph
       ignore_missing: true
   - rename:
+      tag: rename_json_event_tab_id_to_menlo_web_tab_id_6afd2bef
       field: json.event.tab_id
       target_field: menlo.web.tab_id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_virus_details_to_menlo_web_virus_details_d0c58747
       field: json.event.virus_details
       target_field: menlo.web.virus_details
       ignore_missing: true
   - rename:
+      tag: rename_json_event_xff_ip_to_menlo_web_xff_ip_1f9322db
       field: json.event.xff_ip
       target_field: menlo.web.xff_ip
       ignore_missing: true
       if: ctx?.json?.event?.xff_ip != "NA"
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
@@ -351,11 +423,13 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

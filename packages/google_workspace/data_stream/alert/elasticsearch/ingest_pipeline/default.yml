@@ -13,28 +13,35 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_135371bc
       field: ecs.version
       value: '8.16.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
+      tag: append_event_category_5b8d356a
       field: event.category
       if: ctx.json.source == 'Gmail phishing'
       value:
@@ -42,12 +49,14 @@ processors:
         - threat
         - malware
   - append:
+      tag: append_event_category_8edb1962
       field: event.category
       if: ctx.json.source != 'Gmail phishing'
       value:
         - threat
         - malware
   - fingerprint:
+      tag: fingerprint_059823db
       fields:
         - json.alertId
         - json.customerId
@@ -58,8 +67,9 @@ processors:
       target_field: _id
       ignore_missing: true
 
-# Pipeline For Common fields.
+  # Pipeline For Common fields.
   - date:
+      tag: date_json_createTime_to_timestamp_68ca4c26
       field: json.createTime
       target_field: '@timestamp'
       if: ctx.json?.createTime != null
@@ -72,13 +82,16 @@ processors:
         - yyyy/MM/dd HH:mm:ss z
       on_failure:
         - append:
+            tag: append_error_message_52b8cfb3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_google_workspace_alert_create_time_a919a523
       field: google_workspace.alert.create_time
       copy_from: '@timestamp'
       ignore_failure: true
   - date:
+      tag: date_json_endTime_to_google_workspace_alert_end_time_e1cc56ca
       field: json.endTime
       if: ctx.json?.endTime != null
       timezone: UTC
@@ -91,13 +104,16 @@ processors:
       target_field: google_workspace.alert.end_time
       on_failure:
         - append:
+            tag: append_error_message_ca8f8ec1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_end_feeb2689
       field: event.end
       copy_from: google_workspace.alert.end_time
       ignore_failure: true
   - date:
+      tag: date_json_startTime_to_google_workspace_alert_start_time_ca58c857
       field: json.startTime
       if: ctx.json?.startTime != null
       timezone: UTC
@@ -110,84 +126,104 @@ processors:
       target_field: google_workspace.alert.start_time
       on_failure:
         - append:
+            tag: append_error_message_16e621b0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_start_3e0ba55f
       field: event.start
       copy_from: google_workspace.alert.start_time
       ignore_failure: true
   - rename:
+      tag: rename_json_source_to_google_workspace_alert_source_0078390f
       field: json.source
       target_field: google_workspace.alert.source
       ignore_missing: true
   - set:
+      tag: set_event_action_9c5f46ec
       field: event.action
       copy_from: google_workspace.alert.source
       ignore_failure: true
   - rename:
+      tag: rename_json_customerId_to_google_workspace_alert_customer_id_f17f73f5
       field: json.customerId
       target_field: google_workspace.alert.customer.id
       ignore_missing: true
   - set:
+      tag: set_organization_id_3a5c2576
       field: organization.id
       copy_from: google_workspace.alert.customer.id
       ignore_failure: true
   - rename:
+      tag: rename_json_metadata_assignee_to_google_workspace_alert_metadata_assignee_48f4dec1
       field: json.metadata.assignee
       target_field: google_workspace.alert.metadata.assignee
       ignore_missing: true
   - append:
+      tag: append_user_email_30a34aeb
       field: user.email
       value: '{{{google_workspace.alert.metadata.assignee}}}'
       if: ctx.google_workspace?.alert?.metadata?.assignee != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_alertId_to_google_workspace_alert_id_08028acb
       field: json.alertId
       target_field: google_workspace.alert.id
       ignore_missing: true
   - set:
+      tag: set_event_id_71fa2dd5
       field: event.id
       copy_from: google_workspace.alert.id
       ignore_failure: true
   - convert:
+      tag: convert_json_deleted_to_google_workspace_alert_deleted_930fb5eb
       field: json.deleted
       target_field: google_workspace.alert.deleted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8baa31be
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_etag_to_google_workspace_alert_etag_e9cc9c63
       field: json.etag
       target_field: google_workspace.alert.etag
       ignore_missing: true
   - rename:
+      tag: rename_json_metadata_alertId_to_google_workspace_alert_metadata_alert_id_6834fa0b
       field: json.metadata.alertId
       target_field: google_workspace.alert.metadata.alert.id
       ignore_missing: true
   - rename:
+      tag: rename_json_metadata_customerId_to_google_workspace_alert_metadata_customer_id_bc0421fb
       field: json.metadata.customerId
       target_field: google_workspace.alert.metadata.customer.id
       ignore_missing: true
   - rename:
+      tag: rename_json_data_type_to_google_workspace_alert_data_type_5f678f23
       field: json.data.@type
       target_field: google_workspace.alert.data.type
       ignore_missing: true
   - rename:
+      tag: rename_json_metadata_etag_to_google_workspace_alert_metadata_etag_0914a475
       field: json.metadata.etag
       target_field: google_workspace.alert.metadata.etag
       ignore_missing: true
   - rename:
+      tag: rename_json_metadata_severity_to_google_workspace_alert_metadata_severity_cfa6c4c1
       field: json.metadata.severity
       target_field: google_workspace.alert.metadata.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_metadata_status_to_google_workspace_alert_metadata_status_4a095d59
       field: json.metadata.status
       target_field: google_workspace.alert.metadata.status
       ignore_missing: true
   - date:
+      tag: date_json_metadata_updateTime_to_google_workspace_alert_metadata_update_time_c371e716
       field: json.metadata.updateTime
       if: ctx.json?.metadata?.updateTime != null
       timezone: UTC
@@ -200,17 +236,21 @@ processors:
       target_field: google_workspace.alert.metadata.update_time
       on_failure:
         - append:
+            tag: append_error_message_98ade8c7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_securityInvestigationToolLink_to_google_workspace_alert_security_investigation_tool_link_c8760b00
       field: json.securityInvestigationToolLink
       target_field: google_workspace.alert.security_investigation_tool_link
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_google_workspace_alert_type_24d35ea9
       field: json.type
       target_field: google_workspace.alert.type
       ignore_missing: true
   - date:
+      tag: date_json_updateTime_to_google_workspace_alert_update_time_33a29d2a
       field: json.updateTime
       if: ctx.json?.updateTime != null
       timezone: UTC
@@ -223,31 +263,37 @@ processors:
       target_field: google_workspace.alert.update_time
       on_failure:
         - append:
+            tag: append_error_message_6329016b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_email_to_google_workspace_alert_data_email_832cfd05
       field: json.data.email
       target_field: google_workspace.alert.data.email
       ignore_missing: true
   - append:
+      tag: append_user_email_954c1f73
       field: user.email
       value: '{{{google_workspace.alert.data.email}}}'
       if: ctx.google_workspace?.alert?.data?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_data_alertDetails_to_google_workspace_alert_data_alert_details_5d4df09a
       field: json.data.alertDetails
       target_field: google_workspace.alert.data.alert_details
       ignore_missing: true
 
-# Pipeline For Domain wide takeout.
+  # Pipeline For Domain wide takeout.
   - rename:
+      tag: rename_json_data_takeoutRequestId_to_google_workspace_alert_data_takeout_request_id_2a283cbb
       field: json.data.takeoutRequestId
       target_field: google_workspace.alert.data.takeout.request.id
       ignore_missing: true
 
-# Pipeline For Gmail phishing.
+  # Pipeline For Gmail phishing.
   - foreach:
+      tag: foreach_json_data_messages_1172116e
       field: json.data.messages
       processor:
         rename:
@@ -257,6 +303,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_6b6b3956
       field: json.data.messages
       processor:
         date:
@@ -273,6 +320,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_2c4cf9e5
       field: json.data.messages
       processor:
         append:
@@ -282,6 +330,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_07a2f116
       field: json.data.messages
       processor:
         rename:
@@ -291,6 +340,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_3ca60ccc
       field: json.data.messages
       processor:
         rename:
@@ -300,6 +350,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_c869b9ab
       field: json.data.messages
       processor:
         rename:
@@ -309,6 +360,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_6beed4bb
       field: json.data.messages
       processor:
         rename:
@@ -318,6 +370,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_3db57e4a
       field: json.data.messages
       processor:
         append:
@@ -327,6 +380,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_031bdc3f
       field: json.data.messages
       processor:
         rename:
@@ -336,6 +390,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_721621cd
       field: json.data.messages
       processor:
         append:
@@ -345,6 +400,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_2f6658df
       field: json.data.messages
       processor:
         rename:
@@ -354,6 +410,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_messages_25ba9426
       field: json.data.messages
       processor:
         append:
@@ -363,10 +420,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_messages_to_google_workspace_alert_data_messages_973ab021
       field: json.data.messages
       target_field: google_workspace.alert.data.messages
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_alert_data_messages_282d1899
       field: google_workspace.alert.data.messages
       processor:
         foreach:
@@ -382,6 +441,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_google_workspace_alert_data_messages_54e2b458
       field: google_workspace.alert.data.messages
       processor:
         append:
@@ -391,66 +451,81 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_maliciousEntity_entity_emailAddress_to_google_workspace_alert_data_malicious_entity_entity_email_address_2b4bd759
       field: json.data.maliciousEntity.entity.emailAddress
       target_field: google_workspace.alert.data.malicious_entity.entity.email_address
       ignore_missing: true
   - append:
+      tag: append_user_email_4ca189e5
       field: user.email
       value: '{{{google_workspace.alert.data.malicious_entity.entity.email_address}}}'
       if: ctx.google_workspace?.alert?.data?.malicious_entity?.entity?.email_address != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_data_maliciousEntity_entity_displayName_to_google_workspace_alert_data_malicious_entity_entity_display_name_fcb5bec9
       field: json.data.maliciousEntity.entity.displayName
       target_field: google_workspace.alert.data.malicious_entity.entity.display_name
       ignore_missing: true
   - set:
+      tag: set_user_name_b26192bc
       field: user.name
       copy_from: google_workspace.alert.data.malicious_entity.entity.display_name
       ignore_failure: true
   - rename:
+      tag: rename_json_data_domainId_customerPrimaryDomain_to_google_workspace_alert_data_domain_id_customer_primary_domain_300c729e
       field: json.data.domainId.customerPrimaryDomain
       target_field: google_workspace.alert.data.domain_id.customer_primary_domain
       ignore_missing: true
   - set:
+      tag: set_user_domain_a13f7672
       field: user.domain
       copy_from: google_workspace.alert.data.domain_id.customer_primary_domain
       ignore_failure: true
   - rename:
+      tag: rename_json_data_maliciousEntity_displayName_to_google_workspace_alert_data_malicious_entity_display_name_39e58a11
       field: json.data.maliciousEntity.displayName
       target_field: google_workspace.alert.data.malicious_entity.display_name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_maliciousEntity_fromHeader_to_google_workspace_alert_data_malicious_entity_from_header_40fbfa03
       field: json.data.maliciousEntity.fromHeader
       target_field: google_workspace.alert.data.malicious_entity.from_header
       ignore_missing: true
   - rename:
+      tag: rename_json_data_systemActionType_to_google_workspace_alert_data_system_action_type_4667b77b
       field: json.data.systemActionType
       target_field: google_workspace.alert.data.system_action_type
       ignore_missing: true
   - convert:
+      tag: convert_json_data_isInternal_to_google_workspace_alert_data_is_internal_55d70d12
       field: json.data.isInternal
       target_field: google_workspace.alert.data.is_internal
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c2805075
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_data_sourceIp_to_google_workspace_alert_data_source_ip_c3c02b0a
       field: json.data.sourceIp
       target_field: google_workspace.alert.data.source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3fc24edf
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -459,29 +534,35 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_source_ip_461a1df7
       field: source.ip
       copy_from: google_workspace.alert.data.source.ip
       ignore_failure: true
 
-# Pipeline For Google identity.
+  # Pipeline For Google identity.
   - convert:
+      tag: convert_json_data_loginDetails_ipAddress_to_google_workspace_alert_data_login_details_ip_address_be6d1924
       field: json.data.loginDetails.ipAddress
       target_field: google_workspace.alert.data.login_details.ip_address
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_606a0247
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_data_loginDetails_loginTime_to_google_workspace_alert_data_login_details_login_time_1c65d1ee
       field: json.data.loginDetails.loginTime
       if: ctx.json?.data?.loginDetails?.loginTime != null
       timezone: UTC
@@ -494,17 +575,21 @@ processors:
       target_field: google_workspace.alert.data.login_details.login_time
       on_failure:
         - append:
+            tag: append_error_message_efbb9d5b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_state_to_google_workspace_alert_data_state_46ba5ecf
       field: json.data.state
       target_field: google_workspace.alert.data.state
       ignore_missing: true
   - rename:
+      tag: rename_json_data_appealWindow_to_google_workspace_alert_data_appeal_window_d5386514
       field: json.data.appealWindow
       target_field: google_workspace.alert.data.appeal_window
       ignore_missing: true
   - foreach:
+      tag: foreach_json_data_suspensionDetails_01c12526
       field: json.data.suspensionDetails
       processor:
         rename:
@@ -514,6 +599,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_suspensionDetails_c12e7f74
       field: json.data.suspensionDetails
       processor:
         rename:
@@ -523,16 +609,19 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_suspensionDetails_to_google_workspace_alert_data_suspension_details_902ddf48
       field: json.data.suspensionDetails
       target_field: google_workspace.alert.data.suspension_details
       ignore_missing: true
 
-# Pipeline For Google Operations.
+  # Pipeline For Google Operations.
   - rename:
+      tag: rename_json_data_affectedUserEmails_to_google_workspace_alert_data_affected_user_emails_dd2772f2
       field: json.data.affectedUserEmails
       target_field: google_workspace.alert.data.affected.user_emails
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_alert_data_affected_user_emails_73abf0c4
       field: google_workspace.alert.data.affected.user_emails
       processor:
         append:
@@ -543,37 +632,45 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_title_to_google_workspace_alert_data_title_d6f1eb61
       field: json.data.title
       target_field: google_workspace.alert.data.title
       ignore_missing: true
   - rename:
+      tag: rename_json_data_description_to_google_workspace_alert_data_description_b2764b7d
       field: json.data.description
       if: ctx.event?.action == 'Google Operations'
       target_field: google_workspace.alert.data.description
       ignore_missing: true
   - rename:
+      tag: rename_json_data_attachmentData_csv_headers_to_google_workspace_alert_data_attachment_data_csv_headers_606ca091
       field: json.data.attachmentData.csv.headers
       target_field: google_workspace.alert.data.attachment.data.csv.headers
       ignore_missing: true
   - rename:
+      tag: rename_json_data_attachmentData_csv_dataRows_to_google_workspace_alert_data_attachment_data_csv_data_rows_33e6eae0
       field: json.data.attachmentData.csv.dataRows
       target_field: google_workspace.alert.data.attachment.data.csv.data_rows
       ignore_missing: true
   - rename:
+      tag: rename_json_data_header_to_google_workspace_alert_data_header_225ac42d
       field: json.data.header
       target_field: google_workspace.alert.data.header
       ignore_missing: true
   - rename:
+      tag: rename_json_data_domain_to_google_workspace_alert_data_domain_6f0b8109
       field: json.data.domain
       target_field: google_workspace.alert.data.domain
       ignore_missing: true
   - set:
+      tag: set_user_domain_744d269e
       field: user.domain
       copy_from: google_workspace.alert.data.domain
       ignore_failure: true
 
-# Pipeline For Mobile device management.
+  # Pipeline For Mobile device management.
   - foreach:
+      tag: foreach_json_data_events_58e3d601
       field: json.data.events
       processor:
         rename:
@@ -583,6 +680,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_08acc0ed
       field: json.data.events
       processor:
         rename:
@@ -592,6 +690,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_1cef9629
       field: json.data.events
       processor:
         rename:
@@ -601,6 +700,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_77e7a3df
       field: json.data.events
       processor:
         rename:
@@ -610,6 +710,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_4166a4b1
       field: json.data.events
       processor:
         rename:
@@ -619,6 +720,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_6dd63516
       field: json.data.events
       processor:
         rename:
@@ -628,6 +730,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_aa769fef
       field: json.data.events
       processor:
         rename:
@@ -637,6 +740,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_aa11bc7d
       field: json.data.events
       processor:
         rename:
@@ -646,6 +750,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_31557bbc
       field: json.data.events
       processor:
         rename:
@@ -655,6 +760,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_events_1cd2a4ea
       field: json.data.events
       processor:
         rename:
@@ -664,12 +770,14 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_events_to_google_workspace_alert_data_events_dc116d75
       field: json.data.events
       target_field: google_workspace.alert.data.events
       ignore_missing: true
 
-# Pipeline For AppMaker Editor.
+  # Pipeline For AppMaker Editor.
   - foreach:
+      tag: foreach_json_data_requestInfo_d1171305
       field: json.data.requestInfo
       processor:
         rename:
@@ -679,6 +787,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_requestInfo_8fbccdf0
       field: json.data.requestInfo
       processor:
         rename:
@@ -688,6 +797,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_requestInfo_99e01c47
       field: json.data.requestInfo
       processor:
         rename:
@@ -697,41 +807,50 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_requestInfo_to_google_workspace_alert_data_request_info_e3d30b4b
       field: json.data.requestInfo
       target_field: google_workspace.alert.data.request.info
       ignore_missing: true
 
-# Pipeline For Security Center rules.
+  # Pipeline For Security Center rules.
   - rename:
+      tag: rename_json_data_description_to_google_workspace_alert_data_rule_description_458ef8e3
       field: json.data.description
       if: ctx.event?.action == 'Security Center rules'
       target_field: google_workspace.alert.data.rule_description
       ignore_missing: true
   - set:
+      tag: set_rule_description_b4265eba
       field: rule.description
       copy_from: google_workspace.alert.data.rule_description
       ignore_failure: true
   - rename:
+      tag: rename_json_data_name_to_google_workspace_alert_data_name_42b605a1
       field: json.data.name
       target_field: google_workspace.alert.data.name
       ignore_missing: true
   - set:
+      tag: set_rule_name_dc26a0cb
       field: rule.name
       copy_from: google_workspace.alert.data.name
       ignore_failure: true
   - rename:
+      tag: rename_json_data_displayName_to_google_workspace_alert_data_display_name_8fb38481
       field: json.data.displayName
       target_field: google_workspace.alert.data.display.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_windowSize_to_google_workspace_alert_data_window_size_4e9e2e9e
       field: json.data.windowSize
       target_field: google_workspace.alert.data.window_size
       ignore_missing: true
   - rename:
+      tag: rename_json_data_threshold_to_google_workspace_alert_data_threshold_ed381a03
       field: json.data.threshold
       target_field: google_workspace.alert.data.threshold
       ignore_missing: true
   - date:
+      tag: date_json_data_createTime_to_google_workspace_alert_data_create_time_253e3792
       field: json.data.createTime
       if: ctx.json?.data?.createTime != null
       timezone: UTC
@@ -744,9 +863,11 @@ processors:
       target_field: google_workspace.alert.data.create_time
       on_failure:
         - append:
+            tag: append_error_message_5729422f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_data_updateTime_to_google_workspace_alert_data_update_time_e89beec5
       field: json.data.updateTime
       if: ctx.json?.data?.updateTime != null
       timezone: UTC
@@ -759,67 +880,83 @@ processors:
       target_field: google_workspace.alert.data.update_time
       on_failure:
         - append:
+            tag: append_error_message_7a3b0e08
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_triggerSource_to_google_workspace_alert_data_trigger_source_81415dc1
       field: json.data.triggerSource
       target_field: google_workspace.alert.data.trigger.source
       ignore_missing: true
   - rename:
+      tag: rename_json_data_supersededAlerts_to_google_workspace_alert_data_superseded_alerts_c85f6cb6
       field: json.data.supersededAlerts
       target_field: google_workspace.alert.data.superseded_alerts
       ignore_missing: true
   - rename:
+      tag: rename_json_data_supersedingAlert_to_google_workspace_alert_data_superseding_alert_2b0df986
       field: json.data.supersedingAlert
       target_field: google_workspace.alert.data.superseding_alert
       ignore_missing: true
   - rename:
+      tag: rename_json_data_actionNames_to_google_workspace_alert_data_action_name_7398169e
       field: json.data.actionNames
       target_field: google_workspace.alert.data.action.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_query_to_google_workspace_alert_data_query_2344d549
       field: json.data.query
       target_field: google_workspace.alert.data.query
       ignore_missing: true
 
-# Pipeline For Data Loss Prevention.
+  # Pipeline For Data Loss Prevention.
   - rename:
+      tag: rename_json_data_ruleViolationInfo_ruleInfo_displayName_to_google_workspace_alert_data_rule_violation_info_rule_info_display_name_0fe2f603
       field: json.data.ruleViolationInfo.ruleInfo.displayName
       target_field: google_workspace.alert.data.rule.violation_info.rule_info.display.name
       ignore_missing: true
   - set:
+      tag: set_rule_name_673bf10c
       field: rule.name
       copy_from: google_workspace.alert.data.rule.violation_info.rule_info.display.name
       ignore_failure: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_ruleInfo_resourceName_to_google_workspace_alert_data_rule_violation_info_rule_info_resource_name_79dcbdb7
       field: json.data.ruleViolationInfo.ruleInfo.resourceName
       target_field: google_workspace.alert.data.rule.violation_info.rule_info.resource.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_dataSource_to_google_workspace_alert_data_rule_violation_info_data_source_195db44c
       field: json.data.ruleViolationInfo.dataSource
       target_field: google_workspace.alert.data.rule.violation_info.data.source
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_trigger_to_google_workspace_alert_data_rule_violation_info_trigger_value_b0c06bf5
       field: json.data.ruleViolationInfo.trigger
       target_field: google_workspace.alert.data.rule.violation_info.trigger.value
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_triggeringUserEmail_to_google_workspace_alert_data_rule_violation_info_trigger_user_email_d12ad2f6
       field: json.data.ruleViolationInfo.triggeringUserEmail
       target_field: google_workspace.alert.data.rule.violation_info.trigger.user.email
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_recipients_to_google_workspace_alert_data_rule_violation_info_recipients_c4bcaec0
       field: json.data.ruleViolationInfo.recipients
       target_field: google_workspace.alert.data.rule.violation_info.recipients
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_resourceInfo_resourceTitle_to_google_workspace_alert_data_rule_violation_info_resource_info_resource_title_82657c97
       field: json.data.ruleViolationInfo.resourceInfo.resourceTitle
       target_field: google_workspace.alert.data.rule.violation_info.resource_info.resource.title
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_resourceInfo_documentId_to_google_workspace_alert_data_rule_violation_info_resource_info_document_id_2ebb3fcb
       field: json.data.ruleViolationInfo.resourceInfo.documentId
       target_field: google_workspace.alert.data.rule.violation_info.resource_info.document.id
       ignore_missing: true
   - foreach:
+      tag: foreach_json_data_ruleViolationInfo_matchInfo_0ee4d162
       field: json.data.ruleViolationInfo.matchInfo
       processor:
         rename:
@@ -829,6 +966,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_ruleViolationInfo_matchInfo_59d3619c
       field: json.data.ruleViolationInfo.matchInfo
       processor:
         rename:
@@ -838,6 +976,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_data_ruleViolationInfo_matchInfo_e9c86dd3
       field: json.data.ruleViolationInfo.matchInfo
       processor:
         rename:
@@ -847,28 +986,34 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_matchInfo_to_google_workspace_alert_data_rule_violation_info_match_info_ab727ced
       field: json.data.ruleViolationInfo.matchInfo
       target_field: google_workspace.alert.data.rule.violation_info.match_info
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_triggeredActionTypes_to_google_workspace_alert_data_rule_violation_info_triggered_action_types_1b9ab6b8
       field: json.data.ruleViolationInfo.triggeredActionTypes
       target_field: google_workspace.alert.data.rule.violation_info.triggered.action.types
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_triggeredActionInfo_to_google_workspace_alert_data_rule_violation_info_triggered_action_info_d1bb5542
       field: json.data.ruleViolationInfo.triggeredActionInfo
       target_field: google_workspace.alert.data.rule.violation_info.triggered.action.info
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ruleViolationInfo_suppressedActionTypes_to_google_workspace_alert_data_rule_violation_info_suppressed_action_types_80d5b5fa
       field: json.data.ruleViolationInfo.suppressedActionTypes
       target_field: google_workspace.alert.data.rule.violation_info.suppressed.action.types
       ignore_missing: true
 
-# Pipeline For Apps outage.
+  # Pipeline For Apps outage.
   - rename:
+      tag: rename_json_data_products_to_google_workspace_alert_data_products_d0662f81
       field: json.data.products
       target_field: google_workspace.alert.data.products
       ignore_missing: true
   - date:
+      tag: date_json_data_nextUpdateTime_to_google_workspace_alert_data_next_update_time_fc93fd8d
       field: json.data.nextUpdateTime
       if: ctx.json?.data?.nextUpdateTime != null
       timezone: UTC
@@ -881,9 +1026,11 @@ processors:
       target_field: google_workspace.alert.data.next_update_time
       on_failure:
         - append:
+            tag: append_error_message_bd53de8e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_data_resolutionTime_to_google_workspace_alert_data_resolution_time_272a3c40
       field: json.data.resolutionTime
       if: ctx.json?.data?.resolutionTime != null
       timezone: UTC
@@ -896,39 +1043,48 @@ processors:
       target_field: google_workspace.alert.data.resolution_time
       on_failure:
         - append:
+            tag: append_error_message_5b0c0b35
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_dashboardUri_to_google_workspace_alert_data_dashboard_uri_33a05b41
       field: json.data.dashboardUri
       target_field: google_workspace.alert.data.dashboard.uri
       ignore_missing: true
   - rename:
+      tag: rename_json_data_status_to_google_workspace_alert_data_status_69832261
       field: json.data.status
       target_field: google_workspace.alert.data.status
       ignore_missing: true
   - rename:
+      tag: rename_json_data_incidentTrackingId_to_google_workspace_alert_data_incident_tracking_id_fc74afd4
       field: json.data.incidentTrackingId
       target_field: google_workspace.alert.data.incident_tracking.id
       ignore_missing: true
   - rename:
+      tag: rename_json_data_mergeInfo_newIncidentTrackingId_to_google_workspace_alert_data_merge_info_new_incident_tracking_id_96d50242
       field: json.data.mergeInfo.newIncidentTrackingId
       target_field: google_workspace.alert.data.merge_info.new_incident_tracking.id
       ignore_missing: true
   - rename:
+      tag: rename_json_data_mergeInfo_newAlertId_to_google_workspace_alert_data_merge_info_new_alert_id_79258045
       field: json.data.mergeInfo.newAlertId
       target_field: google_workspace.alert.data.merge_info.new_alert.id
       ignore_missing: true
 
-# Pipeline For Sensitive Admin Action.
+  # Pipeline For Sensitive Admin Action.
   - rename:
+      tag: rename_json_data_actorEmail_to_google_workspace_alert_data_actor_email_295c335d
       field: json.data.actorEmail
       target_field: google_workspace.alert.data.actor.email
       ignore_missing: true
   - set:
+      tag: set_source_user_email_5067cc52
       field: source.user.email
       copy_from: google_workspace.alert.data.actor.email
       ignore_failure: true
   - date:
+      tag: date_json_data_eventTime_to_google_workspace_alert_data_event_time_137cb4f0
       field: json.data.eventTime
       if: ctx.json?.data?.eventTime != null
       timezone: UTC
@@ -941,41 +1097,51 @@ processors:
       target_field: google_workspace.alert.data.event_time
       on_failure:
         - append:
+            tag: append_error_message_cc39d383
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_primaryAdminChangedEvent_domain_to_google_workspace_alert_data_primary_admin_changed_event_domain_33c1cb64
       field: json.data.primaryAdminChangedEvent.domain
       target_field: google_workspace.alert.data.primary.admin.changed_event.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_data_primaryAdminChangedEvent_previousAdminEmail_to_google_workspace_alert_data_primary_admin_changed_event_previous_admin_email_239e9fca
       field: json.data.primaryAdminChangedEvent.previousAdminEmail
       target_field: google_workspace.alert.data.primary.admin.changed_event.previous_admin_email
       ignore_missing: true
   - rename:
+      tag: rename_json_data_primaryAdminChangedEvent_updatedAdminEmail_to_google_workspace_alert_data_primary_admin_changed_event_updated_admin_email_5e58918a
       field: json.data.primaryAdminChangedEvent.updatedAdminEmail
       target_field: google_workspace.alert.data.primary.admin.changed_event.updated_admin_email
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ssoProfileCreatedEvent_inboundSsoProfileName_to_google_workspace_alert_data_sso_profile_created_event_inbound_sso_profile_name_33b6b357
       field: json.data.ssoProfileCreatedEvent.inboundSsoProfileName
       target_field: google_workspace.alert.data.sso_profile.created_event.inbound_sso.profile_name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ssoProfileUpdatedEvent_inboundSsoProfileName_to_google_workspace_alert_data_sso_profile_updated_event_inbound_sso_profile_name_fa540bbf
       field: json.data.ssoProfileUpdatedEvent.inboundSsoProfileName
       target_field: google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ssoProfileUpdatedEvent_inboundSsoProfileChanges_to_google_workspace_alert_data_sso_profile_updated_event_inbound_sso_profile_changes_25b5fc89
       field: json.data.ssoProfileUpdatedEvent.inboundSsoProfileChanges
       target_field: google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_changes
       ignore_missing: true
   - rename:
+      tag: rename_json_data_ssoProfileDeletedEvent_inboundSsoProfileName_to_google_workspace_alert_data_sso_profile_deleted_event_inbound_sso_profile_name_c7cfca67
       field: json.data.ssoProfileDeletedEvent.inboundSsoProfileName
       target_field: google_workspace.alert.data.sso_profile.deleted_event.inbound_sso.profile_name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_superAdminPasswordResetEvent_userEmail_to_google_workspace_alert_data_super_admin_password_reset_event_user_email_e64981bd
       field: json.data.superAdminPasswordResetEvent.userEmail
       target_field: google_workspace.alert.data.super_admin_password_reset_event.user.email
       ignore_missing: true
   - append:
+      tag: append_related_ip_25216123
       field: related.ip
       value:
         - '{{{google_workspace.alert.data.login_details.ip_address}}}'
@@ -983,6 +1149,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_b7d457ca
       field: related.user
       value:
         - '{{{user.name}}}'
@@ -990,6 +1157,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - foreach:
+      tag: foreach_email_attachments_file_hash_sha256_086756f1
       field: email.attachments.file.hash.sha256
       processor:
         append:
@@ -1000,6 +1168,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_google_workspace_alert_data_messages_md5_hash_message_body_a87ba08d
       field: google_workspace.alert.data.messages.md5.hash.message_body
       processor:
         append:
@@ -1010,10 +1179,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_f793838c
       field:
         - google_workspace.alert.create_time
         - google_workspace.alert.customer.id
@@ -1036,6 +1207,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_alert_data_messages_62c84f33
       field: google_workspace.alert.data.messages
       processor:
         remove:
@@ -1051,6 +1223,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - script:
+        tag: script_e2ccbdd7
         description: Drops null/empty values recursively.
         lang: painless
         source: |

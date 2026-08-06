@@ -28,6 +28,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -56,6 +57,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4e63ca9d
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
@@ -66,6 +68,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3162e0d9
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
@@ -80,9 +83,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_action_params_restart_8fee63d0
             field: json.action.params.restart
             ignore_missing: true
         - append:
+            tag: append_error_message_eea69420
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
@@ -122,6 +127,7 @@ processors:
       target_field: eset_protect.device_task.targets.device_groups_uuids
       ignore_missing: true
   - foreach:
+      tag: foreach_json_targets_devicesUuids_9d313664
       field: json.targets.devicesUuids
       if: ctx.json?.targets?.devicesUuids instanceof List
       processor:
@@ -136,6 +142,7 @@ processors:
       target_field: eset_protect.device_task.targets.devices_uuids
       ignore_missing: true
   - foreach:
+      tag: foreach_eset_protect_device_task_targets_devices_uuids_abd03c3f
       field: eset_protect.device_task.targets.devices_uuids
       if: ctx.eset_protect?.device_task?.targets?.devices_uuids instanceof List
       processor:
@@ -145,6 +152,7 @@ processors:
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_triggers_504c9a2b
       field: json.triggers
       if: ctx.json?.triggers instanceof List
       processor:
@@ -159,6 +167,7 @@ processors:
                 field: _ingest._value.manual.createTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_triggers_243173bf
       field: json.triggers
       if: ctx.json?.triggers instanceof List
       processor:
@@ -173,6 +182,7 @@ processors:
                 field: _ingest._value.manual.expireTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_triggers_6fdb63fe
       field: json.triggers
       if: ctx.json?.triggers instanceof List
       processor:
@@ -228,11 +238,13 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

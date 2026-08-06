@@ -2,6 +2,7 @@
 description: Mapping of Menlo DLP Fields from API into ECS fields.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
@@ -17,6 +18,7 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - json:
@@ -24,6 +26,7 @@ processors:
       tag: 'json_decoding'
       target_field: json
   - rename:
+      tag: rename_json_event_event_id_to_event_id_f7428aad
       field: json.event.event_id
       target_field: event.id
       ignore_missing: true
@@ -36,84 +39,105 @@ processors:
       tag: date_event_created_time_epoch
       on_failure:
         - append:
+            tag: append_error_message_21aa8fb4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uri_parts:
+      tag: uri_parts_json_event_dst_url_to_url_599c955a
       field: json.event.dst_url
       target_field: "url"
       keep_original: true
       remove_if_successful: true
       if: ctx.json?.event?.dst_url != null
   - registered_domain:
+      tag: registered_domain_url_domain_to_url_5d82631c
       field: url.domain
       target_field: url
   - rename:
+      tag: rename_json_event_rule_id_to_rule_id_d1b284f7
       field: json.event.rule_id
       target_field: rule.id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_action_to_event_action_3087f43a
       field: json.event.action
       target_field: event.action
       ignore_missing: true
   - set:
+      tag: set_event_action_aefac6e9
       field: event.action
       value: blocked
       if: ctx.json.event.action == 'block'
   - set:
+      tag: set_event_action_e3218850
       field: event.action
       value: log
       if: ctx.json.event.action == 'log'
   - set:
+      tag: set_event_type_40ce1cb9
       field: event.type
       value: denied
       if: ctx.event.action == 'blocked'
   - rename:
+      tag: rename_json_event_rule_name_to_rule_name_fd2c7463
       field: json.event.rule_name
       target_field: rule.name
       ignore_missing: true
   - set:
+      tag: set_event_category_6853894d
       field: event.category
       value: intrusion_detection
   - append:
+      tag: append_event_category_7afdca3c
       field: event.category
       value: network
   - convert:
+      tag: convert_json_event_severity_to_event_severity_e3a83e4f
       field: "json.event.severity"
       type: long
       target_field: "event.severity"
       ignore_missing: true
   - set:
+      tag: set_event_outcome_82c7155e
       field: event.outcome
       value: unknown
   - set:
+      tag: set_event_outcome_d720f751
       field: event.outcome
       value: success
       if: ctx.event.action == 'log' || ctx.event.action == 'block'
   - rename:
+      tag: rename_json_event_product_to_observer_product_d119c06e
       field: json.event.product
       target_field: observer.product
       ignore_missing: true
   - rename:
+      tag: rename_json_event_vendor_to_observer_vendor_df71a640
       field: json.event.vendor
       target_field: observer.vendor
       ignore_missing: true
   - rename:
+      tag: rename_json_event_version_to_observer_version_ee7a1daa
       field: json.event.version
       target_field: observer.version
       ignore_missing: true
   - rename:
+      tag: rename_json_event_request_type_to_http_request_method_3d7bf26c
       field: json.event.request_type
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_menlo_protocol_to_network_protocol_719e035f
       field: menlo.protocol
       target_field: network.protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_event_userid_to_user_id_f5aee914
       field: json.event.userid
       target_field: user.id
       ignore_missing: true
   - grok:
+      tag: grok_user_id_893ebf56
       field: user.id
       patterns:
         - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -126,60 +150,73 @@ processors:
       tag: copy_user_email
       if: ctx.user?.id != null && ctx.user.id.indexOf("@") > 0
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - rename:
+      tag: rename_json_event_filename_to_file_name_f289d164
       field: json.event.filename
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_sha256_to_file_hash_sha256_9edd9b99
       field: json.event.sha256
       target_field: file.hash.sha256
       if: ctx.json?.sha256 != "NA"
       ignore_missing: true
   - append:
+      tag: append_related_hash_0ce6a892
       field: related.hash
       value: "{{{file.hash.sha256}}}"
       allow_duplicates: false
-      if: ctx.file?.hash.sha256 != null  
+      if: ctx.file?.hash.sha256 != null
   - rename:
+      tag: rename_json_event_categories_to_menlo_dlp_category_5879914d
       field: json.event.categories
       target_field: menlo.dlp.category
       ignore_missing: true
   - convert:
+      tag: convert_json_event_ccl_match_counts_to_menlo_dlp_ccl_match_counts_26c172bc
       ignore_failure: true
       field: json.event.ccl_match_counts
       type: long
       target_field: menlo.dlp.ccl.match_counts
       ignore_missing: true
   - rename:
+      tag: rename_json_event_user_input_to_menlo_dlp_user_input_b3161409
       field: json.event.user_input
       target_field: menlo.dlp.user_input
       ignore_missing: true
   - rename:
+      tag: rename_json_event_alerted_to_menlo_dlp_alerted_9b26efff
       field: json.event.alerted
       target_field: menlo.dlp.alerted
       ignore_missing: true
   - rename:
+      tag: rename_json_event_status_to_menlo_dlp_status_bed925cd
       field: json.event.status
       target_field: menlo.dlp.status
       ignore_missing: true
   - convert:
+      tag: convert_json_event_ccl_scores_to_menlo_dlp_ccl_score_0460fcce
       field: json.event.ccl_scores
       type: long
       target_field: menlo.dlp.ccl.score
       ignore_missing: true
   - rename:
+      tag: rename_json_event_ccl_ids_to_menlo_dlp_ccl_id_6447cb06
       field: json.event.ccl_ids
       target_field: menlo.dlp.ccl.id
   - rename:
+      tag: rename_json_event_stream_name_to_menlo_dlp_stream_name_5d456840
       field: json.event.stream_name
       target_field: menlo.dlp.stream_name
   - remove:
@@ -205,11 +242,13 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

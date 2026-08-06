@@ -2,12 +2,15 @@
 description: Pipeline for ForgeRock am-activity audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_observer_vendor_a4252fc1
       field: observer.vendor
       value: ForgeRock Identity Platform
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -20,20 +23,25 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - rename:
+      tag: rename_json_payload_to_forgerock_12e49639
       field: json.payload
       target_field: forgerock
   - set:
+      tag: set_event_id_61b21b41
       field: event.id
       copy_from: forgerock._id
       ignore_failure: true
   - set:
+      tag: set_transaction_id_04cf8970
       field: transaction.id
       copy_from: forgerock.transactionId
       ignore_failure: true
   - date:
+      tag: date_forgerock_timestamp_to_timestamp_26758e33
       field: forgerock.timestamp
       formats:
         - ISO8601
@@ -41,36 +49,44 @@ processors:
       timezone: UTC
       on_failure:
         - append:
+            tag: append_error_message_e1edf820
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   # parse am-activity
   - set:
+      tag: set_event_action_03f124af
       field: event.action
       copy_from: forgerock.eventName
       ignore_failure: true
   - set:
+      tag: set_service_name_d24027af
       field: service.name
       copy_from: forgerock.component
       ignore_failure: true
   - set:
+      tag: set_user_id_374bda8c
       field: user.id
       copy_from: forgerock.userId
       ignore_failure: true
   - set:
+      tag: set_user_effective_id_9b10f540
       field: user.effective.id
       copy_from: forgerock.runAs
       ignore_failure: true
   - set:
+      tag: set_event_reason_23324b63
       field: event.reason
       copy_from: forgerock.operation
       ignore_failure: true
   # cleaning up
   - remove:
+      tag: remove_ca120718
       field:
         - json.timestamp
         - json.type
       ignore_failure: true
   - remove:
+      tag: remove_9853f29a
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - json
@@ -85,6 +101,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
