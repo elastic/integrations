@@ -31,13 +31,16 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 # Add the data stream policy reading from MinIO.
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENT_DS
 
-# Each OCSF category should route to its own data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-amazon_security_lake.system_activity-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-amazon_security_lake.findings-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-amazon_security_lake.iam-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-amazon_security_lake.network_activity-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-amazon_security_lake.discovery-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-amazon_security_lake.application_activity-*
+# Wait for all routed docs to arrive, then confirm the total holds.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 5s -timeout 5m logs-amazon_security_lake.system_activity-*,logs-amazon_security_lake.findings-*,logs-amazon_security_lake.iam-*,logs-amazon_security_lake.network_activity-*,logs-amazon_security_lake.discovery-*,logs-amazon_security_lake.application_activity-*
+
+# Each destination got its one document (docs already indexed, these return immediately).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.system_activity-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.findings-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.iam-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.network_activity-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.discovery-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.application_activity-*
 
 # Clean up.
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${EVENT_DS}
