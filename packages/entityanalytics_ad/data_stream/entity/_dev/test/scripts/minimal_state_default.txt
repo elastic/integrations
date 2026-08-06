@@ -1,54 +1,41 @@
-# Verify that entity-analytics documents are correctly routed from the entity
-# data stream to the user, device, and group data streams via routing rules.
+# Verify that the default configuration (use_minimal_state not set) uses the
+# minimal-state sync path. The package default is true, so the behavior should
+# be identical to setting it explicitly.
 #
 # The mock LDAP server provides:
 #   - 1 user (Administrator)        → entityanalytics_ad.user
 #   - 1 device (WORKSTATION-01)     → entityanalytics_ad.device
 #   - 2 empty groups (Decommissioned, Contractors) → entityanalytics_ad.group
-#   - 2 marker events (start, end)  → entityanalytics_ad.entity (retained)
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
 
-# Connect to the running stack.
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 
-# Install an agent.
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
 
-# Start the LDAP mock service via symlink to the package's deploy directory.
-# The directory name must match the service name in docker-compose.yml.
 exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker ldap-mock-service
 docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} ldap-mock-service
 
-# Add the package resources.
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
-# Add the data stream policy.
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTITY_DS
 
-# Wait for the marker events in the entity data stream. Only markers remain
-# after routing rules divert user, device, and group documents.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${ENTITY_DS}
-
-# Verify user documents were routed to the user data stream.
-# Use unique to tolerate stale documents from prior runs in other namespaces.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_ad.user-*
+# Verify user documents arrive in the user data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 5m logs-entityanalytics_ad.user-*
 cp stdout user_docs.json
 exec jq '[.hits.hits[]._source.user.id] | unique[]' user_docs.json
 stdout 'S-1-5-21-374105552-1189110957-4047727897-500'
 exec jq '[.hits.hits[]._source.user.name] | unique[]' user_docs.json
 stdout 'Administrator'
 
-# Verify device documents were routed to the device data stream.
-# device.id is the object SID: elastic/beats#50472 fixed the legacy provider so
-# devices emit activedirectory.device.* and device.yml resolves object_sid correctly.
+# Verify device documents arrive in the device data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_ad.device-*
 cp stdout device_docs.json
 exec jq '[.hits.hits[]._source.device.id] | unique[]' device_docs.json
 stdout 'S-1-5-21-374105552-1189110957-4047727897-1001'
 
-# Verify empty group documents were routed to the group data stream.
+# Verify empty group documents arrive in the group data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_ad.group-*
 cp stdout group_docs.json
 exec jq '[.hits.hits[]._source.group.id] | unique | sort[]' group_docs.json
@@ -57,6 +44,9 @@ stdout 'S-1-5-21-374105552-1189110957-4047727897-1102'
 exec jq '[.hits.hits[]._source.group.name] | unique | sort[]' group_docs.json
 stdout 'Contractors'
 stdout 'Decommissioned'
+
+# The entity data stream should have no documents (no markers in minimal mode).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 0 -confirm 30s -timeout 1m ${ENTITY_DS}
 
 # Clean up.
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ENTITY_DS}
@@ -72,7 +62,6 @@ data_stream:
     ad_user: "cn=admin,dc=testserver,dc=local"
     ad_password: "password"
     dataset: all
-    use_minimal_state: false
     include_empty_groups: true
     sync_interval: 24h
     update_interval: 15m
