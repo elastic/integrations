@@ -292,7 +292,7 @@ updateBackportBranchContents() {
   files_cached_num=$(git diff --name-only --cached | wc -l)
   if [ "${files_cached_num}" -gt 0 ]; then
     echo "--- Committing changes..."
-    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+    git commit -m "[${BACKPORT_BRANCH_NAME}] Sync CI configuration with ${SOURCE_BRANCH} branch"
   else
     echo "+++ Nothing to commit, skip."
   fi
