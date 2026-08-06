@@ -120,6 +120,9 @@ An example event for `system` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "network": {
+        "name": "null"
+    },
     "okta": {
         "actor": {
             "alternate_id": "xxxxxx@elastic.co",
@@ -138,8 +141,7 @@ An example event for `system` looks as following:
                 "browser": "FIREFOX",
                 "os": "Mac OS X",
                 "raw_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0"
-            },
-            "zone": "null"
+            }
         },
         "debug_context": {
             "debug_data": {
@@ -246,12 +248,14 @@ An example event for `system` looks as following:
 | device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| network.name | Name given by operators to sections of their network. | keyword |
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
 | okta.actor.display_name | Display name of the actor. | keyword |
 | okta.actor.display_name.text | Multi-field of `okta.actor.display_name`. | match_only_text |
@@ -273,7 +277,7 @@ An example event for `system` looks as following:
 | okta.client.user_agent.os | The OS informaton. | keyword |
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.user_agent.raw_user_agent.text | Multi-field of `okta.client.user_agent.raw_user_agent`. | match_only_text |
-| okta.client.zone | The zone information of the client. | keyword |
+| okta.client.zone | Deprecated. Alias to `network.name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
 | okta.debug_context.debug_data.behaviors |  | keyword |
@@ -336,7 +340,7 @@ An example event for `system` looks as following:
 | okta.device.secure_hardware_present | Whether there is secure hardware present on the device. This is a checks for chip presence: trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens on the secure hardware. | boolean |
 | okta.display_message | The display message of the LogEvent. | keyword |
 | okta.event_type | The type of the LogEvent. | keyword |
-| okta.outcome.reason | The reason of the outcome. | keyword |
+| okta.outcome.reason | Deprecated. Alias to `event.reason`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.outcome.result | The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN. | keyword |
 | okta.request.ip_chain |  | flattened |
 | okta.security_context.as.number | The AS number. | integer |
