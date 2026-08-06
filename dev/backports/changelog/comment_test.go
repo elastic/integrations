@@ -14,10 +14,10 @@ import (
 
 func TestPostComment_NoOp(t *testing.T) {
 	t.Run("empty backport PR number is a no-op", func(t *testing.T) {
-		require.NoError(t, PostComment("", "changelog/pr-42", "", "success", "123", "org/repo"))
+		require.NoError(t, PostComment("", "changelog/pr-42", "", "success", "123", "org/repo", ""))
 	})
 	t.Run("empty working branch is a no-op", func(t *testing.T) {
-		require.NoError(t, PostComment("42", "", "", "success", "123", "org/repo"))
+		require.NoError(t, PostComment("42", "", "", "success", "123", "org/repo", ""))
 	})
 }
 
@@ -31,16 +31,17 @@ func TestBuildCommentBody(t *testing.T) {
 	withBranch := func(_, _ string) (bool, error) { return true, nil }
 
 	cases := []struct {
-		title          string
-		outcome        string
-		workingBranch  string
-		notFound       string
-		runID          string
-		repository     string
-		syncURLFn      func(string) (string, error)
-		branchExistsFn func(string, string) (bool, error)
-		wantContains   []string
-		wantErr        bool
+		title              string
+		outcome            string
+		workingBranch      string
+		notFound           string
+		existingSyncPRURL  string
+		runID              string
+		repository         string
+		syncURLFn          func(string) (string, error)
+		branchExistsFn     func(string, string) (bool, error)
+		wantContains       []string
+		wantErr            bool
 	}{
 		{
 			title:          "skipped — reports versions already on main",
@@ -114,12 +115,39 @@ func TestBuildCommentBody(t *testing.T) {
 			branchExistsFn: withBranch,
 			wantContains:   []string{"changelog/pr-42", "org/repo/compare/main...changelog/pr-42"},
 		},
+		{
+			title:          "failure — includes /sync-changelog retry hint",
+			outcome:        "failure",
+			workingBranch:  "changelog/pr-42",
+			runID:          "123",
+			repository:     "org/repo",
+			syncURLFn:      noURL,
+			branchExistsFn: noBranch,
+			wantContains:   []string{"/sync-changelog"},
+		},
+		{
+			title:             "already_exists — includes existing sync PR URL",
+			outcome:           "already_exists",
+			workingBranch:     "changelog/pr-42",
+			existingSyncPRURL: "https://github.com/org/repo/pull/99",
+			syncURLFn:         noURL,
+			branchExistsFn:    noBranch,
+			wantContains:      []string{"https://github.com/org/repo/pull/99"},
+		},
+		{
+			title:          "already_exists — no URL falls back to branch name",
+			outcome:        "already_exists",
+			workingBranch:  "changelog/pr-42",
+			syncURLFn:      noURL,
+			branchExistsFn: noBranch,
+			wantContains:   []string{"changelog/pr-42"},
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.title, func(t *testing.T) {
 			body, err := buildCommentBody(
-				tc.workingBranch, tc.notFound, tc.outcome,
+				tc.workingBranch, tc.notFound, tc.outcome, tc.existingSyncPRURL,
 				tc.runID, tc.repository,
 				tc.syncURLFn, tc.branchExistsFn,
 			)
