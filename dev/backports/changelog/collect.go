@@ -5,7 +5,6 @@
 package changelog
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,32 +19,39 @@ import (
 
 // CollectResult holds the outputs produced by Collect.
 type CollectResult struct {
-	HasChanges       bool
-	EntriesTSV       string // path to the written TSV file
-	WorkingBranch    string
-	BackportPRNumber string
+	HasChanges        bool
+	EntriesTSV        string // path to the written TSV file
+	WorkingBranch     string
+	BackportPRNumber  string
+	ExistingSyncPRURL string // non-empty when a sync PR already exists
 }
 
 // Collect finds changelog entries introduced between before and after that are
 // not yet present on main, writes them to a temp TSV file, and returns a
 // CollectResult. Returns HasChanges=false when nothing actionable is found.
-func Collect(before, after, repository string) (*CollectResult, error) {
-	prNumber, err := backportPRNumber(repository, after)
-	if err != nil {
-		return nil, fmt.Errorf("resolving backport PR number: %w", err)
-	}
+// knownPRNumber may be provided to skip the backportPRNumber lookup (useful on
+// the retry path where the PR number is already known from the comment event).
+func Collect(before, after, repository, knownPRNumber string) (*CollectResult, error) {
+	prNumber := knownPRNumber
 	if prNumber == "" {
-		fmt.Fprintf(os.Stderr, "no backport PR found for commit %s\n", after)
-		return &CollectResult{HasChanges: false}, nil
+		var err error
+		prNumber, err = backportPRNumber(repository, after)
+		if err != nil {
+			return nil, fmt.Errorf("resolving backport PR number: %w", err)
+		}
+		if prNumber == "" {
+			fmt.Fprintf(os.Stderr, "no backport PR found for commit %s\n", after)
+			return &CollectResult{HasChanges: false}, nil
+		}
 	}
 
 	workingBranch := "changelog/pr-" + prNumber
-	exists, err := syncPRExists(workingBranch)
+	existingURL, err := existingSyncPR(workingBranch)
 	if err != nil {
 		return nil, fmt.Errorf("checking for existing sync PR: %w", err)
 	}
-	if exists {
-		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch}, nil
+	if existingURL != "" {
+		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch, ExistingSyncPRURL: existingURL}, nil
 	}
 
 	git := gitutil.Git{}
@@ -192,22 +198,19 @@ func backportPRNumber(repository, sha string) (string, error) {
 	return "", nil
 }
 
-// syncPRExists returns true if a PR (open or closed) already exists with the
-// given head branch.
-func syncPRExists(workingBranch string) (bool, error) {
+// existingSyncPR returns the URL of an existing PR (open or closed) with the
+// given head branch, or "" when none is found.
+func existingSyncPR(workingBranch string) (string, error) {
 	stdout, _, err := gh.Exec("pr", "list",
 		"--head", workingBranch,
 		"--state", "all",
-		"--json", "number",
+		"--json", "number,url",
+		"--jq", ".[0].url // empty",
 	)
 	if err != nil {
-		return false, err
+		return "", err
 	}
-	var prs []struct{ Number int }
-	if err := json.Unmarshal(stdout.Bytes(), &prs); err != nil {
-		return false, fmt.Errorf("parsing PR list: %w", err)
-	}
-	return len(prs) > 0, nil
+	return strings.TrimSpace(stdout.String()), nil
 }
 
 // changedChangelogs returns the paths of changelog.yml files introduced

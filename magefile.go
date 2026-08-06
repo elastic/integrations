@@ -638,22 +638,28 @@ func SyncBackportChangelog() error {
 	if before == "" || after == "" || repository == "" || backportBranch == "" {
 		return fmt.Errorf("BEFORE, AFTER, REPOSITORY, and BACKPORT_BRANCH must be set")
 	}
+	backportPRNumber := os.Getenv("BACKPORT_PR_NUMBER")
 	packagesDir := os.Getenv("PACKAGES_DIR")
 	if packagesDir == "" {
 		packagesDir = "packages"
 	}
 
-	collectResult, err := changelog.Collect(before, after, repository)
+	collectResult, err := changelog.Collect(before, after, repository, backportPRNumber)
 	if err != nil {
 		return err
 	}
 
 	if !collectResult.HasChanges {
+		outcome := "skipped"
+		if collectResult.ExistingSyncPRURL != "" {
+			outcome = "already_exists"
+		}
 		return writeGitHubOutputs(map[string]string{
-			"backport_pr_number": collectResult.BackportPRNumber,
-			"working_branch":     collectResult.WorkingBranch,
-			"not_found_packages": "",
-			"create_outcome":     "skipped",
+			"backport_pr_number":   collectResult.BackportPRNumber,
+			"working_branch":       collectResult.WorkingBranch,
+			"not_found_packages":   "",
+			"create_outcome":       outcome,
+			"existing_sync_pr_url": collectResult.ExistingSyncPRURL,
 		})
 	}
 
@@ -680,7 +686,7 @@ func SyncBackportChangelog() error {
 // PostBackportComment posts a result comment on the originating backport PR.
 //
 // Required env vars: BACKPORT_PR_NUMBER, WORKING_BRANCH, REPOSITORY.
-// Optional env vars: NOT_FOUND_PACKAGES, CREATE_OUTCOME, RUN_ID.
+// Optional env vars: NOT_FOUND_PACKAGES, CREATE_OUTCOME, RUN_ID, EXISTING_SYNC_PR_URL.
 func PostBackportComment() error {
 	backportPRNumber := os.Getenv("BACKPORT_PR_NUMBER")
 	workingBranch := os.Getenv("WORKING_BRANCH")
@@ -695,6 +701,7 @@ func PostBackportComment() error {
 		os.Getenv("CREATE_OUTCOME"),
 		os.Getenv("RUN_ID"),
 		repository,
+		os.Getenv("EXISTING_SYNC_PR_URL"),
 	)
 }
 
