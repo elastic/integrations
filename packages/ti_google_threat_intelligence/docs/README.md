@@ -3852,12 +3852,12 @@ An example event for `vulnerability` looks as following:
 | gti.vulnerability.attributes.summary_stats.files_detections.avg |  | double |
 | gti.vulnerability.attributes.summary_stats.files_detections.max |  | double |
 | gti.vulnerability.attributes.summary_stats.files_detections.min |  | double |
-| gti.vulnerability.attributes.summary_stats.first_submission_date.avg |  | double |
-| gti.vulnerability.attributes.summary_stats.first_submission_date.max |  | double |
-| gti.vulnerability.attributes.summary_stats.first_submission_date.min |  | double |
-| gti.vulnerability.attributes.summary_stats.last_submission_date.avg |  | double |
-| gti.vulnerability.attributes.summary_stats.last_submission_date.max |  | double |
-| gti.vulnerability.attributes.summary_stats.last_submission_date.min |  | double |
+| gti.vulnerability.attributes.summary_stats.first_submission_date.avg |  | date |
+| gti.vulnerability.attributes.summary_stats.first_submission_date.max |  | date |
+| gti.vulnerability.attributes.summary_stats.first_submission_date.min |  | date |
+| gti.vulnerability.attributes.summary_stats.last_submission_date.avg |  | date |
+| gti.vulnerability.attributes.summary_stats.last_submission_date.max |  | date |
+| gti.vulnerability.attributes.summary_stats.last_submission_date.min |  | date |
 | gti.vulnerability.attributes.tags | tags associated with the vulnerability. | keyword |
 | gti.vulnerability.attributes.tags_details.confidence |  | keyword |
 | gti.vulnerability.attributes.tags_details.description |  | keyword |
