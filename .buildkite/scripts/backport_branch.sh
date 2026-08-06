@@ -194,6 +194,7 @@ updateBackportBranchContents() {
     # Copy the standalone backport CLI tool so backport branches always use the
     # version from main (same reason as copying .buildkite/ and dev/).
     echo "--- Copying cmd/backport from $SOURCE_BRANCH..."
+    git rm -r --cached "cmd/backport" 2>/dev/null || true
     git checkout "$SOURCE_BRANCH" -- "cmd/backport"
     git add cmd/backport
 
