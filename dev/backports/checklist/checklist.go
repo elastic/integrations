@@ -31,6 +31,69 @@ type PackageBranches struct {
 // checkedLineRe matches a checked checkbox line: "- [x] `branch-name`..."
 var checkedLineRe = regexp.MustCompile("^- \\[[xX]\\] `([^`]+)`")
 
+// checklistItemRe matches any checkbox branch line (checked or unchecked).
+// Group 1: checkbox char (' ', 'x', or 'X'). Group 2: branch name.
+var checklistItemRe = regexp.MustCompile("^- \\[([xX ])\\] `([^`]+)`")
+
+// packageHeaderRe matches a bold package section header: **package-name**
+var packageHeaderRe = regexp.MustCompile(`^\*\*([^*]+)\*\*$`)
+
+// ChecklistItem represents a single branch entry parsed from a checklist comment body.
+type ChecklistItem struct {
+	Package   string
+	Branch    string
+	Checked   bool
+	Processed bool // true if the line already carries a ✅ or ⚠️ status suffix
+}
+
+// ParseChecklistItems scans body for package headers and checkbox branch lines and
+// returns one ChecklistItem per branch. An empty or marker-free body returns an
+// empty (non-nil) slice so callers never need a nil check.
+func ParseChecklistItems(body string) []ChecklistItem {
+	items := []ChecklistItem{}
+	if !strings.Contains(body, marker) {
+		return items
+	}
+	var currentPkg string
+	for _, line := range strings.Split(body, "\n") {
+		line = strings.TrimRight(line, "\r")
+		if m := packageHeaderRe.FindStringSubmatch(line); m != nil {
+			currentPkg = m[1]
+			continue
+		}
+		if m := checklistItemRe.FindStringSubmatch(line); m != nil {
+			items = append(items, ChecklistItem{
+				Package:   currentPkg,
+				Branch:    m[2],
+				Checked:   m[1] != " ",
+				Processed: strings.ContainsRune(line, '✅') || strings.ContainsRune(line, '⚠'),
+			})
+		}
+	}
+	return items
+}
+
+// UpdateBranchStatus finds the checkbox line for branch in body and appends
+// " — <status>" to it. If the line already carries a ✅ or ⚠️ suffix the body
+// is returned unchanged (defence-in-depth against workflow self-trigger loops).
+// Returns body unchanged when branch is not found.
+func UpdateBranchStatus(body, branch, status string) string {
+	lines := strings.Split(body, "\n")
+	for i, line := range lines {
+		trimmed := strings.TrimRight(line, "\r")
+		m := checklistItemRe.FindStringSubmatch(trimmed)
+		if m == nil || m[2] != branch {
+			continue
+		}
+		if strings.ContainsRune(trimmed, '✅') || strings.ContainsRune(trimmed, '⚠') {
+			return body
+		}
+		lines[i] = trimmed + " — " + status
+		return strings.Join(lines, "\n")
+	}
+	return body
+}
+
 // ParseCheckedBranches scans body for "- [x] `<branch>`" lines and returns the
 // set of branch names that are currently ticked. An empty or marker-free body
 // returns an empty (non-nil) map so callers never need a nil check.
@@ -51,9 +114,7 @@ func ParseCheckedBranches(body string) map[string]bool {
 // BuildComment renders the full comment body starting with marker.
 // Packages that have no active branches are omitted, so stale sections disappear
 // automatically on recompute without any special removal logic.
-// The checked parameter is accepted for forward-compatibility but currently has no
-// effect on the output — branches are rendered as plain list items until #19214
-// (auto-backport PR creation) is implemented, at which point checkboxes will be restored.
+// Branches in checked are rendered with a filled checkbox; all others are unchecked.
 //
 // Returns "" when no package has any active branch; callers should skip posting.
 func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
@@ -70,7 +131,7 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b, "> Only branches for packages touched by this PR's current diff are shown.")
 	fmt.Fprintln(&b, "> This comment is updated automatically on each push — manual edits will be overwritten.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Active backport branches for the packages touched by this PR:")
+	fmt.Fprintln(&b, "Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.")
 
 	for _, p := range pkgs {
 		if len(p.Branches) == 0 {
@@ -82,7 +143,11 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 		fmt.Fprintln(&b)
 		fmt.Fprintf(&b, "**%s**\n", p.Package)
 		for _, r := range p.Branches {
-			line := fmt.Sprintf("- `%s`", r.Branch)
+			box := "[ ]"
+			if checked[r.Branch] {
+				box = "[x]"
+			}
+			line := fmt.Sprintf("- %s `%s`", box, r.Branch)
 			if r.MaintainedUntil != nil {
 				line += fmt.Sprintf(" (maintained until %s)", *r.MaintainedUntil)
 			}
