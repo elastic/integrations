@@ -318,6 +318,8 @@ add_bin_path
 
 with_yq
 with_backport
+# mage is still required to get the full packages list 
+with_mage
 
 echo "--- Validating custom backport branch name"
 if ! backport validate-branch-name "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
