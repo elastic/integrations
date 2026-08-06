@@ -1,0 +1,189 @@
+rules:
+  # =========================================================================
+  # PHASE 1 — list log files (paginated). Returns file metadata only; the
+  # JSONL content is fetched per-file in phase 2 (see the /logs/{id} rules).
+  # =========================================================================
+
+  # --- list page 2 (requested with ?after=2026-07-15T11:00:00Z) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: AUTH_LOG
+      limit: 2
+      after: "2026-07-15T11:00:00Z"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_c3",
+                "event_type": "AUTH_LOG",
+                "end_time": "2026-07-15T13:49:25Z",
+                "file_name": "AUTH_LOG_2026-07-15T13:49:25+00:00.jsonl",
+                "file_size": 512,
+                "file_sha256": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3"
+              }
+            ],
+            "has_more": false,
+            "last_end_time": "2026-07-15T14:00:00Z"
+          }
+          `}}
+
+  # --- list page 1 (initial request; no ?after) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: AUTH_LOG
+      limit: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_a1",
+                "event_type": "AUTH_LOG",
+                "end_time": "2026-07-15T10:53:24Z",
+                "file_name": "AUTH_LOG_2026-07-15T10:53:24+00:00.jsonl",
+                "file_size": 1024,
+                "file_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+              },
+              {
+                "id": "eclf_b2",
+                "event_type": "AUTH_LOG",
+                "end_time": "2026-07-15T12:12:23Z",
+                "file_name": "AUTH_LOG_2026-07-15T12:12:23+00:00.jsonl",
+                "file_size": 768,
+                "file_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"
+              }
+            ],
+            "has_more": true,
+            "last_end_time": "2026-07-15T11:00:00Z"
+          }
+          `}}
+
+  # =========================================================================
+  # PHASE 2 — download each log file's JSONL body. The real API 307-redirects
+  # to a signed URL; the mock serves the JSON Lines content directly (200).
+  # Each line is one AUTH_LOG event and is emitted as a separate document.
+  # =========================================================================
+
+  # --- download file eclf_a1 (2 events) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_a1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "9532e1b4-e44a-42c7-a52a-083c345e0001",
+            "type": "AUTH_LOG",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1", "user_email": "alice.martin@example.org" },
+            "timestamp": "2026-07-15T10:53:18Z",
+            "request_metadata": {
+              "client_ip": "81.2.69.142",
+              "client_ip_details": { "country": "GB", "city": "London", "region": "England", "region_code": "ENG", "latitude": "51.50853", "longitude": "-0.12574" },
+              "client_ja3": "f90ffded875933863a95a1a84285c922",
+              "client_ja4": "q13d0311h3_55b375c5d22e_653d80c3fe9d"
+            },
+            "action_data": { "action": "login_success", "role": "standard-user" }
+          }
+          `}}
+          {{ minify_json `
+          {
+            "event_id": "09e7362d-56a9-408b-b020-027731110002",
+            "type": "AUTH_LOG",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Bbbbbbbbbbbbbbbbbbbbbbb2", "user_email": "bob.singh@example.org" },
+            "timestamp": "2026-07-15T10:53:24Z",
+            "request_metadata": {
+              "client_ip": "89.160.20.112",
+              "client_ip_details": { "country": "SE", "city": "Stockholm", "region": "Stockholm County", "region_code": "AB", "asn": "29518", "latitude": "59.32938", "longitude": "18.06871" },
+              "client_user_agent": "openid-client/5.4.0 (https://github.com/panva/node-openid-client)",
+              "client_ja3": "0b85eb0d4981e69064e40753e4f0ac5f",
+              "client_ja4": "t13d301100_1d37bd780c83_8e6e362c5eac"
+            },
+            "action_data": { "action": "token_issued", "role": "standard-user" }
+          }
+          `}}
+
+  # --- download file eclf_b2 (1 event) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_b2
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "a9f4feb4-9277-4b5e-a64e-63f507e40003",
+            "type": "AUTH_LOG",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Cccccccccccccccccccccc3", "user_email": "carol.jones@example.org" },
+            "timestamp": "2026-07-15T12:12:23Z",
+            "request_metadata": {
+              "client_ip": "67.43.156.0",
+              "client_ip_details": { "country": "", "city": "", "region": "", "region_code": "", "latitude": "", "longitude": "" },
+              "client_user_agent": "Python/3.12 aiohttp/3.13.5",
+              "client_ja3": "",
+              "client_ja4": ""
+            },
+            "action_data": { "action": "logout_success", "role": "standard-user" }
+          }
+          `}}
+
+  # --- download file eclf_c3 (1 event) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_c3
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "74a9eeb2-f3da-4668-86a6-8d16fd500004",
+            "type": "AUTH_LOG",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1", "user_email": "alice.martin@example.org" },
+            "timestamp": "2026-07-15T13:49:25Z",
+            "request_metadata": {
+              "client_ip": "175.16.199.0",
+              "client_ip_details": { "country": "US", "city": "Milton", "region": "Washington", "region_code": "WA", "latitude": "47.24503", "longitude": "-122.31417" },
+              "client_ja3": "9a78264e64e221797705e75a3c55df01",
+              "client_ja4": "q13d0311h3_55b375c5d22e_f2a83c8e78ae"
+            },
+            "action_data": { "action": "login_success", "role": "standard-user" }
+          }
+          `}}
