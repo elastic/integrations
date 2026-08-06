@@ -108,18 +108,13 @@ processors:
       field: resecurity_risk.breach.source.is_imported
       tag: set_source_is_imported_true
       value: true
-      if: ctx.resecurity_risk?.breach?.source?.is_imported instanceof Number && ctx.resecurity_risk.breach.source.is_imported != 0
+      if: ctx.resecurity_risk?.breach?.source?.is_imported != 0
       description: The API reports this flag as 0 or 1.
   - set:
       field: resecurity_risk.breach.source.is_imported
       tag: set_source_is_imported_false
       value: false
-      if: ctx.resecurity_risk?.breach?.source?.is_imported instanceof Number && ctx.resecurity_risk.breach.source.is_imported == 0
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
+      if: ctx.resecurity_risk?.breach?.source?.is_imported == 0
 on_failure:
   - append:
       field: error.message
