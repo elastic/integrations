@@ -380,19 +380,19 @@ The following non-ECS fields are used in identities documents:
 | input.type | Input type. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | sailpoint_identity_sc.identity.access.attribute | Attribute name for entitlement-type access items. | keyword |
-| sailpoint_identity_sc.identity.access.cloudEligible | Indicates whether the access item is cloud-eligible. | boolean |
-| sailpoint_identity_sc.identity.access.cloudGoverned | Indicates whether the access item is cloud-governed. | boolean |
+| sailpoint_identity_sc.identity.access.cloud_eligible | Indicates whether the access item is cloud-eligible. | boolean |
+| sailpoint_identity_sc.identity.access.cloud_governed | Indicates whether the access item is cloud-governed. | boolean |
 | sailpoint_identity_sc.identity.access.description | Description of the access item. | keyword |
 | sailpoint_identity_sc.identity.access.disabled | Indicates whether the access item is disabled. | boolean |
-| sailpoint_identity_sc.identity.access.displayName | Display name of the access item. | keyword |
+| sailpoint_identity_sc.identity.access.display_name | Display name of the access item. | keyword |
 | sailpoint_identity_sc.identity.access.enabled | Indicates whether the access item is enabled. | boolean |
 | sailpoint_identity_sc.identity.access.id | Access item ID. | keyword |
 | sailpoint_identity_sc.identity.access.name | Access item name. | keyword |
-| sailpoint_identity_sc.identity.access.owner.displayName | Display name of the owner of this access item. | keyword |
+| sailpoint_identity_sc.identity.access.owner.display_name | Display name of the owner of this access item. | keyword |
 | sailpoint_identity_sc.identity.access.owner.id | ID of the owner of this access item. | keyword |
 | sailpoint_identity_sc.identity.access.owner.name | Username of the owner of this access item. | keyword |
 | sailpoint_identity_sc.identity.access.privileged | Indicates whether the access item grants privileged access. | boolean |
-| sailpoint_identity_sc.identity.access.requestCommentsRequired | Indicates whether comments are required when requesting this access item. | boolean |
+| sailpoint_identity_sc.identity.access.request_comments_required | Indicates whether comments are required when requesting this access item. | boolean |
 | sailpoint_identity_sc.identity.access.requestable | Indicates whether the access item can be requested. | boolean |
 | sailpoint_identity_sc.identity.access.revocable | Indicates whether the access item can be revoked. | boolean |
 | sailpoint_identity_sc.identity.access.schema | Schema name for entitlement-type access items. | keyword |
@@ -404,21 +404,21 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.access_count | Number of access items assigned to this identity. | long |
 | sailpoint_identity_sc.identity.access_profile_count | Number of access profiles assigned to this identity. | long |
 | sailpoint_identity_sc.identity.account_count | Number of accounts associated with this identity. | long |
-| sailpoint_identity_sc.identity.accounts.accountId | Account identifier on the source system. | keyword |
+| sailpoint_identity_sc.identity.accounts.account_id | Account identifier on the source system. | keyword |
 | sailpoint_identity_sc.identity.accounts.created | When the account was created. | date |
 | sailpoint_identity_sc.identity.accounts.disabled | Indicates whether the account is disabled. | boolean |
-| sailpoint_identity_sc.identity.accounts.entitlementAttributes | Entitlement attributes on the account (for example, memberOf groups). | flattened |
+| sailpoint_identity_sc.identity.accounts.entitlement_attributes | Entitlement attributes on the account (for example, memberOf groups). | flattened |
 | sailpoint_identity_sc.identity.accounts.id | Account ID. | keyword |
 | sailpoint_identity_sc.identity.accounts.locked | Indicates whether the account is locked. | boolean |
-| sailpoint_identity_sc.identity.accounts.manuallyCorrelated | Indicates whether the account was manually correlated to this identity. | boolean |
+| sailpoint_identity_sc.identity.accounts.manually_correlated | Indicates whether the account was manually correlated to this identity. | boolean |
 | sailpoint_identity_sc.identity.accounts.name | Account display name. | keyword |
-| sailpoint_identity_sc.identity.accounts.passwordLastSet | When the account password was last set. | date |
+| sailpoint_identity_sc.identity.accounts.password_last_set | When the account password was last set. | date |
 | sailpoint_identity_sc.identity.accounts.privileged | Indicates whether the account has privileged access. | boolean |
 | sailpoint_identity_sc.identity.accounts.source.id | ID of the source system for this account. | keyword |
 | sailpoint_identity_sc.identity.accounts.source.name | Name of the source system for this account. | keyword |
 | sailpoint_identity_sc.identity.accounts.source.type | Type of the source system for this account. | keyword |
-| sailpoint_identity_sc.identity.accounts.supportsPasswordChange | Indicates whether the account supports password changes. | boolean |
-| sailpoint_identity_sc.identity.apps.account.accountId | Account identifier on the source system for this application. | keyword |
+| sailpoint_identity_sc.identity.accounts.supports_password_change | Indicates whether the account supports password changes. | boolean |
+| sailpoint_identity_sc.identity.apps.account.account_id | Account identifier on the source system for this application. | keyword |
 | sailpoint_identity_sc.identity.apps.account.id | ID of the account linked to this application. | keyword |
 | sailpoint_identity_sc.identity.apps.id | Application ID. | keyword |
 | sailpoint_identity_sc.identity.apps.name | Application name. | keyword |
@@ -437,14 +437,14 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.manager.id | ID of the identity's manager. | keyword |
 | sailpoint_identity_sc.identity.manager.name | Username of the identity's manager. | keyword |
 | sailpoint_identity_sc.identity.org | Organization (tenant) identifier for this identity. | keyword |
-| sailpoint_identity_sc.identity.owns.accessProfiles.id | ID of an owned access profile. | keyword |
-| sailpoint_identity_sc.identity.owns.accessProfiles.name | Name of an owned access profile. | keyword |
+| sailpoint_identity_sc.identity.owns.access_profiles.id | ID of an owned access profile. | keyword |
+| sailpoint_identity_sc.identity.owns.access_profiles.name | Name of an owned access profile. | keyword |
 | sailpoint_identity_sc.identity.owns.apps.id | ID of an owned application. | keyword |
 | sailpoint_identity_sc.identity.owns.apps.name | Name of an owned application. | keyword |
 | sailpoint_identity_sc.identity.owns.entitlements.id | ID of an owned entitlement. | keyword |
 | sailpoint_identity_sc.identity.owns.entitlements.name | Name of an owned entitlement. | keyword |
-| sailpoint_identity_sc.identity.owns.governanceGroups.id | ID of an owned governance group. | keyword |
-| sailpoint_identity_sc.identity.owns.governanceGroups.name | Name of an owned governance group. | keyword |
+| sailpoint_identity_sc.identity.owns.governance_groups.id | ID of an owned governance group. | keyword |
+| sailpoint_identity_sc.identity.owns.governance_groups.name | Name of an owned governance group. | keyword |
 | sailpoint_identity_sc.identity.owns.roles.id | ID of an owned role. | keyword |
 | sailpoint_identity_sc.identity.owns.roles.name | Name of an owned role. | keyword |
 | sailpoint_identity_sc.identity.owns.sources.id | ID of an administered source. | keyword |

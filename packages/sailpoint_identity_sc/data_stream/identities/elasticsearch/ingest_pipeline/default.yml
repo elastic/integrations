@@ -211,7 +211,7 @@ processors:
       value: user
       allow_duplicates: false
 
-  # --- Entity relationships: owns (entitlements, accessProfiles, roles, apps, governanceGroups) ---
+  # --- Entity relationships: owns (entitlements, access_profiles, roles, apps, governance_groups) ---
   # and administers (sources)
   # owns may be a List (legacy search API format) or a Map (current search API format).
   - script:
@@ -448,21 +448,71 @@ processors:
       target_field: sailpoint_identity_sc.identity.manager.display_name
       tag: rename_manager_display_name
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: snake_case_accounts
+      if: ctx.json?.accounts instanceof List
+      source: |-
+        for (def acc : ctx.json.accounts) {
+          if (acc.containsKey('accountId')) { acc.put('account_id', acc.remove('accountId')); }
+          if (acc.containsKey('manuallyCorrelated')) { acc.put('manually_correlated', acc.remove('manuallyCorrelated')); }
+          if (acc.containsKey('supportsPasswordChange')) { acc.put('supports_password_change', acc.remove('supportsPasswordChange')); }
+          if (acc.containsKey('passwordLastSet')) { acc.put('password_last_set', acc.remove('passwordLastSet')); }
+          if (acc.containsKey('entitlementAttributes')) { acc.put('entitlement_attributes', acc.remove('entitlementAttributes')); }
+        }
   - rename:
       field: json.accounts
       target_field: sailpoint_identity_sc.identity.accounts
       tag: rename_accounts
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: snake_case_apps
+      if: ctx.json?.apps instanceof List
+      source: |-
+        for (def app : ctx.json.apps) {
+          if (app.containsKey('account') && app.account instanceof Map) {
+            if (app.account.containsKey('accountId')) { app.account.put('account_id', app.account.remove('accountId')); }
+          }
+        }
   - rename:
       field: json.apps
       target_field: sailpoint_identity_sc.identity.apps
       tag: rename_apps
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: snake_case_access
+      if: ctx.json?.access instanceof List
+      source: |-
+        for (def item : ctx.json.access) {
+          if (item.containsKey('displayName')) { item.put('display_name', item.remove('displayName')); }
+          if (item.containsKey('requestCommentsRequired')) { item.put('request_comments_required', item.remove('requestCommentsRequired')); }
+          if (item.containsKey('cloudEligible')) { item.put('cloud_eligible', item.remove('cloudEligible')); }
+          if (item.containsKey('cloudGoverned')) { item.put('cloud_governed', item.remove('cloudGoverned')); }
+          if (item.containsKey('owner') && item.owner instanceof Map) {
+            if (item.owner.containsKey('displayName')) { item.owner.put('display_name', item.owner.remove('displayName')); }
+          }
+        }
   - rename:
       field: json.access
       target_field: sailpoint_identity_sc.identity.access
       tag: rename_access
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: snake_case_owns
+      if: ctx.json?.owns != null
+      source: |-
+        if (ctx.json.owns instanceof List) {
+          for (def ownsItem : ctx.json.owns) {
+            if (ownsItem.containsKey('accessProfiles')) { ownsItem.put('access_profiles', ownsItem.remove('accessProfiles')); }
+            if (ownsItem.containsKey('governanceGroups')) { ownsItem.put('governance_groups', ownsItem.remove('governanceGroups')); }
+          }
+        } else if (ctx.json.owns instanceof Map) {
+          if (ctx.json.owns.containsKey('accessProfiles')) { ctx.json.owns.put('access_profiles', ctx.json.owns.remove('accessProfiles')); }
+          if (ctx.json.owns.containsKey('governanceGroups')) { ctx.json.owns.put('governance_groups', ctx.json.owns.remove('governanceGroups')); }
+        }
   - rename:
       field: json.owns
       target_field: sailpoint_identity_sc.identity.owns
