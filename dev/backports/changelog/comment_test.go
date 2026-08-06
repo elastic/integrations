@@ -31,17 +31,17 @@ func TestBuildCommentBody(t *testing.T) {
 	withBranch := func(_, _ string) (bool, error) { return true, nil }
 
 	cases := []struct {
-		title              string
-		outcome            string
-		workingBranch      string
-		notFound           string
-		existingSyncPRURL  string
-		runID              string
-		repository         string
-		syncURLFn          func(string) (string, error)
-		branchExistsFn     func(string, string) (bool, error)
-		wantContains       []string
-		wantErr            bool
+		title             string
+		outcome           string
+		workingBranch     string
+		notFound          string
+		existingSyncPRURL string
+		runID             string
+		repository        string
+		syncURLFn         func(string) (string, error)
+		branchExistsFn    func(string, string) (bool, error)
+		wantContains      []string
+		wantErr           bool
 	}{
 		{
 			title:          "skipped — reports versions already on main",
