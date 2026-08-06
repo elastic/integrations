@@ -154,6 +154,26 @@ _string_
 _string_
 The Event Hub processor version that the integration should use. Possible values are `v1` (legacy) and `v2` (recommended). Defaults to `v2`.
 
+`processor_update_interval` :
+_string_
+(Processor v2 only) How often the processor should attempt to claim partitions. Defaults to `10s`.
+
+`processor_start_position` :
+_string_
+(Processor v2 only) Where the processor starts processing messages for all partitions. `earliest` (default) starts from the last checkpoint, or the beginning of the event hub if no checkpoint is available. `latest` starts from the latest event and continues with new events as they arrive.
+
+`partition_receive_timeout` :
+_string_
+(Processor v2 only) Maximum time to wait before processing the messages received from the event hub. The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Defaults to `5s`.
+
+`partition_receive_count` :
+_int_
+(Processor v2 only) Maximum number of messages from the event hub to wait for before processing them. The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Defaults to `100`.
+
+`migrate_checkpoint` :
+_bool_
+(Processor v2 only) Controls whether the processor migrates checkpoint information from the v1 format to the v2 format at startup, so it resumes from where v1 left off instead of reprocessing the event hub retention window. Defaults to `true`.
+
 `transport` :
 _string_
 (Processor v2 only) The transport protocol to use when connecting to Event Hubs. `amqp` (default) uses ports `5671` and `5672`. `websocket` uses AMQP-over-WebSockets on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
