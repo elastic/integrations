@@ -1,0 +1,36 @@
+title: Datadog audit trail logs
+type: logs
+dataset: datadog.audit
+streams:
+  - input: aws-s3
+    title: Datadog audit logs via S3
+    description: Collect Datadog audit trail logs from the S3 bucket written by Datadog Log Archives.
+    template_path: aws-s3.yml.hbs
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - datadog
+          - audit
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: |-
+          Preserves a raw copy of the original event, added to the field `event.original`
+        multi: false
+        required: true
+        show_user: false
+        default: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.

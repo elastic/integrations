@@ -1,0 +1,102 @@
+{{#if bucket_list_prefix}}
+bucket_list_prefix: {{bucket_list_prefix}}
+{{/if}}
+{{#if region}}
+region: {{region}}
+{{/if}}
+
+# Collection mode
+{{#if collection_mode}}
+{{#contains "sqs" collection_mode}}
+# SQS Configuration (real-time mode)
+{{#if queue_url}}
+queue_url: {{queue_url}}
+{{/if}}
+{{#if visibility_timeout}}
+visibility_timeout: {{visibility_timeout}}
+{{/if}}
+{{#if max_number_of_messages}}
+max_number_of_messages: {{max_number_of_messages}}
+{{/if}}
+{{/contains}}
+{{#contains "polling" collection_mode}}
+# Polling Configuration (interval mode)
+# S3 Bucket Configuration
+{{#if bucket_arn}}
+bucket_arn: {{bucket_arn}}
+{{/if}}
+{{#if interval}}
+bucket_list_interval: {{bucket_list_interval}}
+{{/if}}
+{{/contains}}
+{{else}}
+# Backward-compatible fallback when collection_mode is not present.
+{{#if queue_url}}
+# SQS Configuration (real-time mode)
+queue_url: {{queue_url}}
+{{#if visibility_timeout}}
+visibility_timeout: {{visibility_timeout}}
+{{/if}}
+{{#if max_number_of_messages}}
+max_number_of_messages: {{max_number_of_messages}}
+{{/if}}
+{{else}}
+# Polling Configuration (interval mode)
+{{#if interval}}
+bucket_list_interval: {{bucket_list_interval}}
+{{/if}}
+{{/if}}
+{{/if}}
+
+# AWS Credentials
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
+{{#if role_arn}}
+role_arn: {{role_arn}}
+{{/if}}
+
+# File Processing
+{{#if file_selectors}}
+file_selectors:
+{{{file_selectors}}}
+{{else}}
+file_selectors:
+  - regex: '.*\.json\.gz$'
+{{#if max_bytes}}
+    max_bytes: {{max_bytes}}
+{{/if}}
+{{/if}}
+
+# Performance & Concurrency
+{{#if number_of_workers}}
+number_of_workers: {{number_of_workers}}
+{{/if}}
+{{#if api_timeout}}
+api_timeout: {{api_timeout}}
+{{/if}}
+{{#if fips_enabled}}
+fips_enabled: {{fips_enabled}}
+{{/if}}
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
+
+# Disable host enrichment
+publisher_pipeline.disable_host: true
