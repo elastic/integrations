@@ -368,6 +368,16 @@ processors:
       target_field: okta.outcome.result
       ignore_missing: true
       ignore_failure: true
+  - foreach:
+      tag: foreach_entity_target_id
+      field: json.target
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_entity_target_id
+          field: entity.target.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
   - rename:
       tag: rename_target
       field: json.target
@@ -666,6 +676,16 @@ processors:
         - okta_target_user
         - okta_target_group
       ignore_missing: true
+  - foreach:
+      tag: foreach_remove_target_id
+      field: okta.target
+      ignore_missing: true
+      processor:
+        remove:
+          tag: remove_target_id
+          field: _ingest._value.id
+          ignore_missing: true
+          ignore_failure: true
   - set:
       tag: set_id_3
       field: client.user.id
