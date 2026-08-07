@@ -35,9 +35,12 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 ### From abuse.ch
 
-abuse.ch requires an `Auth Key` (API key) for request authentication. Any requests made without this key will be rejected by the abuse.ch APIs.
+Authentication depends on which API you use:
 
-#### Obtain `Auth Key`
+- **Community API**: requires an `Auth Key` (API key). Any requests made without this key will be rejected by the abuse.ch community APIs.
+- **Commercial API**: requires Spamhaus username and password credentials. The integration uses these to obtain a short-lived JWT for API requests.
+
+#### Obtain `Auth Key` (Community API)
 
 1. Sign up for a new account, or login into the [abuse.ch authentication portal](https://auth.abuse.ch).
 2. Connect with at least one authentication provider: Google, Github, X, or LinkedIn.
@@ -46,6 +49,17 @@ abuse.ch requires an `Auth Key` (API key) for request authentication. Any reques
 5. Copy the generated **Auth Key**.
 
 For more details, check the abuse.ch [Community First - New Authentication](https://abuse.ch/blog/community-first/) blog.
+
+#### Obtain Commercial API credentials
+
+Commercial API access uses JWT authentication. Create credentials in the Spamhaus Customer Portal, then configure the username and password in the integration. The integration authenticates to `/v1/login` and refreshes the JWT as needed.
+
+1. Log in to the Spamhaus [Customer Portal](https://portal.spamhaus.com).
+2. Navigate to **Product** > **abuse.ch API**.
+3. Under **Generate new credentials for JWT authentication**, fill out the required information and follow the on-screen instructions.
+4. Copy the generated **username** and **password**.
+
+For more details, check the abuse.ch commercial API documentation on [JWT authentication for endpoints available to query](https://abusech.docs.spamhaus.com/api-reference#description/jwt-authentication-for-endpoints-available-to-query).
 
 ## How do I deploy this integration?
 
@@ -71,7 +85,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect abuse.ch logs via API**, you'll need to:
 
-        - Configure **Auth Key**.
+        - Configure **Auth Key** for Community API datasets.
+        - For Commercial API collection, set **API Type** to **Commercial API** and configure **Username** and **Password**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
@@ -94,6 +109,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Troubleshooting
 
+- **Upgrading to v5.0.0**: Version 5.0.0 moves **API Type**, **Username (Commercial)**, and **Password (Commercial)** from the MalwareBazaar data stream to the shared integration input. Fleet does not carry these values across that scope change. If you configured MalwareBazaar Commercial API on 4.2.0, re-enter the credentials after upgrade:
+    1. In Kibana, navigate to **Fleet** > **Agent policies**.
+    2. Select the policy containing the abuse.ch integration.
+    3. Edit the abuse.ch integration.
+    4. Set **API Type** to **Commercial API**, then enter **Username (Commercial)** and **Password (Commercial)** at the integration level (not under the MalwareBazaar data stream).
+    5. Select **Save integration**.
+
+    Community API users who only use an Auth Key are unaffected. After this change, the same Spamhaus credentials apply to all commercial datasets (MalwareBazaar, ThreatFox, and future commercial data streams).
 - **Upgrading to v4.0.0**: Version 4.0.0 switches the URL data stream from the full export ZIP endpoint (`/downloads/json`) to the incremental JSON API (`/v1/urls/recent/`). When upgrading from a previous version, the URL setting in your integration policy retains the old value and must be updated manually:
     1. In Kibana, navigate to **Fleet** > **Agent policies**.
     2. Select the policy containing the abuse.ch integration.

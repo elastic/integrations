@@ -1,6 +1,6 @@
 name: ti_abusech
 title: abuse.ch
-version: "4.2.0"
+version: "5.0.0"
 description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
 type: integration
 format_version: "3.3.2"
@@ -9,7 +9,7 @@ categories:
   - threat_intel
 conditions:
   kibana:
-    version: "^8.19.0 || ^9.1.0"
+    version: "^9.1.0"
 icons:
   - src: /img/abusech2.svg
     title: abuse.ch
@@ -56,7 +56,45 @@ policy_templates:
       - type: cel
         title: Collect abuse.ch logs via API
         description: Collect abuse.ch logs via API
+        required_vars:
+          community:
+            - name: api_type
+              value: community
+            - name: auth_key
+          commercial:
+            - name: api_type
+              value: commercial
+            - name: username
+            - name: password
         vars:
+          - name: api_type
+            type: select
+            title: API Type
+            description: Select the abuse.ch API to use. Community API uses an Auth Key. Commercial API uses Spamhaus credentials and JWT authentication.
+            multi: false
+            required: false
+            show_user: true
+            default: community
+            options:
+              - text: Community API
+                value: community
+              - text: Commercial API
+                value: commercial
+          - name: username
+            type: text
+            title: Username (Commercial)
+            description: Email address for the abuse.ch Commercial API account from the [Spamhaus Customer Portal](https://portal.spamhaus.com). Required when API Type is Commercial API.
+            multi: false
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password (Commercial)
+            description: Password for the abuse.ch Commercial API account. Required when API Type is Commercial API.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
           - name: auth_key
             type: password
             title: Auth Key (Community)
@@ -66,6 +104,14 @@ policy_templates:
             secret: true
             description: >-
               abuse.ch Auth Key for the Community API. Required when API Type is Community API. See [documentation](https://abuse.ch/blog/community-first/) for details.
+          - name: commercial_url
+            type: text
+            title: Commercial API URL
+            description: Base URL for the abuse.ch Commercial API (Spamhaus).
+            multi: false
+            required: false
+            show_user: false
+            default: https://api.spamhaus.com
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing
