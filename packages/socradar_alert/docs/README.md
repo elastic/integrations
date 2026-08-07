@@ -343,21 +343,29 @@ An example event for `incidents` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | socradar_alert.alarm_asset | Asset name | keyword |
+| socradar_alert.alarm_assignees | Assigned users | keyword |
 | socradar_alert.alarm_default_risk_level | Default risk level (extracted) | keyword |
 | socradar_alert.alarm_generic_title | Alarm generic title | keyword |
 | socradar_alert.alarm_id | Unique alarm identifier | keyword |
 | socradar_alert.alarm_main_type | Alarm main type (extracted) | keyword |
+| socradar_alert.alarm_related_assets | Related assets | flattened |
+| socradar_alert.alarm_related_entities | Related entities | flattened |
 | socradar_alert.alarm_risk_level | Risk level | keyword |
 | socradar_alert.alarm_sub_type | Alarm sub type (extracted) | keyword |
 | socradar_alert.alarm_text | Alarm description | text |
 | socradar_alert.alarm_text.keyword | Multi-field of `socradar_alert.alarm_text`. | keyword |
+| socradar_alert.alarm_type_id | Alarm type identifier | keyword |
 | socradar_alert.approved_by | Approved by | keyword |
 | socradar_alert.company_id | ID of the company | long |
+| socradar_alert.content | Alarm content details | flattened |
 | socradar_alert.date | The date when the alarm was created | date |
+| socradar_alert.extra | Extra information | flattened |
+| socradar_alert.history | Alarm history | flattened |
 | socradar_alert.is_approved | Approval status | boolean |
 | socradar_alert.notification_id | Notification ID | long |
 | socradar_alert.status | Alarm status | keyword |
 | socradar_alert.tags | Alarm tags | keyword |
+| socradar_alert.title | Alarm title | keyword |
 
 
 ### Inputs used
