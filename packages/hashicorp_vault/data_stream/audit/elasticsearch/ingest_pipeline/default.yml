@@ -118,12 +118,14 @@ processors:
       ignore_missing: true
 
   # user_agent.original from the request's User-Agent header. Vault emits header
-  # values as a list, so copy the first element. Skip values Vault has HMAC'd
-  # (a configurable option), since the digest is not a meaningful user agent.
-  # Note: logging request headers such as User-Agent is not Vault's default
-  # behavior; it must be explicitly enabled via the /sys/config/auditing API or
-  # the vault_audit_request_header Terraform resource, so this header is often
-  # absent.
+  # values as a list, so copy the first element. Skip values Vault has HMAC'd,
+  # since the digest is not a meaningful user agent.
+  # Vault includes User-Agent in audit request entries by default as of 1.19.0
+  # (hashicorp/vault#28596), and does not HMAC it by default. Older versions
+  # omit the header unless it is explicitly enabled, and either way the value
+  # can be configured to be HMAC'd via
+  # /sys/config/auditing/request-headers/user-agent, so both the missing and
+  # hashed cases are still handled.
   - set:
       tag: set_user_agent_original_446355f3
       field: user_agent.original
