@@ -142,22 +142,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2025-04-07T01:52:47.000Z",
     "agent": {
-        "ephemeral_id": "beadcf19-b02f-464f-92dd-e036cf33a32e",
-        "id": "756e5ee5-1567-43f4-a418-33945537157a",
-        "name": "elastic-agent-42562",
+        "ephemeral_id": "8179d174-f9a3-4bbb-aa9c-d1378919384d",
+        "id": "0859525e-958a-46db-81fa-c0bf21f3d9b9",
+        "name": "elastic-agent-94991",
         "type": "filebeat",
         "version": "9.4.1"
     },
     "data_stream": {
         "dataset": "gdacs.events",
-        "namespace": "33183",
+        "namespace": "26841",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "756e5ee5-1567-43f4-a418-33945537157a",
+        "id": "0859525e-958a-46db-81fa-c0bf21f3d9b9",
         "snapshot": false,
         "version": "9.4.1"
     },
@@ -166,7 +166,7 @@ An example event for `events` looks as following:
         "dataset": "gdacs.events",
         "end": "2025-04-06T22:00:23.000Z",
         "id": "1476137-1632460",
-        "ingested": "2026-07-29T12:45:47Z",
+        "ingested": "2026-08-07T12:34:13Z",
         "kind": "alert",
         "modified": "2025-04-07T01:52:47.000Z",
         "module": "gdacs",
