@@ -7,6 +7,8 @@ on:
       - 'backport-*'
     paths:
       - '**/changelog.yml'
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: none
@@ -14,66 +16,112 @@ permissions:
 jobs:
   sync-changelog:
     runs-on: ubuntu-latest
+    # Skip branch-creation pushes — there is no previous commit to diff against.
+    if: >-
+      github.event_name == 'push' &&
+      github.event.before != '0000000000000000000000000000000000000000'
+    concurrency:
+      group: sync-backport-changelog-${{ github.ref_name }}
+      cancel-in-progress: false
     permissions:
       contents: write      # push the changelog sync branch
       pull-requests: write # create sync PR and comment on backport PR
-    steps:
-      - name: Guard — zero-SHA check
-        id: guard
-        env:
-          BEFORE: ${{ github.event.before }}
-        run: |
-          # Branch-creation pushes carry a zero before-SHA — there is no previous commit to diff against.
-          if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping: branch-creation push"
-            exit 0
-          fi
-          echo "proceed=true" >> "$GITHUB_OUTPUT"
 
+    steps:
       - uses: actions/checkout@v7
-        if: steps.guard.outputs.proceed == 'true'
         with:
           fetch-depth: 0
 
-      - name: Set up Go
-        if: steps.guard.outputs.proceed == 'true'
-        uses: actions/setup-go@v7
+      - uses: ./.github/actions/sync-backport-changelog
         with:
-          go-version-file: .go-version
+          before: ${{ github.event.before }}
+          after: ${{ github.event.after }}
+          backport-branch: ${{ github.ref_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install mage
-        if: steps.guard.outputs.proceed == 'true'
-        run: go install github.com/magefile/mage
+  retry-changelog:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.actor != 'github-actions[bot]' &&
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/sync-changelog')
+    concurrency:
+      group: sync-backport-changelog-retry-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write      # push the changelog sync branch
+      pull-requests: write # create sync PR and comment on backport PR
 
-      - name: Configure git
-        if: steps.guard.outputs.proceed == 'true'
-        uses: elastic/oblt-actions/git/setup@v1
-        with:
-          username: 'github-actions[bot]'
-          email: '41898282+github-actions[bot]@users.noreply.github.com'
-
-      - name: Sync backport changelog
-        id: sync
-        if: steps.guard.outputs.proceed == 'true'
+    steps:
+      - name: Check PR is merged
+        id: pr-check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BEFORE: ${{ github.event.before }}
-          AFTER: ${{ github.event.after }}
           REPOSITORY: ${{ github.repository }}
-          BACKPORT_BRANCH: ${{ github.ref_name }}
-          PACKAGES_DIR: ${{ github.workspace }}/packages
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          mage -d "$GITHUB_WORKSPACE" syncBackportChangelog
+          STATE=$(gh pr view "$ISSUE_NUMBER" --repo "$REPOSITORY" --json state --jq '.state')
+          if [[ "$STATE" == "MERGED" ]]; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "PR #$ISSUE_NUMBER is not merged (state: $STATE) — skipping"
+          fi
 
-      - name: Comment on backport PR
-        if: always() && steps.guard.outputs.proceed == 'true'
+      - name: Check actor permission
+        id: actor-check
+        if: steps.pr-check.outputs.merged == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BACKPORT_PR_NUMBER: ${{ steps.sync.outputs.backport_pr_number }}
-          WORKING_BRANCH: ${{ steps.sync.outputs.working_branch }}
-          NOT_FOUND_PACKAGES: ${{ steps.sync.outputs.not_found_packages }}
-          CREATE_OUTCOME: ${{ steps.sync.outputs.create_outcome }}
-          RUN_ID: ${{ github.run_id }}
           REPOSITORY: ${{ github.repository }}
-        run: mage -d "$GITHUB_WORKSPACE" postBackportComment
+          ACTOR: ${{ github.actor }}
+        run: |
+          PERMISSION=$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" \
+            --jq '.permission' 2>/dev/null || echo "none")
+          if [[ "$PERMISSION" == "write" || "$PERMISSION" == "admin" ]]; then
+            echo "permitted=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Actor $ACTOR lacks write/admin permission ($PERMISSION) — skipping"
+          fi
+
+      - name: Resolve PR metadata
+        id: resolve
+        if: steps.actor-check.outputs.permitted == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          PR_DATA=$(gh pr view "$ISSUE_NUMBER" --repo "$REPOSITORY" \
+            --json mergeCommit,baseRefName)
+
+          BASE=$(jq -r '.baseRefName' <<< "$PR_DATA")
+          if [[ "$BASE" != backport-* ]]; then
+            echo "PR base '$BASE' is not a backport branch — skipping"
+            exit 0
+          fi
+
+          AFTER=$(jq -r '.mergeCommit.oid' <<< "$PR_DATA")
+          # Note: for rebase-merged multi-commit PRs, parents[0] is the
+          # second-to-last commit — the diff range may be narrower than the
+          # original push event. Squash and merge-commit merges are unaffected.
+          BEFORE=$(gh api "repos/$REPOSITORY/commits/$AFTER" --jq '.parents[0].sha') || exit 1
+
+          echo "before=$BEFORE"              >> "$GITHUB_OUTPUT"
+          echo "after=$AFTER"               >> "$GITHUB_OUTPUT"
+          echo "backport_branch=$BASE"      >> "$GITHUB_OUTPUT"
+          echo "pr_number=$ISSUE_NUMBER"    >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        if: steps.resolve.outputs.pr_number != ''
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/sync-backport-changelog
+        if: steps.resolve.outputs.pr_number != ''
+        with:
+          before: ${{ steps.resolve.outputs.before }}
+          after: ${{ steps.resolve.outputs.after }}
+          backport-branch: ${{ steps.resolve.outputs.backport_branch }}
+          pr-number: ${{ steps.resolve.outputs.pr_number }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
