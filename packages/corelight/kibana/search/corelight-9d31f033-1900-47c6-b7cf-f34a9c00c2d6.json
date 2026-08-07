@@ -1,8 +1,29 @@
 {
     "attributes": {
-        "columns": [],
-        "description": "intel",
-        "grid": {},
+        "columns": [
+            "host_header",
+            "host.port",
+            "software.type",
+            "software.name",
+            "software.original",
+            "version.major",
+            "software.version.minor",
+            "software.version.additional_info"
+        ],
+        "description": "",
+        "grid": {
+            "columns": {
+                "@timestamp": {
+                    "width": 245
+                },
+                "host.port": {
+                    "width": 86
+                },
+                "software.original": {
+                    "width": 181
+                }
+            }
+        },
         "hideChart": false,
         "isTextBasedQuery": false,
         "kibanaSavedObjectMeta": {
@@ -15,16 +36,18 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "source.ip",
+                            "field": "observer.vendor",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "source.ip",
+                            "key": "observer.vendor",
                             "negate": false,
-                            "type": "exists",
-                            "value": "exists"
+                            "params": {
+                                "query": "Corelight"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "exists": {
-                                "field": "source.ip"
+                            "match_phrase": {
+                                "observer.vendor": "Corelight"
                             }
                         }
                     },
@@ -35,16 +58,18 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "destination.ip",
+                            "field": "event.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "destination.ip",
+                            "key": "event.dataset",
                             "negate": false,
-                            "type": "exists",
-                            "value": "exists"
+                            "params": {
+                                "query": "software"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "exists": {
-                                "field": "destination.ip"
+                            "match_phrase": {
+                                "event.dataset": "software"
                             }
                         }
                     },
@@ -55,16 +80,16 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "destination.port",
+                            "field": "observer.hostname",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
-                            "key": "destination.port",
+                            "key": "observer.hostname",
                             "negate": false,
                             "type": "exists",
                             "value": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "destination.port"
+                                "field": "observer.hostname"
                             }
                         }
                     },
@@ -75,16 +100,16 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "intel.seen.indicator",
+                            "field": "software.type",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
-                            "key": "intel.seen.indicator",
+                            "key": "software.type",
                             "negate": false,
                             "type": "exists",
                             "value": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "intel.seen.indicator"
+                                "field": "software.type"
                             }
                         }
                     },
@@ -95,16 +120,16 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "intel.seen.indicator_type",
+                            "field": "host_header",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
-                            "key": "intel.seen.indicator_type",
+                            "key": "host_header",
                             "negate": false,
                             "type": "exists",
                             "value": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "intel.seen.indicator_type"
+                                "field": "host_header"
                             }
                         }
                     }
@@ -123,11 +148,12 @@
             ]
         ],
         "timeRestore": false,
-        "title": "Log Data [Logs Corelight]"
+        "title": "Software Details [Logs Corelight]"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-11T11:20:42.096Z",
-    "id": "corelight-845d2914-3a55-4057-9dca-a3fd4e226d54",
+    "created_at": "2026-03-14T12:37:56.672Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "corelight-9d31f033-1900-47c6-b7cf-f34a9c00c2d6",
     "references": [
         {
             "id": "logs-*",
@@ -161,5 +187,6 @@
         }
     ],
     "type": "search",
-    "typeMigrationVersion": "10.5.0"
+    "typeMigrationVersion": "10.5.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
