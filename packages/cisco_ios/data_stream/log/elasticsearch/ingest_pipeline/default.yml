@@ -287,6 +287,28 @@ processors:
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx.event?.code)"
   - grok:
+      field: source.address
+      tag: grok_strip_mac_from_source_address
+      description: Strip the L2 MAC address that IOS-XE prepends to the source IP in FMANFP ACL logs.
+      patterns:
+        - '^%{MAC:source.mac} %{IP:source.address}$'
+      if: >-
+        ['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP',
+         'IPACCESSLOGNP', 'ACCESSLOGNP',
+         'IPACCESSLOGSP', 'ACCESSLOGSP',
+         'IPACCESSLOGRP'].contains(ctx.event?.code)
+      ignore_failure: true
+      ignore_missing: true
+  - grok:
+      field: message
+      tag: grok_fmanfp_ingress_interface
+      description: Capture the ingress interface IOS-XE places before the '->' in FMANFP ACL logs.
+      patterns:
+        - '\)\s+%{NOTSPACE:cisco.ios.interface.name}->\s'
+      if: "['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)"
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
       field: message
       tag: grok_login
       patterns: 
@@ -541,6 +563,12 @@ processors:
       target_field: destination.as.organization.name
       ignore_missing: true
 
+  - gsub:
+      tag: gsub_source_mac_cisco_dotted_1a2b3c4d
+      field: source.mac
+      pattern: '^([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})\.([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})\.([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$'
+      replacement: '$1-$2-$3-$4-$5-$6'
+      ignore_missing: true
   - gsub:
       tag: gsub_source_mac_328298a4
       field: source.mac
