@@ -3,15 +3,16 @@
 This integration connects with the [ESET Threat Intelligence](https://eti.eset.com/taxii2/) TAXII version 2 server.
 It includes the following datasets for retrieving logs:
 
-| Dataset | TAXII2 Collection name |
-|--------:|:-----------------------|
-|     apt | apt stix 2.1           |
-|  botnet | botnet stix 2.1        |
-|      cc | botnet.cc stix 2.1     |
-| domains | domain stix 2.1        |
-|   files | file stix 2.1          |
-|      ip | ip stix 2.1            |
-|     url | url stix 2.1           |
+|     Dataset | TAXII2 Collection name |
+|------------:|:-----------------------|
+|         apt | apt stix 2.1           |
+|      botnet | botnet stix 2.1        |
+|          cc | botnet.cc stix 2.1     |
+|     domains | domain stix 2.1        |
+|       files | file stix 2.1          |
+|          ip | ip stix 2.1            |
+| phishingurl | phishingurl stix 2.1   |
+|         url | url stix 2.1           |
 
 ## Expiration of Indicators of Compromise (IOCs)
 
@@ -19,30 +20,32 @@ The ingested IOCs expire after certain duration. An [Elastic Transform](https://
 facilitate only active IOCs be available to the end users. Each transform creates a destination index named `logs-ti_eset_latest.dest_*` which only contains active and unexpired IOCs.
 Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 
-| Source Datastream        | Destination Index Pattern          | Destination Alias           |
-|:-------------------------|:-----------------------------------|-----------------------------|
-| `logs-ti_eset.apt-*`     | logs-ti_eset_latest.dest_apt-*     | logs-ti_eset_latest.apt     |
-| `logs-ti_eset.botnet-*`  | logs-ti_eset_latest.dest_botnet-*  | logs-ti_eset_latest.botnet  |
-| `logs-ti_eset.cc-*`      | logs-ti_eset_latest.dest_cc-*      | logs-ti_eset_latest.cc      |
-| `logs-ti_eset.domains-*` | logs-ti_eset_latest.dest_domains-* | logs-ti_eset_latest.domains |
-| `logs-ti_eset.files-*`   | logs-ti_eset_latest.dest_files-*   | logs-ti_eset_latest.files   |
-| `logs-ti_eset.ip-*`      | logs-ti_eset_latest.dest_ip-*      | logs-ti_eset_latest.ip      |
-| `logs-ti_eset.url-*`     | logs-ti_eset_latest.dest_url-*     | logs-ti_eset_latest.url     |
+| Source Datastream            | Destination Index Pattern              | Destination Alias               |
+|:-----------------------------|:---------------------------------------|---------------------------------|
+| `logs-ti_eset.apt-*`         | logs-ti_eset_latest.dest_apt-*         | logs-ti_eset_latest.apt         |
+| `logs-ti_eset.botnet-*`      | logs-ti_eset_latest.dest_botnet-*      | logs-ti_eset_latest.botnet      |
+| `logs-ti_eset.cc-*`          | logs-ti_eset_latest.dest_cc-*          | logs-ti_eset_latest.cc          |
+| `logs-ti_eset.domains-*`     | logs-ti_eset_latest.dest_domains-*     | logs-ti_eset_latest.domains     |
+| `logs-ti_eset.files-*`       | logs-ti_eset_latest.dest_files-*       | logs-ti_eset_latest.files       |
+| `logs-ti_eset.ip-*`          | logs-ti_eset_latest.dest_ip-*          | logs-ti_eset_latest.ip          |
+| `logs-ti_eset.phishingurl-*` | logs-ti_eset_latest.dest_phishingurl-* | logs-ti_eset_latest.phishingurl |
+| `logs-ti_eset.url-*`         | logs-ti_eset_latest.dest_url-*         | logs-ti_eset_latest.url         |
 
 ### ILM Policy
 
 ILM policy is added to the source indices, so it doesn't lead to unbounded growth.
 Data in these source indices will be deleted after a certain number of days from ingested days:
 
-|                  Index | Deleted after | Expired after |
-|-----------------------:|:--------------|---------------|
-|     `logs-ti_eset.apt` | 365d          | 365d          |
-|  `logs-ti_eset.botnet` | 7d            | 48h           |
-|      `logs-ti_eset.cc` | 7d            | 48h           |
-| `logs-ti_eset.domains` | 7d            | 48h           |
-|   `logs-ti_eset.files` | 7d            | 48h           |
-|      `logs-ti_eset.ip` | 7d            | 48h           |
-|     `logs-ti_eset.url` | 7d            | 48h           |
+|                      Index | Deleted after | Expired after |
+|---------------------------:|:--------------|---------------|
+|         `logs-ti_eset.apt` | 365d          | 365d          |
+|      `logs-ti_eset.botnet` | 7d            | 48h           |
+|          `logs-ti_eset.cc` | 7d            | 48h           |
+|     `logs-ti_eset.domains` | 7d            | 48h           |
+|       `logs-ti_eset.files` | 7d            | 48h           |
+|          `logs-ti_eset.ip` | 7d            | 48h           |
+| `logs-ti_eset.phishingurl` | 7d            | 48h           |
+|         `logs-ti_eset.url` | 7d            | 48h           |
 
 ## Requirements
 
@@ -93,22 +96,22 @@ An example event for `botnet` looks as following:
 {
     "@timestamp": "2023-10-18T02:05:09.000Z",
     "agent": {
-        "ephemeral_id": "bea850c5-7b99-4fe0-b62a-70e8f816f892",
-        "id": "75de7f03-46a5-4fc6-88cb-6ec688bc8813",
-        "name": "elastic-agent-97208",
+        "ephemeral_id": "8ccef148-0cdf-4314-b38b-74fb79d33d1e",
+        "id": "9d61d79f-13ae-4202-8690-39cef6ce50c2",
+        "name": "elastic-agent-36408",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.botnet",
-        "namespace": "21530",
+        "namespace": "78283",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "75de7f03-46a5-4fc6-88cb-6ec688bc8813",
+        "id": "9d61d79f-13ae-4202-8690-39cef6ce50c2",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -124,9 +127,8 @@ An example event for `botnet` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:23:54.209Z",
         "dataset": "ti_eset.botnet",
-        "ingested": "2025-10-07T05:23:57Z",
+        "ingested": "2026-05-26T17:59:08Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-10-18T02:05:09.000Z\",\"description\":\"Each of these file hashes indicates that a variant of Win32/Rescoms.B backdoor is present.\",\"id\":\"indicator--80dc09fa-563f-4a9c-ad1d-655d8dffa37f\",\"labels\":[\"malicious-activity\"],\"modified\":\"2023-10-18T02:05:09.000Z\",\"name\":\"373d34874d7bc89fd4cefa6272ee80bf\",\"pattern\":\"[file:hashes.'SHA-256'='b0e914d1bbe19433cc9df64ea1ca07fe77f7b150b511b786e46e007941a62bd7'] OR [file:hashes.'SHA-1'='373d34874d7bc89fd4cefa6272ee80bf'] OR [file:hashes.'MD5'='373d34874d7bc89fd4cefa6272ee80bf']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-10-18T02:05:09Z\",\"valid_until\":\"2023-10-20T02:05:09Z\"}",
         "type": [
@@ -197,22 +199,22 @@ An example event for `cc` looks as following:
 {
     "@timestamp": "2023-10-19T02:00:09.000Z",
     "agent": {
-        "ephemeral_id": "b3edd383-6fe5-42f1-98e5-e36a924959ba",
-        "id": "c5567d77-e4ac-453b-b1d3-aa2ea2cf9dfb",
-        "name": "elastic-agent-90683",
+        "ephemeral_id": "2a76dc03-c546-45c4-9600-49f5c1e9bee8",
+        "id": "dfbb6a96-ed78-4c98-8de5-476888da030a",
+        "name": "elastic-agent-59245",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.cc",
-        "namespace": "30355",
+        "namespace": "92562",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c5567d77-e4ac-453b-b1d3-aa2ea2cf9dfb",
+        "id": "dfbb6a96-ed78-4c98-8de5-476888da030a",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -228,9 +230,8 @@ An example event for `cc` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:24:54.170Z",
         "dataset": "ti_eset.cc",
-        "ingested": "2025-10-07T05:24:57Z",
+        "ingested": "2026-05-26T18:00:18Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-10-19T02:00:09.000Z\",\"description\":\"C\\u0026C of Win32/Smokeloader.H trojan\",\"id\":\"indicator--34e0eaa0-d35d-4039-b801-8f05d4e16bea\",\"labels\":[\"malicious-activity\"],\"modified\":\"2023-10-19T02:00:09.000Z\",\"name\":\"https://example.com/some/path\",\"pattern\":\"[url:value='https://example.com/some/path']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-10-19T02:00:09Z\",\"valid_until\":\"2023-10-21T02:00:09Z\"}",
         "type": [
@@ -297,22 +298,22 @@ An example event for `domains` looks as following:
 {
     "@timestamp": "2023-10-19T02:00:28.000Z",
     "agent": {
-        "ephemeral_id": "73444b7b-a480-4ea7-b838-e041791c2cd8",
-        "id": "32093ab2-602b-4282-ab43-c353c6ca2de4",
-        "name": "elastic-agent-56675",
+        "ephemeral_id": "56770e93-16e4-4739-b52f-1f2f5b41ce0e",
+        "id": "d31d9d94-4df3-4adb-a5ba-b683cc996ebf",
+        "name": "elastic-agent-96525",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.domains",
-        "namespace": "76832",
+        "namespace": "51129",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "32093ab2-602b-4282-ab43-c353c6ca2de4",
+        "id": "d31d9d94-4df3-4adb-a5ba-b683cc996ebf",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -328,9 +329,8 @@ An example event for `domains` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:25:53.540Z",
         "dataset": "ti_eset.domains",
-        "ingested": "2025-10-07T05:25:56Z",
+        "ingested": "2026-05-26T18:01:28Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-10-19T02:00:28.000Z\",\"description\":\"Host is known to be actively distributing adware or other medium-risk software.\",\"id\":\"indicator--dfb05726-f2be-43c8-a5b2-48e78cc05286\",\"labels\":[\"malicious-activity\"],\"modified\":\"2023-10-19T02:00:28.000Z\",\"name\":\"example.com\",\"pattern\":\"[domain-name:value='example.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-10-19T02:00:28Z\",\"valid_until\":\"2023-10-21T02:00:28Z\"}",
         "type": [
@@ -398,22 +398,22 @@ An example event for `files` looks as following:
 {
     "@timestamp": "2023-10-19T02:00:38.000Z",
     "agent": {
-        "ephemeral_id": "11ca0f0e-0d11-4dd3-b2d4-64f567328b32",
-        "id": "d13f581e-ff6e-4b91-9ec0-41af4d9ec6dd",
-        "name": "elastic-agent-44731",
+        "ephemeral_id": "0fb77f31-1be9-4905-b796-ede69232c83d",
+        "id": "772a41d6-f939-4684-9447-e1dcf2967364",
+        "name": "elastic-agent-57534",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.files",
-        "namespace": "39976",
+        "namespace": "10685",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d13f581e-ff6e-4b91-9ec0-41af4d9ec6dd",
+        "id": "772a41d6-f939-4684-9447-e1dcf2967364",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -429,9 +429,8 @@ An example event for `files` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:26:44.370Z",
         "dataset": "ti_eset.files",
-        "ingested": "2025-10-07T05:26:47Z",
+        "ingested": "2026-05-26T18:02:39Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-10-19T02:00:38.000Z\",\"description\":\"Each of these file hashes indicates that a variant of HTML/Phishing.Agent.EVU trojan is present.\",\"id\":\"indicator--5d7e9ad6-7b48-42fa-8598-d474e8da1b0f\",\"labels\":[\"malicious-activity\"],\"modified\":\"2023-10-19T02:00:38.000Z\",\"name\":\"b0e914d1bbe19433cc9df64ea1ca07fe77f7b150b511b786e46e007941a62bd7\",\"pattern\":\"[file:hashes.'SHA-256'='b0e914d1bbe19433cc9df64ea1ca07fe77f7b150b511b786e46e007941a62bd7'] OR [file:hashes.'SHA-1'='b0e914d1bbe19433cc9df64ea1ca07fe77f7b150b511b786e46e007941a62bd7'] OR [file:hashes.'MD5'='b0e914d1bbe19433cc9df64ea1ca07fe77f7b150b511b786e46e007941a62bd7']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-10-19T02:00:38Z\",\"valid_until\":\"2023-10-21T02:00:38Z\"}",
         "type": [
@@ -502,22 +501,22 @@ An example event for `ip` looks as following:
 {
     "@timestamp": "2023-10-19T02:20:06.000Z",
     "agent": {
-        "ephemeral_id": "3c72f0b8-ccdc-4db2-93bd-ace8c478a0a8",
-        "id": "62646616-f5ca-4969-9058-a59df4d18be7",
-        "name": "elastic-agent-58112",
+        "ephemeral_id": "d737e309-44ce-4216-864d-9dcacc8a9e31",
+        "id": "b1a2ecec-61c3-44ee-8d45-8ba9d70a080c",
+        "name": "elastic-agent-47253",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.ip",
-        "namespace": "34125",
+        "namespace": "47488",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "62646616-f5ca-4969-9058-a59df4d18be7",
+        "id": "b1a2ecec-61c3-44ee-8d45-8ba9d70a080c",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -533,9 +532,8 @@ An example event for `ip` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:27:33.661Z",
         "dataset": "ti_eset.ip",
-        "ingested": "2025-10-07T05:27:36Z",
+        "ingested": "2026-05-26T18:03:47Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-10-19T02:20:06.000Z\",\"description\":\"Web services scanning and attacks\",\"id\":\"indicator--905fad40-d804-4b89-ac9d-b616e0b8f6d3\",\"labels\":[\"malicious-activity\"],\"modified\":\"2023-10-19T02:20:06.000Z\",\"name\":\"5.2.75.227\",\"pattern\":\"[ipv4-addr:value='5.2.75.227']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-10-19T02:20:06Z\",\"valid_until\":\"2023-10-21T02:20:06Z\"}",
         "type": [
@@ -563,6 +561,103 @@ An example event for `ip` looks as following:
             "name": "5.2.75.227",
             "provider": "eset",
             "type": "ipv4-addr"
+        }
+    }
+}
+```
+
+### Phishing URL
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| eset.id | The UID of the event object. | keyword |
+| eset.labels | Threat labels. | keyword |
+| eset.valid_until | Event expiration date. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Input type. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+An example event for `phishingurl` looks as following:
+
+```json
+{
+    "@timestamp": "2025-08-20T11:52:31.000Z",
+    "agent": {
+        "ephemeral_id": "ca08afc6-a246-41d8-af59-b0e9bfc8934b",
+        "id": "c1987157-0dd8-4177-b862-16be299726c8",
+        "name": "elastic-agent-83116",
+        "type": "filebeat",
+        "version": "9.4.2"
+    },
+    "data_stream": {
+        "dataset": "ti_eset.phishingurl",
+        "namespace": "20027",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "c1987157-0dd8-4177-b862-16be299726c8",
+        "snapshot": false,
+        "version": "9.4.2"
+    },
+    "eset": {
+        "id": "indicator--f8bac022-878c-4c24-ab77-e275e04470b8",
+        "labels": "phishing-activity",
+        "valid_until": "2025-08-22T11:52:31.000Z"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_eset.phishingurl",
+        "ingested": "2026-08-01T20:55:01Z",
+        "kind": "enrichment",
+        "module": "ti_eset",
+        "original": "{\"confidence\":85,\"created\":\"2025-08-20T11:52:31.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Host is known source of phishing or other fraudulent content.\",\"id\":\"indicator--f8bac022-878c-4c24-ab77-e275e04470b8\",\"labels\":[\"phishing-activity\"],\"modified\":\"2025-08-20T11:52:31.000Z\",\"name\":\"Phishing\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[url:value = 'http://track-supportdhl.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-20T11:52:31Z\",\"valid_until\":\"2025-08-22T11:52:31Z\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "eset-phishingurl"
+    ],
+    "threat": {
+        "feed": {
+            "name": "ESET Phishing URLs stix 2.1"
+        },
+        "indicator": {
+            "confidence": "High",
+            "description": "Host is known source of phishing or other fraudulent content.",
+            "last_seen": "2025-08-20T11:52:31.000Z",
+            "modified_at": "2025-08-20T11:52:31.000Z",
+            "name": "Phishing",
+            "provider": "eset",
+            "type": "url",
+            "url": {
+                "original": "http://track-supportdhl.com"
+            }
         }
     }
 }
@@ -603,22 +698,22 @@ An example event for `apt` looks as following:
 {
     "@timestamp": "2023-09-29T08:48:42.000Z",
     "agent": {
-        "ephemeral_id": "a679c1a0-9912-432a-8b96-c086ca315b48",
-        "id": "cf4d8f48-a3a0-4e2b-a1c8-227f0e6989dc",
-        "name": "elastic-agent-89667",
+        "ephemeral_id": "8090e389-5500-4f50-8f07-91c07d36fa23",
+        "id": "8bd00dbe-79ef-4915-8eec-7d2e14c655dc",
+        "name": "elastic-agent-60741",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.apt",
-        "namespace": "24024",
+        "namespace": "26937",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cf4d8f48-a3a0-4e2b-a1c8-227f0e6989dc",
+        "id": "8bd00dbe-79ef-4915-8eec-7d2e14c655dc",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -633,9 +728,8 @@ An example event for `apt` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:22:55.697Z",
         "dataset": "ti_eset.apt",
-        "ingested": "2025-10-07T05:22:56Z",
+        "ingested": "2026-05-26T17:57:59Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-09-29T08:48:42.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"id\":\"indicator--a4cb9aa8-b12e-4141-ae33-509dfd9dd382\",\"kill_chain_phases\":[{\"kill_chain_name\":\"misp-category\",\"phase_name\":\"file\"}],\"labels\":[\"misp:name=\\\"file\\\"\",\"misp:meta-category=\\\"file\\\"\",\"misp:to_ids=\\\"True\\\"\"],\"modified\":\"2023-09-29T08:48:42.000Z\",\"pattern\":\"[file:hashes.MD5 = '7196b26572d2c357a17599b9a0d71d33' AND file:hashes.SHA1 = 'a3ee3d4bc8057cfde073a7acf3232cfb3cbb10c0' AND file:hashes.SHA256 = '6c9eab41d2e06702313ee6513a8b98adc083ee7bcd2c85821a8a3136c20d687e' AND file:name = 'KihqQGHs7zYOxqqNE0b9zO4w6d7ysXUWrfDf6vLOAW4MU3Fs.mp3' AND file:parent_directory_ref.path = 'Comchit ltr no 4200 dt 23-09-2023' AND file:x_misp_fullpath = 'Comchit ltr no 4200 dt 23-09-2023/KihqQGHs7zYOxqqNE0b9zO4w6d7ysXUWrfDf6vLOAW4MU3Fs.mp3' AND file:extensions.'windows-pebinary-ext'.imphash = 'fcab131627362db5898b1bcc15d7fd72' AND file:extensions.'windows-pebinary-ext'.pe_type = 'dll' AND file:extensions.'windows-pebinary-ext'.x_misp_compilation_timestamp = '2023-09-25 07:03:56+00:00' AND file:extensions.'windows-pebinary-ext'.x_misp_authentihash = '6c744b262dbf76fb20346a93cbedbb0668c90b5bb5027485109e3cfb41f48d8c']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-09-26T07:00:04Z\"}",
         "type": [
@@ -705,22 +799,22 @@ An example event for `url` looks as following:
 {
     "@timestamp": "2023-10-19T02:00:13.000Z",
     "agent": {
-        "ephemeral_id": "5c8679f1-6925-42cb-8688-444f99a1bba1",
-        "id": "73974f2f-fe42-40a5-a461-3d277a6d1dcf",
-        "name": "elastic-agent-87584",
+        "ephemeral_id": "3a2e8408-1f1c-4287-bee7-3f632e4f0934",
+        "id": "05c7c23e-3d31-4bb6-9bc8-acba66e26d94",
+        "name": "elastic-agent-98055",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_eset.url",
-        "namespace": "85559",
+        "namespace": "52267",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "73974f2f-fe42-40a5-a461-3d277a6d1dcf",
+        "id": "05c7c23e-3d31-4bb6-9bc8-acba66e26d94",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -736,9 +830,8 @@ An example event for `url` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-10-07T05:28:22.084Z",
         "dataset": "ti_eset.url",
-        "ingested": "2025-10-07T05:28:25Z",
+        "ingested": "2026-05-26T18:04:58Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2023-10-19T02:00:13.000Z\",\"description\":\"Host actively distributes high-severity threat in the form of executable code.\",\"id\":\"indicator--8986619a-150b-453c-aaa8-bfe8694d05cc\",\"labels\":[\"benign\"],\"modified\":\"2023-10-19T02:00:13.000Z\",\"name\":\"https://example.com/some/path\",\"pattern\":\"[url:value='https://example.com/some/path']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"indicator\",\"type\":\"indicator\",\"valid_from\":\"2023-10-19T02:00:13Z\",\"valid_until\":\"2023-10-21T02:00:13Z\"}",
         "type": [
