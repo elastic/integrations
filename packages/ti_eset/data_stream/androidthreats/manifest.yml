@@ -1,27 +1,30 @@
-title: "Malicious files"
+title: Android threats
 type: logs
-ilm_policy: logs-ti_eset.files-default_policy
+ilm_policy: logs-ti_eset.androidthreats-default_policy
 streams:
-  - input: httpjson
-    title: Malicious files
-    description: Collect data from ETI Malicious file feed
-    template_path: httpjson_as_cel.yml.hbs
+  - input: cel
+    enabled: false
+    title: Android threats
+    description: Collect data from ETI Android threats feed
+    template_path: cel.yml.hbs
     vars:
       - name: url
-        description: URL with API root and identifier of Malicious files collection as described by [TAXII v2.1 standard](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107514)
+        description: URL with API root and identifier of Android threats collection as described by [TAXII v2.1 standard](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107514)
         type: text
         title: Collection URL
         multi: false
         required: true
         show_user: true
-        default: https://taxii.eset.com/taxii2/643f4eb5-f8b7-46a3-a606-6d61d5ce223a/collections/ee6a153ed77e4ec3ab21e76cc2074b9f/objects/
+        default: https://taxii.eset.com/taxii2/643f4eb5-f8b7-46a3-a606-6d61d5ce223a/collections/daf3de8fab144552a1cb5af054ed07ee/objects/
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false
-        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -57,7 +60,7 @@ streams:
         type: integer
         multi: false
         required: false
-        default: "1000"
+        default: 1000
         show_user: false
         title: Page size
         description: Maximum number of records to pull in one request.
@@ -76,7 +79,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - eset-files
+          - eset-androidthreats
       - name: preserve_original_event
         required: true
         show_user: true
