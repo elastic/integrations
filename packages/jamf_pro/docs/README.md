@@ -102,6 +102,18 @@ By default these sections are included inventory documents:
 
 All the sections can be enabled or disabled on the integration policy settings page.
 
+#### Latest inventory transform
+
+This integration includes a latest transform that maintains a single up-to-date
+document per device in a dedicated index. The transform destination is accessible
+via the `logs-jamf_pro_latest.inventory` alias.
+
+The source data stream accumulates all inventory snapshots (one per device per
+report cycle). A default ILM policy rolls the source index over every 7 days and
+deletes each rolled-over index 30 days later. The transform's retention policy
+removes devices from the latest index whose `@timestamp` is more than 30 days
+old.
+
 Here is an example inventory document:
 
 An example event for `inventory` looks as following:
@@ -381,6 +393,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.user_and_location.realname |  | keyword |
 | jamf_pro.inventory.user_and_location.room |  | keyword |
 | jamf_pro.inventory.user_and_location.username |  | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 
 
 ### Events
