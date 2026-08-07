@@ -19,8 +19,10 @@ processors:
       if: ctx.date != null
       on_failure:
         - remove:
+            tag: remove_date_1a15cc9b
             field: date
         - append:
+            tag: append_error_message_bf1997ac
             field: error.message
             value: >-
                 Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -36,39 +38,49 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_id_7cf3f855
       field: event.id
       copy_from: request_id
       ignore_empty_value: true
   - set:
+      tag: set_vulnerability_value_d873757a
       field: vulnerability.value
       copy_from: exposed_value
       ignore_empty_value: true
   - set:
+      tag: set_log_origin_file_line_d1fd2935
       field: log.origin.file.line
       copy_from: line_number
       ignore_empty_value: true
   - set:
+      tag: set_vulnerability_category_31985606
       field: vulnerability.category
       value: ["Secret"]
       ignore_empty_value: true
       if: ctx.secret_type != null
   - set:
+      tag: set_vulnerability_description_a3826a5e
       field: vulnerability.description
       copy_from: secret_type
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_13b30ef2
       field: event.category
       value: ["vulnerability"]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: ["info"]
   - set:
+      tag: set_event_dataset_d3e82901
       field: event.dataset
       value: "entro.audit"
   - remove:
+      tag: remove_07170528
       field:
         - date
         - request_id
@@ -78,13 +90,16 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

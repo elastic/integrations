@@ -85,6 +85,7 @@ processors:
       if: ctx.json?.createdDate != null && ctx.json.createdDate != ''
       on_failure:
         - append:
+            tag: append_error_message_3e918fdb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -100,6 +101,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_deeefde3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -115,6 +117,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cf579102
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -125,6 +128,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5bf6fb88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -149,7 +153,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_datastoreOwners_datastoreOwnerUid
+      tag: foreach_datastoreOwners_datastoreOwnerUid_b7acef9e
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         append:
@@ -179,7 +183,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_datastoreOwners_ownerType
+      tag: foreach_datastoreOwners_ownerType_920ad464
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         append:
@@ -411,6 +415,7 @@ processors:
       if: ctx.json?.updatedDate != null && ctx.json.updatedDate != ''
       on_failure:
         - append:
+            tag: append_error_message_0fd23ee0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -478,12 +483,14 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -494,6 +501,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,6 +2,7 @@
 description: Pipeline for processing detected IOC events from the user's environment.
 processors:
   - script:
+      tag: script
       lang: painless
       if: ctx.threat?.enrichments != null;
       description: Store the first 'matched' and 'indicator' object from the alert, as it comes from GreyNoise API.
@@ -14,6 +15,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Retain event.dataset and event.module from the matched source index in temp_fields,
@@ -21,12 +23,12 @@ processors:
 # and are essential for navigating to the corresponding document.
   - rename:
       field: event.dataset
-      tag : keep_event_dataset_from_alert
+      tag: keep_event_dataset_from_alert
       target_field: temp_fields.dataset
       ignore_missing: true
   - rename:
       field: event.module
-      tag : keep_event_module_from_alert
+      tag: keep_event_module_from_alert
       target_field: temp_fields.module
       ignore_missing: true
   - script:
@@ -48,6 +50,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c8631e7c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Define hardcoded values required for processing.
@@ -86,7 +89,7 @@ processors:
 # Extract relevant fields from temp_fields and map them to threat.indicator.
   - rename:
       field: temp_fields.indicator
-      tag : rename_temp_fields_to_indicator
+      tag: rename_temp_fields_to_indicator
       target_field: greynoise.ip
       ignore_missing: true
   - set:
@@ -172,25 +175,26 @@ processors:
       if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != ''
   - rename:
       field: temp_fields.matched.atomic
-      tag : rename_temp_fields_to_matched_value
+      tag: rename_temp_fields_to_matched_value
       target_field: threat.indicator.matched.value
       ignore_missing: true
   - rename:
       field: temp_fields.matched.field
-      tag : rename_temp_fields_to_matched_field
+      tag: rename_temp_fields_to_matched_field
       target_field: threat.indicator.matched.field
       ignore_missing: true
   - rename:
       field: temp_fields.dataset
-      tag : rename_temp_fields_to_matched_field
+      tag: rename_temp_fields_to_matched_field_b298d715
       target_field: threat.indicator.matched.dataset
       ignore_missing: true
   - rename:
       field: temp_fields.module
-      tag : rename_temp_fields_to_matched_field
+      tag: rename_temp_fields_to_matched_field_d974fcd0
       target_field: threat.indicator.matched.module
       ignore_missing: true
   - gsub:
+      tag: gsub_greynoise_ip_internet_scanner_intelligence_metadata_asn_to_threat_indicator_as_number
       field: greynoise.ip.internet_scanner_intelligence.metadata.asn
       target_field: threat.indicator.as.number
       pattern: 'AS'
@@ -203,9 +207,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_210030f4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_greynoise_ip_internet_scanner_intelligence_tag_names
       field: greynoise.ip.internet_scanner_intelligence.tag.names
       if: ctx.greynoise?.ip?.internet_scanner_intelligence?.tag?.names instanceof List
       processor:
@@ -241,12 +247,14 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_3e20ead6
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_48b0633f
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -254,6 +262,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags_a71abfd4
       field: tags
       value: preserve_original_event
       allow_duplicates: false

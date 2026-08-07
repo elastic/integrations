@@ -92,6 +92,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ed15c765
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -129,6 +130,7 @@ processors:
       if: ctx.json?.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_b1bdbb98
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -152,6 +154,7 @@ processors:
       if: ctx.json?.lastcheckin != null && ctx.json.lastcheckin != ''
       on_failure:
         - append:
+            tag: append_error_message_1155faed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -163,6 +166,7 @@ processors:
       if: ctx.json?.localip != ''
       on_failure:
         - append:
+            tag: append_error_message_d86b373c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -270,14 +274,16 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ip
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.policy_details.commlist
-      tag: foreach_policy_details_commlist_ip
+      tag: foreach_policy_details_commlist_ip_761aaae4
       if: ctx.json?.policy_details?.commlist instanceof List
       processor:
         append:
@@ -462,6 +468,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_80c7c540
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -540,6 +547,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_97fa019b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -583,6 +591,7 @@ processors:
       type: string
       ignore_missing: true
   - script:
+      tag: script_1fd0624f
       description: Map status to corresponding agent status.
       lang: painless
       params:
@@ -681,12 +690,14 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_3a6ad1cf
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -697,6 +708,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

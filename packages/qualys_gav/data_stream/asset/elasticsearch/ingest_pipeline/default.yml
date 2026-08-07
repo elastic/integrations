@@ -19,6 +19,7 @@ processors:
       if: ctx.interval_start != null && ctx.interval_start != ''
       on_failure:
         - append:
+            tag: append_error_message_3cdc5092
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -43,25 +44,29 @@ processors:
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
-
   # Set up tag logic for choosing which cloud metadata to include.
   - append:
+      tag: append_tags_ae765f40
       field: tags
       value: ["elastic_cloud_data", "provider_cloud_data"]
       if: ctx.tags?.contains('both') == true
   - script:
+      tag: script_023c6838
       lang: painless
       if: ctx.tags?.contains('both') == true
       source: ctx.tags.remove(ctx.tags.indexOf('both'));
   - script:
+      tag: script_cfa1c445
       lang: painless
       if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
       source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
   - set:
+      tag: set__conf_want_provider_cloud_4bad817b
       field: _conf.want_provider_cloud
       value: true
       if: ctx.tags?.contains('provider_cloud_data') == true
   - remove:
+      tag: remove_cloud_ddf0b5c6
       description: Remove elastic agent-provided cloud metadata fields if not requested.
       field: cloud
       if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
@@ -170,8 +175,10 @@ processors:
       if: ctx.qualys_gav?.asset?.address != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_address_0d5a702a
             field: qualys_gav.asset.address
         - append:
+            tag: append_error_message_549e6416
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -194,8 +201,10 @@ processors:
       if: ctx.qualys_gav?.asset?.agent?.connected_from != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_connected_from_db5636ff
             field: qualys_gav.asset.agent.connected_from
         - append:
+            tag: append_error_message_9aa308a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -214,8 +223,10 @@ processors:
       if: ctx.qualys_gav?.asset?.agent?.last_activity != null && ctx.qualys_gav.asset.agent.last_activity != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_last_activity_eb3052f4
             field: qualys_gav.asset.agent.last_activity
         - append:
+            tag: append_error_message_f3dd5d7b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -228,8 +239,10 @@ processors:
       if: ctx.qualys_gav?.asset?.agent?.last_checked_in != null && ctx.qualys_gav.asset.agent.last_checked_in != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_last_checked_in_6c5fd0ec
             field: qualys_gav.asset.agent.last_checked_in
         - append:
+            tag: append_error_message_f7b4d077
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -242,8 +255,10 @@ processors:
       if: ctx.qualys_gav?.asset?.agent?.last_inventory != null && ctx.qualys_gav.asset.agent.last_inventory != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_last_inventory_13c41b13
             field: qualys_gav.asset.agent.last_inventory
         - append:
+            tag: append_error_message_6c5f5583
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -254,8 +269,10 @@ processors:
       if: ctx.qualys_gav?.asset?.agent?.udc_manifest_assigned != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_udc_manifest_assigned_c69b65f0
             field: qualys_gav.asset.agent.udc_manifest_assigned
         - append:
+            tag: append_error_message_cd44145c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -266,8 +283,10 @@ processors:
       if: ctx.qualys_gav?.asset?.agent?.error_status != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_error_status_b1c7fde8
             field: qualys_gav.asset.agent.error_status
         - append:
+            tag: append_error_message_3fc99ffa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Remove fields having 0 value
@@ -288,8 +307,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_vmscan != null && ctx.qualys_gav.asset.sensor.last_vmscan != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_vmscan_808540e4
             field: qualys_gav.asset.sensor.last_vmscan
         - append:
+            tag: append_error_message_cfb15aeb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -302,8 +323,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_compliance_scan != null && ctx.qualys_gav.asset.sensor.last_compliance_scan != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_compliance_scan_c14e34ae
             field: qualys_gav.asset.sensor.last_compliance_scan
         - append:
+            tag: append_error_message_15802628
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -316,8 +339,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_full_scan != null && ctx.qualys_gav.asset.sensor.last_full_scan != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_full_scan_b7013a00
             field: qualys_gav.asset.sensor.last_full_scan
         - append:
+            tag: append_error_message_6dc15e9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -330,8 +355,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_vm_scan_date_scanner != null && ctx.qualys_gav.asset.sensor.last_vm_scan_date_scanner != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_vm_scan_date_scanner_83b1afac
             field: qualys_gav.asset.sensor.last_vm_scan_date_scanner
         - append:
+            tag: append_error_message_4b7cdc22
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -344,8 +371,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.first_easm_scan_date != null && ctx.qualys_gav.asset.sensor.first_easm_scan_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_first_easm_scan_date_38825704
             field: qualys_gav.asset.sensor.first_easm_scan_date
         - append:
+            tag: append_error_message_575d7e2c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -358,8 +387,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_vm_scan_date_agent != null && ctx.qualys_gav.asset.sensor.last_vm_scan_date_agent != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_vm_scan_date_agent_cfcc4641
             field: qualys_gav.asset.sensor.last_vm_scan_date_agent
         - append:
+            tag: append_error_message_df5d0892
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -372,8 +403,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_pc_scan_date_scanner != null && ctx.qualys_gav.asset.sensor.last_pc_scan_date_scanner != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_pc_scan_date_scanner_2c1f4aec
             field: qualys_gav.asset.sensor.last_pc_scan_date_scanner
         - append:
+            tag: append_error_message_43d142be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -386,8 +419,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_pc_scan_date_agent != null && ctx.qualys_gav.asset.sensor.last_pc_scan_date_agent != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_pc_scan_date_agent_5153e27d
             field: qualys_gav.asset.sensor.last_pc_scan_date_agent
         - append:
+            tag: append_error_message_01013632
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -400,8 +435,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor?.last_easm_scan_date != null && ctx.qualys_gav.asset.sensor.last_easm_scan_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_easm_scan_date_800b1ff2
             field: qualys_gav.asset.sensor.last_easm_scan_date
         - append:
+            tag: append_error_message_870aea82
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -459,8 +496,10 @@ processors:
       if: ctx.qualys_gav?.asset?.container?.no_of_containers != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_container_no_of_containers_d939893f
             field: qualys_gav.asset.container.no_of_containers
         - append:
+            tag: append_error_message_806d532c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -471,8 +510,10 @@ processors:
       if: ctx.qualys_gav?.asset?.container?.no_of_images != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_container_no_of_images_063a2749
             field: qualys_gav.asset.container.no_of_images
         - append:
+            tag: append_error_message_2e6f2388
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -483,8 +524,10 @@ processors:
       if: ctx.qualys_gav?.asset?.cpu_count != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cpu_count_aaa21c40
             field: qualys_gav.asset.cpu_count
         - append:
+            tag: append_error_message_c214ca06
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -497,8 +540,10 @@ processors:
       if: ctx.qualys_gav?.asset?.created_date != null && ctx.qualys_gav.asset.created_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_created_date_705df3ae
             field: qualys_gav.asset.created_date
         - append:
+            tag: append_error_message_95b697b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -514,8 +559,10 @@ processors:
       if: ctx.qualys_gav?.asset?.criticality?.is_default != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_criticality_is_default_636ba50b
             field: qualys_gav.asset.criticality.is_default
         - append:
+            tag: append_error_message_2e07343c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -528,8 +575,10 @@ processors:
       if: ctx.qualys_gav?.asset?.criticality?.last_updated != null && ctx.qualys_gav.asset.criticality.last_updated != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_criticality_last_updated_181d4b3e
             field: qualys_gav.asset.criticality.last_updated
         - append:
+            tag: append_error_message_47c3d483
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -540,8 +589,10 @@ processors:
       if: ctx.qualys_gav?.asset?.criticality?.score != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_criticality_score_f0c6a845
             field: qualys_gav.asset.criticality.score
         - append:
+            tag: append_error_message_a4fb47ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -595,8 +646,10 @@ processors:
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.eos_date != null && ctx.qualys_gav.asset.hardware.lifecycle.eos_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_eos_date_5b63d3fd
             field: qualys_gav.asset.hardware.lifecycle.eos_date
         - append:
+            tag: append_error_message_bc086db7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -609,8 +662,10 @@ processors:
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.ga_date != null && ctx.qualys_gav.asset.hardware.lifecycle.ga_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_ga_date_c3032b5e
             field: qualys_gav.asset.hardware.lifecycle.ga_date
         - append:
+            tag: append_error_message_26629491
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -623,8 +678,10 @@ processors:
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.intro_date != null && ctx.qualys_gav.asset.hardware.lifecycle.intro_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_intro_date_f47bf89c
             field: qualys_gav.asset.hardware.lifecycle.intro_date
         - append:
+            tag: append_error_message_4e6e69df
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -637,8 +694,10 @@ processors:
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.obsolete_date != null && ctx.qualys_gav.asset.hardware.lifecycle.obsolete_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_obsolete_date_4c168eb9
             field: qualys_gav.asset.hardware.lifecycle.obsolete_date
         - append:
+            tag: append_error_message_3d56f317
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -677,8 +736,10 @@ processors:
       if: ctx.qualys_gav?.asset?.inventory?.created != null && ctx.qualys_gav.asset.inventory.created != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_inventory_created_3621ec17
             field: qualys_gav.asset.inventory.created
         - append:
+            tag: append_error_message_c79758e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -691,8 +752,10 @@ processors:
       if: ctx.qualys_gav?.asset?.inventory?.last_updated != null && ctx.qualys_gav.asset.inventory.last_updated != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_inventory_last_updated_76692d3f
             field: qualys_gav.asset.inventory.last_updated
         - append:
+            tag: append_error_message_8b25398b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -709,6 +772,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_created
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
@@ -725,6 +789,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - date:
@@ -737,8 +802,10 @@ processors:
       if: ctx.qualys_gav?.asset?.activity?.last_scanned_date != null && ctx.qualys_gav.asset.activity.last_scanned_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_activity_last_scanned_date_83ecfaee
             field: qualys_gav.asset.activity.last_scanned_date
         - append:
+            tag: append_error_message_cf33fa95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -749,8 +816,10 @@ processors:
       if: ctx.qualys_gav?.asset?.is_container_host != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_is_container_host_df8f9173
             field: qualys_gav.asset.is_container_host
         - append:
+            tag: append_error_message_0472b0ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -763,8 +832,10 @@ processors:
       if: ctx.qualys_gav?.asset?.last_boot != null && ctx.qualys_gav.asset.last_boot != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_last_boot_fb1aa69a
             field: qualys_gav.asset.last_boot
         - append:
+            tag: append_error_message_295822fd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -816,6 +887,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -849,9 +921,11 @@ processors:
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_4411f124
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -861,7 +935,7 @@ processors:
       processor:
         foreach:
           field: _ingest._value.address_ip_v4
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_43ff8a28
           ignore_failure: true
           processor:
             append:
@@ -882,6 +956,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_143963e5
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -915,6 +990,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_7d48ee26
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -934,9 +1010,11 @@ processors:
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_dfc3b655
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_e03cc8cb
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -946,7 +1024,7 @@ processors:
       processor:
         foreach:
           field: _ingest._value.address_ip_v6
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v6
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v6_dfc35121
           ignore_failure: true
           processor:
             append:
@@ -968,6 +1046,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_mac_vendor_intro_date
                 field: _ingest._value.mac_vendor_intro_date
                 ignore_missing: true
   - foreach:
@@ -982,9 +1061,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_port
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
+                tag: append_error_message_d6899848
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -999,9 +1080,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_detection_score
                 field: _ingest._value.detection_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_8da8184e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1018,6 +1101,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_found
                 field: _ingest._value.first_found
                 ignore_missing: true
   - foreach:
@@ -1034,6 +1118,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated_dcfad241
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - set:
@@ -1047,12 +1132,12 @@ processors:
       lang: painless
       if: ctx.qualys_gav?.asset?.operating_system?.category1 != null
       params:
-        macos : macos
-        linux : linux
-        unix : unix
-        windows : windows
-        ios : ios
-        android : android
+        macos: macos
+        linux: linux
+        unix: unix
+        windows: windows
+        ios: ios
+        android: android
       source: |
         def os_type = ctx.qualys_gav.asset.operating_system.category1.toLowerCase();
 
@@ -1084,8 +1169,10 @@ processors:
       if: ctx.qualys_gav?.asset?.operating_system?.install_date != null && ctx.qualys_gav.asset.operating_system.install_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_install_date_dd332c8a
             field: qualys_gav.asset.operating_system.install_date
         - append:
+            tag: append_error_message_e86e0da1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1098,8 +1185,10 @@ processors:
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.eol_date != null && ctx.qualys_gav.asset.operating_system.lifecycle.eol_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_eol_date_5ea340ed
             field: qualys_gav.asset.operating_system.lifecycle.eol_date
         - append:
+            tag: append_error_message_b203b637
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1112,8 +1201,10 @@ processors:
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.eos_date != null && ctx.qualys_gav.asset.operating_system.lifecycle.eos_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_eos_date_29ce926e
             field: qualys_gav.asset.operating_system.lifecycle.eos_date
         - append:
+            tag: append_error_message_8b8c416f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1126,8 +1217,10 @@ processors:
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.ga_date != null && ctx.qualys_gav.asset.operating_system.lifecycle.ga_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_ga_date_6efa9a05
             field: qualys_gav.asset.operating_system.lifecycle.ga_date
         - append:
+            tag: append_error_message_1ac03533
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1138,8 +1231,10 @@ processors:
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.detection_score != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_detection_score_4b9ccf3d
             field: qualys_gav.asset.operating_system.lifecycle.detection_score
         - append:
+            tag: append_error_message_86dace88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1181,9 +1276,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_0cdce69b
             field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
             ignore_missing: true
         - append:
+            tag: append_error_message_63a1c0be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1196,9 +1293,11 @@ processors:
       if: ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2?.launchdate != null && ctx.qualys_gav.asset.cloud_provider.aws.ec2.launchdate != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_launchdate_8e78ea70
             field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
             ignore_missing: true
         - append:
+            tag: append_error_message_3bfa46e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1208,9 +1307,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_qualys_scanner_f49466f1
             field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
             ignore_missing: true
         - append:
+            tag: append_error_message_5ae5e698
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1220,9 +1321,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_cdbd0f4b
             field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
             ignore_missing: true
         - append:
+            tag: append_error_message_ecb043c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -1302,7 +1405,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_6f4b3b6c
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.azure?.vm != null
       value: vm
 
@@ -1352,11 +1455,12 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e21b85a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_dcdaf8c0
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'gcp' && ctx.qualys_gav?.asset?.cloud_provider?.gcp?.compute != null
       value: compute
 
@@ -1371,7 +1475,7 @@ processors:
       tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_ibm_id_to_string
       type: string
       ignore_missing: true
-  
+
   # Map/Convert IBM specific fields to ECS fields
   - set:
       field: cloud.account.id
@@ -1399,7 +1503,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_93672477
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.ibm?.virtual_server != null
       value: virtual_server
 
@@ -1412,8 +1516,10 @@ processors:
       if: ctx.qualys_gav?.asset?.risk_score != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_risk_score_46898134
             field: qualys_gav.asset.risk_score
         - append:
+            tag: append_error_message_4bc086e0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1441,8 +1547,10 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor_last_updated_date != null && ctx.qualys_gav.asset.sensor_last_updated_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_updated_date_e7aa2ebb
             field: qualys_gav.asset.sensor_last_updated_date
         - append:
+            tag: append_error_message_18f0e285
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1473,7 +1581,7 @@ processors:
       processor:
         append:
           field: package.type
-          tag: append_sofware_list_data_software_name_into_package_name
+          tag: append_sofware_list_data_software_name_into_package_name_f09d95a0
           value: '{{{_ingest._value.software_type}}}'
           allow_duplicates: false
   - foreach:
@@ -1488,9 +1596,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_ignored
                 field: _ingest._value.is_ignored
                 ignore_missing: true
             - append:
+                tag: append_error_message_5639bfa9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1527,6 +1637,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_install_date
                 field: _ingest._value.install_date
                 ignore_missing: true
   - foreach:
@@ -1563,6 +1674,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated_48fae1a8
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - foreach:
@@ -1579,6 +1691,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_use_date
                 field: _ingest._value.last_use_date
                 ignore_missing: true
   - foreach:
@@ -1593,9 +1706,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_package
                 field: _ingest._value.is_package
                 ignore_missing: true
             - append:
+                tag: append_error_message_e8e14e4a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1610,9 +1725,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_package_component
                 field: _ingest._value.is_package_component
                 ignore_missing: true
             - append:
+                tag: append_error_message_a4ddfd07
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1639,6 +1756,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_ga_date
                 field: _ingest._value.lifecycle.ga_date
                 ignore_missing: true
   - foreach:
@@ -1655,6 +1773,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_eol_date
                 field: _ingest._value.lifecycle.eol_date
                 ignore_missing: true
   - foreach:
@@ -1671,6 +1790,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_eos_date
                 field: _ingest._value.lifecycle.eos_date
                 ignore_missing: true
   - foreach:
@@ -1685,9 +1805,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_detection_score
                 field: _ingest._value.lifecycle.detection_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_f6de18a6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1707,7 +1829,7 @@ processors:
       processor:
         append:
           field: package.license
-          tag: append_software_list_data_software_support_stage_desc
+          tag: append_software_list_data_software_support_stage_desc_bbaeff2d
           value: '{{{_ingest._value.license.category}}}'
           allow_duplicates: false
   - foreach:
@@ -1722,9 +1844,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_authorization_detection_score
                 field: _ingest._value.authorization_detection_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_f296c5ec
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1746,6 +1870,7 @@ processors:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_first_seen
                     field: _ingest._value.first_seen
                     ignore_missing: true
   - foreach:
@@ -1767,6 +1892,7 @@ processors:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_last_seen
                     field: _ingest._value.last_seen
                     ignore_missing: true
   - foreach:
@@ -1781,9 +1907,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_criticality_score
                 field: _ingest._value.criticality_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_dfdfe4bf
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1824,8 +1952,10 @@ processors:
       if: ctx.qualys_gav?.asset?.threads_per_core != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_threads_per_core_2144e1fc
             field: qualys_gav.asset.threads_per_core
         - append:
+            tag: append_error_message_abc82d01
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1841,8 +1971,10 @@ processors:
       if: ctx.qualys_gav?.asset?.total_memory != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_total_memory_d78e6fd6
             field: qualys_gav.asset.total_memory
         - append:
+            tag: append_error_message_730ab154
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1857,9 +1989,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_free
                 field: _ingest._value.free
                 ignore_missing: true
             - append:
+                tag: append_error_message_8c49b7cd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1874,9 +2008,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_size
                 field: _ingest._value.size
                 ignore_missing: true
             - append:
+                tag: append_error_message_47b2d786
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1893,6 +2029,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_date
                 field: _ingest._value.created_date
                 ignore_missing: true
   - foreach:
@@ -1909,6 +2046,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_expiration_date
                 field: _ingest._value.expiration_date
                 ignore_missing: true
   - foreach:
@@ -1925,6 +2063,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_updated_date
                 field: _ingest._value.updated_date
                 ignore_missing: true
   - foreach:
@@ -1947,8 +2086,10 @@ processors:
       if: ctx.qualys_gav?.asset?.last_modified_date != null && ctx.qualys_gav.asset.last_modified_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_last_modified_date_ca6e9e50
             field: qualys_gav.asset.last_modified_date
         - append:
+            tag: append_error_message_52a15937
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1959,8 +2100,10 @@ processors:
       if: ctx.qualys_gav?.asset?.processor?.speed != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_speed_36a66ad5
             field: qualys_gav.asset.processor.speed
         - append:
+            tag: append_error_message_c0a0bad4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1971,8 +2114,10 @@ processors:
       if: ctx.qualys_gav?.asset?.processor?.num_cpus != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_num_cpus_ee19437d
             field: qualys_gav.asset.processor.num_cpus
         - append:
+            tag: append_error_message_281bd05f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1983,8 +2128,10 @@ processors:
       if: ctx.qualys_gav?.asset?.processor?.no_of_socket != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_no_of_socket_d60370fa
             field: qualys_gav.asset.processor.no_of_socket
         - append:
+            tag: append_error_message_065b4e21
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1995,8 +2142,10 @@ processors:
       if: ctx.qualys_gav?.asset?.processor?.threads_per_core != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_threads_per_core_b07b85e8
             field: qualys_gav.asset.processor.threads_per_core
         - append:
+            tag: append_error_message_8ab88271
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2007,8 +2156,10 @@ processors:
       if: ctx.qualys_gav?.asset?.processor?.cores_per_socket != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_cores_per_socket_13389faf
             field: qualys_gav.asset.processor.cores_per_socket
         - append:
+            tag: append_error_message_2c067477
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2115,12 +2266,14 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_30479dff
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -2131,6 +2284,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

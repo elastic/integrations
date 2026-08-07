@@ -35,6 +35,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -82,6 +83,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c31ebc50
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -120,6 +122,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_067fe3ec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -167,7 +170,7 @@ processors:
       tag: append_host_id_into_related_hosts
       value: '{{{host.id}}}'
       allow_duplicates: false
-      if: ctx.host?.id != null  
+      if: ctx.host?.id != null
   - rename:
       field: json.entity_uid
       tag: rename_entity_uid
@@ -182,6 +185,7 @@ processors:
       if: ctx.json?.event_timestamp != null && ctx.json.event_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_ef18c781
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -201,6 +205,7 @@ processors:
       target_field: vectra_rux.detection_event.mitre
       ignore_missing: true
   - foreach:
+      tag: foreach_vectra_rux_detection_event_mitre_7a055e72
       field: vectra_rux.detection_event.mitre
       if: ctx.vectra_rux?.detection_event?.mitre instanceof List
       ignore_failure: true
@@ -218,6 +223,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_34e5fa7c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -238,6 +244,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0186344f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -260,6 +267,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_53395579
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -328,19 +336,22 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_e666f0e3
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

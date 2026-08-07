@@ -21,6 +21,7 @@ processors:
       if: ctx.event?.original != null && ctx.event.original instanceof String
       on_failure:
         - set:
+            tag: set_error_message_ed130b04
             field: error.message
             value: 'Failed to parse JSON from event.original'
       tag: json_decode
@@ -64,7 +65,7 @@ processors:
       target_field: _id
       ignore_missing: true
       tag: generate_document_id
-  
+
   # Map to ECS fields using copy_from
   - set:
       field: event.id
@@ -97,7 +98,6 @@ processors:
         } else if (normalized == 'critical') {
           ctx.event.severity = 99;
         }
-
   # Set timestamps
   - date:
       field: withsecure_elements.security_events.serverTimestamp
@@ -109,6 +109,7 @@ processors:
       tag: set_timestamp
       on_failure:
         - append:
+            tag: append_error_message_4512bd14
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -121,6 +122,7 @@ processors:
       tag: convert_persistence_timestamp
       on_failure:
         - append:
+            tag: append_error_message_62c01212
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -133,6 +135,7 @@ processors:
       tag: convert_client_timestamp
       on_failure:
         - append:
+            tag: append_error_message_ff605dc2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -151,21 +154,25 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_0dea3c49
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
