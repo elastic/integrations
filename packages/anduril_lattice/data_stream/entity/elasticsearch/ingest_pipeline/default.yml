@@ -141,21 +141,6 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
             allow_duplicates: false
   - append:
-      field: event.category
-      tag: append_event_category_created
-      value: host
-      allow_duplicates: false
-      if: ctx.json?.eventType == 'EVENT_TYPE_CREATED'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_category_created
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
-  - append:
       field: event.type
       tag: append_event_type_created
       value: start
@@ -179,21 +164,6 @@ processors:
         - append:
             field: error.message
             tag: append_error_set_event_kind_update
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
-  - append:
-      field: event.category
-      tag: append_event_category_update
-      value: host
-      allow_duplicates: false
-      if: ctx.json?.eventType == 'EVENT_TYPE_UPDATE'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_category_update
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -229,21 +199,6 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
             allow_duplicates: false
   - append:
-      field: event.category
-      tag: append_event_category_deleted
-      value: host
-      allow_duplicates: false
-      if: ctx.json?.eventType == 'EVENT_TYPE_DELETED'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_category_deleted
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
-  - append:
       field: event.type
       tag: append_event_type_deleted
       value: end
@@ -273,21 +228,6 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
             allow_duplicates: false
   - append:
-      field: event.category
-      tag: append_event_category_preexisting
-      value: host
-      allow_duplicates: false
-      if: ctx.json?.eventType == 'EVENT_TYPE_PREEXISTING'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_category_preexisting
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
-  - append:
       field: event.type
       tag: append_event_type_preexisting
       value: info
@@ -311,21 +251,6 @@ processors:
         - append:
             field: error.message
             tag: append_error_set_event_kind_post_expiry
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
-  - append:
-      field: event.category
-      tag: append_event_category_post_expiry
-      value: host
-      allow_duplicates: false
-      if: ctx.json?.eventType == 'EVENT_TYPE_POST_EXPIRY_OVERRIDE'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_category_post_expiry
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -790,6 +715,7 @@ processors:
           field: anduril_lattice.entity.aliases.alternate_ids
           tag: append_alternate_id
           value: '{{{_ingest._value.id}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -802,6 +728,7 @@ processors:
           field: anduril_lattice.entity.aliases.alternate_id_types
           tag: append_alternate_id_type
           value: '{{{_ingest._value.type}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - rename:
@@ -962,6 +889,7 @@ processors:
           field: anduril_lattice.entity.signal.emitter_notations
           tag: append_signal_emitter_notation
           value: '{{{_ingest._value}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - rename:
@@ -1028,6 +956,7 @@ processors:
           field: anduril_lattice.entity.data_classification.caveats
           tag: append_data_classification_caveat
           value: '{{{_ingest._value}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - rename:
@@ -1062,6 +991,7 @@ processors:
           field: anduril_lattice.entity.health.active_alerts.alert_code
           tag: append_health_alert_code
           value: '{{{_ingest._value.alertCode}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1074,6 +1004,7 @@ processors:
           field: anduril_lattice.entity.health.active_alerts.level
           tag: append_health_alert_level
           value: '{{{_ingest._value.level}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1086,6 +1017,7 @@ processors:
           field: anduril_lattice.entity.health.active_alerts.description
           tag: append_health_alert_description
           value: '{{{_ingest._value.description}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1098,6 +1030,7 @@ processors:
           field: anduril_lattice.entity.health.active_alerts.activated_time
           tag: append_health_alert_activated_time
           value: '{{{_ingest._value.activatedTime}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - rename:
@@ -1232,6 +1165,7 @@ processors:
           field: anduril_lattice.entity.task_catalog.task_specification_urls
           tag: append_task_specification_url
           value: '{{{_ingest._value.taskSpecificationUrl}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1244,6 +1178,7 @@ processors:
           field: anduril_lattice.entity.media.item_identifier
           tag: append_media_item_identifier
           value: '{{{_ingest._value.itemIdentifier}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1256,6 +1191,7 @@ processors:
           field: anduril_lattice.entity.media.type
           tag: append_media_type
           value: '{{{_ingest._value.type}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1268,6 +1204,7 @@ processors:
           field: anduril_lattice.entity.media.relative_path
           tag: append_media_relative_path
           value: '{{{_ingest._value.relativePath}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1280,6 +1217,7 @@ processors:
           field: anduril_lattice.entity.supplies.munition_id
           tag: append_supplies_munition_id
           value: '{{{_ingest._value.munitionId}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1292,6 +1230,7 @@ processors:
           field: anduril_lattice.entity.supplies.munition_name
           tag: append_supplies_munition_name
           value: '{{{_ingest._value.name}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1304,6 +1243,7 @@ processors:
           field: anduril_lattice.entity.supplies.munition_quantity_units
           tag: append_supplies_munition_quantity_units
           value: '{{{_ingest._value.quantityUnits}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1316,6 +1256,7 @@ processors:
           field: anduril_lattice.entity.supplies.fuel_id
           tag: append_supplies_fuel_id
           value: '{{{_ingest._value.fuelId}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1328,6 +1269,7 @@ processors:
           field: anduril_lattice.entity.supplies.fuel_name
           tag: append_supplies_fuel_name
           value: '{{{_ingest._value.name}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1340,8 +1282,15 @@ processors:
           field: anduril_lattice.entity.supplies.fuel_amount_gallons
           tag: append_supplies_fuel_amount_gallons
           value: '{{{_ingest._value.amountGallons}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
+  - convert:
+      field: anduril_lattice.entity.supplies.fuel_amount_gallons
+      type: float
+      ignore_missing: true
+      tag: convert_supplies_fuel_amount_gallons
+      if: ctx.anduril_lattice?.entity?.supplies?.fuel_amount_gallons != null
   - foreach:
       field: json.entity.supplies.fuel
       ignore_missing: true
@@ -1352,8 +1301,15 @@ processors:
           field: anduril_lattice.entity.supplies.fuel_max_authorized_capacity_gallons
           tag: append_supplies_fuel_max_capacity_gallons
           value: '{{{_ingest._value.maxAuthorizedCapacityGallons}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
+  - convert:
+      field: anduril_lattice.entity.supplies.fuel_max_authorized_capacity_gallons
+      type: float
+      ignore_missing: true
+      tag: convert_supplies_fuel_max_capacity_gallons
+      if: ctx.anduril_lattice?.entity?.supplies?.fuel_max_authorized_capacity_gallons != null
   - foreach:
       field: json.entity.payloads.payloadConfigurations
       ignore_missing: true
@@ -1364,6 +1320,7 @@ processors:
           field: anduril_lattice.entity.payloads.capability_id
           tag: append_payload_capability_id
           value: '{{{_ingest._value.config.capabilityId}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1376,6 +1333,7 @@ processors:
           field: anduril_lattice.entity.payloads.operational_state
           tag: append_payload_operational_state
           value: '{{{_ingest._value.config.payloadOperationalState}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1388,6 +1346,7 @@ processors:
           field: anduril_lattice.entity.payloads.description
           tag: append_payload_description
           value: '{{{_ingest._value.config.payloadDescription}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1400,8 +1359,15 @@ processors:
           field: anduril_lattice.entity.payloads.quantity
           tag: append_payload_quantity
           value: '{{{_ingest._value.config.quantity}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
+  - convert:
+      field: anduril_lattice.entity.payloads.quantity
+      type: integer
+      ignore_missing: true
+      tag: convert_payload_quantity
+      if: ctx.anduril_lattice?.entity?.payloads?.quantity != null
   - foreach:
       field: json.entity.overrides
       ignore_missing: true
@@ -1412,6 +1378,7 @@ processors:
           field: anduril_lattice.entity.overrides.request_ids
           tag: append_overrides_request_id
           value: '{{{_ingest._value.requestId}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1424,6 +1391,7 @@ processors:
           field: anduril_lattice.entity.overrides.field_paths
           tag: append_overrides_field_path
           value: '{{{_ingest._value.fieldPath}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1436,6 +1404,7 @@ processors:
           field: anduril_lattice.entity.overrides.statuses
           tag: append_overrides_status
           value: '{{{_ingest._value.status}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1448,6 +1417,7 @@ processors:
           field: anduril_lattice.entity.overrides.types
           tag: append_overrides_type
           value: '{{{_ingest._value.type}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1460,6 +1430,7 @@ processors:
           field: anduril_lattice.entity.overrides.request_timestamps
           tag: append_overrides_request_timestamp
           value: '{{{_ingest._value.requestTimestamp}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1472,6 +1443,7 @@ processors:
           field: anduril_lattice.entity.sensors.sensor_id
           tag: append_sensors_sensor_id
           value: '{{{_ingest._value.sensorId}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1484,6 +1456,7 @@ processors:
           field: anduril_lattice.entity.sensors.operational_state
           tag: append_sensors_operational_state
           value: '{{{_ingest._value.operationalState}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1496,6 +1469,7 @@ processors:
           field: anduril_lattice.entity.sensors.sensor_type
           tag: append_sensors_sensor_type
           value: '{{{_ingest._value.sensorType}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1508,6 +1482,7 @@ processors:
           field: anduril_lattice.entity.sensors.sensor_description
           tag: append_sensors_sensor_description
           value: '{{{_ingest._value.sensorDescription}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -1520,6 +1495,7 @@ processors:
           field: anduril_lattice.entity.sensors.last_detection_timestamp
           tag: append_sensors_last_detection_timestamp
           value: '{{{_ingest._value.lastDetectionTimestamp}}}'
+          ignore_empty_values: true
           allow_duplicates: false
           ignore_failure: true
   - script:

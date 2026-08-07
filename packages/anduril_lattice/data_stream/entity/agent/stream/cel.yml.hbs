@@ -25,19 +25,27 @@ redact:
     - client_secret
     - sandbox_token
 program: |-
-  state.with(
+  state.drop("auth_failed").with(
     has(state.client_id) ?
       (
-        has(state.?next.expiry) && timestamp(state.next.expiry) > now ?
+        (has(state.?next.expiry) && timestamp(state.next.expiry) > now) ?
           {"token": state.next.token, "next": state.next}
         :
           post_request(
             state.url.trim_right("/") + "/api/v1/oauth/token",
-            "application/json",
+            "application/x-www-form-urlencoded",
             {
-              "client_id": state.client_id,
-              "client_secret": state.client_secret,
-            }.encode_json()
+              "client_id": [state.client_id],
+              "client_secret": [state.client_secret],
+              "grant_type": ["client_credentials"],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Content-Type": ["application/x-www-form-urlencoded"],
+                ?"Anduril-Sandbox-Authorization": state.?sandbox_token.optMap(t, ["Bearer " + t]),
+              },
+            }
           ).do_request().as(tok_resp,
             (tok_resp.StatusCode == 200) ?
               tok_resp.Body.decode_json().as(tok_body,
@@ -45,12 +53,13 @@ program: |-
                   "token": tok_body.access_token,
                   "next": {
                     "token": tok_body.access_token,
-                    "expiry": string(now + duration("29m")),
+                    "expiry": string(now + duration(string(max(int(tok_body.expires_in) - 60, 1)) + "s")),
                   },
                 }
               )
             :
               {
+                "auth_failed": true,
                 "events": {
                   "error": {
                     "code": string(tok_resp.StatusCode),
@@ -65,7 +74,7 @@ program: |-
     :
       {?"token": state.?token}
   ).as(state,
-    has(state.?events.error) ?
+    state.?auth_failed.orValue(false) ?
       state
     :
       state.with(

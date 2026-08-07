@@ -276,11 +276,11 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.sensors.sensor_description | Sensor descriptions. | keyword |
 | anduril_lattice.entity.sensors.sensor_id | Sensor identifiers. | keyword |
 | anduril_lattice.entity.sensors.sensor_type | Sensor types. | keyword |
-| anduril_lattice.entity.signal.bandwidth_hz | Signal bandwidth in Hz. | float |
+| anduril_lattice.entity.signal.bandwidth_hz | Signal bandwidth in Hz. | double |
 | anduril_lattice.entity.signal.emitter_notations | Emitter notation identifiers associated with this signal. | keyword |
-| anduril_lattice.entity.signal.frequency_center_hz | Center frequency of the detected signal in Hz. | float |
-| anduril_lattice.entity.signal.frequency_max_hz | Maximum frequency of the signal range in Hz. | float |
-| anduril_lattice.entity.signal.frequency_min_hz | Minimum frequency of the signal range in Hz. | float |
+| anduril_lattice.entity.signal.frequency_center_hz | Center frequency of the detected signal in Hz. | double |
+| anduril_lattice.entity.signal.frequency_max_hz | Maximum frequency of the signal range in Hz. | double |
+| anduril_lattice.entity.signal.frequency_min_hz | Minimum frequency of the signal range in Hz. | double |
 | anduril_lattice.entity.signal.pulse_width_s | Pulse width in seconds. | float |
 | anduril_lattice.entity.signal.scan_period_s | Scan period in seconds. | float |
 | anduril_lattice.entity.signal.scan_type | Radar/signal scan type. | keyword |
@@ -334,7 +334,6 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -348,9 +347,9 @@ An example event for `entity` looks as following:
 {
     "@timestamp": "2025-12-17T15:30:00.000Z",
     "agent": {
-        "ephemeral_id": "f7b5c7cb-12fc-48c8-95d4-26127cebee89",
-        "id": "f819c1fc-36c0-4432-848b-9aeb48f482d2",
-        "name": "elastic-agent-44681",
+        "ephemeral_id": "e698466a-622e-48e2-95f4-7c84fac6c203",
+        "id": "2a550b02-8932-4c1b-b033-6317986fbc02",
+        "name": "elastic-agent-26964",
         "type": "filebeat",
         "version": "9.4.1"
     },
@@ -476,25 +475,22 @@ An example event for `entity` looks as following:
     },
     "data_stream": {
         "dataset": "anduril_lattice.entity",
-        "namespace": "93766",
+        "namespace": "15326",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "f819c1fc-36c0-4432-848b-9aeb48f482d2",
+        "id": "2a550b02-8932-4c1b-b033-6317986fbc02",
         "snapshot": false,
         "version": "9.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": [
-            "host"
-        ],
         "created": "2025-12-17T15:30:00.000Z",
         "dataset": "anduril_lattice.entity",
-        "ingested": "2026-07-10T18:12:09Z",
+        "ingested": "2026-08-07T20:35:18Z",
         "kind": "event",
         "module": "anduril_lattice",
         "original": "{\"entity\":{\"aliases\":{\"name\":\"Tower 45d9bf21\"},\"createdTime\":\"2025-12-17T10:00:00Z\",\"entityId\":\"tower-45d9bf21-0001-0001-0001-000000000001\",\"geoShape\":{\"polygon\":{\"rings\":[{\"positions\":[{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.053,\"longitudeDegrees\":-118.245}},{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.053,\"longitudeDegrees\":-118.242}},{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.051,\"longitudeDegrees\":-118.242}},{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.051,\"longitudeDegrees\":-118.245}}]}]}},\"health\":{\"activeAlerts\":[{\"activatedTime\":\"2025-12-17T15:00:00Z\",\"alertCode\":\"ALERT_LOW_STORAGE\",\"description\":\"Storage capacity below 15 percent\",\"level\":\"ALERT_LEVEL_WARNING\"}],\"connectionStatus\":\"CONNECTION_STATUS_ONLINE\",\"healthStatus\":\"HEALTH_STATUS_HEALTHY\",\"updateTime\":\"2025-12-17T15:30:00Z\"},\"indicators\":{\"simulated\":true},\"isLive\":true,\"location\":{\"position\":{\"altitudeHaeMeters\":85,\"latitudeDegrees\":34.05223,\"longitudeDegrees\":-118.24368}},\"milView\":{\"disposition\":\"DISPOSITION_FRIENDLY\",\"environment\":\"ENVIRONMENT_LAND\"},\"ontology\":{\"platformType\":\"FIXED_SENSOR\",\"template\":\"TEMPLATE_ASSET\"},\"powerState\":{\"sourceIdToState\":{\"Battery\":{\"powerLevel\":{\"percentRemaining\":87.5,\"voltage\":31.84},\"powerStatus\":\"POWER_STATUS_DISCHARGING\",\"powerType\":\"POWER_TYPE_BATTERY\"}}},\"provenance\":{\"dataType\":\"anduril\",\"integrationName\":\"anduril_tower\",\"sourceUpdateTime\":\"2025-12-17T15:30:00Z\"},\"sensors\":{\"sensors\":[{\"fieldsOfView\":[{\"projectedFrustum\":{\"bottomLeft\":{\"latitudeDegrees\":34.05,\"longitudeDegrees\":-118.252},\"bottomRight\":{\"latitudeDegrees\":34.05,\"longitudeDegrees\":-118.237},\"upperLeft\":{\"latitudeDegrees\":34.06,\"longitudeDegrees\":-118.252},\"upperRight\":{\"latitudeDegrees\":34.06,\"longitudeDegrees\":-118.237}}}],\"lastDetectionTimestamp\":\"2025-12-17T15:29:55Z\",\"operationalState\":\"OPERATIONAL_STATE_OPERATIONAL\",\"sensorDescription\":\"Electro-optical camera\",\"sensorId\":\"sensor-001\",\"sensorType\":\"SENSOR_TYPE_EO\"}]}},\"eventType\":\"EVENT_TYPE_UPDATE\",\"time\":\"2025-12-17T15:30:00Z\"}",

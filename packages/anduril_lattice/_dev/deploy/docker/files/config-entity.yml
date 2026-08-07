@@ -1,10 +1,16 @@
 rules:
-  # OAuth2 token endpoint - returns access token for OAuth2 auth mode
+  # OAuth2 token endpoint - validates Anduril's client credentials request.
   - path: /api/v1/oauth/token
     methods: [POST]
     request_headers:
       Content-Type:
-        - "application/json"
+        - "application/x-www-form-urlencoded"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
+    query_params:
+      client_id: test-client-id
+      client_secret: test-client-secret
+      grant_type: client_credentials
     responses:
       - status_code: 200
         headers:
@@ -19,6 +25,10 @@ rules:
     request_headers:
       Content-Type:
         - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
     request_body: '/.*"sessionToken":? *"".*/'
     responses:
       - status_code: 200
@@ -33,6 +43,10 @@ rules:
     request_headers:
       Content-Type:
         - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
     request_body: '/.*"sessionToken":? *"mock-cursor-page-1".*/'
     responses:
       - status_code: 200
@@ -47,6 +61,10 @@ rules:
     request_headers:
       Content-Type:
         - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
     request_body: '/.*"sessionToken":? *"mock-cursor-page-2".*/'
     responses:
       - status_code: 200
@@ -62,6 +80,10 @@ rules:
     request_headers:
       Content-Type:
         - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
     request_body: '/.*"sessionToken":? *"mock-cursor-final".*/'
     responses:
       - status_code: 200

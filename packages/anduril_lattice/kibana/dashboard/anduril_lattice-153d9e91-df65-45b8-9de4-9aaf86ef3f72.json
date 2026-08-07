@@ -3,6 +3,30 @@
         "description": "",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "anduril_lattice.entity"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "anduril_lattice.entity"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -141,6 +165,16 @@
                                                         "esType": "long",
                                                         "type": "number"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "quality_tier",
+                                                    "customLabel": true,
+                                                    "fieldName": "quality_tier",
+                                                    "label": "Quality tier",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "index": "178ae00165c16f7c9419466b0d8a3e1f7c185148df5e9b700f873d77cc0bdc4f",
@@ -158,52 +192,10 @@
                                 "esql": "  FROM logs-anduril_lattice.entity-*\n  | WHERE anduril_lattice.entity.is_live == true\n  | WHERE anduril_lattice.entity.ontology.template == \"TEMPLATE_TRACK\"\n  | EVAL quality_tier = CASE(\n      anduril_lattice.entity.tracked.track_quality <= 3, \"Poor (0-3)\",\n      anduril_lattice.entity.tracked.track_quality <= 6, \"Moderate (4-6)\",\n      \"High (7-9)\"\n    )\n  | STATS entity_count = COUNT_DISTINCT(anduril_lattice.entity.entity_id) BY quality_tier\n  | SORT entity_count DESC"
                             },
                             "visualization": {
+                                "breakdownByAccessor": "quality_tier",
                                 "layerId": "0e4d208b-5cfe-4b82-bad4-00452053ec43",
                                 "layerType": "data",
-                                "metricAccessor": "entity_count",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#F6726A",
-                                                "stop": null
-                                            },
-                                            {
-                                                "color": "#fcd883",
-                                                "stop": 4
-                                            },
-                                            {
-                                                "color": "#24C292",
-                                                "stop": 7
-                                            }
-                                        ],
-                                        "continuity": "all",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": null,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#F6726A",
-                                                "stop": 4
-                                            },
-                                            {
-                                                "color": "#fcd883",
-                                                "stop": 7
-                                            },
-                                            {
-                                                "color": "#24C292",
-                                                "stop": 8
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                }
+                                "metricAccessor": "entity_count"
                             }
                         },
                         "title": "",
@@ -1933,6 +1925,11 @@
     "created_at": "2026-07-07T16:03:19.396Z",
     "id": "anduril_lattice-153d9e91-df65-45b8-9de4-9aaf86ef3f72",
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "20f1d0e2-34a5-4bb3-8d0b-e86232228ed6:layer_1_source_index_pattern",
