@@ -1,0 +1,18 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: {{grpc_endpoint}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+  transform/elastic_mapping_mode:
+    log_statements:
+      - context: scope
+        statements:
+          - set(attributes["elastic.mapping.mode"], "bodymap")
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [resourcedetection/system, transform/elastic_mapping_mode]
