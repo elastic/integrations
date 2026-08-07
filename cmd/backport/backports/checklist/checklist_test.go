@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/elastic/integrations/dev/backports"
+	"github.com/elastic/integrations/cmd/backport/backports"
 )
 
 // ptr returns a pointer to s, for constructing MaintainedUntil values inline.

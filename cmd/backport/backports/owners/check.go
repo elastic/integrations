@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/elastic/integrations/dev/codeowners"
-	"github.com/elastic/integrations/dev/gitutil"
+	"github.com/elastic/integrations/cmd/backport/codeowners"
+	"github.com/elastic/integrations/cmd/backport/gitutil"
 )
 
 // Mismatch is one package's owner-check result against remoteRef. Exactly

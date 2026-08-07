@@ -1,7 +1,7 @@
 ---
 name: Sync backport changelog
 description: >
-  Sets up Go, installs mage, configures git, runs the changelog sync,
+  Builds the backport tool, configures git, runs the changelog sync,
   and posts the result comment on the originating backport PR.
 
 inputs:
@@ -28,11 +28,13 @@ runs:
     - name: Set up Go
       uses: actions/setup-go@v7
       with:
-        go-version-file: .go-version
+        # Use the backport tool's own Go version (pinned to main's version)
+        # so it stays consistent regardless of which backport branch this runs on.
+        go-version-file: cmd/backport/.go-version
 
-    - name: Install mage
+    - name: Build backport tool
       shell: bash
-      run: go install github.com/magefile/mage
+      run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
     - name: Configure git
       uses: elastic/oblt-actions/git/setup@v1
@@ -51,7 +53,8 @@ runs:
         BACKPORT_BRANCH: ${{ inputs.backport-branch }}
         BACKPORT_PR_NUMBER: ${{ inputs.pr-number }}
         PACKAGES_DIR: ${{ github.workspace }}/packages
-      run: mage -d "$GITHUB_WORKSPACE" syncBackportChangelog
+      run: |
+        "$GITHUB_WORKSPACE/build/backport" sync-changelog
 
     - name: Comment on backport PR
       if: always()
@@ -65,4 +68,5 @@ runs:
         EXISTING_SYNC_PR_URL: ${{ steps.sync.outputs.existing_sync_pr_url }}
         RUN_ID: ${{ github.run_id }}
         REPOSITORY: ${{ github.repository }}
-      run: mage -d "$GITHUB_WORKSPACE" postBackportComment
+      run: |
+        "$GITHUB_WORKSPACE/build/backport" post-comment

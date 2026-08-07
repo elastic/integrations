@@ -16,7 +16,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"gopkg.in/yaml.v3"
 
-	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/cmd/backport/citools"
 )
 
 type inventory struct {

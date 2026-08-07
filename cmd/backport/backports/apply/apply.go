@@ -20,12 +20,12 @@ import (
 	"github.com/cli/go-gh/v2"
 	"gopkg.in/yaml.v3"
 
-	"github.com/elastic/integrations/dev/backports"
-	"github.com/elastic/integrations/dev/backports/changelog"
-	"github.com/elastic/integrations/dev/backports/owners"
-	"github.com/elastic/integrations/dev/citools"
-	"github.com/elastic/integrations/dev/codeowners"
-	"github.com/elastic/integrations/dev/gitutil"
+	"github.com/elastic/integrations/cmd/backport/backports"
+	"github.com/elastic/integrations/cmd/backport/backports/changelog"
+	"github.com/elastic/integrations/cmd/backport/backports/owners"
+	"github.com/elastic/integrations/cmd/backport/citools"
+	"github.com/elastic/integrations/cmd/backport/codeowners"
+	"github.com/elastic/integrations/cmd/backport/gitutil"
 )
 
 // ownersSourceBranch is the ownership source of truth for syncOwners — main

@@ -2,6 +2,10 @@
 // or more contributor license agreements. Licensed under the Elastic License;
 // you may not use this file except in compliance with the Elastic License.
 
+// Copied from dev/citools/packages.go. Kept as a local copy so that
+// cmd/backport remains a self-contained sub-module that can be synced onto
+// backport branches without carrying dev/citools and its dependencies.
+
 package citools
 
 import (
@@ -10,17 +14,16 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 )
 
 const ManifestFileName = "manifest.yml"
 
 // PackageInfo holds the filesystem path and manifest fields of a discovered package.
 type PackageInfo struct {
-	Path        string
-	Name        string
-	Type        string
-	HasRequires bool
+	Path string
+	Name string
+	Type string
 }
 
 // ListPackagesWithNames returns the path and manifest name of every valid package
@@ -49,10 +52,9 @@ func ListPackagesWithNames(dir string) ([]PackageInfo, error) {
 			return nil
 		}
 		pkgs = append(pkgs, PackageInfo{
-			Path:        path,
-			Name:        manifest.Name,
-			Type:        manifest.Type,
-			HasRequires: manifest.HasRequires(),
+			Path: path,
+			Name: manifest.Name,
+			Type: manifest.Type,
 		})
 		// No need to look deeper once a package is found.
 		return filepath.SkipDir
@@ -73,6 +75,6 @@ func ListPackages(dir string) ([]string, error) {
 	for i, p := range pkgs {
 		paths[i] = p.Path
 	}
-	sort.Strings(paths)
+	slices.Sort(paths)
 	return paths, nil
 }

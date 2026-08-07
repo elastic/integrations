@@ -2,6 +2,10 @@
 // or more contributor license agreements. Licensed under the Elastic License;
 // you may not use this file except in compliance with the Elastic License.
 
+// Copied from dev/gitutil/git.go. Kept as a local copy so that
+// cmd/backport remains a self-contained sub-module that can be synced onto
+// backport branches without carrying dev/gitutil and its dependencies.
+
 package gitutil
 
 import (
@@ -20,6 +24,19 @@ func (g Git) Run(args ...string) error {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = g.Dir
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+// RunToStderr runs a git command sending both stdout and stderr to os.Stderr.
+// Use this instead of Run when the process stdout must stay clean for
+// structured output — for example when the caller is invoked inside a shell
+// $() capture where only JSON must appear on stdout (git commit summaries,
+// fetch progress, etc. would otherwise contaminate the captured result).
+func (g Git) RunToStderr(args ...string) error {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = g.Dir
+	cmd.Stdout = os.Stderr
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
