@@ -248,6 +248,12 @@ processors:
             tag: append_error_message_convert_sightings
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_threat_indicator_sightings
+      field: threat.indicator.sightings
+      copy_from: abusech.threatfox.sightings
+      ignore_empty_value: true
+      if: ctx.abusech?.threatfox?.sightings != null
   - convert:
       tag: convert_abusech_threatfox_is_compromised_to_boolean
       description: Convert commercial API is_compromised flag to boolean.

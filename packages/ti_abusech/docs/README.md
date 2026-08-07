@@ -38,7 +38,7 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 Authentication depends on which API you use:
 
 - **Community API**: requires an `Auth Key` (API key). Any requests made without this key will be rejected by the abuse.ch community APIs.
-- **Commercial API** : requires Spamhaus username and password credentials. The integration uses these to obtain a short-lived JWT for API requests.
+- **Commercial API**: requires Spamhaus username and password credentials. The integration uses these to obtain a short-lived JWT for API requests.
 
 #### Obtain `Auth Key` (Community API)
 
@@ -86,7 +86,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect abuse.ch logs via API**, you'll need to:
 
         - Configure **Auth Key** for Community API datasets.
-        - For Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
+        - For Commercial API collection, set **API Type** to **Commercial API** and configure **Username** and **Password**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
@@ -339,7 +339,7 @@ For more information on architectures that can be used for scaling this integrat
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| abusech.threatfox.comment | An optional comment from the reporter. | keyword |
+| abusech.threatfox.comment | An optional comment from the reporter. | match_only_text |
 | abusech.threatfox.confidence_level | Confidence level between 0-100. | long |
 | abusech.threatfox.credits.credits_amount | The number of credits awarded. | long |
 | abusech.threatfox.credits.credits_from | The platform that awarded the credits. | keyword |
@@ -773,7 +773,7 @@ An example event for `threatfox` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-24T10:53:37.390Z",
+    "@timestamp": "2026-08-06T11:27:17.172Z",
     "abusech": {
         "threatfox": {
             "confidence_level": 100,
@@ -785,24 +785,24 @@ An example event for `threatfox` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "1f222603-052e-45fd-874f-8670c7aa70d1",
-        "id": "e84cb317-a154-4ad9-9bba-0efcc13b7203",
-        "name": "elastic-agent-55552",
+        "ephemeral_id": "a6fdc71e-dcdc-496d-865e-6b937966c0e0",
+        "id": "344ab28a-1271-4735-a3cf-68982b6783af",
+        "name": "elastic-agent-56347",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "9.1.0"
     },
     "data_stream": {
         "dataset": "ti_abusech.threatfox",
-        "namespace": "24711",
+        "namespace": "66062",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e84cb317-a154-4ad9-9bba-0efcc13b7203",
+        "id": "344ab28a-1271-4735-a3cf-68982b6783af",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.1.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -811,8 +811,9 @@ An example event for `threatfox` looks as following:
         ],
         "dataset": "ti_abusech.threatfox",
         "id": "841537",
-        "ingested": "2026-07-24T10:53:40Z",
+        "ingested": "2026-08-06T11:27:20Z",
         "kind": "enrichment",
+        "module": "ti_abusech",
         "original": "{\"confidence_level\":100,\"first_seen\":\"2022-08-05 19:43:08 UTC\",\"id\":\"841537\",\"ioc\":\"wizzy.hopto.org\",\"ioc_type\":\"domain\",\"ioc_type_desc\":\"Domain that is used for botnet Command\\u0026control (C\\u0026C)\",\"last_seen\":null,\"malware\":\"win.asyncrat\",\"malware_alias\":null,\"malware_malpedia\":\"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat\",\"malware_printable\":\"AsyncRAT\",\"reference\":\"https://tria.ge/220805-w57pxsgae2\",\"reporter\":\"test_reporter\",\"tags\":[\"asyncrat\"],\"threat_type\":\"botnet_cc\",\"threat_type_desc\":\"Indicator that identifies a botnet command\\u0026control server (C\\u0026C)\"}",
         "type": [
             "indicator"
@@ -821,6 +822,9 @@ An example event for `threatfox` looks as following:
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
@@ -828,6 +832,10 @@ An example event for `threatfox` looks as following:
         "asyncrat"
     ],
     "threat": {
+        "feed": {
+            "dashboard_id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "AbuseCH Threat Fox"
+        },
         "indicator": {
             "confidence": "High",
             "description": "Domain that is used for botnet Command&control (C&C)",
