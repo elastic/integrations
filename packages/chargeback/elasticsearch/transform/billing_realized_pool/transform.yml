@@ -55,11 +55,14 @@ source:
           emit('');
 dest:
   index: billing_realized_pool_lookup
-  pipeline: 0.4.0-realized_pool
+  pipeline: 0.4.1-realized_pool
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    # Use @timestamp (billing day), not event.ingested. On-Prem Billing and some
+    # seeded sources do not map event.ingested, which left this transform at 0 docs
+    # and emptied the Usage & Cost Allocation dashboard.
+    field: "@timestamp"
     delay: 1h
 pivot:
   group_by:
@@ -92,4 +95,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.4.0
+  fleet_transform_version: 0.4.1
