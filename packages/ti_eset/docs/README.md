@@ -3,15 +3,16 @@
 This integration connects with the [ESET Threat Intelligence](https://eti.eset.com/taxii2/) TAXII version 2 server.
 It includes the following datasets for retrieving logs:
 
-| Dataset | TAXII2 Collection name |
-|--------:|:-----------------------|
-|     apt | apt stix 2.1           |
-|  botnet | botnet stix 2.1        |
-|      cc | botnet.cc stix 2.1     |
-| domains | domain stix 2.1        |
-|   files | file stix 2.1          |
-|      ip | ip stix 2.1            |
-|     url | url stix 2.1           |
+|            Dataset | TAXII2 Collection name        |
+|-------------------:|:------------------------------|
+| androidinfostealer | androidinfostealer stix 2.1   |
+|                apt | apt stix 2.1                  |
+|             botnet | botnet stix 2.1               |
+|                 cc | botnet.cc stix 2.1            |
+|            domains | domain stix 2.1               |
+|              files | file stix 2.1                 |
+|                 ip | ip stix 2.1                   |
+|                url | url stix 2.1                  |
 
 ## Expiration of Indicators of Compromise (IOCs)
 
@@ -19,30 +20,32 @@ The ingested IOCs expire after certain duration. An [Elastic Transform](https://
 facilitate only active IOCs be available to the end users. Each transform creates a destination index named `logs-ti_eset_latest.dest_*` which only contains active and unexpired IOCs.
 Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 
-| Source Datastream        | Destination Index Pattern          | Destination Alias           |
-|:-------------------------|:-----------------------------------|-----------------------------|
-| `logs-ti_eset.apt-*`     | logs-ti_eset_latest.dest_apt-*     | logs-ti_eset_latest.apt     |
-| `logs-ti_eset.botnet-*`  | logs-ti_eset_latest.dest_botnet-*  | logs-ti_eset_latest.botnet  |
-| `logs-ti_eset.cc-*`      | logs-ti_eset_latest.dest_cc-*      | logs-ti_eset_latest.cc      |
-| `logs-ti_eset.domains-*` | logs-ti_eset_latest.dest_domains-* | logs-ti_eset_latest.domains |
-| `logs-ti_eset.files-*`   | logs-ti_eset_latest.dest_files-*   | logs-ti_eset_latest.files   |
-| `logs-ti_eset.ip-*`      | logs-ti_eset_latest.dest_ip-*      | logs-ti_eset_latest.ip      |
-| `logs-ti_eset.url-*`     | logs-ti_eset_latest.dest_url-*     | logs-ti_eset_latest.url     |
+| Source Datastream                   | Destination Index Pattern                     | Destination Alias                      |
+|:------------------------------------|:----------------------------------------------|----------------------------------------|
+| `logs-ti_eset.androidinfostealer-*` | logs-ti_eset_latest.dest_androidinfostealer-* | logs-ti_eset_latest.androidinfostealer |
+| `logs-ti_eset.apt-*`                | logs-ti_eset_latest.dest_apt-*                | logs-ti_eset_latest.apt                |
+| `logs-ti_eset.botnet-*`             | logs-ti_eset_latest.dest_botnet-*             | logs-ti_eset_latest.botnet             |
+| `logs-ti_eset.cc-*`                 | logs-ti_eset_latest.dest_cc-*                 | logs-ti_eset_latest.cc                 |
+| `logs-ti_eset.domains-*`            | logs-ti_eset_latest.dest_domains-*            | logs-ti_eset_latest.domains            |
+| `logs-ti_eset.files-*`              | logs-ti_eset_latest.dest_files-*              | logs-ti_eset_latest.files              |
+| `logs-ti_eset.ip-*`                 | logs-ti_eset_latest.dest_ip-*                 | logs-ti_eset_latest.ip                 |
+| `logs-ti_eset.url-*`                | logs-ti_eset_latest.dest_url-*                | logs-ti_eset_latest.url                |
 
 ### ILM Policy
 
 ILM policy is added to the source indices, so it doesn't lead to unbounded growth.
 Data in these source indices will be deleted after a certain number of days from ingested days:
 
-|                  Index | Deleted after | Expired after |
-|-----------------------:|:--------------|---------------|
-|     `logs-ti_eset.apt` | 365d          | 365d          |
-|  `logs-ti_eset.botnet` | 7d            | 48h           |
-|      `logs-ti_eset.cc` | 7d            | 48h           |
-| `logs-ti_eset.domains` | 7d            | 48h           |
-|   `logs-ti_eset.files` | 7d            | 48h           |
-|      `logs-ti_eset.ip` | 7d            | 48h           |
-|     `logs-ti_eset.url` | 7d            | 48h           |
+|                             Index | Deleted after | Expired after |
+|----------------------------------:|:--------------|---------------|
+| `logs-ti_eset.androidinfostealer` | 7d            | 48h           |
+|                `logs-ti_eset.apt` | 365d          | 365d          |
+|             `logs-ti_eset.botnet` | 7d            | 48h           |
+|                 `logs-ti_eset.cc` | 7d            | 48h           |
+|            `logs-ti_eset.domains` | 7d            | 48h           |
+|              `logs-ti_eset.files` | 7d            | 48h           |
+|                 `logs-ti_eset.ip` | 7d            | 48h           |
+|                `logs-ti_eset.url` | 7d            | 48h           |
 
 ## Requirements
 
@@ -60,6 +63,107 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 6. Save the integration.
 
 ## Logs
+
+### Android info stealer
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| eset.id | The UID of the event object. | keyword |
+| eset.labels | Threat labels. | keyword |
+| eset.valid_until | Event expiration date. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Input type. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+An example event for `androidinfostealer` looks as following:
+
+```json
+{
+    "@timestamp": "2025-08-27T12:51:58.000Z",
+    "agent": {
+        "ephemeral_id": "4e649840-f137-4c31-91e8-d254c09d489c",
+        "id": "9e771b91-5a6f-419b-9971-1da61c8c4252",
+        "name": "elastic-agent-94452",
+        "type": "filebeat",
+        "version": "9.4.2"
+    },
+    "data_stream": {
+        "dataset": "ti_eset.androidinfostealer",
+        "namespace": "50257",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "9e771b91-5a6f-419b-9971-1da61c8c4252",
+        "snapshot": false,
+        "version": "9.4.2"
+    },
+    "eset": {
+        "id": "indicator--3f28a31b-5c23-46e6-bbae-15c20b5cb27b",
+        "labels": "malicious-activity",
+        "valid_until": "2025-08-29T12:51:58.000Z"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_eset.androidinfostealer",
+        "ingested": "2026-08-01T20:38:33Z",
+        "kind": "enrichment",
+        "module": "ti_eset",
+        "original": "{\"confidence\":85,\"created\":\"2025-08-27T12:51:58.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Each of these file hashes indicates that a variant of a variant of Android/Spy.Banker.DSU trojan is present.\",\"id\":\"indicator--3f28a31b-5c23-46e6-bbae-15c20b5cb27b\",\"labels\":[\"malicious-activity\"],\"modified\":\"2025-08-27T12:51:58.000Z\",\"name\":\"Malware variant\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[file:hashes.'SHA-256' = 'd077a2851161c3363e806b50d7b4648203ecf20647cb03d6d9e593074028c728'] OR [file:hashes.'SHA-1' = '5b913f8dfb17533def5db50b63583076ff8a6e28'] OR [file:hashes.'MD5' = '5db237b11fe18f92a13b743c98fb8945']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-27T12:51:58Z\",\"valid_until\":\"2025-08-29T12:51:58Z\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "eset-androidinfostealer"
+    ],
+    "threat": {
+        "feed": {
+            "name": "ESET Android info stealer stix 2.1"
+        },
+        "indicator": {
+            "confidence": "High",
+            "description": "Each of these file hashes indicates that a variant of a variant of Android/Spy.Banker.DSU trojan is present.",
+            "file": {
+                "hash": {
+                    "md5": "5db237b11fe18f92a13b743c98fb8945",
+                    "sha1": "5b913f8dfb17533def5db50b63583076ff8a6e28",
+                    "sha256": "d077a2851161c3363e806b50d7b4648203ecf20647cb03d6d9e593074028c728"
+                }
+            },
+            "last_seen": "2025-08-27T12:51:58.000Z",
+            "modified_at": "2025-08-27T12:51:58.000Z",
+            "name": "Malware variant",
+            "provider": "eset",
+            "type": "file"
+        }
+    }
+}
+```
 
 ### Botnet
 
