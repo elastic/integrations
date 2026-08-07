@@ -1,0 +1,64 @@
+# Verify that VaultMonitor messages are routed from the audit data stream to
+# the monitor data stream via routing rules.
+#
+# The embedded TCP sender provides:
+#   - 1 VaultMonitor record  → cyberarkpas.monitor
+#   - 1 Vault/Logon record   → cyberarkpas.audit (retained)
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the TCP sender with sample logs.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} cyberarkpas-tcp
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy with TCP input.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml AUDIT_DS
+
+# Signal the sender to start streaming.
+docker_signal cyberarkpas-tcp SIGHUP
+
+# Verify the Vault/Logon record stays in the audit data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${AUDIT_DS}
+cp stdout audit_docs.json
+exec jq -r '.hits.hits[0]._source.observer.product' audit_docs.json
+stdout '^Vault$'
+
+# Verify the VaultMonitor record was routed to the monitor data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-cyberarkpas.monitor-*
+cp stdout monitor_docs.json
+exec jq -r '.hits.hits[0]._source.observer.product' monitor_docs.json
+stdout '^VaultMonitor$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${AUDIT_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down cyberarkpas-tcp
+
+-- cyberarkpas-tcp/docker-compose.yml --
+version: '2.3'
+services:
+  cyberarkpas-tcp:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9999 -p=tcp /sample_logs/routing_test.log
+
+-- cyberarkpas-tcp/sample_logs/routing_test.log --
+{"format":"elastic","version":"1.0","syslog":{"monitor_record":{"Timestamp":"Oct 15 00:00:00","IsoTimestamp":"2024-10-15T00:00:00Z","Hostname":"VAULT","Vendor":"Cyber-Ark","Product":"VaultMonitor","Version":"11.7.0000","AverageExecutionTime":"10","MaxExecutionTime":"149","AverageQueueTime":"0","MaxQueueTime":"37","NumberOfParallelTasks":"1","MaxParallelTasks":"20","TransactionCount":"316","CPUUsage":"7","MemoryUsage":"63","DriveFreeSpaceInGB":"21","DriveTotalSpaceInGB":"40","SyslogQueueSize":"0"}}}
+<5>1 2021-03-04T19:10:05Z VAULT {"format":"elastic","version":"1.0","syslog":{"audit_record":{"Rfc5424":"yes","Timestamp":"Mar 04 11:10:05","IsoTimestamp":"2021-03-04T19:10:05Z","Hostname":"VAULT","Vendor":"Cyber-Ark","Product":"Vault","Version":"11.7.0000","MessageID":"7","Desc":"Logon","Severity":"Info","Issuer":"PasswordManager","Action":"Logon","SourceUser":"","TargetUser":"","Safe":"","File":"","Station":"10.0.1.20","Location":"","Category":"","RequestId":"","Reason":"","ExtraDetails":"","Message":"Logon","GatewayStation":""}}}
+
+-- test_config.yaml --
+input: tcp
+data_stream:
+  vars:
+    syslog_host: 0.0.0.0
+    syslog_port: 9999

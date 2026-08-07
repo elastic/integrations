@@ -1,0 +1,63 @@
+# Verify that entity-analytics documents are correctly routed from the entity
+# data stream to the user and device data streams via routing rules.
+#
+# The mock Graph API provides:
+#   - 2 users (First21480, First45375) → entityanalytics_entra_id.user
+#   - 1 device (Test device)           → entityanalytics_entra_id.device
+#   - 2 marker events (start, end)     → entityanalytics_entra_id.entity (retained)
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock Graph API service via symlink to the package's deploy directory.
+exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker entra_id
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} entra_id
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTITY_DS
+
+# Wait for the marker events in the entity data stream. Only markers remain
+# after routing rules divert user and device documents.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${ENTITY_DS}
+
+# Verify user documents were routed to the user data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_entra_id.user-*
+cp stdout user_docs.json
+exec jq '[.hits.hits[]._source.user.id] | unique | sort[]' user_docs.json
+stdout 'aa534e49-edfd-4541-8256-8bbf34f122b4'
+stdout 'feb6a386-612a-4ed1-9b13-2adc73074a19'
+
+# Verify device documents were routed to the device data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_entra_id.device-*
+cp stdout device_docs.json
+exec jq '.hits.hits[0]._source.device.id' device_docs.json
+! stdout 'null'
+exec jq '.hits.hits[0]._source.asset.type' device_docs.json
+stdout 'microsoft_entra_id_device'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ENTITY_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down entra_id
+
+-- test_config.yaml --
+input: entity-analytics
+data_stream:
+  vars:
+    tenant_id: TENANT_ID
+    client_id: CLIENT_ID
+    secret: foobar
+    login_endpoint: http://svc-entra_id:8080
+    api_endpoint: http://svc-entra_id:8080/v1.0
+    dataset: all
+    sync_interval: 24h
+    update_interval: 15m
