@@ -8,10 +8,11 @@ streams:
       - name: url
         type: text
         title: URL
-        description: Base URL of the abuse.ch URLhaus API to collect recently added malware URLs.
+        description: >-
+          URL for the URLhaus API. For the Community API, use the full endpoint URL. For the Commercial API, use the API base URL (for example `https://api.spamhaus.com`).
         multi: false
         required: true
-        show_user: false
+        show_user: true
         default: https://urlhaus-api.abuse.ch/v1/urls/recent/
       - name: http_client_timeout
         type: text
@@ -36,9 +37,23 @@ streams:
         show_user: true
         default: 10m
         description: >-
-          Duration between requests to the URLhaus API. The API returns at most 1000 URLs added in the last 3 days,
-          so the interval must be short enough to avoid exceeding that limit. Too long an interval risks missing URLs;
-          too short an interval re-collects the same URLs without benefit. Supported units: h/m/s. Example `10m`.
+          Duration between requests to the URLhaus API. For the Community API, the endpoint returns at most 1000 URLs added in the last 3 days, so the interval must be short enough to avoid exceeding that limit. Too long an interval risks missing URLs; too short an interval re-collects the same URLs without benefit. Supported units: h/m/s. Example `10m`.
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back to pull malware URLs from URLhaus when using the Commercial API. Supported units for this parameter are h/m/s. Example `120h`. Default value is `24h`.
+      - name: page_size
+        type: integer
+        title: Page Size
+        multi: false
+        required: false
+        show_user: false
+        default: 100
+        description: Number of malware URLs to request per page when using the Commercial API.
       - name: ioc_expiration_duration
         type: text
         title: IOC Expiration Duration
