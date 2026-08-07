@@ -2,15 +2,19 @@
 description: Initial pipeline for parsing Zoom webhooks
 processors:
   - set:
+      tag: set_observer_vendor_7106a331
       field: observer.vendor
       value: Zoom
   - set:
+      tag: set_observer_product_7d689b96
       field: observer.product
       value: Webhook
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - script:
+      tag: script_4bd31a4f
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -28,53 +32,66 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_76cb4414
       field: event.kind
       value: event
   - rename:
+      tag: rename_zoom_event_to_event_action_39a092bf
       field: zoom.event
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_zoom_payload_to__temp__payload_633a4842
       field: zoom.payload
       target_field: _temp_.payload
   - remove:
+      tag: remove_zoom_50a855e4
       field: zoom
   - rename:
+      tag: rename__temp__payload_to_zoom_313c4932
       field: _temp_.payload
       target_field: zoom
   - rename:
+      tag: rename_zoom_old_object_to_zoom_old_values_1237c769
       field: zoom.old_object
       target_field: zoom.old_values
       ignore_missing: true
   - rename:
+      tag: rename_zoom_object_participant_to_zoom_participant_91b1eaa3
       field: zoom.object.participant
       target_field: zoom.participant
       ignore_missing: true
   - rename:
+      tag: rename_zoom_object_settings_to_zoom_settings_edec9bf1
       field: zoom.object.settings
       target_field: zoom.settings
       ignore_missing: true
   - rename:
+      tag: rename_zoom_object_registrant_to_zoom_registrant_a62917d5
       field: zoom.object.registrant
       target_field: zoom.registrant
       ignore_missing: true
   - append:
+      tag: append_related_user_6ffd2fcc
       field: related.user
       value: "{{{zoom.operator_id}}}"
       if: ctx.zoom?.operator_id != null
   # Set user.id from operator data (user who performs an action).
   - set:
+      tag: set_user_id_bdaf74d8
       field: user.id
       value: "{{{zoom.operator_id}}}"
       if: ctx.zoom?.operator_id != null
   # Set user.name from operator data only when user.id also set above.
   - set:
+      tag: set_user_email_3faefa63
       field: user.email
       value: "{{{zoom.operator}}}"
       ignore_empty_value: true
       if: ctx.zoom?.operator_id != null
   # Removing some fields that have complex nested arrays that might impact performance
   - remove:
+      tag: remove_4ab2113e
       field:
         - message
         - _temp_
@@ -93,30 +110,39 @@ processors:
         - zoom.object.call_logs
       ignore_missing: true
   - pipeline:
+      tag: pipeline_c3fe0500
       name: '{{ IngestPipeline "meeting" }}'
       if: ctx.event?.action?.startsWith('meeting') == true
   - pipeline:
+      tag: pipeline_94b762c4
       name: '{{ IngestPipeline "account" }}'
       if: ctx.event?.action?.startsWith('account') == true
   - pipeline:
+      tag: pipeline_2d965b90
       name: '{{ IngestPipeline "chat_message" }}'
       if: ctx.event?.action?.startsWith('chat_message') == true
   - pipeline:
+      tag: pipeline_ef46fcbc
       name: '{{ IngestPipeline "chat_channel" }}'
       if: ctx.event?.action?.startsWith('chat_channel') == true
   - pipeline:
+      tag: pipeline_5ce4f206
       name: '{{ IngestPipeline "phone" }}'
       if: ctx.event?.action?.startsWith('phone') == true
   - pipeline:
+      tag: pipeline_f4f3f224
       name: '{{ IngestPipeline "recording" }}'
       if: ctx.event?.action?.startsWith('recording') == true
   - pipeline:
+      tag: pipeline_d9979d40
       name: '{{ IngestPipeline "user" }}'
       if: ctx.event?.action?.startsWith('user') == true
   - pipeline:
+      tag: pipeline_c5147c2a
       name: '{{ IngestPipeline "webinar" }}'
       if: ctx.event?.action?.startsWith('webinar') == true
   - pipeline:
+      tag: pipeline_72685d9c
       name: '{{ IngestPipeline "zoomroom" }}'
       if: ctx.event?.action?.startsWith('zoomroom') == true
 on_failure:

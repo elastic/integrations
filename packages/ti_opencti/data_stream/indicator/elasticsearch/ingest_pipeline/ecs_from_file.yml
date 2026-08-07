@@ -3,25 +3,30 @@ description: Build ECS fields from an OpenCTI file observable
 processors:
 
   - set:
+      tag: set__tmp_file_accessed_6f0852d5
       field: _tmp_file.accessed
       value: "{{{_ingest._value.atime}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_created_b498f898
       field: _tmp_file.created
       value: "{{{_ingest._value.ctime}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_mtime_78697244
       field: _tmp_file.mtime
       value: "{{{_ingest._value.mtime}}}"
       ignore_empty_value: true
 
   - append:
+      tag: append__tmp_file_name_e5f1dc6d
       field: _tmp_file.name
       value: "{{{_ingest._value.name}}}"
       allow_duplicates: false
   - foreach:
+      tag: foreach__ingest__value_additional_names_5f2fc97a
       field: _ingest._value.additional_names
       ignore_missing: true
       processor:
@@ -30,6 +35,7 @@ processors:
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - script:
+      tag: script_3509eda3
       description: Remove null or empty names, remove name field if no names
       lang: painless
       source: |
@@ -48,6 +54,7 @@ processors:
         }
 
   - script:
+      tag: script_0c964542
       description: Get file extensions from file names
       lang: painless
       source: |
@@ -71,27 +78,32 @@ processors:
         }
 
   - set:
+      tag: set__tmp_file_mime_type_087066e0
       field: _tmp_file.mime_type
       value: "{{{_ingest._value.mime_type}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_size_6fa82958
       field: _tmp_file.size
       value: "{{{_ingest._value.size}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_type_68f1b6c3
       field: _tmp_file.type
       value: "file"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_hash_f8450041
       field: _tmp_file.hash
       copy_from: _ingest._value.hash
       ignore_empty_value: true
 
   # append object
   - script:
+      tag: script_af218bb0
       description: Append to the destination
       lang: painless
       source: |
@@ -101,4 +113,5 @@ processors:
         ctx.threat.indicator.file.add(ctx._tmp_file);
 
   - remove:
+      tag: remove__tmp_file_0fcb07f0
       field: _tmp_file

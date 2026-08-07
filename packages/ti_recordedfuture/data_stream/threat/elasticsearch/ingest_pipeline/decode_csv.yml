@@ -2,6 +2,7 @@
 description: Pipeline to decode CSV risklists from Recorded Future threat intel.
 processors:
   - csv:
+      tag: csv_event_original_13ba7532
       field: event.original
       target_fields:
         - _tmp_.col0
@@ -10,13 +11,15 @@ processors:
         - _tmp_.col3
         - _tmp_.col4
   - drop:
+      tag: drop_671d56d8
       description: 'Drops the CSV header line.'
       if: 'ctx._tmp_.col0 == "Name"'
 
-# This supports the default CSV risklists:
-# 4-column for url, domain and IPs.
-# 5-column for hash.
+  # This supports the default CSV risklists:
+  # 4-column for url, domain and IPs.
+  # 5-column for hash.
   - script:
+      tag: script_2002905f
       description: Maps the CSV entries to fields.
       lang: painless
       params:
@@ -40,6 +43,7 @@ processors:
         }
         ctx['json'] = dst;
   - remove:
+      tag: remove__tmp__33d3b89e
       field: _tmp_
 on_failure:
   - set:
@@ -48,3 +52,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -61,8 +61,10 @@ processors:
       if: ctx.destination?.address != ''
       on_failure:
         - remove:
+            tag: remove_destination_address_1c6f671d
             field: destination.address
         - append:
+            tag: append_error_message_d3236bc7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -94,8 +96,10 @@ processors:
       if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != ''
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_62839832
             field: _tmp.timestamp
         - append:
+            tag: append_error_message_56570944
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -148,6 +152,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

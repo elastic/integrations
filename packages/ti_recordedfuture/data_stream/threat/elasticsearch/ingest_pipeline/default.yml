@@ -12,83 +12,98 @@ processors:
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
-#
-# Set basic ECS fields.
-#
+  #
+  # Set basic ECS fields.
+  #
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_dataset_b64e7629
       field: event.dataset
       value: "ti_recordedfuture.threat"
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
   - set:
+      tag: set_threat_feed_name_05bf49c4
       field: threat.feed.name
       value: "Recorded Future"
-#
-# TODO: Add dashboard
-#
-#  - set:
-#      field: threat.feed.dashboard_id
-#      value: "recordedfuture-96fe1e60-4261-11ec-b7be-d3026acdf1cf"
 
+  #
+  # TODO: Add dashboard
+  #
+  #  - set:
+  #      field: threat.feed.dashboard_id
+  #      value: "recordedfuture-96fe1e60-4261-11ec-b7be-d3026acdf1cf"
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+     tag: remove_message_2ee3a7d4
      field: message
      ignore_missing: true
      if: 'ctx.event?.original != null'
      description: 'The `message` field is no longer required if the document has an `event.original` field.'
 
-#
-# Decode event.original as JSON if it starts with the "{" character.
-# This is the common case when events are ingested from the API, as httpjson
-# transforms the CSV to a JSON message.
-#
+  #
+  # Decode event.original as JSON if it starts with the "{" character.
+  # This is the common case when events are ingested from the API, as httpjson
+  # transforms the CSV to a JSON message.
+  #
   - json:
+      tag: json_event_original_to_json_f6f317b7
       field: event.original
       target_field: json
       if: 'ctx.event?.original != null && ctx.event.original.startsWith("{")'
       on_failure:
         - fail:
+            tag: fail_eb8d97d0
             message: "Failed decoding message field as JSON: {{{ _ingest.on_failure_message }}}"
 
-#
-# Decode event.original as CSV when the above processor didn't execute.
-# This is used when ingesting CSV lines from a file.
-#
+  #
+  # Decode event.original as CSV when the above processor didn't execute.
+  # This is used when ingesting CSV lines from a file.
+  #
   - pipeline:
+      tag: pipeline_05c75799
       name: '{{ IngestPipeline "decode_csv" }}'
       if: 'ctx.json == null'
       on_failure:
         - fail:
+            tag: fail_e1d890be
             message: "Failed decoding message field as CSV: {{{ _ingest.on_failure_message }}}"
 
-#
-# Decode EvidenceDetails column as JSON.
-#
+  #
+  # Decode EvidenceDetails column as JSON.
+  #
   - json:
+      tag: json_json_EvidenceDetails_to__temp__EvidenceDetails_3cf6ff2c
       field: json.EvidenceDetails
       target_field: _temp_.EvidenceDetails
       ignore_failure: true
 
   - rename:
+      tag: rename__temp__EvidenceDetails_EvidenceDetails_to_json_evidence_details_c2efd158
       field: _temp_.EvidenceDetails.EvidenceDetails
       target_field: json.evidence_details
       ignore_missing: true
 
   - foreach:
+      tag: foreach_json_evidence_details_fa473ee8
       field: json.evidence_details
       ignore_missing: true
       processor:
@@ -96,6 +111,7 @@ processors:
           field: _temp_.providers
           value: "{{{ _ingest._value.EvidenceString }}}"
   - foreach:
+      tag: foreach__temp__providers_5107bca4
       field: _temp_.providers
       ignore_missing: true
       processor:
@@ -104,6 +120,7 @@ processors:
           pattern: '^(?:.+sources?(?: including)?: (.*?)(?:\. |$))|(.*)$'
           replacement: '$1'
   - foreach:
+      tag: foreach__temp__providers_731edc66
       field: _temp_.providers
       ignore_missing: true
       processor:
@@ -111,6 +128,7 @@ processors:
           field: '_ingest._value'
           separator: ', *'
   - script:
+      tag: script_85b55d4c
       description: Iterate through the nested arrays and remove the empty strings
       lang: painless
       ignore_failure: true
@@ -121,6 +139,7 @@ processors:
             .collect(Collectors.toList());
         }
   - foreach:
+      tag: foreach__temp__providers_890090f1
       field: _temp_.providers
       ignore_missing: true
       processor:
@@ -172,11 +191,13 @@ processors:
         ctx.json.evidence_details = evidence_details;
       on_failure:
         - append:
+            tag: append_error_message_3cf1db61
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert evidence_details timestamps to date
   - foreach:
+      tag: foreach_json_evidence_details_b7936642
       field: json.evidence_details
       ignore_missing: true
       processor:
@@ -194,18 +215,20 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-#
-# Hash indicators (threat.indicator.type=file)
-# As risklist indicators don't have a "type" field, it's necessary
-# to detect the kind of indicator in the Name field.
-#
-# An indicator is of type `hash` when the Algorithm field is present.
-#
+  #
+  # Hash indicators (threat.indicator.type=file)
+  # As risklist indicators don't have a "type" field, it's necessary
+  # to detect the kind of indicator in the Name field.
+  #
+  # An indicator is of type `hash` when the Algorithm field is present.
+  #
   - set:
+      tag: set_threat_indicator_type_ce938b4b
       field: threat.indicator.type
       value: file
       if: 'ctx.json.Algorithm != null'
   - script:
+      tag: script_66978522
       lang: painless
       description: >
         Map file hashes.
@@ -225,64 +248,75 @@ processors:
         ctx["_hashes"] = hashes;
       on_failure:
         - append:
+            tag: append_error_message_5e391e75
             field: error.message
             value: "Failed to map fileHashes field: {{{ _ingest.on_failure_message }}}"
   - rename:
+      tag: rename__hashes_to_threat_indicator_file_hash_f901c85e
       field: _hashes
       target_field: threat.indicator.file.hash
       ignore_missing: true
 
-#
-# IP indicators (threat.indicator.type=ipvN-addr)
-#
-# An indicator is of type `ip` if Name is a valid IP address.
-#
+  #
+  # IP indicators (threat.indicator.type=ipvN-addr)
+  #
+  # An indicator is of type `ip` if Name is a valid IP address.
+  #
   - convert:
+      tag: convert_json_Name_to_threat_indicator_ip_224017a3
       field: json.Name
       target_field: threat.indicator.ip
       type: ip
       ignore_failure: true
       if: 'ctx.threat?.indicator?.type == null'
   - set:
+      tag: set_threat_indicator_type_90ebe6a1
       field: threat.indicator.type
       value: ipv4-addr
       if: 'ctx.threat?.indicator?.ip != null && !ctx.threat.indicator.ip.contains(":")'
   - set:
+      tag: set_threat_indicator_type_5f5a335e
       field: threat.indicator.type
       value: ipv6-addr
       if: 'ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(":")'
 
-#
-# URL indicators (threat.indicator.type=url)
-# An indicator is of type `url` if Name contains a slash character.
-#
+  #
+  # URL indicators (threat.indicator.type=url)
+  # An indicator is of type `url` if Name contains a slash character.
+  #
   - set:
+      tag: set_threat_indicator_type_6b38c439
       field: threat.indicator.type
       value: url
       if: 'ctx.threat?.indicator?.type == null && ctx.json.Name.contains("/")'
   - uri_parts:
+      tag: uri_parts_json_Name_to_threat_indicator_url_7b3e5b66
       field: json.Name
       target_field: threat.indicator.url
       keep_original: true
       if: 'ctx.threat?.indicator?.type == "url"'
       on_failure:
         - set:
+            tag: set_threat_indicator_url_original_8f2236d2
             field: threat.indicator.url.original
             copy_from: json.Name
   - set:
+      tag: set_threat_indicator_url_full_a3601f77
       field: threat.indicator.url.full
       copy_from: json.Name
       if: 'ctx.threat?.indicator?.type == "url"'
 
-#
-# Domain indicators (threat.indicator.type=domain)
-# This is a catch-all type.
-#
+  #
+  # Domain indicators (threat.indicator.type=domain)
+  # This is a catch-all type.
+  #
   - set:
+      tag: set_threat_indicator_type_5c7eee59
       field: threat.indicator.type
       value: domain-name
       if: 'ctx.threat?.indicator?.type == null'
   - set:
+      tag: set_threat_indicator_url_domain_c23b278d
       field: threat.indicator.url.domain
       value: '{{{ json.Name }}}'
       ignore_empty_value: true
@@ -304,6 +338,7 @@ processors:
         ctx.threat.indicator.scanner_stats = sum_sources_count;
       on_failure:
         - append:
+            tag: append_error_message_456677d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -321,45 +356,52 @@ processors:
         ctx.threat.indicator.sightings = sum_sightings_count;
       on_failure:
         - append:
+            tag: append_error_message_d9582555
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-
-#
-# Normalize Risk
-#
+  #
+  # Normalize Risk
+  #
   - convert:
+      tag: convert_json_Risk_to_event_risk_score_1c0c002a
       field: json.Risk
       target_field: event.risk_score
       ignore_missing: true
       type: float
       on_failure:
         - append:
+            tag: append_error_message_771c53c0
             field: error.message
             value: "Risk score `{{{ json.Risk }}}` cannot be converted to float: {{{ _ingest.on_failure_message }}}"
 
-#
-# Save fields without an ECS mapping under `recordedfuture`.
-#
+  #
+  # Save fields without an ECS mapping under `recordedfuture`.
+  #
   - rename:
+      tag: rename_json_RiskString_to_json_risk_string_df740bd7
       field: json.RiskString
       target_field: json.risk_string
       ignore_missing: true
   - rename:
+      tag: rename_json_Name_to_json_name_e4cb94c5
       field: json.Name
       target_field: json.name
   - rename:
+      tag: rename_json_to_recordedfuture_8ccfe888
       field: json
       target_field: recordedfuture
   - rename:
+      tag: rename__conf_list_to_recordedfuture_list_16909224
       target_field: recordedfuture.list
       field: _conf.list
       if: ctx._conf?.list != null
 
-#
-# Cleanup
-#
+  #
+  # Cleanup
+  #
   - remove:
+      tag: remove_def50bb9
       field:
         - recordedfuture.Algorithm
         - recordedfuture.EvidenceDetails

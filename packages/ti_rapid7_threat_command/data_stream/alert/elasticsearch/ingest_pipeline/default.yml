@@ -2,6 +2,7 @@
 description: Pipeline for processing Alerts.
 processors:
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -13,16 +14,20 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_UpdateDate_to_rapid7_tc_alert_update_date_89809f7c
       field: json.UpdateDate
       formats:
         - ISO8601
@@ -30,91 +35,114 @@ processors:
       if: ctx.json?.UpdateDate != null
       on_failure:
         - append:
+            tag: append_error_message_31ea7111
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_timestamp_071af590
       field: "@timestamp"
       copy_from: rapid7.tc.alert.update_date
       on_failure:
         - set:
+            tag: set_timestamp_d312dfcb
             field: "@timestamp"
             copy_from: _ingest.timestamp
   - set:
+      tag: set_event_module_a27d1340
       field: event.module
       value: ti_rapid7_threat_command
   - rename:
+      tag: rename_json__id_to_rapid7_tc_alert_id_6b948bd3
       field: json._id
       target_field: rapid7.tc.alert.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Assets_to_rapid7_tc_alert_assets_a9d207aa
       field: json.Assets
       target_field: rapid7.tc.alert.assets
       ignore_missing: true
   - rename:
+      tag: rename_json_Assignees_to_rapid7_tc_alert_assignees_f9955800
       field: json.Assignees
       target_field: rapid7.tc.alert.assignees
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Type_to_rapid7_tc_alert_details_type_e18e2132
       field: json.Details.Type
       target_field: rapid7.tc.alert.details.type
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_SubType_to_rapid7_tc_alert_details_subtype_5087c3ac
       field: json.Details.SubType
       target_field: rapid7.tc.alert.details.subtype
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Title_to_rapid7_tc_alert_details_title_39868e1c
       field: json.Details.Title
       target_field: rapid7.tc.alert.details.title
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Description_to_rapid7_tc_alert_details_description_53790978
       field: json.Details.Description
       target_field: rapid7.tc.alert.details.description
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Severity_to_rapid7_tc_alert_details_severity_69c7ea66
       field: json.Details.Severity
       target_field: rapid7.tc.alert.details.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Images_to_rapid7_tc_alert_details_images_22a50096
       field: json.Details.Images
       target_field: rapid7.tc.alert.details.images
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Source_Type_to_rapid7_tc_alert_details_source_type_ce119a0a
       field: json.Details.Source.Type
       target_field: rapid7.tc.alert.details.source.type
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Source_URL_to_rapid7_tc_alert_details_source_url_0d82ddee
       field: json.Details.Source.URL
       target_field: rapid7.tc.alert.details.source.url
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Source_Email_to_rapid7_tc_alert_details_source_email_c4f67e2e
       field: json.Details.Source.Email
       target_field: rapid7.tc.alert.details.source.email
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Source_NetworkType_to_rapid7_tc_alert_details_source_network_type_320f31f5
       field: json.Details.Source.NetworkType
       target_field: rapid7.tc.alert.details.source.network_type
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Source_LeakName_to_rapid7_tc_alert_details_source_leak_name_f146df5f
       field: json.Details.Source.LeakName
       target_field: rapid7.tc.alert.details.source.leak_name
       ignore_missing: true
   - rename:
+      tag: rename_json_Details_Tags_to_rapid7_tc_alert_details_tags_d8fd2e92
       field: json.Details.Tags
       target_field: rapid7.tc.alert.details.tags
       ignore_missing: true
   - rename:
+      tag: rename_json_TakedownStatus_to_rapid7_tc_alert_takedown_status_a1df52ad
       field: json.TakedownStatus
       target_field: rapid7.tc.alert.takedown_status
       ignore_missing: true
   - rename:
+      tag: rename_json_RelatedIocs_to_rapid7_tc_alert_related_iocs_07c9e7a9
       field: json.RelatedIocs
       target_field: rapid7.tc.alert.related_iocs
       ignore_missing: true
   - rename:
+      tag: rename_json_RelatedThreatIDs_to_rapid7_tc_alert_related_threat_ids_807a98f8
       field: json.RelatedThreatIDs
       target_field: rapid7.tc.alert.related_threat_ids
       ignore_missing: true
   - date:
+      tag: date_json_Details_Source_Date_to_rapid7_tc_alert_details_source_date_ee621ffb
       field: json.Details.Source.Date
       target_field: rapid7.tc.alert.details.source.date
       formats:
@@ -122,9 +150,11 @@ processors:
       if: ctx.json?.Details?.Source?.Date != null
       on_failure:
         - append:
+            tag: append_error_message_58fdc53a
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - date:
+      tag: date_json_FoundDate_to_rapid7_tc_alert_found_date_16f87823
       field: json.FoundDate
       target_field: rapid7.tc.alert.found_date
       if: ctx.json?.FoundDate != null
@@ -132,29 +162,35 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_80782420
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - convert:
+      tag: convert_json_Closed_IsClosed_to_rapid7_tc_alert_is_closed_f4c0dd9f
       field: json.Closed.IsClosed
       type: boolean
       target_field: rapid7.tc.alert.is_closed
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a3c7b176
             field: error.message
             value:
               - "{{{_ingest.on_failure_message}}}"
   - convert:
+      tag: convert_json_IsFlagged_to_rapid7_tc_alert_is_flagged_dca8e27f
       field: json.IsFlagged
       type: boolean
       target_field: rapid7.tc.alert.is_flagged
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5095ae6c
             field: error.message
             value:
               - "{{{_ingest.on_failure_message}}}"
   - foreach:
+      tag: foreach_rapid7_tc_alert_assets_61eb8338
       field: rapid7.tc.alert.assets
       processor:
         rename:
@@ -163,6 +199,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_rapid7_tc_alert_assets_7f9768f8
       field: rapid7.tc.alert.assets
       processor:
         rename:
@@ -171,6 +208,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_rapid7_tc_alert_details_tags_ed293e71
       field: rapid7.tc.alert.details.tags
       processor:
         rename:
@@ -179,6 +217,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_rapid7_tc_alert_details_tags_94ced92e
       field: rapid7.tc.alert.details.tags
       processor:
         rename:
@@ -187,6 +226,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_rapid7_tc_alert_details_tags_4b4bfc6b
       field: rapid7.tc.alert.details.tags
       processor:
         rename:
@@ -195,6 +235,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_rapid7_tc_alert_details_tags_0d92d345
       field: rapid7.tc.alert.details.tags
       processor:
         append:
@@ -204,23 +245,28 @@ processors:
           allow_duplicates: false
       ignore_failure: true
   - set:
+      tag: set_event_id_012ce72e
       field: event.id
       copy_from: rapid7.tc.alert.id
       ignore_failure: true
   - set:
+      tag: set_event_reference_35552931
       field: event.reference
       value: https://dashboard.ti.insight.rapid7.com/#/threat-command/alerts/?search={{{rapid7.tc.alert.id}}}
       ignore_failure: true
   - fingerprint:
+      tag: fingerprint_ef6c7d2e
       fields:
         - rapid7.tc.alert.id
         - rapid7.tc.alert.update_date
       target_field: _id
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_4f9a1bb0
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -238,11 +284,13 @@ processors:
         } drop(ctx);
       ignore_failure: true
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

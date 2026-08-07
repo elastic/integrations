@@ -3,19 +3,23 @@ description: Build ECS fields from an OpenCTI windows registry value type observ
 processors:
 
   - set:
+      tag: set__tmp_registry_value_3cdafa31
       field: _tmp_registry.value
       value: "{{{_ingest._value.name}}}"
 
   - set:
+      tag: set__tmp_registry_data_type_3f0f21ea
       field: _tmp_registry.data.type
       value: "{{{_ingest._value.data_type}}}"
 
   - append:
+      tag: append__tmp_registry_data_strings_a2f63f1f
       field: _tmp_registry.data.strings
       value: "{{{_ingest._value.data}}}"
 
   # append object
   - script:
+      tag: script_caa36794
       description: Append to the destination
       lang: painless
       source: |
@@ -25,4 +29,5 @@ processors:
         ctx.threat.indicator.registry.add(ctx._tmp_registry);
 
   - remove:
+      tag: remove__tmp_registry_cc89fb9b
       field: _tmp_registry

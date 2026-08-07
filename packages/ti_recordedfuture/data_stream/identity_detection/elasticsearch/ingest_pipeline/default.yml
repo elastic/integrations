@@ -20,7 +20,6 @@ processors:
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
-
   # parse the event JSON
   - rename:
       field: message
@@ -40,7 +39,7 @@ processors:
       tag: json_event_original
       target_field: recordedfuture.identity_detection
       if: ctx.event?.original != null
-  
+
   - fingerprint:
       fields:
         - event.original
@@ -79,6 +78,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_985cd761
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -95,8 +95,10 @@ processors:
       if: ctx.recordedfuture?.identity_detection?.created != null && ctx.recordedfuture.identity_detection.created != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_identity_detection_created_835bb058
             field: recordedfuture.identity_detection.created
         - append:
+            tag: append_error_message_d2226ecb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -108,8 +110,10 @@ processors:
       if: ctx.recordedfuture?.identity_detection?.dump?.compromise?.exfiltration_date != null && ctx.recordedfuture.identity_detection.dump.compromise.exfiltration_date != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_identity_detection_dump_compromise_exfiltration_date_74a6da12
             field: recordedfuture.identity_detection.dump.compromise.exfiltration_date
         - append:
+            tag: append_error_message_12001ef9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -139,8 +143,10 @@ processors:
       if: ctx.recordedfuture?.identity_detection?.dump?.downloaded != null && ctx.recordedfuture.identity_detection.dump.downloaded != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_identity_detection_dump_downloaded_62e90bc1
             field: recordedfuture.identity_detection.dump.downloaded
         - append:
+            tag: append_error_message_a19b4603
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -230,8 +236,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_recordedfuture_identity_detection_novel_972f7863
             field: recordedfuture.identity_detection.novel
         - append:
+            tag: append_error_message_ce0b8090
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -242,13 +250,15 @@ processors:
       if: ctx.recordedfuture?.identity_detection?.dump?.infrastructure?.ip != null && ctx.recordedfuture.identity_detection.dump.infrastructure.ip != ''
       on_failure:
         - remove:
+            tag: remove_recordedfuture_identity_detection_dump_infrastructure_ip_90063281
             field: recordedfuture.identity_detection.dump.infrastructure.ip
         - append:
+            tag: append_error_message_3b0ddd9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  # populate ECS fields
 
+  # populate ECS fields
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_identity_detection_created
@@ -324,6 +334,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_57d3063f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -385,6 +396,7 @@ processors:
       if: ctx.url?.full != null && ctx.url.full != ''
       on_failure:
         - append:
+            tag: append_error_message_6bc62259
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -495,6 +507,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

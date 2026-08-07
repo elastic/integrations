@@ -8,10 +8,12 @@ processors:
       value: 8.11.0
   # Set up tag logic for choosing which cloud metadata to include.
   - append:
+      tag: append_tags_ae765f40
       field: tags
       value: ["elastic_cloud_data", "provider_cloud_data"]
       if: ctx.tags?.contains('both') == true
   - script:
+      tag: script_cf15c348
       lang: painless
       source: |
         if (ctx.tags != null) {
@@ -23,10 +25,12 @@ processors:
           }
         }
   - set:
+      tag: set__conf_want_provider_cloud_4bad817b
       field: _conf.want_provider_cloud
       value: true
       if: ctx.tags?.contains('provider_cloud_data') == true
   - remove:
+      tag: remove_cloud_ddf0b5c6
       description: Remove elastic agent-provided cloud metadata fields if not requested.
       field: cloud
       if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
@@ -50,32 +54,39 @@ processors:
   # Metadata is a common event metadata.
   # All of these fields are mapped to ECS fields.
   - date:
+      tag: date_teleport_audit_time_to_timestamp_a865b0e0
       field: teleport.audit.time
       target_field: '@timestamp'
       formats:
         - ISO8601
       if: ctx.teleport?.audit?.time != null
   - remove:
+      tag: remove_teleport_audit_time_92e7e8d3
       field: teleport.audit.time
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_event_to_event_action_ea1a8510
       field: teleport.audit.event
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_code_to_event_code_9d0f036c
       field: teleport.audit.code
       target_field: event.code
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_uid_to_event_id_2f60a897
       field: teleport.audit.uid
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_ei_to_event_sequence_04be18b1
       field: teleport.audit.ei
       target_field: event.sequence
       ignore_missing: true
   # Add the event categorization.
   - pipeline:
+      tag: pipeline_9d713fd0
       name: '{{ IngestPipeline "event-categories" }}'
       ignore_failure: true
   # Rename label fields early so they reach their flattened mapping even
@@ -83,50 +94,60 @@ processors:
   # "cluster.coreweave.cloud/type") cause mapping conflicts under dynamic
   # mapping, but are safe inside flattened fields.
   - rename:
+      tag: rename_teleport_audit_kubernetes_labels_to_teleport_audit_kubernetes_labels_4b099298
       field: teleport.audit.kubernetes_labels
       target_field: teleport.audit.kubernetes.labels
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_kube_labels_to_teleport_audit_kubernetes_labels_a1097919
       field: teleport.audit.kube_labels
       target_field: teleport.audit.kubernetes.labels
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_server_labels_to_teleport_audit_server_labels_8bc614f0
       field: teleport.audit.server_labels
       target_field: teleport.audit.server.labels
       ignore_missing: true
       ignore_failure: true
   # Process most of the field groups.
   - pipeline:
+      tag: pipeline_56034ebc
       name: '{{ IngestPipeline "event-groups" }}'
       ignore_failure: true
   # App session request related metadata
   # The HTTP-related fields are used for other events as well. They work as catch-all
   # fields and should be at the end of the group processing.
   - rename:
+      tag: rename_teleport_audit_method_to_http_request_method_f48ccd1d
       field: teleport.audit.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_path_to_url_path_9cbb1da0
       field: teleport.audit.path
       target_field: url.path
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_raw_query_to_url_query_fdff2a1f
       field: teleport.audit.raw_query
       target_field: url.query
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_cluster_name_to_orchestrator_cluster_name_f893fb52
       field: teleport.audit.cluster_name
       target_field: orchestrator.cluster.name
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_teleport_audit_cluster_name_79794b00
       field: teleport.audit.cluster_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_name_to_orchestrator_resource_name_519b48be
       field: teleport.audit.name
       target_field: orchestrator.resource.name
       ignore_missing: true
@@ -145,6 +166,7 @@ processors:
       target_field: teleport.audit.database.request_body
       ignore_missing: true
   - set:
+      tag: set_http_request_body_content_e9d6c865
       field: http.request.body.content
       value: '{{{teleport.audit.database.request_body}}}'
       if: ctx.teleport?.audit?.database?.request_body != null && (ctx.teleport?.audit?.database?.request_body instanceof String)
@@ -155,20 +177,24 @@ processors:
       ignore_failure: true
       if: ctx.teleport?.audit?.database?.request_body != null
   - rename:
+      tag: rename_teleport_audit_status_code_to_http_response_status_code_d6bd292d
       field: teleport.audit.status_code
       target_field: http.response.status_code
       ignore_missing: true
   - append:
+      tag: append_message_13446ce1
       field: message
       value:
         - '{{{teleport.audit.error}}}'
       allow_duplicates: false
       if: ctx.teleport?.audit?.error != null
   - remove:
+      tag: remove_teleport_audit_error_0e47ef1c
       field: teleport.audit.error
       ignore_missing: true
   # Enrich the fields.
   - pipeline:
+      tag: pipeline_9eb028f9
       name: '{{ IngestPipeline "event-enrich" }}'
       ignore_failure: true
   # Final steps.

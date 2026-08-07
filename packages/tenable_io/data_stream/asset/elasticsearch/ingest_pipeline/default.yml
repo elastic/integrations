@@ -13,6 +13,7 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - terminate:
@@ -20,28 +21,35 @@ processors:
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
+      tag: set_event_category_ba9b1d84
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_871e09cf
       field: event.kind
       value: state
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - date:
+      tag: date_json_created_at_to_tenable_io_asset_created_at_9ade9b19
       field: json.created_at
       target_field: tenable_io.asset.created_at
       formats:
@@ -49,17 +57,21 @@ processors:
       if: ctx.json?.created_at != null && ctx.json.created_at != ''
       on_failure:
         - append:
+            tag: append_error_message_1dc0d2ea
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_id_to_tenable_io_asset_id_e8e1ca00
       field: json.id
       target_field: tenable_io.asset.id
       ignore_missing: true
   - set:
+      tag: set_host_id_1a636e6f
       field: host.id
       copy_from: tenable_io.asset.id
       ignore_empty_value: true
   - convert:
+      tag: convert_json_has_agent_to_tenable_io_asset_has_agent_ca8d7ec1
       field: json.has_agent
       target_field: tenable_io.asset.has_agent
       type: boolean
@@ -67,9 +79,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_df40ab6a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_has_plugin_results_to_tenable_io_asset_has_plugin_results_235bc0d4
       field: json.has_plugin_results
       target_field: tenable_io.asset.has_plugin_results
       type: boolean
@@ -77,9 +91,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_04925581
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_terminated_at_to_tenable_io_asset_terminated_at_49999a6d
       field: json.terminated_at
       target_field: tenable_io.asset.terminated_at
       if: ctx.json?.terminated_at != null && ctx.json.terminated_at != ''
@@ -87,13 +103,16 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_3b9b02d6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_terminated_by_to_tenable_io_asset_terminated_by_da2a4a5c
       field: json.terminated_by
       target_field: tenable_io.asset.terminated_by
       ignore_missing: true
   - date:
+      tag: date_json_updated_at_to_tenable_io_asset_updated_at_4b12f84d
       field: json.updated_at
       target_field: tenable_io.asset.updated_at
       formats:
@@ -101,13 +120,16 @@ processors:
       if: ctx.json?.updated_at != null && ctx.json.updated_at != ''
       on_failure:
         - append:
+            tag: append_error_message_da5c9c4e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_21230a94
       field: '@timestamp'
       copy_from: tenable_io.asset.updated_at
       ignore_empty_value: true
   - date:
+      tag: date_json_deleted_at_to_tenable_io_asset_deleted_at_12b82add
       field: json.deleted_at
       target_field: tenable_io.asset.deleted_at
       formats:
@@ -115,13 +137,16 @@ processors:
       if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
       on_failure:
         - append:
+            tag: append_error_message_94221fce
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_deleted_by_to_tenable_io_asset_deleted_by_2ab03e80
       field: json.deleted_by
       target_field: tenable_io.asset.deleted_by
       ignore_missing: true
   - date:
+      tag: date_json_first_seen_to_tenable_io_asset_first_seen_1bc93d51
       field: json.first_seen
       target_field: tenable_io.asset.first_seen
       formats:
@@ -129,9 +154,11 @@ processors:
       if: ctx.json?.first_seen != null && ctx.json.first_seen != ''
       on_failure:
         - append:
+            tag: append_error_message_245e67c2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_seen_to_tenable_io_asset_last_seen_bdb1b48d
       field: json.last_seen
       target_field: tenable_io.asset.last_seen
       formats:
@@ -139,9 +166,11 @@ processors:
       if: ctx.json?.last_seen != null && ctx.json.last_seen != ''
       on_failure:
         - append:
+            tag: append_error_message_465400fe
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_first_scan_time_to_tenable_io_asset_first_scan_time_7cdeea15
       field: json.first_scan_time
       target_field: tenable_io.asset.first_scan_time
       formats:
@@ -149,9 +178,11 @@ processors:
       if: ctx.json?.first_scan_time != null && ctx.json.first_scan_time != ''
       on_failure:
         - append:
+            tag: append_error_message_bcc308d6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_scan_time_to_tenable_io_asset_last_scan_time_14a3ed59
       field: json.last_scan_time
       target_field: tenable_io.asset.last_scan_time
       formats:
@@ -159,9 +190,11 @@ processors:
       if: ctx.json?.last_scan_time != null && ctx.json.last_scan_time != ''
       on_failure:
         - append:
+            tag: append_error_message_955835ba
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_authenticated_scan_date_to_tenable_io_asset_last_authenticated_scan_date_a7eab3d5
       field: json.last_authenticated_scan_date
       target_field: tenable_io.asset.last_authenticated_scan_date
       formats:
@@ -169,9 +202,11 @@ processors:
       if: ctx.json?.last_authenticated_scan_date != null && ctx.json.last_authenticated_scan_date != ''
       on_failure:
         - append:
+            tag: append_error_message_ad72a2e6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_licensed_scan_date_to_tenable_io_asset_last_licensed_scan_date_9bcca5d1
       field: json.last_licensed_scan_date
       target_field: tenable_io.asset.last_licensed_scan_date
       formats:
@@ -179,81 +214,101 @@ processors:
       if: ctx.json?.last_licensed_scan_date != null && ctx.json.last_licensed_scan_date != ''
       on_failure:
         - append:
+            tag: append_error_message_b98a118a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_last_scan_id_to_tenable_io_asset_last_scan_id_cc402f2a
       field: json.last_scan_id
       target_field: tenable_io.asset.last_scan_id
       ignore_missing: true
   - rename:
+      tag: rename_json_last_schedule_id_to_tenable_io_asset_last_schedule_id_36913e36
       field: json.last_schedule_id
       target_field: tenable_io.asset.last_schedule_id
       ignore_missing: true
   - rename:
+      tag: rename_json_azure_resource_id_to_tenable_io_asset_azure_resource_id_5ffa81e7
       field: json.azure_resource_id
       target_field: tenable_io.asset.azure.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_json_agent_uuid_to_tenable_io_asset_agent_uuid_fdecc384
       field: json.agent_uuid
       target_field: tenable_io.asset.agent_uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_bios_uuid_to_tenable_io_asset_bios_uuid_d42e04d4
       field: json.bios_uuid
       target_field: tenable_io.asset.bios_uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_owner_id_to_tenable_io_asset_aws_owner_id_2a6cd325
       field: json.aws_owner_id
       target_field: tenable_io.asset.aws.owner_id
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_vpc_id_to_tenable_io_asset_aws_vpc_id_65c1d6b9
       field: json.aws_vpc_id
       target_field: tenable_io.asset.aws.vpc_id
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_ec2_instance_group_name_to_tenable_io_asset_aws_ec2_instance_group_name_4548e196
       field: json.aws_ec2_instance_group_name
       target_field: tenable_io.asset.aws.ec2_instance.group_name
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_ec2_instance_state_name_to_tenable_io_asset_aws_ec2_instance_state_name_a2cc52fa
       field: json.aws_ec2_instance_state_name
       target_field: tenable_io.asset.aws.ec2_instance.state_name
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_subnet_id_to_tenable_io_asset_aws_subnet_id_bc8d0bd7
       field: json.aws_subnet_id
       target_field: tenable_io.asset.aws.subnet_id
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_ec2_product_code_to_tenable_io_asset_aws_ec2_product_code_fad48ab7
       field: json.aws_ec2_product_code
       target_field: tenable_io.asset.aws.ec2_product_code
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_ec2_name_to_tenable_io_asset_aws_ec2_name_aae1b09f
       field: json.aws_ec2_name
       target_field: tenable_io.asset.aws.ec2_name
       ignore_missing: true
   - rename:
+      tag: rename_json_mcafee_epo_guid_to_tenable_io_asset_mcafee_epo_guid_1ada7299
       field: json.mcafee_epo_guid
       target_field: tenable_io.asset.mcafee_epo.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_mcafee_epo_agent_guid_to_tenable_io_asset_mcafee_epo_agent_guid_c2082915
       field: json.mcafee_epo_agent_guid
       target_field: tenable_io.asset.mcafee_epo.agent_guid
       ignore_missing: true
   - rename:
+      tag: rename_json_servicenow_sysid_to_tenable_io_asset_servicenow_sysid_244fea76
       field: json.servicenow_sysid
       target_field: tenable_io.asset.servicenow_sysid
       ignore_missing: true
   - rename:
+      tag: rename_json_bigfix_asset_id_to_tenable_io_asset_bigfix_asset_id_f7ce0a80
       field: json.bigfix_asset_id
       target_field: tenable_io.asset.bigfix_asset_id
       ignore_missing: true
   - rename:
+      tag: rename_json_agent_names_to_tenable_io_asset_agent_names_6ee749c4
       field: json.agent_names
       target_field: tenable_io.asset.agent_names
       ignore_missing: true
   - rename:
+      tag: rename_json_installed_software_to_tenable_io_asset_installed_software_2cada8aa
       field: json.installed_software
       target_field: tenable_io.asset.installed_software
       ignore_missing: true
   - foreach:
+      tag: foreach_json_ipv4s_d8b89ddc
       field: json.ipv4s
       if: ctx.json?.ipv4s instanceof List
       processor:
@@ -268,10 +323,12 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ipv4s_to_tenable_io_asset_ipv4s_ba5f227c
       field: json.ipv4s
       target_field: tenable_io.asset.ipv4s
       ignore_missing: true
   - foreach:
+      tag: foreach_tenable_io_asset_ipv4s_db4bab81
       field: tenable_io.asset.ipv4s
       if: ctx.tenable_io?.asset?.ipv4s instanceof List
       processor:
@@ -280,6 +337,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_ipv6s_2b7fc408
       field: json.ipv6s
       if: ctx.json?.ipv6s instanceof List
       processor:
@@ -294,10 +352,12 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ipv6s_to_tenable_io_asset_ipv6s_1e7fa15c
       field: json.ipv6s
       target_field: tenable_io.asset.ipv6s
       ignore_missing: true
   - foreach:
+      tag: foreach_tenable_io_asset_ipv6s_825c70b1
       field: tenable_io.asset.ipv6s
       if: ctx.tenable_io?.asset?.ipv6s instanceof List
       processor:
@@ -306,26 +366,32 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
+      tag: rename_json_fqdns_to_tenable_io_asset_fqdns_cfc6c4f0
       field: json.fqdns
       target_field: tenable_io.asset.fqdns
       ignore_missing: true
   - set:
+      tag: set_host_domain_05ff5c05
       field: host.domain
       copy_from: tenable_io.asset.fqdns
       ignore_empty_value: true
   - gsub:
+      tag: gsub_json_mac_addresses_9751b210
       field: json.mac_addresses
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_json_mac_addresses_37ba2322
       field: json.mac_addresses
       ignore_missing: true
   - rename:
+      tag: rename_json_mac_addresses_to_tenable_io_asset_mac_addresses_b6ced548
       field: json.mac_addresses
       target_field: tenable_io.asset.mac_addresses
       ignore_missing: true
   - foreach:
+      tag: foreach_tenable_io_asset_mac_addresses_0a7b87d7
       field: tenable_io.asset.mac_addresses
       if: ctx.tenable_io?.asset?.mac_addresses instanceof List
       processor:
@@ -334,21 +400,26 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
+      tag: rename_json_netbios_names_to_tenable_io_asset_netbios_names_979fe238
       field: json.netbios_names
       target_field: tenable_io.asset.netbios_names
       ignore_missing: true
   - set:
+      tag: set_host_name_aac4ec01
       field: host.name
       copy_from: tenable_io.asset.netbios_names
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_host_name_91ef3e1c
       field: host.name
       ignore_missing: true
   - rename:
+      tag: rename_json_operating_systems_to_tenable_io_asset_operating_systems_8618eed0
       field: json.operating_systems
       target_field: tenable_io.asset.operating_systems
       ignore_missing: true
   - set:
+      tag: set_host_os_name_225f89d0
       field: host.os.name
       copy_from: tenable_io.asset.operating_systems
       ignore_empty_value: true
@@ -361,6 +432,7 @@ processors:
       if: ctx.json?.ratings?.acr?.score != ''
       on_failure:
         - append:
+            tag: append_error_message_f4873f1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -372,45 +444,56 @@ processors:
       if: ctx.json?.ratings?.aes?.score != ''
       on_failure:
         - append:
+            tag: append_error_message_7f8dd522
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_system_types_to_tenable_io_asset_system_types_8dc333a8
       field: json.system_types
       target_field: tenable_io.asset.system_types
       ignore_missing: true
   - rename:
+      tag: rename_json_hostnames_to_tenable_io_asset_hostnames_05b3da20
       field: json.hostnames
       target_field: tenable_io.asset.hostnames
       ignore_missing: true
   - set:
+      tag: set_host_hostname_8fc6c4a4
       field: host.hostname
       copy_from: tenable_io.asset.hostnames
       ignore_empty_value: true
   - rename:
+      tag: rename_json_serial_number_to_tenable_io_asset_serial_number_ca0ebbc0
       field: json.serial_number
       target_field: tenable_io.asset.serial_number
       ignore_missing: true
   - rename:
+      tag: rename_json_ssh_fingerprints_to_tenable_io_asset_ssh_fingerprints_82afea72
       field: json.ssh_fingerprints
       target_field: tenable_io.asset.ssh_fingerprints
       ignore_missing: true
   - rename:
+      tag: rename_json_qualys_asset_ids_to_tenable_io_asset_qualys_asset_ids_d4d8bdf7
       field: json.qualys_asset_ids
       target_field: tenable_io.asset.qualys.asset_ids
       ignore_missing: true
   - rename:
+      tag: rename_json_qualys_host_ids_to_tenable_io_asset_qualys_host_ids_65fe964d
       field: json.qualys_host_ids
       target_field: tenable_io.asset.qualys.host_ids
       ignore_missing: true
   - rename:
+      tag: rename_json_manufacturer_tpm_ids_to_tenable_io_asset_manufacturer_tpm_ids_bab5c7a6
       field: json.manufacturer_tpm_ids
       target_field: tenable_io.asset.manufacturer_tpm_ids
       ignore_missing: true
   - rename:
+      tag: rename_json_symantec_ep_hardware_keys_to_tenable_io_asset_symantec_ep_hardware_keys_cc6691dc
       field: json.symantec_ep_hardware_keys
       target_field: tenable_io.asset.symantec_ep_hardware_keys
       ignore_missing: true
   - foreach:
+      tag: foreach_json_sources_75b76e3d
       field: json.sources
       if: ctx.json?.sources instanceof List
       processor:
@@ -427,6 +510,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_sources_30083c9d
       field: json.sources
       if: ctx.json?.sources instanceof List
       processor:
@@ -443,10 +527,12 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_sources_to_tenable_io_asset_sources_b63d5da0
       field: json.sources
       target_field: tenable_io.asset.sources
       ignore_missing: true
   - foreach:
+      tag: foreach_json_tags_6e56490d
       field: json.tags
       if: ctx.json?.tags instanceof List
       processor:
@@ -463,10 +549,12 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tags_to_tenable_io_asset_tags_40a9a9f0
       field: json.tags
       target_field: tenable_io.asset.tags
       ignore_missing: true
   - foreach:
+      tag: foreach_json_network_interfaces_eaa254c7
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -486,6 +574,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_network_interfaces_990b7ba3
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -498,6 +587,7 @@ processors:
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_json_network_interfaces_2e2887f1
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -517,6 +607,7 @@ processors:
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_network_interfaces_937ee4e9
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -529,6 +620,7 @@ processors:
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_json_network_interfaces_eea6bb81
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -541,6 +633,7 @@ processors:
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_json_network_interfaces_a8650278
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -556,6 +649,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_network_interfaces_0326775c
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -569,6 +663,7 @@ processors:
               replacement: '-'
               ignore_missing: true
   - foreach:
+      tag: foreach_json_network_interfaces_fed8d774
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -580,6 +675,7 @@ processors:
               field: _ingest._value
               ignore_missing: true
   - foreach:
+      tag: foreach_json_network_interfaces_1352a7ea
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
@@ -592,6 +688,7 @@ processors:
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - rename:
+      tag: rename_json_network_interfaces_to_tenable_io_asset_network_interfaces_7e8af788
       field: json.network_interfaces
       target_field: tenable_io.asset.network_interfaces
       ignore_missing: true
@@ -618,9 +715,9 @@ processors:
           ctx.tenable_io.asset.acr_score = (long) ctx.json.acr_score;
           return;
         } 
-
       on_failure:
         - append:
+            tag: append_error_message_eee4d7d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -649,89 +746,111 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_94d24a2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_network_id_to_tenable_io_asset_network_id_cd409bdf
       field: json.network_id
       target_field: tenable_io.asset.network.id
       ignore_missing: true
   - rename:
+      tag: rename_json_network_name_to_tenable_io_asset_network_name_7574eceb
       field: json.network_name
       target_field: tenable_io.asset.network.name
       ignore_missing: true
   - set:
+      tag: set_network_name_7ad12acf
       field: network.name
       copy_from: tenable_io.asset.network.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_gcp_zone_to_tenable_io_asset_gcp_zone_f49a4871
       field: json.gcp_zone
       target_field: tenable_io.asset.gcp.zone
       ignore_missing: true
   - set:
+      tag: set_cloud_availability_zone_694e2e06
       field: cloud.availability_zone
       copy_from: tenable_io.asset.gcp.zone
       ignore_empty_value: true
   - rename:
+      tag: rename_json_aws_availability_zone_to_tenable_io_asset_aws_availability_zone_45f9d11f
       field: json.aws_availability_zone
       target_field: tenable_io.asset.aws.availability_zone
       ignore_missing: true
   - set:
+      tag: set_cloud_availability_zone_cddbad69
       field: cloud.availability_zone
       copy_from: tenable_io.asset.aws.availability_zone
       ignore_empty_value: true
   - rename:
+      tag: rename_json_azure_vm_id_to_tenable_io_asset_azure_vm_id_004cfde3
       field: json.azure_vm_id
       target_field: tenable_io.asset.azure.vm_id
       ignore_missing: true
   - set:
+      tag: set_cloud_instance_id_a6f0fab0
       field: cloud.instance.id
       copy_from: tenable_io.asset.azure.vm_id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_gcp_instance_id_to_tenable_io_asset_gcp_instance_id_1f77b6f3
       field: json.gcp_instance_id
       target_field: tenable_io.asset.gcp.instance_id
       ignore_missing: true
   - set:
+      tag: set_cloud_instance_id_6cb124cd
       field: cloud.instance.id
       copy_from: tenable_io.asset.gcp.instance_id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_aws_ec2_instance_ami_id_to_tenable_io_asset_aws_ec2_instance_ami_id_8399befa
       field: json.aws_ec2_instance_ami_id
       target_field: tenable_io.asset.aws.ec2_instance.ami_id
       ignore_missing: true
   - rename:
+      tag: rename_json_aws_ec2_instance_id_to_tenable_io_asset_aws_ec2_instance_id_3c7a37ca
       field: json.aws_ec2_instance_id
       target_field: tenable_io.asset.aws.ec2_instance.id
       ignore_missing: true
   - set:
+      tag: set_cloud_instance_id_b56bff6e
       field: cloud.instance.id
       copy_from: tenable_io.asset.aws.ec2_instance.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_aws_ec2_instance_type_to_tenable_io_asset_aws_ec2_instance_type_df6503a6
       field: json.aws_ec2_instance_type
       target_field: tenable_io.asset.aws.ec2_instance.type
       ignore_missing: true
   - set:
+      tag: set_cloud_machine_type_08635eee
       field: cloud.machine.type
       copy_from: tenable_io.asset.aws.ec2_instance.type
       ignore_empty_value: true
   - rename:
+      tag: rename_json_gcp_project_id_to_tenable_io_asset_gcp_project_id_3ceed3bb
       field: json.gcp_project_id
       target_field: tenable_io.asset.gcp.project_id
       ignore_missing: true
   - set:
+      tag: set_cloud_project_id_8d8e128d
       field: cloud.project.id
       copy_from: tenable_io.asset.gcp.project_id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_aws_region_to_tenable_io_asset_aws_region_ab5e68af
       field: json.aws_region
       target_field: tenable_io.asset.aws.region
       ignore_missing: true
   - set:
+      tag: set_cloud_region_887a86bb
       field: cloud.region
       copy_from: tenable_io.asset.aws.region
       ignore_empty_value: true
   - foreach:
+      tag: foreach_host_ip_232e838f
       field: host.ip
       if: ctx.host?.ip instanceof List
       processor:
@@ -740,6 +859,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_host_name_04aa1395
       field: host.name
       if: ctx.host?.name instanceof List
       processor:
@@ -748,6 +868,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_host_hostname_1b8748a5
       field: host.hostname
       if: ctx.host?.hostname instanceof List
       processor:
@@ -756,6 +877,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_host_domain_088fc341
       field: host.domain
       if: ctx.host?.domain instanceof List
       processor:
@@ -764,9 +886,11 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_da7b4987
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tenable_io.asset.updated_at
@@ -789,6 +913,7 @@ processors:
         - tenable_io.asset.network.name
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -806,10 +931,12 @@ processors:
         }
         dropEmptyFields(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,47 +2,59 @@
 description: Pipeline for Zscaler audit logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_ModifiedTime_5022b38b
       field: json.ModifiedTime
       formats:
         - ISO8601
       if: ctx.json?.ModifiedTime != null && ctx.json.ModifiedTime != ''
       on_failure:
         - remove:
+            tag: remove_json_ModifiedTime_7f0a812f
             field: json.ModifiedTime
         - append:
+            tag: append_error_message_456f43f4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_CreationTime_653621fa
       field: json.CreationTime
       if: ctx.json?.ModifiedTime == '' && ctx.json.CreationTime != null && ctx.json.CreationTime != ''
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_json_CreationTime_57b1b024
             field: json.CreationTime
         - append:
+            tag: append_error_message_57776e6f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_created_4864b71e
       field: event.created
       copy_from: '@timestamp'
       ignore_failure: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - script:
+      tag: script_3d9eeafd
       if: ctx.json?.AuditOperationType != null && ctx.json.AuditOperationType != ''
       lang: painless
       params:
@@ -76,9 +88,8 @@ processors:
             type:
               - start
               - error
-            category: failure
-              - session
-            outcome: 
+            category: failure - session
+            outcome:
           'download':
             type:
               - info
@@ -108,41 +119,51 @@ processors:
         ctx.event.category = class.category;
         ctx.event.outcome = class.outcome;
   - rename:
+      tag: rename_json_RequestID_to_event_id_1e1a7dd9
       field: json.RequestID
       target_field: event.id
       ignore_missing: true
   - convert:
+      tag: convert_json_CustomerID_to_organization_id_050f2a5b
       field: json.CustomerID
       target_field: organization.id
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_CustomerID_1851f9ba
             field: json.CustomerID
         - append:
+            tag: append_error_message_a4a28b4a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ModifiedBy_to_user_id_e49f01c2
       field: json.ModifiedBy
       target_field: user.id
       ignore_missing: true
   - convert:
+      tag: convert_user_id_a7d5ea6b
       field: user.id
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_user_id_726ffb33
             field: user.id
         - append:
+            tag: append_error_message_8d34db48
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_3b2f7fde
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_User_to_user_name_e286bc45
       field: json.User
       target_field: user.name
       ignore_missing: true
@@ -158,61 +179,75 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_36d4b55a
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_SessionID_to_zscaler_zpa_audit_session_id_35e2d791
       field: json.SessionID
       target_field: zscaler_zpa.audit.session.id
       ignore_missing: true
   - json:
+      tag: json_json_AuditOldValue_to_json_AuditOldValue_2216926a
       field: json.AuditOldValue
       target_field: json.AuditOldValue
       ignore_failure: true
   - json:
+      tag: json_json_AuditNewValue_to_json_AuditNewValue_12b9a9a2
       field: json.AuditNewValue
       target_field: json.AuditNewValue
       ignore_failure: true
   - set:
+      tag: set_zscaler_zpa_audit_value_old_8d8f2460
       field: zscaler_zpa.audit.value.old
       copy_from: json.AuditOldValue
       ignore_failure: true
   - set:
+      tag: set_zscaler_zpa_audit_value_new_ee743636
       field: zscaler_zpa.audit.value.new
       copy_from: json.AuditNewValue
       ignore_failure: true
   - set:
+      tag: set_zscaler_zpa_audit_object_type_382d6bf3
       field: zscaler_zpa.audit.object.type
       copy_from: json.ObjectType
       ignore_failure: true
   - set:
+      tag: set_zscaler_zpa_audit_object_name_17bcb39b
       field: zscaler_zpa.audit.object.name
       copy_from: json.ObjectName
       ignore_failure: true
   - rename:
+      tag: rename_json_ClientAuditUpdate_to_zscaler_zpa_audit_client_audit_update_3fad53a5
       field: json.ClientAuditUpdate
       target_field: zscaler_zpa.audit.client_audit_update
       ignore_missing: true
   - convert:
+      tag: convert_json_ObjectID_to_zscaler_zpa_audit_object_id_ca0cc3f8
       field: json.ObjectID
       target_field: zscaler_zpa.audit.object.id
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ObjectID_08c2f070
             field: json.ObjectID
         - append:
+            tag: append_error_message_d7ad942d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_03900818
       lang: painless
       description: Map the fields inside AuditNewValues and AuditOldValues to it's corresponding ECS Field-set.
       if: ctx.json.ObjectType != null
@@ -278,37 +313,43 @@ processors:
           ctx.server.address = valuesMap?.domainOrIpAddress;
         }
   - split:
+      tag: split_client_ip_d031558d
       field: client.ip
       separator: ', *'
       if: ctx.client?.ip instanceof String && ctx.client.ip.contains(',')
   - append:
+      tag: append_related_ip_dc70a264
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip instanceof String
       allow_duplicates: false
       ignore_failure: true
   - foreach:
+      tag: foreach_client_ip_bf98098e
       field: client.ip
       if: ctx.client?.ip instanceof List
-      processor:       
+      processor:
         append:
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
           ignore_failure: true
   - convert:
+      tag: convert_server_address_to_server_ip_940441bc
       field: server.address
       target_field: server.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_ip_3ed00a18
       field: related.ip
       value: '{{{server.ip}}}'
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - date:
+      tag: date_x509_not_after_to_x509_not_after_dba0613b
       if: ctx.x509?.not_after != null && ctx.x509.not_after != ''
       field: x509.not_after
       target_field: x509.not_after
@@ -316,11 +357,14 @@ processors:
         - UNIX
       on_failure:
         - remove:
+            tag: remove_x509_not_after_d7e9f7f5
             field: x509.not_after
         - append:
+            tag: append_error_message_554917ae
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_x509_not_before_to_x509_not_before_1516082a
       if: ctx.x509?.not_before != null && ctx.x509.not_before != ''
       field: x509.not_before
       target_field: x509.not_before
@@ -328,15 +372,19 @@ processors:
         - UNIX
       on_failure:
         - remove:
+            tag: remove_x509_not_before_c1c3bc27
             field: x509.not_before
         - append:
+            tag: append_error_message_e195b7e9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_AuditOperationType_to_zscaler_zpa_audit_operation_type_5b0ff5c7
       field: json.AuditOperationType
       target_field: zscaler_zpa.audit.operation_type
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -354,6 +402,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_934f4583
       field:
         - json.ObjectType
         - json.ModifiedTime
@@ -365,6 +414,7 @@ processors:
         - json.ObjectID
       ignore_missing: true
   - script:
+      tag: script_b4dc9a29
       description: Adds all the remaining fields in fields under zscaler_zpa.audit.
       lang: painless
       if: ctx.json != null
@@ -373,6 +423,7 @@ processors:
           ctx.zscaler_zpa?.audit[m.getKey()] = m.getValue();
         }
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:

@@ -2,6 +2,7 @@
 description: Pipeline for processing email events
 processors:
   - foreach:
+      tag: foreach_eti__patterns_b71ef8a9
       field: eti._patterns
       processor:
         grok:
@@ -10,6 +11,7 @@ processors:
             - "^\\[?email-message:from_ref.value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.email.address}'\\]?"
           ignore_failure: true
   - foreach:
+      tag: foreach_eti__patterns_52637e76
       field: eti._patterns
       if: ctx.threat?.indicator?.email?.address != null
       processor:
@@ -19,6 +21,7 @@ processors:
             - "^\\[?email-message:to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.email.address}'\\]?"
           ignore_failure: true
   - script:
+      tag: script_9abebbc4
       lang: painless
       if: ctx.threat?.indicator?.email?.address != null
       source: >

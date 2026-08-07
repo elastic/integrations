@@ -10,18 +10,22 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_4cc22c32
       field: event.category
       value: threat
   - append:
+      tag: append_event_type_7779ef85
       field: event.type
       value: indicator
   ######################
   # General ECS fields #
   ######################
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -45,6 +49,7 @@ processors:
       tag: drop_no_stix_2_1
 
   - fingerprint:
+      tag: fingerprint_8fd388a3
       fields:
         - stix.id
         - stix.modified
@@ -53,15 +58,19 @@ processors:
       ignore_missing: true
 
   - set:
+      tag: set_threat_feed_name_01ac7e20
       field: threat.feed.name
       value: ANY.RUN TI Feeds
   - set:
+      tag: set_threat_feed_description_34aebca7
       field: threat.feed.description
       value: Indicator from the ANY.RUN TI Feeds
   - set:
+      tag: set_threat_feed_reference_a717c23c
       field: threat.feed.reference
       value: https://intelligence.any.run/feeds
   - set:
+      tag: set_threat_indicator_provider_772e91b3
       field: threat.indicator.provider
       value: ANY.RUN
   ################
@@ -78,6 +87,7 @@ processors:
   # Threat ECS Fields #
   #####################
   - append:
+      tag: append_threat_indicator_id_caf54fc8
       field: threat.indicator.id
       value: '{{{stix.id}}}'
       allow_duplicates: false
@@ -99,7 +109,7 @@ processors:
       formats:
         - "ISO8601"
       if: ctx.stix.created != null
-      tag: date_created
+      tag: date_stix_created_to_threat_indicator_first_seen_e1b496f2
   - rename:
       field: stix.name
       target_field: threat.indicator.name
@@ -129,6 +139,7 @@ processors:
           ctx.threat.indicator.confidence = "Not Specified";
         }
   - foreach:
+      tag: foreach_stix_labels_ba882095
       field: stix.labels
       if: ctx.stix.labels != null
       processor:
@@ -139,9 +150,11 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_stix_labels_34842181
       field: stix.labels
       ignore_missing: true
   - gsub:
+      tag: gsub_tags_a0590d98
       field: tags
       pattern: '\\\"'
       replacement: '\"'
@@ -210,8 +223,9 @@ processors:
         ctx.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
+            tag: append_error_message_eafe31b7
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'  
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       lang: painless
@@ -239,10 +253,12 @@ processors:
         - "UNIX"
       on_failure:
         - append:
+            tag: append_error_message_ad4a1b1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
         - fail:
+            tag: fail_24af1a5a
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
@@ -254,14 +270,17 @@ processors:
   # IOC patterns #
   ################
   - set:
+      tag: set_threat_indicator_type_fbf871e7
       field: threat.indicator.type
       value: domain-name
       if: ctx.stix.pattern?.startsWith('[domain-name') == true
   - set:
+      tag: set_threat_indicator_type_276a5ad7
       field: threat.indicator.type
       value: ipv4-addr
       if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
+      tag: set_threat_indicator_type_60ba33af
       field: threat.indicator.type
       value: url
       if: ctx.stix.pattern?.startsWith('[url') == true
@@ -274,14 +293,16 @@ processors:
       tag: split_pattern
 
   - foreach:
+      tag: foreach_stix__patterns_6bd37c40
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-domain-name" }}'
-          
+
   - foreach:
+      tag: foreach_stix__patterns_00f5a031
       field: stix._patterns
       if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
@@ -290,6 +311,7 @@ processors:
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
+      tag: foreach_stix__patterns_f9bd611a
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
@@ -298,6 +320,7 @@ processors:
           name: '{{ IngestPipeline "indicator-url" }}'
 
   - remove:
+      tag: remove_3f098879
       field:
         - "_conf"
         - "stix._patterns"
@@ -328,7 +351,6 @@ processors:
           }
         }
         unescape(ctx);
-
   - script:
       lang: painless
       description: Drops null/empty values recursively.
@@ -353,10 +375,11 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-      if: ctx.error?.message != null      
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message

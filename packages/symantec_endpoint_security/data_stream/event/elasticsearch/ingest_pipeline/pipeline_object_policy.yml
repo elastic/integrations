@@ -11,9 +11,11 @@ processors:
       if: ctx.ses?.policy?.effective_date != null && ctx.ses.policy.effective_date != ''
       on_failure:
         - append:
+            tag: append_error_message_907c81f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_policy_effective_date_b98f0f72
             field: ses.policy.effective_date
             ignore_missing: true
   - convert:
@@ -24,9 +26,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dfec719b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_policy_rule_category_id_d02d9e74
             field: ses.policy.rule_category_id
             ignore_missing: true
   - foreach:
@@ -135,9 +139,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_60b58ab3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_policy_type_id_da3ef2d9
             field: ses.policy.type_id
             ignore_missing: true
   - foreach:
@@ -161,3 +167,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

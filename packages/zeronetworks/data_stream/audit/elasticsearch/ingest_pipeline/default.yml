@@ -2,6 +2,7 @@
 description: Pipeline for processing Zero Networks Audit logs
 processors:
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -13,51 +14,63 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - date:
+      tag: date_json_isoTimestamp_to_timestamp_17cee43f
       field: json.isoTimestamp
       formats:
         - date_optional_time
       target_field: '@timestamp'
   - convert:
+      tag: convert_json_auditType_3d3903c7
       field: json.auditType
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_json_auditType_to_event_code_ec32d5e8
       field: json.auditType
       target_field: event.code
       ignore_missing: true
   - rename:
+      tag: rename_json_performedBy_id_to_user_id_452a4c90
       field: json.performedBy.id
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_performedBy_name_to_user_full_name_91fa72fc
       field: json.performedBy.name
       target_field: user.full_name
       ignore_missing: true
   - rename:
+      tag: rename_json_enforcementSource_to_zeronetworks_audit_enforcementSource_5b8b7ba4
       field: json.enforcementSource
       target_field: zeronetworks.audit.enforcementSource
       if: 'ctx.json?.enforcementSource != null'
   - rename:
+      tag: rename_json_userRole_to_zeronetworks_audit_userRole_ad3ae076
       field: json.userRole
       target_field: zeronetworks.audit.userRole
       if: 'ctx.json?.userRole != null'
   - rename:
+      tag: rename_json_reportedObjectId_to_zeronetworks_audit_reportedObjectId_41b83524
       field: json.reportedObjectId
       target_field: zeronetworks.audit.reportedObjectId
       if: 'ctx.json?.reportedObjectId != null'
   - rename:
+      tag: rename_json_reportedObjectGeneration_to_zeronetworks_audit_reportedObjectGeneration_b39fb3e5
       field: json.reportedObjectGeneration
       target_field: zeronetworks.audit.reportedObjectGeneration
       if: 'ctx.json?.reportedObjectGeneration != null'
   - rename:
+      tag: rename_json_parentObjectId_to_zeronetworks_audit_parentObjectId_38127948
       field: json.parentObjectId
       target_field: zeronetworks.audit.parentObjectId
       ignore_missing: true
       if: 'ctx.json?.parentObjectId != null'
   - foreach:
+      tag: foreach_json_destinationEntitiesList_56c59306
       field: json.destinationEntitiesList
       ignore_missing: true
       processor:
@@ -65,6 +78,7 @@ processors:
           field: zeronetworks.audit.destinationEntitiesList.name
           value: '{{{_ingest._value.name}}}'
   - foreach:
+      tag: foreach_json_destinationEntitiesList_db07fc9e
       field: json.destinationEntitiesList
       ignore_missing: true
       processor:
@@ -72,26 +86,31 @@ processors:
           field: zeronetworks.audit.destinationEntitiesList.id
           value: '{{{_ingest._value.id}}}'
   - json:
+      tag: json_json_details_to_zeronetworks_audit_details_b487c839
       field: json.details
       target_field: zeronetworks.audit.details
       if: 'ctx.json?.details != null'
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
+      tag: append_related_user_cabc82d5
       field: related.user
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - fingerprint:
+      tag: fingerprint_9150d00a
       fields:
         - json.timestamp
         - event.code
         - user.full_name
       target_field: event.id
   - set:
+      tag: set__id_49f9fff4
       field: _id
       copy_from: event.id
   - script:
@@ -694,7 +713,7 @@ processors:
             - change
           category:
             - configuration
-        "82": 
+        "82":
           action: 'Segment server deployed'
           outcome: success
           type:
@@ -702,7 +721,7 @@ processors:
             - change
           category:
             - configuration
-        "83": 
+        "83":
           action: 'AI inbound allow rule rejected'
           outcome: success
           type:
@@ -1112,10 +1131,12 @@ processors:
             return;
         } def hm = new HashMap(params.get(ctx.event.code)); hm.forEach((k, v) -> ctx.event[k] = v);
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |

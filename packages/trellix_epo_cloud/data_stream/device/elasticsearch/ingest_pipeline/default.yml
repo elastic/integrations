@@ -2,18 +2,23 @@
 description: Pipeline for processing Device logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_ba9b1d84
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -30,43 +35,53 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - rename:
+      tag: rename_json_links_self_to_trellix_epo_cloud_device_links_self_3214a31f
       field: json.links.self
       target_field: trellix_epo_cloud.device.links.self
       ignore_missing: true
   - set:
+      tag: set_event_reference_35a28f37
       field: event.reference
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.links?.self)"
       copy_from: trellix_epo_cloud.device.links.self
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_domainName_to_trellix_epo_cloud_device_attributes_domain_name_bb970362
       field: json.attributes.domainName
       target_field: trellix_epo_cloud.device.attributes.domain_name
       ignore_missing: true
   - set:
+      tag: set_host_domain_522caf18
       field: host.domain
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.attributes?.domain_name)"
       copy_from: trellix_epo_cloud.device.attributes.domain_name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_2d0901db
       field: related.hosts
       value: '{{{host.domain}}}'
       allow_duplicates: false
       if: ctx.host?.domain != null
   - rename:
+      tag: rename_json_id_to_trellix_epo_cloud_device_id_b044858f
       field: json.id
       target_field: trellix_epo_cloud.device.id
       ignore_missing: true
   - set:
+      tag: set_host_id_d3e2e8c8
       field: host.id
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.id)"
       copy_from: trellix_epo_cloud.device.id
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_d1851e05
       field: related.hosts
       value: '{{{host.id}}}'
       allow_duplicates: false
@@ -80,14 +95,17 @@ processors:
       if: "!['','(none)','N/A'].contains(ctx.json.attributes.ipAddress)"
       on_failure:
         - append:
+            tag: append_error_message_7a29e733
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_10446edb
       field: related.ip
       value: '{{{trellix_epo_cloud.device.attributes.ip_address}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.device?.attributes?.ip_address != null
   - append:
+      tag: append_host_ip_26500c16
       field: host.ip
       value: '{{{trellix_epo_cloud.device.attributes.ip_address}}}'
       allow_duplicates: false
@@ -102,112 +120,138 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_81730d68
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
+      tag: uppercase_trellix_epo_cloud_device_attributes_mac_address_73da36ee
       field: trellix_epo_cloud.device.attributes.mac_address
       ignore_missing: true
   - append:
+      tag: append_host_mac_1257a066
       field: host.mac
       value: '{{{trellix_epo_cloud.device.attributes.mac_address}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.device?.attributes?.mac_address != null
   - rename:
+      tag: rename_json_attributes_computerName_to_trellix_epo_cloud_device_attributes_computer_name_bbc90b96
       field: json.attributes.computerName
       target_field: trellix_epo_cloud.device.attributes.computer_name
       ignore_missing: true
   - set:
+      tag: set_host_name_c31b0c33
       field: host.name
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.attributes?.computer_name)"
       copy_from: trellix_epo_cloud.device.attributes.computer_name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
+      tag: rename_json_attributes_osPlatform_to_trellix_epo_cloud_device_attributes_os_platform_7a3012eb
       field: json.attributes.osPlatform
       target_field: trellix_epo_cloud.device.attributes.os.platform
       ignore_missing: true
   - set:
+      tag: set_host_os_platform_c3233bc6
       field: host.os.platform
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.attributes?.os?.platform)"
       copy_from: trellix_epo_cloud.device.attributes.os.platform
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_osType_to_trellix_epo_cloud_device_attributes_os_type_f01c5f59
       field: json.attributes.osType
       target_field: trellix_epo_cloud.device.attributes.os.type
       ignore_missing: true
   - set:
+      tag: set_host_os_type_78744970
       field: host.os.type
       if: ctx.trellix_epo_cloud?.device?.attributes?.os?.type != null && !['(none)','N/A'].contains(ctx.trellix_epo_cloud.device.attributes.os.type) && ctx.trellix_epo_cloud.device.attributes.os.type.toLowerCase().contains('windows')
       value: windows
   - set:
+      tag: set_host_os_type_6b790b90
       field: host.os.type
       if: ctx.trellix_epo_cloud?.device?.attributes?.os?.type != null && !['(none)','N/A'].contains(ctx.trellix_epo_cloud.device.attributes.os.type) && ctx.trellix_epo_cloud.device.attributes.os.type.toLowerCase().contains('linux')
       value: linux
   - set:
+      tag: set_host_os_type_45325708
       field: host.os.type
       if: ctx.trellix_epo_cloud?.device?.attributes?.os?.type != null && !['(none)','N/A'].contains(ctx.trellix_epo_cloud.device.attributes.os.type) && ctx.trellix_epo_cloud.device.attributes.os.type.toLowerCase().contains('macos')
       value: macos
   - set:
+      tag: set_host_os_type_03f7eaaa
       field: host.os.type
       if: ctx.trellix_epo_cloud?.device?.attributes?.os?.type != null && !['(none)','N/A'].contains(ctx.trellix_epo_cloud.device.attributes.os.type) && ctx.trellix_epo_cloud.device.attributes.os.type.toLowerCase().contains('unix')
       value: unix
   - set:
+      tag: set_host_os_type_b0d9d924
       field: host.os.type
       if: ctx.trellix_epo_cloud?.device?.attributes?.os?.type != null && !['(none)','N/A'].contains(ctx.trellix_epo_cloud.device.attributes.os.type) && ctx.trellix_epo_cloud.device.attributes.os.type.toLowerCase().contains('ios')
       value: ios
   - set:
+      tag: set_host_os_type_5c42756c
       field: host.os.type
       if: ctx.trellix_epo_cloud?.device?.attributes?.os?.type != null && !['(none)','N/A'].contains(ctx.trellix_epo_cloud.device.attributes.os.type) && ctx.trellix_epo_cloud.device.attributes.os.type.toLowerCase().contains('android')
       value: android
   - rename:
+      tag: rename_json_attributes_osVersion_to_trellix_epo_cloud_device_attributes_os_version_1deeabdf
       field: json.attributes.osVersion
       target_field: trellix_epo_cloud.device.attributes.os.version
       ignore_missing: true
   - set:
+      tag: set_host_os_version_51ed7b87
       field: host.os.version
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.attributes?.os?.version)"
       copy_from: trellix_epo_cloud.device.attributes.os.version
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_systemSerialNumber_to_trellix_epo_cloud_device_attributes_system_serial_number_37f98480
       field: json.attributes.systemSerialNumber
       target_field: trellix_epo_cloud.device.attributes.system.serial_number
       ignore_missing: true
   - set:
+      tag: set_observer_serial_number_11a8a547
       field: observer.serial_number
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.attributes?.system?.serial_number)"
       copy_from: trellix_epo_cloud.device.attributes.system.serial_number
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_userName_to_trellix_epo_cloud_device_attributes_user_name_92dc358e
       field: json.attributes.userName
       target_field: trellix_epo_cloud.device.attributes.user_name
       ignore_missing: true
   - set:
+      tag: set_user_name_300a6352
       field: user.name
       if: "!['(none)','N/A'].contains(ctx.trellix_epo_cloud?.device?.attributes?.user_name)"
       copy_from: trellix_epo_cloud.device.attributes.user_name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - rename:
+      tag: rename_json_attributes_agentGuid_to_trellix_epo_cloud_device_attributes_agent_guid_14464129
       field: json.attributes.agentGuid
       target_field: trellix_epo_cloud.device.attributes.agent.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_agentPlatform_to_trellix_epo_cloud_device_attributes_agent_platform_fafb8d75
       field: json.attributes.agentPlatform
       target_field: trellix_epo_cloud.device.attributes.agent.platform
       ignore_missing: true
   - set:
+      tag: set_json_attributes_agentState_eedd9d01
       field: json.attributes.agentState
       value: true
       if: ctx.json?.attributes?.agentState != '1'
   - set:
+      tag: set_json_attributes_agentState_7fca2ae7
       field: json.attributes.agentState
       value: false
       if: ctx.json?.attributes?.agentState != '0'
@@ -220,9 +264,11 @@ processors:
       if: ctx.json?.attributes?.agentState != ''
       on_failure:
         - append:
+            tag: append_error_message_f4f08c54
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_agentVersion_to_trellix_epo_cloud_device_attributes_agent_version_5c7252c1
       field: json.attributes.agentVersion
       target_field: trellix_epo_cloud.device.attributes.agent.version
       ignore_missing: true
@@ -235,26 +281,32 @@ processors:
       if: ctx.json?.attributes?.cpuSpeed != ''
       on_failure:
         - append:
+            tag: append_error_message_d413fb60
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_cpuType_to_trellix_epo_cloud_device_attributes_cpu_type_54aa7db3
       field: json.attributes.cpuType
       target_field: trellix_epo_cloud.device.attributes.cpu.type
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_excludedTags_to_trellix_epo_cloud_device_attributes_excluded_tags_65cb1b7e
       field: json.attributes.excludedTags
       target_field: trellix_epo_cloud.device.attributes.excluded_tags
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_ipHostName_to_trellix_epo_cloud_device_attributes_ip_host_name_e1a1e8bf
       field: json.attributes.ipHostName
       target_field: trellix_epo_cloud.device.attributes.ip_host_name
       ignore_missing: true
   - append:
+      tag: append_related_hosts_93cd149f
       field: related.hosts
       value: '{{{trellix_epo_cloud.device.attributes.ip_host_name}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.device?.attributes?.ip_host_name != null
   - rename:
+      tag: rename_json_attributes_isPortable_to_trellix_epo_cloud_device_attributes_is_portable_32c5195a
       field: json.attributes.isPortable
       target_field: trellix_epo_cloud.device.attributes.is_portable
       ignore_missing: true
@@ -267,17 +319,21 @@ processors:
       if: ctx.json?.attributes?.lastUpdate != ''
       on_failure:
         - append:
+            tag: append_error_message_88c69459
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_managed_to_trellix_epo_cloud_device_attributes_managed_a3b6d0ed
       field: json.attributes.managed
       target_field: trellix_epo_cloud.device.attributes.managed
       ignore_missing: true
   - set:
+      tag: set_json_attributes_managedState_81d31d31
       field: json.attributes.managedState
       value: true
       if: ctx.json?.attributes?.managedState != '1'
   - set:
+      tag: set_json_attributes_managedState_8969b337
       field: json.attributes.managedState
       value: false
       if: ctx.json?.attributes?.managedState != '0'
@@ -290,9 +346,11 @@ processors:
       if: ctx.json?.attributes?.managedState != ''
       on_failure:
         - append:
+            tag: append_error_message_97936791
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_name_to_trellix_epo_cloud_device_attributes_name_907dbe55
       field: json.attributes.name
       target_field: trellix_epo_cloud.device.attributes.name
       ignore_missing: true
@@ -305,9 +363,11 @@ processors:
       if: ctx.json?.attributes?.nodeCreatedDate != null && ctx.json.attributes.nodeCreatedDate != ''
       on_failure:
         - append:
+            tag: append_error_message_05b328d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_nodePath_to_trellix_epo_cloud_device_attributes_node_path_6443a43f
       field: json.attributes.nodePath
       target_field: trellix_epo_cloud.device.attributes.node.path
       ignore_missing: true
@@ -320,6 +380,7 @@ processors:
       if: ctx.json?.attributes?.numOfCpu != ''
       on_failure:
         - append:
+            tag: append_error_message_25a34654
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -331,6 +392,7 @@ processors:
       if: ctx.json?.attributes?.osBuildNumber != ''
       on_failure:
         - append:
+            tag: append_error_message_c3d13665
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -342,9 +404,11 @@ processors:
       if: ctx.json?.attributes?.parentId != ''
       on_failure:
         - append:
+            tag: append_error_message_366eaf46
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_subnetAddress_to_trellix_epo_cloud_device_attributes_subnet_address_d5d5264a
       field: json.attributes.subnetAddress
       target_field: trellix_epo_cloud.device.attributes.subnet_address
       ignore_missing: true
@@ -357,21 +421,26 @@ processors:
       if: ctx.json?.attributes?.systemBootTime != null && ctx.json.attributes.systemBootTime != ''
       on_failure:
         - append:
+            tag: append_error_message_19b7910a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_systemManufacturer_to_trellix_epo_cloud_device_attributes_system_manufacturer_c10f214f
       field: json.attributes.systemManufacturer
       target_field: trellix_epo_cloud.device.attributes.system.manufacturer
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_systemModel_to_trellix_epo_cloud_device_attributes_system_model_eb36ff75
       field: json.attributes.systemModel
       target_field: trellix_epo_cloud.device.attributes.system.model
       ignore_missing: true
   - set:
+      tag: set_json_attributes_systemRebootPending_2fc43895
       field: json.attributes.systemRebootPending
       value: true
       if: ctx.json?.attributes?.systemRebootPending != '1'
   - set:
+      tag: set_json_attributes_systemRebootPending_d165ce33
       field: json.attributes.systemRebootPending
       value: false
       if: ctx.json?.attributes?.systemRebootPending != '0'
@@ -384,9 +453,11 @@ processors:
       if: ctx.json?.attributes?.systemRebootPending != ''
       on_failure:
         - append:
+            tag: append_error_message_10e898c1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
+      tag: split_json_attributes_tags_to_trellix_epo_cloud_device_attributes_tags_42afdc6e
       field: json.attributes.tags
       target_field: trellix_epo_cloud.device.attributes.tags
       separator: ', '
@@ -400,6 +471,7 @@ processors:
       if: ctx.json?.attributes?.tenantId != ''
       on_failure:
         - append:
+            tag: append_error_message_0511f06e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -411,41 +483,51 @@ processors:
       if: ctx.json?.attributes?.totalPhysicalMemory != ''
       on_failure:
         - append:
+            tag: append_error_message_a4a84f30
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_relationships_devices_data_id_to_trellix_epo_cloud_device_relationships_devices_data_id_e1b0cc59
       field: json.relationships.devices.data.id
       target_field: trellix_epo_cloud.device.relationships.devices.data.id
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_devices_data_type_to_trellix_epo_cloud_device_relationships_devices_data_type_41e8c805
       field: json.relationships.devices.data.type
       target_field: trellix_epo_cloud.device.relationships.devices.data.type
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_devices_links_related_to_trellix_epo_cloud_device_relationships_devices_links_related_cfd8c7b5
       field: json.relationships.devices.links.related
       target_field: trellix_epo_cloud.device.relationships.devices.links.related
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_devices_links_self_to_trellix_epo_cloud_device_relationships_devices_links_self_b4a6e7a3
       field: json.relationships.devices.links.self
       target_field: trellix_epo_cloud.device.relationships.devices.links.self
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_installedProducts_links_related_to_trellix_epo_cloud_device_relationships_installed_products_links_related_247f9348
       field: json.relationships.installedProducts.links.related
       target_field: trellix_epo_cloud.device.relationships.installed_products.links.related
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_installedProducts_links_self_to_trellix_epo_cloud_device_relationships_installed_products_links_self_99d9fe28
       field: json.relationships.installedProducts.links.self
       target_field: trellix_epo_cloud.device.relationships.installed_products.links.self
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_trellix_epo_cloud_type_203347d3
       field: json.type
       target_field: trellix_epo_cloud.type
       ignore_missing: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_128540bc
       field:
         - trellix_epo_cloud.device.links.self
         - trellix_epo_cloud.device.attributes.domain_name
@@ -461,6 +543,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
+      tag: script_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -478,10 +561,12 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

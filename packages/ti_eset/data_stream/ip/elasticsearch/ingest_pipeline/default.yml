@@ -2,23 +2,29 @@
 description: Pipeline for processing IP collection feed
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_5a2092f1
       field: event.category
       value: threat
       allow_duplicates: false
   - append:
+      tag: append_event_type_46bf75e8
       field: event.type
       value: indicator
       allow_duplicates: false
   - set:
+      tag: set_threat_indicator_provider_7fa63b87
       field: threat.indicator.provider
       value: eset
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -30,44 +36,54 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_eti_561d07d4
       field: event.original
       target_field: eti
   - drop:
+      tag: drop_5a415bbc
       if: ctx.eti?.type != 'indicator'
   - set:
+      tag: set_threat_feed_name_e49f8122
       field: threat.feed.name
       value: "ESET IP stix 2.1"
   - date:
+      tag: date_eti_created_to_timestamp_0ff57497
       field: eti.created
       target_field: "@timestamp"
       formats:
         - "ISO8601"
       if: "ctx.eti?.created != null"
   - date:
+      tag: date_eti_modified_to_threat_indicator_last_seen_64ffa1f2
       field: eti.modified
       target_field: threat.indicator.last_seen
       formats:
         - "ISO8601"
       if: "ctx.eti?.modified != null"
   - set:
+      tag: set_threat_indicator_modified_at_5a74d882
       field: threat.indicator.modified_at
       copy_from: threat.indicator.last_seen
       if: "ctx.threat?.indicator?.last_seen != null"
   - date:
+      tag: date_eti_valid_until_to_eset_valid_until_502c1899
       field: eti.valid_until
       target_field: eset.valid_until
       formats:
         - "ISO8601"
       if: "ctx.eti?.valid_until != null"
   - rename:
+      tag: rename_eti_id_to_eset_id_e33c480b
       field: eti.id
       target_field: eset.id
       ignore_missing: true
   - rename:
+      tag: rename_eti_description_to_threat_indicator_description_d13d7cb3
       field: eti.description
       target_field: threat.indicator.description
       ignore_missing: true
   - foreach:
+      tag: foreach_eti_labels_ff89dc21
       field: eti.labels
       processor:
         append:
@@ -77,6 +93,7 @@ processors:
       ignore_failure: true
       if: ctx.eti?.labels != null
   - script:
+      tag: script_bce6660a
       lang: painless
       params:
         "malicious-activity": 'High'
@@ -92,11 +109,13 @@ processors:
           }
         }
   - split:
+      tag: split_eti_pattern_to_eti__patterns_7811368c
       field: eti.pattern
       target_field: eti._patterns
       separator: ' OR '
       ignore_missing: true
   - foreach:
+      tag: foreach_eti__patterns_a572409f
       field: eti._patterns
       processor:
         grok:
@@ -107,13 +126,16 @@ processors:
             - "^\\[ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:threat.indicator.ip}'\\]?"
           ignore_failure: true
   - set:
+      tag: set_threat_indicator_type_d0b54b1c
       field: threat.indicator.type
       value: ipv4-addr
   - set:
+      tag: set_threat_indicator_name_8701e0cf
       field: threat.indicator.name
       copy_from: eti.name
       if: "ctx.eti?.name != null"
   - remove:
+      tag: remove_a0758d9e
       field:
         - eti
       ignore_missing: true
@@ -136,11 +158,13 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -3,6 +3,7 @@ description: Pipeline for processing tenable ot security cloud events
 processors:
 
   - rename:
+      tag: rename_message_to_tenable_ot_security_events_1e74c887
       field: message
       target_field: tenable_ot_security.events
 
@@ -13,12 +14,14 @@ processors:
       target_field: "_id"
       on_failure:
         - append:
+            tag: append_error_message_c6107f5b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  #################### Scripts for processing input ####################
 
+  #################### Scripts for processing input ####################
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -67,6 +70,7 @@ processors:
         }
 
   - script:
+      tag: script_c8d0421d
       description: Recursively normalize every occurrence of 'nodes'.
       lang: painless
       source: |
@@ -101,67 +105,80 @@ processors:
           ctx.tenable_ot_security.events = normalize(ctx.tenable_ot_security.events);
         }
 
-  #################### ECS Fields ####################
 
+  #################### ECS Fields ####################
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
 
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: "8.17.0"
 
   - append:
+      tag: append_event_category_576de059
       field: event.category
       value: iam
 
   - set:
+      tag: set_event_module_3a52d21c
       field: event.module
       value: tenable_ot_security
 
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: ["info"]
 
   - set:
+      tag: set_event_dataset_24a4ceeb
       field: event.dataset
       value: tenable_ot_security.events
 
   - set:
+     tag: set_timestamp_787cb6d5
      field: "@timestamp"
      copy_from: tenable_ot_security.events.time
      ignore_empty_value: true
 
   - set:
+      tag: set_event_id_3f641710
       field: event.id
       copy_from: tenable_ot_security.events.id
       ignore_empty_value: true
 
   - convert:
+      tag: convert_tenable_ot_security_events_src_ip_3c0b7756
       field: tenable_ot_security.events.src_ip
       type: ip
       if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
       ignore_missing: true
 
   - append:
+      tag: append_source_ip_45e1eee7
       field: source.ip
       value: '{{{tenable_ot_security.events.src_ip}}}'
       if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''
       allow_duplicates: false
 
   - convert:
+      tag: convert_tenable_ot_security_events_dst_ip_bc475e37
       field: tenable_ot_security.events.dst_ip
       type: ip
       if: ctx.tenable_ot_security.events?.dst_ip != null && ctx.tenable_ot_security.events.dst_ip != ''
       ignore_missing: true
 
   - append:
+      tag: append_destination_ip_2ad87bb6
       field: destination.ip
       value: '{{{tenable_ot_security.events.dst_ip}}}'
       if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''
       allow_duplicates: false
 
   - script:
+      tag: script_bb4b766e
       description: Convert MAC addresses to standard notation.
       lang: painless
       source: |
@@ -180,38 +197,44 @@ processors:
         }
 
   - append:
+      tag: append_destination_mac_a21b60f7
       field: destination.mac
       value: '{{{tenable_ot_security.events.dst_mac}}}'
       if: ctx.tenable_ot_security.events?.dst_mac != null && ctx.tenable_ot_security.events.dst_mac != ''
       allow_duplicates: false
 
   - append:
+      tag: append_source_mac_e2101609
       field: source.mac
       value: '{{{tenable_ot_security.events.src_mac}}}'
       allow_duplicates: false
       if: ctx.tenable_ot_security.events?.src_mac != null && ctx.tenable_ot_security.events.src_mac != ''
 
   - append:
+      tag: append_network_protocol_08028e3e
       field: network.protocol
       value: '{{{tenable_ot_security.events.protocol_raw}}}'
       allow_duplicates: false
       if: ctx.tenable_ot_security.events?.protocol_raw != null && ctx.tenable_ot_security.events.protocol_raw != ''
 
   - append:
+      tag: append_related_user_2b109645
       field: related.user
       if: ctx.tenable_ot_security.events?.resolved_user != null && ctx.tenable_ot_security.events.resolved_user != ''
       value: "{{{tenable_ot_security.events.resolved_user}}}"
       allow_duplicates: false
 
-  #################### Override host.ip ####################
 
+  #################### Override host.ip ####################
   - append:
+      tag: append_host_ip_a80564ba
       field: host.ip
       value: "{{{tenable_ot_security.events.src_ip}}}"
       allow_duplicates: false
       if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
 
   - geoip:
+      tag: geoip_host_ip_to_host_geo_b6f95445
       field: host.ip
       target_field: host.geo
       ignore_missing: true
@@ -227,3 +250,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -28,18 +28,22 @@ processors:
       tag: set_event_kind
       value: state
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_Duration_to_event_duration_2fe2bd6a
       ignore_missing: true
       field: tencent_cloud.scf.SCF_Duration
       target_field: event.duration
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_FunctionName_to_faas_name_99f67699
       ignore_missing: true
       field: tencent_cloud.scf.SCF_FunctionName
       target_field: faas.name
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_Qualifier_to_faas_version_544891f3
       ignore_missing: true
       field: tencent_cloud.scf.SCF_Qualifier
       target_field: faas.version
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_Level_to_log_level_876d2bf6
       ignore_missing: true
       field: tencent_cloud.scf.SCF_Level
       target_field: log.level
@@ -51,25 +55,29 @@ processors:
       formats:
         - UNIX_MS
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_Message_to_message_7549a7cc
       ignore_missing: true
       field: tencent_cloud.scf.SCF_Message
       target_field: message
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_RequestId_to_faas_execution_45c84119
       ignore_missing: true
       field: tencent_cloud.scf.SCF_RequestId
       target_field: faas.execution
   - date:
       if: ctx.tencent_cloud?.scf?.SCF_StartTime != null
-      tag: date_processor_tencent_cloud.scf.SCF_StartTime
+      tag: date_tencent_cloud_scf_SCF_StartTime_to_event_start_bc28b276
       field: tencent_cloud.scf.SCF_StartTime
       target_field: event.start
       formats:
         - UNIX_MS
   - rename:
+      tag: rename_tencent_cloud_scf_SCF_StatusCode_to_http_response_status_code_c04c6f40
       ignore_missing: true
       field: tencent_cloud.scf.SCF_StatusCode
       target_field: http.response.status_code
   - convert:
+      tag: convert_tencent_cloud_scf___SOURCE___to_source_ip_7524363b
       ignore_failure: true
       ignore_missing: true
       field: tencent_cloud.scf.__SOURCE__
@@ -123,6 +131,7 @@ processors:
       field:
         - tencent_cloud.scf.__SOURCE__
   - append:
+      tag: append_related_ip_8121c591
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
@@ -133,6 +142,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

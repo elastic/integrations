@@ -3,6 +3,7 @@ description: Build ECS indicator fields from an STIX pattern
 processors:
 
   - grok:
+      tag: grok__ingest__value_826928eb
       field: _ingest._value
       patterns:
         - "file:hashes.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.md5}'"
@@ -19,6 +20,7 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_threat_indicator_file_type_25e26339
       if: ctx.threat?.indicator?.file?.name != null
       field: threat.indicator.file.type
       value: "file"
@@ -45,28 +47,33 @@ processors:
 
   # For ECS, remove any subnet mask from IP values arriving in CIDR notation
   - gsub:
+      tag: gsub_threat_indicator_ip_66a02181
       field: threat.indicator.ip
       pattern: '/\d+$'
       replacement: ""
       ignore_missing: true
 
   - uri_parts:
+      tag: uri_parts_threat_indicator_url_original_to_threat_indicator_url_37de733d
       field: threat.indicator.url.original
       target_field: threat.indicator.url
       keep_original: true
       ignore_failure: true
 
   - registered_domain:
+      tag: registered_domain_threat_indicator_url_domain_to_threat_indicator_url_139f4153
       field: threat.indicator.url.domain
       target_field: threat.indicator.url
       ignore_missing: true
 
   - set:
+      tag: set_threat_indicator_url_full_947438bd
       field: threat.indicator.url.full
       copy_from: threat.indicator.url.original
       ignore_empty_value: true
 
   - gsub:
+      tag: gsub__tmp_registry_cc160753
       field: _tmp_registry
       pattern: '\\\\'
       replacement: '\\'
@@ -97,11 +104,13 @@ processors:
       if: ctx.tmp_registry?.hive != null
 
   - rename:
+      tag: rename_tmp_registry_to_threat_indicator_registry_b7fb3695
       field: tmp_registry
       target_field: threat.indicator.registry
       ignore_missing: true
 
   - remove:
+      tag: remove__tmp_registry_e95582c0
       field: _tmp_registry
       ignore_missing: true
 

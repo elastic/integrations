@@ -2,17 +2,21 @@
 description: Pipeline for Zscaler user activity logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - date:
+      tag: date_json_LogTimestamp_2d5df791
       field: json.LogTimestamp
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -21,23 +25,30 @@ processors:
       if: ctx.json?.LogTimestamp != null && ctx.json.LogTimestamp != ''
       on_failure:
         - remove:
+            tag: remove_json_LogTimestamp_7b288581
             field: json.LogTimestamp
         - append:
+            tag: append_error_message_06776b2e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_event_category_576de059
       field: event.category
       value: iam
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - append:
+      tag: append_event_type_7ca34f6b
       field: event.type
       value: user
   - rename:
+      tag: rename_json_Username_to_user_name_fa840346
       field: json.Username
       target_field: user.name
       ignore_missing: true
@@ -54,30 +65,36 @@ processors:
       ignore_failure: true
       if: ctx.user?.name == null
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_36d4b55a
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_ClientCountryCode_to_client_geo_country_iso_code_7aa2c7f8
       field: json.ClientCountryCode
       target_field: client.geo.country_iso_code
       ignore_missing: true
   - rename:
+      tag: rename_json_ClientLatitude_to_client_geo_location_lat_00886b67
       field: json.ClientLatitude
       target_field: client.geo.location.lat
       ignore_missing: true
   - rename:
+      tag: rename_json_ClientLongitude_to_client_geo_location_lon_d4df89a6
       field: json.ClientLongitude
       target_field: client.geo.location.lon
       ignore_missing: true
   - convert:
+      tag: convert_json_ClientPublicIP_to_client_ip_afc6c621
       field: json.ClientPublicIP
       target_field: client.ip
       type: ip
@@ -85,43 +102,52 @@ processors:
       if: ctx.json?.ClientPublicIP != ''
       on_failure:
         - remove:
+            tag: remove_json_ClientPublicIP_1187318e
             field: json.ClientPublicIP
         - append:
+            tag: append_error_message_4351d2ec
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_c5270880
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_Host_d3cfc768
       field: json.Host
       type: ip
       ignore_missing: true
       on_failure:
         - rename:
+            tag: rename_json_Host_to_host_domain_71087e2c
             field: json.Host
             target_field: host.domain
   - append:
+      tag: append_host_ip_565a962b
       field: host.ip
       value: '{{{json.Host}}}'
       if: ctx.json?.Host != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_f59c306a
       field: related.ip
       value: '{{{json.Host}}}'
       if: ctx.json?.Host != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_5996925e
       field: related.hosts
       value: '{{{host.domain}}}'
       if: ctx.host?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - script:
+      tag: script_25e03f17
       if: ctx.json?.IPProtocol != null
       params:
         iana_numbers:
@@ -144,178 +170,221 @@ processors:
         ctx.network.transport = params.iana_numbers[ctx.json.IPProtocol.toString()];
       ignore_failure: true
   - rename:
+      tag: rename_json_Customer_to_organization_name_98de5dda
       field: json.Customer
       target_field: organization.name
       ignore_missing: true
   - convert:
+      tag: convert_json_ServerIP_to_server_ip_be1b1585
       field: json.ServerIP
       target_field: server.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ServerIP_c2d61671
             field: json.ServerIP
         - append:
+            tag: append_error_message_18be9a38
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_3ed00a18
       field: related.ip
       value: '{{{server.ip}}}'
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_ServerPort_to_server_port_489889c6
       field: json.ServerPort
       target_field: server.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ServerPort_bc8177e0
             field: json.ServerPort
         - append:
+            tag: append_error_message_02d7cf4b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ClientZEN_to_zscaler_zpa_user_activity_zen_client_domain_51515427
       field: json.ClientZEN
       target_field: zscaler_zpa.user_activity.zen.client.domain
       ignore_missing: true
   - append:
+      tag: append_related_hosts_7fbf56cb
       field: related.hosts
       value: '{{{zscaler_zpa.user_activity.zen.client.domain}}}'
       if: ctx.zscaler_zpa?.user_activity?.zen?.client?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_ConnectorZEN_to_zscaler_zpa_user_activity_zen_connector_domain_ef6faed9
       field: json.ConnectorZEN
       target_field: zscaler_zpa.user_activity.zen.connector.domain
       ignore_missing: true
   - append:
+      tag: append_related_hosts_c4a60763
       field: related.hosts
       value: '{{{zscaler_zpa.user_activity.zen.connector.domain}}}'
       if: ctx.zscaler_zpa?.user_activity?.zen?.connector?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_SessionID_to_zscaler_zpa_user_activity_session_id_bcb8bd2e
       field: json.SessionID
       target_field: zscaler_zpa.user_activity.session_id
       ignore_missing: true
   - rename:
+      tag: rename_json_ConnectionID_to_zscaler_zpa_user_activity_connection_id_7542dd59
       field: json.ConnectionID
       target_field: zscaler_zpa.user_activity.connection.id
       ignore_missing: true
   - rename:
+      tag: rename_json_InternalReason_to_zscaler_zpa_user_activity_internal_reason_d8d4e43a
       field: json.InternalReason
       target_field: zscaler_zpa.user_activity.internal_reason
       ignore_missing: true
   - rename:
+      tag: rename_json_ConnectionStatus_to_zscaler_zpa_user_activity_connection_status_b0a2073f
       field: json.ConnectionStatus
       target_field: zscaler_zpa.user_activity.connection.status
       ignore_missing: true
   - rename:
+      tag: rename_json_DoubleEncryption_to_zscaler_zpa_user_activity_double_encryption_7de2c43c
       field: json.DoubleEncryption
       target_field: zscaler_zpa.user_activity.double_encryption
       ignore_missing: true
   - convert:
+      tag: convert_json_ServicePort_to_zscaler_zpa_user_activity_service_port_776d21e6
       field: json.ServicePort
       target_field: zscaler_zpa.user_activity.service_port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ServicePort_e919a986
             field: json.ServicePort
         - append:
+            tag: append_error_message_f090b921
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_ClientPrivateIP_to_zscaler_zpa_user_activity_client_private_ip_6a29d637
       field: json.ClientPrivateIP
       target_field: zscaler_zpa.user_activity.client_private_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ClientPrivateIP_25035d6e
             field: json.ClientPrivateIP
         - append:
+            tag: append_error_message_690db246
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_3706e9ab
       field: related.ip
       value: '{{{zscaler_zpa.user_activity.client_private_ip}}}'
       if: ctx.zscaler_zpa?.user_activity?.client_private_ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_Policy_to_zscaler_zpa_user_activity_policy_name_288e94ea
       field: json.Policy
       target_field: zscaler_zpa.user_activity.policy.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Connector_to_zscaler_zpa_user_activity_connector_name_8c34f418
       field: json.Connector
       target_field: zscaler_zpa.user_activity.connector.name
       ignore_missing: true
   - convert:
+      tag: convert_json_ConnectorIP_to_zscaler_zpa_user_activity_connector_ip_45222de0
       field: json.ConnectorIP
       target_field: zscaler_zpa.user_activity.connector.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ConnectorIP_85ac4286
             field: json.ConnectorIP
         - append:
+            tag: append_error_message_21da89cb
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_c7eef7e0
       field: related.ip
       value: '{{{zscaler_zpa.user_activity.connector.ip}}}'
       if: ctx.zscaler_zpa?.user_activity?.connector?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_ConnectorPort_to_zscaler_zpa_user_activity_connector_port_ecdf08d3
       field: json.ConnectorPort
       target_field: zscaler_zpa.user_activity.connector.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_ConnectorPort_e0bf592f
             field: json.ConnectorPort
         - append:
+            tag: append_error_message_3d1fe2c8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_Application_to_zscaler_zpa_user_activity_application_5bb9807b
       field: json.Application
       target_field: zscaler_zpa.user_activity.application
       ignore_missing: true
   - rename:
+      tag: rename_json_AppGroup_to_zscaler_zpa_user_activity_app_group_fc33e6ee
       field: json.AppGroup
       target_field: zscaler_zpa.user_activity.app_group
       ignore_missing: true
   - rename:
+      tag: rename_json_Server_to_zscaler_zpa_user_activity_server_72adad1b
       field: json.Server
       target_field: zscaler_zpa.user_activity.server
       ignore_missing: true
   - rename:
+      tag: rename_json_PolicyProcessingTime_to_zscaler_zpa_user_activity_policy_processing_time_ec766aa8
       field: json.PolicyProcessingTime
       target_field: zscaler_zpa.user_activity.policy.processing_time
       ignore_missing: true
   - rename:
+      tag: rename_json_CAProcessingTime_to_zscaler_zpa_user_activity_ca_processing_time_bc0301d3
       field: json.CAProcessingTime
       target_field: zscaler_zpa.user_activity.ca_processing_time
       ignore_missing: true
   - rename:
+      tag: rename_json_ConnectorZENSetupTime_to_zscaler_zpa_user_activity_connector_zen_setup_time_9c9beed2
       field: json.ConnectorZENSetupTime
       target_field: zscaler_zpa.user_activity.connector_zen_setup_time
       ignore_missing: true
   - rename:
+      tag: rename_json_ConnectionSetupTime_to_zscaler_zpa_user_activity_connection_setup_time_5c42558c
       field: json.ConnectionSetupTime
       target_field: zscaler_zpa.user_activity.connection.setup_time
       ignore_missing: true
   - rename:
+      tag: rename_json_ServerSetupTime_to_zscaler_zpa_user_activity_server_setup_time_83b63f87
       field: json.ServerSetupTime
       target_field: zscaler_zpa.user_activity.server_setup_time
       ignore_missing: true
   - rename:
+      tag: rename_json_AppLearnTime_to_zscaler_zpa_user_activity_app_learn_time_6bdd2a0b
       field: json.AppLearnTime
       target_field: zscaler_zpa.user_activity.app_learn_time
       ignore_missing: true
   - date:
+      tag: date_json_TimestampConnectionStart_to_zscaler_zpa_user_activity_timestamp_connection_start_ba33ebfe
       field: json.TimestampConnectionStart
       target_field: zscaler_zpa.user_activity.timestamp.connection.start
       formats:
@@ -323,11 +392,14 @@ processors:
       if: ctx.json?.TimestampConnectionStart != null && ctx.json.TimestampConnectionStart != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampConnectionStart_51204724
             field: json.TimestampConnectionStart
         - append:
+            tag: append_error_message_6103df65
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampConnectionEnd_to_zscaler_zpa_user_activity_timestamp_connection_end_2485042b
       field: json.TimestampConnectionEnd
       target_field: zscaler_zpa.user_activity.timestamp.connection.end
       formats:
@@ -335,11 +407,14 @@ processors:
       if: ctx.json?.TimestampConnectionEnd != null && ctx.json.TimestampConnectionEnd != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampConnectionEnd_064febb0
             field: json.TimestampConnectionEnd
         - append:
+            tag: append_error_message_1ece509c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampCATx_to_zscaler_zpa_user_activity_timestamp_ca_tx_cbcf7ea6
       field: json.TimestampCATx
       target_field: zscaler_zpa.user_activity.timestamp.ca.tx
       formats:
@@ -347,11 +422,14 @@ processors:
       if: ctx.json?.TimestampCATx != null && ctx.json.TimestampCATx != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampCATx_bcd22c76
             field: json.TimestampCATx
         - append:
+            tag: append_error_message_c477fbaf
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampCARx_to_zscaler_zpa_user_activity_timestamp_ca_rx_86976a1c
       field: json.TimestampCARx
       target_field: zscaler_zpa.user_activity.timestamp.ca.rx
       formats:
@@ -359,11 +437,14 @@ processors:
       if: ctx.json?.TimestampCARx != null && ctx.json.TimestampCARx != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampCARx_0e7f339a
             field: json.TimestampCARx
         - append:
+            tag: append_error_message_26b58f7d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampAppLearnStart_to_zscaler_zpa_user_activity_timestamp_app_learn_start_3aaf15a1
       field: json.TimestampAppLearnStart
       target_field: zscaler_zpa.user_activity.timestamp.app_learn_start
       formats:
@@ -371,11 +452,14 @@ processors:
       if: ctx.json?.TimestampAppLearnStart != null && ctx.json.TimestampAppLearnStart != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampAppLearnStart_95d2583c
             field: json.TimestampAppLearnStart
         - append:
+            tag: append_error_message_8a655584
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENFirstRxClient_to_zscaler_zpa_user_activity_timestamp_zen_client_rx_first_dc82508a
       field: json.TimestampZENFirstRxClient
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.rx.first
       formats:
@@ -383,11 +467,14 @@ processors:
       if: ctx.json?.TimestampZENFirstRxClient != null && ctx.json.TimestampZENFirstRxClient != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENFirstRxClient_46a8dd72
             field: json.TimestampZENFirstRxClient
         - append:
+            tag: append_error_message_a1cde17b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENFirstTxClient_to_zscaler_zpa_user_activity_timestamp_zen_client_tx_first_27d747f0
       field: json.TimestampZENFirstTxClient
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.tx.first
       formats:
@@ -395,11 +482,14 @@ processors:
       if: ctx.json?.TimestampZENFirstTxClient != null && ctx.json.TimestampZENFirstTxClient != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENFirstTxClient_75028d5e
             field: json.TimestampZENFirstTxClient
         - append:
+            tag: append_error_message_400c0c99
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENLastRxClient_to_zscaler_zpa_user_activity_timestamp_zen_client_rx_last_5c226e24
       field: json.TimestampZENLastRxClient
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.rx.last
       formats:
@@ -407,11 +497,14 @@ processors:
       if: ctx.json?.TimestampZENLastRxClient != null && ctx.json.TimestampZENLastRxClient != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENLastRxClient_7cc5009a
             field: json.TimestampZENLastRxClient
         - append:
+            tag: append_error_message_75b93cef
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENLastTxClient_to_zscaler_zpa_user_activity_timestamp_zen_client_tx_last_e3ef1872
       field: json.TimestampZENLastTxClient
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.tx.last
       formats:
@@ -419,11 +512,14 @@ processors:
       if: ctx.json?.TimestampZENLastTxClient != null && ctx.json.TimestampZENLastTxClient != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENLastTxClient_6dc5e412
             field: json.TimestampZENLastTxClient
         - append:
+            tag: append_error_message_ad5a7e35
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampConnectorZENSetupComplete_to_zscaler_zpa_user_activity_timestamp_connector_zen_setup_complete_2b91d25c
       field: json.TimestampConnectorZENSetupComplete
       target_field: zscaler_zpa.user_activity.timestamp.connector_zen.setup_complete
       formats:
@@ -431,11 +527,14 @@ processors:
       if: ctx.json?.TimestampConnectorZENSetupComplete != null && ctx.json.TimestampConnectorZENSetupComplete != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampConnectorZENSetupComplete_1e1420f4
             field: json.TimestampConnectorZENSetupComplete
         - append:
+            tag: append_error_message_b31e67ab
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENFirstRxConnector_to_zscaler_zpa_user_activity_timestamp_zen_connector_rx_first_c91e0cc0
       field: json.TimestampZENFirstRxConnector
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.rx.first
       formats:
@@ -443,11 +542,14 @@ processors:
       if: ctx.json?.TimestampZENFirstRxConnector != null && ctx.json.TimestampZENFirstRxConnector != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENFirstRxConnector_d302e224
             field: json.TimestampZENFirstRxConnector
         - append:
+            tag: append_error_message_3f869517
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENFirstTxConnector_to_zscaler_zpa_user_activity_timestamp_zen_connector_tx_first_483dd76e
       field: json.TimestampZENFirstTxConnector
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.tx.first
       formats:
@@ -455,11 +557,14 @@ processors:
       if: ctx.json?.TimestampZENFirstTxConnector != null && ctx.json.TimestampZENFirstTxConnector != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENFirstTxConnector_5c2c74c8
             field: json.TimestampZENFirstTxConnector
         - append:
+            tag: append_error_message_c90864d9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENLastRxConnector_to_zscaler_zpa_user_activity_timestamp_zen_connector_rx_last_2eb9f1ba
       field: json.TimestampZENLastRxConnector
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.rx.last
       formats:
@@ -467,11 +572,14 @@ processors:
       if: ctx.json?.TimestampZENLastRxConnector != null && ctx.json.TimestampZENLastRxConnector != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENLastRxConnector_3bca0854
             field: json.TimestampZENLastRxConnector
         - append:
+            tag: append_error_message_85857b27
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_TimestampZENLastTxConnector_to_zscaler_zpa_user_activity_timestamp_zen_connector_tx_last_1b200c90
       field: json.TimestampZENLastTxConnector
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.tx.last
       formats:
@@ -479,51 +587,64 @@ processors:
       if: ctx.json?.TimestampZENLastTxConnector != null && ctx.json.TimestampZENLastTxConnector != ''
       on_failure:
         - remove:
+            tag: remove_json_TimestampZENLastTxConnector_986addbc
             field: json.TimestampZENLastTxConnector
         - append:
+            tag: append_error_message_f6d442c9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ZENTotalBytesRxClient_to_zscaler_zpa_user_activity_zen_client_total_bytes_rx_35d0fd54
       field: json.ZENTotalBytesRxClient
       target_field: zscaler_zpa.user_activity.zen.client.total.bytes_rx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENBytesRxClient_to_zscaler_zpa_user_activity_zen_client_bytes_rx_22643af6
       field: json.ZENBytesRxClient
       target_field: zscaler_zpa.user_activity.zen.client.bytes_rx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENTotalBytesTxClient_to_zscaler_zpa_user_activity_zen_client_total_bytes_tx_d8c3fa18
       field: json.ZENTotalBytesTxClient
       target_field: zscaler_zpa.user_activity.zen.client.total.bytes_tx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENBytesTxClient_to_zscaler_zpa_user_activity_zen_client_bytes_tx_e7c37d42
       field: json.ZENBytesTxClient
       target_field: zscaler_zpa.user_activity.zen.client.bytes_tx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENTotalBytesRxConnector_to_zscaler_zpa_user_activity_zen_connector_total_bytes_rx_fb7f6e80
       field: json.ZENTotalBytesRxConnector
       target_field: zscaler_zpa.user_activity.zen.connector.total.bytes_rx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENBytesRxConnector_to_zscaler_zpa_user_activity_zen_connector_bytes_rx_f2095e82
       field: json.ZENBytesRxConnector
       target_field: zscaler_zpa.user_activity.zen.connector.bytes_rx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENTotalBytesTxConnector_to_zscaler_zpa_user_activity_zen_connector_total_bytes_tx_55d0a864
       field: json.ZENTotalBytesTxConnector
       target_field: zscaler_zpa.user_activity.zen.connector.total.bytes_tx
       ignore_missing: true
   - rename:
+      tag: rename_json_ZENBytesTxConnector_to_zscaler_zpa_user_activity_zen_connector_bytes_tx_f29d7d9e
       field: json.ZENBytesTxConnector
       target_field: zscaler_zpa.user_activity.zen.connector.bytes_tx
       ignore_missing: true
   - rename:
+      tag: rename_json_ClientToClient_to_zscaler_zpa_user_activity_client_to_client_a4d33c9b
       field: json.ClientToClient
       target_field: zscaler_zpa.user_activity.client_to_client
       ignore_missing: true
   - rename:
+      tag: rename_json_Idp_to_zscaler_zpa_user_activity_idp_028bf65d
       field: json.Idp
       target_field: zscaler_zpa.user_activity.idp
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -541,6 +662,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_7da181a3
       field:
         - json.LogTimestamp
         - json.ClientPublicIP
@@ -568,6 +690,7 @@ processors:
         - json.TimestampZENLastTxConnector
       ignore_missing: true
   - script:
+      tag: script_85867840
       description: Adds all the remaining fields in fields under zscaler_zpa.user_activity.
       lang: painless
       if: ctx.json != null
@@ -576,6 +699,7 @@ processors:
           ctx.zscaler_zpa.user_activity[m.getKey()] = m.getValue();
         }
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:

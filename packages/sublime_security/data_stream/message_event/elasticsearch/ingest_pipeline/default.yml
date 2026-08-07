@@ -39,6 +39,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -80,6 +81,7 @@ processors:
       if: ctx.json?.created_at != null && ctx.json.created_at != ''
       on_failure:
         - append:
+            tag: append_error_message_a9fd239d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -88,6 +90,7 @@ processors:
       copy_from: sublime_security.message_event.created_at
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_data_flagged_rules_4314a410
       field: json.data.flagged_rules
       if: ctx.json?.data?.flagged_rules instanceof List
       processor:
@@ -97,6 +100,7 @@ processors:
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_data_flagged_rules_4ba22924
       field: json.data.flagged_rules
       if: ctx.json?.data?.flagged_rules instanceof List
       processor:
@@ -151,6 +155,7 @@ processors:
       if: ctx.json?.forwarded_at != null && ctx.json.forwarded_at != ''
       on_failure:
         - append:
+            tag: append_error_message_2f099dc5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -176,6 +181,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_237167b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -222,9 +228,11 @@ processors:
       if: ctx.json?.read_at != null && ctx.json.read_at != ''
       on_failure:
         - append:
+            tag: append_error_message_645e54e7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_recipients_369bbcc9
       field: json.recipients
       if: ctx.json?.recipients instanceof List
       processor:
@@ -234,6 +242,7 @@ processors:
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_recipients_172006ff
       field: json.recipients
       if: ctx.json?.recipients instanceof List
       processor:
@@ -256,6 +265,7 @@ processors:
       if: ctx.json?.replied_at != null && ctx.json.replied_at != ''
       on_failure:
         - append:
+            tag: append_error_message_ae0912a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -307,6 +317,7 @@ processors:
       target_field: sublime_security.message_event.type
       ignore_missing: true
   - foreach:
+      tag: foreach_sublime_security_message_event_data_flagged_rules_64991ff2
       field: sublime_security.message_event.data.flagged_rules
       if: ctx.sublime_security?.message_event?.data?.flagged_rules instanceof List
       processor:
@@ -318,6 +329,7 @@ processors:
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
+      tag: foreach_sublime_security_message_event_recipients_bc49272b
       field: sublime_security.message_event.recipients
       if: ctx.sublime_security?.message_event?.recipients instanceof List
       processor:
@@ -364,6 +376,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
