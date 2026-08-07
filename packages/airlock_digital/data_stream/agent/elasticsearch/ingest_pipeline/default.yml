@@ -274,14 +274,16 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ip
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.policy_details.commlist
-      tag: foreach_json_policy_details_commlist_761aaae4
+      tag: foreach_policy_details_commlist_ip_761aaae4
       if: ctx.json?.policy_details?.commlist instanceof List
       processor:
         append:
@@ -695,6 +697,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_3a6ad1cf
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -705,6 +708,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

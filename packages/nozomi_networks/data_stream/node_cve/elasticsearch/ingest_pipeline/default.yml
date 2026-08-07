@@ -383,11 +383,12 @@ processors:
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
                 ignore_missing: true
   - foreach:
       field: json.nodes
-      tag: foreach_json_nodes_98ad5bbe
+      tag: foreach_nodes_98ad5bbe
       if: ctx.json?.nodes instanceof List
       processor:
         append:
@@ -588,6 +589,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -598,6 +600,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

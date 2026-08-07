@@ -139,7 +139,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_c47f10e9
       params:
         Create:
           type:
@@ -234,13 +234,16 @@ processors:
       ignore_missing: false
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

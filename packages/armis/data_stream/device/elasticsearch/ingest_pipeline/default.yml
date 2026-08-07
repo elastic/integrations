@@ -117,14 +117,16 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_firstSeen
                 field: _ingest._value.firstSeen
                 ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_json_dataSources_44a528e5
+      tag: foreach_dataSources_44a528e5
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_instances
           field: _ingest._value.instances
           ignore_failure: true
           processor:
@@ -138,14 +140,16 @@ processors:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_firstSeen_743481c2
                     field: _ingest._value.firstSeen
                     ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_json_dataSources_80aabde7
+      tag: foreach_dataSources_80aabde7
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_instances_2129e376
           field: _ingest._value.instances
           ignore_failure: true
           processor:
@@ -159,11 +163,12 @@ processors:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_lastSeen
                     field: _ingest._value.lastSeen
                     ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_json_dataSources_b14257f2
+      tag: foreach_dataSources_b14257f2
       if: ctx.json?.dataSources instanceof List
       processor:
         date:
@@ -176,14 +181,16 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lastSeen_c3795701
                 field: _ingest._value.lastSeen
                 ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_json_dataSources_23b1bbea
+      tag: foreach_dataSources_23b1bbea
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_instances_20f07e12
           field: _ingest._value.instances
           ignore_failure: true
           processor:
@@ -195,7 +202,7 @@ processors:
               ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_json_dataSources_17aa49c5
+      tag: foreach_dataSources_17aa49c5
       if: ctx.json?.dataSources instanceof List
       processor:
         remove:
@@ -230,7 +237,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_62b39146
+      tag: set_event_start_from_device_first_seen_62b39146
       copy_from: armis.device.first_seen
       ignore_empty_value: true
   - convert:
@@ -268,9 +275,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -305,9 +314,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_2b6b117d
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_ed446288
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -381,6 +392,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_808486c0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -505,6 +517,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_creationTime
                 field: _ingest._value.creationTime
                 ignore_missing: true
   - foreach:
@@ -533,6 +546,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lastSeenTime
                 field: _ingest._value.lastSeenTime
                 ignore_missing: true
   - foreach:
@@ -725,6 +739,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_dfb15182
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -735,6 +750,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

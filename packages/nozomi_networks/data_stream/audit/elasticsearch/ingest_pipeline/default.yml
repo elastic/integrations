@@ -230,7 +230,7 @@ processors:
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_related_user_fc96f0f9
+      tag: append_audit_username_into_related_user_fc96f0f9
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
@@ -287,6 +287,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -297,6 +298,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

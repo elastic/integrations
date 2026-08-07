@@ -153,7 +153,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_json_datastoreOwners_b7acef9e
+      tag: foreach_datastoreOwners_datastoreOwnerUid_b7acef9e
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         append:
@@ -183,7 +183,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_json_datastoreOwners_920ad464
+      tag: foreach_datastoreOwners_ownerType_920ad464
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         append:
@@ -490,6 +490,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -500,6 +501,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

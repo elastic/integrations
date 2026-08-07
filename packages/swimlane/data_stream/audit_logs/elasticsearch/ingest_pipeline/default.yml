@@ -137,7 +137,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_5da2a2f7
       params:
         Create:
           type:
@@ -168,11 +168,6 @@ processors:
         }
         def hm = new HashMap(params.get(ctx.swimlane?.audit_log?.ActionType));
         hm.forEach((k, v) -> ctx.event[k] = v);
-  - rename:
-      tag: rename_swimlane_audit_log_category_to_log_category_fa1d4a96
-      field: swimlane.audit_log.category
-      target_field: log.category
-      ignore_missing: true
   - grok:
       tag: grok_swimlane_audit_log_endpoint_2bf2105a
       field: swimlane.audit_log.endpoint
@@ -226,13 +221,16 @@ processors:
       ignore_missing: false
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
