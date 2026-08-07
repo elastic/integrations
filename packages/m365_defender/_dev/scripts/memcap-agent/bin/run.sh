@@ -1,45 +1,46 @@
 #!/usr/bin/env bash
 #
-# m365_defender agentless memory run - ALL THREE agentless streams in ONE agent.
+# m365_defender agentless memory run - one elastic-agent, one page per enabled stream.
 #
-# run.sh profiles one stream at a time, which answers "what does one page cost". It does
-# not answer "what does an agentless pod need", because a pod runs every enabled stream
-# of the policy in a single elastic-agent, and every httpjson/cel input lives in the same
-# beat process and therefore the same Go heap. That matters two ways:
-#   - the per-process baseline (agent + beat + monitoring) is paid ONCE, not three times,
+# A pod runs every enabled stream of the policy in a single elastic-agent, and every
+# httpjson/cel input lives in the same beat process and therefore the same Go heap. So
+# this runner is concurrent by default and single-stream only as a special case
+# (STREAMS=incident). Profiling streams separately and adding the results is wrong in
+# both directions:
+#   - the per-process baseline (agent + beat + monitoring) is paid ONCE, not per stream,
 #     so summing single-stream peaks over-counts the base;
 #   - the decode peaks share one heap and one GC cycle, so pages that overlap in time add
 #     on top of each other with no allowance in between.
-# Only a combined run measures the real number.
+# Size the pod from a run with every stream enabled. Use STREAMS to attribute a peak to
+# the stream that causes it, never to build up a total.
 #
 # Scope: the three streams agentless actually runs - alert, incident, vulnerability. The
 # `event` data stream is deliberately absent: its input is azure-eventhub, which is not
 # supported in agentless, so it never contributes to an agentless pod's memory.
 #
 # Two modes:
-#   single page (default, INTERVAL=24h) - every input fires once. Directly comparable
-#     with the per-stream run.sh numbers; measures the cold decode peak.
-#   sustained (INTERVAL=10s HOLD_S=600) - inputs re-fetch for HOLD_S. Each cycle decodes
-#     a fresh page while the previous one is still garbage, so the heap reaches the
-#     steady state a long-running pod sits at. This is the mode to compare against
-#     production working-set telemetry; a single cold page understates it.
+#   cold (default, INTERVAL=24h) - every input fires once and the run stops at the decode
+#     plateau. Measures the cost of a single page.
+#   sustained (DRAIN=1 INTERVAL=10s HOLD_S=600) - inputs re-fetch for HOLD_S. Each cycle
+#     decodes a fresh page while the previous one is still garbage, so the heap reaches
+#     the steady state a long-running pod sits at. This is the mode to compare against
+#     production working-set telemetry; a cold page understates it by ~2x.
 #
 # Pages come from the corpus generator, whose templates are calibrated against a real
 # tenant response - see "Record shapes" in README.md. Nothing here needs tenant access.
 #
 # Examples:
-#   # production defaults, single cold page
-#   ./run-concurrent.sh
+#   # shipped page sizes, single cold page
+#   bin/run.sh
 #
-#   # production defaults, sustained 10 minutes - compare with working-set telemetry
-#   INTERVAL=10s HOLD_S=600 MEM_LIMIT=4g ./run-concurrent.sh
+#   # sustained 10 minutes - the mode that reproduces production working-set peaks
+#   DRAIN=1 INTERVAL=10s HOLD_S=600 MEM_LIMIT=4g bin/run.sh
 #
-#   # worst case: max page per stream, incidents fat with alerts
-#   ALERT_EVENTS=1000 INCIDENT_EVENTS=50 ALERTS_PER_INCIDENT=100 \
-#     VULN_EVENTS=10000 MEM_LIMIT=4g ./run-concurrent.sh
+#   # attribution: what does the incident stream contribute on its own?
+#   STREAMS=incident ALERTS_PER_INCIDENT=400 bin/run.sh
 #
-# As with run.sh, match STACK_VERSION/AGENT_IMAGE to the build agentless ships or the
-# numbers are not representative.
+# Match STACK_VERSION/AGENT_IMAGE to the build agentless ships or the numbers are not
+# representative. Every run appends a row to RESULTS_CSV (default logs/runs.csv).
 
 set -euo pipefail
 
@@ -71,16 +72,23 @@ PLATEAU_S="${PLATEAU_S:-30}"
 STREAMS="${STREAMS:-alert incident vulnerability}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HARNESS_HERE="$HERE"
 # shellcheck source=lib.sh
 . "$HERE/lib.sh"
 TOOL="${TOOL:-$HOME/go/src/github.com/elastic/elastic-integration-corpus-generator-tool}"
+
+# Where this run records itself. The sweep overrides these to group its runs into one
+# file along one axis; a bare run lands in the scratch log of runs.
+RESULTS_CSV="${RESULTS_CSV:-$HARNESS_ROOT/logs/runs.csv}"
+RESULT_AXIS="${RESULT_AXIS:-adhoc}"
+RESULT_POINT="${RESULT_POINT:-}"
+RESULT_LABEL="${RESULT_LABEL:-}"
+RUN_LOG="${RUN_LOG:-}"
 
 NET="m365d-memcap-net"
 SVC="svc-m365d"
 AGENT="m365d-agent"
 SINK="sink-m365d"
-WORK="$HERE/work-all"
+WORK="$HARNESS_ROOT/work"
 AGENT_YML="$WORK/elastic-agent.yml"
 MOCK_YML="$WORK/mock-config.yml"
 
@@ -117,13 +125,13 @@ for s in $STREAMS; do
   n="$(records_for "$s")"
   swork="$WORK/$s"
   mkdir -p "$swork"
-  bytes="$(harness_gen_corpus "$s" "$swork" "$HERE/$s/corpus" "$n" "$ALERTS_PER_INCIDENT")"
+  bytes="$(harness_gen_corpus "$s" "$swork" "$HARNESS_STREAMS/$s/corpus" "$n" "$ALERTS_PER_INCIDENT")"
   PAGE_PAIRS="$PAGE_PAIRS$s=$bytes
 "
   TOTAL_PAGE=$((TOTAL_PAGE + bytes))
   MOUNTS[${#MOUNTS[@]}]="-v"
   MOUNTS[${#MOUNTS[@]}]="$swork/corpus/corpus-1:/var/log/$s/corpus-1:ro"
-  harness_render_config "$s" "$HERE" "$swork" "$swork/elastic-agent.yml" || exit 1
+  harness_render_config "$s" "$swork" "$swork/elastic-agent.yml" || exit 1
   printf '>> [%s] page: %s records, %s bytes (~%s MB raw)\n' "$s" "$n" "$bytes" "$((bytes / 1048576))"
 done
 
@@ -168,13 +176,13 @@ want=$(echo "$STREAMS" | wc -w | tr -d ' ')
 # two-rule shape so a mock config that grows a rule fails here instead of silently losing
 # an endpoint.
 for s in $STREAMS; do
-  cnt=$(grep -c '^  - path:' "$HERE/$s/mock-config.yml" || true)
-  [ "$cnt" = "2" ] || { echo "ERROR: $s/mock-config.yml has $cnt rules, expected 2 (token + data). Update the merge in run-concurrent.sh."; exit 1; }
+  cnt=$(grep -c '^  - path:' "$HARNESS_STREAMS/$s/mock-config.yml" || true)
+  [ "$cnt" = "2" ] || { echo "ERROR: $s/mock-config.yml has $cnt rules, expected 2 (token + data). Update the merge in bin/run.sh."; exit 1; }
 done
-cat "$HERE/$first/mock-config.yml" > "$MOCK_YML"
+cat "$HARNESS_STREAMS/$first/mock-config.yml" > "$MOCK_YML"
 for s in $STREAMS; do
   [ "$s" = "$first" ] && continue
-  awk '/^  - path:/{n++} n>=2{print}' "$HERE/$s/mock-config.yml" >> "$MOCK_YML"
+  awk '/^  - path:/{n++} n>=2{print}' "$HARNESS_STREAMS/$s/mock-config.yml" >> "$MOCK_YML"
 done
 
 # --------------------------- 4. mock ---------------------------
@@ -325,3 +333,12 @@ if [ "$DRAIN" = "1" ]; then
 fi
 echo "==============================================================="
 [ "$oom" = "true" ] && echo "NOTE: OOM at this cap. Record the largest page set that fits."
+
+# Record the run. A number that only ever existed on a terminal cannot be re-checked, and
+# the published tables are rendered from these rows - see the contract in lib.sh.
+PARAMS=""
+for s in $STREAMS; do PARAMS="$PARAMS$s=$(records_for "$s") "; done
+case " $STREAMS " in *" incident "*) PARAMS="${PARAMS}alerts_per_incident=$ALERTS_PER_INCIDENT " ;; esac
+harness_emit_result_row "$RESULTS_CSV" "$RESULT_AXIS" "${RESULT_POINT:-$TOTAL_PAGE}" \
+  "$RESULT_LABEL" "${PARAMS% }" "$RUN_LOG"
+echo " recorded        : $RESULTS_CSV"

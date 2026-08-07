@@ -2,17 +2,25 @@
 #
 # Shared corpus + config assembly for the m365_defender memory harness.
 #
-# Sourced by run.sh (one stream at a time) and run-concurrent.sh (all three agentless
-# streams in one agent). Both must exercise the same page and the same spliced ship
-# logic, so that logic lives here once rather than being copied per runner.
+# Sourced by bin/run.sh (one agent, one or more streams) and bin/sweep.sh (many runs
+# along one axis). Both must exercise the same page and the same spliced ship logic, so
+# that logic lives here once rather than being copied per runner.
 #
 # Provides:
 #   harness_gen_corpus <stream> <work> <pkg> <records> <alerts_per_incident>
 #       writes <work>/corpus/corpus-1 and echoes its size in bytes.
-#   harness_render_config <stream> <here> <work> <out>
+#   harness_render_config <stream> <work> <out>
 #       writes a runnable per-stream agent config, splicing ship logic from the .hbs.
 #
 # Neither function starts containers; the runners own that.
+
+# Layout anchors, derived once so no caller carries a relative path around:
+#   HARNESS_ROOT    memcap-agent/            (bin/, streams/, results/, logs/, work/)
+#   HARNESS_STREAMS memcap-agent/streams/    per-stream inputs to a run
+#   HARNESS_PKG     packages/m365_defender/  the shipping package the configs are spliced from
+HARNESS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+HARNESS_STREAMS="$HARNESS_ROOT/streams"
+HARNESS_PKG="$(cd "$HARNESS_ROOT/../../.." && pwd)"
 
 # --------------------------- corpus ---------------------------
 #
@@ -62,13 +70,12 @@ harness_gen_corpus() {
 # Both paths abort on an unresolved Handlebars token, so a .hbs change is a loud failure
 # rather than a silently mis-rendered config and a wrong ORR number.
 harness_render_config() {
-  local stream="$1" here="$2" work="$3" out="$4"
-  local dir="$here/$stream"
-  local tmpl="$dir/elastic-agent.yml.tmpl"
+  local stream="$1" work="$2" out="$3"
+  local tmpl="$HARNESS_STREAMS/$stream/elastic-agent.yml.tmpl"
   [ -f "$tmpl" ] || { echo "missing $tmpl"; return 1; }
 
   if [ "$stream" = "vulnerability" ]; then
-    local cel_hbs="$here/../../../data_stream/vulnerability/agent/stream/cel.yml.hbs"
+    local cel_hbs="$HARNESS_PKG/data_stream/vulnerability/agent/stream/cel.yml.hbs"
     [ -f "$cel_hbs" ] || { echo "missing $cel_hbs (needed to assemble the cel config)"; return 1; }
     echo ">> [$stream] assembling config (CEL program from $(basename "$cel_hbs")) ..." >&2
     # cel.yml.hbs indents the program body 2 spaces; the tmpl stream wants 6, so
@@ -91,7 +98,7 @@ harness_render_config() {
     return 0
   fi
 
-  local hbs="$here/../../../data_stream/$stream/agent/stream/httpjson.yml.hbs"
+  local hbs="$HARNESS_PKG/data_stream/$stream/agent/stream/httpjson.yml.hbs"
   [ -f "$hbs" ] || { echo "missing $hbs (needed to assemble the httpjson config)"; return 1; }
   echo ">> [$stream] assembling config (request/pagination/split/cursor from $(basename "$hbs")) ..." >&2
   # Extract the ship "behaviour" region: from `request.transforms:` up to `tags:`. These
@@ -190,6 +197,52 @@ harness_read_memory() {
   MEM_WORKINGSET=$((MEM_CURRENT - MEM_INACTIVE_FILE))
   if [ "$MEM_WORKINGSET" -lt 0 ]; then MEM_WORKINGSET=0; fi
   return 0
+}
+
+# --------------------------- the results CSV ---------------------------
+#
+# Every run appends one row here, not just the sweeps, because a number that only ever
+# existed in a terminal cannot be re-checked later. The published tables in README.md and
+# in the ORR are rendered from these files by the agentless-orr skill's harness_autofill.sh,
+# so the schema below is a contract shared with that renderer - adding a column is safe,
+# renaming or reordering one is not.
+#
+#   axis          what was varied across the rows of this file: scale | alerts_per_incident
+#                 | knob | stream. One file per axis; the renderer fits or tabulates it.
+#   point         the x value. Numeric for a fitted axis; a slug for `knob`/`stream`.
+#   label         human-readable row name, used verbatim as the first column of knob tables.
+#   streams       which agentless streams ran in the agent, `+`-separated.
+#   params        free-form `k=v` pairs (page size per stream, alerts_per_incident, ...).
+#                 Space-separated so the field stays comma-free and needs no quoting.
+#   mode          cold (one page per input) | sustained (back-to-back fetching, drained).
+#   *_bytes       as measured; MB conversion is the renderer's job, so no precision is
+#                 lost in the file and the tables stay consistent.
+#   workingset    memory.current - inactive_file, i.e. what kubelet reports. This is the
+#                 column to publish against production telemetry; peak is anon + page cache.
+#   run_log       the console log of this run, under logs/. A local breadcrumb only:
+#                 logs/ is not committed, so this is blanked when a CSV is promoted into
+#                 results/ rather than left pointing at a file no reviewer has. Provenance
+#                 for a published file belongs in its `#` header comment instead.
+HARNESS_CSV_HEADER='axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,anon_bytes,oom,agent_image,run_log'
+
+# harness_emit_result_row <csv> <axis> <point> <label> <params> <run_log>
+# Reads the run's own state (STREAMS, MEM_*, oom, ...) from the caller's scope.
+harness_emit_result_row() {
+  local csv="$1" axis="$2" point="$3" label="$4" params="$5" run_log="$6"
+  local mode limit_bytes
+  mode=$([ "${HOLD_S:-0}" -gt 0 ] && echo sustained || echo cold)
+  limit_bytes=$(awk -v s="${MEM_LIMIT:-0}" 'BEGIN{
+    n=s; sub(/[A-Za-z]+$/,"",n); u=tolower(substr(s,length(n)+1))
+    m=1; if(u=="k")m=1024; else if(u=="m")m=1048576; else if(u=="g")m=1073741824
+    printf "%d", n*m
+  }' </dev/null)
+  mkdir -p "$(dirname "$csv")"
+  [ -f "$csv" ] || printf '%s\n' "$HARNESS_CSV_HEADER" > "$csv"
+  printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
+    "$axis" "$point" "$label" "$(echo "${STREAMS:-}" | tr ' ' '+')" "$params" "$mode" \
+    "$limit_bytes" "${GOMEMLIMIT:-}" "${HOLD_S:-0}" "${TOTAL_PAGE:-0}" \
+    "${MEM_PEAK:-0}" "${MEM_WORKINGSET:-0}" "${MEM_ANON:-0}" "${oom:-unknown}" \
+    "${AGENT_IMAGE:-}" "$(basename "${run_log:-}")" >> "$csv"
 }
 
 harness_print_memory() {

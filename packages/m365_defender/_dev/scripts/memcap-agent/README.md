@@ -1,21 +1,22 @@
 # m365_defender agentless worst-case memory harness
 
 Memory test for the three agentless m365_defender inputs, built for the agentless
-Operational Readiness Review (ORR). It answers two questions:
+Operational Readiness Review (ORR). It answers one question — **how much memory does an
+agentless pod running this integration need, and what would it take to need less?**
 
-- **per stream** (`run.sh`, `sweep.sh`) — how much memory does one worst-case API
-  page cost, and where does that stream OOM at the pod limit?
-- **per pod** (`run-concurrent.sh`, `sweep-concurrent.sh`) — what does the whole
-  agentless deployment need, running all three streams in one agent the way a pod
-  actually does?
-
-The per-pod runs are the ones an agentless memory request should be derived from.
-Summing the per-stream numbers is wrong in both directions: every input shares one
-beat process, so the per-process baseline is paid once rather than three times, but
-the decode peaks land on one heap with one GC cycle and one shared publisher queue.
-Only a combined run measures the real number, and only a *sustained* combined run
-reproduces the production working-set peaks (see
+A pod runs every enabled stream of the policy in a single `elastic-agent`, and every
+httpjson/cel input lives in the same beat process and therefore the same Go heap. So the
+harness is **concurrent by default**: one agent, one page per enabled stream. Measuring
+streams separately and adding the results is wrong in both directions — the per-process
+baseline is paid once rather than three times, but the decode peaks land on one heap with
+one GC cycle and one shared publisher queue. Only a combined run measures the real number,
+and only a *sustained* combined run reproduces the production working-set peaks (see
 [Reproducing the production peak](#reproducing-the-production-peak)).
+
+Single-stream runs still exist, as `STREAMS=incident bin/run.sh`, because the ORR asks for
+the memory driver **per stream** and because attributing a pod peak to the stream that
+causes it is what justifies tuning one knob rather than another. They are attribution, not
+addends.
 
 This is a bespoke Docker + cgroup harness, **not** an `elastic-package` benchmark.
 It runs the real `elastic-agent` image the way `agentless-controller` deploys it
@@ -39,29 +40,29 @@ contributes to an agentless pod.
 
 ```
 memcap-agent/
-├── run.sh                    # one run for STREAM={alert,incident,vulnerability}
-├── sweep.sh                  # several page sizes at a big cap; fits + OOM boundary
-├── run-concurrent.sh         # all three streams in ONE agent (what a pod runs)
-├── sweep-concurrent.sh       # fits the pod-level curve: page scale, or alerts-per-incident
-├── lib.sh                    # shared corpus build, config splice, memory accounting
-├── fake-es.py                # draining sink, optionally rate-limited (sustained mode)
-├── alert/
-│   ├── elastic-agent.yml.tmpl # request/pagination/split/cursor spliced from httpjson.yml.hbs
-│   ├── mock-config.yml        # token + alerts_v2 page serving the corpus
-│   └── corpus/                # template.ndjson, config.yml, fields.yml
-├── incident/
-│   ├── elastic-agent.yml.tmpl # spliced from httpjson.yml.hbs (include_alerts=true, nested split)
-│   ├── mock-config.yml        # token + incidents page (each incident has alerts[])
-│   └── corpus/
-└── vulnerability/
-    ├── elastic-agent.yml.tmpl # CEL program spliced from cel.yml.hbs at run time
-    ├── mock-config.yml        # token + vuln page (no @odata.nextLink = one page)
-    └── corpus/
+├── bin/                    # everything that runs
+│   ├── run.sh              # ONE agent, one page per stream in STREAMS (default: all three)
+│   ├── sweep.sh            # repeat run.sh along one axis: scale | alerts_per_incident | knob
+│   ├── lib.sh              # corpus build, config splice, memory accounting, the results CSV
+│   └── fake-es.py          # draining sink, optionally rate-limited (sustained mode)
+├── streams/                # everything a run reads, per stream
+│   ├── alert/
+│   │   ├── elastic-agent.yml.tmpl # request/pagination/split/cursor spliced from httpjson.yml.hbs
+│   │   ├── mock-config.yml        # token + alerts_v2 page serving the corpus
+│   │   └── corpus/                # template.ndjson, config.yml, fields.yml
+│   ├── incident/                  # as above; include_alerts=true, nested split
+│   └── vulnerability/             # as above; CEL program spliced from cel.yml.hbs at run time
+└── results/                # the measurements the documents publish (committed)
+    ├── scale.csv                  # cold, all page sizes scaled together
+    ├── alerts-per-incident.csv    # cold, shipped page sizes, alerts[] swept
+    ├── sustained.csv              # back-to-back fetching - the production-comparable mode
+    ├── knobs.csv                  # the same worst case with one thing changed per row
+    └── per-stream.csv             # one stream at a time: the per-stream driver
 ```
 
-Each run writes scratch (`<stream>/work/`, `work-all/`) and the sweeps write `logs/`.
-None of that is committed — see `.gitignore`; `work/` alone can hold a multi-hundred-MB
-corpus. Re-run the harness to reproduce them.
+Runs also write `work/` (the generated corpora) and `logs/` (console output and the CSV of
+every run). Neither is committed — see `.gitignore`; `work/` alone can hold a
+multi-hundred-MB corpus. Re-run the harness to reproduce them.
 
 A run needs nothing but this directory, Docker and the corpus generator: no tenant
 access, no sample file, no network beyond the image pulls.
@@ -72,8 +73,8 @@ Go's JSON decode cost tracks the **number of keys and containers** it allocates,
 the byte count, so a template that hits the right size with the wrong shape gets the
 memory wrong: nested object counts move the peak independently of page bytes.
 
-So the templates in `<stream>/corpus/` are calibrated against a real tenant response on
-four axes at once. The flow was one-way and ended outside the repo: the response was
+So the templates in `streams/<stream>/corpus/` are calibrated against a real tenant response
+on four axes at once. The flow was one-way and ended outside the repo: the response was
 sanitised offline (deny-by-default value replacement, preserving lengths and array
 cardinalities), its statistics were read off, and **only those statistics** crossed into the
 repo — as the key set and the `repeat`/`until` counts in `template.ndjson`. The sanitiser and
@@ -117,29 +118,29 @@ stream stores a hand-maintained copy of its config** — each one splices the sh
 logic out of its `.hbs` at run time and errors if it can't. There is nothing to
 re-sync by hand.
 
-- **vulnerability (cel):** `run.sh` extracts the `program:` block verbatim from
-  `../../../data_stream/vulnerability/agent/stream/cel.yml.hbs`, re-indents it, and
-  splices it into `vulnerability/elastic-agent.yml.tmpl` in place of the
-  `#__CEL_PROGRAM__` placeholder.
-- **alert / incident (httpjson):** `run.sh` extracts the ship **behaviour block** —
-  `request.transforms` + `response.pagination` + `response.split` + `cursor` — from
-  `../../../data_stream/<stream>/agent/stream/httpjson.yml.hbs`, resolves the few
-  Handlebars tokens the harness needs (`batch_size`, `initial_interval`, and the
-  `include_*` conditionals — keeping the `include_alerts` bodies so `$expand=alerts`
-  and the nested `body.alerts` split with `keep_parent` are exercised for incidents),
-  re-indents it, and splices it into `<stream>/elastic-agent.yml.tmpl` in place of the
+- **vulnerability (cel):** the `program:` block is extracted verbatim from
+  `data_stream/vulnerability/agent/stream/cel.yml.hbs`, re-indented, and spliced into
+  `streams/vulnerability/elastic-agent.yml.tmpl` in place of the `#__CEL_PROGRAM__`
+  placeholder.
+- **alert / incident (httpjson):** the ship **behaviour block** — `request.transforms` +
+  `response.pagination` + `response.split` + `cursor` — is extracted from
+  `data_stream/<stream>/agent/stream/httpjson.yml.hbs`, the few Handlebars tokens the
+  harness needs are resolved (`batch_size`, `initial_interval`, and the `include_*`
+  conditionals — keeping the `include_alerts` bodies so `$expand=alerts` and the nested
+  `body.alerts` split with `keep_parent` are exercised for incidents), and the result is
+  spliced into `streams/<stream>/elastic-agent.yml.tmpl` in place of the
   `#__STREAM_BEHAVIOR__` placeholder. Only connection/scaffolding (auth + URL → mock,
-  `interval`, output, `tags`) lives in the `.tmpl`, because those are harness
-  environment values, not ship logic.
+  `interval`, output, `tags`) lives in the `.tmpl`, because those are harness environment
+  values, not ship logic.
 
-Both runners share one implementation of this (`harness_render_config` in `lib.sh`), so
-the per-stream and per-pod numbers are produced from the same splice.
+This lives in one place (`harness_render_config` in `bin/lib.sh`), so every run — whatever
+streams are enabled — is produced from the same splice.
 
 **Drift guard:** the splice only understands the tokens listed above. If a `.hbs`
 grows a new `{{...}}` token in the spliced region (a new `{{#if}}`, a new variable),
 the run aborts with the offending line instead of silently mis-rendering — so
 staleness becomes a one-line fix in `harness_render_config`, not a wrong ORR number.
-`run-concurrent.sh` also asserts that the merge produced one input per stream and that
+`bin/run.sh` also asserts that the merge produced one input per enabled stream and that
 each mock config still has exactly its token rule plus one data rule, so a config that
 grows a rule fails loudly instead of quietly losing an endpoint.
 
@@ -165,63 +166,67 @@ elastic/integrations#20234, fixed by elastic/integrations#20348).
 
 ## Usage
 
-### Per pod (all three streams in one agent)
-
 ```
 # cold: one page per stream at the shipped production page sizes
-./run-concurrent.sh
+bin/run.sh
 
 # sustained: inputs keep fetching and the output drains - compare with production telemetry
-DRAIN=1 INTERVAL=10s HOLD_S=300 MEM_LIMIT=3g ./run-concurrent.sh
+DRAIN=1 INTERVAL=10s HOLD_S=300 MEM_LIMIT=3g bin/run.sh
 
-# fit the pod curve two ways
-SWEEP_CAP=3g SCALES="0.25 0.5 1 2 3 4 5" ./sweep-concurrent.sh
-SWEEP_CAP=3g SWEEP_APC="25 50 100 200 400" ./sweep-concurrent.sh
+# fit the pod curve, two axes
+AXIS=scale               SWEEP_CAP=3g POINTS="0.25 0.5 1 2 3 4 5" bin/sweep.sh
+AXIS=alerts_per_incident SWEEP_CAP=3g POINTS="25 50 100 200 400"  bin/sweep.sh
+
+# what is each mitigation worth against the sustained worst case?
+AXIS=knob DRAIN=1 INTERVAL=10s HOLD_S=300 ALERTS_PER_INCIDENT=400 bin/sweep.sh
+
+# attribution: what does one stream cost on its own?
+STREAMS=incident ALERTS_PER_INCIDENT=400 bin/run.sh
 
 # does a candidate configuration survive a smaller cap?
 DRAIN=1 INTERVAL=10s HOLD_S=300 MEM_LIMIT=1g \
-  ALERTS_PER_INCIDENT=400 INCIDENT_EVENTS=10 VULN_EVENTS=1000 ./run-concurrent.sh
+  ALERTS_PER_INCIDENT=400 INCIDENT_EVENTS=10 VULN_EVENTS=1000 bin/run.sh
 ```
 
-Key env: `ALERT_EVENTS` / `INCIDENT_EVENTS` / `VULN_EVENTS` (records per page, default =
-the shipped production page sizes), `ALERTS_PER_INCIDENT`, `MEM_LIMIT`,
-`DRAIN=1` (drain through `fake-es.py`), `INTERVAL` + `HOLD_S` (sustained mode),
-`GOMEMLIMIT` (soft heap ceiling; agentless sets none), `STREAMS` (subset to run).
+Key env: `STREAMS` (which streams the agent runs; default all three), `ALERT_EVENTS` /
+`INCIDENT_EVENTS` / `VULN_EVENTS` (records per page, default = the shipped production page
+sizes), `ALERTS_PER_INCIDENT`, `MEM_LIMIT`, `DRAIN=1` (drain through `fake-es.py`),
+`INTERVAL` + `HOLD_S` (sustained mode), `GOMEMLIMIT` (soft heap ceiling; agentless sets
+none), `STACK_VERSION` / `AGENT_IMAGE` (which build to profile), `KEEP=1` (leave containers
+up), `TOOL` (corpus generator path). Sweeps add `AXIS`, `POINTS`, `SWEEP_CAP` and, for the
+knob ladder, `KNOB_ROWS`.
 
 Sustained mode needs `DRAIN=1`. With an unreachable output the queue fills, the input
 blocks on publish and no second page is ever decoded — the opposite of a catching-up pod.
 
-### Per stream
+### Publishing a number
+
+Every run appends a row to a CSV (`logs/runs.csv` for a bare run, one file per sweep
+otherwise); the schema is documented at the top of `bin/lib.sh`. Nothing in this README or
+in the ORR is typed in by hand — the tables and fits below sit between
+`<!-- AUTOFILL:...:START -->` / `:END` markers and are rendered from `results/*.csv` by the
+`agentless-orr` skill:
 
 ```
-# one run at the enforced pod limit
-STREAM=alert         MEM_LIMIT=1g   TOTAL_EVENTS=1000  ./run.sh
-STREAM=incident      MEM_LIMIT=1g   TOTAL_EVENTS=50 ALERTS_PER_INCIDENT=100 ./run.sh
-STREAM=vulnerability MEM_LIMIT=512m TOTAL_EVENTS=10000 ./run.sh
+# promote the sweep you want to publish, then re-render every document that quotes it
+cp logs/sweep-alerts_per_incident-<ts>.csv results/alerts-per-incident.csv
+# then: blank the run_log column (it names a file under logs/, which is not committed)
+# and lead the file with a `#` comment saying when and how it was measured
+HARNESS_DIR=$PWD $SKILL/scripts/harness_autofill.sh \
+  README.md ~/ingest-dev/docs/agentless-orr/reviews/m365_defender.md
 
-# fit the multiplier + derive the OOM boundary (recommended)
-STREAM=alert    SWEEP_CAP=6g SWEEP_EVENTS="250 500 1000 2000" ./sweep.sh
-STREAM=incident SWEEP_CAP=6g SWEEP_EVENTS="10 25 50 100" ALERTS_PER_INCIDENT=100 ./sweep.sh
-STREAM=vulnerability SWEEP_CAP=6g SWEEP_EVENTS="2500 5000 10000 20000" ./sweep.sh
-
-# one-shot: sweep all three streams, fill the Result table below + emit an ORR snippet
-./autofill.sh
-SKIP_SWEEP=1 ./autofill.sh                                  # reuse existing logs/*.csv, just refill
-ORR_DOC=/path/to/ingest-dev/docs/agentless-orr/reviews/m365_defender.md ./autofill.sh   # also inject into the ORR
+# is anything stale? (no writes; non-zero exit if a block is out of date)
+HARNESS_DIR=$PWD $SKILL/scripts/harness_autofill.sh --check README.md
 ```
 
-`autofill.sh` runs `sweep.sh` for each stream, recomputes the fit + 1Gi/512Mi
-boundaries from `logs/*.csv`, writes them into the **Result** table and the **Agent
-build measured** provenance below, and writes a paste-ready block to
-`logs/orr-snippet-*.md`. If `ORR_DOC` is set and the target contains
-`<!-- AUTOFILL:START -->` / `<!-- AUTOFILL:END -->` markers, it injects the block
-between them (otherwise it only writes the snippet). Same host caveats as the sweep
-(Docker cgroup ≥ `SWEEP_CAP`, image pull, corpus tool, ~tens of minutes).
+So a re-run cannot leave a document behind, and two documents cannot disagree about the
+same measurement. The marker itself says which CSV and which view it wants, so the numbers
+in a table, the fit derived from that table and the budget derived from that fit are always
+the same measurement.
 
-Key env: `STREAM` (required), `STACK_VERSION` (default `9.6.0-SNAPSHOT`),
-`AGENT_IMAGE` (override to pin an exact serverless build), `MEM_LIMIT`,
-`TOTAL_EVENTS` (records per page), `ALERTS_PER_INCIDENT` (incident only),
-`SWEEP_CAP`, `SWEEP_EVENTS`, `KEEP=1` (leave containers up), `TOOL`.
+`results/` is committed for the same reason: a number whose provenance is a terminal that
+has since been closed cannot be re-checked. Each file carries a header comment saying when
+and how it was produced.
 
 ### Which agent version to profile
 
@@ -240,64 +245,65 @@ Record the exact build measured in the ORR, and lean on the memory *driver*
 
 ## Output and analysis
 
-`run.sh` prints a `RESULT` block:
+`bin/run.sh` prints a `RESULT` block and appends the same numbers to the results CSV:
 
 - `raw page bytes` — the served page size.
 - `memory.peak` — cgroup high-water mark (authoritative; on an OOM run it is pinned
   at the cap and is *not* the true peak — use a bigger cap to measure it).
+- `working set` — `memory.current - inactive_file`, computed the way kubelet computes it,
+  so it is directly comparable with the `kubernetes.container.memory.workingset.bytes`
+  telemetry the ORR quotes. **This is the column to publish**; `memory.peak` additionally
+  includes page cache, which for the elastic-agent image is hundreds of MB of binaries.
 - `OOM killed` — whether the cgroup killed the beat at that cap.
-- `page fetches` — should be `>= 1`, confirming the mock served the page.
+- `page fetches` — should be `>= 1` per enabled stream, confirming the mock served the page.
 
-`sweep.sh` runs several page sizes at a non-OOM cap and writes, under `logs/`:
-
-- `sweep-<stream>-<ts>.log` — full console output (every run + the summary).
-- `sweep-<stream>-<ts>.csv` — `records,raw_page_bytes,memory_peak_bytes,oom`.
-- `run-<stream>-<ts>-<N>.log` — the individual `run.sh` output for each count `N`.
-
-The summary fits `memory.peak ≈ base + k × raw_page` over the non-OOM points and
-prints the derived largest raw page that fits at 1Gi and 512Mi. To interpret:
+`bin/sweep.sh` repeats that at several points and prints the table plus the fit. To
+interpret:
 
 - **`k`** is the memory multiplier per raw page byte; a high `k` reflects that the
   raw body, decoded objects, split events, and `event.original` copies coexist.
 - **OOM boundary** = the raw page size where `base + k × page` reaches the cap.
   Convert to records by dividing by the per-record size the harness reports.
-- For **incident**, sweep `ALERTS_PER_INCIDENT` too: nested `keep_parent` split can
-  make memory grow super-linearly with alerts-per-incident, which is the real risk
-  (a single incident with a large `alerts[]` array).
+- For **incident**, `AXIS=alerts_per_incident` is the important one: nested `keep_parent`
+  split can make memory grow super-linearly with alerts-per-incident, which is the real
+  risk (a single incident with a large `alerts[]` array).
 - Any run that OOM'd is excluded from the fit; if that happens, raise `SWEEP_CAP`.
-
-Copy the summary numbers into the ORR load-test / memory-profile sections; the raw
-`logs/` are scratch and should not be committed.
 
 ## Result: per pod (all three agentless streams in one agent)
 
 Measured with generated pages calibrated to a real response (see **Record shapes**), agent
-`9.6.0-SNAPSHOT`, 2026-08-04. `ws` is the working-set figure computed the way kubelet
-computes it (`memory.current - inactive_file`), so it is directly comparable with the
-`kubernetes.container.memory.workingset.bytes` telemetry in the ORR. Page cache was
-negligible in most runs (≤7 MB), so peak ≈ anonymous memory; where it was not, both are
-reported.
+`9.6.0-SNAPSHOT`, 2026-08-04. `working set` is the kubelet-comparable figure described
+above. Page cache was negligible in most runs (≤7 MB), so peak ≈ anonymous memory.
 
-**Cold, one page per stream, page sizes scaled together** (alerts-per-incident 100):
+**Cold, one page per stream, page sizes scaled together** (alerts-per-incident 100; the
+bold row is the shipped configuration):
 
+<!-- AUTOFILL:POD-SCALE:START csv=scale.csv view=table bold=1
+     columns=point:scale|params.alert:alert|params.incident:incident|params.vulnerability:vuln|mb1(total_raw_bytes):raw pages|mb(workingset_bytes):working set -->
 | scale | alert | incident | vuln | raw pages | working set |
 | --- | --- | --- | --- | --- | --- |
 | 0.25 | 250 | 12 | 2,500 | 10.2 MB | 214 MB |
 | 0.5 | 500 | 25 | 5,000 | 20.8 MB | 286 MB |
-| **1 (shipped)** | **1,000** | **50** | **10,000** | **41.6 MB** | **400 MB** |
+| **1** | **1,000** | **50** | **10,000** | **41.6 MB** | **400 MB** |
 | 2 | 2,000 | 100 | 20,000 | 83.1 MB | 720 MB |
 | 3 | 3,000 | 150 | 30,000 | 124.9 MB | 938 MB |
 | 4 | 4,000 | 200 | 40,000 | 166.5 MB | 1,175 MB |
 | 5 | 5,000 | 250 | 50,000 | 208.0 MB | 1,529 MB |
+<!-- AUTOFILL:POD-SCALE:END -->
 
+<!-- AUTOFILL:POD-SCALE-FIT:START csv=scale.csv view=fit x=total_raw_bytes y=workingset_bytes -->
 ```
-working_set ≈ 147 MB + 6.47 × raw_page_bytes        (R² = 0.996, 7 points)
+working_set ≈ 146 MB + 6.47 × raw_page_bytes        (R² = 0.996, 7 points)
 ```
+<!-- AUTOFILL:POD-SCALE-FIT:END -->
 
-Raw page budget per cap: **512Mi ≈ 56 MB · 1Gi ≈ 136 MB · 2Gi ≈ 294 MB · 4Gi ≈ 610 MB**,
-shared across all three streams. The 147 MB intercept is the whole-container floor and
-matches the fleet-median steady state in the ORR telemetry (~195 MB) once a small real
-page is added.
+Raw page budget per cap, shared across all three streams:
+<!-- AUTOFILL:POD-BUDGET:START csv=scale.csv view=budget caps=512Mi,1Gi,2Gi,4Gi -->
+**512Mi ≈ 57 MB** · **1Gi ≈ 136 MB** · **2Gi ≈ 294 MB** · **4Gi ≈ 610 MB**
+<!-- AUTOFILL:POD-BUDGET:END -->
+
+The intercept is the whole-container floor and matches the fleet-median steady state in the
+ORR telemetry (~195 MB) once a small real page is added.
 
 A cold single page is the noisiest measurement here: repeat runs at the shipped page sizes
 landed between 368 and 448 MB (±10%), because where the plateau detector stops depends on
@@ -309,6 +315,8 @@ Scales above 1 measure `k`; they are **not** tenants that can exist. `alert` can
 
 **Cold, alerts-per-incident swept with every page size at its shipped value:**
 
+<!-- AUTOFILL:APC:START csv=alerts-per-incident.csv view=table
+     columns=point:alerts/incident|mb1(total_raw_bytes):raw pages|mb(workingset_bytes):working set -->
 | alerts/incident | raw pages | working set |
 | --- | --- | --- |
 | 25 | 21.0 MB | 329 MB |
@@ -316,10 +324,14 @@ Scales above 1 measure `k`; they are **not** tenants that can exist. `alert` can
 | 100 | 41.6 MB | 368 MB |
 | 200 | 69.0 MB | 505 MB |
 | 400 | 123.8 MB | 780 MB |
+<!-- AUTOFILL:APC:END -->
 
+<!-- AUTOFILL:APC-FIT:START csv=alerts-per-incident.csv view=fit x=point y=workingset_bytes
+     xlabel=alerts_per_incident -->
 ```
-working_set ≈ 280 MB + 1.22 MB × alerts_per_incident   (R² = 0.983, shipped page sizes)
+working_set ≈ 280 MB + 1.22 MB × alerts_per_incident        (R² = 0.983, 5 points)
 ```
+<!-- AUTOFILL:APC-FIT:END -->
 
 `alerts[]` on one incident costs ~1.2 MB of pod memory per alert, because `$expand=alerts`
 plus the nested split with `keep_parent` turns each embedded alert into an event that also
@@ -338,21 +350,29 @@ pages charged to the cgroup. The ORR telemetry says so directly: the hottest pod
 
 `DRAIN=1` plus a short `INTERVAL` reproduces it:
 
-| configuration | raw pages | cold | sustained peak | sustained steady |
-| --- | --- | --- | --- | --- |
-| shipped pages, 100 alerts/incident | 41.6 MB | 400 MB | **690 MB** | 543 MB |
-| shipped pages, 400 alerts/incident | 123.8 MB | 780 MB | **1,516 MB** | 1,132 MB |
+<!-- AUTOFILL:SUSTAINED:START csv=sustained.csv view=table
+     columns=params.alerts_per_incident:alerts/incident|mb1(total_raw_bytes):raw pages|mb(peak_bytes):peak|mb(workingset_bytes):working set -->
+| alerts/incident | raw pages | peak | working set |
+| --- | --- | --- | --- |
+| 100 | 41.6 MB | 690 MB | 543 MB |
+| 400 | 123.8 MB | 1,516 MB | 1,132 MB |
+<!-- AUTOFILL:SUSTAINED:END -->
 
-Sustained fetching costs **~1.7–1.9× the cold single-page peak** (1.73× and 1.94×
-measured). The second row lands within **0.6%** of the worst working set ever observed in
-production (1,507 MB), so the production peaks are fully explained by shipped page sizes +
-a fat `alerts[]` array + back-to-back fetching. No unaccounted mechanism is needed.
+Against the cold runs at the same page sizes (400 MB and 780 MB working set), sustained
+fetching costs **~1.35–1.45× the cold single-page working set**, and its `memory.peak` is
+~1.7–1.9× the cold peak. The second row lands within **0.6%** of the worst working set ever
+observed in production (1,507 MB), so the production peaks are fully explained by shipped
+page sizes + a fat `alerts[]` array + back-to-back fetching. No unaccounted mechanism is
+needed.
 
 Interpolating the two sustained points:
 
+<!-- AUTOFILL:SUSTAINED-FIT:START csv=sustained.csv view=fit x=point y=peak_bytes
+     label=sustained_peak xlabel=alerts_per_incident -->
 ```
-sustained_peak ≈ 415 MB + 2.75 MB × alerts_per_incident
+sustained_peak ≈ 415 MB + 2.75 MB × alerts_per_incident        (2 points - an interpolation, not a fit)
 ```
+<!-- AUTOFILL:SUSTAINED-FIT:END -->
 
 which puts the OOM boundary at roughly **220 alerts/incident for 1Gi** and **590 for 2Gi**.
 Two points is a thin basis for a line — each sustained run costs ~8 minutes — so treat those
@@ -364,11 +384,14 @@ cold curve (`1.22 MB × alerts_per_incident`) is the better-conditioned fit if y
 Every row is the same worst case tested above — shipped page sizes, 400 alerts per
 incident, sustained with a draining output — changing one thing:
 
-| configuration | cap | peak | working set | outcome |
-| --- | --- | --- | --- | --- |
-| baseline (nothing changed) | 3Gi | 1,516 MB | 1,132 MB | needs 2Gi |
-| `GOMEMLIMIT=850MiB`, nothing else | **1Gi** | 1,024 MB = the cap | 917 MB | survived 5 min, but **no headroom** |
-| `incident` batch_size 50→10 + `vulnerability` pageSize 10000→1000 | **1Gi** | **656 MB** | 516 MB | no OOM, 36% headroom |
+<!-- AUTOFILL:KNOBS:START csv=knobs.csv view=table
+     columns=label:configuration|gi(mem_limit_bytes):cap|mb(peak_bytes):peak|mb(workingset_bytes):working set -->
+| configuration | cap | peak | working set |
+| --- | --- | --- | --- |
+| baseline (nothing changed) | 3Gi | 1,516 MB | 1,132 MB |
+| GOMEMLIMIT=850MiB (nothing else) | 1Gi | 1,024 MB | 917 MB |
+| incident batch_size 50->10 + vulnerability pageSize 10000->1000 | 1Gi | 656 MB | 516 MB |
+<!-- AUTOFILL:KNOBS:END -->
 
 - **`GOMEMLIMIT`** is the only lever that needs no package change, and it does work on this
   peak — the pod survived 5 minutes of back-to-back fetching at 400 alerts per incident
@@ -391,27 +414,35 @@ incident, sustained with a draining output — changing one thing:
 - **`preserve_original_event`** stays off in all of these; turning it on retains the raw
   JSON alongside the decoded event and would roughly double the per-event cost.
 
-## Result: per stream (single page, one stream at a time)
+## Result: per stream (attribution, not sizing)
 
-**Agent build measured:** 9.6.0-SNAPSHOT — record the exact serverless build the numbers
-came from, since serverless agentless tracks `main` (a moving target). Capture all
-three:
-- version string: `9.6.0-SNAPSHOT` (e.g. `9.6.0-SNAPSHOT`; from
-  `docker exec m365-agent elastic-agent version --binary-only`)
-- image / commit: `docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT` (e.g. `ecp-elastic-agent-service:git-893784d73b64`, i.e.
-  elastic-agent commit `893784d`; the `run.sh` RESULT block prints `agent image`)
-- date measured: 2026-08-03 (the serverless image rotates every ~1-2 days)
+One stream enabled at a time, page size swept, output held, cap 6Gi. This establishes the
+memory **driver** per stream, which is what the ORR asks for, and says which stream a pod
+peak should be attributed to.
 
-| stream          | fit (base + k·page)      | 1Gi boundary | 512Mi boundary |
-| --------------- | ------------------------ | ------------ | -------------- |
-| `alert`        | ≈126 MB + 11.43·page     | ~79 MB / ~14,400 recs | ~34 MB / ~6,200 recs |
-| `incident`     | ≈170 MB + 7.27·page      | ~118 MB / ~210 incidents | ~47 MB / ~85 incidents |
-| `vulnerability`| ≈146 MB + 10.14·page     | ~87 MB / ~100,489 recs | ~36 MB / ~41,884 recs |
+**These do not add up to a pod.** Each run pays the whole-container baseline once, so
+summing the three bases triple-counts it; the per-pod numbers above are the sizing basis.
 
-`incident` counts are incidents **at 100 alerts each** (~576 KB per incident). `vulnerability`
-was not re-measured after the record-shape calibration because its template did not change.
-These are `memory.peak` (page cache included) with the output held, so they are not additive —
-the per-pod numbers above supersede them for sizing.
+<!-- AUTOFILL:PER-STREAM:START csv=per-stream.csv view=fits group=streams
+     x=total_raw_bytes y=peak_bytes caps=1Gi,512Mi header=stream -->
+| stream | fit (base + k·page) | 1Gi boundary | 512Mi boundary |
+| --- | --- | --- | --- |
+| `alert` | ≈126 MB + 11.43·page | ~79 MB / ~14,343 recs | ~34 MB / ~6,170 recs |
+| `incident` | ≈170 MB + 7.27·page | ~117 MB / ~213 recs | ~47 MB / ~85 recs |
+| `vulnerability` | ≈146 MB + 10.14·page | ~87 MB / ~100,489 recs | ~36 MB / ~41,884 recs |
+<!-- AUTOFILL:PER-STREAM:END -->
+
+`incident` counts are incidents **at 100 alerts each** (~576 KB per incident). These are
+`memory.peak` (page cache included) rather than working set, because this sweep predates
+the working-set accounting; `alert` and `incident` were re-measured after the record-shape
+calibration, `vulnerability` was not because its template did not change.
+
+**Agent build measured:** `9.6.0-SNAPSHOT` — record the exact serverless build the numbers
+came from, since serverless agentless tracks `main` (a moving target). Capture all three:
+version string (`docker exec m365-agent elastic-agent version --binary-only`), image or
+commit (the `RESULT` block prints `agent image`), and the date, because the serverless image
+rotates every ~1-2 days. These runs: `docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT`,
+2026-08-03/04.
 
 ## Notes / deviations from a live agentless pod
 
