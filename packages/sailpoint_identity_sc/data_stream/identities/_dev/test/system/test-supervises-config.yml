@@ -1,0 +1,25 @@
+wait_for_data_timeout: 1m
+input: cel
+service: sailpoint-identities
+vars:
+  api_version: v2026
+  client_id: test-client-id
+  client_secret: test-client-secret
+  api_host: http://{{Hostname}}:{{Port}}
+data_stream:
+  vars:
+    interval: 10s
+    batch_size: 2
+    token_scopes:
+      - sp:scopes:all
+    enable_supervises_enrichment: true
+    preserve_original_event: true
+    tags:
+      - forwarded
+      - sailpoint_identity_sc.identities
+assert:
+  # Round 1: Page 1 (2) + Page 2 (2) + Terminal page (1) = 5 events
+  # Round 2: cursor resume (1 event)
+  # Total: 6 events
+  # Secondary supervises calls do not produce additional events.
+  min_count: 6

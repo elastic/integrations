@@ -1,0 +1,173 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 5
+resource.url: {{api_host}}
+auth:
+  oauth2:
+    client:
+      id: {{client_id}}
+      secret: {{client_secret}}
+    token_url: "{{api_host}}/oauth/token"
+    scopes:
+      {{#each token_scopes as |token_scope|}}
+         - {{token_scope}}
+      {{/each}}
+    endpoint_params:
+      grant_type: client_credentials
+state:
+  batch_size: {{batch_size}}
+  api_version: {{api_version}}
+  enable_supervises_enrichment: {{enable_supervises_enrichment}}
+redact:
+  fields: ~
+program: |-
+  // Paginated identities collection with searchAfter cursor.
+  // Pagination: sort by ["modified", "+id"], searchAfter = [last.modified, last.id].
+  // First run: no time filter — full scan of all identities.
+  // Subsequent runs: RANGE filter on modified >= cursor.modified for incremental collection.
+  // Cursor: stores modified + id of the last collected record.
+  // Supervises enrichment: when enable_supervises_enrichment is true, each identity where
+  // isManager == true triggers a secondary POST /search?limit=250 call to fetch direct
+  // reports and attach them as a _supervises array.
+  {
+  	"search_after_modified": state.?cursor.modified,
+  	"search_after_id": state.?cursor.id,
+  }.as(cursor,
+  	state.with(
+  		request(
+  			"POST",
+  			state.url.trim_right("/") + "/" + state.api_version + "/search?" + {
+  				"limit": [string(int(state.batch_size))],
+  			}.format_query()
+  		).with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  				},
+  				"Body": {
+  					"indices": ["identities"],
+  					"queryType": "SAILPOINT",
+  					"query": {"query": "*"},
+  					?"filters": cursor.search_after_modified.optMap(v,
+  						{
+  							"modified": {
+  								"type": "RANGE",
+  								"range": {
+  									"lower": {
+  										"value": v,
+  										"inclusive": true,
+  									},
+  								},
+  							},
+  						}
+  					),
+  					"sort": ["modified", "+id"],
+  					?"searchAfter": cursor.search_after_modified.optMap(v,
+  						[
+  							v,
+  							cursor.search_after_id.value(),
+  						]
+  					),
+  				}.encode_json(),
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 200) ?
+  				resp.Body.decode_json().as(body,
+  					body.map(e,
+  						(state.enable_supervises_enrichment && e.?isManager.orValue(false)) ?
+  							post_request(
+  								state.url.trim_right("/") + "/" + state.api_version + "/search?" + {
+  									"limit": ["250"],
+  								}.format_query(),
+  								"application/json",
+  								{
+  									"indices": ["identities"],
+  									"queryType": "SAILPOINT",
+  									"query": {"query": "manager.id:" + e.id},
+  									"sort": ["+id"],
+  								}.encode_json()
+  							).do_request().as(sresp,
+  								(sresp.StatusCode == 200) ?
+  									e.with(
+  										{
+  											?"_supervises": sresp.Body.decode_json().as(reports,
+  												size(reports) > 0 ?
+  													optional.of({
+  														"user": {
+  															"id": reports.map(dr, dr.id),
+  															"name": reports.map(dr, dr.name),
+  															"email": reports.map(dr, dr.?email.orValue("")),
+  														},
+  													})
+  												:
+  													optional.none()
+  											),
+  										}
+  									)
+  								:
+  									e
+  							)
+  						:
+  							e
+  					).as(enriched,
+  						{
+  							"events": enriched.map(item, {"message": item.encode_json()}),
+  							"cursor": (size(body) > 0) ?
+  								{
+  									"modified": body[int(size(body) - 1)].modified,
+  									"id": body[int(size(body) - 1)].id,
+  								}
+  							:
+  								state.?cursor.orValue({}),
+  							"want_more": size(body) == int(state.batch_size),
+  						}
+  					)
+  				)
+  			:
+  				{
+  					"events": {
+  						"error": {
+  							"code": string(resp.StatusCode),
+  							"id": string(resp.Status),
+  							"message": "POST /" + state.api_version + "/search: " +
+  							(
+  								(size(resp.Body) != 0) ?
+  									string(resp.Body)
+  								:
+  									string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+  							),
+  						},
+  					},
+  					"want_more": false,
+  				}
+  		)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

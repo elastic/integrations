@@ -1,0 +1,315 @@
+rules:
+  # OAuth Token Endpoint
+  # Used by the system test agent for OAuth2 client_credentials flow.
+  # Note: SailPoint ISC rejects an explicit scope parameter in the token request body,
+  # so scopes are configured on the OAuth client and not sent in the request.
+  - path: /oauth/token
+    methods:
+      - POST
+    query_params:
+      grant_type: client_credentials
+      client_id: test-client-id
+      client_secret: test-client-secret
+    request_headers:
+      Content-Type:
+        - application/x-www-form-urlencoded
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "access_token": "test-token-identities",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+  # Search Identities — Round 2 cursor resume
+  # Matches the second evaluation cycle using the persisted cursor (searchAfter from last page of round 1).
+  # The cursor stores [modified, id] of the last fetched record.
+  # Returns 1 record so cursor persistence is observable in hit_count.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"searchAfter":\["2025-01-12T00:00:00\.000Z","identity-id-005"\].*/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "identity-id-006",
+              "name": "frank.miller",
+              "displayName": "Frank Miller",
+              "firstName": "Frank",
+              "lastName": "Miller",
+              "email": "frank.miller@example.com",
+              "created": "2024-06-01T10:00:00.000Z",
+              "modified": "2025-01-13T00:00:00.000Z",
+              "synced": "2025-01-13T01:00:00.000Z",
+              "inactive": false,
+              "protected": false,
+              "status": "ACTIVE",
+              "disabled": false,
+              "locked": false,
+              "_type": "identity",
+              "type": "identity"
+            }
+          ]
+  # Search Identities — Round 1, Terminal page
+  # Matches the 3rd page request (searchAfter from last record of page 2: id-004).
+  # Returns 1 record (less than batch_size=2) — terminates Round 1 pagination.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"searchAfter":\["2025-01-11T00:00:00\.000Z","identity-id-004"\].*/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "identity-id-005",
+              "name": "eve.davis",
+              "displayName": "Eve Davis",
+              "firstName": "Eve",
+              "lastName": "Davis",
+              "email": "eve.davis@example.com",
+              "created": "2024-05-10T08:00:00.000Z",
+              "modified": "2025-01-12T00:00:00.000Z",
+              "synced": "2025-01-12T01:00:00.000Z",
+              "inactive": false,
+              "protected": false,
+              "status": "ACTIVE",
+              "disabled": false,
+              "locked": false,
+              "_type": "identity",
+              "type": "identity"
+            }
+          ]
+  # Search Identities — Round 1, Page 2
+  # Matches the 2nd page request with searchAfter from last record of page 1: id-002.
+  # Returns 2 records — pagination continues.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"searchAfter":\["2025-01-10T00:00:00\.000Z","identity-id-002"\].*/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "identity-id-003",
+              "name": "carol.white",
+              "displayName": "Carol White",
+              "firstName": "Carol",
+              "lastName": "White",
+              "email": "carol.white@example.com",
+              "created": "2024-03-15T14:00:00.000Z",
+              "modified": "2025-01-11T00:00:00.000Z",
+              "synced": "2025-01-11T01:00:00.000Z",
+              "inactive": false,
+              "protected": false,
+              "status": "ACTIVE",
+              "disabled": false,
+              "locked": false,
+              "_type": "identity",
+              "type": "identity"
+            },
+            {
+              "id": "identity-id-004",
+              "name": "dave.jones",
+              "displayName": "Dave Jones",
+              "firstName": "Dave",
+              "lastName": "Jones",
+              "email": "dave.jones@example.com",
+              "created": "2024-04-20T09:30:00.000Z",
+              "modified": "2025-01-11T00:00:00.000Z",
+              "synced": "2025-01-11T01:30:00.000Z",
+              "inactive": false,
+              "protected": false,
+              "status": "ACTIVE",
+              "disabled": false,
+              "locked": false,
+              "_type": "identity",
+              "type": "identity"
+            }
+          ]
+  # Search Identities — Round 3+ termination (specific cursor)
+  # Matches the third evaluation cycle cursor: searchAfter from the last record of round 2.
+  # Returns an empty array to terminate the collection cycle and allow the agent to go idle.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"searchAfter":\["2025-01-13T00:00:00\.000Z","identity-id-006"\].*/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          []
+  # Search Identities — General fallback termination (any other searchAfter)
+  # Catches any searchAfter request not matched by a more specific rule above.
+  # Returns an empty array to safely terminate pagination for any unexpected cursor position.
+  # This prevents regressions where a cursor mismatch causes the agent to loop indefinitely.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"searchAfter":\[.*/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          []
+  # Supervises enrichment — direct reports lookup for manager identity-id-001
+  # Matches the secondary search call triggered when enable_supervises_enrichment is enabled
+  # and the identity is a manager. Returns 2 direct report identities.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"query":"manager\.id:identity-id-001".*/
+    query_params:
+      limit: "250"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {"id": "direct-report-001", "name": "dave.worker", "displayName": "Dave Worker", "isManager": false},
+            {"id": "direct-report-002", "name": "eve.engineer", "displayName": "Eve Engineer", "isManager": false}
+          ]
+  # Supervises enrichment — fallback for any other manager direct reports lookup
+  # Matches any manager.id query not matched by a more specific rule above.
+  # Returns an empty array (no known direct reports for other managers).
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"query":"manager\.id:.*/
+    query_params:
+      limit: "250"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          []
+  # Search Identities — Round 1, Page 1 (initial fetch, any filter timestamp)
+  # Matches any first-page request (no searchAfter in body) for indices:identities.
+  # The regex matches on the presence of the required fields only; the filter timestamp
+  # is dynamic and not matched here.
+  # Returns 2 records — pagination continues to page 2.
+  # identity-id-001 has isManager: true so the supervises enrichment call is triggered.
+  - path: /v2026/search
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer test-token-identities
+      Content-Type:
+        - application/json
+    request_body: /.*"indices":\["identities"\].*"query":\{"query":"\*"\}.*"sort":\["modified","\+id"\].*/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "identity-id-001",
+              "name": "alice.johnson",
+              "displayName": "Alice Johnson",
+              "firstName": "Alice",
+              "lastName": "Johnson",
+              "email": "alice.johnson@example.com",
+              "created": "2024-04-04T21:36:00.000Z",
+              "modified": "2025-01-10T00:00:00.000Z",
+              "synced": "2025-01-10T01:00:00.000Z",
+              "inactive": false,
+              "protected": false,
+              "status": "ACTIVE",
+              "disabled": false,
+              "locked": false,
+              "isManager": true,
+              "_type": "identity",
+              "type": "identity"
+            },
+            {
+              "id": "identity-id-002",
+              "name": "bob.smith",
+              "displayName": "Bob Smith",
+              "firstName": "Bob",
+              "lastName": "Smith",
+              "email": "bob.smith@example.com",
+              "created": "2024-05-01T10:00:00.000Z",
+              "modified": "2025-01-10T00:00:00.000Z",
+              "synced": "2025-01-10T02:00:00.000Z",
+              "inactive": false,
+              "protected": false,
+              "status": "ACTIVE",
+              "disabled": false,
+              "locked": false,
+              "_type": "identity",
+              "type": "identity"
+            }
+          ]

@@ -1,0 +1,69 @@
+title: "Identities"
+type: logs
+streams:
+  - input: cel
+    title: SailPoint Identity Security Cloud Identities
+    description: "Collect human identity records from SailPoint Identity Security Cloud for entity analytics."
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: "How often the API is polled for new identity records."
+        show_user: true
+        required: true
+        default: "1h"
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: "Number of identity records to fetch per request (max 10000)."
+        show_user: false
+        required: true
+        default: 500
+      - name: token_scopes
+        type: text
+        title: Token Scopes
+        multi: true
+        description: Scopes for OAuth2 token.
+        required: true
+        show_user: false
+        secret: false
+        default:
+          - "sp:search:read"
+      - name: enable_supervises_enrichment
+        type: bool
+        title: Enable Supervises Enrichment
+        description: >-
+          When enabled, performs a secondary API call for each manager identity to fetch their direct reports (up to 250) and populate the `user.entity.relationships.supervises` field. Managers with more than 250 direct reports will have the surplus omitted. This adds one additional API request per manager identity per collection cycle. Disabled by default to avoid extra API request volume.
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: "Tags to be applied to events."
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - sailpoint_identity_sc.identities
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: "When enabled, keeps a raw copy of the original event in the event.original field."
+        required: true
+        show_user: false
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: "Processors can alter the events by reducing the number of fields or adding additional metadata. This is performed in the agent before the logs are parsed."
+        multi: false
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
