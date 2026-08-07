@@ -34,6 +34,13 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Required transforms:**
 - The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index into `monitoring-indices`.
 
+**Install order:**
+1. Install and start **ESS Billing** (or **On-Premises Billing**) so that at least one concrete backing index matches `metrics-ess_billing.billing-*` (or the on-prem billing metrics pattern).
+2. Install and start the **Elasticsearch** integration (index pivot + node stats) on monitored deployments.
+3. Install **Chargeback**. The `chargeback_conf_lookup` bootstrap transform uses the billing metrics pattern as its source trigger. If Chargeback starts before any billing backing index exists, that transform can fail to start until billing data appears; start or `_schedule_now` the transform after billing indices exist.
+
+Billing cost transforms (`billing_cluster_cost`, `billing_realized_pool`) sync on `@timestamp`. If the Usage and Cost Allocation dashboard is empty, confirm `billing_realized_pool_lookup` has documents — that index is the primary source for usage panels.
+
 **Data flow:**
 1. ESS Billing data is collected into `metrics-ess_billing.billing-*`.
 2. Elasticsearch index usage data is aggregated into `monitoring-indices*` by the Elasticsearch integration index pivot transform.
@@ -148,9 +155,11 @@ The integration creates eight transforms to aggregate cost and usage data:
 
 **Usage transforms** (from monitoring indices):
 5. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day.
-6. **`cluster_datastream_contribution`**: same metrics split by data stream.
+6. **`cluster_datastream_contribution`**: same metrics split by data stream. The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name is non-conforming.
 7. **`cluster_tier_contribution`**: same metrics split by data tier.
-8. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream.
+8. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream (includes `ds_type` and `ds_namespace`).
+
+All transform destination documents include ECS `event.ingested` (when the lookup row was written).
 
 These transforms produce lookup indices queried by the dashboards using ES|QL LOOKUP JOINs.
 
@@ -191,8 +200,12 @@ Answers: *which data streams and tiers drive cost, and how efficiently are we us
 Sections:
 - **Deployment cost allocation (usage-based)**: normalized cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
 - **Datatiers / utilization**: provisioned capacity vs chargeable pool, utilization p95 per deployment.
-- **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, workload breakdown by tier.
+- **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, and the **Workload Breakdown by Data Tier** table with columns **Data stream type**, **Namespace**, **Data stream**, **Data tier**, then indexing / querying / storage / blended cost.
 - **Data tier and data stream per day**: time-series panels (indexing, querying, storage, blended) broken out by data stream and data tier (usage-based), including absolute cost and percentage share.
+
+#### Namespace-based ownership on shared deployments
+
+When several teams share one deployment, assign each team a unique Fleet **namespace** so their data lands in distinct data streams (`<type>-<dataset>-<namespace>`). Chargeback parses `ds_namespace` and `ds_type` from the full data stream name and shows them on the Workload Breakdown table. Interactive control-bar filters on those fields are not part of this release line; use the table columns (or a KQL/ES|QL query) until a later package that ships ES|QL variable controls.
 
 ![Usage and Cost Allocation](../img/chargeback-usage-allocation.png)
 
@@ -214,6 +227,10 @@ Two distinct totals appear across the dashboards; both are valid and intentional
 Do not expect the chargeable pool to equal the full deployment bill. Non-allocatable SKUs (ML, Kibana, transfer, snapshots) appear in the Billing Components Overview only. The utilization discount is not spread to tiers or data streams by design.
 
 When `node_stats` is missing for a deployment/day, utilization defaults to 100%.
+
+#### Small differences versus the ESS Billing dashboard
+
+Chargeback billing and usage transforms aggregate on a **calendar day** (`calendar_interval: 1d`) with a sync delay (typically about one hour) and a periodic frequency. The ESS Billing dashboard can show near-real-time or partial-day totals for the current UTC day. Small differences for "today" or windows that cross midnight are expected. When you compare Chargeback to ESS Billing, use **completed UTC days** (or extend the billing time range across the day boundary) rather than an incomplete current day.
 
 ## Deployment Groups
 
@@ -242,6 +259,12 @@ Three alert rule templates are included and can be installed from the integratio
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.4.1
+
+1. Upgrade the Fleet package to **0.4.1**. Kibana requirement remains `^9.2.0`.
+2. Usage transforms rewrite lookup documents through the updated `usage` pipeline so new rows include `ds_type`, `ds_namespace`, and `event.ingested`. Reset usage transforms (or wait for incremental runs) if you need historical rows enriched.
+3. Confirm ESS Billing (or On-Premises Billing) has produced backing indices before relying on `chargeback_conf_lookup` after a fresh install.
 
 ### Upgrading to 0.4.0
 
