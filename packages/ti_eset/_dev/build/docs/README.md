@@ -3,15 +3,16 @@
 This integration connects with the [ESET Threat Intelligence](https://eti.eset.com/taxii2/) TAXII version 2 server.
 It includes the following datasets for retrieving logs:
 
-| Dataset | TAXII2 Collection name |
-|--------:|:-----------------------|
-|     apt | apt stix 2.1           |
-|  botnet | botnet stix 2.1        |
-|      cc | botnet.cc stix 2.1     |
-| domains | domain stix 2.1        |
-|   files | file stix 2.1          |
-|      ip | ip stix 2.1            |
-|     url | url stix 2.1           |
+|  Dataset | TAXII2 Collection name  |
+|---------:|:------------------------|
+|      apt | apt stix 2.1            |
+|   botnet | botnet stix 2.1         |
+|       cc | botnet.cc stix 2.1      |
+|  domains | domain stix 2.1         |
+|    files | file stix 2.1           |
+|       ip | ip stix 2.1             |
+|  smsscam | smsscam stix 2.1        |
+|      url | url stix 2.1            |
 
 ## Expiration of Indicators of Compromise (IOCs)
 
@@ -27,6 +28,7 @@ Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 | `logs-ti_eset.domains-*` | logs-ti_eset_latest.dest_domains-* | logs-ti_eset_latest.domains |
 | `logs-ti_eset.files-*`   | logs-ti_eset_latest.dest_files-*   | logs-ti_eset_latest.files   |
 | `logs-ti_eset.ip-*`      | logs-ti_eset_latest.dest_ip-*      | logs-ti_eset_latest.ip      |
+| `logs-ti_eset.smsscam-*` | logs-ti_eset_latest.dest_smsscam-* | logs-ti_eset_latest.smsscam |
 | `logs-ti_eset.url-*`     | logs-ti_eset_latest.dest_url-*     | logs-ti_eset_latest.url     |
 
 ### ILM Policy
@@ -42,6 +44,7 @@ Data in these source indices will be deleted after a certain number of days from
 | `logs-ti_eset.domains` | 7d            | 48h           |
 |   `logs-ti_eset.files` | 7d            | 48h           |
 |      `logs-ti_eset.ip` | 7d            | 48h           |
+| `logs-ti_eset.smsscam` | 7d            | 48h           |
 |     `logs-ti_eset.url` | 7d            | 48h           |
 
 ## Requirements
@@ -96,6 +99,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 {{fields "apt"}}
 
 {{event "apt"}}
+
+### SMS scam
+
+{{fields "smsscam"}}
+
+{{event "smsscam"}}
 
 ### URL
 
