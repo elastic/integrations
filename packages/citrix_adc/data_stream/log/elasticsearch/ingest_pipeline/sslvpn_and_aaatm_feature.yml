@@ -41,9 +41,11 @@ processors:
       tag: grok_sslvpn_icastart
       if: 'ctx.citrix.name == "ICASTART"'
       field: citrix.extended.message
+      pattern_definitions:
+        SEP: "%{SPACE}-%{SPACE}"
       patterns:
-        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - customername(?:%{SPACE}%{WORD:citrix_adc.log.customer_name})?%{SPACE}- username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{DATA:citrix_adc.log.application_name} - startTime "%{DATA:_tmp.start_time}" - connectionId %{WORD:citrix_adc.log.connection_id}%{SPACE}$'
-        - '^%{DATA} Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - customername (%{WORD:citrix_adc.log.customer_name})? - username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{DATA:citrix_adc.log.application_name} - startTime "%{DATA:_tmp.start_time}" - connectionId %{WORD:citrix_adc.log.connection_id} ?$'
+        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - customername(?:%{SPACE}%{WORD:citrix_adc.log.customer_name})?%{SEP}username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{DATA:citrix_adc.log.application_name} - startTime "%{DATA:_tmp.start_time}" - connectionId %{WORD:citrix_adc.log.connection_id}%{SPACE}$'
+        - '^%{DATA} Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - customername(?:%{SPACE}%{WORD:citrix_adc.log.customer_name})?%{SEP}username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{DATA:citrix_adc.log.application_name} - startTime "%{DATA:_tmp.start_time}" - connectionId %{WORD:citrix_adc.log.connection_id}%{SPACE}$'
 
   - grok:
       tag: grok_sslvpn_icaend_connstat
