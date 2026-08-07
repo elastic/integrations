@@ -40,22 +40,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "17a6f4a6-8e89-4f6b-86d4-a71a034f6498",
-        "id": "94de5972-7582-430e-89b2-19092651d2e5",
-        "name": "elastic-agent-83614",
+        "ephemeral_id": "b773fe07-dabe-4cf1-99ed-767556ec6b10",
+        "id": "8fd557b0-9d5b-47b4-bab1-d1217d45029a",
+        "name": "elastic-agent-39244",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.events",
-        "namespace": "63466",
+        "namespace": "11769",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "94de5972-7582-430e-89b2-19092651d2e5",
+        "id": "8fd557b0-9d5b-47b4-bab1-d1217d45029a",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -65,7 +65,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_sc.events",
-        "ingested": "2026-08-05T11:29:13Z",
+        "ingested": "2026-08-06T14:23:48Z",
         "kind": "event",
         "module": "sailpoint_identity_sc",
         "type": [
@@ -279,22 +279,22 @@ An example event for `identities` looks as following:
 {
     "@timestamp": "2025-01-10T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "d9dcb106-bbfb-453f-b738-4fa89589e0f2",
-        "id": "82ce3b1d-a774-4f6f-8590-f11489481551",
-        "name": "elastic-agent-61229",
+        "ephemeral_id": "2df4a7a5-c850-4fb5-92a2-4a9f09d47e3c",
+        "id": "6792248b-205a-4642-9909-dce8c3a9dd9f",
+        "name": "elastic-agent-24087",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.identities",
-        "namespace": "49652",
+        "namespace": "51450",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "82ce3b1d-a774-4f6f-8590-f11489481551",
+        "id": "6792248b-205a-4642-9909-dce8c3a9dd9f",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -305,7 +305,7 @@ An example event for `identities` looks as following:
         ],
         "created": "2024-04-04T21:36:00.000Z",
         "dataset": "sailpoint_identity_sc.identities",
-        "ingested": "2026-08-05T11:30:51Z",
+        "ingested": "2026-08-06T14:25:27Z",
         "kind": "asset",
         "module": "sailpoint_identity_sc",
         "original": "{\"_type\":\"identity\",\"created\":\"2024-04-04T21:36:00.000Z\",\"disabled\":false,\"displayName\":\"Alice Johnson\",\"email\":\"alice.johnson@example.com\",\"firstName\":\"Alice\",\"id\":\"identity-id-001\",\"inactive\":false,\"isManager\":true,\"lastName\":\"Johnson\",\"locked\":false,\"modified\":\"2025-01-10T00:00:00.000Z\",\"name\":\"alice.johnson\",\"protected\":false,\"status\":\"ACTIVE\",\"synced\":\"2025-01-10T01:00:00.000Z\",\"type\":\"identity\"}",
