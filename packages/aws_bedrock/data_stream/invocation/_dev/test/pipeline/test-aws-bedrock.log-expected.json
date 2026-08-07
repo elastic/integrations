@@ -5105,6 +5105,186 @@
             "user": {
                 "id": "arn:aws:iam::144492464627:user/andrew.kroh@elastic.co"
             }
+        },
+        {
+            "@timestamp": "2026-07-29T10:00:00.000Z",
+            "aws_bedrock": {
+                "invocation": {
+                    "input": {
+                        "input_body_json": {
+                            "messages": [
+                                {
+                                    "content": [
+                                        {
+                                            "guardContent": {
+                                                "text": {
+                                                    "qualifiers": [
+                                                        "guard_content"
+                                                    ],
+                                                    "text": "Contact me at user@example.com about the quarterly finance report."
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "role": "user"
+                                }
+                            ]
+                        },
+                        "input_content_type": "application/json",
+                        "input_token_count": 20
+                    },
+                    "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "output": {
+                        "completion_text": "I can help with general finance topics, but I cannot share sensitive account details.",
+                        "output_body_json": {
+                            "metrics": {
+                                "latency_ms": 1200
+                            },
+                            "output": {
+                                "message": {
+                                    "content": [
+                                        {
+                                            "text": "I can help with general finance topics, but I cannot share sensitive account details."
+                                        }
+                                    ],
+                                    "role": "assistant"
+                                }
+                            },
+                            "stop_reason": "end_turn",
+                            "trace": {
+                                "guardrail": {
+                                    "inputAssessment": {
+                                        "grd-observe-01": {
+                                            "invocation_metrics": {
+                                                "guardrail_coverage": {
+                                                    "text_characters": {
+                                                        "guarded": 60,
+                                                        "total": 61
+                                                    }
+                                                },
+                                                "guardrail_processing_latency": 250,
+                                                "usage": {
+                                                    "content_policy_units": 0,
+                                                    "contextual_grounding_policy_units": 0,
+                                                    "sensitive_information_policy_free_units": 0,
+                                                    "sensitive_information_policy_units": 1,
+                                                    "topic_policy_units": 1,
+                                                    "word_policy_units": 0
+                                                }
+                                            },
+                                            "sensitive_information_policy": {
+                                                "pii_entities": [
+                                                    {
+                                                        "action": "NONE",
+                                                        "match": "user@example.com",
+                                                        "type": "EMAIL"
+                                                    }
+                                                ]
+                                            },
+                                            "topic_policy": {
+                                                "topics": [
+                                                    {
+                                                        "action": "NONE",
+                                                        "name": "Finance",
+                                                        "type": "DENY"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "usage": {
+                                "inputTokens": 20,
+                                "outputTokens": 18,
+                                "totalTokens": 38
+                            }
+                        },
+                        "output_content_type": "application/json",
+                        "output_token_count": 18
+                    },
+                    "request_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "schema_type": "ModelInvocationLog",
+                    "schema_version": "1.0"
+                }
+            },
+            "cloud": {
+                "account": {
+                    "id": "111111111111"
+                },
+                "region": "us-east-1",
+                "service": {
+                    "name": "bedrock"
+                }
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "Converse",
+                "original": "{\"schemaType\":\"ModelInvocationLog\",\"schemaVersion\":\"1.0\",\"timestamp\":\"2026-07-29T10:00:00Z\",\"accountId\":\"111111111111\",\"identity\":{\"arn\":\"arn:aws:iam::111111111111:user/observe-test\"},\"region\":\"us-east-1\",\"requestId\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"operation\":\"Converse\",\"modelId\":\"anthropic.claude-3-5-sonnet-20240620-v1:0\",\"input\":{\"inputContentType\":\"application/json\",\"inputBodyJson\":{\"messages\":[{\"role\":\"user\",\"content\":[{\"guardContent\":{\"text\":{\"text\":\"Contact me at user@example.com about the quarterly finance report.\",\"qualifiers\":[\"guard_content\"]}}}]}]},\"inputTokenCount\":20},\"output\":{\"outputContentType\":\"application/json\",\"outputBodyJson\":{\"output\":{\"message\":{\"role\":\"assistant\",\"content\":[{\"text\":\"I can help with general finance topics, but I cannot share sensitive account details.\"}]}},\"stopReason\":\"end_turn\",\"metrics\":{\"latencyMs\":1200},\"usage\":{\"inputTokens\":20,\"outputTokens\":18,\"totalTokens\":38},\"trace\":{\"guardrail\":{\"inputAssessment\":{\"grd-observe-01\":{\"sensitiveInformationPolicy\":{\"piiEntities\":[{\"type\":\"EMAIL\",\"match\":\"user@example.com\",\"action\":\"NONE\"}]},\"topicPolicy\":{\"topics\":[{\"name\":\"Finance\",\"type\":\"DENY\",\"action\":\"NONE\"}]},\"invocationMetrics\":{\"guardrailProcessingLatency\":250,\"usage\":{\"topicPolicyUnits\":1,\"contentPolicyUnits\":0,\"wordPolicyUnits\":0,\"sensitiveInformationPolicyUnits\":1,\"sensitiveInformationPolicyFreeUnits\":0,\"contextualGroundingPolicyUnits\":0},\"guardrailCoverage\":{\"textCharacters\":{\"guarded\":60,\"total\":61}}}}}}}},\"outputTokenCount\":18}}",
+                "outcome": "success"
+            },
+            "gen_ai": {
+                "completion": "{\"metrics\":{\"latencyMs\":1200},\"output\":{\"message\":{\"content\":[{\"text\":\"I can help with general finance topics, but I cannot share sensitive account details.\"}],\"role\":\"assistant\"}},\"stopReason\":\"end_turn\",\"trace\":{\"guardrail\":{\"inputAssessment\":{\"grd-observe-01\":{\"invocationMetrics\":{\"guardrailCoverage\":{\"textCharacters\":{\"guarded\":60,\"total\":61}},\"guardrailProcessingLatency\":250,\"usage\":{\"contentPolicyUnits\":0,\"contextualGroundingPolicyUnits\":0,\"sensitiveInformationPolicyFreeUnits\":0,\"sensitiveInformationPolicyUnits\":1,\"topicPolicyUnits\":1,\"wordPolicyUnits\":0}},\"sensitiveInformationPolicy\":{\"piiEntities\":[{\"action\":\"NONE\",\"match\":\"user@example.com\",\"type\":\"EMAIL\"}]},\"topicPolicy\":{\"topics\":[{\"action\":\"NONE\",\"name\":\"Finance\",\"type\":\"DENY\"}]}}}}},\"usage\":{\"inputTokens\":20,\"outputTokens\":18,\"totalTokens\":38}}",
+                "compliance": {
+                    "violation_code": [
+                        "DENY",
+                        "EMAIL"
+                    ]
+                },
+                "guardrail_id": [
+                    "grd-observe-01"
+                ],
+                "performance": {
+                    "request_size": 177,
+                    "response_size": 818
+                },
+                "policy": {
+                    "action": [
+                        "NONE"
+                    ],
+                    "match_detail": [
+                        {
+                            "action": "NONE",
+                            "match": "user@example.com",
+                            "type": "EMAIL"
+                        }
+                    ],
+                    "name": [
+                        "sensitive_information_policy",
+                        "topic_policy"
+                    ]
+                },
+                "prompt": "{\"messages\":[{\"content\":[{\"guardContent\":{\"text\":{\"qualifiers\":[\"guard_content\"],\"text\":\"Contact me at user@example.com about the quarterly finance report.\"}}}],\"role\":\"user\"}]}",
+                "request": {
+                    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "model": {
+                        "id": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                        "role": "assistant",
+                        "type": "anthropic"
+                    }
+                },
+                "response": {
+                    "finish_reasons": "end_turn",
+                    "timestamp": "2026-07-29T10:00:00.000Z"
+                },
+                "system": "aws",
+                "usage": {
+                    "completion_tokens": 18,
+                    "prompt_tokens": 20
+                },
+                "user": {
+                    "id": "arn:aws:iam::111111111111:user/observe-test"
+                }
+            },
+            "tags": [
+                "preserve_original_event",
+                "preserve_duplicate_custom_fields"
+            ],
+            "user": {
+                "id": "arn:aws:iam::111111111111:user/observe-test"
+            }
         }
     ]
 }

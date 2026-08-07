@@ -46,6 +46,10 @@ echo "=== Running check_changelog_entries.sh tests ==="
 run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"
 
 echo ""
+echo "=== Running check_backport_owners.sh tests ==="
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_check_backport_owners.sh"
+
+echo ""
 echo "=== Running trigger_backport_lib.sh tests ==="
 # yq is required by generate_trigger_pipeline(); install it if not already available.
 if ! command -v yq &>/dev/null; then

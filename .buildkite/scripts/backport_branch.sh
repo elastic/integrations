@@ -144,8 +144,35 @@ updateBackportBranchContents() {
   local files_cached_num=""
 
   git checkout "$BACKPORT_BRANCH_NAME"
+
+  # Preserve version pins that are specific to the backport branch (e.g. kubernetes
+  # packages pin K8S_VERSION/KIND_VERSION to whatever was compatible at release time).
+  # We capture the full line (including whitespace and quote style) so we can restore
+  # it with sed, which rewrites only that line and leaves blank lines intact — yq -i
+  # rewrites the whole file and strips empty lines as a side effect.
+  local pipeline_yml="${BUILDKITE_FOLDER_PATH}/pipeline.yml"
+  local k8s_version_line=""
+  local kind_version_line=""
+  if [ -f "${pipeline_yml}" ]; then
+    k8s_version_line=$(grep -E '^\s*K8S_VERSION:' "${pipeline_yml}" || true)
+    kind_version_line=$(grep -E '^\s*KIND_VERSION:' "${pipeline_yml}" || true)
+    echo "Preserving from backport branch: ${k8s_version_line}, ${kind_version_line}"
+  fi
+
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
+  git rm -r --cached "${BUILDKITE_FOLDER_PATH}" 2>/dev/null || true
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
+
+  # Restore the version pins overwritten by the checkout above.
+  if [ -n "${k8s_version_line}" ]; then
+    echo "--- Restoring K8S_VERSION in ${pipeline_yml}..."
+    sed -i "s|^\s*K8S_VERSION:.*|${k8s_version_line}|" "${pipeline_yml}"
+  fi
+  if [ -n "${kind_version_line}" ]; then
+    echo "--- Restoring KIND_VERSION in ${pipeline_yml}..."
+    sed -i "s|^\s*KIND_VERSION:.*|${kind_version_line}|" "${pipeline_yml}"
+  fi
+
   git add $BUILDKITE_FOLDER_PATH
 
   if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
@@ -161,43 +188,13 @@ updateBackportBranchContents() {
   fi
 
   # Update scripts used by mage
-  local MAGEFILE_SCRIPTS_FOLDER="dev/citools"
-  local TESTSREPORTER_SCRIPTS_FOLDER="dev/testsreporter"
-  local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
-  local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
-  local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
-  local BACKPORTS_SCRIPTS_FOLDER="dev/backports"
-  local DEV_SCRIPTS_FOLDER="dev/scripts"
+  local DEV_FOLDER="dev"
 
-  if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
-    echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
-    echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
-    git add "${MAGEFILE_SCRIPTS_FOLDER}"
-
-    echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
-    git add "${TESTSREPORTER_SCRIPTS_FOLDER}"
-
-    echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
-    git add "${COVERAGE_SCRIPTS_FOLDER}"
-
-    echo "Copying $CODEOWNERS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${CODEOWNERS_SCRIPTS_FOLDER}"
-    git add "${CODEOWNERS_SCRIPTS_FOLDER}"
-
-    echo "Copying $PACKAGENAMES_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${PACKAGENAMES_SCRIPTS_FOLDER}"
-    git add "${PACKAGENAMES_SCRIPTS_FOLDER}"
-
-    echo "Copying $BACKPORTS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${BACKPORTS_SCRIPTS_FOLDER}"
-    git add "${BACKPORTS_SCRIPTS_FOLDER}"
-
-    echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
-    git add "${DEV_SCRIPTS_FOLDER}"
+  if git ls-tree -d --name-only main:${DEV_FOLDER} > /dev/null 2>&1 ; then
+    echo "--- Copying $DEV_FOLDER from $SOURCE_BRANCH..."
+    git rm -r --cached "${DEV_FOLDER}" 2>/dev/null || true
+    git checkout "$SOURCE_BRANCH" -- "${DEV_FOLDER}"
+    git add "${DEV_FOLDER}"
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
@@ -214,6 +211,7 @@ updateBackportBranchContents() {
     # > error: GH013: Repository rule violations found for ...
     # > refusing to allow a GitHub App to create or update workflow `.github/workflows/bump-elastic-stack-version.yml` without `workflows` permission
     echo "--- Copying .github/workflows from $SOURCE_BRANCH..."
+    git rm -r --cached ".github/workflows" 2>/dev/null || true
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
 
@@ -221,6 +219,10 @@ updateBackportBranchContents() {
     echo "--- Copying tools.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "tools.go"
     git add tools.go
+
+    echo "--- Copying .gitignore from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- ".gitignore"
+    git add .gitignore
 
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     echo "--- Running go mod tidy to update dependencies related to magefile and dev scripts..."
@@ -271,7 +273,7 @@ updateBackportBranchContents() {
   if [ "$DRY_RUN" == "true" ];then
     echo "--- DRY_RUN mode, nothing will be pushed."
     # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .go-version, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ dev/ go.sum go.mod .go-version tools.go .github/CODEOWNERS "${PACKAGE_PATH}"
+    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ dev/ go.sum go.mod .go-version tools.go .gitignore .github/CODEOWNERS "${PACKAGE_PATH}"
   else
     echo "--- Pushing..."
     git push origin "$BACKPORT_BRANCH_NAME"

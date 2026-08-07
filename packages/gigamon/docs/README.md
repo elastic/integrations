@@ -212,6 +212,7 @@ An example event for `ami` looks as following:
 | event.module | Event module | constant_keyword |
 | gigamon.ami.app_id |  | keyword |
 | gigamon.ami.app_name |  | keyword |
+| gigamon.ami.app_tags |  | keyword |
 | gigamon.ami.device_inbound_interface |  | keyword |
 | gigamon.ami.dns_ancount |  | long |
 | gigamon.ami.dns_arcount |  | long |
@@ -260,6 +261,7 @@ An example event for `ami` looks as following:
 | gigamon.ami.http_mime_type |  | keyword |
 | gigamon.ami.http_referer |  | keyword |
 | gigamon.ami.http_request_size |  | long |
+| gigamon.ami.http_response_ts |  | double |
 | gigamon.ami.http_rtt |  | double |
 | gigamon.ami.http_server |  | keyword |
 | gigamon.ami.http_server_agent |  | keyword |
@@ -355,6 +357,12 @@ An example event for `ami` looks as following:
 | gigamon.ami.tcp_retransmission_bytes |  | long |
 | gigamon.ami.tcp_rtt |  | double |
 | gigamon.ami.tcp_rtt_app |  | double |
+| gigamon.ami.tcp_rtt_app_max |  | double |
+| gigamon.ami.tcp_rtt_app_mean |  | double |
+| gigamon.ami.tcp_rtt_app_min |  | double |
+| gigamon.ami.tcp_rtt_max |  | double |
+| gigamon.ami.tcp_rtt_mean |  | double |
+| gigamon.ami.tcp_rtt_min |  | double |
 | gigamon.ami.tcp_wrong_crc |  | keyword |
 | gigamon.ami.ts |  | date |
 | gigamon.ami.vendor |  | keyword |

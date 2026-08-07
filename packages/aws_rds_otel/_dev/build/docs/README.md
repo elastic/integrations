@@ -20,7 +20,7 @@ This package includes one pre-built Kibana dashboard:
 
 | Name | Description |
 |---|---|
-| [AWS OTel] RDS | AWS RDS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
+| [AWS RDS OTel] Metrics | AWS RDS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
 ## Alerting Rule Templates
 {{alertRuleTemplates}}
