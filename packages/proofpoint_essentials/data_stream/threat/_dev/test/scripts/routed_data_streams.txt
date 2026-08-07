@@ -28,11 +28,14 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 # Add the data stream policy pointing at the mock server.
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml THREAT_DS
 
+# Wait for all routed docs to arrive, then confirm the total holds.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -confirm 5s -timeout 5m logs-proofpoint_essentials.clicks_blocked-*,logs-proofpoint_essentials.clicks_permitted-*,logs-proofpoint_essentials.message_blocked-*,logs-proofpoint_essentials.message_delivered-*
+
 # Each event type should route to its own data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.clicks_blocked-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.clicks_permitted-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.message_blocked-*
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.message_delivered-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-proofpoint_essentials.clicks_blocked-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-proofpoint_essentials.clicks_permitted-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-proofpoint_essentials.message_blocked-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-proofpoint_essentials.message_delivered-*
 
 # Clean up.
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${THREAT_DS}
