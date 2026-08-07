@@ -1143,6 +1143,16 @@ processors:
       copy_from: _tmp.session_name
       if: ctx.user?.email == null && ctx._tmp?.session_name_prefix != null
       ignore_empty_value: true
+  - set:
+      tag: set_aws_cloudtrail_user_identity_on_behalf_of_user_id_7d2af063
+      field: aws.cloudtrail.user_identity.on_behalf_of.user_id
+      copy_from: json.userIdentity.onBehalfOf.userId
+      ignore_empty_value: true
+  - rename:
+      tag: rename_json_userIdentity_onBehalfOf_identityStoreArn_to_aws_cloudtrail_user_identity_on_behalf_of_identity_store_arn_1f9c4b70
+      field: json.userIdentity.onBehalfOf.identityStoreArn
+      target_field: aws.cloudtrail.user_identity.on_behalf_of.identity_store_arn
+      ignore_missing: true
   - rename:
       field: json.userIdentity.onBehalfOf.userId
       target_field: user.id
@@ -1168,6 +1178,73 @@ processors:
       tag: rename_json_userIdentity_invokedBy_to_aws_cloudtrail_user_identity_invoked_by_0bc27c76
       field: json.userIdentity.invokedBy
       target_field: aws.cloudtrail.user_identity.invoked_by
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_invokedByDelegate_accountId_to_aws_cloudtrail_user_identity_invoked_by_delegate_account_id_5a71e3b4
+      field: json.userIdentity.invokedByDelegate.accountId
+      target_field: aws.cloudtrail.user_identity.invoked_by_delegate.account_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_credentialId_to_aws_cloudtrail_user_identity_credential_id_c8f40d29
+      field: json.userIdentity.credentialId
+      target_field: aws.cloudtrail.user_identity.credential_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_identityProvider_to_aws_cloudtrail_user_identity_identity_provider_9e3a6b15
+      field: json.userIdentity.identityProvider
+      target_field: aws.cloudtrail.user_identity.identity_provider
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_inScopeOf_issuerType_to_aws_cloudtrail_user_identity_in_scope_of_issuer_type_2d7c8f60
+      field: json.userIdentity.inScopeOf.issuerType
+      target_field: aws.cloudtrail.user_identity.in_scope_of.issuer_type
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_inScopeOf_credentialsIssuedTo_to_aws_cloudtrail_user_identity_in_scope_of_credentials_issued_to_71b4e0a3
+      field: json.userIdentity.inScopeOf.credentialsIssuedTo
+      target_field: aws.cloudtrail.user_identity.in_scope_of.credentials_issued_to
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_inScopeOf_sourceArn_to_aws_cloudtrail_user_identity_in_scope_of_source_arn_0c5fd812
+      field: json.userIdentity.inScopeOf.sourceArn
+      target_field: aws.cloudtrail.user_identity.in_scope_of.source_arn
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_inScopeOf_sourceAccount_to_aws_cloudtrail_user_identity_in_scope_of_source_account_e6a29b47
+      field: json.userIdentity.inScopeOf.sourceAccount
+      target_field: aws.cloudtrail.user_identity.in_scope_of.source_account
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_sessionContext_ec2RoleDelivery_to_aws_cloudtrail_user_identity_session_context_ec2_role_delivery_836bf1da
+      field: json.userIdentity.sessionContext.ec2RoleDelivery
+      target_field: aws.cloudtrail.user_identity.session_context.ec2_role_delivery
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_sessionContext_sourceIdentity_to_aws_cloudtrail_user_identity_session_context_source_identity_4b1e7c95
+      field: json.userIdentity.sessionContext.sourceIdentity
+      target_field: aws.cloudtrail.user_identity.session_context.source_identity
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_sessionContext_webIdFederationData_federatedProvider_to_aws_cloudtrail_user_identity_session_context_web_id_federation_data_federated_provider_a05d3e28
+      field: json.userIdentity.sessionContext.webIdFederationData.federatedProvider
+      target_field: aws.cloudtrail.user_identity.session_context.web_id_federation_data.federated_provider
+      ignore_missing: true
+  # The keys under webIdFederationData.attributes are named by the identity
+  # provider, so the object is stored whole rather than field by field.
+  - rename:
+      tag: rename_json_userIdentity_sessionContext_webIdFederationData_attributes_to_aws_cloudtrail_user_identity_session_context_web_id_federation_data_attributes_6e4a91cb
+      field: json.userIdentity.sessionContext.webIdFederationData.attributes
+      target_field: aws.cloudtrail.user_identity.session_context.web_id_federation_data.attributes
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_sessionContext_assumedRoot_to_aws_cloudtrail_user_identity_session_context_assumed_root_d38f0c72
+      field: json.userIdentity.sessionContext.assumedRoot
+      target_field: aws.cloudtrail.user_identity.session_context.assumed_root
+      ignore_missing: true
+  - rename:
+      tag: rename_json_userIdentity_sessionContext_signInSessionArn_to_aws_cloudtrail_user_identity_session_context_sign_in_session_arn_2b7de5a4
+      field: json.userIdentity.sessionContext.signInSessionArn
+      target_field: aws.cloudtrail.user_identity.session_context.sign_in_session_arn
       ignore_missing: true
   - rename:
       tag: rename_json_eventSource_to_event_provider_4648c27c
@@ -1382,14 +1459,47 @@ processors:
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_json_sharedEventID_to_aws_cloudtrail_shared_event_id_b3d0c1a7
+      field: json.sharedEventID
+      target_field: aws.cloudtrail.shared_event_id
+      ignore_missing: true
+  - rename:
       tag: rename_json_sharedEventId_to_aws_cloudtrail_shared_event_id_593eca9a
       field: json.sharedEventId
       target_field: aws.cloudtrail.shared_event_id
       ignore_missing: true
+      if: ctx.aws?.cloudtrail?.shared_event_id == null
   - rename:
       tag: rename_json_vpcEndpointId_to_aws_cloudtrail_vpc_endpoint_id_21ac588e
       field: json.vpcEndpointId
       target_field: aws.cloudtrail.vpc_endpoint_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_vpcEndpointAccountId_to_aws_cloudtrail_vpc_endpoint_account_id_4f2b91ce
+      field: json.vpcEndpointAccountId
+      target_field: aws.cloudtrail.vpc_endpoint_account_id
+      ignore_missing: true
+  # An addendum is emitted when CloudTrail delivers an event late or corrects a
+  # previously delivered one, so it explains gaps and restated values.
+  - rename:
+      tag: rename_json_addendum_reason_to_aws_cloudtrail_addendum_reason_8b06d5f2
+      field: json.addendum.reason
+      target_field: aws.cloudtrail.addendum.reason
+      ignore_missing: true
+  - rename:
+      tag: rename_json_addendum_updatedFields_to_aws_cloudtrail_addendum_updated_fields_47e1c9a8
+      field: json.addendum.updatedFields
+      target_field: aws.cloudtrail.addendum.updated_fields
+      ignore_missing: true
+  - rename:
+      tag: rename_json_addendum_originalRequestID_to_aws_cloudtrail_addendum_original_request_id_d92f3b05
+      field: json.addendum.originalRequestID
+      target_field: aws.cloudtrail.addendum.original_request_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_addendum_originalEventID_to_aws_cloudtrail_addendum_original_event_id_6a3ed470
+      field: json.addendum.originalEventID
+      target_field: aws.cloudtrail.addendum.original_event_id
       ignore_missing: true
   - append:
       tag: append_related_user_0121b806
@@ -1983,11 +2093,26 @@ processors:
       ignore_missing: true
       if: ctx.file?.path == null
   - rename:
-      tag: rename_json_previousDigestSignature_to_file_hash_sha256_0cfc4a19
+      tag: rename_json_previousDigestS3Object_to_aws_cloudtrail_digest_previous_s3_object_7d2e4a91
+      field: json.previousDigestS3Object
+      target_field: aws.cloudtrail.digest.previous_s3_object
+      ignore_missing: true
+  - rename:
+      tag: rename_json_previousDigestSignature_to_aws_cloudtrail_digest_previous_signature_0cfc4a19
       field: json.previousDigestSignature
+      target_field: aws.cloudtrail.digest.previous_signature
+      ignore_missing: true
+  - set:
+      tag: set_aws_cloudtrail_digest_previous_hash_value_5c8b1f30
+      field: aws.cloudtrail.digest.previous_hash_value
+      copy_from: json.previousDigestHashValue
+      ignore_empty_value: true
+  - rename:
+      tag: rename_json_previousDigestHashValue_to_file_hash_sha256_3a91c7d2
+      field: json.previousDigestHashValue
       target_field: file.hash.sha256
-      if: >-
-        ctx.json?.previousDigestHashAlgorithm != null && ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
+      ignore_missing: true
+      if: ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
   - append:
       tag: append_related_hash_7574f0ee
       field: related.hash
@@ -2087,10 +2212,16 @@ processors:
       target_field: aws.cloudtrail.digest.previous_hash_algorithm
       ignore_missing: true
   - rename:
+      tag: rename_json_digestPublicKeyFingerprint_to_aws_cloudtrail_digest_public_key_fingerprint_4ec7a218
+      field: json.digestPublicKeyFingerprint
+      target_field: aws.cloudtrail.digest.public_key_fingerprint
+      ignore_missing: true
+  - rename:
       tag: rename_json_publicKeyFingerprint_to_aws_cloudtrail_digest_public_key_fingerprint_6babc730
       field: json.publicKeyFingerprint
       target_field: aws.cloudtrail.digest.public_key_fingerprint
       ignore_missing: true
+      if: ctx.aws?.cloudtrail?.digest?.public_key_fingerprint == null
   - rename:
       tag: rename_json_digestSignatureAlgorithm_to_aws_cloudtrail_digest_signature_algorithm_71bf5c31
       field: json.digestSignatureAlgorithm
@@ -2165,6 +2296,11 @@ processors:
       tag: rename_json_tlsDetails_clientProvidedHostHeader_to_tls_client_server_name_af2e4313
       field: json.tlsDetails.clientProvidedHostHeader
       target_field: tls.client.server_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_tlsDetails_keyExchange_to_aws_cloudtrail_tls_details_key_exchange_3ce8a4d1
+      field: json.tlsDetails.keyExchange
+      target_field: aws.cloudtrail.tls_details.key_exchange
       ignore_missing: true
   # Standardize user fields
   - set:
