@@ -113,6 +113,108 @@ streams:
         description: >-
           (Optional when **Authentication Type** is **Client Secret**) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
           Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
+      - name: processor_version
+        type: select
+        title: Processor version
+        multi: false
+        required: false
+        show_user: false
+        default: v2
+        options:
+          - text: v1 (legacy)
+            value: v1
+          - text: v2
+            value: v2
+        description: >
+          The processor version that the integration should use. Possible values are v1 (legacy) and v2 (recommended).
+          The v2 event hub processor is recommended for typical use cases. Defaults to v2.
+      - name: processor_update_interval
+        type: text
+        title: Processor update interval
+        multi: false
+        required: false
+        show_user: false
+        default: 10s
+        description: >-
+          (Processor v2 only) How often the processor should attempt to claim partitions.
+
+          Default is `10` seconds.
+      - name: processor_start_position
+        type: select
+        title: Processor start position
+        multi: false
+        required: false
+        show_user: false
+        default: earliest
+        options:
+          - text: earliest
+            value: earliest
+          - text: latest
+            value: latest
+        description: >-
+          (Processor v2 only) Controls from what position in the event hub the processor should start processing messages for all partitions.
+
+          Possible values are `earliest` and `latest`.
+
+          `earliest` starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
+
+          `latest` starts processing messages from the latest event in the event hub and continues to process new events as they arrive.
+
+          Default is `earliest`.
+      - name: partition_receive_timeout
+        type: text
+        title: Partition receive timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 5s
+        description: >-
+          (Processor v2 only) Maximum time to wait before processing the messages received from the event hub.
+
+          The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first.
+
+          Default is `5` seconds.
+      - name: partition_receive_count
+        type: text
+        title: Partition receive count
+        multi: false
+        required: false
+        show_user: false
+        default: 100
+        description: >-
+          (Processor v2 only) Maximum number of messages from the event hub to wait for before processing them.
+
+          The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first.
+
+          Default is `100` messages.
+      - name: transport
+        type: select
+        title: Event Hubs transport protocol
+        multi: false
+        required: true
+        show_user: false
+        default: amqp
+        options:
+          - text: AMQP
+            value: amqp
+          - text: AMQP-over-WebSockets
+            value: websocket
+        description: >
+          (Processor v2 only) The transport protocol used to connect to Event Hubs.
+          Supported values are AMQP and AMQP-over-WebSockets. Defaults to AMQP.
+      - name: migrate_checkpoint
+        type: bool
+        title: Migrate checkpoint information
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        description: >-
+          (Processor v2 only) Flag to control if the processor should perform the checkpoint information migration from processor v1 to v2 at startup.
+
+          The checkpoint migration converts the checkpoint information from the v1 format to the v2 format, so the processor resumes from where v1 left off instead of reprocessing the event hub retention window.
+
+          Default is `true`.
       - name: preserve_original_event
         required: true
         show_user: true
