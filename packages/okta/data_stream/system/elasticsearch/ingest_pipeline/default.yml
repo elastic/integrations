@@ -75,6 +75,17 @@ processors:
       field: event.kind
       value: event
   - rename:
+      tag: rename_severity
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_severity
+      field: log.level
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
       tag: rename_displayMessage
       field: json.displayMessage
       target_field: okta.display_message
@@ -277,6 +288,23 @@ processors:
       tag: rename_device_product_name
       field: json.device.name
       target_field: device.product.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_device_os_platform
+      field: json.device.os_platform
+      target_field: host.os.platform
+      ignore_missing: true
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_device_os_platform
+      field: host.os.platform
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_device_os_version
+      field: json.device.os_version
+      target_field: host.os.version
       ignore_missing: true
       ignore_failure: true
   - rename:

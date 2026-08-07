@@ -120,6 +120,9 @@ An example event for `system` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "log": {
+        "level": "info"
+    },
     "network": {
         "name": "null"
     },
@@ -154,7 +157,6 @@ An example event for `system` looks as following:
                     "url": "/api/v1/authn?"
                 },
                 "request_id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
-                "request_uri": "/api/v1/authn",
                 "threat_suspected": "false",
                 "url": "/api/v1/authn?"
             }
@@ -215,6 +217,9 @@ An example event for `system` looks as following:
         "preserve_original_event",
         "forwarded"
     ],
+    "url": {
+        "path": "/api/v1/authn"
+    },
     "user": {
         "email": "xxxxxx@elastic.co",
         "full_name": "xxxxxx",
@@ -254,8 +259,11 @@ An example event for `system` looks as following:
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.flags | Flags for the log file. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.name | Name given by operators to sections of their network. | keyword |
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
@@ -317,7 +325,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.originalPrincipal.type |  | keyword |
 | okta.debug_context.debug_data.promptingPolicyTypes |  | keyword |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
-| okta.debug_context.debug_data.request_uri | The request URI. | keyword |
+| okta.debug_context.debug_data.request_uri | Deprecated. Alias to `url.path`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.debug_context.debug_data.requested_scopes |  | keyword |
 | okta.debug_context.debug_data.risk |  | keyword |
 | okta.debug_context.debug_data.risk.level |  | keyword |
@@ -335,8 +343,8 @@ An example event for `system` looks as following:
 | okta.device.id | Deprecated. Alias to `device.id`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.device.managed | Whether the device is managed. | boolean |
 | okta.device.name | Deprecated. Alias to `device.product.name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.device.os_platform | The OS of the device. | keyword |
-| okta.device.os_version | The device's OS version. | keyword |
+| okta.device.os_platform | Deprecated. Alias to `host.os.platform`, retained so existing saved searches, dashboards, and detection rules continue to resolve. The value is now lowercased to follow the ECS convention, so `OSX` resolves as `osx`. | alias |
+| okta.device.os_version | Deprecated. Alias to `host.os.version`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.device.registered | Whether the device is registered. | boolean |
 | okta.device.screen_lock_type | The mechanism for locking the device's screen. One of "NONE", "PASSCODE" or "BIOMETRIC". | keyword |
 | okta.device.secure_hardware_present | Whether there is secure hardware present on the device. This is a checks for chip presence: trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens on the secure hardware. | boolean |
@@ -350,7 +358,7 @@ An example event for `system` looks as following:
 | okta.security_context.domain | The domain name. | keyword |
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
-| okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
+| okta.severity | Deprecated. Alias to `log.level`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.target.alternate_id | The alternate ID of the target. | keyword |
 | okta.target.changeDetails.from.\* |  | object |
 | okta.target.changeDetails.to.\* |  | object |
@@ -364,3 +372,4 @@ An example event for `system` looks as following:
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |
 | okta.version | The version of the LogEvent. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
