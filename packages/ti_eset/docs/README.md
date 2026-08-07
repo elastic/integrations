@@ -3,15 +3,16 @@
 This integration connects with the [ESET Threat Intelligence](https://eti.eset.com/taxii2/) TAXII version 2 server.
 It includes the following datasets for retrieving logs:
 
-| Dataset | TAXII2 Collection name |
-|--------:|:-----------------------|
-|     apt | apt stix 2.1           |
-|  botnet | botnet stix 2.1        |
-|      cc | botnet.cc stix 2.1     |
-| domains | domain stix 2.1        |
-|   files | file stix 2.1          |
-|      ip | ip stix 2.1            |
-|     url | url stix 2.1           |
+|    Dataset | TAXII2 Collection name |
+|-----------:|:-----------------------|
+|        apt | apt stix 2.1           |
+|     botnet | botnet stix 2.1        |
+|         cc | botnet.cc stix 2.1     |
+|    domains | domain stix 2.1        |
+|      files | file stix 2.1          |
+|         ip | ip stix 2.1            |
+| ransomware | ransomware stix 2.1    |
+|        url | url stix 2.1           |
 
 ## Expiration of Indicators of Compromise (IOCs)
 
@@ -19,30 +20,32 @@ The ingested IOCs expire after certain duration. An [Elastic Transform](https://
 facilitate only active IOCs be available to the end users. Each transform creates a destination index named `logs-ti_eset_latest.dest_*` which only contains active and unexpired IOCs.
 Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 
-| Source Datastream        | Destination Index Pattern          | Destination Alias           |
-|:-------------------------|:-----------------------------------|-----------------------------|
-| `logs-ti_eset.apt-*`     | logs-ti_eset_latest.dest_apt-*     | logs-ti_eset_latest.apt     |
-| `logs-ti_eset.botnet-*`  | logs-ti_eset_latest.dest_botnet-*  | logs-ti_eset_latest.botnet  |
-| `logs-ti_eset.cc-*`      | logs-ti_eset_latest.dest_cc-*      | logs-ti_eset_latest.cc      |
-| `logs-ti_eset.domains-*` | logs-ti_eset_latest.dest_domains-* | logs-ti_eset_latest.domains |
-| `logs-ti_eset.files-*`   | logs-ti_eset_latest.dest_files-*   | logs-ti_eset_latest.files   |
-| `logs-ti_eset.ip-*`      | logs-ti_eset_latest.dest_ip-*      | logs-ti_eset_latest.ip      |
-| `logs-ti_eset.url-*`     | logs-ti_eset_latest.dest_url-*     | logs-ti_eset_latest.url     |
+| Source Datastream           | Destination Index Pattern             | Destination Alias              |
+|:----------------------------|:--------------------------------------|--------------------------------|
+| `logs-ti_eset.apt-*`        | logs-ti_eset_latest.dest_apt-*        | logs-ti_eset_latest.apt        |
+| `logs-ti_eset.botnet-*`     | logs-ti_eset_latest.dest_botnet-*     | logs-ti_eset_latest.botnet     |
+| `logs-ti_eset.cc-*`         | logs-ti_eset_latest.dest_cc-*         | logs-ti_eset_latest.cc         |
+| `logs-ti_eset.domains-*`    | logs-ti_eset_latest.dest_domains-*    | logs-ti_eset_latest.domains    |
+| `logs-ti_eset.files-*`      | logs-ti_eset_latest.dest_files-*      | logs-ti_eset_latest.files      |
+| `logs-ti_eset.ip-*`         | logs-ti_eset_latest.dest_ip-*         | logs-ti_eset_latest.ip         |
+| `logs-ti_eset.ransomware-*` | logs-ti_eset_latest.dest_ransomware-* | logs-ti_eset_latest.ransomware |
+| `logs-ti_eset.url-*`        | logs-ti_eset_latest.dest_url-*        | logs-ti_eset_latest.url        |
 
 ### ILM Policy
 
 ILM policy is added to the source indices, so it doesn't lead to unbounded growth.
 Data in these source indices will be deleted after a certain number of days from ingested days:
 
-|                  Index | Deleted after | Expired after |
-|-----------------------:|:--------------|---------------|
-|     `logs-ti_eset.apt` | 365d          | 365d          |
-|  `logs-ti_eset.botnet` | 7d            | 48h           |
-|      `logs-ti_eset.cc` | 7d            | 48h           |
-| `logs-ti_eset.domains` | 7d            | 48h           |
-|   `logs-ti_eset.files` | 7d            | 48h           |
-|      `logs-ti_eset.ip` | 7d            | 48h           |
-|     `logs-ti_eset.url` | 7d            | 48h           |
+|                     Index | Deleted after | Expired after |
+|--------------------------:|:--------------|---------------|
+|        `logs-ti_eset.apt` | 365d          | 365d          |
+|     `logs-ti_eset.botnet` | 7d            | 48h           |
+|         `logs-ti_eset.cc` | 7d            | 48h           |
+|    `logs-ti_eset.domains` | 7d            | 48h           |
+|      `logs-ti_eset.files` | 7d            | 48h           |
+|         `logs-ti_eset.ip` | 7d            | 48h           |
+| `logs-ti_eset.ransomware` | 7d            | 48h           |
+|        `logs-ti_eset.url` | 7d            | 48h           |
 
 ## Requirements
 
@@ -660,6 +663,107 @@ An example event for `apt` looks as following:
             },
             "last_seen": "2023-09-29T08:48:42.000Z",
             "modified_at": "2023-09-29T08:48:42.000Z",
+            "provider": "eset",
+            "type": "file"
+        }
+    }
+}
+```
+
+### Ransomware
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| eset.id | The UID of the event object. | keyword |
+| eset.labels | Threat labels. | keyword |
+| eset.valid_until | Event expiration date. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Input type. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+An example event for `ransomware` looks as following:
+
+```json
+{
+    "@timestamp": "2025-08-27T11:20:08.000Z",
+    "agent": {
+        "ephemeral_id": "a3510329-1058-4210-aa97-9587d1bceea7",
+        "id": "19e754eb-ffee-48b0-9f75-e821c7020398",
+        "name": "elastic-agent-21836",
+        "type": "filebeat",
+        "version": "9.4.2"
+    },
+    "data_stream": {
+        "dataset": "ti_eset.ransomware",
+        "namespace": "76770",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "19e754eb-ffee-48b0-9f75-e821c7020398",
+        "snapshot": false,
+        "version": "9.4.2"
+    },
+    "eset": {
+        "id": "indicator--2a142f4d-8895-40ce-8c2b-0cc6961b8c1b",
+        "labels": "malicious-activity",
+        "valid_until": "2025-08-29T11:20:08.000Z"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_eset.ransomware",
+        "ingested": "2026-08-01T20:59:41Z",
+        "kind": "enrichment",
+        "module": "ti_eset",
+        "original": "{\"confidence\":85,\"created\":\"2025-08-27T11:20:08.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Each of these file hashes indicates that a variant of a variant of Win32/Filecoder.DragonForce.A trojan is present.\",\"id\":\"indicator--2a142f4d-8895-40ce-8c2b-0cc6961b8c1b\",\"labels\":[\"malicious-activity\"],\"modified\":\"2025-08-27T11:20:08.000Z\",\"name\":\"Malware variant\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[file:hashes.'SHA-256' = 'df5ab9015833023a03f92a797e20196672c1d6525501a9f9a94a45b0904c7403'] OR [file:hashes.'SHA-1' = '4a34bbad85312ef34b60818a47f7b5bb8e9a7e26'] OR [file:hashes.'MD5' = 'e84270afa3030b48dc9e0c53a35c65aa']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-27T11:20:08Z\",\"valid_until\":\"2025-08-29T11:20:08Z\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "eset-ransomware"
+    ],
+    "threat": {
+        "feed": {
+            "name": "ESET Ransomware stix 2.1"
+        },
+        "indicator": {
+            "confidence": "High",
+            "description": "Each of these file hashes indicates that a variant of a variant of Win32/Filecoder.DragonForce.A trojan is present.",
+            "file": {
+                "hash": {
+                    "md5": "e84270afa3030b48dc9e0c53a35c65aa",
+                    "sha1": "4a34bbad85312ef34b60818a47f7b5bb8e9a7e26",
+                    "sha256": "df5ab9015833023a03f92a797e20196672c1d6525501a9f9a94a45b0904c7403"
+                }
+            },
+            "last_seen": "2025-08-27T11:20:08.000Z",
+            "modified_at": "2025-08-27T11:20:08.000Z",
+            "name": "Malware variant",
             "provider": "eset",
             "type": "file"
         }
