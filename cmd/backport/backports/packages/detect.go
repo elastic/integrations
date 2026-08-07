@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/cmd/backport/citools"
 )
 
 // DetectPackages maps a list of changed file paths to the package names they belong to.

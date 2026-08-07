@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/elastic/integrations/dev/gitutil"
+	"github.com/elastic/integrations/cmd/backport/gitutil"
 )
 
 func TestVersionInContent(t *testing.T) {

@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/elastic/integrations/dev/codeowners"
-	"github.com/elastic/integrations/dev/gitutil"
+	"github.com/elastic/integrations/cmd/backport/codeowners"
+	"github.com/elastic/integrations/cmd/backport/gitutil"
 )
 
 // parseCodeowners reads and parses CODEOWNERS from localPath on disk and
