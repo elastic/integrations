@@ -443,6 +443,14 @@ processors:
       tag: pipeline_authenticationProvider
       if: ctx._conf?.remove_flattened_debug == true
       name: '{{ IngestPipeline "no_use_flattened_debug" }}'
+  # Copied rather than renamed with okta.debug_context.debug_data.url turned into
+  # an alias: that field has a text multi-field, and aliases cannot carry
+  # multi-fields, so aliasing would silently break queries on ...url.text.
+  - set:
+      tag: set_url_original
+      field: url.original
+      copy_from: okta.debug_context.debug_data.url
+      ignore_empty_value: true
   - rename:
       tag: rename_authenticationProvider
       field: json.authenticationContext.authenticationProvider

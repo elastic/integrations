@@ -218,6 +218,7 @@ An example event for `system` looks as following:
         "forwarded"
     ],
     "url": {
+        "original": "/api/v1/authn?",
         "path": "/api/v1/authn"
     },
     "user": {
@@ -372,4 +373,6 @@ An example event for `system` looks as following:
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |
 | okta.version | The version of the LogEvent. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
