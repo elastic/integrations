@@ -119,15 +119,21 @@ processors:
 # Handle Blocked ARP
 ####################################################
 - grok:
+    description: Parse Blocked ARP, RA and DHCP packet events
+    tag: grok_blocked_packet_events
     field: event.original
-    patterns: 
+    patterns:
       - '^%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>%{BLOCKEDARP:_temp.blocked_arp} from %{MAC:source.mac} with IP %{IP:source.ip} on %{NOTSPACE} %{GREEDYDATA:observer.ingress.vlan.id})$'
+      - '^%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>%{BLOCKEDRA:_temp.blocked_ra} from %{MAC:source.mac} \(%{IP:source.ip}\) on VLAN %{WORD:observer.ingress.vlan.id}(?: by default)?)$'
+      - '^%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>%{BLOCKEDDHCP:_temp.blocked_dhcp} from %{MAC:source.mac} \(%{IP:source.ip}\) on VLAN %{WORD:observer.ingress.vlan.id}(?: by default)?)$'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
       BLOCKEDARP: 'Blocked ARP Packet'
+      BLOCKEDRA: 'Blocked RA Packet'
+      BLOCKEDDHCP: 'Blocked DHCP Packet'
     if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "blocked"
 - gsub:
     field: source.mac
@@ -141,6 +147,21 @@ processors:
     field: cisco_meraki.event_subtype
     value: arp_blocked
     if: ctx._temp?.blocked_arp != null
+- set:
+    field: cisco_meraki.event_subtype
+    tag: set_event_subtype_ra_blocked
+    value: ra_blocked
+    if: ctx._temp?.blocked_ra != null
+- set:
+    field: cisco_meraki.event_subtype
+    tag: set_event_subtype_dhcp_blocked
+    value: dhcp_blocked
+    if: ctx._temp?.blocked_dhcp != null
+- set:
+    field: network.protocol
+    tag: set_network_protocol_dhcp_blocked
+    value: dhcp
+    if: ctx._temp?.blocked_dhcp != null
 
 ####################################################
 # Handle Ports
