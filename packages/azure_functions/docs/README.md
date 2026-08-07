@@ -96,11 +96,22 @@ Instead of a connection string, you can authenticate using a Microsoft Entra ID 
 4. **Configure the integration**  
    Set **Authentication type** to **Client Secret**. Provide **Tenant ID**, **Client ID**, **Client Secret**, and the fully qualified **Event Hub namespace** (for example `yournamespace.servicebus.windows.net`). Use the same Storage Account and container as for connection string authentication; the integration will use the client secret to access both Event Hubs and Storage.
 
-#### AMQP-over-WebSockets and proxy support
+#### AMQP-over-WebSockets
 
-By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
+By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443`.
 
 This option requires the Event Hub processor v2 (**Processor version** set to `v2`, which is the default) and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+
+#### Proxy support
+
+Proxy support is optional and requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**.
+
+To enable it:
+
+1. In the advanced options, set **Event Hubs transport protocol** to **AMQP-over-WebSockets**.
+2. Define the `HTTPS_PROXY` environment variable for the Elastic Agent process, for example `HTTPS_PROXY=http://proxy.example.com:8080`. Elastic Agent routes both Event Hubs and Storage Account traffic through the proxy.
+
+This requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
 
 #### Configuration options
 

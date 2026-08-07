@@ -391,9 +391,14 @@ Optionally, you can restrict the traffic to the following domain names:
 
 #### Proxy support
 
-When using AMQP-over-WebSockets, both Event Hubs and Storage Account traffic use HTTPS on port `443`. Set the `HTTPS_PROXY` environment variable to route this traffic through a proxy.
+Proxy support is optional and requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**.
 
-Proxy support requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**, processor v2, and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+To enable it:
+
+1. In the advanced options, set **Event Hubs transport protocol** to **AMQP-over-WebSockets**.
+2. Define the `HTTPS_PROXY` environment variable for the Elastic Agent process, for example `HTTPS_PROXY=http://proxy.example.com:8080`. Elastic Agent routes both Event Hubs and Storage Account traffic through the proxy.
+
+This requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
 
 ## Settings
 
