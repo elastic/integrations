@@ -1,0 +1,198 @@
+---
+description: Pipeline for parsing evcc loadpoint metric events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - script:
+      tag: remove_null_fields
+      lang: painless
+      if: ctx.json != null
+      description: Removes null-valued fields so per-loadpoint metrics that evcc did not report (e.g. no vehicle connected) do not appear in the document.
+      source: >-
+        ctx.json.entrySet().removeIf(e -> e.getValue() == null);
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_ingest
+      copy_from: _ingest.timestamp
+  - rename:
+      field: json.index
+      target_field: evcc.loadpoint.index
+      ignore_missing: true
+      tag: rename_index
+  - rename:
+      field: json.site_title
+      target_field: evcc.site.title
+      ignore_missing: true
+      tag: rename_site_title
+  - rename:
+      field: json.title
+      target_field: evcc.loadpoint.title
+      ignore_missing: true
+      tag: rename_title
+  - rename:
+      field: json.mode
+      target_field: evcc.loadpoint.mode
+      ignore_missing: true
+      tag: rename_mode
+  - rename:
+      field: json.charging
+      target_field: evcc.loadpoint.charging
+      ignore_missing: true
+      tag: rename_charging
+  - rename:
+      field: json.connected
+      target_field: evcc.loadpoint.connected
+      ignore_missing: true
+      tag: rename_connected
+  - rename:
+      field: json.enabled
+      target_field: evcc.loadpoint.enabled
+      ignore_missing: true
+      tag: rename_enabled
+  - rename:
+      field: json.connected_duration
+      target_field: evcc.loadpoint.connected_duration.sec
+      ignore_missing: true
+      tag: rename_connected_duration
+  - rename:
+      field: json.charge_power
+      target_field: evcc.loadpoint.charge.power
+      ignore_missing: true
+      tag: rename_charge_power
+  - rename:
+      field: json.charged_energy
+      target_field: evcc.loadpoint.charge.energy
+      ignore_missing: true
+      tag: rename_charged_energy
+  - rename:
+      field: json.charge_duration
+      target_field: evcc.loadpoint.charge.duration.sec
+      ignore_missing: true
+      tag: rename_charge_duration
+  - rename:
+      field: json.charge_remaining_duration
+      target_field: evcc.loadpoint.charge.remaining_duration.sec
+      ignore_missing: true
+      tag: rename_charge_remaining_duration
+  - rename:
+      field: json.charge_remaining_energy
+      target_field: evcc.loadpoint.charge.remaining_energy
+      ignore_missing: true
+      tag: rename_charge_remaining_energy
+  - rename:
+      field: json.effective_limit_soc
+      target_field: evcc.loadpoint.effective.limit_soc
+      ignore_missing: true
+      tag: rename_effective_limit_soc
+  - rename:
+      field: json.effective_min_current
+      target_field: evcc.loadpoint.effective.min_current
+      ignore_missing: true
+      tag: rename_effective_min_current
+  - rename:
+      field: json.effective_max_current
+      target_field: evcc.loadpoint.effective.max_current
+      ignore_missing: true
+      tag: rename_effective_max_current
+  - rename:
+      field: json.charger_status_reason
+      target_field: evcc.loadpoint.charger_status_reason
+      ignore_missing: true
+      tag: rename_charger_status_reason
+  - rename:
+      field: json.last_24h_energy
+      target_field: evcc.loadpoint.last_24h_energy
+      ignore_missing: true
+      tag: rename_last_24h_energy
+  - rename:
+      field: json.last_7d_energy
+      target_field: evcc.loadpoint.last_7d_energy
+      ignore_missing: true
+      tag: rename_last_7d_energy
+  - rename:
+      field: json.vehicle_name
+      target_field: evcc.loadpoint.vehicle.name
+      ignore_missing: true
+      tag: rename_vehicle_name
+  - rename:
+      field: json.vehicle_soc
+      target_field: evcc.loadpoint.vehicle.soc
+      ignore_missing: true
+      tag: rename_vehicle_soc
+  - rename:
+      field: json.vehicle_range
+      target_field: evcc.loadpoint.vehicle.range
+      ignore_missing: true
+      tag: rename_vehicle_range
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      description: Removes the copy of the original message unless the user opted in to preserve it.
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,257 @@
+---
+description: Pipeline for parsing evcc site metric events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - script:
+      tag: normalize_battery_shape
+      lang: painless
+      if: ctx.json?.battery != null
+      description: >-
+        evcc varies the shape of the top-level `battery` field between versions: some releases (e.g. 0.211.x)
+        return a list of battery objects, others (e.g. 0.312.x) return a single battery object directly.
+        This normalizes both shapes to the first battery's power/soc/capacity, matching the single-battery fields
+        this data stream exposes.
+      source: >-
+        def batt = ctx.json.battery instanceof List
+          ? (ctx.json.battery.size() > 0 ? ctx.json.battery[0] : null)
+          : ctx.json.battery;
+        if (batt != null) {
+          if (batt.containsKey('power')) {
+            ctx.json.battery_power = batt.power;
+          }
+          if (batt.containsKey('soc')) {
+            ctx.json.battery_soc = batt.soc;
+          }
+          if (batt.containsKey('capacity')) {
+            ctx.json.battery_capacity = batt.capacity;
+          }
+        }
+        ctx.json.remove('battery');
+  - script:
+      tag: remove_null_fields
+      lang: painless
+      if: ctx.json != null
+      description: >-
+        Removes null-valued fields, at any depth, so optional evcc metrics that are not configured
+        (e.g. no battery, or no CO2/price tariff inside `statistics`) do not appear in the document.
+        The nested pass matters because the `statistics` object is passed through by the CEL program
+        verbatim and its leaves are renamed two levels down, where a null value would fail the rename.
+      source: >-
+        def pending = new ArrayList();
+        pending.add(ctx.json);
+        while (!pending.isEmpty()) {
+          Map current = (Map) pending.remove(pending.size() - 1);
+          current.entrySet().removeIf(e -> e.getValue() == null);
+          for (def value : current.values()) {
+            if (value instanceof Map) {
+              pending.add(value);
+            }
+          }
+        }
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_ingest
+      copy_from: _ingest.timestamp
+  - rename:
+      field: json.site_title
+      target_field: evcc.site.title
+      ignore_missing: true
+      tag: rename_site_title
+  - rename:
+      field: json.version
+      target_field: evcc.site.version
+      ignore_missing: true
+      tag: rename_version
+  - rename:
+      field: json.currency
+      target_field: evcc.site.currency
+      ignore_missing: true
+      tag: rename_currency
+  - rename:
+      field: json.home_power
+      target_field: evcc.site.home.power
+      ignore_missing: true
+      tag: rename_home_power
+  - rename:
+      field: json.grid_power
+      target_field: evcc.site.grid.power
+      ignore_missing: true
+      tag: rename_grid_power
+  - rename:
+      field: json.pv_power
+      target_field: evcc.site.pv.power
+      ignore_missing: true
+      tag: rename_pv_power
+  - rename:
+      field: json.pv_energy
+      target_field: evcc.site.pv.energy
+      ignore_missing: true
+      tag: rename_pv_energy
+  - rename:
+      field: json.battery_power
+      target_field: evcc.site.battery.power
+      ignore_missing: true
+      tag: rename_battery_power
+  - rename:
+      field: json.battery_soc
+      target_field: evcc.site.battery.soc
+      ignore_missing: true
+      tag: rename_battery_soc
+  - rename:
+      field: json.battery_capacity
+      target_field: evcc.site.battery.capacity
+      ignore_missing: true
+      tag: rename_battery_capacity
+  - rename:
+      field: json.statistics.30d.avgCo2
+      target_field: evcc.site.statistics.last_30d.avg_co2
+      ignore_missing: true
+      tag: rename_statistics_30d_avg_co2
+  - rename:
+      field: json.statistics.30d.avgPrice
+      target_field: evcc.site.statistics.last_30d.avg_price
+      ignore_missing: true
+      tag: rename_statistics_30d_avg_price
+  - rename:
+      field: json.statistics.30d.chargedKWh
+      target_field: evcc.site.statistics.last_30d.charged_kwh
+      ignore_missing: true
+      tag: rename_statistics_30d_charged_kwh
+  - rename:
+      field: json.statistics.30d.solarPercentage
+      target_field: evcc.site.statistics.last_30d.solar_percentage
+      ignore_missing: true
+      tag: rename_statistics_30d_solar_percentage
+  - rename:
+      field: json.statistics.365d.avgCo2
+      target_field: evcc.site.statistics.last_365d.avg_co2
+      ignore_missing: true
+      tag: rename_statistics_365d_avg_co2
+  - rename:
+      field: json.statistics.365d.avgPrice
+      target_field: evcc.site.statistics.last_365d.avg_price
+      ignore_missing: true
+      tag: rename_statistics_365d_avg_price
+  - rename:
+      field: json.statistics.365d.chargedKWh
+      target_field: evcc.site.statistics.last_365d.charged_kwh
+      ignore_missing: true
+      tag: rename_statistics_365d_charged_kwh
+  - rename:
+      field: json.statistics.365d.solarPercentage
+      target_field: evcc.site.statistics.last_365d.solar_percentage
+      ignore_missing: true
+      tag: rename_statistics_365d_solar_percentage
+  - rename:
+      field: json.statistics.thisYear.avgCo2
+      target_field: evcc.site.statistics.this_year.avg_co2
+      ignore_missing: true
+      tag: rename_statistics_this_year_avg_co2
+  - rename:
+      field: json.statistics.thisYear.avgPrice
+      target_field: evcc.site.statistics.this_year.avg_price
+      ignore_missing: true
+      tag: rename_statistics_this_year_avg_price
+  - rename:
+      field: json.statistics.thisYear.chargedKWh
+      target_field: evcc.site.statistics.this_year.charged_kwh
+      ignore_missing: true
+      tag: rename_statistics_this_year_charged_kwh
+  - rename:
+      field: json.statistics.thisYear.solarPercentage
+      target_field: evcc.site.statistics.this_year.solar_percentage
+      ignore_missing: true
+      tag: rename_statistics_this_year_solar_percentage
+  - rename:
+      field: json.statistics.total.avgCo2
+      target_field: evcc.site.statistics.total.avg_co2
+      ignore_missing: true
+      tag: rename_statistics_total_avg_co2
+  - rename:
+      field: json.statistics.total.avgPrice
+      target_field: evcc.site.statistics.total.avg_price
+      ignore_missing: true
+      tag: rename_statistics_total_avg_price
+  - rename:
+      field: json.statistics.total.chargedKWh
+      target_field: evcc.site.statistics.total.charged_kwh
+      ignore_missing: true
+      tag: rename_statistics_total_charged_kwh
+  - rename:
+      field: json.statistics.total.solarPercentage
+      target_field: evcc.site.statistics.total.solar_percentage
+      ignore_missing: true
+      tag: rename_statistics_total_solar_percentage
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      description: Removes the copy of the original message unless the user opted in to preserve it.
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
