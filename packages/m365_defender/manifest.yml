@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: m365_defender
 title: Microsoft Defender XDR
-version: "5.15.1"
+version: "5.16.0"
 description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
@@ -29,7 +29,14 @@ policy_templates:
         team: security-service-integrations
         resources:
           requests:
-            memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
+            # Peak memory is set by the largest single decoded API page, not by dataset size.
+            # Measured with _dev/scripts/memcap-agent (all three agentless streams in one agent,
+            # polling back-to-back): 1,516 MB with 400 alerts per incident, which reproduces the
+            # worst working set observed in production (1,507 MB). 2Gi covers that, but the request
+            # stays at 4Gi until the agentless ORR signs off the reduction: alerts-per-incident is
+            # unbounded (~1.2 MB of pod memory per alert with include_alerts=true) and the 2Gi
+            # OOM boundary sits near 590 alerts per incident.
+            memory: 4Gi
     inputs:
       - type: httpjson
         title: "Collect alerts and incidents using Microsoft Graph Security API"
