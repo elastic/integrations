@@ -56,6 +56,21 @@ To find a user's ID:
    - **Batch Size**: Number of events per API request (100-500, default: 500)
    - **Performer IDs Filter**: Filter by specific user IDs
    - **Event Types Filter**: Filter by event type (data_change_update, data_change_create, data_change_destroy, harvest_access, action)
+   - **Enrich rejected application events**: When enabled, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event (default: disabled)
+
+### Enabling rejection enrichment (optional)
+
+When a candidate or prospect is rejected, Greenhouse records a `Candidate or Prospect rejected` audit event that contains no application ID, rejection reason, or notes. Enabling **Enrich rejected application events** looks these up from the Harvest API and adds them to the event under `greenhouse.audit.event.rejection`.
+
+1. On the same Harvest V3 (OAuth) API credential used for audit log access, grant the following read permissions (under **Configure → Dev Center → API Credentials**):
+   - **Rejection details** → *List rejection details* (`harvest:rejection_details:list`)
+   - **Rejection reasons** → *Show rejection reason* (`harvest:rejection_reasons:show`)
+   - **Notes** → *List notes* (`harvest:notes:list`)
+2. Enable the **Enrich rejected application events** setting on the integration.
+
+When enrichment succeeds, `greenhouse.audit.event.rejection` is populated with `application_id`, `candidate_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, and `rejected_at`. The notes are also copied to `event.reason`.
+
+If correlation fails (no matching `RejectionDetails` event found, or an ambiguous bulk-reject), the event is still indexed with `greenhouse.audit.event.rejection.error` and the `greenhouse-rejection-enrichment-failed` tag rather than being dropped.
 
 ## Logs
 
@@ -93,6 +108,14 @@ If no events are being collected:
 2. Check that there have been events in the last 30 days
 3. Review any filter settings that might be excluding events
 
+### Rejection Enrichment Errors
+
+If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and `greenhouse.audit.event.rejection.error` is populated:
+1. Verify the OAuth credential has been granted all three required read permissions: **Rejection details** (*List rejection details*), **Rejection reasons** (*Show rejection reason*), and **Notes** (*List notes*)
+2. Check that the authorizing user has permission to view the affected application
+3. If the error mentions no matching `RejectionDetails` event was found, try increasing **Batch Size** so the two related audit events are less likely to land on different pages
+4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action; `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
+
 ## Logs reference
 
 ### audit
@@ -108,6 +131,15 @@ If no events are being collected:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | greenhouse.audit.event.meta | The before and after values from data change events, or other relevant data for the event. | flattened |
+| greenhouse.audit.event.rejection.ambiguous_application_ids | When more than one "RejectionDetails" audit event shares the rejection event's request.id (for example, a bulk rejection), the Application IDs of all. No reason or notes are attached in this case, since it is impossible to tell which one corresponds to this rejection event. | keyword |
+| greenhouse.audit.event.rejection.application_id | The ID of the Application matched to this rejection event via its sibling "RejectionDetails" audit event. | keyword |
+| greenhouse.audit.event.rejection.candidate_id | The ID of the candidate whose application was rejected. | keyword |
+| greenhouse.audit.event.rejection.error | Error message if the rejection enrichment lookup against the Harvest API failed. | keyword |
+| greenhouse.audit.event.rejection.notes | The rejection notes/comments entered when the application was rejected, sourced from the Harvest v3 Notes API via the rejection_note_id on the rejection detail record. | match_only_text |
+| greenhouse.audit.event.rejection.reason.id | The ID of the rejection reason. | keyword |
+| greenhouse.audit.event.rejection.reason.name | The name of the rejection reason. | keyword |
+| greenhouse.audit.event.rejection.reason.type | The category of the rejection reason, for example "We rejected them" or "They rejected us." | keyword |
+| greenhouse.audit.event.rejection.rejected_at | The timestamp when the application was rejected, as reported by the Harvest API. | date |
 | greenhouse.audit.event.target_id | The ID of the element that was edited or accessed. | keyword |
 | greenhouse.audit.event.target_type | The resource name for data changes, Harvest access, or the event action type for other actions. | keyword |
 | greenhouse.audit.event.type | The type of event: data_change_update, data_change_create, data_change_destroy, harvest_access, or action. | keyword |
