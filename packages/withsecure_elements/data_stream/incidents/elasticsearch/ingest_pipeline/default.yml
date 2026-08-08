@@ -21,6 +21,7 @@ processors:
       if: ctx.event?.original != null && ctx.event.original instanceof String
       on_failure:
         - set:
+            tag: set_error_message_cebe6eaa
             field: error.message
             value: 'Failed to parse JSON from event.original'
       tag: json_decode
@@ -72,7 +73,7 @@ processors:
       target_field: _id
       ignore_missing: true
       tag: generate_document_id
-  
+
   # Map to ECS fields using copy_from
   - set:
       field: event.id
@@ -107,7 +108,6 @@ processors:
         } else if (normalized == 'severe') {
           ctx.event.severity = 99;
         }
-
   # Set timestamps
   - date:
       field: withsecure_elements.incidents.createdTimestamp
@@ -119,6 +119,7 @@ processors:
       tag: set_timestamp
       on_failure:
         - append:
+            tag: append_error_message_54574230
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -143,6 +144,7 @@ processors:
       tag: set_event_end
       on_failure:
         - append:
+            tag: append_error_message_52da5d7b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -152,6 +154,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

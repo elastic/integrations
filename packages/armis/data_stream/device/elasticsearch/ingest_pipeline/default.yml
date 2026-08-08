@@ -42,6 +42,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -120,7 +121,7 @@ processors:
                 ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources
+      tag: foreach_json_dataSources_44a528e5
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
@@ -141,7 +142,7 @@ processors:
                     ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources
+      tag: foreach_json_dataSources_80aabde7
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
@@ -162,7 +163,7 @@ processors:
                     ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources
+      tag: foreach_json_dataSources_b14257f2
       if: ctx.json?.dataSources instanceof List
       processor:
         date:
@@ -179,7 +180,7 @@ processors:
                 ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources
+      tag: foreach_json_dataSources_23b1bbea
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
@@ -194,7 +195,7 @@ processors:
               ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources
+      tag: foreach_json_dataSources_17aa49c5
       if: ctx.json?.dataSources instanceof List
       processor:
         remove:
@@ -224,11 +225,12 @@ processors:
       if: ctx.json?.firstSeen != null && ctx.json.firstSeen != ''
       on_failure:
         - append:
+            tag: append_error_message_3f050535
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_device_first_seen
+      tag: set_event_start_62b39146
       copy_from: armis.device.first_seen
       ignore_empty_value: true
   - convert:
@@ -251,6 +253,7 @@ processors:
       if: ctx.json?.ipAddress instanceof String && ctx.json.ipAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_1ef97379
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -272,7 +275,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: armis.device.ip_address
-      tag: foreach_armis_device_ip_address
+      tag: foreach_armis_device_ip_address_83fc270f
       if: ctx.armis?.device?.ip_address instanceof List
       processor:
         append:
@@ -282,7 +285,7 @@ processors:
           allow_duplicates: false
   - foreach:
       field: armis.device.ip_address
-      tag: foreach_armis_device_ip_address
+      tag: foreach_armis_device_ip_address_cbd753d5
       if: ctx.armis?.device?.ip_address instanceof List
       processor:
         append:
@@ -333,6 +336,7 @@ processors:
       if: ctx.json?.lastSeen != null && ctx.json.lastSeen != ''
       on_failure:
         - append:
+            tag: append_error_message_36ac071d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -349,9 +353,11 @@ processors:
       if: ctx.json?.macAddress instanceof String && ctx.json.macAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_304849a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_armis_device_mac_address_886e7aa3
       field: armis.device.mac_address
       if: ctx.armis?.device?.mac_address instanceof List
       ignore_failure: true
@@ -362,6 +368,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_host_mac_cf1efd0d
       field: host.mac
       if: ctx.host?.mac instanceof List
       ignore_failure: true
@@ -377,6 +384,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_host_mac_15ece91a
       field: host.mac
       if: ctx.host?.mac instanceof List
       ignore_failure: true
@@ -419,9 +427,11 @@ processors:
       if: ctx.json?.names instanceof String && ctx.json.names != ''
       on_failure:
         - append:
+            tag: append_error_message_76b1b9d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_armis_device_names_01a73f31
       field: armis.device.names
       if: ctx.armis?.device?.names instanceof List
       ignore_failure: true
@@ -441,6 +451,7 @@ processors:
           tag: lowercase_host_name
           ignore_missing: true
   - foreach:
+      tag: foreach_host_name_13da92ce
       field: host.name
       if: ctx.host?.name instanceof List
       ignore_failure: true
@@ -498,7 +509,7 @@ processors:
                 ignore_missing: true
   - foreach:
       field: json.protections
-      tag: foreach_json_protections
+      tag: foreach_json_protections_ab2da63a
       if: ctx.json?.protections instanceof List
       processor:
         convert:
@@ -509,7 +520,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.protections
-      tag: foreach_json_protections
+      tag: foreach_json_protections_7ad79d22
       if: ctx.json?.protections instanceof List
       processor:
         date:
@@ -525,6 +536,7 @@ processors:
                 field: _ingest._value.lastSeenTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_protections_40ae4388
       field: json.protections
       if: ctx.json?.protections instanceof List
       processor:
@@ -534,6 +546,7 @@ processors:
           target_field: _ingest._value.protection_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_protections_dc8b0544
       field: json.protections
       if: ctx.json?.protections instanceof List
       processor:
@@ -557,6 +570,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_750fa912
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -567,6 +581,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e1222968
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -581,6 +596,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3141b072
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -636,7 +652,7 @@ processors:
           allow_duplicates: false
   - foreach:
       field: armis.device.user_ids
-      tag: foreach_armis_device_user_ids
+      tag: foreach_armis_device_user_ids_eb2fdd9d
       if: ctx.armis?.device?.user_ids instanceof List
       processor:
         append:
@@ -702,6 +718,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
