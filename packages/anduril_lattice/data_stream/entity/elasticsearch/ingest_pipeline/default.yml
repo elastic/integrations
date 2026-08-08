@@ -1,0 +1,1576 @@
+---
+description: Pipeline for processing Anduril Lattice entity events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a
+        copy of the original message. The `event.original` field is not touched
+        if the document already has one; it may happen when Logstash sends the
+        document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: >-
+        The `message` field is no longer required if the document has an
+        `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_json
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: json.time
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: parse_timestamp
+      if: ctx.json?.time != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_timestamp
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+            allow_duplicates: false
+  - date:
+      field: json.entity.provenance.sourceUpdateTime
+      target_field: event.created
+      formats:
+        - ISO8601
+      tag: parse_event_created
+      if: ctx.json?.entity?.provenance?.sourceUpdateTime != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_event_created
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+            allow_duplicates: false
+  - date:
+      field: json.entity.createdTime
+      target_field: event.start
+      formats:
+        - ISO8601
+      tag: parse_event_start
+      if: ctx.json?.entity?.createdTime != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_event_start
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+            allow_duplicates: false
+  - date:
+      field: json.entity.expiryTime
+      target_field: event.end
+      formats:
+        - ISO8601
+      tag: parse_event_end
+      if: ctx.json?.entity?.expiryTime != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_event_end
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+            allow_duplicates: false
+  - rename:
+      field: json.entity.description
+      target_field: message
+      ignore_missing: true
+      tag: rename_description_to_message
+      if: ctx.json?.entity?.description != null
+  - rename:
+      field: json.entity.provenance.integrationName
+      target_field: observer.name
+      ignore_missing: true
+      tag: rename_integration_name_to_observer_name
+      if: ctx.json?.entity?.provenance?.integrationName != null
+  - set:
+      field: event.kind
+      tag: set_event_kind_created
+      value: event
+      if: ctx.json?.eventType == 'EVENT_TYPE_CREATED'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_event_kind_created
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_created
+      value: start
+      allow_duplicates: false
+      if: ctx.json?.eventType == 'EVENT_TYPE_CREATED'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_event_type_created
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind_update
+      value: event
+      if: ctx.json?.eventType == 'EVENT_TYPE_UPDATE'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_event_kind_update
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_update
+      value: change
+      allow_duplicates: false
+      if: ctx.json?.eventType == 'EVENT_TYPE_UPDATE'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_event_type_update
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind_deleted
+      value: event
+      if: ctx.json?.eventType == 'EVENT_TYPE_DELETED'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_event_kind_deleted
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_deleted
+      value: end
+      allow_duplicates: false
+      if: ctx.json?.eventType == 'EVENT_TYPE_DELETED'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_event_type_deleted
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind_preexisting
+      value: state
+      if: ctx.json?.eventType == 'EVENT_TYPE_PREEXISTING'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_event_kind_preexisting
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_preexisting
+      value: info
+      allow_duplicates: false
+      if: ctx.json?.eventType == 'EVENT_TYPE_PREEXISTING'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_event_type_preexisting
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind_post_expiry
+      value: event
+      if: ctx.json?.eventType == 'EVENT_TYPE_POST_EXPIRY_OVERRIDE'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_event_kind_post_expiry
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_post_expiry
+      value: change
+      allow_duplicates: false
+      if: ctx.json?.eventType == 'EVENT_TYPE_POST_EXPIRY_OVERRIDE'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_event_type_post_expiry
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - rename:
+      field: json.eventType
+      target_field: anduril_lattice.entity.event_type
+      ignore_missing: true
+      tag: rename_event_type
+      if: ctx.json?.eventType != null
+  - rename:
+      field: json.entity.entityId
+      target_field: anduril_lattice.entity.entity_id
+      ignore_missing: true
+      tag: rename_entity_id
+      if: ctx.json?.entity?.entityId != null
+  - rename:
+      field: json.entity.isLive
+      target_field: anduril_lattice.entity.is_live
+      ignore_missing: true
+      tag: rename_is_live
+      if: ctx.json?.entity?.isLive != null
+  - rename:
+      field: json.entity.noExpiry
+      target_field: anduril_lattice.entity.no_expiry
+      ignore_missing: true
+      tag: rename_no_expiry
+      if: ctx.json?.entity?.noExpiry != null
+  - rename:
+      field: json.entity.aliases.name
+      target_field: anduril_lattice.entity.aliases.name
+      ignore_missing: true
+      tag: rename_aliases_name
+      if: ctx.json?.entity?.aliases?.name != null
+  - rename:
+      field: json.entity.milView.disposition
+      target_field: anduril_lattice.entity.mil_view.disposition
+      ignore_missing: true
+      tag: rename_mil_view_disposition
+      if: ctx.json?.entity?.milView?.disposition != null
+  - rename:
+      field: json.entity.milView.environment
+      target_field: anduril_lattice.entity.mil_view.environment
+      ignore_missing: true
+      tag: rename_mil_view_environment
+      if: ctx.json?.entity?.milView?.environment != null
+  - rename:
+      field: json.entity.milView.nationality
+      target_field: anduril_lattice.entity.mil_view.nationality
+      ignore_missing: true
+      tag: rename_mil_view_nationality
+      if: ctx.json?.entity?.milView?.nationality != null
+  - rename:
+      field: json.entity.ontology.template
+      target_field: anduril_lattice.entity.ontology.template
+      ignore_missing: true
+      tag: rename_ontology_template
+      if: ctx.json?.entity?.ontology?.template != null
+  - rename:
+      field: json.entity.ontology.platformType
+      target_field: anduril_lattice.entity.ontology.platform_type
+      ignore_missing: true
+      tag: rename_ontology_platform_type
+      if: ctx.json?.entity?.ontology?.platformType != null
+  - rename:
+      field: json.entity.ontology.specificType
+      target_field: anduril_lattice.entity.ontology.specific_type
+      ignore_missing: true
+      tag: rename_ontology_specific_type
+      if: ctx.json?.entity?.ontology?.specificType != null
+  - set:
+      field: anduril_lattice.entity.location.geo
+      tag: set_location_geo
+      value: '{{{json.entity.location.position.latitudeDegrees}}},{{{json.entity.location.position.longitudeDegrees}}}'
+      if: ctx.json?.entity?.location?.position?.latitudeDegrees != null && ctx.json?.entity?.location?.position?.longitudeDegrees != null
+  - rename:
+      field: json.entity.location.position.altitudeHaeMeters
+      target_field: anduril_lattice.entity.location.altitude_hae_meters
+      ignore_missing: true
+      tag: rename_altitude_hae_meters
+      if: ctx.json?.entity?.location?.position?.altitudeHaeMeters != null
+  - rename:
+      field: json.entity.location.speedMps
+      target_field: anduril_lattice.entity.location.speed_mps
+      ignore_missing: true
+      tag: rename_speed_mps
+      if: ctx.json?.entity?.location?.speedMps != null
+  - rename:
+      field: json.entity.location.velocityEnu.e
+      target_field: anduril_lattice.entity.location.velocity_enu.e
+      ignore_missing: true
+      tag: rename_velocity_enu_e
+      if: ctx.json?.entity?.location?.velocityEnu?.e != null
+  - rename:
+      field: json.entity.location.velocityEnu.n
+      target_field: anduril_lattice.entity.location.velocity_enu.n
+      ignore_missing: true
+      tag: rename_velocity_enu_n
+      if: ctx.json?.entity?.location?.velocityEnu?.n != null
+  - rename:
+      field: json.entity.location.velocityEnu.u
+      target_field: anduril_lattice.entity.location.velocity_enu.u
+      ignore_missing: true
+      tag: rename_velocity_enu_u
+      if: ctx.json?.entity?.location?.velocityEnu?.u != null
+  - rename:
+      field: json.entity.tracked.trackQualityWrapper
+      target_field: anduril_lattice.entity.tracked.track_quality
+      ignore_missing: true
+      tag: rename_track_quality
+      if: ctx.json?.entity?.tracked?.trackQualityWrapper != null
+  - rename:
+      field: json.entity.tracked.sensorHits
+      target_field: anduril_lattice.entity.tracked.sensor_hits
+      ignore_missing: true
+      tag: rename_sensor_hits
+      if: ctx.json?.entity?.tracked?.sensorHits != null
+  - rename:
+      field: json.entity.provenance.dataType
+      target_field: anduril_lattice.entity.provenance.data_type
+      ignore_missing: true
+      tag: rename_provenance_data_type
+      if: ctx.json?.entity?.provenance?.dataType != null
+  - rename:
+      field: json.entity.indicators.simulated
+      target_field: anduril_lattice.entity.indicators.simulated
+      ignore_missing: true
+      tag: rename_indicators_simulated
+      if: ctx.json?.entity?.indicators?.simulated != null
+  - rename:
+      field: json.entity.indicators.exercise
+      target_field: anduril_lattice.entity.indicators.exercise
+      ignore_missing: true
+      tag: rename_indicators_exercise
+      if: ctx.json?.entity?.indicators?.exercise != null
+  - rename:
+      field: json.entity.indicators.emergency
+      target_field: anduril_lattice.entity.indicators.emergency
+      ignore_missing: true
+      tag: rename_indicators_emergency
+      if: ctx.json?.entity?.indicators?.emergency != null
+  - rename:
+      field: json.entity.health.connectionStatus
+      target_field: anduril_lattice.entity.health.connection_status
+      ignore_missing: true
+      tag: rename_health_connection_status
+      if: ctx.json?.entity?.health?.connectionStatus != null
+  - rename:
+      field: json.entity.powerState
+      target_field: anduril_lattice.entity.power_state
+      ignore_missing: true
+      tag: rename_power_state
+      if: ctx.json?.entity?.powerState != null
+  - rename:
+      field: json.entity.relationships
+      target_field: anduril_lattice.entity.relationships
+      ignore_missing: true
+      tag: rename_relationships
+      if: ctx.json?.entity?.relationships != null
+  - rename:
+      field: json.entity.status.platformActivity
+      target_field: anduril_lattice.entity.status.platform_activity
+      ignore_missing: true
+      tag: rename_status_platform_activity
+      if: ctx.json?.entity?.status?.platformActivity != null
+  - rename:
+      field: json.entity.status.role
+      target_field: anduril_lattice.entity.status.role
+      ignore_missing: true
+      tag: rename_status_role
+      if: ctx.json?.entity?.status?.role != null
+  - rename:
+      field: json.entity.location.position.altitudeAglMeters
+      target_field: anduril_lattice.entity.location.altitude_agl_meters
+      ignore_missing: true
+      tag: rename_altitude_agl_meters
+      if: ctx.json?.entity?.location?.position?.altitudeAglMeters != null
+  - rename:
+      field: json.entity.location.position.altitudeAsfMeters
+      target_field: anduril_lattice.entity.location.altitude_asf_meters
+      ignore_missing: true
+      tag: rename_altitude_asf_meters
+      if: ctx.json?.entity?.location?.position?.altitudeAsfMeters != null
+  - rename:
+      field: json.entity.location.position.pressureDepthMeters
+      target_field: anduril_lattice.entity.location.pressure_depth_meters
+      ignore_missing: true
+      tag: rename_pressure_depth_meters
+      if: ctx.json?.entity?.location?.position?.pressureDepthMeters != null
+  - rename:
+      field: json.entity.location.acceleration.e
+      target_field: anduril_lattice.entity.location.acceleration_enu.e
+      ignore_missing: true
+      tag: rename_acceleration_enu_e
+      if: ctx.json?.entity?.location?.acceleration?.e != null
+  - rename:
+      field: json.entity.location.acceleration.n
+      target_field: anduril_lattice.entity.location.acceleration_enu.n
+      ignore_missing: true
+      tag: rename_acceleration_enu_n
+      if: ctx.json?.entity?.location?.acceleration?.n != null
+  - rename:
+      field: json.entity.location.acceleration.u
+      target_field: anduril_lattice.entity.location.acceleration_enu.u
+      ignore_missing: true
+      tag: rename_acceleration_enu_u
+      if: ctx.json?.entity?.location?.acceleration?.u != null
+  - rename:
+      field: json.entity.location.attitudeEnu.x
+      target_field: anduril_lattice.entity.location.attitude_enu.x
+      ignore_missing: true
+      tag: rename_attitude_enu_x
+      if: ctx.json?.entity?.location?.attitudeEnu?.x != null
+  - rename:
+      field: json.entity.location.attitudeEnu.y
+      target_field: anduril_lattice.entity.location.attitude_enu.y
+      ignore_missing: true
+      tag: rename_attitude_enu_y
+      if: ctx.json?.entity?.location?.attitudeEnu?.y != null
+  - rename:
+      field: json.entity.location.attitudeEnu.z
+      target_field: anduril_lattice.entity.location.attitude_enu.z
+      ignore_missing: true
+      tag: rename_attitude_enu_z
+      if: ctx.json?.entity?.location?.attitudeEnu?.z != null
+  - rename:
+      field: json.entity.location.attitudeEnu.w
+      target_field: anduril_lattice.entity.location.attitude_enu.w
+      ignore_missing: true
+      tag: rename_attitude_enu_w
+      if: ctx.json?.entity?.location?.attitudeEnu?.w != null
+  - rename:
+      field: json.entity.locationUncertainty.positionEnuCov.mxx
+      target_field: anduril_lattice.entity.location_uncertainty.position_enu_cov.mxx
+      ignore_missing: true
+      tag: rename_pos_enu_cov_mxx
+      if: ctx.json?.entity?.locationUncertainty?.positionEnuCov?.mxx != null
+  - rename:
+      field: json.entity.locationUncertainty.positionEnuCov.mxy
+      target_field: anduril_lattice.entity.location_uncertainty.position_enu_cov.mxy
+      ignore_missing: true
+      tag: rename_pos_enu_cov_mxy
+      if: ctx.json?.entity?.locationUncertainty?.positionEnuCov?.mxy != null
+  - rename:
+      field: json.entity.locationUncertainty.positionEnuCov.mxz
+      target_field: anduril_lattice.entity.location_uncertainty.position_enu_cov.mxz
+      ignore_missing: true
+      tag: rename_pos_enu_cov_mxz
+      if: ctx.json?.entity?.locationUncertainty?.positionEnuCov?.mxz != null
+  - rename:
+      field: json.entity.locationUncertainty.positionEnuCov.myy
+      target_field: anduril_lattice.entity.location_uncertainty.position_enu_cov.myy
+      ignore_missing: true
+      tag: rename_pos_enu_cov_myy
+      if: ctx.json?.entity?.locationUncertainty?.positionEnuCov?.myy != null
+  - rename:
+      field: json.entity.locationUncertainty.positionEnuCov.myz
+      target_field: anduril_lattice.entity.location_uncertainty.position_enu_cov.myz
+      ignore_missing: true
+      tag: rename_pos_enu_cov_myz
+      if: ctx.json?.entity?.locationUncertainty?.positionEnuCov?.myz != null
+  - rename:
+      field: json.entity.locationUncertainty.positionEnuCov.mzz
+      target_field: anduril_lattice.entity.location_uncertainty.position_enu_cov.mzz
+      ignore_missing: true
+      tag: rename_pos_enu_cov_mzz
+      if: ctx.json?.entity?.locationUncertainty?.positionEnuCov?.mzz != null
+  - rename:
+      field: json.entity.locationUncertainty.velocityEnuCov.mxx
+      target_field: anduril_lattice.entity.location_uncertainty.velocity_enu_cov.mxx
+      ignore_missing: true
+      tag: rename_vel_enu_cov_mxx
+      if: ctx.json?.entity?.locationUncertainty?.velocityEnuCov?.mxx != null
+  - rename:
+      field: json.entity.locationUncertainty.velocityEnuCov.mxy
+      target_field: anduril_lattice.entity.location_uncertainty.velocity_enu_cov.mxy
+      ignore_missing: true
+      tag: rename_vel_enu_cov_mxy
+      if: ctx.json?.entity?.locationUncertainty?.velocityEnuCov?.mxy != null
+  - rename:
+      field: json.entity.locationUncertainty.velocityEnuCov.mxz
+      target_field: anduril_lattice.entity.location_uncertainty.velocity_enu_cov.mxz
+      ignore_missing: true
+      tag: rename_vel_enu_cov_mxz
+      if: ctx.json?.entity?.locationUncertainty?.velocityEnuCov?.mxz != null
+  - rename:
+      field: json.entity.locationUncertainty.velocityEnuCov.myy
+      target_field: anduril_lattice.entity.location_uncertainty.velocity_enu_cov.myy
+      ignore_missing: true
+      tag: rename_vel_enu_cov_myy
+      if: ctx.json?.entity?.locationUncertainty?.velocityEnuCov?.myy != null
+  - rename:
+      field: json.entity.locationUncertainty.velocityEnuCov.myz
+      target_field: anduril_lattice.entity.location_uncertainty.velocity_enu_cov.myz
+      ignore_missing: true
+      tag: rename_vel_enu_cov_myz
+      if: ctx.json?.entity?.locationUncertainty?.velocityEnuCov?.myz != null
+  - rename:
+      field: json.entity.locationUncertainty.velocityEnuCov.mzz
+      target_field: anduril_lattice.entity.location_uncertainty.velocity_enu_cov.mzz
+      ignore_missing: true
+      tag: rename_vel_enu_cov_mzz
+      if: ctx.json?.entity?.locationUncertainty?.velocityEnuCov?.mzz != null
+  - rename:
+      field: json.entity.locationUncertainty.positionErrorEllipse.probability
+      target_field: anduril_lattice.entity.location_uncertainty.position_error_ellipse.probability
+      ignore_missing: true
+      tag: rename_pos_err_ellipse_probability
+      if: ctx.json?.entity?.locationUncertainty?.positionErrorEllipse?.probability != null
+  - rename:
+      field: json.entity.locationUncertainty.positionErrorEllipse.semiMajorAxisM
+      target_field: anduril_lattice.entity.location_uncertainty.position_error_ellipse.semi_major_axis_m
+      ignore_missing: true
+      tag: rename_pos_err_ellipse_semi_major
+      if: ctx.json?.entity?.locationUncertainty?.positionErrorEllipse?.semiMajorAxisM != null
+  - rename:
+      field: json.entity.locationUncertainty.positionErrorEllipse.semiMinorAxisM
+      target_field: anduril_lattice.entity.location_uncertainty.position_error_ellipse.semi_minor_axis_m
+      ignore_missing: true
+      tag: rename_pos_err_ellipse_semi_minor
+      if: ctx.json?.entity?.locationUncertainty?.positionErrorEllipse?.semiMinorAxisM != null
+  - rename:
+      field: json.entity.locationUncertainty.positionErrorEllipse.orientationD
+      target_field: anduril_lattice.entity.location_uncertainty.position_error_ellipse.orientation_d
+      ignore_missing: true
+      tag: rename_pos_err_ellipse_orientation
+      if: ctx.json?.entity?.locationUncertainty?.positionErrorEllipse?.orientationD != null
+  - script:
+      tag: set_geo_shape
+      description: >-
+        Convert the geoShape one-of union to a GeoJSON geo_shape. Handles point,
+        line, and polygon geometry types. Ellipse and ellipsoid store scalars only.
+      lang: painless
+      if: ctx.json?.entity?.geoShape != null
+      source: |
+        def gs = ctx.json.entity.geoShape;
+        if (gs.point != null) {
+          def pt = gs.point;
+          def coords = new ArrayList();
+          coords.add(pt.longitudeDegrees);
+          coords.add(pt.latitudeDegrees);
+          if (pt.altitudeHaeMeters != null) { coords.add(pt.altitudeHaeMeters); }
+          def shape = [:];
+          shape.type = "Point";
+          shape.coordinates = coords;
+          ctx.anduril_lattice = ctx.anduril_lattice ?: [:];
+          ctx.anduril_lattice.entity = ctx.anduril_lattice.entity ?: [:];
+          ctx.anduril_lattice.entity.geo_shape = shape;
+        } else if (gs.line != null && gs.line.positions != null) {
+          def coordList = new ArrayList();
+          for (def pos : gs.line.positions) {
+            def c = new ArrayList();
+            c.add(pos.longitudeDegrees);
+            c.add(pos.latitudeDegrees);
+            coordList.add(c);
+          }
+          def shape = [:];
+          shape.type = "LineString";
+          shape.coordinates = coordList;
+          ctx.anduril_lattice = ctx.anduril_lattice ?: [:];
+          ctx.anduril_lattice.entity = ctx.anduril_lattice.entity ?: [:];
+          ctx.anduril_lattice.entity.geo_shape = shape;
+        } else if (gs.polygon != null && gs.polygon.rings != null && gs.polygon.rings.size() > 0) {
+          def ring = gs.polygon.rings[0];
+          def ringCoords = new ArrayList();
+          if (ring.positions != null) {
+            for (def posEntry : ring.positions) {
+              def pos = posEntry.position != null ? posEntry.position : posEntry;
+              def c = new ArrayList();
+              c.add(pos.longitudeDegrees);
+              c.add(pos.latitudeDegrees);
+              ringCoords.add(c);
+            }
+          }
+          if (ringCoords.size() > 0) {
+            def first = ringCoords.get(0);
+            def last = ringCoords.get(ringCoords.size() - 1);
+            if (!first.equals(last)) { ringCoords.add(first); }
+          }
+          def rings = new ArrayList();
+          rings.add(ringCoords);
+          def shape = [:];
+          shape.type = "Polygon";
+          shape.coordinates = rings;
+          ctx.anduril_lattice = ctx.anduril_lattice ?: [:];
+          ctx.anduril_lattice.entity = ctx.anduril_lattice.entity ?: [:];
+          ctx.anduril_lattice.entity.geo_shape = shape;
+        } else if (gs.ellipse != null) {
+          def e = gs.ellipse;
+          ctx.anduril_lattice = ctx.anduril_lattice ?: [:];
+          ctx.anduril_lattice.entity = ctx.anduril_lattice.entity ?: [:];
+          ctx.anduril_lattice.entity.geo_shape_ellipse = [:];
+          if (e.semiMajorAxisM != null) { ctx.anduril_lattice.entity.geo_shape_ellipse.semi_major_axis_m = e.semiMajorAxisM; }
+          if (e.semiMinorAxisM != null) { ctx.anduril_lattice.entity.geo_shape_ellipse.semi_minor_axis_m = e.semiMinorAxisM; }
+          if (e.orientationD != null) { ctx.anduril_lattice.entity.geo_shape_ellipse.orientation_d = e.orientationD; }
+          if (e.heightM != null) { ctx.anduril_lattice.entity.geo_shape_ellipse.height_m = e.heightM; }
+        } else if (gs.ellipsoid != null) {
+          def e = gs.ellipsoid;
+          ctx.anduril_lattice = ctx.anduril_lattice ?: [:];
+          ctx.anduril_lattice.entity = ctx.anduril_lattice.entity ?: [:];
+          ctx.anduril_lattice.entity.geo_shape_ellipsoid = [:];
+          if (e.forwardAxisM != null) { ctx.anduril_lattice.entity.geo_shape_ellipsoid.forward_axis_m = e.forwardAxisM; }
+          if (e.sideAxisM != null) { ctx.anduril_lattice.entity.geo_shape_ellipsoid.side_axis_m = e.sideAxisM; }
+          if (e.upAxisM != null) { ctx.anduril_lattice.entity.geo_shape_ellipsoid.up_axis_m = e.upAxisM; }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_geo_shape
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - rename:
+      field: json.entity.geoDetails.type
+      target_field: anduril_lattice.entity.geo_details.type
+      ignore_missing: true
+      tag: rename_geo_details_type
+      if: ctx.json?.entity?.geoDetails?.type != null
+  - rename:
+      field: json.entity.geoDetails.controlArea.type
+      target_field: anduril_lattice.entity.geo_details.control_area_type
+      ignore_missing: true
+      tag: rename_geo_details_control_area_type
+      if: ctx.json?.entity?.geoDetails?.controlArea?.type != null
+  - rename:
+      field: json.entity.geoDetails.acm.acmType
+      target_field: anduril_lattice.entity.geo_details.acm.type
+      ignore_missing: true
+      tag: rename_geo_details_acm_type
+      if: ctx.json?.entity?.geoDetails?.acm?.acmType != null
+  - rename:
+      field: json.entity.geoDetails.acm.acmDescription
+      target_field: anduril_lattice.entity.geo_details.acm.description
+      ignore_missing: true
+      tag: rename_geo_details_acm_description
+      if: ctx.json?.entity?.geoDetails?.acm?.acmDescription != null
+  - foreach:
+      field: json.entity.aliases.alternateIds
+      ignore_missing: true
+      tag: foreach_alternate_ids
+      if: ctx.json?.entity?.aliases?.alternateIds instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.aliases.alternate_ids
+          tag: append_alternate_id
+          value: '{{{_ingest._value.id}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.aliases.alternateIds
+      ignore_missing: true
+      tag: foreach_alternate_id_types
+      if: ctx.json?.entity?.aliases?.alternateIds instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.aliases.alternate_id_types
+          tag: append_alternate_id_type
+          value: '{{{_ingest._value.type}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.entity.tracked.numberOfObjects.lowerBound
+      target_field: anduril_lattice.entity.tracked.number_of_objects.lower_bound
+      ignore_missing: true
+      tag: rename_tracked_num_objects_lower
+      if: ctx.json?.entity?.tracked?.numberOfObjects?.lowerBound != null
+  - rename:
+      field: json.entity.tracked.numberOfObjects.upperBound
+      target_field: anduril_lattice.entity.tracked.number_of_objects.upper_bound
+      ignore_missing: true
+      tag: rename_tracked_num_objects_upper
+      if: ctx.json?.entity?.tracked?.numberOfObjects?.upperBound != null
+  - rename:
+      field: json.entity.tracked.radarCrossSection
+      target_field: anduril_lattice.entity.tracked.radar_cross_section
+      ignore_missing: true
+      tag: rename_tracked_radar_cross_section
+      if: ctx.json?.entity?.tracked?.radarCrossSection != null
+  - date:
+      field: json.entity.tracked.lastMeasurementTime
+      target_field: anduril_lattice.entity.tracked.last_measurement_time
+      formats:
+        - ISO8601
+      tag: parse_tracked_last_measurement_time
+      if: ctx.json?.entity?.tracked?.lastMeasurementTime != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_tracked_last_measurement_time
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - rename:
+      field: json.entity.tracked.lineOfBearing.rangeEstimateM.value
+      target_field: anduril_lattice.entity.tracked.line_of_bearing.range_estimate_m
+      ignore_missing: true
+      tag: rename_lob_range_estimate_m
+      if: ctx.json?.entity?.tracked?.lineOfBearing?.rangeEstimateM?.value != null
+  - rename:
+      field: json.entity.tracked.lineOfBearing.maxRangeM.value
+      target_field: anduril_lattice.entity.tracked.line_of_bearing.max_range_m
+      ignore_missing: true
+      tag: rename_lob_max_range_m
+      if: ctx.json?.entity?.tracked?.lineOfBearing?.maxRangeM?.value != null
+  - rename:
+      field: json.entity.indicators.c2
+      target_field: anduril_lattice.entity.indicators.c2
+      ignore_missing: true
+      tag: rename_indicators_c2
+      if: ctx.json?.entity?.indicators?.c2 != null
+  - rename:
+      field: json.entity.indicators.egressable
+      target_field: anduril_lattice.entity.indicators.egressable
+      ignore_missing: true
+      tag: rename_indicators_egressable
+      if: ctx.json?.entity?.indicators?.egressable != null
+  - rename:
+      field: json.entity.indicators.starred
+      target_field: anduril_lattice.entity.indicators.starred
+      ignore_missing: true
+      tag: rename_indicators_starred
+      if: ctx.json?.entity?.indicators?.starred != null
+  - rename:
+      field: json.entity.provenance.sourceId
+      target_field: anduril_lattice.entity.provenance.source_id
+      ignore_missing: true
+      tag: rename_provenance_source_id
+      if: ctx.json?.entity?.provenance?.sourceId != null
+  - rename:
+      field: json.entity.provenance.sourceDescription
+      target_field: anduril_lattice.entity.provenance.source_description
+      ignore_missing: true
+      tag: rename_provenance_source_description
+      if: ctx.json?.entity?.provenance?.sourceDescription != null
+  - rename:
+      field: json.entity.targetPriority.highValueTarget.isHighValueTarget
+      target_field: anduril_lattice.entity.target_priority.is_high_value_target
+      ignore_missing: true
+      tag: rename_target_priority_hvt
+      if: ctx.json?.entity?.targetPriority?.highValueTarget?.isHighValueTarget != null
+  - rename:
+      field: json.entity.targetPriority.highValueTarget.targetPriority
+      target_field: anduril_lattice.entity.target_priority.priority
+      ignore_missing: true
+      tag: rename_target_priority_priority
+      if: ctx.json?.entity?.targetPriority?.highValueTarget?.targetPriority != null
+  - rename:
+      field: json.entity.targetPriority.highValueTarget.isHighPayoffTarget
+      target_field: anduril_lattice.entity.target_priority.is_high_payoff_target
+      ignore_missing: true
+      tag: rename_target_priority_hpt
+      if: ctx.json?.entity?.targetPriority?.highValueTarget?.isHighPayoffTarget != null
+  - rename:
+      field: json.entity.targetPriority.threat.isThreat
+      target_field: anduril_lattice.entity.target_priority.is_threat
+      ignore_missing: true
+      tag: rename_target_priority_is_threat
+      if: ctx.json?.entity?.targetPriority?.threat?.isThreat != null
+  - rename:
+      field: json.entity.signal.frequencyCenter.frequencyHz.value
+      target_field: anduril_lattice.entity.signal.frequency_center_hz
+      ignore_missing: true
+      tag: rename_signal_frequency_center_hz
+      if: ctx.json?.entity?.signal?.frequencyCenter?.frequencyHz?.value != null
+  - rename:
+      field: json.entity.signal.frequencyRange.minimumFrequencyHz.frequencyHz.value
+      target_field: anduril_lattice.entity.signal.frequency_min_hz
+      ignore_missing: true
+      tag: rename_signal_frequency_min_hz
+      if: ctx.json?.entity?.signal?.frequencyRange?.minimumFrequencyHz?.frequencyHz?.value != null
+  - rename:
+      field: json.entity.signal.frequencyRange.maximumFrequencyHz.frequencyHz.value
+      target_field: anduril_lattice.entity.signal.frequency_max_hz
+      ignore_missing: true
+      tag: rename_signal_frequency_max_hz
+      if: ctx.json?.entity?.signal?.frequencyRange?.maximumFrequencyHz?.frequencyHz?.value != null
+  - rename:
+      field: json.entity.signal.bandwidthHz
+      target_field: anduril_lattice.entity.signal.bandwidth_hz
+      ignore_missing: true
+      tag: rename_signal_bandwidth_hz
+      if: ctx.json?.entity?.signal?.bandwidthHz != null
+  - rename:
+      field: json.entity.signal.signalToNoiseRatio
+      target_field: anduril_lattice.entity.signal.signal_to_noise_ratio
+      ignore_missing: true
+      tag: rename_signal_snr
+      if: ctx.json?.entity?.signal?.signalToNoiseRatio != null
+  - rename:
+      field: json.entity.signal.pulseWidthS
+      target_field: anduril_lattice.entity.signal.pulse_width_s
+      ignore_missing: true
+      tag: rename_signal_pulse_width_s
+      if: ctx.json?.entity?.signal?.pulseWidthS != null
+  - rename:
+      field: json.entity.signal.scanCharacteristics.scanType
+      target_field: anduril_lattice.entity.signal.scan_type
+      ignore_missing: true
+      tag: rename_signal_scan_type
+      if: ctx.json?.entity?.signal?.scanCharacteristics?.scanType != null
+  - rename:
+      field: json.entity.signal.scanCharacteristics.scanPeriodS
+      target_field: anduril_lattice.entity.signal.scan_period_s
+      ignore_missing: true
+      tag: rename_signal_scan_period_s
+      if: ctx.json?.entity?.signal?.scanCharacteristics?.scanPeriodS != null
+  - foreach:
+      field: json.entity.signal.emitterNotations
+      ignore_missing: true
+      tag: foreach_signal_emitter_notations
+      if: ctx.json?.entity?.signal?.emitterNotations instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.signal.emitter_notations
+          tag: append_signal_emitter_notation
+          value: '{{{_ingest._value}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.entity.transponderCodes.mode1
+      target_field: anduril_lattice.entity.transponder_codes.mode1
+      ignore_missing: true
+      tag: rename_transponder_mode1
+      if: ctx.json?.entity?.transponderCodes?.mode1 != null
+  - rename:
+      field: json.entity.transponderCodes.mode2
+      target_field: anduril_lattice.entity.transponder_codes.mode2
+      ignore_missing: true
+      tag: rename_transponder_mode2
+      if: ctx.json?.entity?.transponderCodes?.mode2 != null
+  - rename:
+      field: json.entity.transponderCodes.mode3
+      target_field: anduril_lattice.entity.transponder_codes.mode3
+      ignore_missing: true
+      tag: rename_transponder_mode3
+      if: ctx.json?.entity?.transponderCodes?.mode3 != null
+  - rename:
+      field: json.entity.transponderCodes.modeCAltitudeFt
+      target_field: anduril_lattice.entity.transponder_codes.mode_c_altitude_ft
+      ignore_missing: true
+      tag: rename_transponder_mode_c_altitude_ft
+      if: ctx.json?.entity?.transponderCodes?.modeCAltitudeFt != null
+  - rename:
+      field: json.entity.transponderCodes.modeS.id
+      target_field: anduril_lattice.entity.transponder_codes.mode_s_id
+      ignore_missing: true
+      tag: rename_transponder_mode_s_id
+      if: ctx.json?.entity?.transponderCodes?.modeS?.id != null
+  - rename:
+      field: json.entity.transponderCodes.modeS.address
+      target_field: anduril_lattice.entity.transponder_codes.mode_s_address
+      ignore_missing: true
+      tag: rename_transponder_mode_s_address
+      if: ctx.json?.entity?.transponderCodes?.modeS?.address != null
+  - rename:
+      field: json.entity.transponderCodes.mode5.mode5
+      target_field: anduril_lattice.entity.transponder_codes.mode5
+      ignore_missing: true
+      tag: rename_transponder_mode5
+      if: ctx.json?.entity?.transponderCodes?.mode5?.mode5 != null
+  - rename:
+      field: json.entity.transponderCodes.mode5.mode5PlatformId
+      target_field: anduril_lattice.entity.transponder_codes.mode5_platform_id
+      ignore_missing: true
+      tag: rename_transponder_mode5_platform_id
+      if: ctx.json?.entity?.transponderCodes?.mode5?.mode5PlatformId != null
+  - rename:
+      field: json.entity.dataClassification.default.level
+      target_field: anduril_lattice.entity.data_classification.level
+      ignore_missing: true
+      tag: rename_data_classification_level
+      if: ctx.json?.entity?.dataClassification?.default?.level != null
+  - foreach:
+      field: json.entity.dataClassification.default.caveats
+      ignore_missing: true
+      tag: foreach_data_classification_caveats
+      if: ctx.json?.entity?.dataClassification?.default?.caveats instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.data_classification.caveats
+          tag: append_data_classification_caveat
+          value: '{{{_ingest._value}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.entity.health.healthStatus
+      target_field: anduril_lattice.entity.health.health_status
+      ignore_missing: true
+      tag: rename_health_status
+      if: ctx.json?.entity?.health?.healthStatus != null
+  - date:
+      field: json.entity.health.updateTime
+      target_field: anduril_lattice.entity.health.update_time
+      formats:
+        - ISO8601
+      tag: parse_health_update_time
+      if: ctx.json?.entity?.health?.updateTime != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_health_update_time
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - foreach:
+      field: json.entity.health.activeAlerts
+      ignore_missing: true
+      tag: foreach_health_active_alerts_code
+      if: ctx.json?.entity?.health?.activeAlerts instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.health.active_alerts.alert_code
+          tag: append_health_alert_code
+          value: '{{{_ingest._value.alertCode}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.health.activeAlerts
+      ignore_missing: true
+      tag: foreach_health_active_alerts_level
+      if: ctx.json?.entity?.health?.activeAlerts instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.health.active_alerts.level
+          tag: append_health_alert_level
+          value: '{{{_ingest._value.level}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.health.activeAlerts
+      ignore_missing: true
+      tag: foreach_health_active_alerts_description
+      if: ctx.json?.entity?.health?.activeAlerts instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.health.active_alerts.description
+          tag: append_health_alert_description
+          value: '{{{_ingest._value.description}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.health.activeAlerts
+      ignore_missing: true
+      tag: foreach_health_active_alerts_activated_time
+      if: ctx.json?.entity?.health?.activeAlerts instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.health.active_alerts.activated_time
+          tag: append_health_alert_activated_time
+          value: '{{{_ingest._value.activatedTime}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.entity.correlation.primary.secondaryEntityIds
+      target_field: anduril_lattice.entity.correlation.primary_secondary_entity_ids
+      ignore_missing: true
+      tag: rename_correlation_primary_secondary_ids
+      if: ctx.json?.entity?.correlation?.primary?.secondaryEntityIds != null
+  - rename:
+      field: json.entity.correlation.secondary.primaryEntityId
+      target_field: anduril_lattice.entity.correlation.secondary_primary_entity_id
+      ignore_missing: true
+      tag: rename_correlation_secondary_primary_id
+      if: ctx.json?.entity?.correlation?.secondary?.primaryEntityId != null
+  - rename:
+      field: json.entity.correlation.membership.correlationSetId
+      target_field: anduril_lattice.entity.correlation.membership_set_id
+      ignore_missing: true
+      tag: rename_correlation_membership_set_id
+      if: ctx.json?.entity?.correlation?.membership?.correlationSetId != null
+  - rename:
+      field: json.entity.symbology.milStd2525C.sidc
+      target_field: anduril_lattice.entity.symbology.mil_std_2525c_sidc
+      ignore_missing: true
+      tag: rename_symbology_sidc
+      if: ctx.json?.entity?.symbology?.milStd2525C?.sidc != null
+  - date:
+      field: json.entity.orbit.orbitMeanElements.meanKeplerianElements.epoch
+      target_field: anduril_lattice.entity.orbit.epoch
+      formats:
+        - ISO8601
+      tag: parse_orbit_epoch
+      if: ctx.json?.entity?.orbit?.orbitMeanElements?.meanKeplerianElements?.epoch != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_orbit_epoch
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - rename:
+      field: json.entity.orbit.orbitMeanElements.meanKeplerianElements.semiMajorAxisKm
+      target_field: anduril_lattice.entity.orbit.semi_major_axis_km
+      ignore_missing: true
+      tag: rename_orbit_semi_major_axis_km
+      if: ctx.json?.entity?.orbit?.orbitMeanElements?.meanKeplerianElements?.semiMajorAxisKm != null
+  - rename:
+      field: json.entity.orbit.orbitMeanElements.meanKeplerianElements.eccentricity
+      target_field: anduril_lattice.entity.orbit.eccentricity
+      ignore_missing: true
+      tag: rename_orbit_eccentricity
+      if: ctx.json?.entity?.orbit?.orbitMeanElements?.meanKeplerianElements?.eccentricity != null
+  - rename:
+      field: json.entity.orbit.orbitMeanElements.meanKeplerianElements.inclinationDeg
+      target_field: anduril_lattice.entity.orbit.inclination_deg
+      ignore_missing: true
+      tag: rename_orbit_inclination_deg
+      if: ctx.json?.entity?.orbit?.orbitMeanElements?.meanKeplerianElements?.inclinationDeg != null
+  - rename:
+      field: json.entity.orbit.orbitMeanElements.tleParameters.noradCatId
+      target_field: anduril_lattice.entity.orbit.norad_cat_id
+      ignore_missing: true
+      tag: rename_orbit_norad_cat_id
+      if: ctx.json?.entity?.orbit?.orbitMeanElements?.tleParameters?.noradCatId != null
+  - rename:
+      field: json.entity.orbit.orbitMeanElements.tleParameters.bstar
+      target_field: anduril_lattice.entity.orbit.bstar
+      ignore_missing: true
+      tag: rename_orbit_bstar
+      if: ctx.json?.entity?.orbit?.orbitMeanElements?.tleParameters?.bstar != null
+  - rename:
+      field: json.entity.dimensions.lengthM
+      target_field: anduril_lattice.entity.dimensions.length_m
+      ignore_missing: true
+      tag: rename_dimensions_length_m
+      if: ctx.json?.entity?.dimensions?.lengthM != null
+  - rename:
+      field: json.entity.routeDetails.destinationName
+      target_field: anduril_lattice.entity.route_details.destination_name
+      ignore_missing: true
+      tag: rename_route_details_destination_name
+      if: ctx.json?.entity?.routeDetails?.destinationName != null
+  - date:
+      field: json.entity.routeDetails.estimatedArrivalTime
+      target_field: anduril_lattice.entity.route_details.estimated_arrival_time
+      formats:
+        - ISO8601
+      tag: parse_route_estimated_arrival_time
+      if: ctx.json?.entity?.routeDetails?.estimatedArrivalTime != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_route_estimated_arrival_time
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - rename:
+      field: json.entity.visualDetails.rangeRings.minDistanceM
+      target_field: anduril_lattice.entity.visual_details.range_rings.min_distance_m
+      ignore_missing: true
+      tag: rename_visual_details_range_rings_min
+      if: ctx.json?.entity?.visualDetails?.rangeRings?.minDistanceM != null
+  - rename:
+      field: json.entity.visualDetails.rangeRings.maxDistanceM
+      target_field: anduril_lattice.entity.visual_details.range_rings.max_distance_m
+      ignore_missing: true
+      tag: rename_visual_details_range_rings_max
+      if: ctx.json?.entity?.visualDetails?.rangeRings?.maxDistanceM != null
+  - rename:
+      field: json.entity.visualDetails.rangeRings.ringCount
+      target_field: anduril_lattice.entity.visual_details.range_rings.ring_count
+      ignore_missing: true
+      tag: rename_visual_details_range_rings_count
+      if: ctx.json?.entity?.visualDetails?.rangeRings?.ringCount != null
+  - rename:
+      field: json.entity.groupDetails.echelon.armyEchelon
+      target_field: anduril_lattice.entity.group_details.army_echelon
+      ignore_missing: true
+      tag: rename_group_details_army_echelon
+      if: ctx.json?.entity?.groupDetails?.echelon?.armyEchelon != null
+  - foreach:
+      field: json.entity.taskCatalog.taskDefinitions
+      ignore_missing: true
+      tag: foreach_task_catalog_task_definitions
+      if: ctx.json?.entity?.taskCatalog?.taskDefinitions instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.task_catalog.task_specification_urls
+          tag: append_task_specification_url
+          value: '{{{_ingest._value.taskSpecificationUrl}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.media.media
+      ignore_missing: true
+      tag: foreach_media_item_identifier
+      if: ctx.json?.entity?.media?.media instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.media.item_identifier
+          tag: append_media_item_identifier
+          value: '{{{_ingest._value.itemIdentifier}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.media.media
+      ignore_missing: true
+      tag: foreach_media_type
+      if: ctx.json?.entity?.media?.media instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.media.type
+          tag: append_media_type
+          value: '{{{_ingest._value.type}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.media.media
+      ignore_missing: true
+      tag: foreach_media_relative_path
+      if: ctx.json?.entity?.media?.media instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.media.relative_path
+          tag: append_media_relative_path
+          value: '{{{_ingest._value.relativePath}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.supplies.munitions
+      ignore_missing: true
+      tag: foreach_supplies_munition_id
+      if: ctx.json?.entity?.supplies?.munitions instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.munition_id
+          tag: append_supplies_munition_id
+          value: '{{{_ingest._value.munitionId}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.supplies.munitions
+      ignore_missing: true
+      tag: foreach_supplies_munition_name
+      if: ctx.json?.entity?.supplies?.munitions instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.munition_name
+          tag: append_supplies_munition_name
+          value: '{{{_ingest._value.name}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.supplies.munitions
+      ignore_missing: true
+      tag: foreach_supplies_munition_quantity_units
+      if: ctx.json?.entity?.supplies?.munitions instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.munition_quantity_units
+          tag: append_supplies_munition_quantity_units
+          value: '{{{_ingest._value.quantityUnits}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.supplies.fuel
+      ignore_missing: true
+      tag: foreach_supplies_fuel_id
+      if: ctx.json?.entity?.supplies?.fuel instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.fuel_id
+          tag: append_supplies_fuel_id
+          value: '{{{_ingest._value.fuelId}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.supplies.fuel
+      ignore_missing: true
+      tag: foreach_supplies_fuel_name
+      if: ctx.json?.entity?.supplies?.fuel instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.fuel_name
+          tag: append_supplies_fuel_name
+          value: '{{{_ingest._value.name}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.supplies.fuel
+      ignore_missing: true
+      tag: foreach_supplies_fuel_amount_gallons
+      if: ctx.json?.entity?.supplies?.fuel instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.fuel_amount_gallons
+          tag: append_supplies_fuel_amount_gallons
+          value: '{{{_ingest._value.amountGallons}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: anduril_lattice.entity.supplies.fuel_amount_gallons
+      type: float
+      ignore_missing: true
+      tag: convert_supplies_fuel_amount_gallons
+      if: ctx.anduril_lattice?.entity?.supplies?.fuel_amount_gallons != null
+  - foreach:
+      field: json.entity.supplies.fuel
+      ignore_missing: true
+      tag: foreach_supplies_fuel_max_capacity_gallons
+      if: ctx.json?.entity?.supplies?.fuel instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.supplies.fuel_max_authorized_capacity_gallons
+          tag: append_supplies_fuel_max_capacity_gallons
+          value: '{{{_ingest._value.maxAuthorizedCapacityGallons}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: anduril_lattice.entity.supplies.fuel_max_authorized_capacity_gallons
+      type: float
+      ignore_missing: true
+      tag: convert_supplies_fuel_max_capacity_gallons
+      if: ctx.anduril_lattice?.entity?.supplies?.fuel_max_authorized_capacity_gallons != null
+  - foreach:
+      field: json.entity.payloads.payloadConfigurations
+      ignore_missing: true
+      tag: foreach_payload_capability_id
+      if: ctx.json?.entity?.payloads?.payloadConfigurations instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.payloads.capability_id
+          tag: append_payload_capability_id
+          value: '{{{_ingest._value.config.capabilityId}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.payloads.payloadConfigurations
+      ignore_missing: true
+      tag: foreach_payload_operational_state
+      if: ctx.json?.entity?.payloads?.payloadConfigurations instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.payloads.operational_state
+          tag: append_payload_operational_state
+          value: '{{{_ingest._value.config.payloadOperationalState}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.payloads.payloadConfigurations
+      ignore_missing: true
+      tag: foreach_payload_description
+      if: ctx.json?.entity?.payloads?.payloadConfigurations instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.payloads.description
+          tag: append_payload_description
+          value: '{{{_ingest._value.config.payloadDescription}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.payloads.payloadConfigurations
+      ignore_missing: true
+      tag: foreach_payload_quantity
+      if: ctx.json?.entity?.payloads?.payloadConfigurations instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.payloads.quantity
+          tag: append_payload_quantity
+          value: '{{{_ingest._value.config.quantity}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: anduril_lattice.entity.payloads.quantity
+      type: integer
+      ignore_missing: true
+      tag: convert_payload_quantity
+      if: ctx.anduril_lattice?.entity?.payloads?.quantity != null
+  - foreach:
+      field: json.entity.overrides
+      ignore_missing: true
+      tag: foreach_overrides_request_id
+      if: ctx.json?.entity?.overrides instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.overrides.request_ids
+          tag: append_overrides_request_id
+          value: '{{{_ingest._value.requestId}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.overrides
+      ignore_missing: true
+      tag: foreach_overrides_field_path
+      if: ctx.json?.entity?.overrides instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.overrides.field_paths
+          tag: append_overrides_field_path
+          value: '{{{_ingest._value.fieldPath}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.overrides
+      ignore_missing: true
+      tag: foreach_overrides_status
+      if: ctx.json?.entity?.overrides instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.overrides.statuses
+          tag: append_overrides_status
+          value: '{{{_ingest._value.status}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.overrides
+      ignore_missing: true
+      tag: foreach_overrides_type
+      if: ctx.json?.entity?.overrides instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.overrides.types
+          tag: append_overrides_type
+          value: '{{{_ingest._value.type}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.overrides
+      ignore_missing: true
+      tag: foreach_overrides_request_timestamp
+      if: ctx.json?.entity?.overrides instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.overrides.request_timestamps
+          tag: append_overrides_request_timestamp
+          value: '{{{_ingest._value.requestTimestamp}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.sensors.sensors
+      ignore_missing: true
+      tag: foreach_sensors_sensor_id
+      if: ctx.json?.entity?.sensors?.sensors instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.sensors.sensor_id
+          tag: append_sensors_sensor_id
+          value: '{{{_ingest._value.sensorId}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.sensors.sensors
+      ignore_missing: true
+      tag: foreach_sensors_operational_state
+      if: ctx.json?.entity?.sensors?.sensors instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.sensors.operational_state
+          tag: append_sensors_operational_state
+          value: '{{{_ingest._value.operationalState}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.sensors.sensors
+      ignore_missing: true
+      tag: foreach_sensors_sensor_type
+      if: ctx.json?.entity?.sensors?.sensors instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.sensors.sensor_type
+          tag: append_sensors_sensor_type
+          value: '{{{_ingest._value.sensorType}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.sensors.sensors
+      ignore_missing: true
+      tag: foreach_sensors_sensor_description
+      if: ctx.json?.entity?.sensors?.sensors instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.sensors.sensor_description
+          tag: append_sensors_sensor_description
+          value: '{{{_ingest._value.sensorDescription}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.entity.sensors.sensors
+      ignore_missing: true
+      tag: foreach_sensors_last_detection_timestamp
+      if: ctx.json?.entity?.sensors?.sensors instanceof List
+      processor:
+        append:
+          field: anduril_lattice.entity.sensors.last_detection_timestamp
+          tag: append_sensors_last_detection_timestamp
+          value: '{{{_ingest._value.lastDetectionTimestamp}}}'
+          ignore_empty_values: true
+          allow_duplicates: false
+          ignore_failure: true
+  - script:
+      tag: set_sensors_fov_geo
+      description: >-
+        Build geo_shape Polygon footprints from sensor fieldsOfView projectedFrustum corners
+        (upperLeft, upperRight, bottomRight, bottomLeft). Appends one Polygon per FoV across
+        all sensors into anduril_lattice.entity.sensors.fields_of_view.geo.
+      lang: painless
+      if: ctx.json?.entity?.sensors?.sensors instanceof List
+      source: |
+        def fovGeoList = new ArrayList();
+        for (def sensor : ctx.json.entity.sensors.sensors) {
+          if (sensor.fieldsOfView == null) { continue; }
+          for (def fov : sensor.fieldsOfView) {
+            def fr = fov.projectedFrustum;
+            if (fr == null) { continue; }
+            def ul = fr.upperLeft;
+            def ur = fr.upperRight;
+            def br = fr.bottomRight;
+            def bl = fr.bottomLeft;
+            if (ul == null || ur == null || br == null || bl == null) { continue; }
+            def ring = new ArrayList();
+            def c0 = new ArrayList(); c0.add(ul.longitudeDegrees); c0.add(ul.latitudeDegrees); ring.add(c0);
+            def c1 = new ArrayList(); c1.add(ur.longitudeDegrees); c1.add(ur.latitudeDegrees); ring.add(c1);
+            def c2 = new ArrayList(); c2.add(br.longitudeDegrees); c2.add(br.latitudeDegrees); ring.add(c2);
+            def c3 = new ArrayList(); c3.add(bl.longitudeDegrees); c3.add(bl.latitudeDegrees); ring.add(c3);
+            ring.add(c0);
+            def rings = new ArrayList(); rings.add(ring);
+            def poly = [:]; poly.type = "Polygon"; poly.coordinates = rings;
+            fovGeoList.add(poly);
+          }
+        }
+        if (!fovGeoList.isEmpty()) {
+          ctx.anduril_lattice = ctx.anduril_lattice ?: [:];
+          ctx.anduril_lattice.entity = ctx.anduril_lattice.entity ?: [:];
+          ctx.anduril_lattice.entity.sensors = ctx.anduril_lattice.entity.sensors ?: [:];
+          ctx.anduril_lattice.entity.sensors.fields_of_view = ctx.anduril_lattice.entity.sensors.fields_of_view ?: [:];
+          ctx.anduril_lattice.entity.sensors.fields_of_view.geo = fovGeoList;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_set_sensors_fov_geo
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: cleanup_json
+      description: Remove the temporary json parse target.
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
