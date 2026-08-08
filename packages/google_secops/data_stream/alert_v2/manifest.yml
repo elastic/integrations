@@ -1,15 +1,51 @@
-title: Collect Alerts from Google SecOps (Deprecated).
+title: Collect Chronicle alerts from Google SecOps.
 type: logs
+dataset: google_secops.alert_v2
 streams:
   - input: cel
     enabled: false
-    title: Alerts (Deprecated)
+    title: Alerts v2
     description: >-
-      Deprecated. Collects alerts from Google SecOps using the Backstory Detection Engine API.
-      This data stream is only available to existing Google SecOps Backstory users.
-      New users should use the Alerts v2 data stream instead.
+      Collect alerts from Google SecOps using the Chronicle API legacySearchDetections method.
+      Use this data stream for new deployments.
     template_path: cel.yml.hbs
     vars:
+      - name: oauth_scope
+        type: select
+        title: OAuth Scope
+        description: OAuth scope used to authenticate with the Chronicle API. Requires one of the supported Google OAuth scopes for legacySearchDetections. See [Chronicle API authentication](https://cloud.google.com/chronicle/docs/reference/authentication).
+        multi: false
+        required: true
+        show_user: true
+        default: https://www.googleapis.com/auth/chronicle.readonly
+        options:
+          - value: https://www.googleapis.com/auth/chronicle.readonly
+            text: Chronicle Read Only
+          - value: https://www.googleapis.com/auth/chronicle
+            text: Chronicle
+          - value: https://www.googleapis.com/auth/cloud-platform
+            text: Cloud Platform
+      - name: project_id
+        type: text
+        title: GCP Project ID
+        description: Google Cloud project ID linked to the Google SecOps instance.
+        multi: false
+        required: true
+        show_user: true
+      - name: location
+        type: text
+        title: Location
+        description: Regional location code for the SecOps instance (for example, us, eu, or europe-west3).
+        multi: false
+        required: true
+        show_user: true
+      - name: instance_id
+        type: text
+        title: Instance ID
+        description: Google SecOps SIEM customer or instance ID (Settings → SIEM Settings → Profile).
+        multi: false
+        required: true
+        show_user: true
       - name: initial_interval
         type: text
         title: Initial Interval
@@ -63,20 +99,12 @@ streams:
         show_user: false
         default:
           - forwarded
-          - google_secops-alert
+          - google_secops-alert-v2
       - name: preserve_original_event
         required: true
         show_user: true
         title: Preserve original event
         description: Preserves a raw copy of the original event, added to the field `event.original`.
-        type: bool
-        multi: false
-        default: false
-      - name: preserve_duplicate_custom_fields
-        required: true
-        show_user: false
-        title: Preserve duplicate custom fields
-        description: Preserve google_secops.alert fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
         default: false
