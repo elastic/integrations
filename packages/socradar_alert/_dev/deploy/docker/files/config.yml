@@ -1,0 +1,98 @@
+rules:
+  - path: /api/company/330/incidents/v4
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      include_total_records: "true"
+      show_page_in_response: "true"
+      page: "1"
+      include_alarm_details: "true"
+      include_company_id: "true"
+      start_date: "{start_date:.*}"
+    request_headers:
+      Api-Key:
+        - xxxx
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "total_pages": 2,
+              "total_records": 2,
+              "page": 1,
+              "alarms": [
+                {
+                  "alarm_id": "a1b2c3d4-0000-0000-0000-000000000001",
+                  "status": "OPEN",
+                  "alarm_risk_level": "HIGH",
+                  "alarm_text": "A possible phishing domain targeting your brand was detected.",
+                  "alarm_asset": "example.com",
+                  "notification_id": 1001,
+                  "tags": ["phishing", "brand-protection"],
+                  "company_id": 330,
+                  "is_approved": false,
+                  "date": "2024-01-15 10:30:00",
+                  "alarm_type_details": {
+                    "alarm_sub_type": "Phishing Domain",
+                    "alarm_main_type": "Brand Protection",
+                    "alarm_generic_title": "Possible Phishing Domain Detected",
+                    "alarm_default_risk_level": "HIGH"
+                  }
+                }
+              ]
+            }
+          }
+          `}}
+  - path: /api/company/330/incidents/v4
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      include_total_records: "true"
+      show_page_in_response: "true"
+      page: "2"
+      include_alarm_details: "true"
+      include_company_id: "true"
+      start_date: "{start_date:.*}"
+    request_headers:
+      Api-Key:
+        - xxxx
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "total_pages": 2,
+              "total_records": 2,
+              "page": 2,
+              "alarms": [
+                {
+                  "alarm_id": "a1b2c3d4-0000-0000-0000-000000000002",
+                  "status": "RESOLVED",
+                  "alarm_risk_level": "MEDIUM",
+                  "alarm_text": "Leaked credentials referencing your domain were found on a paste site.",
+                  "alarm_asset": "corp.example.org",
+                  "notification_id": 1002,
+                  "tags": ["credential-leak"],
+                  "company_id": 330,
+                  "is_approved": true,
+                  "approved_by": "analyst",
+                  "date": "2024-02-03 08:15:42",
+                  "alarm_type_details": {
+                    "alarm_sub_type": "Credential Leak",
+                    "alarm_main_type": "Digital Risk Protection",
+                    "alarm_generic_title": "Leaked Credentials Detected",
+                    "alarm_default_risk_level": "MEDIUM"
+                  }
+                }
+              ]
+            }
+          }
+          `}}
