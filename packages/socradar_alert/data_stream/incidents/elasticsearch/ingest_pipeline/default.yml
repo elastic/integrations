@@ -52,16 +52,6 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: alert
-  - append:
-      field: event.category
-      tag: append_event_category
-      value: threat
-      allow_duplicates: false
-  - append:
-      field: event.type
-      tag: append_event_type
-      value: indicator
-      allow_duplicates: false
   - set:
       field: event.id
       copy_from: socradar_alert.alarm_id
@@ -117,12 +107,6 @@ processors:
   - remove:
       field: socradar_alert.alarm_type_details
       tag: remove_alarm_type_details
-      ignore_missing: true
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
       ignore_missing: true
 on_failure:
   - append:

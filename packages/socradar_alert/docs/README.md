@@ -260,17 +260,11 @@ An example event for `incidents` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": [
-            "threat"
-        ],
         "dataset": "socradar_alert.incidents",
         "id": "a1b2c3d4-0000-0000-0000-000000000002",
         "ingested": "2026-08-05T13:34:27Z",
         "kind": "alert",
-        "severity": 47,
-        "type": [
-            "indicator"
-        ]
+        "severity": 47
     },
     "host": {
         "architecture": "aarch64",
