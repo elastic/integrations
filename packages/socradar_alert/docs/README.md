@@ -123,7 +123,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
   "condition": {
     "script": {
       "lang": "painless",
-      "source": "return ctx.payload.hits.total > 0;"
+      "source": "return ctx.payload.hits.total.value > 0;"
     }
   },
   "transform": {
