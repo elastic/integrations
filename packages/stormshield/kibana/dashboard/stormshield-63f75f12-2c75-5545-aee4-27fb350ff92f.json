@@ -6,7 +6,7 @@
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
             "panelsJSON": "{\"440785c6-61cc-4a85-a129-e4aa5f32590f\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"440785c6-61cc-4a85-a129-e4aa5f32590f\",\"fieldName\":\"stormshield.fw\",\"title\":\"Firewall Id\",\"grow\":false,\"width\":\"small\",\"enhancements\":{},\"dataViewId\":\"logs-*\"}},\"0e8afad9-83ae-43ac-8f0e-aac581300173\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"0e8afad9-83ae-43ac-8f0e-aac581300173\",\"fieldName\":\"event.action\",\"title\":\"event.action\",\"grow\":false,\"width\":\"medium\",\"enhancements\":{},\"selectedOptions\":[],\"dataViewId\":\"logs-*\"}},\"419c6dd9-f52e-4ecb-a8d0-bec91ec966b0\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"419c6dd9-f52e-4ecb-a8d0-bec91ec966b0\",\"fieldName\":\"log.syslog.facility.name\",\"title\":\"Syslog facility\",\"grow\":true,\"width\":\"medium\",\"enhancements\":{},\"dataViewId\":\"logs-*\"}},\"fa254ad2-d372-4df0-91f1-e277f993a09d\":{\"type\":\"optionsListControl\",\"order\":3,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"fa254ad2-d372-4df0-91f1-e277f993a09d\",\"fieldName\":\"log.syslog.severity.name\",\"title\":\"Syslog severity\",\"grow\":true,\"width\":\"medium\",\"enhancements\":{},\"dataViewId\":\"logs-*\"}},\"df708a52-f811-4be0-b0ca-3384d1a6ef6e\":{\"type\":\"optionsListControl\",\"order\":4,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"df708a52-f811-4be0-b0ca-3384d1a6ef6e\",\"fieldName\":\"user.name\",\"title\":\"User\",\"grow\":true,\"width\":\"medium\",\"enhancements\":{},\"dataViewId\":\"logs-*\"}}}"
         },
-        "description": "Alarms raised by the intrusion prevention engine of Stormshield SNS firewalls.",
+        "description": "Authentication, administration sessions and IPsec/SSL VPN events from Stormshield SNS firewalls, with their outcomes.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -43,14 +43,39 @@
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
                             "key": "stormshield.logtype",
                             "negate": false,
-                            "params": {
-                                "query": "alarm"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "auth",
+                                "server",
+                                "vpn",
+                                "xvpn"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "stormshield.logtype": "alarm"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "stormshield.logtype": "auth"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "stormshield.logtype": "server"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "stormshield.logtype": "vpn"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "stormshield.logtype": "xvpn"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -76,7 +101,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-33a48b60-d148-58ee-923b-3159d9f3d942",
+                                "name": "indexpattern-datasource-layer-31555dc9-9c86-5c2b-9331-da5e5c86431a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -86,13 +111,14 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "33a48b60-d148-58ee-923b-3159d9f3d942": {
+                                        "31555dc9-9c86-5c2b-9331-da5e5c86431a": {
                                             "columnOrder": [
-                                                "f7210768-ca8b-5361-9a22-2db31997589d",
-                                                "fa27ea62-35f0-5454-893c-93bf97353d4a"
+                                                "5a3d8c83-23e6-53df-83c5-00f156c3917c",
+                                                "2a7fb575-0c0e-5265-a6d5-877075326b24",
+                                                "47ea5c5c-1180-5b57-b631-115cbad12d42"
                                             ],
                                             "columns": {
-                                                "f7210768-ca8b-5361-9a22-2db31997589d": {
+                                                "5a3d8c83-23e6-53df-83c5-00f156c3917c": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -105,7 +131,7 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
-                                                "fa27ea62-35f0-5454-893c-93bf97353d4a": {
+                                                "47ea5c5c-1180-5b57-b631-115cbad12d42": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count of records",
@@ -115,6 +141,33 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
+                                                },
+                                                "2a7fb575-0c0e-5265-a6d5-877075326b24": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of event.outcome",
+                                                    "customLabel": false,
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "47ea5c5c-1180-5b57-b631-115cbad12d42",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -157,14 +210,15 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "fa27ea62-35f0-5454-893c-93bf97353d4a"
+                                            "47ea5c5c-1180-5b57-b631-115cbad12d42"
                                         ],
-                                        "layerId": "33a48b60-d148-58ee-923b-3159d9f3d942",
+                                        "layerId": "31555dc9-9c86-5c2b-9331-da5e5c86431a",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "xAccessor": "f7210768-ca8b-5361-9a22-2db31997589d"
+                                        "xAccessor": "5a3d8c83-23e6-53df-83c5-00f156c3917c",
+                                        "splitAccessor": "2a7fb575-0c0e-5265-a6d5-877075326b24"
                                     }
                                 ],
                                 "legend": {
@@ -180,7 +234,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "",
+                        "title": "Authentication and VPN events over time",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -189,13 +243,13 @@
                 },
                 "gridData": {
                     "h": 9,
-                    "i": "dbd36ee2-ce51-5c01-a7f8-20ac061ff0ed",
+                    "i": "33f91bc5-9e79-5b06-9fd4-4738d46650ab",
                     "w": 24,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "dbd36ee2-ce51-5c01-a7f8-20ac061ff0ed",
-                "title": "Alarms over time",
+                "panelIndex": "33f91bc5-9e79-5b06-9fd4-4738d46650ab",
+                "title": "Authentication and VPN events over time",
                 "type": "lens"
             },
             {
@@ -205,7 +259,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-0dc1a2d0-031c-54cc-bb3d-511946e4dc07",
+                                "name": "indexpattern-datasource-layer-9e9b089e-d05d-5964-839d-baa0dd699e82",
                                 "type": "index-pattern"
                             }
                         ],
@@ -214,22 +268,21 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "0dc1a2d0-031c-54cc-bb3d-511946e4dc07": {
+                                        "9e9b089e-d05d-5964-839d-baa0dd699e82": {
                                             "columnOrder": [
-                                                "5f4b706b-b9e3-5fc7-b64c-c6a24dcb1073"
+                                                "b65b4986-12d8-5991-bb9f-bd130959acc4"
                                             ],
                                             "columns": {
-                                                "5f4b706b-b9e3-5fc7-b64c-c6a24dcb1073": {
+                                                "b65b4986-12d8-5991-bb9f-bd130959acc4": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Alarms",
+                                                    "label": "Count of records",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___",
-                                                    "customLabel": true
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -253,12 +306,12 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layerId": "0dc1a2d0-031c-54cc-bb3d-511946e4dc07",
+                                "layerId": "9e9b089e-d05d-5964-839d-baa0dd699e82",
                                 "layerType": "data",
-                                "metricAccessor": "5f4b706b-b9e3-5fc7-b64c-c6a24dcb1073"
+                                "metricAccessor": "b65b4986-12d8-5991-bb9f-bd130959acc4"
                             }
                         },
-                        "title": "",
+                        "title": "Event count",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -266,14 +319,14 @@
                 },
                 "gridData": {
                     "h": 9,
-                    "i": "6b282572-fec2-5663-b8f6-5574cf407f28",
+                    "i": "e20851d1-14ec-58e4-a0f8-9b3c3f36a22b",
                     "w": 8,
                     "x": 24,
                     "y": 0
                 },
-                "panelIndex": "6b282572-fec2-5663-b8f6-5574cf407f28",
+                "panelIndex": "e20851d1-14ec-58e4-a0f8-9b3c3f36a22b",
                 "type": "lens",
-                "title": "Alarm count"
+                "title": "Event count"
             },
             {
                 "embeddableConfig": {
@@ -282,7 +335,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-ab83a13d-87c9-5f49-a26d-c237bc57dc4d",
+                                "name": "indexpattern-datasource-layer-a9087fce-0080-536b-9f3f-fe432adf47ed",
                                 "type": "index-pattern"
                             }
                         ],
@@ -292,13 +345,13 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "ab83a13d-87c9-5f49-a26d-c237bc57dc4d": {
+                                        "a9087fce-0080-536b-9f3f-fe432adf47ed": {
                                             "columnOrder": [
-                                                "8ea7fbe1-bf06-5ded-93ad-75477f36a6d1",
-                                                "ce655896-0b85-5fee-905a-fc799f08fc01"
+                                                "a282a1ad-a63c-5bee-a578-5157e6c1c819",
+                                                "bca46d52-ae25-5dea-bcea-aaad90fcc758"
                                             ],
                                             "columns": {
-                                                "ce655896-0b85-5fee-905a-fc799f08fc01": {
+                                                "bca46d52-ae25-5dea-bcea-aaad90fcc758": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count of records",
@@ -309,10 +362,10 @@
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "8ea7fbe1-bf06-5ded-93ad-75477f36a6d1": {
-                                                    "dataType": "number",
+                                                "a282a1ad-a63c-5bee-a578-5157e6c1c819": {
+                                                    "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 4 values of event.severity",
+                                                    "label": "Top 3 values of event.outcome",
                                                     "customLabel": false,
                                                     "operationType": "terms",
                                                     "params": {
@@ -322,7 +375,487 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "ce655896-0b85-5fee-905a-fc799f08fc01",
+                                                            "columnId": "bca46d52-ae25-5dea-bcea-aaad90fcc758",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "a9087fce-0080-536b-9f3f-fe432adf47ed",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "bca46d52-ae25-5dea-bcea-aaad90fcc758"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "a282a1ad-a63c-5bee-a578-5157e6c1c819"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Outcomes",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "698cc51c-6c45-55c6-869d-0859e1f6a403",
+                    "w": 16,
+                    "x": 32,
+                    "y": 0
+                },
+                "panelIndex": "698cc51c-6c45-55c6-869d-0859e1f6a403",
+                "title": "Outcomes",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-008cd50c-407b-55ed-8421-44e9d84a5b6a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "008cd50c-407b-55ed-8421-44e9d84a5b6a": {
+                                            "columnOrder": [
+                                                "5ddb0153-ba8e-5252-951c-7d8454b031ff",
+                                                "e28ec590-1238-57f0-8a93-86e61c1f22b8"
+                                            ],
+                                            "columns": {
+                                                "e28ec590-1238-57f0-8a93-86e61c1f22b8": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "5ddb0153-ba8e-5252-951c-7d8454b031ff": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of user.name",
+                                                    "customLabel": false,
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "e28ec590-1238-57f0-8a93-86e61c1f22b8",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "008cd50c-407b-55ed-8421-44e9d84a5b6a",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "e28ec590-1238-57f0-8a93-86e61c1f22b8"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "5ddb0153-ba8e-5252-951c-7d8454b031ff"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Top users",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "b4a49986-1e0b-5331-a4df-f31c9bd8d474",
+                    "w": 12,
+                    "x": 0,
+                    "y": 9
+                },
+                "panelIndex": "b4a49986-1e0b-5331-a4df-f31c9bd8d474",
+                "title": "Top users",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-b79edfdb-4889-5989-90dd-871a4526dba8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "b79edfdb-4889-5989-90dd-871a4526dba8": {
+                                            "columnOrder": [
+                                                "2e81916e-911d-516c-9f0e-267e3e90327f",
+                                                "be0668e1-2293-5f4c-bbc0-5972d09e1698"
+                                            ],
+                                            "columns": {
+                                                "be0668e1-2293-5f4c-bbc0-5972d09e1698": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "2e81916e-911d-516c-9f0e-267e3e90327f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 8 values of user.domain",
+                                                    "customLabel": false,
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "be0668e1-2293-5f4c-bbc0-5972d09e1698",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 8
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.domain"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "b79edfdb-4889-5989-90dd-871a4526dba8",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "be0668e1-2293-5f4c-bbc0-5972d09e1698"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "2e81916e-911d-516c-9f0e-267e3e90327f"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "User directories",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "dbc4a5aa-0b35-5487-bb4a-52cd501558a7",
+                    "w": 12,
+                    "x": 12,
+                    "y": 9
+                },
+                "panelIndex": "dbc4a5aa-0b35-5487-bb4a-52cd501558a7",
+                "title": "User directories",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8196f0c2-93bc-54bd-8022-49b3373e0ccd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "8196f0c2-93bc-54bd-8022-49b3373e0ccd": {
+                                            "columnOrder": [
+                                                "f2543eed-303e-5f69-9894-24888384fc1f",
+                                                "ee4e5e82-408a-5cfa-99a7-93ac6ee32c05"
+                                            ],
+                                            "columns": {
+                                                "ee4e5e82-408a-5cfa-99a7-93ac6ee32c05": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f2543eed-303e-5f69-9894-24888384fc1f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of user.group.name",
+                                                    "customLabel": false,
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ee4e5e82-408a-5cfa-99a7-93ac6ee32c05",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.group.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "8196f0c2-93bc-54bd-8022-49b3373e0ccd",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "ee4e5e82-408a-5cfa-99a7-93ac6ee32c05"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "f2543eed-303e-5f69-9894-24888384fc1f"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "User groups",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "48b1d410-b52d-50e1-bef9-8a5985db7bc5",
+                    "w": 12,
+                    "x": 24,
+                    "y": 9
+                },
+                "panelIndex": "48b1d410-b52d-50e1-bef9-8a5985db7bc5",
+                "title": "User groups",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-492a1bb7-a185-54d2-b5b8-25d50a4ed2bf",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "492a1bb7-a185-54d2-b5b8-25d50a4ed2bf": {
+                                            "columnOrder": [
+                                                "ac8d78c8-7738-5f2d-8883-651801fdbe3f",
+                                                "82d97990-cc70-588f-acde-b928069ba8c6"
+                                            ],
+                                            "columns": {
+                                                "82d97990-cc70-588f-acde-b928069ba8c6": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ac8d78c8-7738-5f2d-8883-651801fdbe3f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 4 values of stormshield.logtype",
+                                                    "customLabel": false,
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "82d97990-cc70-588f-acde-b928069ba8c6",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -334,7 +867,7 @@
                                                         "size": 4
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.severity"
+                                                    "sourceField": "stormshield.logtype"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -361,23 +894,23 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "layerId": "ab83a13d-87c9-5f49-a26d-c237bc57dc4d",
+                                        "layerId": "492a1bb7-a185-54d2-b5b8-25d50a4ed2bf",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "metrics": [
-                                            "ce655896-0b85-5fee-905a-fc799f08fc01"
+                                            "82d97990-cc70-588f-acde-b928069ba8c6"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "8ea7fbe1-bf06-5ded-93ad-75477f36a6d1"
+                                            "ac8d78c8-7738-5f2d-8883-651801fdbe3f"
                                         ]
                                     }
                                 ],
                                 "shape": "donut"
                             }
                         },
-                        "title": "",
+                        "title": "Event families",
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
@@ -386,493 +919,13 @@
                 },
                 "gridData": {
                     "h": 9,
-                    "i": "b9ba912b-0fda-5235-b94e-c8ea532091e3",
-                    "w": 16,
-                    "x": 32,
-                    "y": 0
-                },
-                "panelIndex": "b9ba912b-0fda-5235-b94e-c8ea532091e3",
-                "title": "Alarm severity (1 = major, 4 = minor)",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-b76aee0c-46c5-556f-8ba8-4b99965cf0f2",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "b76aee0c-46c5-556f-8ba8-4b99965cf0f2": {
-                                            "columnOrder": [
-                                                "8f39f632-def2-5159-98ec-ef7807dc1a32",
-                                                "b6c55eb3-6e0f-5056-8c16-c9200e6523f4"
-                                            ],
-                                            "columns": {
-                                                "b6c55eb3-6e0f-5056-8c16-c9200e6523f4": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "8f39f632-def2-5159-98ec-ef7807dc1a32": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 5 values of event.action",
-                                                    "customLabel": false,
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "b6c55eb3-6e0f-5056-8c16-c9200e6523f4",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "b76aee0c-46c5-556f-8ba8-4b99965cf0f2",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "b6c55eb3-6e0f-5056-8c16-c9200e6523f4"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "8f39f632-def2-5159-98ec-ef7807dc1a32"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "5daca082-ec6c-5528-ba45-b16eed39c5d5",
-                    "w": 12,
-                    "x": 0,
-                    "y": 9
-                },
-                "panelIndex": "5daca082-ec6c-5528-ba45-b16eed39c5d5",
-                "title": "Alarm actions",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-fb51d00c-6e2a-514f-a775-3e64e2c37195",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "fb51d00c-6e2a-514f-a775-3e64e2c37195": {
-                                            "columnOrder": [
-                                                "f4c67c7f-b5e7-5f96-9909-df2990164ac8",
-                                                "2a5948c7-c27b-5fb5-af9b-fe9469a0e572"
-                                            ],
-                                            "columns": {
-                                                "2a5948c7-c27b-5fb5-af9b-fe9469a0e572": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f4c67c7f-b5e7-5f96-9909-df2990164ac8": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of event.code",
-                                                    "customLabel": false,
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "2a5948c7-c27b-5fb5-af9b-fe9469a0e572",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.code"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "fb51d00c-6e2a-514f-a775-3e64e2c37195",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "2a5948c7-c27b-5fb5-af9b-fe9469a0e572"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "f4c67c7f-b5e7-5f96-9909-df2990164ac8"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "334053ec-d73a-51e1-9cd1-481487b181b5",
-                    "w": 12,
-                    "x": 12,
-                    "y": 9
-                },
-                "panelIndex": "334053ec-d73a-51e1-9cd1-481487b181b5",
-                "title": "Top alarm IDs",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-181889fe-90e3-5c30-b75f-f0411a0ac138",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "181889fe-90e3-5c30-b75f-f0411a0ac138": {
-                                            "columnOrder": [
-                                                "8860558d-c7b7-5cc6-9bc4-b0cf3012022f",
-                                                "f138ffd2-631c-5ba3-ab35-a276613937ca"
-                                            ],
-                                            "columns": {
-                                                "f138ffd2-631c-5ba3-ab35-a276613937ca": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "8860558d-c7b7-5cc6-9bc4-b0cf3012022f": {
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of source.ip",
-                                                    "customLabel": false,
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "f138ffd2-631c-5ba3-ab35-a276613937ca",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "source.ip"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "181889fe-90e3-5c30-b75f-f0411a0ac138",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "f138ffd2-631c-5ba3-ab35-a276613937ca"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "8860558d-c7b7-5cc6-9bc4-b0cf3012022f"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "d0bffc64-50b7-5de6-8f0f-ed50cda30796",
-                    "w": 12,
-                    "x": 24,
-                    "y": 9
-                },
-                "panelIndex": "d0bffc64-50b7-5de6-8f0f-ed50cda30796",
-                "title": "Top source addresses",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-cb829b24-4bc5-5934-bdd4-38b00af9d1e1",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "cb829b24-4bc5-5934-bdd4-38b00af9d1e1": {
-                                            "columnOrder": [
-                                                "7e9246e0-4f9f-5ae7-b735-90a23f9b057e",
-                                                "78b1b4ce-310d-5476-990e-14fa234e48d6"
-                                            ],
-                                            "columns": {
-                                                "78b1b4ce-310d-5476-990e-14fa234e48d6": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "7e9246e0-4f9f-5ae7-b735-90a23f9b057e": {
-                                                    "dataType": "number",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of destination.port",
-                                                    "customLabel": false,
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "78b1b4ce-310d-5476-990e-14fa234e48d6",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "destination.port"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "cb829b24-4bc5-5934-bdd4-38b00af9d1e1",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "78b1b4ce-310d-5476-990e-14fa234e48d6"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "7e9246e0-4f9f-5ae7-b735-90a23f9b057e"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "82efd6ff-47ab-5957-92b3-ff013ad6fd2d",
+                    "i": "565c98df-6722-5682-bc97-bfc6639c236b",
                     "w": 12,
                     "x": 36,
                     "y": 9
                 },
-                "panelIndex": "82efd6ff-47ab-5957-92b3-ff013ad6fd2d",
-                "title": "Top destination ports",
+                "panelIndex": "565c98df-6722-5682-bc97-bfc6639c236b",
+                "title": "Event families",
                 "type": "lens"
             },
             {
@@ -882,7 +935,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-7fb571c8-8876-58ec-a1ae-00c5da9c1bec",
+                                "name": "indexpattern-datasource-layer-57c9928a-6a0a-5a3f-aeed-24bc46c761e6",
                                 "type": "index-pattern"
                             }
                         ],
@@ -892,13 +945,13 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "7fb571c8-8876-58ec-a1ae-00c5da9c1bec": {
+                                        "57c9928a-6a0a-5a3f-aeed-24bc46c761e6": {
                                             "columnOrder": [
-                                                "31f833eb-ecf9-58a7-a956-51e819453761",
-                                                "6a581dde-0878-5fbf-bf99-81dbdd5328d9"
+                                                "86438d8c-a8f8-5d42-922b-84bd7b765707",
+                                                "ef81aa29-6eac-5bcc-89e8-6436214ed6e3"
                                             ],
                                             "columns": {
-                                                "6a581dde-0878-5fbf-bf99-81dbdd5328d9": {
+                                                "ef81aa29-6eac-5bcc-89e8-6436214ed6e3": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count of records",
@@ -909,10 +962,10 @@
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "31f833eb-ecf9-58a7-a956-51e819453761": {
+                                                "86438d8c-a8f8-5d42-922b-84bd7b765707": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 12 values of observer.name",
+                                                    "label": "Top 10 values of destination.ip",
                                                     "customLabel": false,
                                                     "operationType": "terms",
                                                     "params": {
@@ -922,7 +975,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "6a581dde-0878-5fbf-bf99-81dbdd5328d9",
+                                                            "columnId": "ef81aa29-6eac-5bcc-89e8-6436214ed6e3",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -931,10 +984,10 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 12
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "observer.name"
+                                                    "sourceField": "destination.ip"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -961,23 +1014,23 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "layerId": "7fb571c8-8876-58ec-a1ae-00c5da9c1bec",
+                                        "layerId": "57c9928a-6a0a-5a3f-aeed-24bc46c761e6",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "metrics": [
-                                            "6a581dde-0878-5fbf-bf99-81dbdd5328d9"
+                                            "ef81aa29-6eac-5bcc-89e8-6436214ed6e3"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "31f833eb-ecf9-58a7-a956-51e819453761"
+                                            "86438d8c-a8f8-5d42-922b-84bd7b765707"
                                         ]
                                     }
                                 ],
-                                "shape": "treemap"
+                                "shape": "donut"
                             }
                         },
-                        "title": "",
+                        "title": "Top VPN peers",
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
@@ -985,23 +1038,143 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 10,
-                    "i": "ac219908-ca85-5b5a-88f9-1f96a77ce979",
-                    "w": 48,
+                    "h": 9,
+                    "i": "4697e556-996f-54a1-ae6e-a912830c0d22",
+                    "w": 24,
                     "x": 0,
                     "y": 18
                 },
-                "panelIndex": "ac219908-ca85-5b5a-88f9-1f96a77ce979",
-                "title": "Alarms by firewall",
+                "panelIndex": "4697e556-996f-54a1-ae6e-a912830c0d22",
+                "title": "Top VPN peers",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-835c619b-dbaa-5038-914d-fde70005fab7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "835c619b-dbaa-5038-914d-fde70005fab7": {
+                                            "columnOrder": [
+                                                "498ee73e-1f42-57eb-a8de-2e7d024b88a5",
+                                                "4c20fbf3-707b-5ead-aae2-9270d00fb1c3"
+                                            ],
+                                            "columns": {
+                                                "4c20fbf3-707b-5ead-aae2-9270d00fb1c3": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "498ee73e-1f42-57eb-a8de-2e7d024b88a5": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of source.geo.country_name",
+                                                    "customLabel": false,
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4c20fbf3-707b-5ead-aae2-9270d00fb1c3",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.geo.country_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "835c619b-dbaa-5038-914d-fde70005fab7",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "4c20fbf3-707b-5ead-aae2-9270d00fb1c3"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "498ee73e-1f42-57eb-a8de-2e7d024b88a5"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Source countries",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "adda7654-d366-5222-b3e1-c5afec48ae7e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 18
+                },
+                "panelIndex": "adda7654-d366-5222-b3e1-c5afec48ae7e",
+                "title": "Source countries",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Stormshield SNS] Alarms (IPS)",
+        "title": "[Stormshield SNS] Users & VPN",
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "id": "stormshield-3f2a9c60-1a4e-11f1-9adf-0242ac120002",
+    "id": "stormshield-63f75f12-2c75-5545-aee4-27fb350ff92f",
     "managed": false,
     "references": [
         {
@@ -1016,42 +1189,47 @@
         },
         {
             "id": "logs-*",
-            "name": "dbd36ee2-ce51-5c01-a7f8-20ac061ff0ed:indexpattern-datasource-layer-33a48b60-d148-58ee-923b-3159d9f3d942",
+            "name": "33f91bc5-9e79-5b06-9fd4-4738d46650ab:indexpattern-datasource-layer-31555dc9-9c86-5c2b-9331-da5e5c86431a",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6b282572-fec2-5663-b8f6-5574cf407f28:indexpattern-datasource-layer-0dc1a2d0-031c-54cc-bb3d-511946e4dc07",
+            "name": "e20851d1-14ec-58e4-a0f8-9b3c3f36a22b:indexpattern-datasource-layer-9e9b089e-d05d-5964-839d-baa0dd699e82",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "b9ba912b-0fda-5235-b94e-c8ea532091e3:indexpattern-datasource-layer-ab83a13d-87c9-5f49-a26d-c237bc57dc4d",
+            "name": "698cc51c-6c45-55c6-869d-0859e1f6a403:indexpattern-datasource-layer-a9087fce-0080-536b-9f3f-fe432adf47ed",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5daca082-ec6c-5528-ba45-b16eed39c5d5:indexpattern-datasource-layer-b76aee0c-46c5-556f-8ba8-4b99965cf0f2",
+            "name": "b4a49986-1e0b-5331-a4df-f31c9bd8d474:indexpattern-datasource-layer-008cd50c-407b-55ed-8421-44e9d84a5b6a",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "334053ec-d73a-51e1-9cd1-481487b181b5:indexpattern-datasource-layer-fb51d00c-6e2a-514f-a775-3e64e2c37195",
+            "name": "dbc4a5aa-0b35-5487-bb4a-52cd501558a7:indexpattern-datasource-layer-b79edfdb-4889-5989-90dd-871a4526dba8",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d0bffc64-50b7-5de6-8f0f-ed50cda30796:indexpattern-datasource-layer-181889fe-90e3-5c30-b75f-f0411a0ac138",
+            "name": "48b1d410-b52d-50e1-bef9-8a5985db7bc5:indexpattern-datasource-layer-8196f0c2-93bc-54bd-8022-49b3373e0ccd",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "82efd6ff-47ab-5957-92b3-ff013ad6fd2d:indexpattern-datasource-layer-cb829b24-4bc5-5934-bdd4-38b00af9d1e1",
+            "name": "565c98df-6722-5682-bc97-bfc6639c236b:indexpattern-datasource-layer-492a1bb7-a185-54d2-b5b8-25d50a4ed2bf",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "ac219908-ca85-5b5a-88f9-1f96a77ce979:indexpattern-datasource-layer-7fb571c8-8876-58ec-a1ae-00c5da9c1bec",
+            "name": "4697e556-996f-54a1-ae6e-a912830c0d22:indexpattern-datasource-layer-57c9928a-6a0a-5a3f-aeed-24bc46c761e6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "adda7654-d366-5222-b3e1-c5afec48ae7e:indexpattern-datasource-layer-835c619b-dbaa-5038-914d-fde70005fab7",
             "type": "index-pattern"
         }
     ],
