@@ -76,30 +76,55 @@ processors:
       value: critical
       if: ctx.log?.level == 'fatal'
 
-  # Convert the raw-trace format's Go duration string (e.g. "576ms") into ECS event.duration (nanoseconds).
+  # Convert the raw-trace format's Go duration string into ECS event.duration (nanoseconds).
+  # time.Duration.String() emits compound values once a duration reaches a minute ("1m30s",
+  # "2h5m0s") and sub-second units below it ("576ms", "1.5µs"), so every number/unit pair is
+  # summed. An unrecognised unit aborts without setting event.duration -- a wrong duration is
+  # worse than a missing one, because it would under-report exactly the slowest device reads.
   - script:
       tag: convert_trace_duration_to_nanos
       lang: painless
       if: ctx.evcc?.log?._trace_duration != null
       source: >-
         String s = ctx.evcc.log._trace_duration;
+        double total = 0;
         int i = 0;
-        while (i < s.length() && (Character.isDigit(s.charAt(i)) || s.substring(i, i + 1).equals("."))) {
-          i++;
-        }
-        if (i > 0) {
-          double value = Double.parseDouble(s.substring(0, i));
-          String unit = i < s.length() ? s.substring(i) : '';
-          double factor = 1.0;
-          if (unit.equals('us') || unit.equals('µs')) {
-            factor = 1000.0;
-          } else if (unit.equals('ms')) {
-            factor = 1000000.0;
-          } else if (unit.equals('s')) {
-            factor = 1000000000.0;
+        boolean ok = s.length() > 0;
+        while (ok && i < s.length()) {
+          int numStart = i;
+          while (i < s.length() && (Character.isDigit(s.charAt(i)) || s.charAt(i) == (char) '.')) {
+            i++;
           }
+          if (i == numStart) {
+            ok = false;
+            break;
+          }
+          double value = Double.parseDouble(s.substring(numStart, i));
+          int unitStart = i;
+          while (i < s.length() && !Character.isDigit(s.charAt(i)) && s.charAt(i) != (char) '.') {
+            i++;
+          }
+          String unit = s.substring(unitStart, i);
+          if (unit.equals('ns')) {
+            total += value;
+          } else if (unit.equals('us') || unit.equals('µs')) {
+            total += value * 1000.0;
+          } else if (unit.equals('ms')) {
+            total += value * 1000000.0;
+          } else if (unit.equals('s')) {
+            total += value * 1000000000.0;
+          } else if (unit.equals('m')) {
+            total += value * 60000000000.0;
+          } else if (unit.equals('h')) {
+            total += value * 3600000000000.0;
+          } else {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) {
           ctx.event = ctx.event != null ? ctx.event : new HashMap();
-          ctx.event.duration = (long) (value * factor);
+          ctx.event.duration = (long) total;
         }
   - remove:
       field: evcc.log._trace_duration

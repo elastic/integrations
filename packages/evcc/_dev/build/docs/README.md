@@ -99,9 +99,16 @@ The `log` data stream provides evcc's own application logs, collected via journa
 
 {{ fields "log" }}
 
-#### log sample event
+{{/*
+  No sample event is published for the log data stream. sample_event.json must be captured from a
+  real `elastic-package test system --generate` run, and the journald system test cannot complete
+  outside Linux (the input harvests nothing under macOS/podman). Restore the two lines below once
+  the log system test has been run on a Linux host and has produced data_stream/log/sample_event.json.
 
-{{ event "log" }}
+  #### log sample event
+
+  {{ event "log" }}
+*/}}
 
 ### Inputs used
 
