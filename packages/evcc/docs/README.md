@@ -123,24 +123,24 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-02T15:03:49.111803033Z",
+    "@timestamp": "2026-08-08T07:57:47.09214435Z",
     "agent": {
-        "ephemeral_id": "67997be3-cad3-4649-8a09-8a967d8b8c9b",
-        "id": "ca919993-dd34-463c-bae5-b78c1a7886de",
-        "name": "elastic-agent-84937",
+        "ephemeral_id": "e51c96d8-83d9-45ef-80d9-f15335a8f603",
+        "id": "d5b967a5-f8db-4cd9-9413-836e9d29b3b1",
+        "name": "elastic-agent-13437",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "59093",
+        "namespace": "78723",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ca919993-dd34-463c-bae5-b78c1a7886de",
+        "id": "d5b967a5-f8db-4cd9-9413-836e9d29b3b1",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -195,7 +195,7 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-08-02T15:03:49Z",
+        "ingested": "2026-08-08T07:57:47Z",
         "kind": "metric",
         "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521300,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
@@ -261,24 +261,24 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-02T15:03:03.090010619Z",
+    "@timestamp": "2026-08-08T07:56:56.989234305Z",
     "agent": {
-        "ephemeral_id": "b8ef183f-d040-49d4-a6af-9b606aaee547",
-        "id": "9718ac0a-2ac0-4f20-b9e1-38057a7672f3",
-        "name": "elastic-agent-51526",
+        "ephemeral_id": "85ac4b5d-ba70-4cc9-9e77-b649ea69533e",
+        "id": "0de74363-33a7-4fb7-bb4d-b7b82f0d8e28",
+        "name": "elastic-agent-98025",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "53619",
+        "namespace": "46416",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "9718ac0a-2ac0-4f20-b9e1-38057a7672f3",
+        "id": "0de74363-33a7-4fb7-bb4d-b7b82f0d8e28",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -325,7 +325,7 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-08-02T15:03:03Z",
+        "ingested": "2026-08-08T07:56:56Z",
         "kind": "metric",
         "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
