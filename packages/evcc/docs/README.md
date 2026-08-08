@@ -123,26 +123,26 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-08T07:57:47.09214435Z",
+    "@timestamp": "2026-08-08T12:40:06.1531006Z",
     "agent": {
-        "ephemeral_id": "e51c96d8-83d9-45ef-80d9-f15335a8f603",
-        "id": "d5b967a5-f8db-4cd9-9413-836e9d29b3b1",
-        "name": "elastic-agent-13437",
+        "ephemeral_id": "e5ba2784-d44d-4bae-b7e8-cfb4ed5588d4",
+        "id": "98839b3c-fd19-4e11-9b37-5aefbbcbb744",
+        "name": "elastic-agent-15212",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "78723",
+        "namespace": "66679",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "d5b967a5-f8db-4cd9-9413-836e9d29b3b1",
+        "id": "98839b3c-fd19-4e11-9b37-5aefbbcbb744",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "evcc": {
         "site": {
@@ -195,7 +195,7 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-08-08T07:57:47Z",
+        "ingested": "2026-08-08T12:40:06Z",
         "kind": "metric",
         "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521300,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
@@ -261,26 +261,26 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-08T07:56:56.989234305Z",
+    "@timestamp": "2026-08-08T12:38:34.717692809Z",
     "agent": {
-        "ephemeral_id": "85ac4b5d-ba70-4cc9-9e77-b649ea69533e",
-        "id": "0de74363-33a7-4fb7-bb4d-b7b82f0d8e28",
-        "name": "elastic-agent-98025",
+        "ephemeral_id": "df6bd01b-ada0-4ca5-9047-7a4bb9c5589e",
+        "id": "e8974a9b-9b6f-4d39-bada-4a88c787495c",
+        "name": "elastic-agent-76239",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "46416",
+        "namespace": "55863",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0de74363-33a7-4fb7-bb4d-b7b82f0d8e28",
+        "id": "e8974a9b-9b6f-4d39-bada-4a88c787495c",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "evcc": {
         "loadpoint": {
@@ -325,7 +325,7 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-08-08T07:56:56Z",
+        "ingested": "2026-08-08T12:38:34Z",
         "kind": "metric",
         "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
@@ -386,6 +386,18 @@ The `log` data stream provides evcc's own application logs, collected via journa
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of input that generated the event. | keyword |
+| journald.custom.runtime_scope | The runtime scope in which the journal entry was captured, either `initrd` or `system`. | keyword |
+| journald.custom.seqnum | The sequence number of the journal entry in the journal it was read from. | keyword |
+| journald.custom.seqnum_id | The identifier of the sequence number the journal entry belongs to, formatted as a 128-bit hexadecimal string. | keyword |
+| journald.custom.stream_id | The identifier of the stream the journal entry was read from, formatted as a 128-bit hexadecimal string. | keyword |
+| journald.gid | The group ID of the process the journal entry originates from. | long |
+| journald.host.boot_id | The kernel boot ID for the boot the message was generated in, formatted as a 128-bit hexadecimal string. | keyword |
+| journald.pid | The process ID of the process the journal entry originates from. | long |
+| journald.process.capabilities | The effective capabilities of the process the journal entry originates from, formatted as a hexadecimal string. | keyword |
+| journald.process.command_line | The command line of the process the journal entry originates from. | keyword |
+| journald.process.executable | The path to the executable of the process the journal entry originates from. | keyword |
+| journald.process.name | The name of the process the journal entry originates from. | keyword |
+| journald.uid | The user ID of the process the journal entry originates from. | long |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
 | log.origin.file.name | The name of the file containing the source code which originated the log event. Note that this field is not meant to capture the log file. The correct field to capture the log file is `log.file.path`. | keyword |
@@ -396,6 +408,11 @@ The `log` data stream provides evcc's own application logs, collected via journa
 | log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.ip | All of the IPs seen on your event. | ip |
+| systemd.cgroup | The control group path the journal entry originates from. | keyword |
+| systemd.invocation_id | The invocation ID of the systemd unit the journal entry originates from. | keyword |
+| systemd.slice | The systemd slice the journal entry originates from. | keyword |
+| systemd.transport | How the entry was received by the journal service. | keyword |
+| systemd.unit | The systemd unit the journal entry originates from. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -413,7 +430,116 @@ The `log` data stream provides evcc's own application logs, collected via journa
 | url.username | Username of the request. | keyword |
 
 
+#### log sample event
 
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2026-07-23T11:48:23.601Z",
+    "agent": {
+        "ephemeral_id": "514d38b0-3353-4de9-9ef5-a2269f103e66",
+        "id": "50238e03-9ac6-4712-9740-2deea84b76c3",
+        "name": "elastic-agent-79253",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "evcc.log",
+        "namespace": "23565",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "50238e03-9ac6-4712-9740-2deea84b76c3",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "evcc": {
+        "log": {
+            "component": "site"
+        }
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2026-08-08T12:39:14.938Z",
+        "dataset": "evcc.log",
+        "ingested": "2026-08-08T12:39:17Z",
+        "kind": "event"
+    },
+    "host": {
+        "hostname": "test-host",
+        "id": "9a1b3c5d7e9f0a2b4c6d8e0f1a2b3c4d"
+    },
+    "input": {
+        "type": "journald"
+    },
+    "journald": {
+        "custom": {
+            "runtime_scope": "system",
+            "seqnum": "1",
+            "seqnum_id": "4bb015643914401b965770128dc75f7b",
+            "stream_id": "aa1bb2cc3dd4ee5ff607a8b9c0d1e2f3"
+        },
+        "gid": 111,
+        "host": {
+            "boot_id": "6f2a1c9d7e4b4f1a9c3e8d2b5a7f0c31"
+        },
+        "pid": 274550,
+        "process": {
+            "capabilities": "400",
+            "command_line": "/usr/bin/evcc",
+            "executable": "/usr/bin/evcc",
+            "name": "evcc"
+        },
+        "uid": 106
+    },
+    "log": {
+        "level": "debug",
+        "syslog": {
+            "appname": "evcc",
+            "facility": {
+                "code": 3
+            },
+            "priority": 6
+        }
+    },
+    "message": "site power: -4745W",
+    "process": {
+        "args": [
+            "/usr/bin/evcc"
+        ],
+        "args_count": 1,
+        "command_line": "/usr/bin/evcc",
+        "pid": 274550,
+        "thread": {
+            "capabilities": {
+                "effective": [
+                    "CAP_NET_BIND_SERVICE"
+                ]
+            }
+        }
+    },
+    "systemd": {
+        "cgroup": "/system.slice/evcc.service",
+        "invocation_id": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9",
+        "slice": "system.slice",
+        "transport": "stdout",
+        "unit": "evcc.service"
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "user": {
+        "group": {
+            "id": "111"
+        },
+        "id": "106"
+    }
+}
+```
 
 ### Inputs used
 
