@@ -7,6 +7,9 @@ data_stream:
       - "/run/service_logs/test.journal"
     include_matches:
       - _SYSTEMD_UNIT=evcc.service
+    # The service container writes a static journal before the agent starts, so the test has to read
+    # from the beginning. The package default (seek: cursor, cursor_seek_fallback: tail) would skip it.
+    seek: head
     tags: [forwarded]
 assert:
   min_count: 6

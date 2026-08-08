@@ -47,7 +47,7 @@ For the metrics data streams, Elastic Agent polls the evcc REST API directly ove
 1. In Kibana, go to **Management > Integrations** and add the **evcc** integration.
 2. Set the **evcc URL** to the base URL of your evcc instance, e.g. `http://evcc.local:7070`.
 3. Optionally adjust the polling **Interval** for the site and loadpoint data streams (default: `30s`).
-4. To collect logs, deploy the log data stream's input to an Elastic Agent running directly on the host where evcc's systemd service runs. Adjust **Include Matches** if evcc runs under a different systemd unit name than `evcc.service`. Consider enabling **Drop debug-level logs** if you do not need evcc's high-volume DEBUG telemetry.
+4. To collect logs, deploy the log data stream's input to an Elastic Agent running directly on the host where evcc's systemd service runs. Adjust **Include Matches** if evcc runs under a different systemd unit name than `evcc.service`. Consider enabling **Drop debug-level logs** if you do not need evcc's high-volume DEBUG telemetry. By default the first collection starts at the end of the journal; set **Cursor Seek Fallback** to `head` if you want evcc's existing journal history backfilled instead.
 5. Assign the integration to an Elastic Agent policy and deploy it to an agent with the required network/host access.
 
 ### Validation
@@ -89,22 +89,22 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | evcc.site.currency | Currency used for cost and tariff values. | keyword |  |  |
 | evcc.site.grid.power | Current grid power, in watts. Positive values indicate import from the grid, negative values indicate export. | double |  | gauge |
 | evcc.site.home.power | Current home power consumption, in watts. | double |  | gauge |
-| evcc.site.pv.energy | Cumulative solar (PV) energy produced, in Wh. | double |  | gauge |
+| evcc.site.pv.energy | Cumulative solar (PV) energy produced, in kWh. | double |  | gauge |
 | evcc.site.pv.power | Current combined solar (PV) power production, in watts. | double |  | gauge |
-| evcc.site.statistics.last_30d.avg_co2 | Average CO2 intensity of energy used over the last 30 days. | double |  | gauge |
-| evcc.site.statistics.last_30d.avg_price | Average energy price over the last 30 days. | double |  | gauge |
+| evcc.site.statistics.last_30d.avg_co2 | Average CO2 intensity of energy used over the last 30 days, in g/kWh. | double |  | gauge |
+| evcc.site.statistics.last_30d.avg_price | Average energy price per kWh over the last 30 days, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.last_30d.charged_kwh | Total energy charged over the last 30 days, in kWh. | double |  | gauge |
 | evcc.site.statistics.last_30d.solar_percentage | Share of charged energy sourced from solar over the last 30 days. | double | percent | gauge |
-| evcc.site.statistics.last_365d.avg_co2 | Average CO2 intensity of energy used over the last 365 days. | double |  | gauge |
-| evcc.site.statistics.last_365d.avg_price | Average energy price over the last 365 days. | double |  | gauge |
+| evcc.site.statistics.last_365d.avg_co2 | Average CO2 intensity of energy used over the last 365 days, in g/kWh. | double |  | gauge |
+| evcc.site.statistics.last_365d.avg_price | Average energy price per kWh over the last 365 days, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.last_365d.charged_kwh | Total energy charged over the last 365 days, in kWh. | double |  | gauge |
 | evcc.site.statistics.last_365d.solar_percentage | Share of charged energy sourced from solar over the last 365 days. | double | percent | gauge |
-| evcc.site.statistics.this_year.avg_co2 | Average CO2 intensity of energy used in the current year. | double |  | gauge |
-| evcc.site.statistics.this_year.avg_price | Average energy price in the current year. | double |  | gauge |
+| evcc.site.statistics.this_year.avg_co2 | Average CO2 intensity of energy used in the current year, in g/kWh. | double |  | gauge |
+| evcc.site.statistics.this_year.avg_price | Average energy price per kWh in the current year, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.this_year.charged_kwh | Total energy charged in the current year, in kWh. | double |  | gauge |
 | evcc.site.statistics.this_year.solar_percentage | Share of charged energy sourced from solar in the current year. | double | percent | gauge |
-| evcc.site.statistics.total.avg_co2 | Average CO2 intensity of energy used across all recorded history. | double |  | gauge |
-| evcc.site.statistics.total.avg_price | Average energy price across all recorded history. | double |  | gauge |
+| evcc.site.statistics.total.avg_co2 | Average CO2 intensity of energy used across all recorded history, in g/kWh. | double |  | gauge |
+| evcc.site.statistics.total.avg_price | Average energy price per kWh across all recorded history, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.total.charged_kwh | Total energy charged across all recorded history, in kWh. | double |  | gauge |
 | evcc.site.statistics.total.solar_percentage | Share of charged energy sourced from solar across all recorded history. | double | percent | gauge |
 | evcc.site.title | Configured title of the evcc site. | keyword |  |  |
@@ -123,26 +123,26 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-08T12:40:06.1531006Z",
+    "@timestamp": "2026-08-08T14:24:46.134803198Z",
     "agent": {
-        "ephemeral_id": "e5ba2784-d44d-4bae-b7e8-cfb4ed5588d4",
-        "id": "98839b3c-fd19-4e11-9b37-5aefbbcbb744",
-        "name": "elastic-agent-15212",
+        "ephemeral_id": "05596c2a-5ae4-44a7-a864-ef9ef0ca045b",
+        "id": "62d70a67-b9ae-4a39-8ae7-252db2dbf069",
+        "name": "elastic-agent-86569",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "66679",
+        "namespace": "33313",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "98839b3c-fd19-4e11-9b37-5aefbbcbb744",
+        "id": "62d70a67-b9ae-4a39-8ae7-252db2dbf069",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.4.3"
     },
     "evcc": {
         "site": {
@@ -159,7 +159,7 @@ An example event for `site` looks as following:
                 "power": 500
             },
             "pv": {
-                "energy": 24521300,
+                "energy": 24521.3,
                 "power": 8307.59154846352
             },
             "statistics": {
@@ -195,9 +195,9 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-08-08T12:40:06Z",
+        "ingested": "2026-08-08T14:24:46Z",
         "kind": "metric",
-        "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521300,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
+        "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521.3,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
     "input": {
         "type": "cel"
@@ -229,7 +229,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.charge.energy | Energy charged during the current charging session, in Wh. | double |  | gauge |
 | evcc.loadpoint.charge.power | Current charging power at the loadpoint, in watts. | double |  | gauge |
 | evcc.loadpoint.charge.remaining_duration.sec | Estimated remaining duration until the charging target is reached, in seconds. | double |  | gauge |
-| evcc.loadpoint.charge.remaining_energy | Estimated remaining energy required to reach the charging target, in Wh. | double |  | gauge |
+| evcc.loadpoint.charge.remaining_energy | Estimated remaining energy required to reach the charging target, in kWh. | double |  | gauge |
 | evcc.loadpoint.charger_status_reason | Reason reported by the charger for its current status. | keyword |  |  |
 | evcc.loadpoint.charging | Whether the loadpoint is currently charging. | boolean |  |  |
 | evcc.loadpoint.connected | Whether a vehicle is currently connected to the loadpoint. | boolean |  |  |
@@ -261,26 +261,26 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-08T12:38:34.717692809Z",
+    "@timestamp": "2026-08-08T14:23:06.872840503Z",
     "agent": {
-        "ephemeral_id": "df6bd01b-ada0-4ca5-9047-7a4bb9c5589e",
-        "id": "e8974a9b-9b6f-4d39-bada-4a88c787495c",
-        "name": "elastic-agent-76239",
+        "ephemeral_id": "ac7d40a4-cea0-4f4a-bb3e-7140488f0749",
+        "id": "2e132ad2-c2bc-44e2-a449-4458b9a9b217",
+        "name": "elastic-agent-70686",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "55863",
+        "namespace": "81647",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "e8974a9b-9b6f-4d39-bada-4a88c787495c",
+        "id": "2e132ad2-c2bc-44e2-a449-4458b9a9b217",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.4.3"
     },
     "evcc": {
         "loadpoint": {
@@ -293,7 +293,7 @@ An example event for `loadpoint` looks as following:
                 "remaining_duration": {
                     "sec": 41739
                 },
-                "remaining_energy": 40000
+                "remaining_energy": 40
             },
             "charger_status_reason": "unknown",
             "charging": true,
@@ -325,9 +325,9 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-08-08T12:38:34Z",
+        "ingested": "2026-08-08T14:23:06Z",
         "kind": "metric",
-        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
+        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
     "input": {
         "type": "cel"
@@ -438,24 +438,24 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-07-23T11:48:23.601Z",
     "agent": {
-        "ephemeral_id": "514d38b0-3353-4de9-9ef5-a2269f103e66",
-        "id": "50238e03-9ac6-4712-9740-2deea84b76c3",
-        "name": "elastic-agent-79253",
+        "ephemeral_id": "3df235eb-3bb6-4dbd-a681-c5e4a08310c6",
+        "id": "be434754-9a47-4d5d-9ef5-5aa982c62ccf",
+        "name": "elastic-agent-23980",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.log",
-        "namespace": "23565",
+        "namespace": "95998",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "50238e03-9ac6-4712-9740-2deea84b76c3",
+        "id": "be434754-9a47-4d5d-9ef5-5aa982c62ccf",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.4.3"
     },
     "evcc": {
         "log": {
@@ -464,10 +464,11 @@ An example event for `log` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2026-08-08T12:39:14.938Z",
+        "created": "2026-08-08T14:23:54.235Z",
         "dataset": "evcc.log",
-        "ingested": "2026-08-08T12:39:17Z",
-        "kind": "event"
+        "ingested": "2026-08-08T14:23:57Z",
+        "kind": "event",
+        "module": "evcc"
     },
     "host": {
         "hostname": "test-host",
@@ -480,7 +481,7 @@ An example event for `log` looks as following:
         "custom": {
             "runtime_scope": "system",
             "seqnum": "1",
-            "seqnum_id": "4bb015643914401b965770128dc75f7b",
+            "seqnum_id": "04c7baf40fb44a9a83de6ad8d2a32778",
             "stream_id": "aa1bb2cc3dd4ee5ff607a8b9c0d1e2f3"
         },
         "gid": 111,

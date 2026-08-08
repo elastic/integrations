@@ -46,7 +46,7 @@ For the metrics data streams, Elastic Agent polls the evcc REST API directly ove
 1. In Kibana, go to **Management > Integrations** and add the **evcc** integration.
 2. Set the **evcc URL** to the base URL of your evcc instance, e.g. `http://evcc.local:7070`.
 3. Optionally adjust the polling **Interval** for the site and loadpoint data streams (default: `30s`).
-4. To collect logs, deploy the log data stream's input to an Elastic Agent running directly on the host where evcc's systemd service runs. Adjust **Include Matches** if evcc runs under a different systemd unit name than `evcc.service`. Consider enabling **Drop debug-level logs** if you do not need evcc's high-volume DEBUG telemetry.
+4. To collect logs, deploy the log data stream's input to an Elastic Agent running directly on the host where evcc's systemd service runs. Adjust **Include Matches** if evcc runs under a different systemd unit name than `evcc.service`. Consider enabling **Drop debug-level logs** if you do not need evcc's high-volume DEBUG telemetry. By default the first collection starts at the end of the journal; set **Cursor Seek Fallback** to `head` if you want evcc's existing journal history backfilled instead.
 5. Assign the integration to an Elastic Agent policy and deploy it to an agent with the required network/host access.
 
 ### Validation

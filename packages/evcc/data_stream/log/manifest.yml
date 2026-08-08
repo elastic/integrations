@@ -26,6 +26,24 @@ streams:
         description: >
           List of journals to read from. Defaults to the system journal.
 
+      - name: seek
+        type: text
+        title: Seek
+        required: false
+        show_user: false
+        default: cursor
+        description: >
+          Position to start reading from: `head` (oldest retained entry), `tail` (only new entries), or `cursor` (resume where the previous run stopped). With `cursor` and no stored position, **Cursor Seek Fallback** decides. See [seek](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-seek) for details.
+
+      - name: cursor_seek_fallback
+        type: text
+        title: Cursor Seek Fallback
+        required: false
+        show_user: false
+        default: tail
+        description: >
+          Where to start when **Seek** is `cursor` but no usable position is stored — on first collection, or after the journal rotated past the last position. Defaults to `tail` so a first install does not replay evcc's entire retained journal at once. Set to `head` to backfill that history instead.
+
       - name: drop_debug_logs
         type: bool
         title: Drop debug-level logs
