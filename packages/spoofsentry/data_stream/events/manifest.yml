@@ -1,0 +1,69 @@
+title: SpoofSentry Events
+type: logs
+streams:
+  - input: http_endpoint
+    title: SpoofSentry Events
+    description: Receive domain security events from SpoofSentry via an HTTP webhook.
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: >-
+          Bind address for the HTTP listener. Use `0.0.0.0` to listen on all interfaces,
+          or `localhost` when a reverse proxy terminates TLS in front of the Agent.
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: Bind port for the HTTP listener.
+        required: true
+        show_user: true
+        default: 8089
+      - name: secret_header
+        type: text
+        title: Secret Header
+        description: >-
+          Name of the HTTP header carrying the shared secret used to authenticate
+          incoming requests (for example `Authorization`). Configure a matching static
+          header on the SpoofSentry webhook. Leave empty to disable static-secret checks.
+        required: false
+        show_user: true
+        secret: false
+      - name: secret_value
+        type: password
+        title: Secret Value
+        description: Expected value of the secret header. Required when a Secret Header is set.
+        required: false
+        show_user: true
+        secret: true
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: >-
+          TLS configuration for the listener. See the
+          [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html)
+          for details.
+        required: false
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: >-
+          Copies the raw unmodified body of the incoming request to the `event.original`
+          field as a string before the event is processed.
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to append to each event.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - spoofsentry-events

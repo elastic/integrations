@@ -1,0 +1,44 @@
+- name: spoofsentry
+  type: group
+  fields:
+    - name: delivery_id
+      type: keyword
+      description: Unique delivery identifier for this webhook dispatch (DomainSeal cuid).
+    - name: domain_id
+      type: keyword
+      description: Internal SpoofSentry identifier of the related domain.
+    - name: risk_score
+      type: long
+      description: Risk score associated with the event (0-100), when applicable.
+    - name: confidence
+      type: double
+      description: Detection confidence for the event, when applicable.
+    - name: status
+      type: keyword
+      description: Lifecycle status of the related entity (for example detected, monitoring, threat, resolved).
+    - name: priority
+      type: keyword
+      description: Priority of the related entity (for example takedown case priority).
+    - name: variant
+      type: keyword
+      description: Lookalike or variant domain associated with the event.
+    - name: threat_type
+      type: keyword
+      description: Threat classification for the event (for example lookalike, spoofing, forensic).
+    - name: case_number
+      type: keyword
+      description: Human-readable takedown case number, when applicable.
+    - name: entity
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Type of the entity that originated the event (for example domain, alert, integration).
+        - name: id
+          type: keyword
+          description: Identifier of the entity that originated the event.
+    - name: event_data
+      type: flattened
+      description: >-
+        Full event-specific payload as delivered by SpoofSentry. The shape varies by
+        event type; stored as a flattened object so it remains queryable without a fixed schema.
