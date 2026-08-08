@@ -1,0 +1,36 @@
+- name: pihole
+  type: group
+  description: Pi-hole DNS query log fields
+  fields:
+    - name: query
+      type: group
+      description: DNS query information
+      fields:
+        - name: id
+          type: long
+          description: Unique identifier for this query
+        - name: status
+          type: keyword
+          description: Status of the query (CACHE, FORWARDED, BLOCKED, ALLOWED, etc.)
+        - name: dnssec
+          type: keyword
+          description: DNSSEC status (UNKNOWN, SECURE, INSECURE, BOGUS)
+        - name: reply_time
+          type: double
+          description: Query reply time in seconds
+    - name: cname
+      type: keyword
+      description: CNAME if the query resulted in a CNAME
+    - name: list_id
+      type: long
+      description: Gravity list ID if the query matched a blocklist
+    - name: ede
+      type: group
+      description: Extended DNS Error information
+      fields:
+        - name: code
+          type: long
+          description: Extended DNS Error code
+        - name: text
+          type: keyword
+          description: Extended DNS Error text
