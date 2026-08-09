@@ -27,21 +27,25 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTIT
 
 # Wait for the marker events in the entity data stream. Only markers remain
 # after routing rules divert user and device documents.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${ENTITY_DS}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 5s -timeout 5m ${ENTITY_DS}
 
 # Verify user documents were routed to the user data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_entra_id.user-*
 cp stdout user_docs.json
-exec jq '[.hits.hits[]._source.user.id] | unique | sort[]' user_docs.json
+# Filter by the current run's namespace (derived from ENTITY_DS) to avoid
+# matching stale docs left by a previous run in the wildcard data stream.
+exec jq --arg src ${ENTITY_DS} '[.hits.hits[] | select(._source.data_stream.namespace == ($src | ltrimstr("logs-entityanalytics_entra_id.entity-"))) | ._source.user.id] | unique | sort[]' user_docs.json
 stdout 'aa534e49-edfd-4541-8256-8bbf34f122b4'
 stdout 'feb6a386-612a-4ed1-9b13-2adc73074a19'
 
 # Verify device documents were routed to the device data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_entra_id.device-*
 cp stdout device_docs.json
-exec jq '.hits.hits[0]._source.device.id' device_docs.json
+# Filter by the current run's namespace (derived from ENTITY_DS) to avoid
+# matching stale docs left by a previous run in the wildcard data stream.
+exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_entra_id.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.device.id][0]' device_docs.json
 ! stdout 'null'
-exec jq '.hits.hits[0]._source.asset.type' device_docs.json
+exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_entra_id.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.asset.type][0]' device_docs.json
 stdout 'microsoft_entra_id_device'
 
 # Clean up.

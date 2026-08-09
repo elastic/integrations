@@ -27,7 +27,7 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml AUDIT
 docker_signal cyberarkpas-tcp SIGHUP
 
 # Verify the Vault/Logon record stays in the audit data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${AUDIT_DS}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 5s -timeout 5m ${AUDIT_DS}
 cp stdout audit_docs.json
 exec jq -r '.hits.hits[0]._source.observer.product' audit_docs.json
 stdout '^Vault$'
@@ -35,7 +35,9 @@ stdout '^Vault$'
 # Verify the VaultMonitor record was routed to the monitor data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-cyberarkpas.monitor-*
 cp stdout monitor_docs.json
-exec jq -r '.hits.hits[0]._source.observer.product' monitor_docs.json
+# Filter by the current run's namespace (derived from AUDIT_DS) to avoid
+# matching stale docs left by a previous run in the wildcard data stream.
+exec jq -r --arg src ${AUDIT_DS} '($src | ltrimstr("logs-cyberarkpas.audit-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.observer.product][0]' monitor_docs.json
 stdout '^VaultMonitor$'
 
 # Clean up.

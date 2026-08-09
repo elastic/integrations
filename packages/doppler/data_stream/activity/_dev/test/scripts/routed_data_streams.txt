@@ -28,12 +28,18 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ACTIV
 docker_signal doppler-webhook-http SIGHUP
 
 # Verify activity events stay in the activity data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 10 -confirm 15s -timeout 5m ${ACTIVITY_DS}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 10 -confirm 5s -timeout 5m ${ACTIVITY_DS}
 
 # Verify secret_read events were routed to the secret_read data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-doppler.secret_read-*
 cp stdout secret_read_docs.json
-exec jq '.hits.hits[0]._source.event.action' secret_read_docs.json
+# Filter by the current run's namespace (derived from ACTIVITY_DS) to avoid
+# matching stale docs left by a previous run in the wildcard data stream.
+# The `($s.data_stream.namespace // $s["data_stream.namespace"])` can be
+# simplified to `._source.data_stream.namespace` when 8.x is no longer
+# supported; it is required to work around the polymorphism in document
+# shape between 8.x and 9.x. Same for `$s.event.action // $s["event.action"]`.
+exec jq --arg src ${ACTIVITY_DS} '($src | ltrimstr("logs-doppler.activity-")) as $ns | [.hits.hits[] | ._source as $s | select(($s.data_stream.namespace // $s["data_stream.namespace"]) == $ns) | ($s.event.action // $s["event.action"])][0]' secret_read_docs.json
 stdout 'security.secret_read'
 
 # Clean up.
