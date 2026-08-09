@@ -406,6 +406,16 @@ processors:
           field: entity.target.id
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
+  - foreach:
+      tag: foreach_entity_target_display_name
+      field: json.target
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_entity_target_display_name
+          field: entity.target.display_name
+          value: '{{{_ingest._value.displayName}}}'
+          allow_duplicates: false
   - rename:
       tag: rename_target
       field: json.target
@@ -722,6 +732,19 @@ processors:
           field: _ingest._value.id
           ignore_missing: true
           ignore_failure: true
+  - foreach:
+      tag: foreach_remove_target_display_name
+      field: okta.target
+      ignore_missing: true
+      processor:
+        remove:
+          tag: remove_target_display_name
+          field: _ingest._value.display_name
+          ignore_missing: true
+          ignore_failure: true
+      description: >-
+        Removed only after user.target.full_name and user.target.group.name have
+        copied it, so the vendor name can be an alias to entity.target.display_name.
   - set:
       tag: set_id_3
       field: client.user.id
