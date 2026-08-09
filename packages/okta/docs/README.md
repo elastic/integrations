@@ -130,7 +130,6 @@ An example event for `system` looks as following:
         "actor": {
             "alternate_id": "xxxxxx@elastic.co",
             "display_name": "xxxxxx",
-            "id": "00u1abvz4pYqdM8ms4x6",
             "type": "User"
         },
         "authentication_context": {
@@ -224,6 +223,7 @@ An example event for `system` looks as following:
     "user": {
         "email": "xxxxxx@elastic.co",
         "full_name": "xxxxxx",
+        "id": "00u1abvz4pYqdM8ms4x6",
         "name": "xxxxxx@elastic.co"
     },
     "user_agent": {
@@ -272,7 +272,7 @@ An example event for `system` looks as following:
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
 | okta.actor.display_name | Display name of the actor. | keyword |
 | okta.actor.display_name.text | Multi-field of `okta.actor.display_name`. | match_only_text |
-| okta.actor.id | Identifier of the actor. | keyword |
+| okta.actor.id | Deprecated. Alias to `user.id`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.actor.type | Type of the actor. | keyword |
 | okta.authentication_context.authentication_provider | The information about the authentication provider. Must be one of OKTA_AUTHENTICATION_PROVIDER, ACTIVE_DIRECTORY, LDAP, FEDERATION, SOCIAL, FACTOR_PROVIDER. | keyword |
 | okta.authentication_context.authentication_step | The authentication step. | integer |
@@ -346,7 +346,7 @@ An example event for `system` looks as following:
 | okta.device.id | Deprecated. Alias to `device.id`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.device.managed | Whether the device is managed. | boolean |
 | okta.device.name | Deprecated. Alias to `device.product.name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.device.os_platform | Deprecated. Alias to `host.os.platform`, retained so existing saved searches, dashboards, and detection rules continue to resolve. The value is now lowercased to follow the ECS convention, so `OSX` resolves as `osx`. | alias |
+| okta.device.os_platform | Deprecated. Alias to `host.os.platform`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.device.os_version | Deprecated. Alias to `host.os.version`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
 | okta.device.registered | Whether the device is registered. | boolean |
 | okta.device.screen_lock_type | The mechanism for locking the device's screen. One of "NONE", "PASSCODE" or "BIOMETRIC". | keyword |
@@ -378,3 +378,4 @@ An example event for `system` looks as following:
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
+| user.id | Unique identifier of the user. | keyword |
