@@ -994,7 +994,6 @@ The `xg` data stream collects Sophos XG (SFOS) logs.
 | sophos.xg.host | Host | keyword |
 | sophos.xg.http_category | HTTP Category | keyword |
 | sophos.xg.http_category_type | HTTP Category Type | keyword |
-| sophos.xg.http_referer | HTTP referer URL | keyword |
 | sophos.xg.httpresponsecode | code of HTTP response | long |
 | sophos.xg.iap | Internet Access policy ID applied on the traffic | keyword |
 | sophos.xg.icmp_code | ICMP code of ICMP traffic | keyword |
