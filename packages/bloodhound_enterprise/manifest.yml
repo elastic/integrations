@@ -1,0 +1,155 @@
+format_version: 3.5.6
+name: bloodhound_enterprise
+title: "SpecterOps BloodHound Enterprise"
+version: 1.0.0
+source:
+  license: "Elastic-2.0"
+description: "Collect BloodHound Enterprise attack-path findings into Elastic Security Cases and Alerts for investigation and remediation tracking."
+type: integration
+categories:
+  - custom
+conditions:
+  kibana:
+    version: "^9.3.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/elastic-dashboard-screenshot.png
+    title: BloodHound Enterprise Attack Path Overview
+    type: image/png
+icons:
+  - src: /img/BHE-logo-64.svg
+    title: BloodHound Enterprise Logo
+    size: 64x64
+    type: image/svg+xml
+policy_templates:
+  - name: BloodHound
+    title: Collect BloodHound Enterprise attack paths
+    description: >-
+      Sync BloodHound Enterprise attack-path findings into Elastic Security Cases and Alerts. Add this integration to an Elastic Agent policy (not Fleet Server), configure credentials, then Save.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: custom
+        division: engineering
+        team: custom-service-integrations
+    inputs:
+      - type: cel
+        title: Collect BloodHound Enterprise findings via CEL
+        description: >-
+          Polls BloodHound Enterprise for attack-path findings, creates or updates matching Security Cases (tagged BloodHound Enterprise plus the tenant slug from Base URL), and attaches related Security Alerts for at-risk principals.
+        vars:
+          - name: base_url
+            type: text
+            title: Base URL
+            description: BloodHound Enterprise tenant URL, for example https://yourtenant.bloodhoundenterprise.io. Do not include a trailing slash.
+            multi: false
+            required: true
+            show_user: true
+          - name: selected_environment
+            type: text
+            title: Selected environment
+            description: Comma-separated environment/domain names to sync (e.g. PHANTOM.CORP,GHOST.CORP). Leave empty or use All/* to fetch all. Unrecognized or gibberish values are treated as all. Spaces/quotes are tolerated.
+            default: ""
+            multi: false
+            required: false
+            show_user: true
+          - name: bhe_zones
+            type: text
+            title: BloodHound Enterprise zones
+            description: Comma-separated BloodHound Enterprise zone names to sync (e.g. Tier Zero,Tier One). Leave empty or use All/* to fetch all. Unrecognized or gibberish values are treated as all. Spaces/quotes are tolerated.
+            default: ""
+            multi: false
+            required: false
+            show_user: true
+          - name: token_id
+            type: text
+            title: Token ID
+            description: BloodHound Enterprise API Token ID
+            multi: false
+            required: true
+            show_user: true
+            secret: false
+          - name: token_key
+            type: password
+            title: Token Key
+            description: This is a secret value. Once saved, you won't be able to see this value again.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: interval
+            type: text
+            title: Interval
+            description: Time to wait between full Case & Alert Sync cycles (e.g. 1h, 30m). Default 1h. During a single sync, steps still run back-to-back; this value only applies after a sync finishes.
+            default: 1h
+            multi: false
+            required: true
+            show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracer
+            description: Enable HTTP request tracing for troubleshooting CEL API calls.
+            default: false
+            show_user: false
+          - name: kibana_url
+            type: text
+            title: Kibana URL
+            description: URL the Elastic Agent uses to reach Kibana (e.g. https://elastic-package-stack-kibana-1:5601 for local stack)
+            default: https://elastic-package-stack-kibana-1:5601
+            multi: false
+            required: true
+            show_user: true
+          - name: kibana_api_key
+            type: password
+            title: Kibana API Key
+            description: This is a secret value. Once saved, you won't be able to see this value again.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: elasticsearch_url
+            type: text
+            title: Elasticsearch URL
+            description: URL the Elastic Agent uses to reach Elasticsearch for alert indexing (e.g. https://elasticsearch:9200 for local stack)
+            default: https://elasticsearch:9200
+            multi: false
+            required: true
+            show_user: true
+          - name: details_limit
+            type: text
+            title: Details page size
+            description: Fixed efficient BloodHound details page size for case/alert sync.
+            default: "500"
+            multi: false
+            required: true
+            show_user: false
+          - name: attach_batch_size
+            type: text
+            title: Alert attach batch size
+            description: Fixed alert attach batch size aligned with bulk indexing.
+            default: "100"
+            multi: false
+            required: true
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL configuration
+            description: Certificate authorities, supported protocols, and verification_mode for BloodHound Enterprise/Kibana/Elasticsearch HTTPS connections.
+            required: false
+            show_user: false
+            default: |
+              verification_mode: none
+          - name: max_executions
+            type: text
+            title: Max CEL executions per interval
+            description: Fixed CEL loop budget for large BloodHound environments.
+            default: "500000"
+            multi: false
+            required: true
+            show_user: false
+owner:
+  github: omkarj-metron
+  type: elastic
