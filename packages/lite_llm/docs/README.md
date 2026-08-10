@@ -34,11 +34,11 @@ Integrating LiteLLM with Elastic provides centralized visibility into LLM API us
 
 ### From LiteLLM (API collection)
 
-To collect data via the API, you need an **API key** with permission to access the endpoint.
+To collect data via the API, you need an **API key** with permission to access the `/spend/logs/v2` and `/audit` endpoints.
 
 1. Sign in to your LiteLLM deployment admin panel.
 2. Navigate to **API Keys** or **Credentials**.
-3. Create or select an API key with permission to read logs from the endpoint.
+3. Create or select an API key with permission to read from the `/spend/logs/v2` and `/audit` endpoints.
 
 For more information on configuring API keys in LiteLLM, refer to the [LiteLLM API documentation](https://docs.litellm.ai/docs/proxy/virtual_keys).
 
@@ -63,7 +63,7 @@ To collect data using AWS S3, configure LiteLLM to export logs to an S3 bucket, 
 5. Set the data format to **ECS - Elastic Common Schema**.
 6. Click **Validate Settings**, then **Save Settings**.
 
-> **Note:** logs are exported to S3 in JSON format at regular intervals.
+> **Note:** Spend tracking and audit logs are exported to S3 in JSON format at regular intervals.
 
 For more information on configuring S3 export in LiteLLM, refer to the [LiteLLM S3 export documentation](https://docs.litellm.ai/docs/proxy/multiple_admins).
 
@@ -331,6 +331,7 @@ The `spend_tracking` data stream provides LLM request usage and cost records col
 | lite_llm.spend_tracking.model_group | LiteLLM routing model group used for the request. | keyword |
 | lite_llm.spend_tracking.model_id | Identifier of the LiteLLM model deployment used for the call. | keyword |
 | lite_llm.spend_tracking.request_duration_ms | Total request duration stored in milliseconds. | long |
+| lite_llm.spend_tracking.request_tags | Tags attached to the request by the LiteLLM caller. | keyword |
 | lite_llm.spend_tracking.response | Model response retained in the spend log; LiteLLM may also emit list or object forms. | keyword |
 | lite_llm.spend_tracking.response_cost | Calculated response cost in US dollars. | double |
 | lite_llm.spend_tracking.response_time | Total response time in seconds; for streaming calls this may represent time to first token. | double |
@@ -343,9 +344,7 @@ The `spend_tracking` data stream provides LLM request usage and cost records col
 | observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
 
 
-### Example event
-
-#### Spend Tracking
+#### Spend Tracking example event
 
 An example event for `spend_tracking` looks as following:
 
@@ -353,17 +352,17 @@ An example event for `spend_tracking` looks as following:
 {
     "@timestamp": "2026-07-18T10:11:19.909Z",
     "agent": {
-        "ephemeral_id": "6f0ea597-c45b-4ee2-8f88-773e5e1cd323",
-        "id": "f1126aef-7ff5-4f85-b068-7e2d4035df8a",
-        "name": "elastic-agent-73742",
+        "ephemeral_id": "4060e8cd-5b3e-4f2b-ad16-0e869f97cdf9",
+        "id": "8c103279-d0af-4ade-9ccb-a54816fb4a0a",
+        "name": "elastic-agent-92634",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-lite-llm-spend-tracking-bucket-43594",
-                "name": "elastic-package-lite-llm-spend-tracking-bucket-43594"
+                "arn": "arn:aws:s3:::elastic-package-lite-llm-spend-tracking-bucket-84964",
+                "name": "elastic-package-lite-llm-spend-tracking-bucket-84964"
             },
             "object": {
                 "key": "spend-tracking.log"
@@ -375,14 +374,14 @@ An example event for `spend_tracking` looks as following:
     },
     "data_stream": {
         "dataset": "lite_llm.spend_tracking",
-        "namespace": "52154",
+        "namespace": "90994",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "f1126aef-7ff5-4f85-b068-7e2d4035df8a",
+        "id": "8c103279-d0af-4ade-9ccb-a54816fb4a0a",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -399,7 +398,7 @@ An example event for `spend_tracking` looks as following:
         "duration": 0,
         "end": "2026-07-18T10:11:19.909Z",
         "id": "7d8f7a77-9f46-47b2-997e-0a0892fe2c7a",
-        "ingested": "2026-07-30T10:15:33Z",
+        "ingested": "2026-08-06T08:42:15Z",
         "kind": "event",
         "original": "{\"request_id\":\"7d8f7a77-9f46-47b2-997e-0a0892fe2c7a\",\"call_type\":\"\",\"api_key\":\"8de15ff28eedf53bd4cf2e65b8e980b9231acc3f894648a9fa3c2dbf0ab1a6d9\",\"spend\":0,\"total_tokens\":0,\"prompt_tokens\":0,\"completion_tokens\":0,\"start_time\":\"2026-07-18T10:11:19.909+00:00\",\"end_time\":\"2026-07-18T10:11:19.909+00:00\",\"model\":\"gemma-4-31b-it\",\"user\":\"default_user_id\",\"status\":\"failure\",\"metadata\":{\"error_information\":{\"error_code\":\"400\",\"error_class\":\"ProxyModelNotFoundError\",\"error_message\":\"Invalid model name passed in model=gemma-4-31b-it\"}}}",
         "outcome": "failure",
@@ -434,7 +433,7 @@ An example event for `spend_tracking` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-lite-llm-spend-tracking-bucket-43594.s3.us-east-2.amazonaws.com/spend-tracking.log"
+            "path": "https://elastic-package-lite-llm-spend-tracking-bucket-84964.s3.us-east-2.amazonaws.com/spend-tracking.log"
         },
         "offset": 1900
     },
@@ -545,9 +544,7 @@ The `audit` data stream provides audit log records collected from LiteLLM via AP
 | observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
 
 
-### Example event
-
-#### Audit
+#### Audit example event
 
 An example event for `audit` looks as following:
 

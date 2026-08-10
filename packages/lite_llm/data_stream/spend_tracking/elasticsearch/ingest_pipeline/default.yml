@@ -2128,16 +2128,6 @@ processors:
       tag: set_event_id_from_spend_tracking_request_id
       copy_from: lite_llm.spend_tracking.request_id
       ignore_empty_value: true
-  - foreach:
-      field: lite_llm.spend_tracking.request_tags
-      tag: foreach_request_tags
-      if: ctx.lite_llm?.spend_tracking?.request_tags instanceof List
-      processor:
-        append:
-          field: tags
-          tag: append_request_tags_into_tags
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
   - convert:
       field: lite_llm.spend_tracking.requester_ip_address
       tag: convert_requester_ip_address_to_ip
@@ -2310,8 +2300,7 @@ processors:
         remove:
           field:
             - _ingest._value.guardrail_name
-          tag: remove_custom_duplicate_fields_from_metadata_guardrail_information
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+          tag: remove_fields_mapped_to_ecs_from_metadata_guardrail_information
           ignore_missing: true
   - remove:
       field:
@@ -2330,7 +2319,6 @@ processors:
         - lite_llm.spend_tracking.model
         - lite_llm.spend_tracking.organization_id
         - lite_llm.spend_tracking.request_id
-        - lite_llm.spend_tracking.request_tags
         - lite_llm.spend_tracking.requester_ip_address
         - lite_llm.spend_tracking.start_time
         - lite_llm.spend_tracking.status
@@ -2385,11 +2373,6 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
-  - set:
-      field: event.kind
-      tag: set_pipeline_error_to_event_kind
-      value: pipeline_error
-      if: ctx.error?.message != null
   - append:
       tag: append_pipeline_failure_message
       field: error.message
@@ -2397,9 +2380,12 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
   - append:
       field: tags
       tag: append_preserve_original_event
       value: preserve_original_event
       allow_duplicates: false
-      if: ctx.error?.message != null

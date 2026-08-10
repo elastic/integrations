@@ -34,11 +34,11 @@ Integrating LiteLLM with Elastic provides centralized visibility into LLM API us
 
 ### From LiteLLM (API collection)
 
-To collect data via the API, you need an **API key** with permission to access the endpoint.
+To collect data via the API, you need an **API key** with permission to access the `/spend/logs/v2` and `/audit` endpoints.
 
 1. Sign in to your LiteLLM deployment admin panel.
 2. Navigate to **API Keys** or **Credentials**.
-3. Create or select an API key with permission to read logs from the endpoint.
+3. Create or select an API key with permission to read from the `/spend/logs/v2` and `/audit` endpoints.
 
 For more information on configuring API keys in LiteLLM, refer to the [LiteLLM API documentation](https://docs.litellm.ai/docs/proxy/virtual_keys).
 
@@ -63,7 +63,7 @@ To collect data using AWS S3, configure LiteLLM to export logs to an S3 bucket, 
 5. Set the data format to **ECS - Elastic Common Schema**.
 6. Click **Validate Settings**, then **Save Settings**.
 
-> **Note:** logs are exported to S3 in JSON format at regular intervals.
+> **Note:** Spend tracking and audit logs are exported to S3 in JSON format at regular intervals.
 
 For more information on configuring S3 export in LiteLLM, refer to the [LiteLLM S3 export documentation](https://docs.litellm.ai/docs/proxy/multiple_admins).
 
@@ -144,9 +144,7 @@ The `spend_tracking` data stream provides LLM request usage and cost records col
 
 {{fields "spend_tracking"}}
 
-### Example event
-
-#### Spend Tracking
+#### Spend Tracking example event
 
 {{event "spend_tracking"}}
 
@@ -158,9 +156,7 @@ The `audit` data stream provides audit log records collected from LiteLLM via AP
 
 {{fields "audit"}}
 
-### Example event
-
-#### Audit
+#### Audit example event
 
 {{event "audit"}}
 
