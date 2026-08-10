@@ -245,17 +245,18 @@ resource "aws_instance" "client" {
 
   user_data = <<-EOF
 #!/bin/bash
-cat >/etc/systemd/system/ep-traffic.service <<UNIT
+cat >/etc/systemd/system/ep-traffic.service <<'UNIT'
 [Unit]
 Description=elastic-package ELB traffic generator
 After=network-online.target
 Wants=network-online.target
 [Service]
-ExecStart=/bin/bash -c 'while true; do for p in / /ok /redirect /client-error /server-error; do curl -s -m 2 -o /dev/null "http://${aws_lb.alb.dns_name}$p" || true; done; sleep 1; done'
+ExecStart=/bin/bash -c 'while true; do for p in / /ok /redirect /client-error /server-error; do curl -s -m 2 -o /dev/null "http://ALB_DNS_PLACEHOLDER$p" || true; done; sleep 1; done'
 Restart=always
 [Install]
 WantedBy=multi-user.target
 UNIT
+sed -i 's|ALB_DNS_PLACEHOLDER|${aws_lb.alb.dns_name}|g' /etc/systemd/system/ep-traffic.service
 systemctl daemon-reload
 systemctl enable --now ep-traffic.service
 EOF
