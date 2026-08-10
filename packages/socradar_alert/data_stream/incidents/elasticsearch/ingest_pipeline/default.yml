@@ -73,9 +73,14 @@ processors:
       tag: script_set_event_severity
       description: Maps the SOCRadar alarm risk level to the numeric ECS event.severity used by the detection rule's risk score mapping.
       if: ctx.socradar_alert?.alarm_risk_level != null
+      params:
+        risk_severity:
+          CRITICAL: 99
+          HIGH: 73
+          MEDIUM: 47
+          LOW: 21
       source: >-
-        def m = ['CRITICAL': 99L, 'HIGH': 73L, 'MEDIUM': 47L, 'LOW': 21L];
-        def v = m.get(ctx.socradar_alert.alarm_risk_level);
+        def v = params.risk_severity.get(ctx.socradar_alert.alarm_risk_level);
         if (v != null) { ctx.event = ctx.event == null ? [:] : ctx.event; ctx.event.severity = v; }
   - date:
       field: socradar_alert.date

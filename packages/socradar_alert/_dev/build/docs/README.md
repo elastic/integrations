@@ -9,7 +9,7 @@ The integration also ships a Detection Rule (`SOCRadar - Alarm Detection`) that 
 
 ### Compatibility
 
-This integration is compatible with **SOCRadar API v4** and requires Kibana **8.18 or higher**.
+This integration is compatible with **SOCRadar API v4**.
 
 ### How it works
 
@@ -33,7 +33,6 @@ Each event represents a single SOCRadar alarm and includes details such as risk 
 
 - A valid **SOCRadar API Key**
 - Your **SOCRadar Company ID**
-- Kibana **8.18 or higher**
 - Elastic Agent installed on a host with network access to `https://platform.socradar.com`
 
 ## How do I deploy this integration?
