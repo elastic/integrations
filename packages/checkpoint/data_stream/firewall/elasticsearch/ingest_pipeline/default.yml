@@ -813,6 +813,12 @@ processors:
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_user_id_cc07e8aa
+      field: user.id
+      value: '{{{ source.user.id }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
       tag: set_user_group_name_9c5d2f82
       field: user.group.name
       value: '{{{ source.user.group.name }}}'
@@ -846,6 +852,10 @@ processors:
   - lowercase:
       tag: lowercase_user_name_6eed8999
       field: user.name
+      ignore_missing: true
+  - lowercase:
+      tag: lowercase_user_id_1ebe4987
+      field: user.id
       ignore_missing: true
   - lowercase:
       tag: lowercase_user_email_75b1062e
@@ -1520,6 +1530,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_user_7f407fef
+      field: related.user
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null    
+  - append:
       tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
@@ -1544,6 +1560,12 @@ processors:
       if: ctx.source?.user?.name == null
       ignore_missing: true
       ignore_failure: true
+    - append:
+      tag: append_related_user_bcb5a560
+      field: related.user
+      value: "{{{source.user.id}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.id != null
   - append:
       tag: append_related_user_f745a124
       field: related.user
@@ -1569,6 +1591,12 @@ processors:
       if: ctx.destination?.user?.name == null
       ignore_missing: true
       ignore_failure: true
+  - append:
+      tag: append_related_user_8e80602e
+      field: related.user
+      value: "{{{destination.user.id}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.id != null
   - append:
       tag: append_related_user_8f37bc82
       field: related.user
