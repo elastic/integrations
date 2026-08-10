@@ -95,7 +95,7 @@ To create alerts for alarms that were ingested **before** the rule was enabled, 
 
 Open **Kibana → Dev Tools** and run the following, replacing `<your-api-key>` with your SOCRadar API key:
 
-> **Security note:** The API key is stored in clear text inside the watch definition (in the `.watches` index). Restrict access to that index and to Dev Tools, and rotate the key if it may have been exposed.
+> **Security note:** The API key is stored in clear text inside the watch definition (in the `.watches` index, a restricted system index). To limit exposure, use a dedicated SOCRadar API key scoped to only the status-change endpoint — rather than a general key with access to all SOCRadar APIs — so that even if the key is exposed, its access stays limited to that single endpoint. Restrict access to the `.watches` index and to Dev Tools, and rotate the key regularly.
 
 ```json
 PUT _watcher/watch/socradar_alarm_status_sync
