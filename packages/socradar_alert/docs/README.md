@@ -226,6 +226,16 @@ GET .watcher-history-*/_search
 
 - Confirm your API key is correct and re-run the `PUT _watcher/watch/...` command with the correct key if needed.
 
+## Performance and scaling
+
+The integration polls the SOCRadar alarms endpoint once per **Polling Interval** (default `5m`) and pages through the results using **Records per page** (default `100`) until it reaches the last page.
+
+- The first collection replays the whole **Initial Lookback Period** (default `72h`, configurable up to `8760h`). A large lookback issues many paged requests in a single cycle, so start with a smaller window if you are close to your SOCRadar API quota.
+- Each alarm is indexed under a document ID derived from its alarm ID, so an alarm that is re-fetched (for example when a mid-pagination retry replays an earlier page) is rejected as a duplicate rather than indexed twice.
+- Lower the polling interval only if your alarm volume justifies it; every collection cycle costs at least one API request.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
 ## Reference
 
 ### Incidents
