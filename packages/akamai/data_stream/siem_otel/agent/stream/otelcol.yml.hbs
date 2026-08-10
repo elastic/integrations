@@ -20,6 +20,12 @@ receivers:
 {{#if ssl}}
     tls: {{ssl}}
 {{/if}}
+    # Receiver-level routing: events are written to the existing akamai.siem
+    # dataset (see the data_stream.dataset var) so they reuse the siem data
+    # stream's index template, ingest pipeline, and dashboards. Fleet still
+    # installs a .otel-suffixed index template for this siem_otel data stream
+    # (logs-akamai.siem_otel.otel-*) because its input type is otelcol, but
+    # nothing ever writes to it.
     data_stream:
       type: logs
       dataset: "{{data_stream.dataset}}"
@@ -38,6 +44,12 @@ processors:
     log_statements:
       - context: log
         statements:
+          # Bodymap documents carry no @timestamp, and the ingest pipeline only
+          # sets one when httpMessage.start is present (Akamai internal 500s
+          # omit it), so those events would be rejected by the data stream.
+          # Seed @timestamp from the record (poll) time as a fallback; the
+          # pipeline overwrites it with the real event time when available.
+          - set(log.body["@timestamp"], UnixMilli(log.time)) where log.body["@timestamp"] == nil
           - set(log.body["tags"], [
               {{~#if preserve_original_event~}}
                 "preserve_original_event"{{#if tags}}, {{/if}}

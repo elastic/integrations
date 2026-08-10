@@ -25,6 +25,7 @@ processors:
         log_statements:
             - context: log
               statements:
+                - set(log.body["@timestamp"], UnixMilli(log.time)) where log.body["@timestamp"] == nil
                 - set(log.body["tags"], ["akamai-siem", "forwarded"])
     transform/componentid-1:
         log_statements:

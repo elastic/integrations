@@ -29,6 +29,7 @@ processors:
         log_statements:
             - context: log
               statements:
+                - set(log.body["@timestamp"], UnixMilli(log.time)) where log.body["@timestamp"] == nil
                 - set(log.body["tags"], ["preserve_original_event", "custom-tag-a", "custom-tag-b"])
     transform/componentid-1:
         log_statements:
