@@ -5,7 +5,7 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 add_bin_path
-with_mage
+with_backport
 
 echo "--- Check changelog versions are not already in main"
-mage -d "${WORKSPACE}" -v checkChangelogVersionsInMain "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
+backport check-changelog-versions "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
