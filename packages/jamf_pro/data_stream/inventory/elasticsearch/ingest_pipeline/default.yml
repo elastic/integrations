@@ -6,11 +6,6 @@ processors:
     field: message
     target_field: jamf_pro.inventory
 
-- fingerprint:
-    fields:
-      - jamf_pro.inventory.udid
-    target_field: "_id"
-
 - script:
     description: Drops null/empty values recursively.
     lang: painless
@@ -62,6 +57,12 @@ processors:
       if (ctx.jamf_pro.inventory != null) {
         ctx.jamf_pro.inventory = keysToSnakeCase(ctx.jamf_pro.inventory);
       }
+
+- fingerprint:
+    fields:
+      - jamf_pro.inventory.udid
+      - jamf_pro.inventory.general.report_date
+    target_field: "_id"
 
 - geoip:
     field: jamf_pro.inventory.general.last_ip_address

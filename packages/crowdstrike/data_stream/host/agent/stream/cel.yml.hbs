@@ -32,6 +32,7 @@ state:
 {{#if query}}
   query: {{query}}
 {{/if}}
+  user_agent: Elastic-crowdstrike/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
 redact:
   fields: ~
 program: |-
@@ -75,7 +76,11 @@ program: |-
               :
                 optional.none(),
             }.format_query()
-          ).do_request().as(get_resp, (get_resp.StatusCode == 200) ?
+          ).as(req, req.with(
+            {
+              "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+            }
+          )).do_request().as(get_resp, (get_resp.StatusCode == 200) ?
             bytes(get_resp.Body).decode_json().as(body,
               (int(state.offset) + body.resources.size() < body.meta.pagination.total).as(want_more,
                 {
@@ -117,7 +122,11 @@ program: |-
                 state.url.trim_right("/") + "/devices/entities/devices/v2",
                 "application/json",
                 {"ids": state.next.resources}.encode_json()
-              ).do_request().as(post_resp, (post_resp.StatusCode == 200) ?
+              ).as(req, req.with(
+                {
+                  "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+                }
+              )).do_request().as(post_resp, (post_resp.StatusCode == 200) ?
                 bytes(post_resp.Body).decode_json().as(inner_body,
                   {
                     "events": inner_body.resources.map(e,
@@ -187,7 +196,11 @@ program: |-
               ],
               ?"fields": state.?select_fields.optMap(v, [v.trim_right(",")+",modified_timestamp"]),
             }.format_query()
-          ).do_request().as(resp, (resp.StatusCode == 200) ?
+          ).as(req, req.with(
+            {
+              "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+            }
+          )).do_request().as(resp, (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
               (size(body.?errors.orValue([])) > 0) ?
                 {
