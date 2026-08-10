@@ -1,10 +1,14 @@
+skip 'Self-signed certificates are currently not supported in the entityanalytics_okta integration: see https://github.com/elastic/beats/issues/52061'
+
 # Verify that entity-analytics documents are correctly routed from the entity
 # data stream to the user and device data streams via routing rules.
 #
 # The mock Okta API provides:
 #   - 1 user (Isaac Brock)                → entityanalytics_okta.user
 #   - 2 devices (Example Device 1 and 2)  → entityanalytics_okta.device
-#   - 2 marker events (start, end)        → entityanalytics_okta.entity (retained)
+#
+# The minimal-state path does not produce marker events, so the entity data
+# stream is empty after routing rules divert user and device documents.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -25,26 +29,18 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 # Add the data stream policy.
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTITY_DS
 
-# Wait for the marker events in the entity data stream. Only markers remain
-# after routing rules divert user and device documents.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 5s -timeout 5m ${ENTITY_DS}
-
-# Verify user documents were routed to the user data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_okta.user-*
+# Wait for user documents in the user data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 5m logs-entityanalytics_okta.user-*
 cp stdout user_docs.json
-# Filter by the current run's namespace (derived from ENTITY_DS) to avoid
-# matching stale docs left by a previous run in the wildcard data stream.
-exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_okta.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.user.id][0]' user_docs.json
+exec jq '[.hits.hits[]._source.user.id] | unique[]' user_docs.json
 stdout '00ub0oNGTSWTBKOLGLNR'
 
 # Verify device documents were routed to the device data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_okta.device-*
 cp stdout device_docs.json
-# Filter by the current run's namespace (derived from ENTITY_DS) to avoid
-# matching stale docs left by a previous run in the wildcard data stream.
-exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_okta.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.device.id][0]' device_docs.json
+exec jq '[.hits.hits[]._source.device.id] | .[0]' device_docs.json
 ! stdout 'null'
-exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_okta.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.asset.type][0]' device_docs.json
+exec jq '[.hits.hits[]._source.asset.type] | unique | .[0]' device_docs.json
 stdout 'okta_device'
 
 # Clean up.

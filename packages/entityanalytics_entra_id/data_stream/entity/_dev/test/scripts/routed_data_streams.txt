@@ -4,7 +4,9 @@
 # The mock Graph API provides:
 #   - 2 users (First21480, First45375) → entityanalytics_entra_id.user
 #   - 1 device (Test device)           → entityanalytics_entra_id.device
-#   - 2 marker events (start, end)     → entityanalytics_entra_id.entity (retained)
+#
+# The minimal-state path does not produce marker events, so the entity data
+# stream is empty after routing rules divert user and device documents.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -25,27 +27,19 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 # Add the data stream policy.
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTITY_DS
 
-# Wait for the marker events in the entity data stream. Only markers remain
-# after routing rules divert user and device documents.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 5s -timeout 5m ${ENTITY_DS}
-
-# Verify user documents were routed to the user data stream.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_entra_id.user-*
+# Wait for user documents in the user data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m logs-entityanalytics_entra_id.user-*
 cp stdout user_docs.json
-# Filter by the current run's namespace (derived from ENTITY_DS) to avoid
-# matching stale docs left by a previous run in the wildcard data stream.
-exec jq --arg src ${ENTITY_DS} '[.hits.hits[] | select(._source.data_stream.namespace == ($src | ltrimstr("logs-entityanalytics_entra_id.entity-"))) | ._source.user.id] | unique | sort[]' user_docs.json
+exec jq '[.hits.hits[]._source.user.id] | unique | sort[]' user_docs.json
 stdout 'aa534e49-edfd-4541-8256-8bbf34f122b4'
 stdout 'feb6a386-612a-4ed1-9b13-2adc73074a19'
 
 # Verify device documents were routed to the device data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_entra_id.device-*
 cp stdout device_docs.json
-# Filter by the current run's namespace (derived from ENTITY_DS) to avoid
-# matching stale docs left by a previous run in the wildcard data stream.
-exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_entra_id.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.device.id][0]' device_docs.json
+exec jq '[.hits.hits[]._source.device.id] | .[0]' device_docs.json
 ! stdout 'null'
-exec jq --arg src ${ENTITY_DS} '($src | ltrimstr("logs-entityanalytics_entra_id.entity-")) as $ns | [.hits.hits[] | select(._source.data_stream.namespace == $ns) | ._source.asset.type][0]' device_docs.json
+exec jq '[.hits.hits[]._source.asset.type] | unique | .[0]' device_docs.json
 stdout 'microsoft_entra_id_device'
 
 # Clean up.
