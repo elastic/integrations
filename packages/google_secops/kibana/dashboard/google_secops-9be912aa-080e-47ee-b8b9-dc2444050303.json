@@ -9,7 +9,42 @@
                 "ignoreTimerange": false,
                 "ignoreValidations": false
             },
-            "panelsJSON": {},
+            "panelsJSON": {
+                "c897b407-42c1-4bba-9cd0-1b19f3130c7a": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "fieldName": "google_secops.alert_v2.detection.rule_type",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Rule Type"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "d83c076b-32b7-4810-993a-245aee2d2983": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "fieldName": "event.severity",
+                        "searchTechnique": "exact",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Severity"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
             "showApplySelections": false
         },
         "description": "",
@@ -28,13 +63,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "google_secops.alert"
+                                "query": "google_secops.alert_v2"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "google_secops.alert"
+                                "data_stream.dataset": "google_secops.alert_v2"
                             }
                         }
                     }
@@ -135,13 +170,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "48d9f688-d20c-4524-8b71-97636bebfbf8",
+                    "i": "ad353e4e-19da-4034-9062-0fc5106afb1d",
                     "w": 10,
                     "x": 10,
                     "y": 0
                 },
-                "panelIndex": "48d9f688-d20c-4524-8b71-97636bebfbf8",
-                "title": "Total Alerts [Logs Google SecOps]",
+                "panelIndex": "ad353e4e-19da-4034-9062-0fc5106afb1d",
+                "title": "Total Alerts",
                 "type": "lens"
             },
             {
@@ -158,6 +193,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "43331204-3227-43b0-a843-fb002fab8cfc": {
                                             "columnOrder": [
@@ -166,9 +202,10 @@
                                             ],
                                             "columns": {
                                                 "14ae3653-697a-4a71-8be2-a988441082c2": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "Timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": false,
@@ -193,14 +230,23 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -272,13 +318,162 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "35272a61-8be1-4807-a91c-9d487c0e4650",
+                    "i": "308b983e-32be-4044-bcc7-e14d9614979e",
                     "w": 28,
                     "x": 20,
                     "y": 0
                 },
-                "panelIndex": "35272a61-8be1-4807-a91c-9d487c0e4650",
-                "title": "Alerts over Time [Logs Google SecOps]",
+                "panelIndex": "308b983e-32be-4044-bcc7-e14d9614979e",
+                "title": "Alerts over Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d20c5fbe-e566-4368-b9d6-5464b4f0ec01",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d20c5fbe-e566-4368-b9d6-5464b4f0ec01": {
+                                            "columnOrder": [
+                                                "d91d1b13-6e1d-4517-bedb-adf6ef86e594",
+                                                "0f855819-5ae4-4662-bfb7-dd156c59fa5e"
+                                            ],
+                                            "columns": {
+                                                "0f855819-5ae4-4662-bfb7-dd156c59fa5e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Alerts",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                },
+                                                "d91d1b13-6e1d-4517-bedb-adf6ef86e594": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Rule Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0f855819-5ae4-4662-bfb7-dd156c59fa5e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": null,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "google_secops.alert_v2.detection.rule_type"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "d20c5fbe-e566-4368-b9d6-5464b4f0ec01",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "0f855819-5ae4-4662-bfb7-dd156c59fa5e"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "d91d1b13-6e1d-4517-bedb-adf6ef86e594"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "8f436f33-50d0-4687-a8af-27a59869b044",
+                    "w": 19,
+                    "x": 29,
+                    "y": 15
+                },
+                "panelIndex": "8f436f33-50d0-4687-a8af-27a59869b044",
+                "title": "Alerts by Rule Type",
                 "type": "lens"
             },
             {
@@ -335,10 +530,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": null,
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_secops.alert.detection.alertState"
+                                                    "sourceField": "google_secops.alert_v2.detection.alert_state"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -382,6 +578,7 @@
                                                 }
                                             ]
                                         },
+                                        "emptySizeRatio": 0.54,
                                         "layerId": "58620378-ae56-48b0-9c21-2c22b980c590",
                                         "layerType": "data",
                                         "legendDisplay": "show",
@@ -396,7 +593,7 @@
                                         "truncateLegend": false
                                     }
                                 ],
-                                "shape": "pie"
+                                "shape": "donut"
                             }
                         },
                         "title": "",
@@ -419,14 +616,120 @@
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "25452417-531a-4819-b48f-8e24582602c5",
+                    "i": "4422a87d-56d0-4008-83a8-d0d8a12895d4",
                     "w": 19,
                     "x": 10,
                     "y": 15
                 },
-                "panelIndex": "25452417-531a-4819-b48f-8e24582602c5",
-                "title": "Alerts by State [Logs Google SecOps]",
+                "panelIndex": "4422a87d-56d0-4008-83a8-d0d8a12895d4",
+                "title": "Alerts by State",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "22679e22-be09-4425-9b59-4f26d23fc230",
+                    "w": 48,
+                    "x": 0,
+                    "y": 74
+                },
+                "panelIndex": "22679e22-be09-4425-9b59-4f26d23fc230",
+                "panelRefName": "panel_22679e22-be09-4425-9b59-4f26d23fc230",
+                "title": "Rule Essential Details",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "vertical",
+                        "links": [
+                            {
+                                "destinationRefName": "link_ac279dea-0501-4e62-acdd-59949f8cdeb4_dashboard",
+                                "id": "ac279dea-0501-4e62-acdd-59949f8cdeb4",
+                                "label": "Alert",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_22ba50ea-b7e2-4695-ae88-ebad4bccc1a6_dashboard",
+                                "id": "22ba50ea-b7e2-4695-ae88-ebad4bccc1a6",
+                                "label": "Alert v2",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "74142263-e738-4146-b408-65411536a3e0",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "74142263-e738-4146-b408-65411536a3e0",
+                "title": "Navigation",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "This dashboard offers a comprehensive view of security rule alerts using various visualizations. It includes saved searches for rule details, along with key metrics for total alerts. The alert distribution is represented through pie charts for alert states, bar charts for rule name, and a line chart tracking trends over time. Additionally, tables highlight the top 10 hosts, source IPs, and destination IPs, providing insights into high-risk entities.\n\n[**Integrations Page**](/app/integrations/detail/google_secops/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 23,
+                    "i": "0c8f1a5f-f59d-4575-bf67-a26dd973fb2a",
+                    "w": 10,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "0c8f1a5f-f59d-4575-bf67-a26dd973fb2a",
+                "title": "Overview",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -434,7 +737,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-d20c5fbe-e566-4368-b9d6-5464b4f0ec01",
+                                "name": "indexpattern-datasource-layer-425074a0-1db1-4045-ade3-e226c2f17c2b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -444,13 +747,330 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "d20c5fbe-e566-4368-b9d6-5464b4f0ec01": {
+                                        "425074a0-1db1-4045-ade3-e226c2f17c2b": {
                                             "columnOrder": [
-                                                "d91d1b13-6e1d-4517-bedb-adf6ef86e594",
-                                                "0f855819-5ae4-4662-bfb7-dd156c59fa5e"
+                                                "631ecc4e-3573-4425-a846-783058b1a67f",
+                                                "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d"
                                             ],
                                             "columns": {
-                                                "0f855819-5ae4-4662-bfb7-dd156c59fa5e": {
+                                                "631ecc4e-3573-4425-a846-783058b1a67f": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Tactics",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.tactic.name"
+                                                },
+                                                "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Alerts",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "425074a0-1db1-4045-ade3-e226c2f17c2b",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "631ecc4e-3573-4425-a846-783058b1a67f"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e24dfdfb-148e-4de6-afd3-5f05c00ff473",
+                    "w": 24,
+                    "x": 0,
+                    "y": 29
+                },
+                "panelIndex": "e24dfdfb-148e-4de6-afd3-5f05c00ff473",
+                "title": "Alert by Tactics",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-425074a0-1db1-4045-ade3-e226c2f17c2b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "425074a0-1db1-4045-ade3-e226c2f17c2b": {
+                                            "columnOrder": [
+                                                "631ecc4e-3573-4425-a846-783058b1a67f",
+                                                "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d"
+                                            ],
+                                            "columns": {
+                                                "631ecc4e-3573-4425-a846-783058b1a67f": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Techniques",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.technique.name"
+                                                },
+                                                "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Alerts",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "425074a0-1db1-4045-ade3-e226c2f17c2b",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "907ad3cb-fc63-4b3d-8d9d-0290a2ed4e2d"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "631ecc4e-3573-4425-a846-783058b1a67f"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6d59f351-cf3b-402e-9db9-f20bbaa2a42b",
+                    "w": 24,
+                    "x": 24,
+                    "y": 29
+                },
+                "panelIndex": "6d59f351-cf3b-402e-9db9-f20bbaa2a42b",
+                "title": "Alert by Techniques",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f4291c89-f2d9-4bf2-909a-d6d925f43e46",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "f4291c89-f2d9-4bf2-909a-d6d925f43e46": {
+                                            "columnOrder": [
+                                                "91f6bb7c-add4-40ee-a5ee-c198c079bf1b",
+                                                "653a22e1-fd91-4935-9aab-5e5e9c862596"
+                                            ],
+                                            "columns": {
+                                                "653a22e1-fd91-4935-9aab-5e5e9c862596": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -462,11 +1082,11 @@
                                                     "scale": "ratio",
                                                     "sourceField": "event.id"
                                                 },
-                                                "d91d1b13-6e1d-4517-bedb-adf6ef86e594": {
+                                                "91f6bb7c-add4-40ee-a5ee-c198c079bf1b": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Rule Type",
+                                                    "label": "Rule Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -475,7 +1095,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "0f855819-5ae4-4662-bfb7-dd156c59fa5e",
+                                                            "columnId": "653a22e1-fd91-4935-9aab-5e5e9c862596",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -486,7 +1106,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_secops.alert.detection.ruleType"
+                                                    "sourceField": "rule.name"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -497,9 +1117,17 @@
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -513,7 +1141,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "0f855819-5ae4-4662-bfb7-dd156c59fa5e"
+                                            "653a22e1-fd91-4935-9aab-5e5e9c862596"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -533,18 +1161,17 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "d20c5fbe-e566-4368-b9d6-5464b4f0ec01",
+                                        "layerId": "f4291c89-f2d9-4bf2-909a-d6d925f43e46",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "bar_stacked",
+                                        "seriesType": "bar_horizontal",
                                         "showGridlines": false,
-                                        "xAccessor": "d91d1b13-6e1d-4517-bedb-adf6ef86e594"
+                                        "xAccessor": "91f6bb7c-add4-40ee-a5ee-c198c079bf1b"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false
+                                    "position": "right"
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
@@ -571,13 +1198,13 @@
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "b2ff31f6-6e93-4e7c-8191-a90868219a89",
-                    "w": 19,
-                    "x": 29,
-                    "y": 15
+                    "i": "8dcd2308-7843-480d-aef6-9a5074da1e80",
+                    "w": 48,
+                    "x": 0,
+                    "y": 44
                 },
-                "panelIndex": "b2ff31f6-6e93-4e7c-8191-a90868219a89",
-                "title": "Alerts by Rule Type [Logs Google SecOps]",
+                "panelIndex": "8dcd2308-7843-480d-aef6-9a5074da1e80",
+                "title": "Alert by Rule Name",
                 "type": "lens"
             },
             {
@@ -695,142 +1322,14 @@
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "706cf068-1d8f-4bda-8d64-92050e14279c",
+                    "h": 16,
+                    "i": "0605f41b-8b1c-4716-a74c-ae7e9c86305a",
                     "w": 24,
                     "x": 0,
-                    "y": 29
+                    "y": 58
                 },
-                "panelIndex": "706cf068-1d8f-4bda-8d64-92050e14279c",
-                "title": "Top 10 Host IP [Logs Google SecOps]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-a92db386-2147-4478-a9b8-6a36ab789cd3",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "a92db386-2147-4478-a9b8-6a36ab789cd3": {
-                                            "columnOrder": [
-                                                "bb169b19-bc15-4b6a-b477-3219832894a2",
-                                                "dce15fd4-4e83-4eda-a97c-8bc8780edc96"
-                                            ],
-                                            "columns": {
-                                                "bb169b19-bc15-4b6a-b477-3219832894a2": {
-                                                    "customLabel": true,
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Source IP",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "dce15fd4-4e83-4eda-a97c-8bc8780edc96",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "source.ip"
-                                                },
-                                                "dce15fd4-4e83-4eda-a97c-8bc8780edc96": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "event.id"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "bb169b19-bc15-4b6a-b477-3219832894a2",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "dce15fd4-4e83-4eda-a97c-8bc8780edc96",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "a92db386-2147-4478-a9b8-6a36ab789cd3",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "22655c01-a16f-4360-b1af-8c800ba86d0b",
-                    "w": 24,
-                    "x": 24,
-                    "y": 29
-                },
-                "panelIndex": "22655c01-a16f-4360-b1af-8c800ba86d0b",
-                "title": "Top 10 Source IP [Logs Google SecOps]",
+                "panelIndex": "0605f41b-8b1c-4716-a74c-ae7e9c86305a",
+                "title": "Top 10 Host IP",
                 "type": "lens"
             },
             {
@@ -951,151 +1450,25 @@
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "2c314fb4-baa8-4211-9400-4d100bd83171",
-                    "w": 24,
-                    "x": 0,
-                    "y": 44
-                },
-                "panelIndex": "2c314fb4-baa8-4211-9400-4d100bd83171",
-                "title": "Top 10 Destination IP [Logs Google SecOps]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "b8420267-73a8-4ecf-948f-615264ed90ca",
+                    "h": 16,
+                    "i": "0c26cc51-158d-48f2-bb23-8f996391fb3d",
                     "w": 24,
                     "x": 24,
-                    "y": 44
+                    "y": 58
                 },
-                "panelIndex": "b8420267-73a8-4ecf-948f-615264ed90ca",
-                "panelRefName": "panel_b8420267-73a8-4ecf-948f-615264ed90ca",
-                "title": "Rule Essential Details [Logs Google SecOps]",
-                "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "cbffe3df-af95-4a21-827c-985aa436d4e8",
-                    "w": 48,
-                    "x": 0,
-                    "y": 59
-                },
-                "panelIndex": "cbffe3df-af95-4a21-827c-985aa436d4e8",
-                "panelRefName": "panel_cbffe3df-af95-4a21-827c-985aa436d4e8",
-                "title": "Top Active Users [Logs Google SecOps]",
-                "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "layout": "vertical",
-                        "links": [
-                            {
-                                "destinationRefName": "link_ac279dea-0501-4e62-acdd-59949f8cdeb4_dashboard",
-                                "id": "ac279dea-0501-4e62-acdd-59949f8cdeb4",
-                                "label": "Alert",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 0,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_22ba50ea-b7e2-4695-ae88-ebad4bccc1a6_dashboard",
-                                "id": "22ba50ea-b7e2-4695-ae88-ebad4bccc1a6",
-                                "label": "Alert v2",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 1,
-                                "type": "dashboardLink"
-                            }
-                        ]
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "7c45593c-f8df-4f2a-9aa2-10efcdf83201",
-                    "w": 10,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "7c45593c-f8df-4f2a-9aa2-10efcdf83201",
-                "title": "Navigation",
-                "type": "links"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "\nThis dashboard offers a comprehensive view of security rule alerts using various visualizations. It includes saved searches for rule details and active users, along with key metrics for total alerts. The alert distribution is represented through pie charts for alert states, bar charts for rule types, and a line chart tracking trends over time. Additionally, tables highlight the top 10 hosts, source IPs, and destination IPs, providing insights into high-risk entities.\n\n[**Integrations Page**](/app/integrations/detail/google_secops/overview)",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 23,
-                    "i": "fdf659e9-704d-4df6-817c-2a62a7c5a571",
-                    "w": 10,
-                    "x": 0,
-                    "y": 6
-                },
-                "panelIndex": "fdf659e9-704d-4df6-817c-2a62a7c5a571",
-                "title": "Overview",
-                "type": "visualization"
+                "panelIndex": "0c26cc51-158d-48f2-bb23-8f996391fb3d",
+                "title": "Top 10 Destination IP",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Google SecOps] Alert",
+        "title": "[Logs Google SecOps] Alert v2",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-14T13:00:37.064Z",
-    "id": "google_secops-517f96c9-1d44-420a-9ff4-96cf28de00d7",
+    "created_at": "2026-07-14T12:32:02.464Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "google_secops-9be912aa-080e-47ee-b8b9-dc2444050303",
     "references": [
         {
             "id": "logs-*",
@@ -1104,58 +1477,73 @@
         },
         {
             "id": "google_secops-6a9de76e-e146-484e-ad87-fdb29c937fa2",
-            "name": "b8420267-73a8-4ecf-948f-615264ed90ca:panel_b8420267-73a8-4ecf-948f-615264ed90ca",
-            "type": "search"
-        },
-        {
-            "id": "google_secops-5407845c-e294-4f99-a342-9dc7e05dc8e0",
-            "name": "cbffe3df-af95-4a21-827c-985aa436d4e8:panel_cbffe3df-af95-4a21-827c-985aa436d4e8",
+            "name": "22679e22-be09-4425-9b59-4f26d23fc230:panel_22679e22-be09-4425-9b59-4f26d23fc230",
             "type": "search"
         },
         {
             "id": "logs-*",
-            "name": "48d9f688-d20c-4524-8b71-97636bebfbf8:indexpattern-datasource-layer-bb486aa7-b797-4763-9d1f-d762f0d17498",
+            "name": "ad353e4e-19da-4034-9062-0fc5106afb1d:indexpattern-datasource-layer-bb486aa7-b797-4763-9d1f-d762f0d17498",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "35272a61-8be1-4807-a91c-9d487c0e4650:indexpattern-datasource-layer-43331204-3227-43b0-a843-fb002fab8cfc",
+            "name": "308b983e-32be-4044-bcc7-e14d9614979e:indexpattern-datasource-layer-43331204-3227-43b0-a843-fb002fab8cfc",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "25452417-531a-4819-b48f-8e24582602c5:indexpattern-datasource-layer-58620378-ae56-48b0-9c21-2c22b980c590",
+            "name": "8f436f33-50d0-4687-a8af-27a59869b044:indexpattern-datasource-layer-d20c5fbe-e566-4368-b9d6-5464b4f0ec01",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "b2ff31f6-6e93-4e7c-8191-a90868219a89:indexpattern-datasource-layer-d20c5fbe-e566-4368-b9d6-5464b4f0ec01",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "706cf068-1d8f-4bda-8d64-92050e14279c:indexpattern-datasource-layer-a92db386-2147-4478-a9b8-6a36ab789cd3",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "22655c01-a16f-4360-b1af-8c800ba86d0b:indexpattern-datasource-layer-a92db386-2147-4478-a9b8-6a36ab789cd3",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "2c314fb4-baa8-4211-9400-4d100bd83171:indexpattern-datasource-layer-a92db386-2147-4478-a9b8-6a36ab789cd3",
+            "name": "4422a87d-56d0-4008-83a8-d0d8a12895d4:indexpattern-datasource-layer-58620378-ae56-48b0-9c21-2c22b980c590",
             "type": "index-pattern"
         },
         {
             "id": "google_secops-517f96c9-1d44-420a-9ff4-96cf28de00d7",
-            "name": "7c45593c-f8df-4f2a-9aa2-10efcdf83201:link_ac279dea-0501-4e62-acdd-59949f8cdeb4_dashboard",
+            "name": "74142263-e738-4146-b408-65411536a3e0:link_ac279dea-0501-4e62-acdd-59949f8cdeb4_dashboard",
             "type": "dashboard"
         },
         {
             "id": "google_secops-9be912aa-080e-47ee-b8b9-dc2444050303",
-            "name": "7c45593c-f8df-4f2a-9aa2-10efcdf83201:link_22ba50ea-b7e2-4695-ae88-ebad4bccc1a6_dashboard",
+            "name": "74142263-e738-4146-b408-65411536a3e0:link_22ba50ea-b7e2-4695-ae88-ebad4bccc1a6_dashboard",
             "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "e24dfdfb-148e-4de6-afd3-5f05c00ff473:indexpattern-datasource-layer-425074a0-1db1-4045-ade3-e226c2f17c2b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6d59f351-cf3b-402e-9db9-f20bbaa2a42b:indexpattern-datasource-layer-425074a0-1db1-4045-ade3-e226c2f17c2b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8dcd2308-7843-480d-aef6-9a5074da1e80:indexpattern-datasource-layer-f4291c89-f2d9-4bf2-909a-d6d925f43e46",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0605f41b-8b1c-4716-a74c-ae7e9c86305a:indexpattern-datasource-layer-a92db386-2147-4478-a9b8-6a36ab789cd3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0c26cc51-158d-48f2-bb23-8f996391fb3d:indexpattern-datasource-layer-a92db386-2147-4478-a9b8-6a36ab789cd3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_d83c076b-32b7-4810-993a-245aee2d2983:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_c897b407-42c1-4bba-9cd0-1b19f3130c7a:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
