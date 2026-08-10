@@ -21,7 +21,7 @@ state:
 redact:
   fields:
     - api_key
-program: |
+program: |-
   state.with(
     request(
       "GET",
@@ -35,15 +35,15 @@ program: |
         "start_date": [
           state.?cursor.last_requested_at.orValue(
             (now - duration(state.initial_lookback)).format("2006-01-02 15:04:05")
-          )
+          ),
         ],
       }.format_query()
     ).with(
       {"Header": {"Api-Key": [state.api_key]}}
     ).do_request().as(resp,
-      resp.StatusCode == 200 ?
+      (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
-          state.?current_page.orValue(1) < int(body.?data.?total_pages.orValue(1)) ?
+          (state.?current_page.orValue(1) < int(body.?data.?total_pages.orValue(1))) ?
             {
               "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
               "want_more": true,
@@ -64,9 +64,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET " + string(resp.StatusCode) + ": " + (
-                  size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status)
-                ),
+                "message": "GET " + string(resp.StatusCode) + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
               },
             },
           ],
