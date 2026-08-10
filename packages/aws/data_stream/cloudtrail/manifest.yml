@@ -6,14 +6,6 @@ streams:
     title: AWS CloudTrail Logs
     description: Collect AWS CloudTrail logs using s3 input
     vars:
-      - name: collect_s3_logs
-        required: true
-        show_user: true
-        title: Collect logs via S3 Bucket
-        description: To Collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
-        type: bool
-        multi: false
-        default: false
       - name: bucket_arn
         type: text
         title: "[S3] Bucket ARN"
@@ -21,8 +13,9 @@ streams:
         required: false
         show_user: true
         description: >-
-          Mandatory if the "Collect logs via S3 Bucket" switch is on, unless you set an Access Point ARN or a Non-AWS
-          Bucket Name. In case multiple source options are set, Bucket ARN takes precedence.
+          AWS S3 bucket ARN to poll. Use when collecting via S3 listing (not SQS). Do not set together with
+          `queue_url`. If multiple S3 source options are set, Bucket ARN takes precedence over Access Point ARN
+          and Non-AWS Bucket Name.
       - name: access_point_arn
         type: text
         title: "[S3] Access Point ARN"
@@ -30,8 +23,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          Mandatory if the "Collect logs via S3 Bucket" switch is on, unless you set a Bucket ARN or a Non-AWS Bucket
-          Name. Used when collecting via an AWS S3 Access Point.
+          AWS S3 Access Point ARN to poll. Use when collecting via S3 listing (not SQS). Do not set together with
+          `queue_url`. Ignored if `bucket_arn` is set.
       - name: non_aws_bucket_name
         type: text
         title: "[S3] Non-AWS Bucket Name"
@@ -39,20 +32,21 @@ streams:
         required: false
         show_user: false
         description: >-
-          Name of the S3-compatible bucket to poll. Required for third-party
-          S3 services when `bucket_arn` and `access_point_arn` are not set. Requires `endpoint` and `region`, and typically
-          access key credentials. Pair with `non_aws_backup_to_bucket_name` when backing up processed objects.
+          Name of the S3-compatible bucket to poll. Required for third-party S3 services when `bucket_arn` and
+          `access_point_arn` are not set. Requires `endpoint` and `region`, and typically access key credentials.
+          Pair with `non_aws_backup_to_bucket_name` when backing up processed objects. Do not set together with
+          `queue_url`.
       - name: path_style
-        type: bool
+        type: text
         title: "[S3] Path Style"
         multi: false
         required: false
         show_user: false
-        default: false
         description: >-
-          When enabled, the bucket name is used as a path in the API call instead of a subdomain
-          (`https://s3.<region>.<provider>.com/<bucket-name>`). Only supported with third-party S3 providers; AWS does
-          not support path style.
+          When set to `true`, the bucket name is used as a path in the API call instead of a subdomain
+          (`https://s3.<region>.<provider>.com/<bucket-name>`). Supported with third-party S3 providers and with
+          SQS/`queue_url`. Do not use with AWS `bucket_arn` / `access_point_arn` polling; AWS does not support path
+          style for those sources.
       - name: start_timestamp
         type: text
         title: "[S3] Start Timestamp"
@@ -74,8 +68,8 @@ streams:
         required: false
         show_user: false
         description: >-
-          ARN of the AWS S3 bucket where fully processed objects are copied. Use with an AWS source (`bucket_arn` or
-          `access_point_arn`). For a non-AWS source, use `non_aws_backup_to_bucket_name` instead.
+          ARN of the AWS S3 bucket where fully processed objects are copied. Use with an AWS source (`bucket_arn`,
+          `access_point_arn`, or SQS/`queue_url`). For a non-AWS source, use `non_aws_backup_to_bucket_name` instead.
       - name: backup_to_bucket_prefix
         type: text
         title: "[S3] Backup Bucket Prefix"
@@ -99,7 +93,6 @@ streams:
         multi: false
         required: false
         show_user: false
-        default: false
         description: >-
           Permanently delete each source S3 object after it has been fully processed and copied to the backup bucket.
           Requires `backup_to_bucket_arn` or `non_aws_backup_to_bucket_name`; it has no valid effect on its own. The
@@ -111,7 +104,10 @@ streams:
         multi: false
         required: false
         show_user: true
-        description: Mandatory if the "Collect logs via S3 Bucket" switch is off. URL of the AWS SQS queue that messages will be received from.
+        description: >-
+          URL of the AWS SQS queue that messages will be received from. Used when no S3 polling source
+          (`bucket_arn`, `access_point_arn`, or `non_aws_bucket_name`) is set. Preferred over bucket polling when
+          possible.
       - name: endpoint
         type: text
         title: Endpoint

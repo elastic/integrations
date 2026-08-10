@@ -105,13 +105,13 @@ If you must use polling mode, configure these advanced options to limit which S3
 - **Ignore Older Timespan** (`ignore_older`): Skip S3 objects older than the specified duration (for example, `48h`, `30d`).
 - **Start Timestamp** (`start_timestamp`): Only process objects newer than the specified time (`YYYY-MM-DDTHH:MM:SSZ`).
 - **Non-AWS Bucket Name** (`non_aws_bucket_name`): Poll a third-party S3-compatible source (for example MinIO). Requires `endpoint` and `region`. Do not set this together with `bucket_arn` or `access_point_arn`.
-- **Path Style** (`path_style`): Use path-style addressing for third-party S3 providers.
-- **Backup Bucket ARN** (`backup_to_bucket_arn`): ARN of an AWS S3 bucket that fully processed objects are copied to. Use with an AWS source (`bucket_arn` / `access_point_arn`). Requires `s3:PutObject` on the backup bucket.
+- **Path Style** (`path_style`): Use path-style addressing for third-party S3 providers (also allowed with SQS/`queue_url`). Do not enable with AWS `bucket_arn` / `access_point_arn` polling.
+- **Backup Bucket ARN** (`backup_to_bucket_arn`): ARN of an AWS S3 bucket that fully processed objects are copied to. Use with an AWS source (`bucket_arn` / `access_point_arn`) or with SQS notifications for AWS objects. Requires `s3:PutObject` on the backup bucket.
 - **Non-AWS Backup Bucket Name** (`non_aws_backup_to_bucket_name`): Name of a third-party S3-compatible backup bucket. Use with `non_aws_bucket_name` as the source (not with `backup_to_bucket_arn`).
 - **Backup Bucket Prefix** (`backup_to_bucket_prefix`): Prefix prepended to the object key in the backup bucket. Include a trailing `/` to back up into a subdirectory.
 - **Delete After Backup** (`delete_after_backup`): Permanently deletes each source object once it has been backed up. Only valid together with `backup_to_bucket_arn` or `non_aws_backup_to_bucket_name`, and requires delete permission on the source bucket.
 
-These options apply only in S3 bucket polling mode; they are ignored when collecting via SQS.
+Backup and delete options apply to both SQS notification and S3 bucket polling collection.
 
 If you experience timeouts (`ListObjectsV2, context canceled`), also consider increasing `bucket_list_interval` to reduce listing frequency.
 
@@ -210,115 +210,103 @@ An example event for `cloudtrail` looks as following:
 {
     "@timestamp": "2020-09-11T19:36:49.000Z",
     "agent": {
-        "ephemeral_id": "6b4ed425-a0ee-4515-8b8d-e73e018989c2",
-        "id": "449295a1-c91d-4d82-a238-4b90b3da70e8",
-        "name": "elastic-agent-43820",
+        "ephemeral_id": "aa67d483-be87-4b71-a844-5ec2792be8eb",
+        "id": "43ab4872-7895-414c-b4a6-7022fe02948e",
+        "name": "elastic-agent-57812",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.4.4"
     },
     "aws": {
         "cloudtrail": {
             "flattened": {
                 "digest": {
                     "end_time": "2020-09-11T19:36:49.000Z",
-                    "log_files": [
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c",
-                            "newestEventTime": "2020-09-11T19:26:24Z",
-                            "oldestEventTime": "2020-09-11T19:26:24Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196",
-                            "newestEventTime": "2020-09-11T19:11:18Z",
-                            "oldestEventTime": "2020-09-11T19:11:18Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70",
-                            "newestEventTime": "2020-09-11T18:32:04Z",
-                            "oldestEventTime": "2020-09-11T18:32:04Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689",
-                            "newestEventTime": "2020-09-11T19:21:28Z",
-                            "oldestEventTime": "2020-09-11T19:21:28Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097",
-                            "newestEventTime": "2020-09-11T18:51:21Z",
-                            "oldestEventTime": "2020-09-11T18:51:21Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b",
-                            "newestEventTime": "2020-09-11T18:46:45Z",
-                            "oldestEventTime": "2020-09-11T18:46:45Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5",
-                            "newestEventTime": "2020-09-11T19:01:06Z",
-                            "oldestEventTime": "2020-09-11T19:01:06Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7",
-                            "newestEventTime": "2020-09-11T19:16:12Z",
-                            "oldestEventTime": "2020-09-11T19:16:12Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba",
-                            "newestEventTime": "2020-09-11T18:56:05Z",
-                            "oldestEventTime": "2020-09-11T18:56:05Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7",
-                            "newestEventTime": "2020-09-11T19:06:31Z",
-                            "oldestEventTime": "2020-09-11T19:06:31Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6",
-                            "newestEventTime": "2020-09-11T18:41:58Z",
-                            "oldestEventTime": "2020-09-11T18:41:58Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771",
-                            "newestEventTime": "2020-09-11T18:37:10Z",
-                            "oldestEventTime": "2020-09-11T18:37:10Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz"
-                        }
-                    ],
+                    "log_files": {
+                        "hashAlgorithm": [
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256"
+                        ],
+                        "hashValue": [
+                            "420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c",
+                            "4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196",
+                            "2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70",
+                            "45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689",
+                            "515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097",
+                            "18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b",
+                            "54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5",
+                            "6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7",
+                            "b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba",
+                            "4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7",
+                            "94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6",
+                            "9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771"
+                        ],
+                        "newestEventTime": [
+                            "2020-09-11T19:26:24Z",
+                            "2020-09-11T19:11:18Z",
+                            "2020-09-11T18:32:04Z",
+                            "2020-09-11T19:21:28Z",
+                            "2020-09-11T18:51:21Z",
+                            "2020-09-11T18:46:45Z",
+                            "2020-09-11T19:01:06Z",
+                            "2020-09-11T19:16:12Z",
+                            "2020-09-11T18:56:05Z",
+                            "2020-09-11T19:06:31Z",
+                            "2020-09-11T18:41:58Z",
+                            "2020-09-11T18:37:10Z"
+                        ],
+                        "oldestEventTime": [
+                            "2020-09-11T19:26:24Z",
+                            "2020-09-11T19:11:18Z",
+                            "2020-09-11T18:32:04Z",
+                            "2020-09-11T19:21:28Z",
+                            "2020-09-11T18:51:21Z",
+                            "2020-09-11T18:46:45Z",
+                            "2020-09-11T19:01:06Z",
+                            "2020-09-11T19:16:12Z",
+                            "2020-09-11T18:56:05Z",
+                            "2020-09-11T19:06:31Z",
+                            "2020-09-11T18:41:58Z",
+                            "2020-09-11T18:37:10Z"
+                        ],
+                        "s3Bucket": [
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket"
+                        ],
+                        "s3Object": [
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz"
+                        ]
+                    },
                     "newest_event_time": "2020-09-11T19:26:24.000Z",
                     "oldest_event_time": "2020-09-11T18:32:04.000Z",
                     "previous_hash_algorithm": "SHA-256",
@@ -331,8 +319,8 @@ An example event for `cloudtrail` looks as following:
         },
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-22020",
-                "name": "elastic-package-aws-bucket-22020"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-29783",
+                "name": "elastic-package-aws-bucket-29783"
             },
             "object": {
                 "key": "cloudtrail-digest.log"
@@ -347,23 +335,24 @@ An example event for `cloudtrail` looks as following:
     },
     "data_stream": {
         "dataset": "aws.cloudtrail",
-        "namespace": "41832",
+        "namespace": "61795",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "449295a1-c91d-4d82-a238-4b90b3da70e8",
+        "id": "43ab4872-7895-414c-b4a6-7022fe02948e",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-09-04T09:55:08.902Z",
+        "created": "2026-08-10T17:11:01.005Z",
         "dataset": "aws.cloudtrail",
-        "ingested": "2025-09-04T09:55:09Z",
+        "ingested": "2026-08-10T17:11:02Z",
         "kind": "event",
+        "module": "aws",
         "original": "{\"awsAccountId\":\"123456789123\",\"digestStartTime\":\"2020-09-11T18:36:49Z\",\"digestEndTime\":\"2020-09-11T19:36:49Z\",\"digestS3Bucket\":\"alice-bucket\",\"digestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T193649Z.json.gz\",\"digestPublicKeyFingerprint\":\"47aaa19f7eec22e9bd0b5e58cfade8cb\",\"digestSignatureAlgorithm\":\"SHA256withRSA\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\",\"previousDigestS3Bucket\":\"alice-bucket\",\"previousDigestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T183649Z.json.gz\",\"previousDigestHashValue\":\"531914fcfa0dbacf0c9dd1475a1fdcb5dea6e85921409f3c3ec0ba39063c860\",\"previousDigestHashAlgorithm\":\"SHA-256\",\"previousDigestSignature\":\"10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987\",\"logFiles\":[{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz\",\"hashValue\":\"420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T19:26:24Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz\",\"hashValue\":\"4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:11:18Z\",\"oldestEventTime\":\"2020-09-11T19:11:18Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz\",\"hashValue\":\"2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:32:04Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz\",\"hashValue\":\"45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:21:28Z\",\"oldestEventTime\":\"2020-09-11T19:21:28Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz\",\"hashValue\":\"515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:51:21Z\",\"oldestEventTime\":\"2020-09-11T18:51:21Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz\",\"hashValue\":\"18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:46:45Z\",\"oldestEventTime\":\"2020-09-11T18:46:45Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz\",\"hashValue\":\"54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:01:06Z\",\"oldestEventTime\":\"2020-09-11T19:01:06Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz\",\"hashValue\":\"6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:16:12Z\",\"oldestEventTime\":\"2020-09-11T19:16:12Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz\",\"hashValue\":\"b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:56:05Z\",\"oldestEventTime\":\"2020-09-11T18:56:05Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz\",\"hashValue\":\"4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:06:31Z\",\"oldestEventTime\":\"2020-09-11T19:06:31Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz\",\"hashValue\":\"94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:41:58Z\",\"oldestEventTime\":\"2020-09-11T18:41:58Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz\",\"hashValue\":\"9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:37:10Z\",\"oldestEventTime\":\"2020-09-11T18:37:10Z\"}]}",
         "outcome": "success",
         "type": [
@@ -381,7 +370,7 @@ An example event for `cloudtrail` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-22020.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
+            "path": "https://elastic-package-aws-bucket-29783.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
         },
         "offset": 0
     },
