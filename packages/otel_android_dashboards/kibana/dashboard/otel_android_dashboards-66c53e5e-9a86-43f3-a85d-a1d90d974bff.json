@@ -627,6 +627,12 @@
                                     "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "name": "android-observability",
                                     "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
                                         "_stacktrace.group_id": {
                                             "script": {
                                                 "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
@@ -687,7 +693,7 @@
                                                         },
                                                         "size": 10
                                                     },
-                                                    "sourceField": "exception.message"
+                                                    "sourceField": "_exception.message"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1296,8 +1302,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-09T08:43:39.912Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2026-07-27T12:31:56.119Z",
     "id": "otel_android_dashboards-66c53e5e-9a86-43f3-a85d-a1d90d974bff",
     "references": [
         {
@@ -1307,6 +1312,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.3.0"
 }

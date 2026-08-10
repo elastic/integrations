@@ -229,6 +229,8 @@
       multi_fields:
         - name: text
           type: match_only_text
+    - name: CommandSequence
+      type: keyword
     - name: CompletionEventId
       type: keyword
     - name: CompositeId
@@ -2021,6 +2023,41 @@
       type: keyword
     - name: AnodeIndicators
       type: nested
+      fields:
+        - name: Detected
+          type: boolean
+        - name: Destination
+          type: keyword
+        - name: Entity
+          type: keyword
+        - name: Explanation
+          type: keyword
+        - name: Name
+          type: keyword
+        - name: Type
+          type: keyword
+        - name: Score
+          type: float
+          description: Anomaly score for the indicator.
+        - name: DataVolumeIncreasePercentage
+          type: float
+          description: Observed data volume as a multiple of the entity's baseline.
+        - name: FileCountIncreasePercentage
+          type: float
+          description: Observed file count as a multiple of the entity's baseline.
+        - name: FileCategoryDistributions
+          type: group
+          fields:
+            - name: ID
+              type: keyword
+            - name: Name
+              type: keyword
+            - name: CurrentPercentage
+              type: float
+            - name: ExpectedPercentage
+              type: float
+            - name: IncreasePercentage
+              type: float
     - name: ContentPatterns
       type: group
       fields:
@@ -2074,6 +2111,7 @@
           type: keyword
     - name: OriginWebLocations
       type: flattened
+      ignore_above: 8191
     - name: RelatedClassifications
       type: group
       fields:
@@ -2097,6 +2135,7 @@
       type: integer
     - name: assessments
       type: flattened
+      ignore_above: 8191
     - name: cid
       type: keyword
     - name: discovererCount
@@ -2170,6 +2209,7 @@
       type: date
     - name: ResourceAttributes
       type: flattened
+      ignore_above: 8191
     - name: ResourceId
       type: keyword
     - name: ResourceIdType
