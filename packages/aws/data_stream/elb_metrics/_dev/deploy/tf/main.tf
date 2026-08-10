@@ -30,7 +30,17 @@ data "aws_subnets" "default" {
   }
 }
 
-# t3.micro is not offered in every AZ (e.g. us-east-1e). Prefer a known-good AZ.
+# t3.micro is not offered in every AZ. Discover AZs that actually offer it
+# in the active region instead of hardcoding us-east-1 names.
+data "aws_ec2_instance_type_offerings" "t3_micro" {
+  filter {
+    name   = "instance-type"
+    values = ["t3.micro"]
+  }
+
+  location_type = "availability-zone"
+}
+
 data "aws_subnets" "target" {
   filter {
     name   = "vpc-id"
@@ -39,7 +49,7 @@ data "aws_subnets" "target" {
 
   filter {
     name   = "availability-zone"
-    values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"]
+    values = data.aws_ec2_instance_type_offerings.t3_micro.locations
   }
 }
 
@@ -128,20 +138,46 @@ resource "aws_instance" "target" {
   associate_public_ip_address = true
 
   user_data = <<-EOF
-              #!/bin/bash
-              cat >/etc/systemd/system/ep-http.service <<'UNIT'
-              [Unit]
-              Description=elastic-package ELB test HTTP server
-              After=network.target
-              [Service]
-              ExecStart=/usr/bin/python3 -c "from http.server import BaseHTTPRequestHandler,HTTPServer\nclass H(BaseHTTPRequestHandler):\n  def do_GET(self):\n    self.send_response(200); self.send_header('Content-Length','2'); self.end_headers(); self.wfile.write(b'OK')\n  def log_message(self,*a): pass\nHTTPServer(('0.0.0.0',80),H).serve_forever()"
-              Restart=always
-              [Install]
-              WantedBy=multi-user.target
-              UNIT
-              systemctl daemon-reload
-              systemctl enable --now ep-http.service
-              EOF
+#!/bin/bash
+cat >/usr/local/bin/ep-http.py <<'PY'
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        path = self.path.split("?", 1)[0]
+        code = {
+            "/": 200,
+            "/ok": 200,
+            "/redirect": 302,
+            "/client-error": 404,
+            "/server-error": 500,
+        }.get(path, 200)
+        body = b"OK"
+        self.send_response(code)
+        if code == 302:
+            self.send_header("Location", "/ok")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass
+
+HTTPServer(("0.0.0.0", 80), H).serve_forever()
+PY
+cat >/etc/systemd/system/ep-http.service <<'UNIT'
+[Unit]
+Description=elastic-package ELB test HTTP server
+After=network.target
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/ep-http.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now ep-http.service
+EOF
 
   tags = {
     Name = "elastic-package-test-${var.TEST_RUN_ID}"
@@ -199,8 +235,8 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# In-VPC client generates continuous HTTP traffic so CloudWatch publishes
-# HTTPCode_Target_* (and non-zero RequestCount) for the system test.
+# In-VPC client generates continuous HTTP traffic across 2xx/3xx/4xx/5xx paths
+# so CloudWatch publishes all HTTPCode_Target_* series for the system test.
 resource "aws_instance" "client" {
   ami                         = data.aws_ami.latest_amzn.id
   instance_type               = "t3.micro"
@@ -210,21 +246,21 @@ resource "aws_instance" "client" {
   depends_on                  = [aws_lb_listener.http, aws_lb_target_group_attachment.tg_attachment]
 
   user_data = <<-EOF
-              #!/bin/bash
-              cat >/etc/systemd/system/ep-traffic.service <<UNIT
-              [Unit]
-              Description=elastic-package ELB traffic generator
-              After=network-online.target
-              Wants=network-online.target
-              [Service]
-              ExecStart=/bin/bash -c 'while true; do curl -s -m 2 "http://${aws_lb.alb.dns_name}/" >/dev/null || true; sleep 1; done'
-              Restart=always
-              [Install]
-              WantedBy=multi-user.target
-              UNIT
-              systemctl daemon-reload
-              systemctl enable --now ep-traffic.service
-              EOF
+#!/bin/bash
+cat >/etc/systemd/system/ep-traffic.service <<UNIT
+[Unit]
+Description=elastic-package ELB traffic generator
+After=network-online.target
+Wants=network-online.target
+[Service]
+ExecStart=/bin/bash -c 'while true; do for p in / /ok /redirect /client-error /server-error; do curl -s -m 2 -o /dev/null "http://${aws_lb.alb.dns_name}$p" || true; done; sleep 1; done'
+Restart=always
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now ep-traffic.service
+EOF
 
   tags = {
     Name = "elastic-package-test-${var.TEST_RUN_ID}"
