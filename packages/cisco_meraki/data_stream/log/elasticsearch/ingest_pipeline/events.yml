@@ -116,7 +116,7 @@ processors:
     if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
 
 ####################################################
-# Handle Blocked ARP
+# Handle Blocked ARP, RA and DHCP
 ####################################################
 - grok:
     description: Parse Blocked ARP, RA and DHCP packet events
@@ -137,14 +137,17 @@ processors:
     if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "blocked"
 - gsub:
     field: source.mac
+    tag: gsub_source_mac_separators
     pattern: '[:.]'
     replacement: '-'
     ignore_missing: true
 - uppercase:
     field: source.mac
+    tag: uppercase_source_mac
     ignore_missing: true
 - set:
     field: cisco_meraki.event_subtype
+    tag: set_event_subtype_arp_blocked
     value: arp_blocked
     if: ctx._temp?.blocked_arp != null
 - set:
