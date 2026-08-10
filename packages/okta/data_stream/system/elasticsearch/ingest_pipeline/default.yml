@@ -85,6 +85,11 @@ processors:
       field: log.level
       ignore_missing: true
       ignore_failure: true
+      description: >-
+        Okta emits severity uppercase as DEBUG, INFO, WARN or ERROR. Normalized to
+        match how log.level reads across integrations. Safe to change the value here
+        because the pipeline previously discarded severity and okta.severity was never
+        populated, so no existing query depends on the original casing.
   - rename:
       tag: rename_displayMessage
       field: json.displayMessage
@@ -777,6 +782,9 @@ processors:
           field: _ingest._value.id
           ignore_missing: true
           ignore_failure: true
+      description: >-
+        Removed only after user.target.id and user.target.group.id have copied it,
+        so the vendor name can be an alias to entity.target.id.
   - foreach:
       tag: foreach_remove_target_display_name
       field: okta.target
