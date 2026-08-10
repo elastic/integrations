@@ -1,4 +1,136 @@
 # newer versions go on top
+- version: "4.6.0"
+  changes:
+    - description: Set the User-Agent header for HTTP requests to CrowdStrike API endpoints.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20241
+- version: "4.5.1"
+  changes:
+    - description: Use inclusive >= cursor boundary in host CEL program to avoid permanently skipping same-timestamp records at page or error boundaries.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20524
+- version: "4.5.0"
+  changes:
+    - description: Map CommandHistory events to ECS process fields.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20285
+- version: "4.4.4"
+  changes:
+    - description: Raise FDR `total_fields.limit` from 2000 to 5000 to prevent upgrade failures after latest field additions.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20395
+- version: "4.4.3"
+  changes:
+    - description: Add `ignore_above` for flattened attribute blobs in the falcon, fdr, and alert data streams to avoid dropping events. Requires Kibana 8.19.8+ or 9.1.8+ so Fleet applies the mapping option.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/16398
+- version: "4.4.2"
+  changes:
+    - description: Classify FDR aidmaster/userinfo/data object types from aws.s3.object.key when log.file.path is absent.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20331
+    - description: >-
+        Run CSPM pipelines before the deduplication fingerprint and include rule.id
+        (when present) plus a CSPM resource id so distinct Cloud Security findings are
+        retained and re-ingested duplicates are dropped. Because rule.id is also set on
+        EPP, FIM, and Data Protection events, enabling deduplication after upgrade
+        produces a one-time _id change for those event types on re-delivery.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20331
+- version: "4.4.1"
+  changes:
+    - description: Declare the ANODE anomaly-indicator numeric leaves as `float` in the `falcon`, `fdr`, and `alert` data streams. These values are polymorphic (usually fractional, occasionally whole numbers), so leaving them undeclared let dynamic mapping lock them to `long` on integer-first indices and reject later fractional values to the failure store.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20305
+- version: "4.4.0"
+  changes:
+    - description: >-
+        Add ECS categorization for FDR agentic/AI telemetry, Public Cloud asset inventory, on-demand scan (ODS), sensor channel downloads, Custom IOA/AMS/CSA detections, data protection egress, Open Directory IAM, WSL distribution lifecycle, and accessory device events.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20194
+    - description: Map Public Cloud FDR events to `cloud.*` and `host.ip`, DataEgress fields to `file.*`.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20194
+    - description: Derive FDR `event.outcome` from `crowdstrike.Status` using NTSTATUS severity bits.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20194
+- version: "4.3.1"
+  changes:
+    - description: Use an inclusive lower bound (>=) on the updated_timestamp cursor filter in the vulnerability and alert data streams to prevent records sharing a boundary timestamp from being permanently skipped at page or error boundaries.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20190
+- version: "4.3.0"
+  changes:
+    - description: Add ECS categorization and field mappings for new FDR event types including IDP telemetry, Active Directory account changes, DBus/systemd events, network containment, host firewall, sensor diagnostics, and container activity.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20079
+    - description: Map Active Directory events to ECS user fields from SamAccountName, AccountObjectSid, and AccountDomain, and add DNS enrichment for DNSRequestDetectInfo events.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20079
+- version: "4.2.0"
+  changes:
+    - description: Add support for OverwatchGenericDetectionSummaryEvent in the Falcon data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19969
+- version: "4.1.0"
+  changes:
+    - description: >-
+        Expose the CrowdStrike Falcon Event Streams retry settings (maximum attempts, infinite retries, minimum and maximum wait) as configurable options so the streaming input can be tuned to recover from repeated connection failures without requiring an agent restart.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20025
+- version: "4.0.0"
+  changes:
+    - description: >-
+        Restore FDR event.action to the CrowdStrike event_simpleName value (e.g. DriverLoad, AsepKeyUpdate, NewExecutableWritten) instead of overwriting it with generic terms. Remove redundant message field copy from event_simpleName. Add missing creation type to MachOFileWritten events.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19927
+    - description: >-
+        FDR event.action values have changed. Custom queries, dashboards, or rules that filter on the previous generic values (load, modification, creation, deletion, open, query) in event.action must be updated to use the CrowdStrike event_simpleName instead. The message field is no longer populated from event_simpleName; use crowdstrike.event_simpleName for the same data.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/19927
+- version: "3.26.1"
+  changes:
+    - description: Remove incorrect unlimited maximum executions documentation.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19809
+- version: "3.26.0"
+  changes:
+    - description: Add support for NG-SIEM correlation-detection alerts in the Alert data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19494
+    - description: Populate `event.duration` ECS field from `event.start` and `event.end` fields in the Alert data streams.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19494
+- version: "3.25.0"
+  changes:
+    - description: >-
+        Deprecate FDR ingest-time cache enrichment (enrich_metadata, keep_metadata, metadata_ttl, metadata_cache_capacity, metadata_cache_write_interval). These settings will be removed in a future major version. Use query-time LOOKUP JOIN enrichment instead.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19696
+    - description: >-
+        Change the default for keep_metadata from false to true so that metadata events (aidmaster, userinfo) are indexed by default, enabling the LOOKUP JOIN transforms to have source data. Existing installations retain their previous setting on upgrade; if it was false, set it to true to enable query-time enrichment.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19696
+- version: "3.24.0"
+  changes:
+    - description: Make max_executions configurable for all CEL data streams to allow high-volume environments to complete pagination within a single interval.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19530
+- version: "3.23.0"
+  changes:
+    - description: Add categorization pipeline for new events in the FDR data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19387
+- version: "3.22.0"
+  changes:
+    - description: Add support for Automated Leads events in the Alert, Falcon, and FDR data streams.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19398
+- version: "3.21.0"
+  changes:
+    - description: Use new `release` field for agentless deployment mode to establish as beta.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/18552
 - version: "3.20.0"
   changes:
     - description: Improve dashboards for coverage, control, and consistency.
@@ -22,10 +154,7 @@
 - version: "3.16.2"
   changes:
     - description: >-
-        Rename FDR lookup transform destinations and aliases from `logs-crowdstrike_lookup.*` to
-        `crowdstrike_lookup.*` so empty lookup indices no longer match the Security Solution `logs-*`
-        index pattern and trigger missing-`@timestamp` warnings. Old `logs-crowdstrike_lookup.*`
-        indices from previous installs can be safely deleted after upgrade.
+        Rename FDR lookup transform destinations and aliases from `logs-crowdstrike_lookup.*` to `crowdstrike_lookup.*` so empty lookup indices no longer match the Security Solution `logs-*` index pattern and trigger missing-`@timestamp` warnings. Old `logs-crowdstrike_lookup.*` indices from previous installs can be safely deleted after upgrade.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/19005
 - version: "3.16.1"
@@ -1052,7 +1181,7 @@
     - description: Fix logic that checks for the 'forwarded' tag
       type: bugfix
       link: https://github.com/elastic/integrations/pull/1812
-- version: '1.0.0'
+- version: "1.0.0"
   changes:
     - description: make GA
       type: enhancement
@@ -1078,7 +1207,7 @@
     - description: Add cleanup processor to Falcon
       type: enhancement
       link: https://github.com/elastic/integrations/pull/1522
-- version: '0.7.1'
+- version: "0.7.1"
   changes:
     - description: update to ECS 1.11.0
       type: enhancement

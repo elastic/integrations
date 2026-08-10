@@ -1,7 +1,7 @@
-format_version: 3.3.2
+format_version: 3.6.1
 name: elastic_security
 title: Elastic Security
-version: 0.4.1
+version: 0.6.0
 source:
   license: "Elastic-2.0"
 description: Collect logs from Elastic Instance with Elastic Agent.
@@ -11,7 +11,9 @@ categories:
   - siem
 conditions:
   kibana:
-    version: "^9.1.1"
+    version: "^9.4.0"
+  agent:
+    version: "^9.4.0"
   elastic:
     subscription: basic
 screenshots:
@@ -33,6 +35,7 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        release: ga
         organization: security
         division: engineering
         team: security-service-integrations
@@ -40,6 +43,54 @@ policy_templates:
       - type: cel
         title: Collect Elastic Security events via API
         description: Collect events from Elastic instance via API.
+        vars:
+          - name: username
+            type: text
+            title: Username
+            description: The username of Elasticsearch Instance to be used with Basic Auth headers.
+            multi: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: The password of Elasticsearch Instance to be used with Basic Auth headers.
+            multi: false
+            secret: true
+            show_user: true
+          - name: api_key
+            type: password
+            title: API Key
+            description: The API Key of Elasticsearch Instance to be used with API Auth headers.
+            multi: false
+            secret: true
+            show_user: true
+          - name: bearer_token
+            type: password
+            title: Bearer Token
+            description: The Bearer Token of Elasticsearch Instance to be used with Bearer Auth headers.
+            multi: false
+            secret: true
+            show_user: true
+        var_groups:
+          - name: auth_type
+            required: true
+            title: Authentication
+            selector_title: Authentication type
+            description: Type of authentication to be used for the Elasticsearch API requests. See [documentation](https://www.elastic.co/docs/api/doc/elasticsearch/authentication) for details.
+            options:
+              - name: api_auth
+                title: API Key
+                vars:
+                  - api_key
+              - name: basic_auth
+                title: Basic Auth
+                vars:
+                  - username
+                  - password
+              - name: bearer_auth
+                title: Bearer Token
+                vars:
+                  - bearer_token
 owner:
   github: elastic/security-service-integrations
   type: elastic

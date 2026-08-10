@@ -154,17 +154,17 @@ processors:
       tag: append_data_id
       value: '{{{gti.threat.indicator.id}}}'
       allow_duplicates: false
-      if: ctx.gti?.ioc_stream?.id != null
+      if: ctx.gti?.threat?.indicator?.id != null
   - append:
       field: related.hosts
       tag: append_data_id_domain
       value: '{{{gti.threat.indicator.id}}}'
       allow_duplicates: false
-      if: ctx.gti?.ioc_stream?.type == 'domain'
+      if: ctx.gti?.threat?.indicator?.type == 'domain'
   - set:
       field: threat.indicator.name
       tag: set_threat_indicator_name_from_id
-      copy_from: gti.ioc_stream.id
+      copy_from: gti.threat.indicator.id
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
@@ -345,8 +345,8 @@ processors:
       copy_from: gti.threat.indicator.attributes.meaningful_name
       ignore_empty_value: true
   - foreach:
-      field: json.attributes.names
-      if: ctx.json?.attributes?.names instanceof List
+      field: gti.threat.indicator.attributes.names
+      if: ctx.gti?.threat?.indicator?.attributes?.names instanceof List
       processor:
         append:
           field: file.attributes

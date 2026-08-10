@@ -15,6 +15,10 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - set:
       field: event.category
       value: [configuration]
@@ -62,21 +66,115 @@ processors:
       formats:
         - yyyyMMdd'T'HHmmss
   - date:
-      field: json.scan_details.created_at
-      target_field: json.scan_details.created_at
-      if: ctx.json?.scan_details?.created_at != null && ctx.json.scan_details.created_at != ''
+      field: json.scan_details.info.scan_start
+      target_field: json.scan_details.info.scan_start
+      if: ctx.json?.scan_details?.info?.scan_start != null && ctx.json.scan_details.info.scan_start != ''
       formats:
-        - ISO8601
+        - UNIX
   - date:
-      field: json.scan_details.updated_at
-      target_field: json.scan_details.updated_at
-      if: ctx.json?.scan_details?.updated_at != null && ctx.json.scan_details.updated_at != ''
+      field: json.scan_details.info.scan_end
+      target_field: json.scan_details.info.scan_end
+      if: ctx.json?.scan_details?.info?.scan_end != null && ctx.json.scan_details.info.scan_end != ''
       formats:
+        - UNIX
+  - date:
+      field: json.scan_details.info.timestamp
+      target_field: json.scan_details.info.timestamp
+      if: ctx.json?.scan_details?.info?.timestamp != null && ctx.json.scan_details.info.timestamp != ''
+      formats:
+        - UNIX
+  - foreach:
+      field: json.scan_details.history
+      ignore_missing: true
+      processor:
+        date:
+          field: _ingest._value.creation_date
+          target_field: _ingest._value.creation_date
+          formats:
+            - UNIX
+          ignore_failure: true
+  - foreach:
+      field: json.scan_details.history
+      ignore_missing: true
+      processor:
+        date:
+          field: _ingest._value.last_modification_date
+          target_field: _ingest._value.last_modification_date
+          formats:
+            - UNIX
+          ignore_failure: true
+  - date:
+      field: json.scan_details.info.scanner_start
+      target_field: json.scan_details.info.scanner_start
+      if: ctx.json?.scan_details?.info?.scanner_start != null && ctx.json.scan_details.info.scanner_start != ''
+      formats:
+        - UNIX
         - ISO8601
+      ignore_failure: true
+  - date:
+      field: json.scan_details.info.scanner_end
+      target_field: json.scan_details.info.scanner_end
+      if: ctx.json?.scan_details?.info?.scanner_end != null && ctx.json.scan_details.info.scanner_end != ''
+      formats:
+        - UNIX
+        - ISO8601
+      ignore_failure: true
+  - remove:
+      field: json.scan_details.filters
+      ignore_missing: true
   - rename:
       field: json
       target_field: tenable_io.scan
       ignore_missing: true
+  - script:
+      description: Populate related.ip and related.hosts from scan details.
+      lang: painless
+      tag: populate_related_from_scan_details
+      if: ctx.tenable_io?.scan?.scan_details != null
+      source: |
+        def details = ctx.tenable_io.scan.scan_details;
+        def ipv4Pat = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+        def ipv6Pat = /^[0-9A-Fa-f:]*:[0-9A-Fa-f:.]*$/;
+        if (ctx.related == null) { ctx.related = new HashMap(); }
+        if (details.info?.targets instanceof String) {
+          for (def t : details.info.targets.splitOnToken(',')) {
+            def v = t.trim();
+            if (v.length() == 0) { continue; }
+            def base = v;
+            int slash = base.indexOf('/');
+            if (slash >= 0) { base = base.substring(0, slash); }
+            int dash = base.indexOf('-');
+            if (dash > 0 && base.indexOf(':') < 0) { base = base.substring(0, dash); }
+            base = base.trim();
+            if (ipv4Pat.matcher(base).matches() || ipv6Pat.matcher(base).matches()) {
+              if (ctx.related.ip == null) { ctx.related.ip = new ArrayList(); }
+              if (!ctx.related.ip.contains(base)) { ctx.related.ip.add(base); }
+            } else {
+              if (ctx.related.hosts == null) { ctx.related.hosts = new ArrayList(); }
+              if (!ctx.related.hosts.contains(v)) { ctx.related.hosts.add(v); }
+            }
+          }
+        }
+        if (details.hosts instanceof List) {
+          for (def host : (List) details.hosts) {
+            if (host?.hostname instanceof String && host.hostname.length() > 0) {
+              def v = host.hostname;
+              def base = v;
+              int slash = base.indexOf('/');
+              if (slash >= 0) { base = base.substring(0, slash); }
+              int dash = base.indexOf('-');
+              if (dash > 0 && base.indexOf(':') < 0) { base = base.substring(0, dash); }
+              base = base.trim();
+              if (ipv4Pat.matcher(base).matches() || ipv6Pat.matcher(base).matches()) {
+                if (ctx.related.ip == null) { ctx.related.ip = new ArrayList(); }
+                if (!ctx.related.ip.contains(base)) { ctx.related.ip.add(base); }
+              } else {
+                if (ctx.related.hosts == null) { ctx.related.hosts = new ArrayList(); }
+                if (!ctx.related.hosts.contains(v)) { ctx.related.hosts.add(v); }
+              }
+            }
+          }
+        }
   - script:
       description: Drops null/empty values recursively.
       lang: painless

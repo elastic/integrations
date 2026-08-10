@@ -1,0 +1,44 @@
+{
+  "id": "aws_ec2_otel-low-cpu-credit-balance",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when CPU credit balance on burstable (T-family) instances drops below a threshold, indicating imminent throttling and application slowdown.",
+    "name": "[AWS EC2 OTel] Low CPU credit balance",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ec2",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Low CPU Credit Balance (Burstable Instances)\n\n### Meaning\nT-family instances earn CPU credits when idle and spend them to burst above baseline. A depleted balance forces throttling to baseline CPU — applications slow down even when average CPUUtilization looks moderate.\n\n### Triage\n1. Check CPUUtilization and CPUCreditUsage trends for the instance.\n2. Review CPUSurplusCreditsCharged — overage billing may already be accruing.\n3. Consider rightsizing to a non-burstable instance type if sustained bursting is normal.\n\n### Remediation\nReduce burst demand, enable unlimited mode (accepts overage charges), or migrate to a fixed-performance instance family."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE Namespace == \"AWS/EC2\"\n    AND MetricName == \"CPUCreditBalance\"\n    AND stat == \"Average\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", cloud.region, \")\")\n| STATS min_credit_balance = MIN(`metrics.amazonaws.com/AWS/EC2/CPUCreditBalance`) BY ec2_instance\n// Credit threshold: tune per instance size — MIN of Average readings is the floor proxy (no Minimum stat collected)\n| WHERE min_credit_balance < 10.0\n| SORT min_credit_balance ASC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ec2_instance",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

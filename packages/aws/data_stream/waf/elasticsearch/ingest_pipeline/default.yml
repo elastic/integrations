@@ -2,48 +2,59 @@
 description: "Pipeline for WAF logs"
 processors:
 - set:
+    tag: set_ecs_version_0f7334bb
     field: ecs.version
     value: '8.11.0'
 - set:
+    tag: set_event_category_d1482d04
     field: event.category
     value: ["web", "network"]
 - append:
+    tag: append_event_type_8860cef4
     field: event.type
     value: ["access"]
 - rename:
+    tag: rename_message_to_event_original_c74b1d7e
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
     description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
 - remove:
+    tag: remove_message_2ee3a7d4
     field: message
     ignore_missing: true
     if: 'ctx.event?.original != null'
     description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - json:
+    tag: json_event_original_to_json_5e54dc16
     field: event.original
     target_field: json
 - date:
+    tag: date_json_timestamp_to_timestamp_56edca7f
     field: json.timestamp
     target_field: '@timestamp'
     ignore_failure: true
     formats:
     - UNIX_MS
 - rename:
+    tag: rename_json_httpRequest_clientIp_to_source_ip_d91520cd
     field: json.httpRequest.clientIp
     target_field: source.ip
     ignore_missing: true
 - geoip:
+    tag: geoip_source_ip_to_source_geo_da2e41b2
     field: source.ip
     target_field: source.geo
     ignore_missing: true
 - rename:
+    tag: rename_json_httpRequest_country_to_source_geo_country_iso_code_e529e510
     field: json.httpRequest.country
     target_field: source.geo.country_iso_code
     ignore_missing: true
     if: ctx.source?.geo?.country_iso_code == null
 - geoip:
+    tag: geoip_source_ip_to_source_as_28d69883
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -52,15 +63,18 @@ processors:
     - organization_name
     ignore_missing: true
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_json_ClientASN_to_source_as_number_ca8c111f
     field: json.ClientASN
     target_field: source.as.number
     ignore_missing: true
     if: ctx?.source?.as?.number == null
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
@@ -72,6 +86,7 @@ processors:
     ignore_missing: true
     on_failure:
       - append:
+          tag: append_error_message_1aa4965d
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - date:
@@ -83,6 +98,7 @@ processors:
     if: ctx.json?.captchaResponse?.solveTimestamp != null && ctx.json.captchaResponse.solveTimestamp != ''
     on_failure:
       - append:
+          tag: append_error_message_42eab77f
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
@@ -98,6 +114,7 @@ processors:
     ignore_missing: true
     on_failure:
       - append:
+          tag: append_error_message_162ae230
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - date:
@@ -109,6 +126,7 @@ processors:
     if: ctx.json?.challengeResponse?.solveTimestamp != null && ctx.json.challengeResponse.solveTimestamp != ''
     on_failure:
       - append:
+          tag: append_error_message_25c78f2c
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
@@ -133,6 +151,7 @@ processors:
     target_field: url.registered_domain
     ignore_missing: true
 - rename:
+    tag: rename_json_httpRequest_requestId_to_http_request_id_9f01188d
     field: json.httpRequest.requestId
     target_field: http.request.id
     ignore_missing: true
@@ -149,6 +168,7 @@ processors:
     ignore_missing: true
     on_failure:
       - append:
+          tag: append_error_message_6edc1635
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -159,6 +179,7 @@ processors:
     ignore_missing: true
     on_failure:
       - append:
+          tag: append_error_message_b1dcefda
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -169,28 +190,35 @@ processors:
     ignore_missing: true
     on_failure:
       - append:
+          tag: append_error_message_e983b3a7
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
+    tag: rename_json_httpRequest_httpMethod_to_http_request_method_36be9aa0
     field: json.httpRequest.httpMethod
     target_field: http.request.method
     ignore_missing: true
 - dissect:
+    tag: dissect_json_httpRequest_httpVersion_3eaa461f
     field: json.httpRequest.httpVersion
     pattern: "%{network.protocol}/%{http.version}"
     ignore_failure: true
 - lowercase:
+    tag: lowercase_network_protocol_49872259
     field: network.protocol
     ignore_missing: true
 - set:
+    tag: set_network_transport_be847bd4
     field: network.transport
     value: tcp
     if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
 - rename:
+    tag: rename_json_httpRequest_args_to_url_query_f317ee93
     field: json.httpRequest.args
     target_field: url.query
     ignore_missing: true
 - rename:
+    tag: rename_json_httpRequest_uri_to_url_path_efbbbc4d
     field: json.httpRequest.uri
     target_field: url.path
     ignore_missing: true
@@ -215,22 +243,27 @@ processors:
     target_field: aws.waf.oversize_fields
     ignore_missing: true
 - rename:
+    tag: rename_json_terminatingRuleMatchDetails_to_aws_waf_terminating_rule_match_details_c9c5dba2
     field: json.terminatingRuleMatchDetails
     target_field: aws.waf.terminating_rule_match_details
     ignore_missing: true
 - rename:
+    tag: rename_json_ruleGroupList_to_aws_waf_rule_group_list_b00ab221
     field: json.ruleGroupList
     target_field: aws.waf.rule_group_list
     ignore_missing: true
 - rename:
+    tag: rename_json_rateBasedRuleList_to_aws_waf_rate_based_rule_list_d273b998
     field: json.rateBasedRuleList
     target_field: aws.waf.rate_based_rule_list
     ignore_missing: true
 - rename:
+    tag: rename_json_nonTerminatingMatchingRules_to_aws_waf_non_terminating_matching_rules_9e63f656
     field: json.nonTerminatingMatchingRules
     target_field: aws.waf.non_terminating_matching_rules
     ignore_missing: true
 - script:
+    tag: script_cb4c8e3d
     lang: painless
     source: >-
       if (ctx.json.httpRequest.headers != null) {
@@ -253,53 +286,66 @@ processors:
       }
     on_failure:
       - append:
+          tag: append_error_message_6eaadeb6
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
+    tag: rename_json_action_to_event_action_6ebb0784
     field: json.action
     target_field: event.action
     ignore_missing: true
 - append:
+    tag: append_related_ip_d7aecc5f
     field: related.ip
     value: '{{source.ip}}'
     allow_duplicates: false
     if: ctx.source?.ip != null
 - set:
+    tag: set_cloud_provider_208bdd6b
     field: cloud.provider
     value: aws
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - append:
+    tag: append_event_type_7c253a3f
     field: event.type
     value: allowed
     if: ctx.event.action == "ALLOW"
 - append:
+    tag: append_event_type_c102eb1c
     field: event.type
     value: denied
     if: ctx.event.action == "BLOCK"
 - rename:
+    tag: rename_json_webaclId_to_aws_waf_arn_50c9c659
     field: json.webaclId
     target_field: aws.waf.arn
     ignore_missing: true
 - dissect:
+    tag: dissect_aws_waf_arn_751ee2c3
     field: aws.waf.arn
     pattern: "arn:%{}:%{cloud.service.name}:%{cloud.region}:%{cloud.account.id}:%{aws.waf.id}"
     ignore_failure: true
     ignore_missing: true
 - rename:
+    tag: rename_json_terminatingRuleId_to_rule_id_9b482d48
     field: json.terminatingRuleId
     target_field: rule.id
     ignore_missing: true
 - rename:
+    tag: rename_json_terminatingRuleType_to_rule_ruleset_d7b5d1b8
     field: json.terminatingRuleType
     target_field: rule.ruleset
     ignore_missing: true
 - rename:
+    tag: rename_json_httpSourceName_to_aws_waf_source_name_0d5e84e3
     field: json.httpSourceName
     target_field: aws.waf.source.name
     ignore_missing: true
 - rename:
+    tag: rename_json_httpSourceId_to_aws_waf_source_id_ab7d1b3f
     field: json.httpSourceId
     target_field: aws.waf.source.id
     ignore_missing: true
@@ -308,9 +354,11 @@ processors:
   # Remove temporary fields
   #
 - remove:
+    tag: remove_json_29cdffdc
     field: json
     ignore_missing: true
 - script:
+    tag: script_63b36254
     lang: painless
     description: This script processor iterates over the whole document to remove fields with null values.
     source: |
@@ -343,4 +391,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

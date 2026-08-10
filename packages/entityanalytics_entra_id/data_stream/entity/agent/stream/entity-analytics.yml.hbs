@@ -1,4 +1,7 @@
 provider: azure-ad
+{{#if use_minimal_state}}
+use_minimal_state: true
+{{/if}}
 {{#if enable_request_tracer}}
 tracer.filename: "../../logs/azure-ad/http-request-trace-*.ndjson"
 tracer.maxbackups: 5
@@ -19,6 +22,23 @@ login_scopes:
 {{#if custom_options}}
 {{custom_options}}
 {{/if}}
+enrich_with:
+{{#if enrich_with_mfa}}
+  - mfa
+{{/if}}
+{{#if user_sign_in_activity}}
+  - sign_in_activity
+{{/if}}
+{{#if user_direct_reports}}
+expand.users:
+  - directReports
+{{#if user_app_role_assignments}}
+  - appRoleAssignments
+{{/if}}
+{{else if user_app_role_assignments}}
+expand.users:
+  - appRoleAssignments
+{{/if}}
 {{#if intune_managed_devices}}
 select.devices:
   - accountEnabled
@@ -29,6 +49,7 @@ select.devices:
   - physicalIds
   - extensionAttributes
   - alternativeSecurityIds
+  - approximateLastSignInDateTime
   - isCompliant
   - isManaged
   - manufacturer

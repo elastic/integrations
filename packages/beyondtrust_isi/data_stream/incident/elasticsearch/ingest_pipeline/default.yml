@@ -1,0 +1,307 @@
+---
+description: Pipeline for processing incident logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondtrust_isi.incident
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+      description: >-
+        For the http_endpoint input, Filebeat auto-parses the JSON request body into `json.*`.
+        Drop it so the pipeline parses again from `event.original`.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category
+      value: intrusion_detection
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_incident_definitionId
+      copy_from: beyondtrust_isi.incident.definitionId
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_incident_incidentId
+      copy_from: beyondtrust_isi.incident.incidentId
+      ignore_empty_value: true
+  # `ignore_failure` is set to true because we are not sure whether severity will be sent as a long or a keyword,
+  # so this avoids conversion errors when the value is a non-numeric keyword.
+  - convert:
+      field: beyondtrust_isi.incident.severity
+      tag: convert_incident_severity_to_long
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      description: Converts `beyondtrust_isi.incident.severity` to a long when the source sends it as a numeric value.
+  - script:
+      lang: painless
+      description: Normalizes the incident severity to a textual label (Low/Medium/High/Critical) and maps it to a numeric `event.severity` score.
+      tag: script_map_incident_severity
+      if: ctx.beyondtrust_isi?.incident?.severity != null
+      params:
+        # Numeric severity (1-4) -> textual label.
+        number_to_label:
+          '1': Low
+          '2': Medium
+          '3': High
+          '4': Critical
+        # Textual label -> numeric ECS `event.severity` score (0-100 scale).
+        label_to_score:
+          low: 21
+          medium: 47
+          high: 73
+          critical: 99
+      source: |-
+        // Severity can arrive either as a number (1-4) or as a textual label,
+        // so first resolve it to a canonical label before deriving a score.
+        def severity = ctx.beyondtrust_isi.incident.severity;
+        String label = null;
+
+        if (severity instanceof Long) {
+          label = params.number_to_label.get(String.valueOf(severity));
+        } else if (severity instanceof String) {
+          label = (String) severity;
+        }
+
+        // Drop unrecognized or out-of-range values so only valid labels remain.
+        if (label == null) {
+          ctx.beyondtrust_isi.incident.remove('severity');
+          return;
+        }
+
+        ctx.beyondtrust_isi.incident.severity = label;
+
+        def score = params.label_to_score.get(label.toLowerCase());
+        if (score != null) {
+          ctx.event.severity = score;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_incident_tenantId
+      copy_from: beyondtrust_isi.incident.tenantId
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_isi.incident.timestamp
+      tag: date_timestamp
+      if: ctx.beyondtrust_isi?.incident?.timestamp != null && ctx.beyondtrust_isi.incident.timestamp != ''
+      target_field: beyondtrust_isi.incident.timestamp
+      formats:
+        - ISO8601
+        - MM/dd/yyyy HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: beyondtrust_isi.incident.timestamp
+            tag: remove_incident_timestamp_on_failure
+            ignore_missing: true
+  - split:
+      field: beyondtrust_isi.incident.entityName
+      separator: ','
+      tag: split_entity_name
+      ignore_missing: true
+      if: ctx.beyondtrust_isi?.incident?.entityName instanceof String && ctx.beyondtrust_isi.incident.entityName != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: beyondtrust_isi.incident.entityType
+      separator: ','
+      tag: split_entity_type
+      ignore_missing: true
+      if: ctx.beyondtrust_isi?.incident?.entityType instanceof String && ctx.beyondtrust_isi.incident.entityType != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: beyondtrust_isi.incident.source
+      separator: ','
+      tag: split_incident_source
+      ignore_missing: true
+      if: ctx.beyondtrust_isi?.incident?.source instanceof String && ctx.beyondtrust_isi.incident.source != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: beyondtrust_isi.incident.location
+      separator: ','
+      tag: split_incident_location
+      ignore_missing: true
+      if: ctx.beyondtrust_isi?.incident?.location instanceof String && ctx.beyondtrust_isi.incident.location != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_incident_timestamp
+      copy_from: beyondtrust_isi.incident.timestamp
+      ignore_empty_value: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_definition_summary
+      copy_from: beyondtrust_isi.incident.definitionSummary
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_definition_summary
+      copy_from: beyondtrust_isi.incident.definitionSummary
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_incident_link
+      copy_from: beyondtrust_isi.incident.link
+      ignore_empty_value: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference_from_incident_link
+      copy_from: beyondtrust_isi.incident.link
+      ignore_empty_value: true
+  - remove:
+      field:
+        - beyondtrust_isi.incident.definitionId
+        - beyondtrust_isi.incident.incidentId
+        - beyondtrust_isi.incident.link
+        - beyondtrust_isi.incident.definitionSummary
+        - beyondtrust_isi.incident.tenantId
+        - beyondtrust_isi.incident.timestamp
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  # rename to snake case
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+          StringBuilder result = new StringBuilder();
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0) {
+                char prev = str.charAt(i - 1);
+                boolean nextIsLower = (i + 1 < str.length()) && Character.isLowerCase(str.charAt(i + 1));
+                boolean prevIsDigit = Character.isDigit(prev);
+                if (Character.isLowerCase(prev) || prevIsDigit || (Character.isUpperCase(prev) && nextIsLower)) {
+                  result.append('_');
+                }
+              }
+              result.append(Character.toLowerCase(c));
+            } else {
+              result.append(c);
+            }
+          }
+          return result.toString();
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        ctx.beyondtrust_isi = ctx.beyondtrust_isi ?: [:];
+        if (ctx.beyondtrust_isi?.incident != null) {
+          ctx.beyondtrust_isi.incident = convertToSnakeCase(ctx.beyondtrust_isi.incident);
+        }
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false

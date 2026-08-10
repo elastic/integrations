@@ -97,6 +97,10 @@ processors:
       target_field: azure.auditlogs.result_signature
       ignore_missing: true
   - rename:
+      field: azure.auditlogs.resultDescription
+      target_field: azure.auditlogs.result_description
+      ignore_missing: true
+  - rename:
       field: azure.auditlogs.operationVersion
       target_field: azure.auditlogs.operation_version
       ignore_missing: true
@@ -235,6 +239,22 @@ processors:
       field: azure.auditlogs.properties.initiatedBy
       target_field: azure.auditlogs.properties.initiated_by
       ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: azure.auditlogs.properties.initiated_by.user.userPrincipalName
+      ignore_empty_value: true
+  - convert:
+      field: azure.auditlogs.properties.initiated_by.user.id
+      tag: convert_user_id
+      target_field: user.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.full_name
+      tag: set_user_full_name
+      copy_from: azure.auditlogs.properties.initiated_by.user.displayName
+      ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -287,6 +307,24 @@ processors:
             description: Add error reason
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
+  - append:
+      field: related.user
+      tag: append_user_id_to_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_full_name_to_related_user
+      value: '{{{user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:

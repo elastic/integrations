@@ -1,0 +1,283 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/openai-rate-limits-http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{api_url}}
+fields_under_root: true
+keep_null: true
+state:
+  access_token: {{admin_token}}
+  batch_size: {{batch_size}}
+  include_archived: {{include_archived}}
+redact:
+  fields:
+    - access_token
+program: |
+  // filebeat's CEL input ends a periodic cycle as soon as an evaluation emits zero events,
+  // BEFORE it inspects want_more (x-pack/filebeat/input/cel: `if result.eventCount == 0 { return nil }`).
+  // So a want_more chain must emit at least one event on every productive step or it stalls and
+  // resumes only on the next interval. The project listing carries no rate-limit documents, so it
+  // must never be a standalone empty evaluation -- instead the LOAD step below pages the project
+  // list AND immediately drains the first new project's first rate-limit page in the same eval, so
+  // listing and emitting always happen together. (A separate empty listing eval is what made this
+  // data stream collect only every other interval.)
+  //
+  // State machine (all fields default via orValue, so no initial seeding is required):
+  //   worklist      accumulated [{id,name,status}] of discovered projects
+  //   next          index into worklist of the project currently being drained
+  //   rl_after      pagination cursor within the current project's rate limits
+  //   project_after pagination cursor for the project list
+  //   projects_done true once every project-list page has been fetched
+  //   want_more     drives both intra-cycle chaining and (when false) a fresh-cycle reset
+  (
+    // Fresh cycle: the previous chain ended (want_more false) or this is the first run, so clear
+    // scheduling state and re-list projects from the top. Mid-chain (want_more true) keep state.
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "worklist": [],
+        "next": 0,
+        "rl_after": "",
+        "project_after": "",
+        "projects_done": false,
+      })
+  ).as(state, state.with(
+    // LOAD is needed at the start of a cycle (empty worklist) and whenever the worklist is drained
+    // but more project pages remain.
+    (int(state.?next.orValue(0)) >= size(state.?worklist.orValue([])) && !state.?projects_done.orValue(false)).as(need_load,
+      need_load ?
+        // LOAD: page the project list, then drain the first newly discovered project's first page
+        // of rate limits in the same evaluation so events are always emitted alongside listing.
+        request(
+          "GET",
+          state.url.trim_right("/") + "?" + {
+            "limit": [string(int(state.batch_size))],
+            "after": state.?project_after.orValue("") != "" ? [state.project_after] : [],
+            "include_archived": [string(state.include_archived)],
+          }.format_query()
+        ).with({
+          "Header": {
+            "Authorization": ["Bearer " + string(state.access_token)],
+            "Content-Type": ["application/json"],
+          }
+        }).do_request().as(presp, presp.StatusCode == 200 ?
+          bytes(presp.Body).decode_json().as(pbody, pbody.?has_more.orValue(false).as(more_projects,
+            (state.?worklist.orValue([]) + pbody.?data.orValue([]).map(p, {
+              "id": p.id,
+              "name": p.?name.orValue(""),
+              "status": p.?status.orValue(""),
+            })).as(worklist,
+              int(state.?next.orValue(0)) < size(worklist) ?
+                // At least one new project: fetch its first rate-limit page now so this eval emits.
+                worklist[int(state.?next.orValue(0))].as(proj,
+                  request(
+                    "GET",
+                    state.url.trim_right("/") + "/" + string(proj.id) + "/rate_limits?" + {
+                      "limit": [string(int(state.batch_size))],
+                    }.format_query()
+                  ).with({
+                    "Header": {
+                      "Authorization": ["Bearer " + string(state.access_token)],
+                      "Content-Type": ["application/json"],
+                    }
+                  }).do_request().as(resp, resp.StatusCode == 200 ?
+                    bytes(resp.Body).decode_json().as(body, body.?has_more.orValue(false).as(more,
+                    {
+                      "events": size(body.?data.orValue([])) > 0 ? body.?data.orValue([]).map(rl, {
+                        "message": {
+                          "project_id": proj.id,
+                          "project_name": proj.name,
+                          "project_status": proj.status,
+                          "collected_at": now.format(time_layout.RFC3339),
+                          // Optional map entries: a field is included only when present in the
+                          // API response, so sparse records never emit null (which would fail the
+                          // long-typed field mappings on ingest).
+                          ?"id": rl.?id,
+                          ?"object": rl.?object,
+                          ?"model": rl.?model,
+                          ?"max_requests_per_1_minute": rl.?max_requests_per_1_minute,
+                          ?"max_tokens_per_1_minute": rl.?max_tokens_per_1_minute,
+                          ?"max_images_per_1_minute": rl.?max_images_per_1_minute,
+                          ?"max_audio_megabytes_per_1_minute": rl.?max_audio_megabytes_per_1_minute,
+                          ?"max_requests_per_1_day": rl.?max_requests_per_1_day,
+                          ?"max_tokens_per_1_day": rl.?max_tokens_per_1_day,
+                          ?"batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens,
+                        }.encode_json(),
+                      }) :
+                      // Empty rate-limit page (a project with no configured limits): emit a keep-alive
+                      // sentinel (dropped at ingest) so this eval never returns zero events, which would
+                      // end filebeat's CEL cycle before want_more is read and stall the worklist.
+                      [{"message": {"skip": true}.encode_json()}],
+                      "worklist": worklist,
+                      "project_after": pbody.?last_id.orValue(""),
+                      "projects_done": !more_projects,
+                      "rl_after": more ? body.?last_id.orValue("") : "",
+                      // Advance next only when this project's rate-limit pages are exhausted (!more).
+                      // Advancing here is safe because the remaining projects from this project-list
+                      // page were already appended to worklist above; the DRAIN branch below will
+                      // visit them in subsequent evals. Advancing while more=true would skip pages.
+                      "next": more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1,
+                      "want_more": more || (int(state.?next.orValue(0)) + 1 < size(worklist)) || more_projects,
+                    }
+                  ))
+                  :
+                    // Rate-limit call failed for this project: emit an error and move on.
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET:" + state.url.trim_right("/") + "/" + string(proj.id) + "/rate_limits: " + (
+                            size(resp.Body) != 0 ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "worklist": worklist,
+                      "project_after": pbody.?last_id.orValue(""),
+                      "projects_done": !more_projects,
+                      "rl_after": "",
+                      "next": int(state.?next.orValue(0)) + 1,
+                      "want_more": (int(state.?next.orValue(0)) + 1 < size(worklist)) || more_projects,
+                    }
+                  )
+                )
+              :
+                // Project page added no new projects. If more pages remain, continue listing on
+                // the next interval; otherwise the cycle is complete.
+                {
+                  // When more project pages remain, want_more is true below, so this eval must still
+                  // emit: a zero-event evaluation would end the cycle before want_more is read. Emit a
+                  // keep-alive sentinel (dropped at ingest). When listing is complete, [] is fine
+                  // because want_more is false and the next interval starts a fresh cycle.
+                  "events": more_projects ? [{"message": {"skip": true}.encode_json()}] : [],
+                  "worklist": worklist,
+                  "project_after": pbody.?last_id.orValue(""),
+                  "projects_done": !more_projects,
+                  "rl_after": "",
+                  "next": int(state.?next.orValue(0)),
+                  "want_more": more_projects,
+                }
+            )
+          ))
+        :
+          // Project listing failed: emit an error and reset so the next interval retries.
+          {
+            "events": {
+              "error": {
+                "code": string(presp.StatusCode),
+                "id": string(presp.Status),
+                "message": "GET:" + state.url + ": " + (
+                  size(presp.Body) != 0 ?
+                    string(presp.Body)
+                  :
+                    string(presp.Status) + " (" + string(presp.StatusCode) + ")"
+                ),
+              },
+            },
+            "worklist": [],
+            "project_after": "",
+            "projects_done": false,
+            "rl_after": "",
+            "next": 0,
+            "want_more": false,
+          }
+        )
+      : int(state.?next.orValue(0)) < size(state.?worklist.orValue([])) ?
+        // DRAIN: page the current project's rate limits. Always emits the page just fetched.
+        state.worklist[int(state.?next.orValue(0))].as(proj,
+          request(
+            "GET",
+            state.url.trim_right("/") + "/" + string(proj.id) + "/rate_limits?" + {
+              "limit": [string(int(state.batch_size))],
+              "after": state.?rl_after.orValue("") != "" ? [state.rl_after] : [],
+            }.format_query()
+          ).with({
+            "Header": {
+              "Authorization": ["Bearer " + string(state.access_token)],
+              "Content-Type": ["application/json"],
+            }
+          }).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, body.?has_more.orValue(false).as(more,
+            {
+              "events": size(body.?data.orValue([])) > 0 ? body.?data.orValue([]).map(rl, {
+                "message": {
+                  "project_id": proj.id,
+                  "project_name": proj.name,
+                  "project_status": proj.status,
+                  "collected_at": now.format(time_layout.RFC3339),
+                  ?"id": rl.?id,
+                  ?"object": rl.?object,
+                  ?"model": rl.?model,
+                  ?"max_requests_per_1_minute": rl.?max_requests_per_1_minute,
+                  ?"max_tokens_per_1_minute": rl.?max_tokens_per_1_minute,
+                  ?"max_images_per_1_minute": rl.?max_images_per_1_minute,
+                  ?"max_audio_megabytes_per_1_minute": rl.?max_audio_megabytes_per_1_minute,
+                  ?"max_requests_per_1_day": rl.?max_requests_per_1_day,
+                  ?"max_tokens_per_1_day": rl.?max_tokens_per_1_day,
+                  ?"batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens,
+                }.encode_json(),
+              }) :
+              // Empty rate-limit page (a project with no configured limits): emit a keep-alive
+              // sentinel (dropped at ingest) so this eval never returns zero events, which would
+              // end filebeat's CEL cycle before want_more is read and stall the worklist.
+              [{"message": {"skip": true}.encode_json()}],
+              "rl_after": more ? body.?last_id.orValue("") : "",
+              "next": more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1,
+              // More rate-limit pages, more projects in the worklist, or more project pages to load.
+              "want_more": more || (int(state.?next.orValue(0)) + 1 < size(state.worklist)) || !state.?projects_done.orValue(true),
+            }
+          ))
+          :
+            // Rate-limit call failed for this project: emit an error and continue with the rest.
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET:" + state.url.trim_right("/") + "/" + string(proj.id) + "/rate_limits: " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "rl_after": "",
+              "next": int(state.?next.orValue(0)) + 1,
+              "want_more": (int(state.?next.orValue(0)) + 1 < size(state.worklist)) || !state.?projects_done.orValue(true),
+            }
+          )
+        )
+      :
+        // Defensive: nothing left to do; reset for the next interval.
+        {
+          "events": [],
+          "worklist": [],
+          "project_after": "",
+          "projects_done": false,
+          "rl_after": "",
+          "next": 0,
+          "want_more": false,
+        }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

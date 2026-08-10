@@ -15,6 +15,10 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - set:
       field: event.type
       value: [info]
@@ -37,10 +41,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-  - terminate:
-      tag: data_collection_error
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      description: error message set and no data to process.
   - drop:
       if: ctx.json?.data?.plugin_details != null && ctx.json.data.plugin_details.isEmpty()
   - fingerprint:

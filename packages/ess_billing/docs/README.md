@@ -1,8 +1,21 @@
 # Elasticsearch Service Billing
 
-The Elasticsearch Service Billing integration allows you to monitor Elasticsearch Service usage and costs. It collects billing data from the [Elasticsearch Service billing API](https://www.elastic.co/docs/api/doc/cloud-billing/) and sends it to your target Elasticsearch cluster. Dashboards are provided out-of-the-box to help you visualize your Elasticsearch Service usage and costs.
+The Elasticsearch Service Billing integration (also known as the **Elastic Cloud billing integration**) lets you monitor usage and costs for your entire **Elastic Cloud organization**. It collects billing data from the [Elastic Cloud Billing API](https://www.elastic.co/docs/api/doc/cloud-billing/) and sends it to your target Elasticsearch cluster. Dashboards are provided out-of-the-box to help you visualize spending across your organization.
 
-Using this integration, you could for instance create alerts whenever a new deployment is created, or when your baseline spending exceeds a certain threshold.
+Using this integration, you could for instance create alerts whenever a new deployment or project is created, or when your baseline spending exceeds a certain threshold.
+
+## Supported Elastic Cloud products
+
+This integration reports **organization-level** billing data. Any usage billed to your Elastic Cloud organization appears in the collected data, regardless of deployment model.
+
+| Product | What is billed | How it appears in billing data |
+| --- | --- | --- |
+| **Elastic Cloud Hosted** | Deployments (Elasticsearch, Kibana, and add-on capacity), data transfer, snapshot storage, and related services | Instances with `deployment_type: deployment` |
+| **Elastic Cloud Serverless** | Serverless projects (Elasticsearch, Observability, and Security), including usage-based dimensions such as ingest, retention, and search power | Instances with project types such as `elasticsearch`, `observability`, or `security` |
+| **Cloud connected usage** | Elastic Cloud services consumed through [Cloud Connect](https://www.elastic.co/docs/deploy-manage/cloud-connect) on self-managed, ECE, or ECK clusters (for example, [Elastic Inference Service](https://www.elastic.co/docs/explore-analyze/elastic-inference/eis) token usage) | Organization-level line items for connected services |
+| **Other Elastic Cloud services** | Add-on services billed to the organization (for example, Synthetics monitors) | Service-specific line items alongside deployments and projects |
+
+All usage is metered in [Elastic Consumption Units (ECUs)](https://www.elastic.co/docs/deploy-manage/cloud-organization/billing/ecu). The integration does not distinguish between billing models (pay-as-you-go, marketplace, or prepaid consumption)—it reflects the ECU consumption recorded for your organization.
 
 ## Data streams
 
@@ -16,11 +29,11 @@ By default, the last year of data of billing data is collected upon first execut
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+This integration collects data at the organization level, so no need to target individual deployments or projects.
 
-You will need to recover the identifier of your organization, which can be seen in the [cloud organization page](https://cloud.elastic.co/account/members).
+You will need the identifier of your Elastic Cloud **organization** (not a single deployment or project), which can be seen on the [cloud organization page](https://cloud.elastic.co/account/members).
 
-You will also need to provision an API key with the `Billing admin` role in the [API keys page](https://cloud.elastic.co/account/keys).
+You will also need to provision an API key with the `Billing admin` role on the [API keys page](https://cloud.elastic.co/account/keys). This key must have access to the organization whose billing data you want to collect.
 
 For private cloud, or admin users, the cloud endpoint can be altered to match your requirements. You can change this in the "advanced settings" section of the integration configuration.
 
@@ -29,13 +42,15 @@ For private cloud, or admin users, the cloud endpoint can be altered to match yo
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-monitor-hosts-with-elastic-agent) guide.
 
-If you run in the cloud (Cloud Hosted of Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward - if this criteria is met, you don't need to install an Elastic Agent to gather these metrics.
+If you run on Elastic Cloud (Hosted or Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward. When agentless deployment is available, you don't need to install an Elastic Agent to gather these metrics.
 
 ## Data streams reference
 
 ###  `metrics-ess_billing.billing` data stream
 
-The `metrics-ess_billing.billing` data stream collects billing data from the Elasticsearch Service billing API. This exposes information about the ECU consumption for each deployment or service provided by Elastic (serverless projects, synthetics monitors).
+The `metrics-ess_billing.billing` data stream collects billing data from the Elastic Cloud Billing API. Each event represents ECU consumption for a billing line item. Line items are grouped by instance—an instance may be an Elastic Cloud Hosted deployment, a Serverless project, a cloud connected service, or another organization-level service (for example, Synthetics monitors).
+
+Field names such as `ess.billing.deployment_id` and `ess.billing.deployment_name` are used for all instance types for backward compatibility. For Serverless projects, `ess.billing.deployment_type` reflects the project type (for example, `observability` or `security`). For Hosted deployments, it is `deployment`.
 
 An example event for `billing` looks as following:
 
@@ -141,10 +156,10 @@ An example event for `billing` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ess.billing.cloud.machine.type | The machine type of the instance (e.g., n2.68x16x45). | keyword |
 | ess.billing.cloud.service.type | The service type of the serverless project. | keyword |
-| ess.billing.deployment_id | ID of the Elasticsearch Service deployment. | keyword |
-| ess.billing.deployment_name | Name of the Elasticsearch Service deployment. | keyword |
-| ess.billing.deployment_tags | Tags associated with the Elasticsearch Service deployment. | keyword |
-| ess.billing.deployment_type | Type of the Elasticsearch Service deployment. | keyword |
+| ess.billing.deployment_id | ID of the billed instance (Hosted deployment, Serverless project, or other Elastic Cloud service). | keyword |
+| ess.billing.deployment_name | Name of the billed instance. | keyword |
+| ess.billing.deployment_tags | Tags associated with the billed Hosted deployment (when available). | keyword |
+| ess.billing.deployment_type | Instance type—for Hosted deployments this is `deployment`; for Serverless projects this is the project type (for example, `elasticsearch`, `observability`, or `security`). | keyword |
 | ess.billing.display_quantity.formatted_value | Human-readable representation of the quantity used (e.g., "24 hours"). | keyword |
 | ess.billing.display_quantity.type | Type of quantity displayed (default or custom). | keyword |
 | ess.billing.display_quantity.value | Actual quantity used (e.g., 24). | float |
@@ -171,7 +186,7 @@ An example event for `billing` looks as following:
 
 ### `metrics-ess_billing.credit` data stream
 
-The `metrics-ess_billing.credit` data stream collects credit data from the Elasticsearch Service billing API. This is only available for customers with a direct yearly or multi-year contract with Elastic (not marketplace or monthly subscriptions).
+The `metrics-ess_billing.credit` data stream collects credit data from the Elastic Cloud Billing API. This is only available for customers with a direct yearly or multi-year contract with Elastic (not marketplace or monthly subscriptions). ECU credits apply to all Elastic Cloud usage in the organization, including Hosted, Serverless, and cloud connected services.
 
 An example event for `credits` looks as following:
 
