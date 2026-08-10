@@ -1,0 +1,87 @@
+{
+  "attributes": {
+    "created_at": "2026-08-06T00:00:00.000Z",
+    "created_by": "elastic",
+    "description": "NTFS $MFT forensic sweep over high-signal Windows directories using the elastic_ntfs_file extension table (requires osquerybeat 9.5.0+ with the NTFS extension). The query uses a UNION ALL of per-directory blocks — one bounded access mode per directory — because the extension table rejects unbounded scans and its glob is NOT recursive (each directory must be listed explicitly). Directories covered: the global Startup folder (C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup), C:\\Windows\\Temp, C:\\ProgramData, C:\\Users\\Public, C:\\Windows\\System32\\Tasks, and the current default user profile's Startup, AppData\\Roaming, AppData\\Local, and AppData\\Local\\Temp folders (C:\\Users\\Default). Because directory= is an exact, non-recursive match, per-user profiles must be added explicitly: operators should duplicate the C:\\Users\\Default blocks and substitute each real user name (e.g. C:\\Users\\jdoe\\AppData\\Roaming) to cover active accounts. Returns both $STANDARD_INFORMATION (btime/mtime/ctime/atime) and $FILE_NAME (fn_btime/fn_mtime/fn_ctime/fn_atime) timestamp sets, plus NTFS metadata: inode, parent_inode, sequence_number, hard_link_count, flags, object_id, security_id, owner_id, ADS presence, and allocation status. active=0 surfaces deleted or unallocated MFT entries; si_lt_fn=1 indicates $SI creation time predates $FN creation time, a common timestomping indicator. Both signals are triage hints only — they are attacker-defeatable — and should be corroborated with the ntfs_journal_events (USN) query.",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": ["file"]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": ["info"]
+        }
+      },
+      {
+        "key": "event.action",
+        "value": {
+          "value": "osquery.ntfs_mft"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "file.name",
+        "value": {
+          "field": "filename"
+        }
+      },
+      {
+        "key": "file.inode",
+        "value": {
+          "field": "inode"
+        }
+      },
+      {
+        "key": "file.size",
+        "value": {
+          "field": "size"
+        }
+      },
+      {
+        "key": "file.mtime",
+        "value": {
+          "field": "mtime"
+        }
+      },
+      {
+        "key": "file.created",
+        "value": {
+          "field": "btime"
+        }
+      },
+      {
+        "key": "file.accessed",
+        "value": {
+          "field": "atime"
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": ["osquery", "ntfs_mft", "filesystem_forensics", "timestomping", "deleted_files", "windows"]
+        }
+      }
+    ],
+    "id": "ntfs_mft_windows_elastic",
+    "interval": "3600",
+    "platform": "windows",
+    "query": "-- NTFS $MFT Forensic Sweep\n-- Requires: osquerybeat 9.5.0+ with elastic_ntfs_file extension (beats#50641)\n-- Each UNION block pins one directory via bounded access mode (directory + filename GLOB).\n-- active=0: deleted/unallocated MFT entry. si_lt_fn=1: $SI creation < $FN creation (timestomping hint).\n-- Wire quirk: integer 0 serializes as empty string; if you filter active/ads use numeric comparison (WHERE ads = 0), not WHERE ads = '0'.\n-- directory= is an exact, NON-recursive match. Per-user blocks use C:\\Users\\Default as a template;\n-- duplicate them and substitute each real user name (e.g. C:\\Users\\jdoe\\AppData\\Roaming) to cover active accounts.\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Users\\Default\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Windows\\Temp' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\ProgramData' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Users\\Public' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Users\\Default\\AppData\\Roaming' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Users\\Default\\AppData\\Local' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Users\\Default\\AppData\\Local\\Temp' AND filename GLOB '*'\nUNION ALL\nSELECT\n  path,\n  filename,\n  type,\n  size,\n  allocated_size,\n  inode,\n  parent_inode,\n  sequence_number,\n  hard_link_count,\n  active,\n  ads,\n  object_id,\n  security_id,\n  owner_id,\n  datetime(btime, 'unixepoch') AS btime,\n  datetime(mtime, 'unixepoch') AS mtime,\n  datetime(ctime, 'unixepoch') AS ctime,\n  datetime(atime, 'unixepoch') AS atime,\n  datetime(fn_btime, 'unixepoch') AS fn_btime,\n  datetime(fn_mtime, 'unixepoch') AS fn_mtime,\n  datetime(fn_ctime, 'unixepoch') AS fn_ctime,\n  datetime(fn_atime, 'unixepoch') AS fn_atime,\n  CASE WHEN btime < fn_btime THEN 1 ELSE 0 END AS si_lt_fn\nFROM elastic_ntfs_file\nWHERE directory = 'C:\\Windows\\System32\\Tasks' AND filename GLOB '*'",
+    "updated_at": "2026-08-06T00:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.3.0",
+  "id": "osquery_manager-d90c2cb6-9d10-486d-a0db-fd7ea0a3bc1f",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2026-08-06T00:00:00.000Z",
+  "version": "WzEsMV0="
+}
