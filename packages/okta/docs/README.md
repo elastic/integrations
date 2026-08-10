@@ -374,7 +374,7 @@ An example event for `system` looks as following:
 | okta.target.changeDetails.to.\* |  | object |
 | okta.target.detailEntry.\* |  | object |
 | okta.target.display_name | Human-readable name of an object the event acted on. One event can act on several objects, so this holds the names of all of them. Targets that do not carry a name are skipped and repeated names are collapsed, so positions do not line up with `okta.target.id` or `okta.target.type`. Deprecated. Use the ECS `entity.target.display_name` field. | alias |
-| okta.target.id | Okta identifier of an object the event acted on, such as a user, group, application or policy. Opaque, so use `okta.target.type` to tell what kind of object it refers to. One event can act on several objects, so this holds the identifiers of all of them. Not every target has one, so this can be shorter than `okta.target.type` and positions do not line up between them. Deprecated. Use the ECS `entity.target.id` field. | alias |
+| okta.target.id | Okta identifier of an object the event acted on, such as a user, group, application or policy. Deprecated. Use the ECS `entity.target.id` field. | alias |
 | okta.target.type | The kind of object the event acted on, such as "User", "AppInstance", "PolicyEntity", "PolicyRule" or "UDDevice". Okta-specific rather than a normalized vocabulary, and also available as `entity.target.sub_type`. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
 | okta.transaction.detail.root_api_token_id | ID of the root API token. | keyword |
