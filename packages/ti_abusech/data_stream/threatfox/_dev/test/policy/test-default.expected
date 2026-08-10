@@ -33,6 +33,8 @@ inputs:
                         {
                           "events": {
                             "error": {
+                              "code": 400,
+                              "id": "configuration_error",
                               "message": "api_type is 'commercial' but username/password are not configured",
                             },
                           },
@@ -157,51 +159,60 @@ inputs:
                         )
                     )
                   :
-                    request(
-                      "POST",
-                      state.url,
-                      "{ \"query\": \"get_iocs\", \"days\": " + state.?cursor.days.orValue(state.initial_interval) + " }"
-                    ).with(
+                    !has(state.auth_key) ?
                       {
-                        "Header": {
-                          "Content-Type": ["application/json"],
-                          ?"Auth-Key": has(state.auth_key) ?
-                            optional.of([state.auth_key])
-                          :
-                            optional.none(),
+                        "events": {
+                          "error": {
+                            "code": 400,
+                            "id": "configuration_error",
+                            "message": "api_type is 'community' but auth_key is not configured",
+                          },
                         },
+                        "want_more": false,
                       }
-                    ).as(req,
-                      req.do_request().as(resp, (resp.StatusCode == 200) ?
-                        resp.Body.decode_json().as(body,
+                    :
+                      request(
+                        "POST",
+                        state.url,
+                        "{ \"query\": \"get_iocs\", \"days\": " + state.?cursor.days.orValue(state.initial_interval) + " }"
+                      ).with(
+                        {
+                          "Header": {
+                            "Content-Type": ["application/json"],
+                            "Auth-Key": [state.auth_key],
+                          },
+                        }
+                      ).as(req,
+                        req.do_request().as(resp, (resp.StatusCode == 200) ?
+                          resp.Body.decode_json().as(body,
+                            {
+                              "events": has(body.data) ?
+                                body.data.map(ind, {"message": ind.encode_json()})
+                              :
+                                [],
+                              "cursor": {
+                                "days": "1",
+                              },
+                            }
+                          )
+                        :
                           {
-                            "events": has(body.data) ?
-                              body.data.map(ind, {"message": ind.encode_json()})
-                            :
-                              [],
-                            "cursor": {
-                              "days": "1",
+                            "events": {
+                              "error": {
+                                "code": string(resp.StatusCode),
+                                "id": resp.Status,
+                                "message": "POST " + state.url.trim_right("/") + ":" + (
+                                  (size(resp.Body) != 0) ?
+                                    string(resp.Body)
+                                  :
+                                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                                ),
+                              },
                             },
+                            "want_more": false,
                           }
                         )
-                      :
-                        {
-                          "events": {
-                            "error": {
-                              "code": string(resp.StatusCode),
-                              "id": resp.Status,
-                              "message": "POST " + state.url.trim_right("/") + ":" + (
-                                (size(resp.Body) != 0) ?
-                                  string(resp.Body)
-                                :
-                                  resp.Status + " (" + string(resp.StatusCode) + ")"
-                              ),
-                            },
-                          },
-                          "want_more": false,
-                        }
                       )
-                    )
                 )
               )
             )
