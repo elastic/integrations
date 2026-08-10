@@ -8,7 +8,7 @@ require (
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.9.1
 	github.com/magefile/mage v1.17.2
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/tools v0.48.0
 	gopkg.in/yaml.v3 v3.0.1
 )
