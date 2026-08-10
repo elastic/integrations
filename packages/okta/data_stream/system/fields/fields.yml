@@ -14,14 +14,15 @@
   type: alias
   path: log.level
   description: |
-    Deprecated. Alias to `log.level`, retained so existing saved searches,
-    dashboards, and detection rules continue to resolve.
+    Okta's own assessment of how important the event is. One of "DEBUG", "INFO",
+    "WARN" or "ERROR". Okta emits it uppercase; it is lowercased when written to
+    `log.level`.
+    Deprecated. Use the ECS `log.level` field.
 - name: okta.display_message
   type: keyword
   description: |
-    The display message of the LogEvent. Also copied to `message`; kept as a keyword
-    here so terms aggregations and sorts continue to work, which `message` cannot
-    support as a `match_only_text` field.
+    The human-readable summary of the event shown in the Okta System Log UI.
+    Also available as `message`.
 - name: okta.actor
   type: group
   fields:
@@ -29,8 +30,11 @@
       type: alias
       path: user.id
       description: |
-        Deprecated. Alias to `user.id`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        Identifier of the actor that performed the action. For a human actor this is
+        the Okta user ID. Events triggered by Okta itself carry the ID of a system
+        principal instead, so read it together with `okta.actor.type` to tell the two
+        apart.
+        Deprecated. Use the ECS `user.id` field.
     - name: type
       type: keyword
       description: |
@@ -77,8 +81,11 @@
       type: alias
       path: network.name
       description: |
-        Deprecated. Alias to `network.name`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        The Okta network zone the client request matched, as configured under
+        Security > Networks. Requests that match no configured zone carry the literal
+        string "null" rather than omitting the field, so filter on that value rather
+        than on the field's absence.
+        Deprecated. Use the ECS `network.name` field.
     - name: device
       type: keyword
       description: |
@@ -100,32 +107,39 @@
       type: alias
       path: device.id
       description: |
-        Deprecated. Alias to `device.id`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        Identifier assigned by Okta when the device was registered with the org.
+        Only present on events that carry device context, so it is absent from most
+        events.
+        Deprecated. Use the ECS `device.id` field.
     - name: managed
       type: alias
       path: host.entity.attributes.managed
       description: |
-        Deprecated. Alias to `host.entity.attributes.managed`, retained so existing
-        saved searches, dashboards, and detection rules continue to resolve.
+        Whether the device is enrolled in the organization's device management. Only
+        present on events that carry device context, so it is absent from most events.
+        Deprecated. Use the ECS `host.entity.attributes.managed` field.
     - name: name
       type: alias
       path: device.product.name
       description: |
-        Deprecated. Alias to `device.product.name`, retained so existing saved
-        searches, dashboards, and detection rules continue to resolve.
+        The device's self-reported name, which in practice is the hardware model
+        identifier rather than a name a user chose.
+        Deprecated. Use the ECS `device.product.name` field.
     - name: os_platform
       type: alias
       path: host.os.platform
       description: |
-        Deprecated. Alias to `host.os.platform`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        The operating system family of the end user's device, reported by Okta in
+        uppercase. Describes the device the request came from, not the Okta tenant.
+        Deprecated. Use the ECS `host.os.platform` field.
     - name: os_version
       type: alias
       path: host.os.version
       description: |
-        Deprecated. Alias to `host.os.version`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        The operating system version of the end user's device. The format is whatever
+        the platform reports and is not normalized by Okta, so it is not reliably
+        comparable across platforms.
+        Deprecated. Use the ECS `host.os.version` field.
     - name: registered
       type: boolean
       description: |
@@ -147,8 +161,10 @@
       type: alias
       path: event.reason
       description: |
-        Deprecated. Alias to `event.reason`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        Human-readable explanation of why the event ended with the result recorded in
+        `okta.outcome.result`. Free text that varies by event type and Okta wording,
+        so it is useful for investigation but not a stable value to match rules on.
+        Deprecated. Use the ECS `event.reason` field.
     - name: result
       type: keyword
       description: |
@@ -176,21 +192,24 @@
       type: alias
       path: entity.target.display_name
       description: |
-        Deprecated. Alias to `entity.target.display_name`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        Human-readable name of an object the event acted on. One event can act on
+        several objects, so this holds the names of all of them. Targets that do not
+        carry a name are skipped and repeated names are collapsed, so positions do
+        not line up with `okta.target.id` or `okta.target.type`.
+        Deprecated. Use the ECS `entity.target.display_name` field.
     - name: id
       type: alias
       path: entity.target.id
       description: |
-        Deprecated. Alias to `entity.target.id`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        Okta identifier of an object the event acted on, such as a user, group,
+        application or policy.
+        Deprecated. Use the ECS `entity.target.id` field.
     - name: type
       type: keyword
       description: |
-        The type of target. Also copied to `entity.target.sub_type`, which ECS uses for
-        provider-specific designations rather than the standardized `entity.type`. Kept
-        as a real field because the values are folded from the `okta.target` array into
-        a single list, which an alias cannot express.
+        The kind of object the event acted on, such as "User", "AppInstance",
+        "PolicyEntity", "PolicyRule" or "UDDevice". Okta-specific rather than a
+        normalized vocabulary, and also available as `entity.target.sub_type`.
 - name: okta.transaction
   type: group
   fields:
@@ -249,8 +268,10 @@
       type: alias
       path: url.path
       description: |
-        Deprecated. Alias to `url.path`, retained so existing saved searches,
-        dashboards, and detection rules continue to resolve.
+        Path of the Okta API or admin console request that produced the event. Path
+        only; the query string is carried separately in
+        `okta.debug_context.debug_data.url`.
+        Deprecated. Use the ECS `url.path` field.
     - name: debug_data.threat_suspected
       type: keyword
       description: |
@@ -401,8 +422,10 @@
           type: alias
           path: client.as.number
           description: |
-            Deprecated. Alias to `client.as.number`, retained so existing saved
-            searches, dashboards, and detection rules continue to resolve.
+            Number of the autonomous system that announces the client IP address.
+            Resolved by Okta rather than by the Elastic GeoIP processor, so it can
+            differ from an ASN derived from `source.ip`.
+            Deprecated. Use the ECS `client.as.number` field.
         - name: organization
           type: group
           fields:
@@ -410,9 +433,11 @@
               type: alias
               path: client.as.organization.name
               description: |
-                Deprecated. Alias to `client.as.organization.name`, retained so
-                existing saved searches, dashboards, and detection rules continue
-                to resolve.
+                Name of the organization that owns the autonomous system announcing
+                the client IP. Okta lowercases it and does not normalize it, so
+                punctuation and length vary widely between providers and some values
+                are a full sentence.
+                Deprecated. Use the ECS `client.as.organization.name` field.
     - name: isp
       type: keyword
       description: |

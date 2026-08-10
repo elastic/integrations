@@ -279,7 +279,7 @@ An example event for `system` looks as following:
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
 | okta.actor.display_name | Display name of the actor. | keyword |
 | okta.actor.display_name.text | Multi-field of `okta.actor.display_name`. | match_only_text |
-| okta.actor.id | Deprecated. Alias to `user.id`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.actor.id | Identifier of the actor that performed the action. For a human actor this is the Okta user ID. Events triggered by Okta itself carry the ID of a system principal instead, so read it together with `okta.actor.type` to tell the two apart. Deprecated. Use the ECS `user.id` field. | alias |
 | okta.actor.type | Type of the actor. | keyword |
 | okta.authentication_context.authentication_provider | The information about the authentication provider. Must be one of OKTA_AUTHENTICATION_PROVIDER, ACTIVE_DIRECTORY, LDAP, FEDERATION, SOCIAL, FACTOR_PROVIDER. | keyword |
 | okta.authentication_context.authentication_step | The authentication step. | integer |
@@ -297,7 +297,7 @@ An example event for `system` looks as following:
 | okta.client.user_agent.os | The OS informaton. | keyword |
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.user_agent.raw_user_agent.text | Multi-field of `okta.client.user_agent.raw_user_agent`. | match_only_text |
-| okta.client.zone | Deprecated. Alias to `network.name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.client.zone | The Okta network zone the client request matched, as configured under Security \> Networks. Requests that match no configured zone carry the literal string "null" rather than omitting the field, so filter on that value rather than on the field's absence. Deprecated. Use the ECS `network.name` field. | alias |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
 | okta.debug_context.debug_data.behaviors |  | keyword |
@@ -335,7 +335,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.originalPrincipal.type |  | keyword |
 | okta.debug_context.debug_data.promptingPolicyTypes |  | keyword |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
-| okta.debug_context.debug_data.request_uri | Deprecated. Alias to `url.path`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.debug_context.debug_data.request_uri | Path of the Okta API or admin console request that produced the event. Path only; the query string is carried separately in `okta.debug_context.debug_data.url`. Deprecated. Use the ECS `url.path` field. | alias |
 | okta.debug_context.debug_data.requested_scopes |  | keyword |
 | okta.debug_context.debug_data.risk |  | keyword |
 | okta.debug_context.debug_data.risk.level |  | keyword |
@@ -350,32 +350,32 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.url.text | Multi-field of `okta.debug_context.debug_data.url`. | match_only_text |
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
-| okta.device.id | Deprecated. Alias to `device.id`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.device.managed | Deprecated. Alias to `host.entity.attributes.managed`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.device.name | Deprecated. Alias to `device.product.name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.device.os_platform | Deprecated. Alias to `host.os.platform`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.device.os_version | Deprecated. Alias to `host.os.version`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.device.id | Identifier assigned by Okta when the device was registered with the org. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `device.id` field. | alias |
+| okta.device.managed | Whether the device is enrolled in the organization's device management. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `host.entity.attributes.managed` field. | alias |
+| okta.device.name | The device's self-reported name, which in practice is the hardware model identifier rather than a name a user chose. Deprecated. Use the ECS `device.product.name` field. | alias |
+| okta.device.os_platform | The operating system family of the end user's device, reported by Okta in uppercase. Describes the device the request came from, not the Okta tenant. Deprecated. Use the ECS `host.os.platform` field. | alias |
+| okta.device.os_version | The operating system version of the end user's device. The format is whatever the platform reports and is not normalized by Okta, so it is not reliably comparable across platforms. Deprecated. Use the ECS `host.os.version` field. | alias |
 | okta.device.registered | Whether the device is registered. | boolean |
 | okta.device.screen_lock_type | The mechanism for locking the device's screen. One of "NONE", "PASSCODE" or "BIOMETRIC". | keyword |
 | okta.device.secure_hardware_present | Whether there is secure hardware present on the device. This is a checks for chip presence: trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens on the secure hardware. | boolean |
-| okta.display_message | The display message of the LogEvent. Also copied to `message`; kept as a keyword here so terms aggregations and sorts continue to work, which `message` cannot support as a `match_only_text` field. | keyword |
+| okta.display_message | The human-readable summary of the event shown in the Okta System Log UI. Also available as `message`. | keyword |
 | okta.event_type | The type of the LogEvent. | keyword |
-| okta.outcome.reason | Deprecated. Alias to `event.reason`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.outcome.reason | Human-readable explanation of why the event ended with the result recorded in `okta.outcome.result`. Free text that varies by event type and Okta wording, so it is useful for investigation but not a stable value to match rules on. Deprecated. Use the ECS `event.reason` field. | alias |
 | okta.outcome.result | The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN. | keyword |
 | okta.request.ip_chain |  | flattened |
-| okta.security_context.as.number | Deprecated. Alias to `client.as.number`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.security_context.as.organization.name | Deprecated. Alias to `client.as.organization.name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.security_context.as.number | Number of the autonomous system that announces the client IP address. Resolved by Okta rather than by the Elastic GeoIP processor, so it can differ from an ASN derived from `source.ip`. Deprecated. Use the ECS `client.as.number` field. | alias |
+| okta.security_context.as.organization.name | Name of the organization that owns the autonomous system announcing the client IP. Okta lowercases it and does not normalize it, so punctuation and length vary widely between providers and some values are a full sentence. Deprecated. Use the ECS `client.as.organization.name` field. | alias |
 | okta.security_context.domain | The domain name. | keyword |
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
-| okta.severity | Deprecated. Alias to `log.level`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
+| okta.severity | Okta's own assessment of how important the event is. One of "DEBUG", "INFO", "WARN" or "ERROR". Okta emits it uppercase; it is lowercased when written to `log.level`. Deprecated. Use the ECS `log.level` field. | alias |
 | okta.target.alternate_id | The alternate ID of the target. | keyword |
 | okta.target.changeDetails.from.\* |  | object |
 | okta.target.changeDetails.to.\* |  | object |
 | okta.target.detailEntry.\* |  | object |
-| okta.target.display_name | Deprecated. Alias to `entity.target.display_name`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.target.id | Deprecated. Alias to `entity.target.id`, retained so existing saved searches, dashboards, and detection rules continue to resolve. | alias |
-| okta.target.type | The type of target. Also copied to `entity.target.sub_type`, which ECS uses for provider-specific designations rather than the standardized `entity.type`. Kept as a real field because the values are folded from the `okta.target` array into a single list, which an alias cannot express. | keyword |
+| okta.target.display_name | Human-readable name of an object the event acted on. One event can act on several objects, so this holds the names of all of them. Targets that do not carry a name are skipped and repeated names are collapsed, so positions do not line up with `okta.target.id` or `okta.target.type`. Deprecated. Use the ECS `entity.target.display_name` field. | alias |
+| okta.target.id | Okta identifier of an object the event acted on, such as a user, group, application or policy. Opaque, so use `okta.target.type` to tell what kind of object it refers to. One event can act on several objects, so this holds the identifiers of all of them. Not every target has one, so this can be shorter than `okta.target.type` and positions do not line up between them. Deprecated. Use the ECS `entity.target.id` field. | alias |
+| okta.target.type | The kind of object the event acted on, such as "User", "AppInstance", "PolicyEntity", "PolicyRule" or "UDDevice". Okta-specific rather than a normalized vocabulary, and also available as `entity.target.sub_type`. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
 | okta.transaction.detail.root_api_token_id | ID of the root API token. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
