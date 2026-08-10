@@ -223,9 +223,9 @@ An example event for `cloudtrail` looks as following:
 {
     "@timestamp": "2020-09-11T19:36:49.000Z",
     "agent": {
-        "ephemeral_id": "682be2d8-abc9-4d10-857f-c455adee8197",
-        "id": "62acae51-592b-4890-82a9-a12f83d23580",
-        "name": "elastic-agent-32028",
+        "ephemeral_id": "0c78ac32-b221-4631-bff4-f8ccba95303c",
+        "id": "3ce5e0b6-a326-44ac-b094-b038234aaa99",
+        "name": "elastic-agent-70464",
         "type": "filebeat",
         "version": "9.4.0"
     },
@@ -336,8 +336,8 @@ An example event for `cloudtrail` looks as following:
         },
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-89047",
-                "name": "elastic-package-aws-bucket-89047"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-79112",
+                "name": "elastic-package-aws-bucket-79112"
             },
             "object": {
                 "key": "cloudtrail-digest.log"
@@ -348,26 +348,27 @@ An example event for `cloudtrail` looks as following:
         "account": {
             "id": "123456789123"
         },
+        "provider": "aws",
         "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "aws.cloudtrail",
-        "namespace": "34239",
+        "namespace": "88895",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "62acae51-592b-4890-82a9-a12f83d23580",
+        "id": "3ce5e0b6-a326-44ac-b094-b038234aaa99",
         "snapshot": false,
         "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2026-08-07T05:57:21.830Z",
+        "created": "2026-08-10T12:26:46.695Z",
         "dataset": "aws.cloudtrail",
-        "ingested": "2026-08-07T05:57:22Z",
+        "ingested": "2026-08-10T12:26:47Z",
         "kind": "event",
         "module": "aws",
         "original": "{\"awsAccountId\":\"123456789123\",\"digestStartTime\":\"2020-09-11T18:36:49Z\",\"digestEndTime\":\"2020-09-11T19:36:49Z\",\"digestS3Bucket\":\"alice-bucket\",\"digestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T193649Z.json.gz\",\"digestPublicKeyFingerprint\":\"47aaa19f7eec22e9bd0b5e58cfade8cb\",\"digestSignatureAlgorithm\":\"SHA256withRSA\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\",\"previousDigestS3Bucket\":\"alice-bucket\",\"previousDigestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T183649Z.json.gz\",\"previousDigestHashValue\":\"531914fcfa0dbacf0c9dd1475a1fdcb5dea6e85921409f3c3ec0ba39063c860\",\"previousDigestHashAlgorithm\":\"SHA-256\",\"previousDigestSignature\":\"10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987\",\"logFiles\":[{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz\",\"hashValue\":\"420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T19:26:24Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz\",\"hashValue\":\"4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:11:18Z\",\"oldestEventTime\":\"2020-09-11T19:11:18Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz\",\"hashValue\":\"2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:32:04Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz\",\"hashValue\":\"45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:21:28Z\",\"oldestEventTime\":\"2020-09-11T19:21:28Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz\",\"hashValue\":\"515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:51:21Z\",\"oldestEventTime\":\"2020-09-11T18:51:21Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz\",\"hashValue\":\"18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:46:45Z\",\"oldestEventTime\":\"2020-09-11T18:46:45Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz\",\"hashValue\":\"54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:01:06Z\",\"oldestEventTime\":\"2020-09-11T19:01:06Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz\",\"hashValue\":\"6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:16:12Z\",\"oldestEventTime\":\"2020-09-11T19:16:12Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz\",\"hashValue\":\"b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:56:05Z\",\"oldestEventTime\":\"2020-09-11T18:56:05Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz\",\"hashValue\":\"4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:06:31Z\",\"oldestEventTime\":\"2020-09-11T19:06:31Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz\",\"hashValue\":\"94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:41:58Z\",\"oldestEventTime\":\"2020-09-11T18:41:58Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz\",\"hashValue\":\"9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:37:10Z\",\"oldestEventTime\":\"2020-09-11T18:37:10Z\"}]}",
@@ -387,7 +388,7 @@ An example event for `cloudtrail` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-89047.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
+            "path": "https://elastic-package-aws-bucket-79112.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
         },
         "offset": 0
     },

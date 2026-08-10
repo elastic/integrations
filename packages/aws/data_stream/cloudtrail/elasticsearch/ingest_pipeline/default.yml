@@ -1113,7 +1113,13 @@ processors:
       patterns:
         - '^arn:[a-z0-9-]+:sts:.*/%{GREEDYDATA:_tmp.session_name}$'
       ignore_missing: true
-      if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser'
+      if: >-
+        (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' ||
+        ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser' ||
+        ctx.aws?.cloudtrail?.user_identity?.type == 'IdentityCenterUser') &&
+        ctx.aws?.cloudtrail?.user_identity?.arn != null &&
+        ctx.aws.cloudtrail.user_identity.arn.contains(':sts:') &&
+        ctx.aws.cloudtrail.user_identity.arn.contains('/')
       tag: extract_session_name_from_arn
       on_failure:
         - append:
@@ -1246,6 +1252,13 @@ processors:
       field: json.userIdentity.sessionContext.signInSessionArn
       target_field: aws.cloudtrail.user_identity.session_context.sign_in_session_arn
       ignore_missing: true
+  - dissect:
+      tag: dissect_json_eventSource_to_cloud_service_name_5d2b7c94
+      field: json.eventSource
+      pattern: '%{cloud.service.name}.amazonaws.com'
+      if: >-
+        ctx.cloud?.service?.name == null && ctx.json?.eventSource != null &&
+        ctx.json.eventSource.endsWith('.amazonaws.com')
   - rename:
       tag: rename_json_eventSource_to_event_provider_4648c27c
       field: json.eventSource
@@ -1267,6 +1280,10 @@ processors:
       tag: rename_additionalEventData_UserName_to_username
       target_field: user.name
       if: ctx.event?.action == 'UserAuthentication' && ctx.user?.name == null && ctx.json?.additionalEventData?.UserName != null
+  - set:
+      tag: set_cloud_provider_aws_8f31c0e6
+      field: cloud.provider
+      value: aws
   - set:
       tag: set_cloud_region_5d7559a1
       field: cloud.region
@@ -1962,11 +1979,13 @@ processors:
         Publish:
           category:
             - api
-          type: []
+          type:
+            - info
         SendCommand:
           category:
             - process
-          type: []
+          type:
+            - start
         GetPolicy:
           category:
             - iam
@@ -1990,7 +2009,8 @@ processors:
         Converse:
           category:
             - api
-          type: []
+          type:
+            - info
         CreateDocument:
           category:
             - file
@@ -2055,7 +2075,7 @@ processors:
           category:
             - file
           type:
-            - delete
+            - deletion
       source: >-
         ctx.event.kind = 'event';
         ctx.event.type = ['info'];
@@ -2329,6 +2349,130 @@ processors:
       value: '{{{user.changes.name}}}'
       if: ctx.user?.changes?.name != null
       allow_duplicates: false
+
+  - append:
+      tag: append_related_user_on_behalf_of_user_id
+      field: related.user
+      value: '{{{aws.cloudtrail.user_identity.on_behalf_of.user_id}}}'
+      if: ctx.aws?.cloudtrail?.user_identity?.on_behalf_of?.user_id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_source_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - convert:
+      tag: convert_json_serviceEventDetails_sourceIpAddress_to_tmp_service_event_ip
+      field: json.serviceEventDetails.sourceIpAddress
+      target_field: _tmp.service_event_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_tmp_service_event_ip
+            field: _tmp.service_event_ip
+            ignore_missing: true
+  - append:
+      tag: append_related_ip_service_event_source_ip
+      field: related.ip
+      value: '{{{_tmp.service_event_ip}}}'
+      if: ctx._tmp?.service_event_ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_tls_client_server_name
+      field: related.hosts
+      value: '{{{tls.client.server_name}}}'
+      if: ctx.tls?.client?.server_name != null
+      allow_duplicates: false
+  # The value can also be the literal `AWS Internal`, which is not a host.
+  - append:
+      tag: append_related_hosts_source_address
+      field: related.hosts
+      value: '{{{source.address}}}'
+      if: >-
+        ctx.source?.ip == null && ctx.source?.address != null &&
+        ctx.source.address.contains('.') && !ctx.source.address.contains(' ')
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_computer_name
+      field: related.hosts
+      value: '{{{json.requestParameters.computerName}}}'
+      if: ctx.json?.requestParameters?.computerName != null
+      allow_duplicates: false
+  - script:
+      tag: script_append_related_hosts_instance_ids
+      lang: painless
+      description: >
+        Collect EC2 instance identifiers and add them to related.hosts. CloudTrail
+        reports them in several shapes depending on the API.
+      if: >-
+        ctx.json?.requestParameters != null || ctx.json?.responseElements != null ||
+        ctx.aws?.cloudtrail?.resources != null
+      params:
+        scalar_keys:
+          - instanceId
+          - target
+          - resourceId
+      on_failure:
+        - append:
+            tag: append_error_message_related_hosts_instance_ids
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      source: |
+        void add(List out, def value) {
+          if (value instanceof String && value.length() >= 10 && value.startsWith('i-') && !out.contains(value)) {
+            out.add(value);
+          }
+        }
+
+        void addContainer(List out, def container, List scalarKeys) {
+          if (!(container instanceof Map)) {
+            return;
+          }
+          for (String key : scalarKeys) {
+            add(out, container[key]);
+          }
+          if (container.instanceIds instanceof List) {
+            for (def id : container.instanceIds) {
+              add(out, id);
+            }
+          }
+          def set = container.instancesSet;
+          if (set instanceof Map && set.items instanceof List) {
+            for (def item : set.items) {
+              if (item instanceof Map) {
+                add(out, item.instanceId);
+              }
+            }
+          }
+        }
+
+        List found = new ArrayList();
+
+        if (ctx.aws?.cloudtrail?.resources instanceof List) {
+          for (def resource : ctx.aws.cloudtrail.resources) {
+            if (resource instanceof Map && resource.arn instanceof String && resource.arn.contains(':instance/')) {
+              add(found, resource.arn.substring(resource.arn.lastIndexOf('/') + 1));
+            }
+          }
+        }
+        addContainer(found, ctx.json?.requestParameters, params.scalar_keys);
+        addContainer(found, ctx.json?.responseElements, params.scalar_keys);
+
+        if (found.isEmpty()) {
+          return;
+        }
+        ctx.related = ctx.related ?: [:];
+        if (ctx.related.hosts instanceof List) {
+          for (def host : found) {
+            if (!ctx.related.hosts.contains(host)) {
+              ctx.related.hosts.add(host);
+            }
+          }
+        } else {
+          ctx.related.hosts = found;
+        }
 
   # Remove the fields that the user does not want.
   # In the case that we did not want the flattened fields our work is already
