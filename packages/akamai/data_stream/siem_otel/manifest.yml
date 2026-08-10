@@ -23,11 +23,10 @@ streams:
       - name: api_host
         type: text
         title: API Host
-        description: API Hostname in the form of http(s)://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net without path
+        description: API Hostname in the form of https://akzz-XXXXXXXXXXXXXXXX-XXXXXXXXXXXXXXXX.luna.akamaiapis.net without path
         multi: false
         required: true
         show_user: true
-        default: https://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net
       - name: client_token
         type: password
         title: Client Token
@@ -141,11 +140,11 @@ streams:
         required: true
         show_user: false
         default: akamai.siem
-      - name: enable_storage
+      - name: persist_cursor
         type: bool
-        title: Enable Cursor Persistence
+        title: Persist Cursor
         description: >-
-          Declares a file_storage OpenTelemetry extension and references it from the akamai_siem receiver so the receiver persists its poll cursor across agent restarts. Enabled by default. Requires Elastic Stack 9.5.0 or later, where Fleet rewrites the renamed storage-extension reference into the receiver configuration. When disabled, the receiver re-fetches the Initial Interval window after a restart; replayed events are deduplicated by the ingest pipeline's event.original fingerprint within the same backing index.
+          Persist the SIEM API poll cursor to the Elastic Agent state directory (via the OpenTelemetry file_storage extension) so collection resumes where it left off after an agent restart. Enabled by default. When disabled, the receiver re-fetches the Initial Interval window after a restart; replayed events are deduplicated by the ingest pipeline's event.original fingerprint within the same backing index.
         multi: false
         required: false
         show_user: false

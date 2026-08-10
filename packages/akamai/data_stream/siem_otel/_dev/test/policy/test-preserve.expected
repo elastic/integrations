@@ -1,0 +1,77 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+extensions:
+    file_storage/componentid-0:
+        create_directory: true
+        directory: ${env:STATE_PATH:-/usr/share/elastic-agent/state}
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        error_mode: ignore
+        log_statements:
+            - context: log
+              statements:
+                - set(log.body["tags"], ["preserve_original_event", "custom-tag-a", "custom-tag-b"])
+    transform/componentid-1:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "akamai.siem") where attributes["data_stream.dataset"] == nil
+                - set(attributes["data_stream.namespace"], "ep") where attributes["data_stream.namespace"] == nil
+receivers:
+    akamai_siem/componentid-0:
+        authentication:
+            access_token: ${SECRET_2}
+            client_secret: ${SECRET_1}
+            client_token: ${SECRET_0}
+        config_ids: "123456"
+        data_stream:
+            dataset: akamai.siem
+            namespace: default
+            type: logs
+        endpoint: https://akab-example.luna.akamaiapis.net
+        event_limit: 10000
+        initial_lookback: 12h
+        poll_interval: 1h
+        storage: file_storage/componentid-0
+        timeout: 60s
+secret_references:
+    - {}
+    - {}
+    - {}
+service:
+    extensions:
+        - file_storage/componentid-0
+    pipelines:
+        logs/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        logs/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - transform/componentid-0
+                - transform/componentid-1
+            receivers:
+                - akamai_siem/componentid-0

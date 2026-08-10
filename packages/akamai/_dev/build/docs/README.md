@@ -22,7 +22,7 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 API collection uses the native OpenTelemetry `akamai_siem` receiver behind the scenes. This is an internal backend detail and does not change the data you collect.
 
 **Note**:
-- Cursor persistence is enabled by default, so collection resumes from where it left off after an Elastic Agent restart. It can be turned off via the "Enable Cursor Persistence" advanced option. Cursor persistence is also not guaranteed across stack upgrades and breaking changes. Whenever the cursor is unavailable, the integration re-fetches the configured Initial Interval window; replayed events are deduplicated by the ingest pipeline's `event.original` fingerprint as long as the data stream is still writing to the same backing index.
+- Cursor persistence is enabled by default, so collection resumes from where it left off after an Elastic Agent restart. It can be turned off via the "Persist Cursor" advanced option. Cursor persistence is also not guaranteed across stack upgrades and breaking changes. Whenever the cursor is unavailable, the integration re-fetches the configured Initial Interval window; replayed events are deduplicated by the ingest pipeline's `event.original` fingerprint as long as the data stream is still writing to the same backing index.
 
 ### To collect data from GCS Bucket, follow the steps below:
 - Configure the [Data Forwarder](https://techdocs.akamai.com/datastream2/docs/stream-google-cloud/) to ingest data into a GCS bucket.

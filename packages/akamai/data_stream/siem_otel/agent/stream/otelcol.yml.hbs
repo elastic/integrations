@@ -8,7 +8,9 @@ receivers:
       access_token: "{{access_token}}"
     poll_interval: "{{interval}}"
     initial_lookback: "{{initial_interval}}"
+{{#if event_limit}}
     event_limit: {{event_limit}}
+{{/if}}
 {{#if http_client_timeout}}
     timeout: "{{http_client_timeout}}"
 {{/if}}
@@ -22,7 +24,7 @@ receivers:
       type: logs
       dataset: "{{data_stream.dataset}}"
       namespace: "{{namespace}}"
-{{#if enable_storage}}
+{{#if persist_cursor}}
     storage: file_storage
 {{/if}}
 processors:
@@ -36,15 +38,22 @@ processors:
     log_statements:
       - context: log
         statements:
-          - set(log.body["tags"], [{{#if preserve_original_event}}"preserve_original_event"{{#if tags}}, {{/if}}{{/if}}{{#each tags}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}])
-{{#if enable_storage}}
+          - set(log.body["tags"], [
+              {{~#if preserve_original_event~}}
+                "preserve_original_event"{{#if tags}}, {{/if}}
+              {{~/if~}}
+              {{~#each tags~}}
+                "{{this}}"{{#unless @last}}, {{/unless}}
+              {{~/each~}}
+            ])
+{{#if persist_cursor}}
 extensions:
   file_storage:
     directory: "${env:STATE_PATH:-/usr/share/elastic-agent/state}"
     create_directory: true
 {{/if}}
 service:
-{{#if enable_storage}}
+{{#if persist_cursor}}
   extensions: [file_storage]
 {{/if}}
   pipelines:
