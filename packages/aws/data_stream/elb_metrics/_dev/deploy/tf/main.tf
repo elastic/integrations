@@ -63,8 +63,6 @@ data "aws_ami" "latest_amzn" {
   }
 }
 
-data "aws_caller_identity" "current" {}
-
 resource "aws_security_group" "alb" {
   name        = "elastic-package-elb-alb-${var.TEST_RUN_ID}"
   description = "Allow HTTP to internal ALB for elastic-package elb_metrics system test"
