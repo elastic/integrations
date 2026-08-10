@@ -19,7 +19,9 @@
 - name: okta.display_message
   type: keyword
   description: |
-    The display message of the LogEvent.
+    The display message of the LogEvent. Also copied to `message`; kept as a keyword
+    here so terms aggregations and sorts continue to work, which `message` cannot
+    support as a `match_only_text` field.
 - name: okta.actor
   type: group
   fields:
@@ -101,9 +103,11 @@
         Deprecated. Alias to `device.id`, retained so existing saved searches,
         dashboards, and detection rules continue to resolve.
     - name: managed
-      type: boolean
+      type: alias
+      path: host.entity.attributes.managed
       description: |
-        Whether the device is managed.
+        Deprecated. Alias to `host.entity.attributes.managed`, retained so existing
+        saved searches, dashboards, and detection rules continue to resolve.
     - name: name
       type: alias
       path: device.product.name
@@ -182,7 +186,11 @@
         dashboards, and detection rules continue to resolve.
     - name: type
       type: keyword
-      description: The type of target.
+      description: |
+        The type of target. Also copied to `entity.target.sub_type`, which ECS uses for
+        provider-specific designations rather than the standardized `entity.type`. Kept
+        as a real field because the values are folded from the `okta.target` array into
+        a single list, which an alias cannot express.
 - name: okta.transaction
   type: group
   fields:
@@ -390,16 +398,21 @@
       type: group
       fields:
         - name: number
-          type: integer
+          type: alias
+          path: client.as.number
           description: |
-            The AS number.
+            Deprecated. Alias to `client.as.number`, retained so existing saved
+            searches, dashboards, and detection rules continue to resolve.
         - name: organization
           type: group
           fields:
             - name: name
-              type: keyword
+              type: alias
+              path: client.as.organization.name
               description: |
-                The organization name.
+                Deprecated. Alias to `client.as.organization.name`, retained so
+                existing saved searches, dashboards, and detection rules continue
+                to resolve.
     - name: isp
       type: keyword
       description: |
