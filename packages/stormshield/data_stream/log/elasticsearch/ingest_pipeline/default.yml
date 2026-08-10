@@ -173,6 +173,7 @@ processors:
       target_field: source.ip
       type: ip
       ignore_missing: true
+      if: ctx.stormshield?.src != null && ctx.stormshield?.src != 'unknown'
   - remove:
       tag: remove_stormshield_src_d5b88ee0
       field: stormshield.src
@@ -209,18 +210,19 @@ processors:
       target_field: destination.ip
       type: ip
       ignore_missing: true
+      if: ctx.stormshield?.origdst != null && ctx.stormshield?.origdst != 'unknown'
   - convert:
       tag: convert_stormshield_dst_to_destination_ip_0a06151b
       field: stormshield.dst
       target_field: destination.ip
       type: ip
-      if: ctx.stormshield?.origdst == null && ctx.stormshield?.dst != null
+      if: ctx.stormshield?.origdst == null && ctx.stormshield?.dst != null && ctx.stormshield?.dst != 'unknown'
   - convert:
       tag: convert_stormshield_dst_to_destination_nat_ip_d9516ee1
       field: stormshield.dst
       target_field: destination.nat.ip
       type: ip
-      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null && ctx.stormshield?.origdst != ctx.stormshield?.dst
+      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null && ctx.stormshield?.origdst != ctx.stormshield?.dst && ctx.stormshield?.dst != 'unknown'
   - remove:
       tag: remove_stormshield_dst_a0577a87
       field: stormshield.dst
