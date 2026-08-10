@@ -2,6 +2,10 @@
 // or more contributor license agreements. Licensed under the Elastic License;
 // you may not use this file except in compliance with the Elastic License.
 
+// Copied from dev/citools/packagemanifest.go. Kept as a local copy so that
+// cmd/backport remains a self-contained sub-module that can be synced onto
+// backport branches without carrying dev/citools and its dependencies.
+
 package citools
 
 import (
@@ -58,11 +62,10 @@ func (m *packageManifest) IsValid() bool {
 	return m.FormatVersion != "" && m.Name != "" && m.Type != "" && m.Version != ""
 }
 
-func (m *packageManifest) HasRequires() bool {
-	return m.Requires != nil && (len(m.Requires.Input) > 0 || len(m.Requires.Content) > 0)
-}
-
-func parsePackageManifest(content []byte) (*packageManifest, error) {
+// ParsePackageManifest parses manifest.yml content read from anywhere — a
+// worktree file, or content read from another git ref (e.g. via `git show
+// <ref>:packages/<pkg>/manifest.yml`).
+func ParsePackageManifest(content []byte) (*packageManifest, error) {
 	cfg, err := yaml.NewConfig(content, ucfg.PathSep("."))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse package manifest: %w", err)
@@ -81,7 +84,7 @@ func ReadPackageManifest(path string) (*packageManifest, error) {
 		return nil, fmt.Errorf("reading file failed (path: %s): %w", path, err)
 	}
 
-	manifest, err := parsePackageManifest(content)
+	manifest, err := ParsePackageManifest(content)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
