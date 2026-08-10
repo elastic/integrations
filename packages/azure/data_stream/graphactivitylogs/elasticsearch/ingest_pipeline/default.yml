@@ -9,10 +9,6 @@ processors:
       field: event.kind
       value: event
       tag: set-event_kind
-  - append:
-      field: event.type
-      value: access
-      tag: append-event_type
   - rename:
       field: azure
       target_field: azure-eventhub
@@ -422,6 +418,51 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      value: api
+      tag: append_api_into_event_category
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: access
+      tag: append_access_into_event_type
+      allow_duplicates: false
+      if: ctx.http?.request?.method == null || ctx.http.request.method == 'GET' || ctx.http.request.method == 'HEAD'
+  - append:
+      field: event.type
+      value: creation
+      tag: append_creation_into_event_type
+      allow_duplicates: false
+      if: ctx.http?.request?.method == 'POST'
+  - append:
+      field: event.type
+      value: change
+      tag: append_change_into_event_type
+      allow_duplicates: false
+      if: ctx.http?.request?.method == 'PATCH' || ctx.http?.request?.method == 'PUT'
+  - append:
+      field: event.type
+      value: deletion
+      tag: append_deletion_into_event_type
+      allow_duplicates: false
+      if: ctx.http?.request?.method == 'DELETE'
+  - append:
+      field: event.type
+      value: denied
+      tag: append_denied_into_event_type
+      allow_duplicates: false
+      if: ctx.http?.response?.status_code == 401 || ctx.http?.response?.status_code == 403
+  - set:
+      field: event.outcome
+      value: success
+      tag: set-event_outcome-success
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 200 && ctx.http.response.status_code < 300
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set-event_outcome-failure
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       tag: pipeline-azure-shared-pipeline
