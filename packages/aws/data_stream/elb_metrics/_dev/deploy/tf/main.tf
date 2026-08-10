@@ -215,7 +215,10 @@ resource "aws_lb" "alb" {
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = slice(sort(data.aws_subnets.default.ids), 0, min(2, length(data.aws_subnets.default.ids)))
+  # Use the same AZ-qualified subnet set as the target so the ALB always spans
+  # the target's Availability Zone when regions do not offer t3.micro
+  # everywhere.
+  subnets            = slice(sort(data.aws_subnets.target.ids), 0, min(2, length(data.aws_subnets.target.ids)))
 
   tags = {
     Name = "elastic-package-test-${var.TEST_RUN_ID}"
