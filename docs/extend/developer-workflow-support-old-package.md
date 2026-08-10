@@ -200,6 +200,8 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
+    **Retrying a failed sync:** if the workflow fails after pushing the working branch but before opening the PR (for example, due to a transient GitHub API error), the failure comment includes a retry hint. Any repository member with write access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite the stale working branch and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
+
 ## Package owner synchronization
 
 Backport branches are created from historical commits, so their `manifest.yml` owner field and `.github/CODEOWNERS` entries may be stale from the start and can drift further as packages change hands on `main`. Because GitHub resolves PR reviewers from the CODEOWNERS on the PR's **base branch**, a stale backport branch notifies the wrong team.
