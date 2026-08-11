@@ -176,11 +176,21 @@ processors:
         view_retention_policy: configuration
         view_retention_settings: configuration
         view_system_audit_log: configuration
+        download_count_per_account_csv: file
+        export: file
+        export_file_download: file
+        legacy_export_download: file
+        view_document: file
+        view_document_information: file
+        view_external_document: file
       source: |-
         ctx.event = ctx.event ?: [:];
-        def category = [];
-        category.add(params.get(ctx.google_workspace.vault.name));
-        ctx.event.category = category;
+        def category = params.get(ctx.google_workspace.vault.name);
+        if (category == null) {
+          ctx.event.remove('category');
+        } else {
+          ctx.event.category = [category];
+        }
       on_failure:
         - append:
             field: error.message
@@ -280,9 +290,12 @@ processors:
         view_system_audit_log: access
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = [];
-        type.add(params.get(ctx.google_workspace.vault.name));
-        ctx.event.type = type;
+        def type = params.get(ctx.google_workspace.vault.name);
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.type = [type];
+        }
       on_failure:
         - append:
             field: error.message
