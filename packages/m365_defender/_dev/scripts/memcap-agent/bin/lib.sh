@@ -217,13 +217,23 @@ harness_read_memory() {
 #   mode          cold (one page per input) | sustained (back-to-back fetching, drained).
 #   *_bytes       as measured; MB conversion is the renderer's job, so no precision is
 #                 lost in the file and the tables stay consistent.
-#   workingset    memory.current - inactive_file, i.e. what kubelet reports. This is the
-#                 column to publish against production telemetry; peak is anon + page cache.
+#   peak          cgroup memory.peak: a true kernel high-water mark, but of anon + page
+#                 cache, so it is NOT the kubelet metric and must not be compared with
+#                 kubernetes.container.memory.workingset.bytes. Its production counterpart
+#                 is the cgroup usage figure (`usage.bytes`).
+#   workingset    memory.current - inactive_file at the end of the run, i.e. the kubelet
+#                 metric, but a single closing snapshot rather than a maximum.
+#   workingset_peak
+#                 the largest working set seen while the run was in progress, sampled every
+#                 3s (docker stats already subtracts inactive_file on cgroup v2). This is
+#                 the column to compare with the production workingset.bytes peak. A 3s
+#                 sample can miss a shorter spike, so it is a lower bound. Empty on rows
+#                 measured before this column existed.
 #   run_log       the console log of this run, under logs/. A local breadcrumb only:
 #                 logs/ is not committed, so this is blanked when a CSV is promoted into
 #                 results/ rather than left pointing at a file no reviewer has. Provenance
 #                 for a published file belongs in its `#` header comment instead.
-HARNESS_CSV_HEADER='axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,anon_bytes,oom,agent_image,run_log'
+HARNESS_CSV_HEADER='axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,workingset_peak_bytes,anon_bytes,oom,agent_image,run_log'
 
 # harness_emit_result_row <csv> <axis> <point> <label> <params> <run_log>
 # Reads the run's own state (STREAMS, MEM_*, oom, ...) from the caller's scope.
@@ -238,11 +248,11 @@ harness_emit_result_row() {
   }' </dev/null)
   mkdir -p "$(dirname "$csv")"
   [ -f "$csv" ] || printf '%s\n' "$HARNESS_CSV_HEADER" > "$csv"
-  printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
+  printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
     "$axis" "$point" "$label" "$(echo "${STREAMS:-}" | tr ' ' '+')" "$params" "$mode" \
     "$limit_bytes" "${GOMEMLIMIT:-}" "${HOLD_S:-0}" "${TOTAL_PAGE:-0}" \
-    "${MEM_PEAK:-0}" "${MEM_WORKINGSET:-0}" "${MEM_ANON:-0}" "${oom:-unknown}" \
-    "${AGENT_IMAGE:-}" "$(basename "${run_log:-}")" >> "$csv"
+    "${MEM_PEAK:-0}" "${MEM_WORKINGSET:-0}" "${MEM_WORKINGSET_PEAK:-}" "${MEM_ANON:-0}" \
+    "${oom:-unknown}" "${AGENT_IMAGE:-}" "$(basename "${run_log:-}")" >> "$csv"
 }
 
 harness_print_memory() {
@@ -251,7 +261,11 @@ harness_print_memory() {
   printf ' memory.current  : %s (~%s MB)  at end of run\n' "$MEM_CURRENT" "$((MEM_CURRENT / mb))"
   printf '   anon (heap)   : ~%s MB   <- what the decode actually costs\n' "$((MEM_ANON / mb))"
   printf '   page cache    : ~%s MB (inactive ~%s MB)\n' "$((MEM_FILE / mb))" "$((MEM_INACTIVE_FILE / mb))"
-  printf ' working set     : ~%s MB   <- comparable to kubernetes.container.memory.workingset.bytes\n' "$((MEM_WORKINGSET / mb))"
+  printf ' working set     : ~%s MB   at end of run\n' "$((MEM_WORKINGSET / mb))"
+  if [ "${MEM_WORKINGSET_PEAK:-0}" -gt 0 ]; then
+    printf ' working set peak: ~%s MB   <- compare with kubernetes.container.memory.workingset.bytes (3s samples)\n' \
+      "$((MEM_WORKINGSET_PEAK / mb))"
+  fi
 }
 
 # --------------------------- shared prerequisites ---------------------------

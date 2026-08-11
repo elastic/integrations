@@ -155,16 +155,24 @@ echo "=================================================================="
 printf ' %-10s %-11s %-10s %-10s %-6s %s\n' point raw_MB peak_MB ws_MB oom label
 awk -F, 'NR>1{printf " %-10s %-11.1f %-10.1f %-10.1f %-6s %s\n", $2,$10/1048576,$11/1048576,$12/1048576,$14,$3}' "$CSV"
 
-# The fit and the published tables come from one implementation, in the agentless-orr
-# skill, so a number in a document and a number on this terminal cannot disagree.
-RENDERER="${ORR_RENDERER:-$HOME/.cursor/skills/agentless-orr/scripts/harness_autofill.sh}"
-if [ -x "$RENDERER" ]; then
+# The fit and the published tables come from one implementation, so a number in a
+# document and a number on this terminal cannot disagree. That implementation ships
+# with the agentless-orr skill rather than this repository, because it is shared by
+# every package's ORR; point ORR_RENDERER at it to get the fit printed here. Without
+# it the sweep still produces the CSV, which is the part that matters.
+RENDERER="${ORR_RENDERER:-}"
+if [ -n "$RENDERER" ] && [ -x "$RENDERER" ]; then
   echo
   "$RENDERER" --fit "$CSV" || true
 else
   echo
-  echo "Fit: run the agentless-orr renderer over the CSV"
-  echo "  \$SKILL/scripts/harness_autofill.sh --fit $CSV"
+  echo "Fit: not computed. Set ORR_RENDERER to the agentless-orr skill's"
+  echo "harness_autofill.sh and re-run, or run it directly over the CSV:"
+  echo "  ORR_RENDERER=/path/to/harness_autofill.sh"
+  echo "  \$ORR_RENDERER --fit $CSV"
+  if [ -n "$RENDERER" ]; then
+    echo "(ORR_RENDERER is set to '$RENDERER', which is not executable.)"
+  fi
 fi
 
 echo

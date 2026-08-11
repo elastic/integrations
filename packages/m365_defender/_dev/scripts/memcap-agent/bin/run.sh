@@ -303,6 +303,12 @@ harness_read_memory "$AGENT"
 peak=$MEM_PEAK
 [ "$peak" -lt "$maxseen" ] && peak=$maxseen   # fall back to the observed max if the exec read failed
 MEM_PEAK=$peak
+# `docker stats` reports memory.current - inactive_file on cgroup v2, the same arithmetic
+# kubelet uses, so the running maximum of the samples above is a working-set high-water
+# mark and is the figure to hold against production workingset.bytes. MEM_WORKINGSET is
+# the closing snapshot of the same quantity, which is lower whenever the run tails off.
+MEM_WORKINGSET_PEAK=$maxseen
+[ "$MEM_WORKINGSET_PEAK" -lt "$MEM_WORKINGSET" ] && MEM_WORKINGSET_PEAK=$MEM_WORKINGSET
 echo
 echo "============== RESULT (elastic-agent, concurrent) =============="
 echo " streams         : $STREAMS"

@@ -10,7 +10,7 @@ harness is **concurrent by default**: one agent, one page per enabled stream. Me
 streams separately and adding the results is wrong in both directions — the per-process
 baseline is paid once rather than three times, but the decode peaks land on one heap with
 one GC cycle and one shared publisher queue. Only a combined run measures the real number,
-and only a *sustained* combined run reproduces the production working-set peaks (see
+and only a *sustained* combined run reproduces the production peaks (see
 [Reproducing the production peak](#reproducing-the-production-peak)).
 
 Single-stream runs still exist, as `STREAMS=incident bin/run.sh`, because the ORR asks for
@@ -21,7 +21,9 @@ addends.
 This is a bespoke Docker + cgroup harness, **not** an `elastic-package` benchmark.
 It runs the real `elastic-agent` image the way `agentless-controller` deploys it
 against the `elastic/stream` mock serving one big API page, under a Docker
-`--memory` cap, and reads the cgroup `memory.peak` high-water mark.
+`--memory` cap, and reads both the cgroup `memory.peak` high-water mark and the
+kubelet-comparable working set. Which of the two a given number is matters when it is held
+against production telemetry, so every table below says which it is reporting.
 
 Unlike o365 (one giant content blob fetched by a CEL input), the m365_defender
 memory driver is a single **API page**, and the shape differs per stream:
@@ -204,20 +206,31 @@ blocks on publish and no second page is ever decoded — the opposite of a catch
 Every run appends a row to a CSV (`logs/runs.csv` for a bare run, one file per sweep
 otherwise); the schema is documented at the top of `bin/lib.sh`. Nothing in this README or
 in the ORR is typed in by hand — the tables and fits below sit between
-`<!-- AUTOFILL:...:START -->` / `:END` markers and are rendered from `results/*.csv` by the
-`agentless-orr` skill:
+`<!-- AUTOFILL:...:START -->` / `:END` markers and are rendered from `results/*.csv`.
+
+The renderer, `harness_autofill.sh`, ships with the `agentless-orr` skill in
+[elastic/sit-llm](https://github.com/elastic/sit-llm), under
+`local/cursor/skills/agentless-orr/scripts/`, rather than living here, because every
+package's ORR shares it. It is a standalone Python script with no dependencies beyond the
+standard library, so a checkout of that repository is all it needs:
 
 ```
+export ORR_RENDERER=/path/to/agentless-orr/scripts/harness_autofill.sh
+
 # promote the sweep you want to publish, then re-render every document that quotes it
 cp logs/sweep-alerts_per_incident-<ts>.csv results/alerts-per-incident.csv
 # then: blank the run_log column (it names a file under logs/, which is not committed)
 # and lead the file with a `#` comment saying when and how it was measured
-HARNESS_DIR=$PWD $SKILL/scripts/harness_autofill.sh \
+HARNESS_DIR=$PWD $ORR_RENDERER \
   README.md ~/ingest-dev/docs/agentless-orr/reviews/m365_defender.md
 
 # is anything stale? (no writes; non-zero exit if a block is out of date)
-HARNESS_DIR=$PWD $SKILL/scripts/harness_autofill.sh --check README.md
+HARNESS_DIR=$PWD $ORR_RENDERER --check README.md
 ```
+
+`bin/sweep.sh` reads the same `ORR_RENDERER` variable to print the fit at the end of a
+sweep. Without it the sweep still writes its CSV, which is the part the documents are
+rendered from; only the convenience fit on the terminal is skipped.
 
 So a re-run cannot leave a document behind, and two documents cannot disagree about the
 same measurement. The marker itself says which CSV and which view it wants, so the numbers
@@ -248,12 +261,16 @@ Record the exact build measured in the ORR, and lean on the memory *driver*
 `bin/run.sh` prints a `RESULT` block and appends the same numbers to the results CSV:
 
 - `raw page bytes` — the served page size.
-- `memory.peak` — cgroup high-water mark (authoritative; on an OOM run it is pinned
-  at the cap and is *not* the true peak — use a bigger cap to measure it).
-- `working set` — `memory.current - inactive_file`, computed the way kubelet computes it,
-  so it is directly comparable with the `kubernetes.container.memory.workingset.bytes`
-  telemetry the ORR quotes. **This is the column to publish**; `memory.peak` additionally
-  includes page cache, which for the elastic-agent image is hundreds of MB of binaries.
+- `memory.peak` — cgroup high-water mark (a true maximum, not sampled; on an OOM run it is
+  pinned at the cap and is *not* the true peak — use a bigger cap to measure it). It counts
+  page cache as well as anonymous memory, so its production counterpart is the cgroup usage
+  metric, **not** `kubernetes.container.memory.workingset.bytes`.
+- `working set` — `memory.current - inactive_file`, the way kubelet computes it, read once
+  when the run finishes. A closing snapshot, so on a sustained run it sits below the maximum.
+- `working set peak` — the largest working set seen during the run, sampled every 3s
+  (`docker stats` already does the `inactive_file` subtraction on cgroup v2). **This is the
+  column to hold against the `workingset.bytes` telemetry the ORR quotes.** A spike shorter
+  than the sampling interval can be missed, so treat it as a lower bound.
 - `OOM killed` — whether the cgroup killed the beat at that cap.
 - `page fetches` — should be `>= 1` per enabled stream, confirming the mock served the page.
 
@@ -273,7 +290,10 @@ interpret:
 
 Measured with generated pages calibrated to a real response (see **Record shapes**), agent
 `9.6.0-SNAPSHOT`, 2026-08-04. `working set` is the kubelet-comparable figure described
-above. Page cache was negligible in most runs (≤7 MB), so peak ≈ anonymous memory.
+above, read at the end of the run. In a cold run memory climbs to a plateau and stays
+there, so the closing snapshot is at the maximum; in a sustained run it is not, which is
+why the sustained section below is careful about which metric it compares. Page cache was
+negligible in most runs (≤7 MB), so peak ≈ anonymous memory.
 
 **Cold, one page per stream, page sizes scaled together** (alerts-per-incident 100; the
 bold row is the shipped configuration):
@@ -340,7 +360,8 @@ carries its parent. Nothing in the package or the API bounds it.
 ### Reproducing the production peak
 
 A cold page does not explain the telemetry: even 400 alerts per incident only reaches
-780 MB, while production peaks at 1,377–1,507 MB. The missing factor is that production
+780 MB, while production working set peaks at 1,377–1,507 MB and production cgroup usage
+peaks at ~1,515 MB (p95) to ~1,578 MB (max). The missing factor is that production
 pods fetch **back-to-back**, not once — `alert` polls every 5m and `incident` every 1m
 against a 24h initial lookback, and the CEL stream re-enters immediately while
 `want_more` is true against a 336h lookback. A page is decoded while the previous one is
@@ -360,10 +381,19 @@ pages charged to the cgroup. The ORR telemetry says so directly: the hottest pod
 
 Against the cold runs at the same page sizes (400 MB and 780 MB working set), sustained
 fetching costs **~1.35–1.45× the cold single-page working set**, and its `memory.peak` is
-~1.7–1.9× the cold peak. The second row lands within **0.6%** of the worst working set ever
-observed in production (1,507 MB), so the production peaks are fully explained by shipped
-page sizes + a fat `alerts[]` array + back-to-back fetching. No unaccounted mechanism is
-needed.
+~1.7–1.9× the cold peak.
+
+The second row reaches the production peak, but the comparison has to be made metric for
+metric. `memory.peak` is cgroup usage including page cache, so its counterpart is
+production's cgroup usage peak (p95 ~1,515 MB, max ~1,578 MB) — 1,516 MB lands on the p95
+and 4% under the max. It is **not** the counterpart of the 1,507 MB `workingset.bytes`
+peak, and the two matching to within 0.6% is a coincidence of this dataset. The working-set
+column in the table above is the closing snapshot (1,132 MB), and these runs predate the
+`working set peak` column, so a like-for-like working-set comparison is not available from
+them; re-running the sweep produces one.
+
+Either way the conclusion is the same: production peaks are explained by shipped page sizes
++ a fat `alerts[]` array + back-to-back fetching, and no unaccounted mechanism is needed.
 
 Interpolating the two sustained points:
 
@@ -457,9 +487,11 @@ rotates every ~1-2 days. These runs: `docker.elastic.co/elastic-agent/elastic-ag
   backpressure keeps events resident for longer, so the sustained numbers here are if
   anything an underestimate of a rate-limited pod. `fake-es.py --max-eps` exists to model
   that and was not used for the recorded results.
-- Sustained runs report the working set at a 3s sampling interval, so a peak shorter than
-  3s can be missed. `memory.peak` is a true kernel high-water mark and is not sampled, so
-  the two are reported side by side; the recorded peaks are the cgroup ones.
+- The working-set peak is sampled every 3s, so a spike shorter than that can be missed;
+  it is a lower bound. `memory.peak` is a true kernel high-water mark and is not sampled,
+  but it counts page cache, so it is an upper bound on the same quantity. The two are
+  reported side by side and the recorded peaks are the cgroup ones, which is the
+  conservative choice for sizing but is not the metric kubelet reports.
 - httpjson `batch_size` is neutralised to a huge sentinel (in the spliced block) to
   force a single page; production defaults differ (`alert` ships `batch_size=1000` =
   the Graph `$top` cap since 5.15.1, `incident` ships `batch_size=50`). The harness
