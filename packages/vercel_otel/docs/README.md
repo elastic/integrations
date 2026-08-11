@@ -53,7 +53,7 @@ https://<managed-endpoint>/inputs/vercel/_default_
 For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the managed endpoint URL for Vercel is:
 
 ```text
-https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel
+https://abc123.ingest.us-east-1.aws.elastic.cloud/inputs/vercel/_default_
 ```
 
 Every project and deployment has its own host, so always build the managed endpoint URL for Vercel from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
