@@ -200,7 +200,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
-    **Retrying a failed sync:** if the workflow fails after pushing the working branch but before opening the PR (for example, due to a transient GitHub API error), the failure comment includes a retry hint. Any repository member with write access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite the stale working branch and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
+    **Retrying a failed sync:** if the workflow fails for any reason, the failure comment includes a `/sync-changelog` retry hint. Any repository member with write access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
 
 ## Package owner synchronization
 
