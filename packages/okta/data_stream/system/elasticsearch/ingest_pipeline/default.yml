@@ -435,6 +435,33 @@ processors:
         Okta target types such as PolicyEntity and AppInstance are provider-specific,
         which ECS models as sub_type rather than the standardized entity.type. The
         vendor field is left in place.
+  - script:
+      tag: script_prune_entity_target
+      lang: painless
+      ignore_failure: true
+      description: >-
+        Drops the empty strings the appends above produce for targets that carry no
+        id, displayName or type, and removes any list left empty.
+      source: |-
+        def target = ctx.entity?.target;
+        if (target == null) {
+          return;
+        }
+        for (def key : ['id', 'display_name', 'sub_type']) {
+          def values = target[key];
+          if (values instanceof List) {
+            values.removeIf(value -> value == null || value == '');
+            if (values.isEmpty()) {
+              target.remove(key);
+            }
+          }
+        }
+        if (target.isEmpty()) {
+          ctx.entity.remove('target');
+          if (ctx.entity.isEmpty()) {
+            ctx.remove('entity');
+          }
+        }
   - rename:
       tag: rename_target
       field: json.target
