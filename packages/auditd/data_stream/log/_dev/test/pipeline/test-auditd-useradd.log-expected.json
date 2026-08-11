@@ -308,6 +308,11 @@
                 "executable": "/usr/bin/passwd",
                 "pid": 2953
             },
+            "related": {
+                "user": [
+                    "charlie"
+                ]
+            },
             "source": {
                 "address": "127.0.0.1",
                 "ip": "127.0.0.1"
@@ -363,6 +368,11 @@
                 "executable": "/usr/bin/chfn",
                 "pid": 2954
             },
+            "related": {
+                "user": [
+                    "root"
+                ]
+            },
             "source": {
                 "address": "127.0.0.1",
                 "ip": "127.0.0.1"
@@ -415,6 +425,11 @@
                 "executable": "/usr/bin/chfn",
                 "pid": 2954
             },
+            "related": {
+                "user": [
+                    "root"
+                ]
+            },
             "source": {
                 "address": "127.0.0.1",
                 "ip": "127.0.0.1"
@@ -432,6 +447,660 @@
                 "id": "1000",
                 "name": "root",
                 "terminal": "pts/2"
+            }
+        },
+        {
+            "@timestamp": "2026-06-15T14:20:04.613Z",
+            "auditd": {
+                "log": {
+                    "AUID": "user123456",
+                    "ID": "testgrp1001",
+                    "UID": "root",
+                    "hostname": "sanitized-host-01.example.local",
+                    "id": "2001",
+                    "op": "add-group",
+                    "record_type": "ADD_GROUP",
+                    "sequence": 1308,
+                    "ses": "10",
+                    "subj": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "added-group-account-to"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=ADD_GROUP msg=audit(1781533204.613:1308): pid=1234 uid=0 auid=1000000000 ses=10 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=add-group id=2001 exe=\"/usr/sbin/groupadd\" hostname=sanitized-host-01.example.local addr=? terminal=pts/1 res=success'\u001dUID=\"root\" AUID=\"user123456\" ID=\"testgrp1001\"",
+                "outcome": "success",
+                "type": [
+                    "group",
+                    "creation"
+                ]
+            },
+            "group": {
+                "id": "2001",
+                "name": "testgrp1001"
+            },
+            "process": {
+                "executable": "/usr/sbin/groupadd",
+                "pid": 1234
+            },
+            "related": {
+                "user": [
+                    "user123456",
+                    "root"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1000000000",
+                    "name": "user123456"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "1000000000",
+                "name": "user123456",
+                "terminal": "pts/1"
+            }
+        },
+        {
+            "@timestamp": "2026-07-17T10:46:21.000Z",
+            "auditd": {
+                "log": {
+                    "AUID": "example_admin",
+                    "ID": "example_deleted_group",
+                    "UID": "root",
+                    "hostname": "example-host-05",
+                    "id": "20004",
+                    "record_type": "DEL_GROUP",
+                    "sequence": 5678,
+                    "ses": "5678",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "deleted-group-account-from"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=DEL_GROUP msg=audit(1784285181.000:5678): pid=567890 uid=0 auid=1006 ses=5678 msg='op= id=20004 exe=\"/usr/sbin/groupdel\" hostname=example-host-05 addr=? terminal=pts/1 res=success'\u001dUID=\"root\" AUID=\"example_admin\" ID=\"example_deleted_group\"",
+                "outcome": "success",
+                "type": [
+                    "group",
+                    "deletion"
+                ]
+            },
+            "group": {
+                "id": "20004",
+                "name": "example_deleted_group"
+            },
+            "process": {
+                "executable": "/usr/sbin/groupdel",
+                "pid": 567890
+            },
+            "related": {
+                "user": [
+                    "example_admin",
+                    "root"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1006",
+                    "name": "example_admin"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "1006",
+                "name": "example_admin",
+                "terminal": "pts/1"
+            }
+        },
+        {
+            "@timestamp": "2026-07-17T10:46:21.000Z",
+            "auditd": {
+                "log": {
+                    "AUID": "example_admin",
+                    "ID": "example_created_user",
+                    "UID": "root",
+                    "hostname": "example-host-02",
+                    "id": "500",
+                    "op": "adding user",
+                    "record_type": "ADD_USER",
+                    "sequence": 1200,
+                    "ses": "1200",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "added-user-account"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=ADD_USER msg=audit(1784285181.000:1200): pid=234567 uid=0 auid=1006 ses=1200 msg='op=adding user id=500 exe=\"/usr/sbin/useradd\" hostname=example-host-02 addr=? terminal=pts/1 res=success'\u001dUID=\"root\" AUID=\"example_admin\" ID=\"example_created_user\"",
+                "outcome": "success",
+                "type": [
+                    "user",
+                    "creation"
+                ]
+            },
+            "process": {
+                "executable": "/usr/sbin/useradd",
+                "pid": 234567
+            },
+            "related": {
+                "user": [
+                    "example_admin",
+                    "root",
+                    "example_created_user"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1006",
+                    "name": "example_admin"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "1006",
+                "name": "example_admin",
+                "target": {
+                    "id": "500",
+                    "name": "example_created_user"
+                },
+                "terminal": "pts/1"
+            }
+        },
+        {
+            "@timestamp": "2026-07-17T10:46:21.000Z",
+            "auditd": {
+                "log": {
+                    "AUID": "example_admin",
+                    "ID": "example_deleted_user",
+                    "UID": "root",
+                    "hostname": "example-host-01.example.local",
+                    "id": "20001",
+                    "op": "delete-user",
+                    "record_type": "DEL_USER",
+                    "sequence": 3456,
+                    "ses": "1234",
+                    "subj": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "deleted-user-account"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=DEL_USER msg=audit(1784285181.000:3456): pid=1234567 uid=0 auid=10001 ses=1234 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=delete-user id=20001 exe=\"/usr/sbin/userdel\" hostname=example-host-01.example.local addr=? terminal=pts/1 res=success'\u001dUID=\"root\" AUID=\"example_admin\" ID=\"example_deleted_user\"",
+                "outcome": "success",
+                "type": [
+                    "user",
+                    "deletion"
+                ]
+            },
+            "process": {
+                "executable": "/usr/sbin/userdel",
+                "pid": 1234567
+            },
+            "related": {
+                "user": [
+                    "example_admin",
+                    "root",
+                    "example_deleted_user"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "10001",
+                    "name": "example_admin"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "10001",
+                "name": "example_admin",
+                "target": {
+                    "id": "20001",
+                    "name": "example_deleted_user"
+                },
+                "terminal": "pts/1"
+            }
+        },
+        {
+            "@timestamp": "2026-07-17T10:46:21.000Z",
+            "auditd": {
+                "log": {
+                    "AUID": "example_admin",
+                    "ID": "example_target_user",
+                    "UID": "root",
+                    "hostname": "example-host-03.example.local",
+                    "id": "20002",
+                    "op": "updating-password",
+                    "record_type": "USER_CHAUTHTOK",
+                    "sequence": 3457,
+                    "ses": "3456",
+                    "subj": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "changed-password"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=USER_CHAUTHTOK msg=audit(1784285181.000:3457): pid=345678 uid=0 auid=1007 ses=3456 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=updating-password id=20002 exe=\"/usr/sbin/usermod\" hostname=example-host-03.example.local addr=? terminal=pts/6 res=success'\u001dUID=\"root\" AUID=\"example_admin\" ID=\"example_target_user\"",
+                "outcome": "success",
+                "type": [
+                    "user",
+                    "change"
+                ]
+            },
+            "process": {
+                "executable": "/usr/sbin/usermod",
+                "pid": 345678
+            },
+            "related": {
+                "user": [
+                    "example_admin",
+                    "root",
+                    "example_target_user"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1007",
+                    "name": "example_admin"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "1007",
+                "name": "example_admin",
+                "target": {
+                    "id": "20002",
+                    "name": "example_target_user"
+                },
+                "terminal": "pts/6"
+            }
+        },
+        {
+            "@timestamp": "2026-07-17T10:46:21.000Z",
+            "auditd": {
+                "log": {
+                    "AUID": "example_admin",
+                    "ID": "example_locked_user",
+                    "UID": "root",
+                    "hostname": "example-host-04.example.local",
+                    "id": "20003",
+                    "op": "locked-password",
+                    "record_type": "ACCT_LOCK",
+                    "sequence": 4568,
+                    "ses": "4567",
+                    "subj": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "locked-account"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=ACCT_LOCK msg=audit(1784285181.000:4568): pid=456789 uid=0 auid=1000 ses=4567 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=locked-password id=20003 exe=\"/usr/bin/passwd\" hostname=example-host-04.example.local addr=? terminal=pts/1 res=success'\u001dUID=\"root\" AUID=\"example_admin\" ID=\"example_locked_user\"",
+                "outcome": "success",
+                "type": [
+                    "user",
+                    "info"
+                ]
+            },
+            "process": {
+                "executable": "/usr/bin/passwd",
+                "pid": 456789
+            },
+            "related": {
+                "user": [
+                    "example_admin",
+                    "root",
+                    "example_locked_user"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1000",
+                    "name": "example_admin"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "1000",
+                "name": "example_admin",
+                "target": {
+                    "id": "20003",
+                    "name": "example_locked_user"
+                },
+                "terminal": "pts/1"
+            }
+        },
+        {
+            "@timestamp": "2026-07-15T09:17:07.804Z",
+            "auditd": {
+                "log": {
+                    "AUID": "appuser",
+                    "ID": "appuser",
+                    "UID": "root",
+                    "id": "100001",
+                    "record_type": "USER_LOGOUT",
+                    "sequence": 194380001,
+                    "ses": "1188111",
+                    "subj": "system_u:system_r:sshd_t:s0-s0:c0.c1023",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "logged-out"
+                ],
+                "category": [
+                    "authentication"
+                ],
+                "kind": "event",
+                "original": "type=USER_LOGOUT msg=audit(1784107027.804:194380001): pid=403923 uid=0 auid=100001 ses=1188111 subj=system_u:system_r:sshd_t:s0-s0:c0.c1023 msg='op=login id=100001 exe=\"/usr/sbin/sshd\" hostname=? addr=192.168.100.25 terminal=ssh res=success' UID=\"root\" AUID=\"appuser\" ID=\"appuser\"",
+                "outcome": "success",
+                "type": [
+                    "end"
+                ]
+            },
+            "message": "op=login",
+            "process": {
+                "executable": "/usr/sbin/sshd",
+                "pid": 403923
+            },
+            "related": {
+                "user": [
+                    "appuser",
+                    "root"
+                ]
+            },
+            "source": {
+                "address": "192.168.100.25",
+                "ip": "192.168.100.25"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "100001",
+                    "name": "appuser"
+                },
+                "effective": {
+                    "id": "100001",
+                    "name": "root"
+                },
+                "id": "100001",
+                "name": "appuser",
+                "terminal": "ssh"
+            }
+        },
+        {
+            "@timestamp": "2026-07-15T09:20:25.880Z",
+            "auditd": {
+                "log": {
+                    "AUID": "serviceuser",
+                    "ID": "serviceuser",
+                    "UID": "root",
+                    "id": "100002",
+                    "record_type": "USER_START",
+                    "sequence": 387518118,
+                    "ses": "15441219",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "started-session"
+                ],
+                "category": [
+                    "session"
+                ],
+                "kind": "event",
+                "original": "type=USER_START msg=audit(1784107225.880:387518118): pid=1688267 uid=0 auid=100002 ses=15441219 msg='op=login id=100002 exe=\"/usr/sbin/sshd\" hostname=? addr=192.168.100.50 terminal=ssh res=success' UID=\"root\" AUID=\"serviceuser\" ID=\"serviceuser\"",
+                "outcome": "success",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "op=login",
+            "process": {
+                "executable": "/usr/sbin/sshd",
+                "pid": 1688267
+            },
+            "related": {
+                "user": [
+                    "serviceuser",
+                    "root"
+                ]
+            },
+            "source": {
+                "address": "192.168.100.50",
+                "ip": "192.168.100.50"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "100002",
+                    "name": "serviceuser"
+                },
+                "effective": {
+                    "id": "100002",
+                    "name": "root"
+                },
+                "id": "100002",
+                "name": "serviceuser",
+                "terminal": "ssh"
+            }
+        },
+        {
+            "@timestamp": "2026-07-15T09:20:25.880Z",
+            "auditd": {
+                "log": {
+                    "AUID": "badformat",
+                    "ID": "badformat",
+                    "UID": "root",
+                    "id": "100003",
+                    "record_type": "USER_START",
+                    "sequence": 387518119,
+                    "ses": "15441220",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "started-session"
+                ],
+                "category": [
+                    "session"
+                ],
+                "kind": "event",
+                "original": "type=USER_START msg=audit(1784107225.880:387518119): pid=1688268 uid=0 auid=100003 ses=15441220 msg='op=login id=100003 exe=\"/usr/sbin/sshd\" hostname=? addr=192.168.100.51 terminal=ssh res=successUID=\"root\" AUID=\"badformat\" ID=\"badformat\"",
+                "outcome": "success",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "op=login",
+            "process": {
+                "executable": "/usr/sbin/sshd",
+                "pid": 1688268
+            },
+            "related": {
+                "user": [
+                    "badformat",
+                    "root"
+                ]
+            },
+            "source": {
+                "address": "192.168.100.51",
+                "ip": "192.168.100.51"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "100003",
+                    "name": "badformat"
+                },
+                "effective": {
+                    "id": "100003",
+                    "name": "root"
+                },
+                "id": "100003",
+                "name": "badformat",
+                "terminal": "ssh"
+            }
+        },
+        {
+            "@timestamp": "2026-07-17T10:46:21.000Z",
+            "auditd": {
+                "log": {
+                    "AUID": "example_admin",
+                    "ID": "example_unlocked_user",
+                    "UID": "root",
+                    "hostname": "example-host-04.example.local",
+                    "id": "20003",
+                    "op": "unlocked-password",
+                    "record_type": "ACCT_UNLOCK",
+                    "sequence": 4569,
+                    "ses": "4567",
+                    "subj": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "unlocked-account"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=ACCT_UNLOCK msg=audit(1784285181.000:4569): pid=456790 uid=0 auid=1000 ses=4567 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=unlocked-password id=20003 exe=\"/usr/bin/passwd\" hostname=example-host-04.example.local addr=? terminal=pts/1 res=success'\u001dUID=\"root\" AUID=\"example_admin\" ID=\"example_unlocked_user\"",
+                "outcome": "success",
+                "type": [
+                    "user",
+                    "info"
+                ]
+            },
+            "process": {
+                "executable": "/usr/bin/passwd",
+                "pid": 456790
+            },
+            "related": {
+                "user": [
+                    "example_admin",
+                    "root",
+                    "example_unlocked_user"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1000",
+                    "name": "example_admin"
+                },
+                "effective": {
+                    "id": "0",
+                    "name": "root"
+                },
+                "id": "1000",
+                "name": "example_admin",
+                "target": {
+                    "id": "20003",
+                    "name": "example_unlocked_user"
+                },
+                "terminal": "pts/1"
             }
         }
     ]

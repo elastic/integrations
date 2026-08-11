@@ -78,14 +78,14 @@ processors:
       field: "message"
       tag: "ssh login 3"
       patterns:
-          - "%{WORD:_tmp.user.roles} %{NOTSPACE:user.name} logged in %{WORD:event.outcome} from (?:jsconsole|%{WORD}\\(%{IP:source.ip}\\))"
+          - "%{WORD:_tmp.user.roles} %{NOTSPACE:user.name} logged in %{WORD:event.outcome} from (?:jsconsole|%{WORD}(?:\\(%{IP:source.ip}\\))?)"
       if: "ctx.message != null && ctx.message.startsWith('Administrator') && ctx.message.toLowerCase().contains('logged in')"
       on_failure:
           - append:
                 tag: append_error_message_9b89cd96
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-      description: "Administrator admin logged in successfully from jsconsole|ssh(172.16.200.254)"
+      description: "Administrator admin logged in successfully from jsconsole|ssh(172.16.200.254)|fgfm_fgc"
 - set:
     tag: set_event_outcome_4b7c0079
     field: "event.outcome"

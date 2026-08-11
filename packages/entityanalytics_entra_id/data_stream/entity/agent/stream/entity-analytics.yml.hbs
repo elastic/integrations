@@ -1,4 +1,7 @@
 provider: azure-ad
+{{#if use_minimal_state}}
+use_minimal_state: true
+{{/if}}
 {{#if enable_request_tracer}}
 tracer.filename: "../../logs/azure-ad/http-request-trace-*.ndjson"
 tracer.maxbackups: 5
@@ -19,23 +22,12 @@ login_scopes:
 {{#if custom_options}}
 {{custom_options}}
 {{/if}}
-{{#if enrich_with_mfa}}
 enrich_with:
+{{#if enrich_with_mfa}}
   - mfa
 {{/if}}
 {{#if user_sign_in_activity}}
-select.users:
-  - accountEnabled
-  - userPrincipalName
-  - mail
-  - displayName
-  - givenName
-  - surname
-  - jobTitle
-  - officeLocation
-  - mobilePhone
-  - businessPhones
-  - signInActivity
+  - sign_in_activity
 {{/if}}
 {{#if user_direct_reports}}
 expand.users:
@@ -57,6 +49,7 @@ select.devices:
   - physicalIds
   - extensionAttributes
   - alternativeSecurityIds
+  - approximateLastSignInDateTime
   - isCompliant
   - isManaged
   - manufacturer

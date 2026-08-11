@@ -1,4 +1,73 @@
 # newer versions go on top
+- version: "7.1.1"
+  changes:
+    - description: Add `data_stream.namespace` to the Amazon Inspector vulnerability latest transform's unique key so findings are tracked per namespace, preventing findings ingested into non-default namespaces from being dropped or conflated in the latest index. Bump transform's destination suffix to `-v2`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20427
+- version: "7.1.0"
+  changes:
+    - description: "Stop storing the assumed-role ARN session name in `user.changes.*`. The session name is now added to `related.user` for cross-source correlation; when it is an email, both the full email and the local-part prefix are added. `user.name` continues to hold the IAM role name for detection rules."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20318
+- version: "7.0.0"
+  changes:
+    - description: Hide the CloudWatch, EBS, EC2, ECS, and S3 metric/log inputs when the Identity Federation setup access option is selected, since only the GuardDuty API input supports identity federation.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19828
+    - description: Reorganize AWS credentials configuration into a `Setup Access` selector with Identity Federation, Direct Access Keys, Temporary Access Keys, Assume Role, Assume Role with External ID, and Shared Credentials options. Existing access keys, role ARN, and shared credential settings continue to function and are auto-mapped to the corresponding option.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19828
+    - description: Switch the GuardDuty httpjson stream from manual SigV4 HMAC signing to the native `auth.aws` block.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19828
+    - description: Store the `external_id` variable as a secret.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/19828
+    - description: Add `assume_role_duration`, `assume_role_expiry_window`, and `supports_identity_federation` variables.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19828
+    - description: Require Kibana and Elastic Agent ^9.4.0 (drop support for Kibana 8.x, Kibana 9.x below 9.4.0, and Elastic Agent below 9.4.0). The var_groups manifest feature and `auth.aws` runtime require this minimum.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/19828
+- version: "6.21.0"
+  changes:
+    - description: Poll Amazon Inspector findings on `updatedAt` instead of `lastObservedAt` so that findings AWS marks CLOSED or SUPPRESSED are collected and no longer remain stale in Elastic.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19918
+    - description: Include all Inspector finding statuses in the vulnerability latest transform and map `aws.inspector.status` to the `vulnerability.status` field (CLOSED as `fixed`), so remediated findings can be filtered out on the Vulnerability Findings page.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19918
+    - description: Add a `lag_time` variable to the Amazon Inspector data stream that offsets the poll cursor to tolerate delay between when a finding's `updatedAt` is set and when it becomes available from the API, preventing missed findings.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19918
+- version: "6.20.4"
+  changes:
+    - description: Add security category to the Transit Gateway data stream to match its policy template categories.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19911
+- version: "6.20.3"
+  changes:
+    - description: Add processor tags to all ingest pipeline processors to satisfy elastic-package linter requirements for format_version 3.6.0 and above.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19824
+- version: "6.20.2"
+  changes:
+    - description: Skip AWS service-linked Config rules when collecting compliance details so the AWS Config data stream no longer degrades on `AccessDeniedException`, and treat per-rule compliance errors as non-fatal so a single failing rule does not stop ingestion of the rest.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19803
+- version: "6.20.1"
+  changes:
+    - description: Revert addition of assignment of host.id from CloudTrail target hosts.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19630
+- version: "6.20.0"
+  changes:
+    - description: Enable agentless deployment mode for CloudWatch, EBS, EC2, ECS, and S3 policy templates.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19339
+    - description: Disable TSDB on the S3 daily storage data stream to avoid rejection of late-arriving daily CloudWatch metrics.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19339
 - version: "6.19.2"
   changes:
     - description: Restore a stable endInclusive bound to Inspector findings filter to prevent potential nextToken invalidation.

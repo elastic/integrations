@@ -10,7 +10,7 @@ For a demo, refer to the following video (click to view).
 
 ### Compatibility
 
-This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
+This integration is compatible with CrowdStrike Falcon SIEM Connector 2.29.0, REST API, and CrowdStrike Event Streams API.
 
 ### How it works
 
@@ -92,6 +92,7 @@ You can use the Falcon SIEM Connector as an alternative to the Event Streams API
 
 The following event types are supported for CrowdStrike Event Streams (whether you use the Falcon SIEM Connector or the Event Streams API):
 
+- AutomatedLeadSummaryEvent
 - CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
@@ -107,6 +108,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IDP Incidents
 - IDP Summary events
 - Mobile Detection events
+- OverwatchGenericDetectionSummaryEvent
 - Recon Notification events
 - XDR Detection events
 - Scheduled Report Notification events
@@ -273,11 +275,11 @@ The FDR dataset includes:
 5. Configure the integration.
 6. Click **Save and Continue** to save the integration.
 
-### Agentless enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent based installation
 
@@ -286,6 +288,20 @@ You can install only one Elastic Agent per host.
 Elastic Agent is required to stream data from the AWS SQS, Event Streams API, REST API, or SIEM Connector and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ## Troubleshooting
+
+### Event Streams input stops collecting after repeated connection failures
+
+The **Falcon events** data stream's **Event Streams API** input (`streaming`) reconnects to the CrowdStrike stream with a bounded number of retries. Failures such as a non-200 response or an authentication error from bad credentials count toward **Retry - Maximum Attempts**; once that limit is reached the input terminates and the Elastic Agent must be restarted to resume collection.
+
+On Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later, transient connection-level failures (an empty response, a network error, or a timeout) are instead retried indefinitely with back-off and do not count toward the limit, so the input self-heals once the upstream recovers. On earlier agents these transient failures count toward the limit and can terminate the input.
+
+If the Falcon Event Streams input goes **Degraded** and then stops, and the agent logs show repeated discover or connection errors, tune the retry settings on the integration policy:
+
+- Increase **Retry - Maximum Attempts** to tolerate longer upstream outages.
+- Enable **Retry - Infinite Retries** to never terminate on repeated failures. The input keeps retrying with capped back-off until the upstream recovers.
+- Under **Advanced options**, adjust **Retry - Minimum Wait** and **Retry - Maximum Wait** to control the back-off window between attempts.
+
+Values above 10 for **Retry - Maximum Attempts**, and **Retry - Infinite Retries**, also require Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later; on earlier agents they are silently capped at 10 attempts.
 
 ### Vulnerability API returns 404 Not found
 
@@ -298,6 +314,8 @@ To resolve this, adjust the `Batch Size` setting in the integration to reduce th
 ### Duplicate Events
 
 The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events can be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of CrowdStrike fields that uniquely identify the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique and prevent duplicates.
+
+The fingerprint includes `@timestamp`, CrowdStrike `id`/`aid`/`cid`, and the FDR object type (`aidmaster`, `userinfo`, or `data`), derived from `log.file.path` or `aws.s3.object.key`. When present, `rule.id` is also included — for Cloud Security (CSPM) findings and for other event types that map a rule id (for example EPP detection summary, FIM rule matched, and Data Protection detection summary). For Cloud Security findings, a resource identifier is included as well so distinct findings that share a timestamp and customer id stay unique.
 
 If duplicate events are ingested, to help find them, the integration's `event.id` field is populated by concatenating a few CrowdStrike fields that uniquely identify the event. These fields are `id`, `aid`, and `cid` from the CrowdStrike event. The fields are separated with pipe `|`.
 For example, if your CrowdStrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
@@ -358,6 +376,10 @@ FROM logs-crowdstrike.fdr-*
 
 **Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
 
+:::{warning}
+**Deprecation notice:** Ingest-time cache enrichment (`enrich_metadata` and related settings — `keep_metadata`, `metadata_ttl`, `metadata_cache_capacity`, `metadata_cache_write_interval`) is deprecated and will be removed in a future major version. Query-time enrichment via `LOOKUP JOIN` is the replacement. The default for `keep_metadata` has been changed to `true` so that metadata events are indexed and the LOOKUP JOIN transforms have source data. Existing installations that upgrade retain their previous `keep_metadata` setting; if it was `false`, set it to `true` to enable query-time enrichment.
+:::
+
 ### Query-time user metadata enrichment (LOOKUP JOIN)
 
 A second transform maintains the latest user metadata per host-user pair from `UserIdentity` and `UserLogon` sensor events in a lookup index. Unlike `userinfo` directory data (which requires [Falcon Discover](https://www.crowdstrike.com/platform/exposure-management/falcon-discover/) and covers only Windows), sensor events are available to all FDR customers on all platforms (Windows, macOS, Linux, ChromeOS). You can enrich FDR events with user metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join).
@@ -398,6 +420,10 @@ FROM logs-crowdstrike.fdr-*
 **Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment. Note that detection rules using EQL, threshold, or KQL operate on stored documents and cannot use `LOOKUP JOIN` — those rule types continue to rely on ingest-time cache enrichment for user metadata.
 
 **Ingest-time versus query-time:** The same **Enrich Host and User Metadata** option (`enrich_metadata`) that controls ingest-time host enrichment also controls ingest-time user enrichment from `userinfo` directory data. Query-time user enrichment via the transform is additive — it works regardless of whether ingest-time enrichment is enabled. If you rely on query-time enrichment only, set **Enrich Host and User Metadata** to **Off** so metadata is not applied twice. If both are active, user metadata may appear under `crowdstrike.info.user.*` from both the ingest-time cache and the query-time lookup; the values should be consistent but the ingest-time cache is populated from `userinfo` while the query-time lookup uses sensor events, so field availability may differ.
+
+:::{warning}
+**Deprecation notice:** Ingest-time cache enrichment is deprecated and will be removed in a future major version. Query-time enrichment via the transforms and `LOOKUP JOIN` described above is the replacement. See the deprecation notice in the host metadata section above for details on the `keep_metadata` default change.
+:::
 
 #### ES|QL dashboard panels
 

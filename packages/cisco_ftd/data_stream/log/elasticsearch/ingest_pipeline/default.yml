@@ -265,6 +265,7 @@ processors:
       description: "106010"
       patterns:
         - "%{NOTSPACE:event.outcome} %{NOTSPACE} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+        - "%{NOTSPACE:event.outcome} %{NOTSPACE} protocol %{POSINT:network.iana_number} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}(%{GREEDYDATA})?"
   - dissect:
       tag: dissect_message_6a3adcc1
       if: "ctx._temp_.cisco.message_id == '106013'"
@@ -433,7 +434,7 @@ processors:
       patterns:
         - "AAA user (authentication|authorization) Rejected(%{SPACE})?: reason = %{REASON:event.reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?: user IP = %{IP:source.address}"
       pattern_definitions:
-        REASON: (AAA failure|Account has been disabled|Invalid password|Password has expired|Password is expiring|Password malformed|Unspecified)
+        REASON: (AAA failure|Account has been disabled|Account has been locked out|Invalid password|Password has expired|Password is expiring|Password malformed|Unspecified|Users account has expired)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       tag: grok_message_9e29df82
@@ -1291,6 +1292,7 @@ processors:
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) \(%{CISCO_USER:_temp_.cisco.termination_user}\)
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason}
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} connection %{NOTSPACE:_temp_.cisco.connection_id} from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int} duration %{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}(?:\s+%{NUMBER}\s+%{NUMBER})?
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\s*(?:\(%{CISCO_USER:_temp_.cisco.source_username}\))?(\s*type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
@@ -1885,7 +1887,7 @@ processors:
       tag: convert-security_event_file_size
       field: _temp_.cisco.security_event.file_size
       target_field: _temp_.cisco.security_event.file_size
-      type: integer
+      type: long
   - date:
       field: _temp_.cisco.security_event.first_packet_second
       tag: date_first_packet_second
@@ -2413,7 +2415,7 @@ processors:
   - convert:
       tag: convert_file_size_5671cd5a
       field: file.size
-      type: integer
+      type: long
       ignore_failure: true
   - convert:
       tag: convert_network_iana_number_7aa7bdd4
