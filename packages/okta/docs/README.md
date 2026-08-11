@@ -264,12 +264,8 @@ An example event for `system` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
-| host.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -351,10 +347,10 @@ An example event for `system` looks as following:
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
 | okta.device.id | Identifier assigned by Okta when the device was registered with the org. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `device.id` field. | alias |
-| okta.device.managed | Whether the device is enrolled in the organization's device management. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `host.entity.attributes.managed` field. | alias |
+| okta.device.managed | Whether the device is enrolled in the organization's device management. Only present on events that carry device context, so it is absent from most events. | boolean |
 | okta.device.name | The device's self-reported name, which in practice is the hardware model identifier rather than a name a user chose. Deprecated. Use the ECS `device.product.name` field. | alias |
-| okta.device.os_platform | The operating system family of the end user's device, reported by Okta in uppercase. Describes the device the request came from, not the Okta tenant. Deprecated. Use the ECS `host.os.platform` field. | alias |
-| okta.device.os_version | The operating system version of the end user's device. The format is whatever the platform reports and is not normalized by Okta, so it is not reliably comparable across platforms. Deprecated. Use the ECS `host.os.version` field. | alias |
+| okta.device.os_platform | The operating system family of the end user's device, reported by Okta in uppercase. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `user_agent.os.platform` field. | alias |
+| okta.device.os_version | The operating system version of the end user's device. The format is whatever the platform reports and is not normalized by Okta, so it is not reliably comparable across platforms. May differ from `user_agent.os.version`, which is parsed from the request instead. | keyword |
 | okta.device.registered | Whether the device is registered. | boolean |
 | okta.device.screen_lock_type | The mechanism for locking the device's screen. One of "NONE", "PASSCODE" or "BIOMETRIC". | keyword |
 | okta.device.secure_hardware_present | Whether there is secure hardware present on the device. This is a checks for chip presence: trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens on the secure hardware. | boolean |
@@ -386,3 +382,5 @@ An example event for `system` looks as following:
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | user.id | Unique identifier of the user. | keyword |
+| user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| user_agent.os.version | Operating system version as a raw string. | keyword |

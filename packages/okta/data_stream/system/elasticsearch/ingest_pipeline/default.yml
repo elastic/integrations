@@ -304,34 +304,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_device_os_platform
-      field: json.device.os_platform
-      target_field: host.os.platform
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      tag: rename_device_os_version
-      field: json.device.os_version
-      target_field: host.os.version
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      tag: rename_device_managed
-      field: json.device.managed
-      target_field: host.entity.attributes.managed
-      ignore_missing: true
-      ignore_failure: true
-  - append:
-      tag: append_host_entity_type
-      field: host.entity.type
-      value: host
-      allow_duplicates: false
-      if: ctx.host?.entity?.attributes?.managed != null
-      description: >-
-        ECS expects an entity object to carry a type identifying what it describes.
-        Appended because entity.type is array-normalized, and only when host entity
-        attributes are present so events without device data gain no empty entity.
-  - rename:
       tag: rename_device
       field: json.client.device
       target_field: okta.client.device
@@ -878,6 +850,30 @@ processors:
       tag: user_agent_original
       field: user_agent.original
       ignore_missing: true
+  - set:
+      tag: set_user_agent_os_platform
+      field: user_agent.os.platform
+      copy_from: okta.device.os_platform
+      ignore_empty_value: true
+      description: >-
+        The operating system family of the end user's device, reported by Okta in
+        uppercase.
+  - set:
+      tag: set_user_agent_os_version
+      field: user_agent.os.version
+      copy_from: okta.device.os_version
+      ignore_empty_value: true
+      if: ctx.user_agent?.os?.version == null
+      description: >-
+        The operating system version of the end user's device as Okta reports it,
+        applied where the user agent string carries no version of its own.
+  - remove:
+      tag: remove_device_os_platform
+      field: okta.device.os_platform
+      ignore_missing: true
+      description: >-
+        Removes the vendor field after the copy above, leaving okta.device.os_platform
+        as an alias to user_agent.os.platform.
   - geoip:
       tag: geoip_ip
       field: source.ip

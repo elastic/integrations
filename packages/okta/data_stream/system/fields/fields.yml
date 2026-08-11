@@ -112,12 +112,10 @@
         events.
         Deprecated. Use the ECS `device.id` field.
     - name: managed
-      type: alias
-      path: host.entity.attributes.managed
+      type: boolean
       description: |
         Whether the device is enrolled in the organization's device management. Only
         present on events that carry device context, so it is absent from most events.
-        Deprecated. Use the ECS `host.entity.attributes.managed` field.
     - name: name
       type: alias
       path: device.product.name
@@ -127,19 +125,19 @@
         Deprecated. Use the ECS `device.product.name` field.
     - name: os_platform
       type: alias
-      path: host.os.platform
+      path: user_agent.os.platform
       description: |
         The operating system family of the end user's device, reported by Okta in
-        uppercase. Describes the device the request came from, not the Okta tenant.
-        Deprecated. Use the ECS `host.os.platform` field.
+        uppercase. Only present on events that carry device context, so it is absent
+        from most events.
+        Deprecated. Use the ECS `user_agent.os.platform` field.
     - name: os_version
-      type: alias
-      path: host.os.version
+      type: keyword
       description: |
         The operating system version of the end user's device. The format is whatever
         the platform reports and is not normalized by Okta, so it is not reliably
-        comparable across platforms.
-        Deprecated. Use the ECS `host.os.version` field.
+        comparable across platforms. May differ from `user_agent.os.version`, which is
+        parsed from the request instead.
     - name: registered
       type: boolean
       description: |
