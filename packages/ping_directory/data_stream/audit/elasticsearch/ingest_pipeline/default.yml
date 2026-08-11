@@ -30,8 +30,172 @@ processors:
       field: event.original
       tag: parse_audit_header
       patterns:
-        - '^# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};?)?(?: op=%{NUMBER:ping_directory.audit.op:long};?)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};?)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};?)?(?: origin="%{DATA:ping_directory.audit.origin}";?)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";?)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id:long};?)?(?: clientIP=%{IP:ping_directory.audit.client_ip};?)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";?)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};?)?'
+        - '^# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?<_tmp.audit_header>[^\n]*)$'
       if: ctx.event?.original != null
+      description: >-
+        Extracts the audit header timestamp and timezone and captures the remainder of the header line into _tmp.audit_header. The pattern is anchored at both ends, and [^\n]* bounds the capture to the header line so the LDIF body that follows is left untouched. The header key/value pairs are parsed by kv_audit_header rather than by positional optional grok groups: PingDirectory emits header tokens this data stream does not map (msgID, requesterIP, productName, startupID, replicationChangeID) interleaved among the mapped ones, and a positional pattern silently discards every field after the first unrecognised token.
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_for_parse_audit_header
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - kv:
+      field: _tmp.audit_header
+      tag: kv_audit_header
+      field_split: ';\s*'
+      value_split: '='
+      target_field: _tmp.audit_kv
+      trim_key: ' '
+      trim_value: '"'
+      exclude_keys:
+        - operationPurpose
+      ignore_missing: true
+      if: ctx._tmp?.audit_header != null
+      description: >-
+        Splits the semicolon-delimited audit header into key/value pairs, so header field order and unrecognised tokens do not affect which fields are extracted. value_split splits on the first `=` only, which keeps DN values such as requesterDN="cn=Directory Manager,cn=Root DNs,cn=config" intact. operationPurpose is excluded because its JSON value is parsed by parse_operation_purpose.
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_for_kv_audit_header
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: drop_empty_audit_header_values
+      lang: painless
+      if: ctx._tmp?.audit_kv != null
+      description: >-
+        Drops header pairs whose value is empty, for example `clientIP=` or `instanceName=""`. The scratch fields under ping_directory.audit are not declared in fields.yml and are disposed of only by the rename processors below, which skip empty values to avoid writing an empty string into a typed ECS field. Removing the empty pairs here keeps them inside _tmp so they cannot survive into the document.
+      source: |-
+        def kv = ctx._tmp.audit_kv;
+        def drop = new ArrayList();
+        for (def entry : kv.entrySet()) {
+          def value = entry.getValue();
+          if (value == null || (value instanceof String && ((String)value).trim().isEmpty())) {
+            drop.add(entry.getKey());
+          }
+        }
+        for (def key : drop) {
+          kv.remove(key);
+        }
+  - rename:
+      field: _tmp.audit_kv.conn
+      tag: rename_kv_conn
+      target_field: ping_directory.audit.conn
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.op
+      tag: rename_kv_op
+      target_field: ping_directory.audit.op
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.triggeredByConn
+      tag: rename_kv_triggeredByConn
+      target_field: ping_directory.audit.triggered_by_conn
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.triggeredByOp
+      tag: rename_kv_triggeredByOp
+      target_field: ping_directory.audit.triggered_by_op
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.origin
+      tag: rename_kv_origin
+      target_field: ping_directory.audit.origin
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.instanceName
+      tag: rename_kv_instanceName
+      target_field: ping_directory.audit.instance_name
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.threadID
+      tag: rename_kv_threadID
+      target_field: ping_directory.audit.thread_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.clientIP
+      tag: rename_kv_clientIP
+      target_field: ping_directory.audit.client_ip
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.requesterDN
+      tag: rename_kv_requesterDN
+      target_field: ping_directory.audit.requester_dn_raw
+      ignore_missing: true
+  - rename:
+      field: _tmp.audit_kv.usingAdminSessionWorkerThread
+      tag: rename_kv_usingAdminSessionWorkerThread
+      target_field: ping_directory.audit.using_admin_session_worker_thread
+      ignore_missing: true
+  - convert:
+      field: ping_directory.audit.conn
+      tag: convert_conn_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ping_directory.audit.conn
+            tag: remove_invalid_conn
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_message_for_convert_conn_to_long
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ping_directory.audit.op
+      tag: convert_op_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ping_directory.audit.op
+            tag: remove_invalid_op
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_message_for_convert_op_to_long
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ping_directory.audit.triggered_by_conn
+      tag: convert_triggered_by_conn_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ping_directory.audit.triggered_by_conn
+            tag: remove_invalid_triggered_by_conn
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_message_for_convert_triggered_by_conn_to_long
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ping_directory.audit.triggered_by_op
+      tag: convert_triggered_by_op_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ping_directory.audit.triggered_by_op
+            tag: remove_invalid_triggered_by_op
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_message_for_convert_triggered_by_op_to_long
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ping_directory.audit.thread_id
+      tag: convert_thread_id_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ping_directory.audit.thread_id
+            tag: remove_invalid_thread_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_message_for_convert_thread_id_to_long
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
       field: event.original
       tag: normalize_multiline_to_space
@@ -377,11 +541,12 @@ processors:
             tag: remove_using_admin_session_worker_thread
             field: ping_directory.audit.using_admin_session_worker_thread
             ignore_missing: true
-  - set:
-      field: client.ip
-      tag: set_client_ip_from_audit_client_ip
-      copy_from: ping_directory.audit.client_ip
-      ignore_empty_value: true
+  - rename:
+      field: ping_directory.audit.client_ip
+      tag: rename_audit_client_ip_to_client_ip
+      target_field: client.ip
+      if: ctx.ping_directory?.audit?.client_ip != null && ctx.ping_directory.audit.client_ip != ''
+      ignore_missing: true
   - geoip:
       field: client.ip
       tag: geoip_client_ip
@@ -411,9 +576,11 @@ processors:
   - append:
       field: related.ip
       tag: append_audit_client_ip_into_related_ip
-      if: ctx.ping_directory?.audit?.client_ip != null
-      value: '{{{ping_directory.audit.client_ip}}}'
+      if: ctx.client?.ip != null
+      value: '{{{client.ip}}}'
       allow_duplicates: false
+      description: >-
+        Appends the client IP to related.ip. Reads client.ip because rename_audit_client_ip_to_client_ip has already moved the source field.
   - date:
       field: ping_directory.audit.create_timestamp
       tag: date_createTimestamp
@@ -431,11 +598,12 @@ processors:
             tag: append_error_message_for_date_createTimestamp
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: observer.name
-      tag: set_observer_name_from_audit_instance_name
-      copy_from: ping_directory.audit.instance_name
-      ignore_empty_value: true
+  - rename:
+      field: ping_directory.audit.instance_name
+      tag: rename_audit_instance_name_to_observer_name
+      target_field: observer.name
+      if: ctx.ping_directory?.audit?.instance_name != null && ctx.ping_directory.audit.instance_name != ''
+      ignore_missing: true
   - date:
       field: ping_directory.audit.modify_timestamp
       tag: date_modifyTimestamp
@@ -504,16 +672,20 @@ processors:
       allow_duplicates: false
       description: >-
         Appends the target entry's RDN value to related.user when the DN is keyed on a user attribute, covering delete and rename records that carry no objectClass lines.
-  - set:
-      field: event.reason
-      tag: set_event_reason_from_audit_operation_purpose_code_location
-      copy_from: ping_directory.audit.operation_purpose.code_location
-      ignore_empty_value: true
-  - set:
-      field: event.timezone
-      tag: set_event_timezone_from_audit_timezone
-      copy_from: ping_directory.audit.timezone
-      ignore_empty_value: true
+  - rename:
+      field: ping_directory.audit.operation_purpose.code_location
+      tag: rename_audit_operation_purpose_code_location_to_event_reason
+      target_field: event.reason
+      if: >-
+        ctx.ping_directory?.audit?.operation_purpose?.code_location != null &&
+        ctx.ping_directory.audit.operation_purpose.code_location != ''
+      ignore_missing: true
+  - rename:
+      field: ping_directory.audit.timezone
+      tag: rename_audit_timezone_to_event_timezone
+      target_field: event.timezone
+      if: ctx.ping_directory?.audit?.timezone != null && ctx.ping_directory.audit.timezone != ''
+      ignore_missing: true
   - date:
       field: ping_directory.audit.timestamp
       tag: date_timestamp_with_timezone
@@ -560,11 +732,14 @@ processors:
       tag: set_@timestamp_from_ping_directory_audit_timestamp
       copy_from: ping_directory.audit.timestamp
       ignore_empty_value: true
-  - set:
-      field: event.action
-      tag: set_event_action_from_audit_changetype
-      copy_from: ping_directory.audit.changetype
-      ignore_empty_value: true
+      description: >-
+        Deliberately a set with copy_from rather than a rename. Agent-collected documents always arrive with @timestamp already populated with the collection time, and rename fails with "field [@timestamp] already exists" on an existing target, whereas set overwrites it with the parsed log timestamp. ping_directory.audit.timestamp is therefore dropped by remove_fields_map_to_ecs below.
+  - rename:
+      field: ping_directory.audit.changetype
+      tag: rename_audit_changetype_to_event_action
+      target_field: event.action
+      if: ctx.ping_directory?.audit?.changetype != null && ctx.ping_directory.audit.changetype != ''
+      ignore_missing: true
   - lowercase:
       field: event.action
       tag: lowercase_event_action
@@ -574,15 +749,11 @@ processors:
   - remove:
       field:
         - _tmp
-        - _conf
-        - ping_directory.audit.client_ip
-        - ping_directory.audit.instance_name
-        - ping_directory.audit.operation_purpose.code_location
         - ping_directory.audit.timestamp
-        - ping_directory.audit.timezone
-        - ping_directory.audit.changetype
       tag: remove_fields_map_to_ecs
       ignore_missing: true
+      description: >-
+        Drops the temporary parsing scratch space. The fields mapped to ECS are moved with rename processors, so they no longer need to be listed here. ping_directory.audit.timestamp is the exception: @timestamp always pre-exists on agent-collected documents, so it is copied with set rather than moved with rename and still has to be removed explicitly.
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
