@@ -142,6 +142,10 @@ program: |-
           }
         )
       )
+    : state.?events.hasValue() ?
+      // Phase 1 recorded an error for this evaluation; surface it instead of
+      // replacing it with an empty batch.
+      state
     :
       state.with(
         {
@@ -150,7 +154,6 @@ program: |-
         }
       )
   )
-
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

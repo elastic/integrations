@@ -136,22 +136,22 @@ An example event for `auth_log` looks as following:
 {
     "@timestamp": "2026-07-15T10:53:18.000Z",
     "agent": {
-        "ephemeral_id": "4a746158-1f24-4534-8300-6b6e84fff8c8",
-        "id": "eba18202-c4ca-44c7-a417-1c08765c429b",
-        "name": "elastic-agent-41846",
+        "ephemeral_id": "0bf8af8d-084f-4240-bdd3-e5c159387150",
+        "id": "405aab5e-9e2a-47ac-872c-756cd5373b69",
+        "name": "elastic-agent-56715",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.auth_log",
-        "namespace": "56377",
+        "namespace": "47768",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "eba18202-c4ca-44c7-a417-1c08765c429b",
+        "id": "405aab5e-9e2a-47ac-872c-756cd5373b69",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -163,12 +163,12 @@ An example event for `auth_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.auth_log",
         "id": "9532e1b4-e44a-42c7-a52a-083c345e0001",
-        "ingested": "2026-08-06T07:22:07Z",
+        "ingested": "2026-08-10T11:31:41Z",
         "kind": "event",
         "original": "{\"event_id\":\"9532e1b4-e44a-42c7-a52a-083c345e0001\",\"type\":\"AUTH_LOG\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"timestamp\":\"2026-07-15T10:53:18Z\",\"request_metadata\":{\"client_ip\":\"81.2.69.142\",\"client_ip_details\":{\"country\":\"GB\",\"city\":\"London\",\"region\":\"England\",\"region_code\":\"ENG\",\"latitude\":\"51.50853\",\"longitude\":\"-0.12574\"},\"client_ja3\":\"f90ffded875933863a95a1a84285c922\",\"client_ja4\":\"q13d0311h3_55b375c5d22e_653d80c3fe9d\"},\"action_data\":{\"action\":\"login_success\",\"role\":\"standard-user\"}}",
         "outcome": "success",
         "type": [
-            "info"
+            "start"
         ]
     },
     "gen_ai": {

@@ -203,8 +203,19 @@ processors:
       value: authentication
   - append:
       field: event.type
-      tag: append_event_type_auth_log
+      tag: append_event_type_start
+      value: start
+      if: ctx.event?.action != null && ctx.event.action.startsWith('login')
+  - append:
+      field: event.type
+      tag: append_event_type_end
+      value: end
+      if: ctx.event?.action != null && ctx.event.action.startsWith('logout')
+  - append:
+      field: event.type
+      tag: append_event_type_info
       value: info
+      if: ctx.event?.type == null
   - append:
       field: related.ip
       tag: append_source_ip_to_related
