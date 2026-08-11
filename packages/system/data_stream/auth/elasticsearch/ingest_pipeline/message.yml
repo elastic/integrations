@@ -106,6 +106,24 @@ processors:
         - "^delete user '%{USERNAME:_temp.userdel_user}'$"
         - "^removed (?:shadow )?group '%{DATA:_temp.userdel_group}'"
   - grok:
+      description: Extract group name from groupadd messages for /etc/group and /etc/gshadow entries.
+      tag: grok-groupadd
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.process?.name == 'groupadd'
+      patterns:
+        - '^group added to /etc/(?:group|gshadow): name=%{DATA:group.name}(?:, GID=%{NUMBER:group.id})?$'
+  - grok:
+      description: Extract group name from groupdel messages for /etc/group and /etc/gshadow entries.
+      tag: grok-groupdel
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.process?.name == 'groupdel'
+      patterns:
+        - "^group '%{DATA:group.name}' removed from /etc/(?:group|gshadow)$"
+  - grok:
       description: Grok usernames from PAM messages.
       tag: grok-pam-users
       field: message
@@ -621,6 +639,16 @@ processors:
       field: event.type
       value: change
       if: ctx.process?.name != null && ['usermod', 'groupmod'].contains(ctx.process.name)
+  - set:
+      tag: set_action-group-added
+      field: event.action
+      value: group-added
+      if: ctx.process?.name == 'groupadd'
+  - set:
+      tag: set_action-group-deleted
+      field: event.action
+      value: group-deleted
+      if: ctx.process?.name == 'groupdel'
   - append:
       tag: append_related-user-name
       field: related.user
