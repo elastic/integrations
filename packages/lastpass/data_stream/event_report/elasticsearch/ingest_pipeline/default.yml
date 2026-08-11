@@ -497,6 +497,7 @@ processors:
       field: lastpass.event_report.data.user_email
       processor:
         append:
+          tag: append_user_email
           field: user.email
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -528,6 +529,7 @@ processors:
       field: user.email
       processor:
         append:
+          tag: append_related_user
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -579,12 +581,15 @@ processors:
           dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

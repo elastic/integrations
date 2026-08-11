@@ -136,6 +136,7 @@ processors:
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_node_id
           field: ["_ingest._value.node_id", "_ingest._value.avatar_url", "_ingest._value.gravatar_id", "_ingest._value.followers_url", "_ingest._value.following_url", "_ingest._value.gists_url", "_ingest._value.starred_url", "_ingest._value.subscriptions_url", "_ingest._value.organizations_url", "_ingest._value.repos_url", "_ingest._value.events_url", "_ingest._value.received_events_url"]
   - fingerprint:
       tag: fingerprint_aba2b3a0
@@ -262,6 +263,7 @@ processors:
       if: ctx.github.issues.assignees != null
       processor:
         append:
+          tag: append_related_user
           field: related.user
           value: "{{{_ingest._value.login}}}"
           allow_duplicates: false
@@ -302,12 +304,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -176,7 +176,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: host.hostname
-      tag: set_host_hostname_d388b1b4
+      tag: set_host_name_from_machine_action_computer_dns_name_d388b1b4
       copy_from: microsoft_defender_endpoint.machine_action.computer_dns_name
       ignore_empty_value: true
   - append:
@@ -426,6 +426,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -433,6 +434,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

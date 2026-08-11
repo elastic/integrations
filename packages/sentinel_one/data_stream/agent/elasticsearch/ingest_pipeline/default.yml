@@ -555,12 +555,14 @@ processors:
       field: json.networkInterfaces
       processor:
         convert:
+          tag: convert_ingest_value_gatewayIp_to_ingest_value_gateway_ip
           field: _ingest._value.gatewayIp
           target_field: _ingest._value.gateway.ip
           type: ip
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -570,6 +572,7 @@ processors:
       field: json.networkInterfaces
       processor:
         append:
+          tag: append_related_ip
           field: related.ip
           value: '{{{_ingest._value.gatewayIp}}}'
           allow_duplicates: false
@@ -581,6 +584,7 @@ processors:
       field: json.networkInterfaces
       processor:
         gsub:
+          tag: gsub_ingest_value_gatewayMacAddress
           field: _ingest._value.gatewayMacAddress
           pattern: '[-:.]'
           replacement: '-'
@@ -592,6 +596,7 @@ processors:
       field: json.networkInterfaces
       processor:
         uppercase:
+          tag: uppercase_ingest_value_gatewayMacAddress_to_ingest_value_gateway_mac
           field: _ingest._value.gatewayMacAddress
           target_field: _ingest._value.gateway.mac
           ignore_missing: true
@@ -603,16 +608,20 @@ processors:
       if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_inet
           field: _ingest._value.inet
           processor:
             convert:
+              tag: convert_ingest_value
               field: _ingest._value
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value
                     field: _ingest._value
                 - append:
+                    tag: append_error_message_abafa9cf
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -622,9 +631,11 @@ processors:
       field: json.networkInterfaces
       processor:
         foreach:
+          tag: foreach_ingest_value_inet_af8321ad
           field: _ingest._value.inet
           processor:
             append:
+              tag: append_related_ip_4334a955
               field: related.ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -638,16 +649,20 @@ processors:
       if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_inet6
           field: _ingest._value.inet6
           processor:
             convert:
+              tag: convert_ingest_value_cf539cce
               field: _ingest._value
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_c9b5f779
                     field: _ingest._value
                 - append:
+                    tag: append_error_message_696bfb01
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -657,9 +672,11 @@ processors:
       field: json.networkInterfaces
       processor:
         foreach:
+          tag: foreach_ingest_value_inet6_e107abf1
           field: _ingest._value.inet6
           processor:
             append:
+              tag: append_related_ip_3b0b0490
               field: related.ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -672,6 +689,7 @@ processors:
       field: json.networkInterfaces
       processor:
         append:
+          tag: append_host_mac
           field: host.mac
           value: '{{{_ingest._value.physical}}}'
           ignore_failure: true
@@ -682,6 +700,7 @@ processors:
       field: json.networkInterfaces
       processor:
         remove:
+          tag: remove_ingest_value_physical
           field:
             - _ingest._value.physical
             - _ingest._value.gatewayMacAddress
@@ -973,6 +992,7 @@ processors:
       field: sentinel_one.agent.tags
       processor:
         date:
+          tag: date_ingest_value_assignedAt_to_ingest_value_assigned_at
           field: _ingest._value.assignedAt
           target_field: _ingest._value.assigned_at
           formats:
@@ -985,6 +1005,7 @@ processors:
       field: sentinel_one.agent.tags
       processor:
         rename:
+          tag: rename_ingest_value_assignedBy_to_ingest_value_assigned_by
           field: _ingest._value.assignedBy
           target_field: _ingest._value.assigned_by
           ignore_missing: true
@@ -995,6 +1016,7 @@ processors:
       field: sentinel_one.agent.tags
       processor:
         rename:
+          tag: rename_ingest_value_assignedById_to_ingest_value_assigned_by_id
           field: _ingest._value.assignedById
           target_field: _ingest._value.assigned_by_id
           ignore_missing: true
@@ -1005,6 +1027,7 @@ processors:
       field: sentinel_one.agent.tags
       processor:
         remove:
+          tag: remove_ingest_value_assignedAt
           field:
             - _ingest._value.assignedAt
           ignore_missing: true
@@ -1035,13 +1058,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_17daf11d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

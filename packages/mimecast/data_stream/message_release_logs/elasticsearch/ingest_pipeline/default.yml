@@ -75,6 +75,7 @@ processors:
       if: ctx.mimecast?.to instanceof List
       processor:
         append:
+          tag: append_email_to_address
           field: email.to.address
           value: '{{{_ingest._value.emailAddress}}}'
           allow_duplicates: false
@@ -117,6 +118,7 @@ processors:
       if: ctx.email.direction == 'inbound' && ctx.mimecast?.to instanceof List
       processor:
         append:
+          tag: append_user_full_name
           field: user.full_name
           value: '{{{_ingest._value.displayableName}}}'
           allow_duplicates: false
@@ -282,13 +284,16 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

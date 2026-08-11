@@ -652,6 +652,7 @@ processors:
       if: ctx.panw_cortex?.xdr?.tags != null
       processor:
         append:
+          tag: append_tags
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -676,12 +677,15 @@ processors:
 # Error handling
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_727dcfcf
       field: tags
       value: preserve_original_event
       allow_duplicates: false

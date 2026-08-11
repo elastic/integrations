@@ -556,7 +556,7 @@ processors:
   - rename:
       field: json.protoPayload.authenticationInfo.serviceAccountKeyName
       target_field: google_scc.audit.proto_payload.authentication_info.service_account_key_name
-      tag: rename_json_protoPayload_authenticationInfo_serviceAccountKeyName_to_google_scc_audit_proto_payload_authentication_info_service_account_key_name_c8b37f59
+      tag: rename_authentication_info_service_account_key_name_c8b37f59
       ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
@@ -576,9 +576,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_granted
                 field: _ingest._value.granted
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -595,6 +597,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_resourceAttributes_createTime
                 field: _ingest._value.resourceAttributes.createTime
                 ignore_missing: true
   - foreach:
@@ -611,6 +614,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_resourceAttributes_deleteTime
                 field: _ingest._value.resourceAttributes.deleteTime
                 ignore_missing: true
   - foreach:
@@ -627,6 +631,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_resourceAttributes_updateTime
                 field: _ingest._value.resourceAttributes.updateTime
                 ignore_missing: true
   - foreach:
@@ -1007,12 +1012,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_17a7abfa
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_b007fd96
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

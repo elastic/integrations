@@ -164,6 +164,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_manual_createTime
                 field: _ingest._value.manual.createTime
                 ignore_missing: true
   - foreach:
@@ -179,6 +180,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_manual_expireTime
                 field: _ingest._value.manual.expireTime
                 ignore_missing: true
   - foreach:
@@ -251,6 +253,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
@@ -258,6 +261,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

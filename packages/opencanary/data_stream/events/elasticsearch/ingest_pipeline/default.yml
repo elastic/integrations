@@ -437,7 +437,7 @@ processors:
   # TFTP Events
   - rename:
       description: Rename TFTP FILENAME field to opencanary.tftp.filename
-      tag: rename_opencanary_logdata_FILENAME_to_opencanary_tftp_filename_0b2e7468
+      tag: rename_opencanary_logdata_FILENAME_0b2e7468
       if: ctx.log?.logger == 'LOG_TFTP'
       field: opencanary.logdata.FILENAME
       target_field: opencanary.tftp.filename
@@ -623,7 +623,7 @@ processors:
       ignore_failure: true
   - grok:
       description: Parse source and destination MAC addresses from opencanary.logdata.MAC if present
-      tag: grok_opencanary_logdata_MAC_95eba733
+      tag: gsub_opencanary_logdata_MAC_95eba733
       field: opencanary.logdata.MAC
       patterns:
         - "%{MAC:destination.mac}-%{MAC:source.mac}%{GREEDYDATA}"
@@ -902,6 +902,7 @@ processors:
       field: opencanary.logdata
       processor:
         lowercase:
+          tag: lowercase_ingest_key
           field: _ingest._key
           ignore_failure: true
 
@@ -938,12 +939,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_95d7d84c
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message {{{ _ingest.on_failure_message }}}'

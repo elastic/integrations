@@ -163,7 +163,7 @@ processors:
   - script:
       if: ctx.gcp?.dns?.rdata != null && ctx.gcp.dns.rdata != ""
       lang: painless
-      tag: Process DNS RData
+      tag: process_dns_rdata
       description: This script processes the DNS RData into `dns.answers`.
       source: |
         def rdata = ctx.gcp.dns.rdata;
@@ -432,12 +432,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

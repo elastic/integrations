@@ -138,7 +138,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: google_secops.alert.friendly_name
-      tag: set_google_secops_alert_friendly_name_e7bfafb7
+      tag: set_rule_name_from_alert_detection_ruleName_e7bfafb7
       copy_from: google_secops.alert.detection.ruleName
       ignore_empty_value: true
   - set:
@@ -413,9 +413,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -541,9 +543,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ip
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_15c5fb6d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -593,9 +597,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_location_regionCoordinates_lat
                 field: _ingest._value.location.regionCoordinates.lat
                 ignore_missing: true
             - append:
+                tag: append_error_message_ab72e120
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -612,9 +618,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_location_regionCoordinates_lon
                 field: _ingest._value.location.regionCoordinates.lon
                 ignore_missing: true
             - append:
+                tag: append_error_message_7beedeb5
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -678,9 +686,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_593bb39c
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_88332cb7
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1031,6 +1041,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_firstDiscoveredTime
                 field: _ingest._value.firstDiscoveredTime
                 ignore_missing: true
       ignore_missing: true
@@ -1079,9 +1090,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_4e46f4a8
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_ba4898bc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1143,9 +1156,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_f22bd50a
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_574362fe
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1248,9 +1263,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_7106c570
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_f1e8fd3e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1327,9 +1344,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_9104f6b8
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_5a4d552a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1845,6 +1864,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_5b44c082
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -1855,6 +1875,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

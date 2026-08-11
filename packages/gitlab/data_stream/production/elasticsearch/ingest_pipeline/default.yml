@@ -322,7 +322,7 @@ processors:
     if: ctx.url?.path == '/dashboard/groups'
 - convert:
     field: gitlab.production.path_traversal_check_duration_s
-    tag: convert_path_traversal_check_duration_s _to_double
+    tag: convert_path_traversal_check_duration_s_to_double
     type: double
     ignore_missing: true
     on_failure:
@@ -518,7 +518,7 @@ processors:
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: gitlab.api.path_traversal_check_duration_s
-    tag: convert_path_traversal_check_duration_s_to_double
+    tag: convert_path_traversal_check_duration_s_to_double_9a4ba35d
     type: double
     ignore_missing: true
     on_failure:
@@ -560,13 +560,16 @@ processors:
       dropEmptyFields(ctx);
 on_failure:
 - append:
+    tag: append_error_message
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 - set:
+    tag: set_event_kind
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags
     field: tags
     value: preserve_original_event
     allow_duplicates: false

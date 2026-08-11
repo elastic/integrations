@@ -171,6 +171,7 @@ processors:
         ctx.host.cpu.usage = Math.round(ctx.json?.system_performance_metrics?.cpu_percentage *10) / 1000.0;
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
@@ -178,6 +179,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

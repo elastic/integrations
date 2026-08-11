@@ -7,6 +7,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_activity_identifier
           field: jamf_compliance_reporter.log.event_attributes.activity_identifier
           value: '{{{_ingest._value.activityIdentifier}}}'
           allow_duplicates: false
@@ -24,9 +25,11 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_backtrace_frames
           field: _ingest._value.backtrace.frames
           processor:
             append:
+              tag: append_jamf_compliance_reporter_log_event_attributes_backtrace_frames_image_offset
               field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_offset
               value: '{{{_ingest._value.imageOffset}}}'
               allow_duplicates: false
@@ -48,9 +51,11 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_backtrace_frames_bd161f4c
           field: _ingest._value.backtrace.frames
           processor:
             append:
+              tag: append_jamf_compliance_reporter_log_event_attributes_backtrace_frames_image_uuid
               field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_uuid
               value: '{{{_ingest._value.imageUUID}}}'
               allow_duplicates: false
@@ -61,6 +66,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_category
           field: jamf_compliance_reporter.log.event_attributes.category
           value: '{{{_ingest._value.category}}}'
           allow_duplicates: false
@@ -71,6 +77,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_event_message
           field: jamf_compliance_reporter.log.event_attributes.event.message
           value: '{{{_ingest._value.eventMessage}}}'
           allow_duplicates: false
@@ -81,6 +88,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_event_type
           field: jamf_compliance_reporter.log.event_attributes.event.type
           value: '{{{_ingest._value.eventType}}}'
           allow_duplicates: false
@@ -91,6 +99,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_format_string
           field: jamf_compliance_reporter.log.event_attributes.format_string
           value: '{{{_ingest._value.formatString}}}'
           allow_duplicates: false
@@ -101,14 +110,17 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_machTimestamp_to_jamf_compliance_reporter_log_event_attributes_mach_timestamp
           field: _ingest._value.machTimestamp
           target_field: jamf_compliance_reporter.log.event_attributes.mach_timestamp
           type: string
           on_failure:
             - remove:
+                tag: remove_ingest_value_machTimestamp
                 field: _ingest._value.machTimestamp
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -117,6 +129,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_event_type
           field: event.type
           value: 'info'
           allow_duplicates: false
@@ -127,6 +140,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_parent_activity_identifier
           field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
           value: '{{{_ingest._value.parentActivityIdentifier}}}'
           allow_duplicates: false
@@ -144,6 +158,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_process_id
           field: jamf_compliance_reporter.log.event_attributes.process.id
           value: '{{{_ingest._value.processID}}}'
           allow_duplicates: false
@@ -165,6 +180,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_process_image_path
           field: jamf_compliance_reporter.log.event_attributes.process.image.path
           value: '{{{_ingest._value.processImagePath}}}'
           allow_duplicates: false
@@ -175,6 +191,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_process_image_uuid
           field: jamf_compliance_reporter.log.event_attributes.process.image.uuid
           value: '{{{_ingest._value.processImageUUID}}}'
           allow_duplicates: false
@@ -185,6 +202,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_sender_image_path
           field: jamf_compliance_reporter.log.event_attributes.sender.image.path
           value: '{{{_ingest._value.senderImagePath}}}'
           allow_duplicates: false
@@ -195,6 +213,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_sender_image_uuid
           field: jamf_compliance_reporter.log.event_attributes.sender.image.uuid
           value: '{{{_ingest._value.senderImageUUID}}}'
           allow_duplicates: false
@@ -205,6 +224,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_sender_program_counter
           field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
           value: '{{{_ingest._value.senderProgramCounter}}}'
           allow_duplicates: false
@@ -226,6 +246,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_source
           field: jamf_compliance_reporter.log.event_attributes.source
           value: '{{{_ingest._value.source}}}'
           allow_duplicates: false
@@ -236,6 +257,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_subsystem
           field: jamf_compliance_reporter.log.event_attributes.subsystem
           value: '{{{_ingest._value.subsystem}}}'
           allow_duplicates: false
@@ -246,6 +268,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_thread_id
           field: jamf_compliance_reporter.log.event_attributes.thread_id
           value: '{{{_ingest._value.threadID}}}'
           allow_duplicates: false
@@ -263,15 +286,18 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         date:
+          tag: date_ingest_value_timestamp_to_jamf_compliance_reporter_log_event_attributes_timestamp
           field: _ingest._value.timestamp
           target_field: jamf_compliance_reporter.log.event_attributes.timestamp
           formats:
             - yyyy-MM-dd HH:mm:ss.SSSSSSZ
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp
                 field: _ingest._value.timestamp
                 ignore_missing: true
             - append:
+                tag: append_error_message_2bea64de
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -280,6 +306,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_timezone_name
           field: jamf_compliance_reporter.log.event_attributes.timezone_name
           value: '{{{_ingest._value.timezone_name}}}'
           allow_duplicates: false
@@ -290,6 +317,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_timezoneName
           field: jamf_compliance_reporter.log.event_attributes.timezoneName
           value: '{{{_ingest._value.timezoneName}}}'
           allow_duplicates: false
@@ -300,6 +328,7 @@ processors:
       if: ctx.json?.event_attributes instanceof List
       processor:
         append:
+          tag: append_jamf_compliance_reporter_log_event_attributes_trace_id
           field: jamf_compliance_reporter.log.event_attributes.trace_id
           value: '{{{_ingest._value.traceID}}}'
           allow_duplicates: false
@@ -313,12 +342,15 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_b56739da
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

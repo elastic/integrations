@@ -174,6 +174,7 @@ processors:
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv4 != null
       processor:
         append:
+          tag: append_related_ip
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -207,6 +208,7 @@ processors:
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv6 != null
       processor:
         append:
+          tag: append_related_ip_13e36d83
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -554,16 +556,20 @@ processors:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
+          tag: foreach_ingest_value_inet
           field: _ingest._value.inet
           processor:
             convert:
+              tag: convert_ingest_value
               field: _ingest._value
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value
                     field: _ingest._value
                 - append:
+                    tag: append_error_message
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -574,9 +580,11 @@ processors:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
+          tag: foreach_ingest_value_inet_a1a90248
           field: _ingest._value.inet
           processor:
             append:
+              tag: append_related_ip_1b97ac9c
               field: related.ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -589,16 +597,20 @@ processors:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
+          tag: foreach_ingest_value_inet6
           field: _ingest._value.inet6
           processor:
             convert:
+              tag: convert_ingest_value_c9cc24fb
               field: _ingest._value
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_92ae3650
                     field: _ingest._value
                 - append:
+                    tag: append_error_message_cbfbfaa9
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -609,9 +621,11 @@ processors:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
+          tag: foreach_ingest_value_inet6_6800f0be
           field: _ingest._value.inet6
           processor:
             append:
+              tag: append_related_ip_561502c5
               field: related.ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -624,6 +638,7 @@ processors:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         append:
+          tag: append_host_mac
           field: host.mac
           value: '{{{_ingest._value.physical}}}'
           allow_duplicates: false
@@ -635,6 +650,7 @@ processors:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         remove:
+          tag: remove_ingest_value_physical
           field:
             - _ingest._value.physical
           ignore_missing: true
@@ -781,6 +797,7 @@ processors:
       field: json.indicators
       processor:
         rename:
+          tag: rename_ingest_value_category_to_ingest_value_category_name
           field: _ingest._value.category
           target_field: _ingest._value.category.name
           ignore_missing: true
@@ -790,6 +807,7 @@ processors:
       field: json.indicators
       processor:
         rename:
+          tag: rename_ingest_value_categoryId_to_ingest_value_category_id
           field: _ingest._value.categoryId
           target_field: _ingest._value.category.id
           ignore_missing: true
@@ -799,9 +817,11 @@ processors:
       field: json.indicators
       processor:
         foreach:
+          tag: foreach_ingest_value_ids
           field: _ingest._value.ids
           processor:
             append:
+              tag: append_threat_tactic_id
               field: threat.tactic.id
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -814,6 +834,7 @@ processors:
       if: ctx.json?.indicators instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_ids_3fc7017d
           field: _ingest._value.ids
           ignore_missing: true
           processor:
@@ -827,9 +848,11 @@ processors:
       field: json.indicators
       processor:
         foreach:
+          tag: foreach_ingest_value_tactics
           field: _ingest._value.tactics
           processor:
             append:
+              tag: append_threat_tactic_name
               field: threat.tactic.name
               value: '{{{_ingest._value.name}}}'
               allow_duplicates: false
@@ -841,9 +864,11 @@ processors:
       field: json.indicators
       processor:
         foreach:
+          tag: foreach_ingest_value_tactics_45677d3b
           field: _ingest._value.tactics
           processor:
             append:
+              tag: append_threat_framework
               field: threat.framework
               value: '{{{_ingest._value.source}}}'
               allow_duplicates: false
@@ -855,12 +880,15 @@ processors:
       field: json.indicators
       processor:
         foreach:
+          tag: foreach_ingest_value_tactics_cdca3d3d
           field: _ingest._value.tactics
           processor:
             foreach:
+              tag: foreach_ingest_value_techniques
               field: _ingest._value.techniques
               processor:
                 append:
+                  tag: append_threat_technique_reference
                   field: threat.technique.reference
                   value: '{{{_ingest._value.link}}}'
                   allow_duplicates: false
@@ -873,12 +901,15 @@ processors:
       field: json.indicators
       processor:
         foreach:
+          tag: foreach_ingest_value_tactics_597fc93f
           field: _ingest._value.tactics
           processor:
             foreach:
+              tag: foreach_ingest_value_techniques_52ca4b01
               field: _ingest._value.techniques
               processor:
                 append:
+                  tag: append_threat_technique_id
                   field: threat.technique.id
                   value: '{{{_ingest._value.name}}}'
                   allow_duplicates: false
@@ -891,6 +922,7 @@ processors:
       field: json.indicators
       processor:
         remove:
+          tag: remove_ingest_value_ids
           field:
             - _ingest._value.ids
             - _ingest._value.tactics
@@ -951,12 +983,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_actionsCounters_failed_to_ingest_value_action_counters_failed
           field: _ingest._value.actionsCounters.failed
           target_field: _ingest._value.action_counters.failed
           type: long
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_40dddd55
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -966,12 +1000,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_actionsCounters_notFound_to_ingest_value_action_counters_not_found
           field: _ingest._value.actionsCounters.notFound
           target_field: _ingest._value.action_counters.not_found
           type: long
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_b48c026c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -981,12 +1017,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_actionsCounters_pendingReboot_to_ingest_value_action_counters_pending_reboot
           field: _ingest._value.actionsCounters.pendingReboot
           target_field: _ingest._value.action_counters.pending_reboot
           type: long
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_52169984
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -996,12 +1034,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_actionsCounters_success_to_ingest_value_action_counters_success
           field: _ingest._value.actionsCounters.success
           target_field: _ingest._value.action_counters.success
           type: long
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_07db898a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -1011,12 +1051,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_actionsCounters_total_to_ingest_value_action_counters_total
           field: _ingest._value.actionsCounters.total
           target_field: _ingest._value.action_counters.total
           type: long
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_ca47fb53
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -1026,12 +1068,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_agentSupportsReport_to_ingest_value_agent_supports_report
           field: _ingest._value.agentSupportsReport
           target_field: _ingest._value.agent_supports_report
           type: boolean
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_26bbf8ea
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -1041,12 +1085,14 @@ processors:
       field: json.mitigationStatus
       processor:
         convert:
+          tag: convert_ingest_value_groupNotFound_to_ingest_value_group_not_found
           field: _ingest._value.groupNotFound
           target_field: _ingest._value.group_not_found
           type: boolean
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_50ca062b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -1056,6 +1102,7 @@ processors:
       field: json.mitigationStatus
       processor:
         date:
+          tag: date_ingest_value_lastUpdate_to_ingest_value_last_update
           field: _ingest._value.lastUpdate
           target_field: _ingest._value.last_update
           formats:
@@ -1068,6 +1115,7 @@ processors:
       field: json.mitigationStatus
       processor:
         rename:
+          tag: rename_ingest_value_latestReport_to_ingest_value_latest_report
           field: _ingest._value.latestReport
           target_field: _ingest._value.latest_report
           ignore_missing: true
@@ -1078,6 +1126,7 @@ processors:
       field: json.mitigationStatus
       processor:
         rename:
+          tag: rename_ingest_value_reportId_to_ingest_value_report_id
           field: _ingest._value.reportId
           target_field: _ingest._value.report_id
           ignore_missing: true
@@ -1088,6 +1137,7 @@ processors:
       field: json.mitigationStatus
       processor:
         date:
+          tag: date_ingest_value_mitigationEndedAt_to_ingest_value_mitigation_ended_at
           field: _ingest._value.mitigationEndedAt
           target_field: _ingest._value.mitigation_ended_at
           formats:
@@ -1100,6 +1150,7 @@ processors:
       field: json.mitigationStatus
       processor:
         date:
+          tag: date_ingest_value_mitigationStartedAt_to_ingest_value_mitigation_started_at
           field: _ingest._value.mitigationStartedAt
           target_field: _ingest._value.mitigation_started_at
           formats:
@@ -1112,6 +1163,7 @@ processors:
       field: json.mitigationStatus
       processor:
         remove:
+          tag: remove_ingest_value_actionsCounters
           field:
             - _ingest._value.actionsCounters
             - _ingest._value.agentSupportsReport
@@ -1725,13 +1777,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_abe37bea
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

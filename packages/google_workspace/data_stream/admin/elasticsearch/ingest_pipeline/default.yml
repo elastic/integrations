@@ -807,11 +807,6 @@ processors:
       target_field: google_workspace.admin.distribution.entity.type
       ignore_missing: true
   - rename:
-      tag: rename_google_workspace_admin_MOBILE_APP_PACKAGE_ID_to_google_workspace_admin_application_package_id_a3501123
-      field: google_workspace.admin.MOBILE_APP_PACKAGE_ID
-      target_field: google_workspace.admin.application.package_id
-      ignore_missing: true
-  - rename:
       tag: rename_google_workspace_admin_NEW_PERMISSION_GRANT_STATE_to_google_workspace_admin_new_value_a686cf77
       field: google_workspace.admin.NEW_PERMISSION_GRANT_STATE
       target_field: google_workspace.admin.new_value
@@ -1109,13 +1104,16 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

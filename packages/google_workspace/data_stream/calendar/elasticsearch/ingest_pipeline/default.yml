@@ -474,7 +474,7 @@ processors:
   - script:
       description: Convert Gregorian time in seconds to a Unix epoch timestamp in milliseconds.
       if: ctx.google_workspace?.calendar?.start_time != null
-      tag: script_7ee314f1
+      tag: convert_gregorian_time_to_unix_timestamp_7ee314f1
       lang: painless
       source: |-
         long gregorianOffset = 62135683200L;
@@ -719,12 +719,14 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

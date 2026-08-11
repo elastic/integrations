@@ -177,11 +177,13 @@ processors:
     ignore_failure: true
     processor:
       convert:
+        tag: convert_ingest_value
         field: _ingest._value
         type: ip
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_ingest_value
               field: _ingest._value
               ignore_missing: true
 - remove:
@@ -894,13 +896,16 @@ processors:
     if: ctx.gitlab?.api?.username != null
 on_failure:
 - set:
+    tag: set_event_kind
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 - append:
+    tag: append_tags
     field: tags
     value: preserve_original_event
     allow_duplicates: false

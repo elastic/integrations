@@ -101,6 +101,7 @@ processors:
       field: mimecast.recipients
       processor:
         append:
+          tag: append_email_to_address
           field: email.to.address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -235,7 +236,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_email_from_address_list_to_related_user
+          tag: append_email_from_address_list_to_related_user_d1a50329
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
@@ -258,6 +259,7 @@ processors:
       field: email.attachments.file.hash
       processor:
         append:
+          tag: append_related_hash
           field: related.hash
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -322,13 +324,16 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

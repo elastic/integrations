@@ -261,6 +261,7 @@ processors:
     if: ctx.jamf_pro.inventory?.group_memberships != null
     processor:
       append:
+        tag: append_user_group_name
         field: user.group.name
         value: '{{{_ingest._value.group_name}}}'
         allow_duplicates: false
@@ -272,6 +273,7 @@ processors:
     if: ctx.jamf_pro.inventory?.group_memberships != null
     processor:
       append:
+        tag: append_user_group_id
         field: user.group.id
         value: '{{{_ingest._value.group_id}}}'
         allow_duplicates: false
@@ -317,12 +319,15 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
+    tag: append_error_message
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

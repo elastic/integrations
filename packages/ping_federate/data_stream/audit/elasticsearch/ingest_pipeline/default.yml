@@ -239,7 +239,7 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_related_user_5a8fbae8
+      tag: append_local_user_id_to_related_user_5a8fbae8
       value: '{{{ping_federate.audit.subject}}}'
       allow_duplicates: false
       if: ctx.ping_federate?.audit?.subject != null
@@ -386,6 +386,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -396,6 +397,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

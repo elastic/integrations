@@ -212,7 +212,7 @@ processors:
   - set:
       field: asset.last_updated
       copy_from: entityanalytics_okta.user.last_updated
-      tag: set_asset_last_updated_011f75e3
+      tag: set_asset_last_seen_011f75e3
       ignore_empty_value: true
   - date:
       field: okta.passwordChanged
@@ -250,6 +250,7 @@ processors:
       if: ctx.entityanalytics_okta?.groups != null
       processor:
         append:
+          tag: append_user_group_id
           field: user.group.id
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
@@ -259,6 +260,7 @@ processors:
       if: ctx.entityanalytics_okta?.groups != null
       processor:
         append:
+          tag: append_user_group_name
           field: user.group.name
           value: '{{{_ingest._value.profile.name}}}'
           allow_duplicates: false
@@ -273,6 +275,7 @@ processors:
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
         append:
+          tag: append_user_roles
           field: user.roles
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
@@ -282,6 +285,7 @@ processors:
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
         append:
+          tag: append_user_roles_31fce0cf
           field: user.roles
           value: '{{{_ingest._value.label}}}'
           allow_duplicates: false
@@ -303,7 +307,7 @@ processors:
         rename:
           field: _ingest._value.lastUpdated
           target_field: _ingest._value.last_updated
-          tag: rename_user_roles.assignmentType
+          tag: rename_user_roles.assignmentType_912b7f28
           ignore_missing: true
   - foreach:
       tag: foreach_entityanalytics_okta_roles_6a1b3c29
@@ -318,6 +322,7 @@ processors:
             - ISO8601
           on_failure:
             - rename:
+                tag: rename_ingest_value_last_updated_to_ingest_value_lastUpdated
                 field: _ingest._value.last_updated
                 target_field: _ingest._value.lastUpdated
                 ignore_failure: true
@@ -327,6 +332,7 @@ processors:
       if: ctx.entityanalytics_okta?.roles instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_permissions
           field: _ingest._value.permissions
           ignore_missing: true
           processor:

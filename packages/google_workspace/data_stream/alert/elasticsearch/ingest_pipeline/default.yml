@@ -297,6 +297,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_attachmentsSha256Hash_to_ingest_value_attachments_sha256_hash
           field: _ingest._value.attachmentsSha256Hash
           target_field: _ingest._value.attachments_sha256_hash
           ignore_missing: true
@@ -307,6 +308,7 @@ processors:
       field: json.data.messages
       processor:
         date:
+          tag: date_ingest_value_date_to_ingest_value_date
           field: _ingest._value.date
           target_field: _ingest._value.date
           timezone: UTC
@@ -324,6 +326,7 @@ processors:
       field: json.data.messages
       processor:
         append:
+          tag: append_email_delivery_timestamp
           field: email.delivery_timestamp
           value: '{{{_ingest._value.date}}}'
           allow_duplicates: false
@@ -334,6 +337,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_md5HashSubject_to_ingest_value_md5_hash_subject
           field: _ingest._value.md5HashSubject
           target_field: _ingest._value.md5.hash.subject
           ignore_missing: true
@@ -344,6 +348,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_messageBodySnippet_to_ingest_value_message_body_snippet
           field: _ingest._value.messageBodySnippet
           target_field: _ingest._value.message_body_snippet
           ignore_missing: true
@@ -354,6 +359,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_md5HashMessageBody_to_ingest_value_md5_hash_message_body
           field: _ingest._value.md5HashMessageBody
           target_field: _ingest._value.md5.hash.message_body
           ignore_missing: true
@@ -364,6 +370,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_messageId_to_ingest_value_id
           field: _ingest._value.messageId
           target_field: _ingest._value.id
           ignore_missing: true
@@ -374,6 +381,7 @@ processors:
       field: json.data.messages
       processor:
         append:
+          tag: append_email_message_id
           field: email.message_id
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
@@ -384,6 +392,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_recipient_to_ingest_value_recipient_email
           field: _ingest._value.recipient
           target_field: _ingest._value.recipient_email
           ignore_missing: true
@@ -394,6 +403,7 @@ processors:
       field: json.data.messages
       processor:
         append:
+          tag: append_email_to_address
           field: email.to.address
           value: '{{{_ingest._value.recipient_email}}}'
           allow_duplicates: false
@@ -404,6 +414,7 @@ processors:
       field: json.data.messages
       processor:
         rename:
+          tag: rename_ingest_value_subjectText_to_ingest_value_subject_text
           field: _ingest._value.subjectText
           target_field: _ingest._value.subject_text
           ignore_missing: true
@@ -414,6 +425,7 @@ processors:
       field: json.data.messages
       processor:
         append:
+          tag: append_email_subject
           field: email.subject
           value: '{{{_ingest._value.subject_text}}}'
           allow_duplicates: false
@@ -429,9 +441,11 @@ processors:
       field: google_workspace.alert.data.messages
       processor:
         foreach:
+          tag: foreach_ingest_value_attachments_sha256_hash
           field: _ingest._value.attachments_sha256_hash
           processor:
               append:
+                tag: append_email_attachments_file_hash_sha256
                 field: email.attachments.file.hash.sha256
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
@@ -445,6 +459,7 @@ processors:
       field: google_workspace.alert.data.messages
       processor:
         append:
+          tag: append_related_hash
           field: related.hash
           value: '{{{_ingest._value.md5.hash.subject}}}'
           allow_duplicates: false
@@ -593,6 +608,7 @@ processors:
       field: json.data.suspensionDetails
       processor:
         rename:
+          tag: rename_ingest_value_abuseReason_to_ingest_value_abuse_reason
           field: _ingest._value.abuseReason
           target_field: _ingest._value.abuse_reason
           ignore_missing: true
@@ -603,6 +619,7 @@ processors:
       field: json.data.suspensionDetails
       processor:
         rename:
+          tag: rename_ingest_value_productName_to_ingest_value_product_name
           field: _ingest._value.productName
           target_field: _ingest._value.product_name
           ignore_missing: true
@@ -625,6 +642,7 @@ processors:
       field: google_workspace.alert.data.affected.user_emails
       processor:
         append:
+          tag: append_user_email
           field: user.email
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -674,6 +692,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_deviceId_to_ingest_value_device_id
           field: _ingest._value.deviceId
           target_field: _ingest._value.device.id
           ignore_missing: true
@@ -684,6 +703,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_serialNumber_to_ingest_value_serial_number
           field: _ingest._value.serialNumber
           target_field: _ingest._value.serial.number
           ignore_missing: true
@@ -694,6 +714,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_deviceType_to_ingest_value_device_type
           field: _ingest._value.deviceType
           target_field: _ingest._value.device.type
           ignore_missing: true
@@ -704,6 +725,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_deviceModel_to_ingest_value_device_model
           field: _ingest._value.deviceModel
           target_field: _ingest._value.device.model
           ignore_missing: true
@@ -714,6 +736,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_resourceId_to_ingest_value_resource_id
           field: _ingest._value.resourceId
           target_field: _ingest._value.resource.id
           ignore_missing: true
@@ -724,6 +747,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_iosVendorId_to_ingest_value_ios_vendor_id
           field: _ingest._value.iosVendorId
           target_field: _ingest._value.ios_vendor.id
           ignore_missing: true
@@ -734,6 +758,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_deviceCompromisedState_to_ingest_value_device_compromised_state
           field: _ingest._value.deviceCompromisedState
           target_field: _ingest._value.device_compromised_state
           ignore_missing: true
@@ -744,6 +769,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_deviceProperty_to_ingest_value_device_property
           field: _ingest._value.deviceProperty
           target_field: _ingest._value.device.property
           ignore_missing: true
@@ -754,6 +780,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_oldValue_to_ingest_value_old_value
           field: _ingest._value.oldValue
           target_field: _ingest._value.old_value
           ignore_missing: true
@@ -764,6 +791,7 @@ processors:
       field: json.data.events
       processor:
         rename:
+          tag: rename_ingest_value_newValue_to_ingest_value_new_value
           field: _ingest._value.newValue
           target_field: _ingest._value.new_value
           ignore_missing: true
@@ -781,6 +809,7 @@ processors:
       field: json.data.requestInfo
       processor:
         rename:
+          tag: rename_ingest_value_appKey_to_ingest_value_app_key
           field: _ingest._value.appKey
           target_field: _ingest._value.app.key
           ignore_missing: true
@@ -791,6 +820,7 @@ processors:
       field: json.data.requestInfo
       processor:
         rename:
+          tag: rename_ingest_value_appDeveloperEmail_to_ingest_value_app_developer_email
           field: _ingest._value.appDeveloperEmail
           target_field: _ingest._value.app.developer_email
           ignore_missing: true
@@ -801,6 +831,7 @@ processors:
       field: json.data.requestInfo
       processor:
         rename:
+          tag: rename_ingest_value_numberOfRequests_to_ingest_value_number_of_requests
           field: _ingest._value.numberOfRequests
           target_field: _ingest._value.number_of_requests
           ignore_missing: true
@@ -960,6 +991,7 @@ processors:
       field: json.data.ruleViolationInfo.matchInfo
       processor:
         rename:
+          tag: rename_ingest_value_userDefinedDetector_resourceName_to_ingest_value_user_defined_detector_resource
           field: _ingest._value.userDefinedDetector.resourceName
           target_field: _ingest._value.user_defined_detector.resource.name
           ignore_missing: true
@@ -970,6 +1002,7 @@ processors:
       field: json.data.ruleViolationInfo.matchInfo
       processor:
         rename:
+          tag: rename_ingest_value_userDefinedDetector_displayName_to_ingest_value_user_defined_detector_display_na
           field: _ingest._value.userDefinedDetector.displayName
           target_field: _ingest._value.user_defined_detector.display.name
           ignore_missing: true
@@ -980,6 +1013,7 @@ processors:
       field: json.data.ruleViolationInfo.matchInfo
       processor:
         rename:
+          tag: rename_ingest_value_predefinedDetector_detectorName_to_ingest_value_predefined_detector_name
           field: _ingest._value.predefinedDetector.detectorName
           target_field: _ingest._value.predefined_detector.name
           ignore_missing: true
@@ -1161,6 +1195,7 @@ processors:
       field: email.attachments.file.hash.sha256
       processor:
         append:
+          tag: append_related_hash_c475e947
           field: related.hash
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -1172,6 +1207,7 @@ processors:
       field: google_workspace.alert.data.messages.md5.hash.message_body
       processor:
         append:
+          tag: append_related_hash_0478669a
           field: related.hash
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -1211,6 +1247,7 @@ processors:
       field: google_workspace.alert.data.messages
       processor:
         remove:
+          tag: remove_ingest_value_attachments_sha256_hash
           field:
             - _ingest._value.attachments_sha256_hash
             - _ingest._value.subject_text
@@ -1242,13 +1279,16 @@ processors:
           dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

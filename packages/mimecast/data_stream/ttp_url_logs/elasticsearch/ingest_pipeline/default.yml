@@ -170,6 +170,7 @@ processors:
       ignore_failure: true
       processor:
         gsub:
+          tag: gsub_ingest_key
           field: _ingest._key
           pattern: ':'
           replacement: '_'
@@ -213,13 +214,16 @@ processors:
 # Error handling
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

@@ -84,14 +84,17 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address
                 field: _ingest._value.address
             - append:
+                tag: append_error_message
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -102,6 +105,7 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         append:
+          tag: append_related_ip
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -114,6 +118,7 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -178,13 +183,16 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_algorithm
           field: _ingest._value.algorithm
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_algorithm
                 field: _ingest._value.algorithm
             - append:
+                tag: append_error_message_70adecb3
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -195,6 +203,7 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_zone_to_ingest_value_protocol_zone
           field: _ingest._value.protocol_zone
           target_field: _ingest._value.protocol.zone
           ignore_missing: true
@@ -206,6 +215,7 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_public_key_to_ingest_value_public
           field: _ingest._value.public_key
           target_field: _ingest._value.public
           ignore_missing: true
@@ -217,13 +227,16 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_sep
           field: _ingest._value.sep
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_sep
                 field: _ingest._value.sep
             - append:
+                tag: append_error_message_1ff33ec2
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -239,13 +252,16 @@ processors:
       if: ctx.json?.dnssec_trust_anchors instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_algorithm_01b2b0bb
           field: _ingest._value.algorithm
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_algorithm_2623b1df
                 field: _ingest._value.algorithm
             - append:
+                tag: append_error_message_184d6ad1
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -256,6 +272,7 @@ processors:
       if: ctx.json?.dnssec_trust_anchors instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_zone_to_ingest_value_protocol_zone_d894e2df
           field: _ingest._value.protocol_zone
           target_field: _ingest._value.protocol.zone
           ignore_missing: true
@@ -267,13 +284,16 @@ processors:
       if: ctx.json?.dnssec_trust_anchors instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_sep_ea9a09c8
           field: _ingest._value.sep
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_sep_e81484a5
                 field: _ingest._value.sep
             - append:
+                tag: append_error_message_8c419857
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -349,6 +369,7 @@ processors:
       if: ctx.json?.ecs_zones instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn_fbe40519
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -377,14 +398,17 @@ processors:
       if: ctx.json?.forwarders instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_b480db8d
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_b241e963
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_fda37eb3
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -395,6 +419,7 @@ processors:
       if: ctx.json?.forwarders instanceof List
       processor:
         append:
+          tag: append_related_ip_94d816d4
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -407,6 +432,7 @@ processors:
       if: ctx.json?.forwarders instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn_adb84906
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -499,14 +525,17 @@ processors:
       if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_6fcbb2cd
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_00b24998
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_e583fd1a
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -517,6 +546,7 @@ processors:
       if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
       processor:
         append:
+          tag: append_related_ip_1f3a15ba
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -529,6 +559,7 @@ processors:
       if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn_4c58787f
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -596,13 +627,16 @@ processors:
       if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_trust_anchors instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_algorithm_9e0d42f9
           field: _ingest._value.algorithm
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_algorithm_78ff78ef
                 field: _ingest._value.algorithm
             - append:
+                tag: append_error_message_93fb373f
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -613,6 +647,7 @@ processors:
       if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_trust_anchors instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_zone_to_ingest_value_protocol_zone_102ebcb7
           field: _ingest._value.protocol_zone
           target_field: _ingest._value.protocol.zone
           ignore_missing: true
@@ -624,13 +659,16 @@ processors:
       if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_trust_anchors instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_sep_f6bd33b3
           field: _ingest._value.sep
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_sep_0a0241fa
                 field: _ingest._value.sep
             - append:
+                tag: append_error_message_a1a4ad8a
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -721,6 +759,7 @@ processors:
       if: ctx.json?.inheritance_sources?.ecs_block?.value?.ecs_zones instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn_210627df
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -779,14 +818,17 @@ processors:
       if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_d8d7f474
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_ab427c11
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_c42526ca
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -797,6 +839,7 @@ processors:
       if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
       processor:
         append:
+          tag: append_related_ip_d6a62fce
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -809,6 +852,7 @@ processors:
       if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn_51316f38
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -1068,14 +1112,17 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_18d45910
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_ac9a33dc
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_db480d88
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1086,6 +1133,7 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_ip_a9b810a9
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1098,6 +1146,7 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_hash
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1110,6 +1159,7 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1141,14 +1191,17 @@ processors:
       if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_0a31ecb6
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_55494cf8
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_72711275
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1159,6 +1212,7 @@ processors:
       if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_ip_b5d2fe7b
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1171,6 +1225,7 @@ processors:
       if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_hash_2fdc3767
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1183,6 +1238,7 @@ processors:
       if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_64eded2a
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1268,14 +1324,17 @@ processors:
       if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_6d61c1a5
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_a74580c8
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_320469ba
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1286,6 +1345,7 @@ processors:
       if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_ip_f2e59cba
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1298,6 +1358,7 @@ processors:
       if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_hash_36facd08
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1310,6 +1371,7 @@ processors:
       if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_5173c20e
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1341,14 +1403,17 @@ processors:
       if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_27df5214
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_290c4a12
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_67d99262
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1359,6 +1424,7 @@ processors:
       if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_ip_2a9e8d0d
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1371,6 +1437,7 @@ processors:
       if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
       processor:
         append:
+          tag: append_related_hash_82fcead6
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1383,6 +1450,7 @@ processors:
       if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_ef787570
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1660,14 +1728,17 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_a36c6366
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_94109830
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_265b840a
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1678,6 +1749,7 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         append:
+          tag: append_related_ip_90481de1
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1690,6 +1762,7 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_acl_to_ingest_value_value
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -1701,6 +1774,7 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         append:
+          tag: append_related_hash_8c45dcf9
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1713,6 +1787,7 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_0496a391
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1729,14 +1804,17 @@ processors:
       if: ctx.json?.match_destinations_acl instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_421f605d
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_208e2558
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_e7027487
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1747,6 +1825,7 @@ processors:
       if: ctx.json?.match_destinations_acl instanceof List
       processor:
         append:
+          tag: append_related_ip_d29b47bd
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1759,6 +1838,7 @@ processors:
       if: ctx.json?.match_destinations_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_acl_to_ingest_value_value_c1f8da34
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -1770,6 +1850,7 @@ processors:
       if: ctx.json?.match_destinations_acl instanceof List
       processor:
         append:
+          tag: append_related_hash_4ed8ef1d
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1782,6 +1863,7 @@ processors:
       if: ctx.json?.match_destinations_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_e332ca57
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1875,14 +1957,17 @@ processors:
       if: ctx.json?.query_acl instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_bc18eb0f
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_c5f91a6a
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_62556c19
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1893,6 +1978,7 @@ processors:
       if: ctx.json?.query_acl instanceof List
       processor:
         append:
+          tag: append_related_ip_6c4fcc7d
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1905,6 +1991,7 @@ processors:
       if: ctx.json?.query_acl instanceof List
       processor:
         append:
+          tag: append_related_hash_02fd84e1
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1917,6 +2004,7 @@ processors:
       if: ctx.json?.query_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_acl_to_ingest_value_value_eeeaf724
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -1928,6 +2016,7 @@ processors:
       if: ctx.json?.query_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_3c7f2a21
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1944,14 +2033,17 @@ processors:
       if: ctx.json?.recursion_acl instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_5e219dc3
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_d2b9fd82
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_90b62247
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -1962,6 +2054,7 @@ processors:
       if: ctx.json?.recursion_acl instanceof List
       processor:
         append:
+          tag: append_related_ip_01c24773
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -1974,6 +2067,7 @@ processors:
       if: ctx.json?.recursion_acl instanceof List
       processor:
         append:
+          tag: append_related_hash_eda173a4
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1986,6 +2080,7 @@ processors:
       if: ctx.json?.recursion_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_acl_to_ingest_value_value_7bd069f2
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -1997,6 +2092,7 @@ processors:
       if: ctx.json?.recursion_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_0b385bcf
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -2042,14 +2138,17 @@ processors:
       if: ctx.json?.transfer_acl instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_e71721b3
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_56bd0c06
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_e706a385
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -2060,6 +2159,7 @@ processors:
       if: ctx.json?.transfer_acl instanceof List
       processor:
         append:
+          tag: append_related_ip_e2988b21
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -2072,6 +2172,7 @@ processors:
       if: ctx.json?.transfer_acl instanceof List
       processor:
         append:
+          tag: append_related_hash_494dc367
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -2084,6 +2185,7 @@ processors:
       if: ctx.json?.transfer_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_acl_to_ingest_value_value_d02efe13
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -2095,6 +2197,7 @@ processors:
       if: ctx.json?.transfer_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_00a24660
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -2111,14 +2214,17 @@ processors:
       if: ctx.json?.update_acl instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_address_fb5f8858
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_address_5fa2fd27
                 field: _ingest._value.address
             - append:
+                tag: append_error_message_5b26d4e0
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -2129,6 +2235,7 @@ processors:
       if: ctx.json?.update_acl instanceof List
       processor:
         append:
+          tag: append_related_ip_ddc56a80
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -2141,6 +2248,7 @@ processors:
       if: ctx.json?.update_acl instanceof List
       processor:
         append:
+          tag: append_related_hash_daaad540
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -2153,6 +2261,7 @@ processors:
       if: ctx.json?.update_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_acl_to_ingest_value_value_c534d542
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -2164,6 +2273,7 @@ processors:
       if: ctx.json?.update_acl instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_042662cf
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -2316,12 +2426,15 @@ processors:
       source: boolean dropEmptyFields(Object object) { if (object == null || object == '') { return true; } else if (object instanceof Map) { ((Map) object).values().removeIf(value -> dropEmptyFields(value)); return (((Map) object).size() == 0); } else if (object instanceof List) { ((List) object).removeIf(value -> dropEmptyFields(value)); return (((List) object).length == 0); } return false; } dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_77ee30c8
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

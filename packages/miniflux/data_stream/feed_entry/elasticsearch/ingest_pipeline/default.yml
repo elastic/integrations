@@ -254,7 +254,7 @@ processors:
         target_field: miniflux.feed.webhook_url
     - rename:
         field: json.feed_id
-        tag: rename_json_feed_id_to_miniflux_feed_id_a1e93bde
+        tag: rename_feed_id_a1e93bde
         target_field: miniflux.feed_id
     - rename:
         field: json.hash
@@ -358,6 +358,7 @@ processors:
         if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -368,6 +369,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

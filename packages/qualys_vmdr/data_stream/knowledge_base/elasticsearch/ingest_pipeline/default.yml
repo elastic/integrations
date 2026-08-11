@@ -240,7 +240,7 @@ processors:
       if: ctx.json?.CVSS?.BASE instanceof String
   - rename:
       field: json.CVSS.BASE
-      tag: rename_json_CVSS_BASE_to_qualys_vmdr_knowledge_base_cvss_base_obj_31654f88
+      tag: rename_CVSS_BASE_31654f88
       target_field: qualys_vmdr.knowledge_base.cvss.base_obj
       ignore_missing: true
       if: ctx.json?.CVSS?.BASE instanceof Object
@@ -896,12 +896,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -129,6 +129,7 @@ processors:
       field: json.messageParts
       processor:
         append:
+          tag: append_related_hash
           field: related.hash
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
@@ -140,6 +141,7 @@ processors:
       field: json.messageParts
       processor:
         append:
+          tag: append_related_hash_962d26dc
           field: related.hash
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
@@ -212,6 +214,7 @@ processors:
       field: json.recipient
       processor:
         append:
+          tag: append_email_to_address
           field: email.to.address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -238,6 +241,7 @@ processors:
       field: email.attachments
       processor:
         remove:
+          tag: remove_ingest_value_disposition
           field:
             - _ingest._value.disposition
             - _ingest._value.oContentType
@@ -250,6 +254,7 @@ processors:
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_contentType_to_ingest_value_file_mime_type
           field: _ingest._value.contentType
           target_field: _ingest._value.file.mime_type
           ignore_missing: true
@@ -260,6 +265,7 @@ processors:
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_md5_to_ingest_value_file_hash_md5
           field: _ingest._value.md5
           target_field: _ingest._value.file.hash.md5
           ignore_missing: true
@@ -270,6 +276,7 @@ processors:
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_sha256_to_ingest_value_file_hash_sha256
           field: _ingest._value.sha256
           target_field: _ingest._value.file.hash.sha256
           ignore_missing: true
@@ -280,6 +287,7 @@ processors:
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_filename_to_ingest_value_file_name
           field: _ingest._value.filename
           target_field: _ingest._value.file.name
           ignore_missing: true
@@ -390,6 +398,7 @@ processors:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
         remove:
+          tag: remove_ingest_value_contentType
           field:
             - _ingest._value.contentType
             - _ingest._value.filename
@@ -403,6 +412,7 @@ processors:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
         rename:
+          tag: rename_ingest_value_oContentType_to_ingest_value_o_content_type
           field: _ingest._value.oContentType
           target_field: _ingest._value.o_content_type
           ignore_missing: true
@@ -413,6 +423,7 @@ processors:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
         rename:
+          tag: rename_ingest_value_sandboxStatus_to_ingest_value_sandbox_status
           field: _ingest._value.sandboxStatus
           target_field: _ingest._value.sandbox_status
           ignore_missing: true
@@ -495,6 +506,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_campaignId_to_ingest_value_campaign_id
           field: _ingest._value.campaignId
           target_field: _ingest._value.campaign_id
           ignore_missing: true
@@ -505,6 +517,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threat_to_ingest_value_threat_artifact
           field: _ingest._value.threat
           target_field: _ingest._value.threat.artifact
           ignore_missing: true
@@ -515,6 +528,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatID_to_ingest_value_threat_id
           field: _ingest._value.threatID
           target_field: _ingest._value.threat.id
           ignore_missing: true
@@ -525,6 +539,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatStatus_to_ingest_value_threat_status
           field: _ingest._value.threatStatus
           target_field: _ingest._value.threat.status
           ignore_missing: true
@@ -535,6 +550,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         date:
+          tag: date_ingest_value_threatTime_to_ingest_value_threat_time
           field: _ingest._value.threatTime
           target_field: _ingest._value.threat.time
           ignore_failure: true
@@ -547,6 +563,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         remove:
+          tag: remove_ingest_value_threatTime
           field: _ingest._value.threatTime
           ignore_missing: true
       ignore_failure: true
@@ -556,6 +573,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatType_to_ingest_value_threat_type
           field: _ingest._value.threatType
           target_field: _ingest._value.threat.type
           ignore_missing: true
@@ -566,6 +584,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatUrl_to_ingest_value_threat_url
           field: _ingest._value.threatUrl
           target_field: _ingest._value.threat.url
           ignore_missing: true
@@ -609,12 +628,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -290,6 +290,7 @@ processors:
       field: "github.code_scanning.rule.tags"
       processor:
         append:
+          tag: append_tags
           field: tags
           value: "{{{_ingest._value}}}"
       ignore_missing: true
@@ -334,12 +335,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_f03ee041
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

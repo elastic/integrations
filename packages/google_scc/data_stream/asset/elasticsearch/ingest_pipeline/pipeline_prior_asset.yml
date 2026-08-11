@@ -62,6 +62,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_devicePolicy_osConstraints
           field: _ingest._value.devicePolicy.osConstraints
           ignore_failure: true
           processor:
@@ -72,8 +73,10 @@ processors:
               ignore_missing: true
               on_failure:
                   - remove:
+                      tag: remove_ingest_value_devicePolicy_requireCorpOwned
                       field: _ingest._value.devicePolicy.requireCorpOwned
                   - append:
+                      tag: append_error_message
                       field: error.message
                       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -89,8 +92,10 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_devicePolicy_requireScreenlock
                 field: _ingest._value.devicePolicy.requireScreenlock
             - append:
+                tag: append_error_message_7bafa3b1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -106,8 +111,10 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_devicePolicy_requireAdminApproval
                 field: _ingest._value.devicePolicy.requireAdminApproval
             - append:
+                tag: append_error_message_12faa146
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -123,8 +130,10 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_negate
                 field: _ingest._value.negate
             - append:
+                tag: append_error_message_75bceb0e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -286,8 +295,10 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_version
                 field: _ingest._value.version
             - append:
+                tag: append_error_message_a46e2bb8
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -304,6 +315,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_updateTime
                 field: _ingest._value.updateTime
                 ignore_missing: true
   - foreach:
@@ -319,8 +331,10 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_listPolicy_inheritFromParent
                 field: _ingest._value.listPolicy.inheritFromParent
             - append:
+                tag: append_error_message_c88b72f9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -336,8 +350,10 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_inbooleanPolicy_enforcedheritFromParent
                 field: _ingest._value.inbooleanPolicy.enforcedheritFromParent
             - append:
+                tag: append_error_message_a6b87c14
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -878,12 +894,15 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_027aa91a
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

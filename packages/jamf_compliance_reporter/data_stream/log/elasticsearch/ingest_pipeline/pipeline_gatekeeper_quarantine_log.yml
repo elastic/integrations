@@ -7,6 +7,7 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_QuarantineAgentBundleIdentifier_to_ingest_value_quarantine_agent_bundle_identifi
           field: _ingest._value.QuarantineAgentBundleIdentifier
           target_field: _ingest._value.quarantine.agent_bundle_identifier
           ignore_failure: true
@@ -16,6 +17,7 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_QuarantineAgentName_to_ingest_value_quarantine_agent_name
           field: _ingest._value.QuarantineAgentName
           target_field: _ingest._value.quarantine.agent_name
           ignore_failure: true
@@ -25,6 +27,7 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_QuarantineDataURLString_to_ingest_value_quarantine_data_url_string
           field: _ingest._value.QuarantineDataURLString
           target_field: _ingest._value.quarantine.data_url_string
           ignore_failure: true
@@ -34,6 +37,7 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_QuarantineEventIdentifier_to_ingest_value_quarantine_event_identifier
           field: _ingest._value.QuarantineEventIdentifier
           target_field: _ingest._value.quarantine.event_identifier
           ignore_failure: true
@@ -43,6 +47,7 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_QuarantineOriginURLString_to_ingest_value_quarantine_origin_url_string
           field: _ingest._value.QuarantineOriginURLString
           target_field: _ingest._value.quarantine.origin_url_string
           ignore_failure: true
@@ -52,15 +57,18 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         date:
+          tag: date_ingest_value_QuarantineTimeStamp_to_ingest_value_quarantine_timestamp
           field: _ingest._value.QuarantineTimeStamp
           target_field: _ingest._value.quarantine.timestamp
           formats:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_QuarantineTimeStamp
                 field: _ingest._value.QuarantineTimeStamp
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -69,6 +77,7 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_QuarantineTimeStamp_1011d9e1
           field: _ingest._value.QuarantineTimeStamp
           ignore_failure: true
   - rename:
@@ -83,12 +92,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_11921d70
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

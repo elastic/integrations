@@ -97,12 +97,14 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_event_ts_to_ingest_value_ts
           field: _ingest._value.event_ts
           target_field: _ingest._value.ts
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_event_ts
                 field: _ingest._value.event_ts
                 ignore_missing: true
   - foreach:
@@ -247,12 +249,14 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_modifiedOn_to_ingest_value_modified_on
           field: _ingest._value.modifiedOn
           target_field: _ingest._value.modified_on
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_modifiedOn
                 field: _ingest._value.modifiedOn
                 ignore_missing: true
   - foreach:
@@ -306,7 +310,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.lastUpdated
-      tag: date_json_lastUpdated_to_prisma_cloud_alert_last_updated_721aee6c
+      tag: date_lastUpdated_721aee6c
       target_field: prisma_cloud.alert.last.updated
       formats:
         - UNIX_MS
@@ -356,9 +360,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_customAssigned
                 field: _ingest._value.customAssigned
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -452,9 +458,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_sectionViewOrder
                 field: _ingest._value.sectionViewOrder
                 ignore_missing: true
             - append:
+                tag: append_error_message_fbc9897f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -471,9 +479,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_requirementViewOrder
                 field: _ingest._value.requirementViewOrder
                 ignore_missing: true
             - append:
+                tag: append_error_message_fc19b69f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -490,9 +500,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_systemDefault
                 field: _ingest._value.systemDefault
                 ignore_missing: true
             - append:
+                tag: append_error_message_cd33099c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -686,7 +698,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.policy.rule.cloudType
-      tag: rename_json_policy_rule_cloudType_to_prisma_cloud_alert_policy_rule_cloud_type_02ef601e
+      tag: rename_cloudType_02ef601e
       target_field: prisma_cloud.alert.policy.rule.cloud.type
       ignore_missing: true
   - rename:
@@ -765,7 +777,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.policyId
-      tag: rename_json_policyId_to_prisma_cloud_alert_policy_id_58efa8fb
+      tag: rename_policyId_58efa8fb
       target_field: prisma_cloud.alert.policy_id
       ignore_missing: true
   - rename:
@@ -825,7 +837,7 @@ processors:
       ignore_empty_value: true
   - rename:
       field: prisma_cloud.alert.resource.cloudType
-      tag: rename_prisma_cloud_alert_resource_cloudType_to_prisma_cloud_alert_resource_cloud_type_c43ebf0a
+      tag: rename_cloudType_c43ebf0a
       target_field: prisma_cloud.alert.resource.cloud.type
       ignore_missing: true
   - set:
@@ -891,7 +903,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: prisma_cloud.alert.resource.resourceType
-      tag: rename_prisma_cloud_alert_resource_resourceType_to_prisma_cloud_alert_resource_type_dbbb90ab
+      tag: rename_resourceType_dbbb90ab
       target_field: prisma_cloud.alert.resource.type
       ignore_missing: true
   - rename:
@@ -947,6 +959,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -962,6 +975,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_a48d7ac1
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -973,9 +987,11 @@ processors:
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_customAssigned_82853e04
                     field: _ingest._value.customAssigned
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_f3545475
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -985,6 +1001,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_e5efffc3
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1000,6 +1017,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_35b068b3
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1015,6 +1033,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_6ca26cfc
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1030,6 +1049,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_6698a5db
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1045,6 +1065,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_c4326b45
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1060,6 +1081,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_6df7550e
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1075,6 +1097,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_190beb82
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1090,6 +1113,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_4392ae78
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1105,6 +1129,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_68ce13e8
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1120,6 +1145,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_d648c40f
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1135,6 +1161,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_compliance_metadata_45ff7532
           field: _ingest._value.compliance_metadata
           ignore_failure: true
           processor:
@@ -1161,12 +1188,14 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_createdOn_to_ingest_value_created_on
           field: _ingest._value.createdOn
           target_field: _ingest._value.created.on
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_createdOn
                 field: _ingest._value.createdOn
                 ignore_missing: true
   - foreach:
@@ -1182,9 +1211,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_deleted
                 field: _ingest._value.deleted
                 ignore_missing: true
             - append:
+                tag: append_error_message_a2f87eff
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1200,9 +1231,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_enabled
                 field: _ingest._value.enabled
                 ignore_missing: true
             - append:
+                tag: append_error_message_80e2ae99
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1234,12 +1267,14 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_lastModifiedOn_to_ingest_value_last_modified_on
           field: _ingest._value.lastModifiedOn
           target_field: _ingest._value.last_modified.on
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_lastModifiedOn
                 field: _ingest._value.lastModifiedOn
                 ignore_missing: true
   - foreach:
@@ -1255,9 +1290,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_overridden
                 field: _ingest._value.overridden
                 ignore_missing: true
             - append:
+                tag: append_error_message_0c33274e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1317,9 +1354,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_remediable
                 field: _ingest._value.remediable
                 ignore_missing: true
             - append:
+                tag: append_error_message_59fe9c14
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1347,9 +1386,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_restrictAlertDismissal
                 field: _ingest._value.restrictAlertDismissal
                 ignore_missing: true
             - append:
+                tag: append_error_message_8b7bd5ef
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1366,9 +1407,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_riskScore_maxScore
                 field: _ingest._value.riskScore.maxScore
                 ignore_missing: true
             - append:
+                tag: append_error_message_d8b4e623
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1385,9 +1428,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_riskScore_score
                 field: _ingest._value.riskScore.score
                 ignore_missing: true
             - append:
+                tag: append_error_message_1bbd7320
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1420,7 +1465,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.rule.cloudType
-          tag: rename_prisma_cloud_alert_risk_detail_policy_scores_cloudType
+          tag: rename_prisma_cloud_alert_risk_detail_policy_scores_cloudType_f0e8c7c0
           target_field: _ingest._value.rule.cloud.type
           ignore_missing: true
   - foreach:
@@ -1474,12 +1519,14 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_ruleLastModifiedOn_to_ingest_value_rule_last_modified_on
           field: _ingest._value.ruleLastModifiedOn
           target_field: _ingest._value.rule.last_modified_on
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_ruleLastModifiedOn
                 field: _ingest._value.ruleLastModifiedOn
                 ignore_missing: true
   - foreach:
@@ -1496,9 +1543,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_systemDefault_db998270
                 field: _ingest._value.systemDefault
                 ignore_missing: true
             - append:
+                tag: append_error_message_cf5aba13
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1543,7 +1592,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.saveSearchId
-      tag: rename_json_saveSearchId_to_prisma_cloud_alert_save_search_id_a8e32b4d
+      tag: rename_saveSearchId_a8e32b4d
       target_field: prisma_cloud.alert.save_search_id
       ignore_missing: true
   - rename:
@@ -1614,12 +1663,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_ea753321
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_ddae2e57
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

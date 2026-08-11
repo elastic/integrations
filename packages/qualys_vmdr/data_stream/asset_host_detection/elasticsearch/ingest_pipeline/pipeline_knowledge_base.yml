@@ -201,7 +201,7 @@ processors:
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CVSS?.BASE instanceof String
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.BASE
-      tag: rename_qualys_vmdr_asset_host_detection_knowledge_base_CVSS_BASE_to_qualys_vmdr_asset_host_detection_knowledge_base_cvss_base_obj_b187039b
+      tag: rename_CVSS_BASE_b187039b
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base_obj
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CVSS?.BASE instanceof Object
@@ -404,7 +404,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.SRC_NAME
-          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME_f79e31e8
           target_field: _ingest._value.name
           ignore_missing: true
   - foreach:
@@ -419,7 +419,7 @@ processors:
           processor:
             rename:
               field: _ingest._value.DESC
-              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC_53598538
               target_field: _ingest._value.desc
               ignore_missing: true
   - foreach:
@@ -434,7 +434,7 @@ processors:
           processor:
             rename:
               field: _ingest._value.LINK
-              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK_9ecde444
               target_field: _ingest._value.link
               ignore_missing: true
   - foreach:
@@ -449,7 +449,7 @@ processors:
           processor:
             rename:
               field: _ingest._value.REF
-              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF_640c96b1
               target_field: _ingest._value.ref
               ignore_missing: true
   - foreach:
@@ -896,8 +896,10 @@ on_failure:
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error

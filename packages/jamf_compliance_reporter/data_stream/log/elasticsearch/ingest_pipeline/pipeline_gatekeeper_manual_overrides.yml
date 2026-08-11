@@ -7,15 +7,18 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         date:
+          tag: date_ingest_value_ctime_to_ingest_value_ctime
           field: _ingest._value.ctime
           target_field: _ingest._value.ctime
           formats:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_ctime
                 field: _ingest._value.ctime
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -24,15 +27,18 @@ processors:
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         date:
+          tag: date_ingest_value_mtime_to_ingest_value_mtime
           field: _ingest._value.mtime
           target_field: _ingest._value.mtime
           formats:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_mtime
                 field: _ingest._value.mtime
                 ignore_missing: true
             - append:
+                tag: append_error_message_0c355e70
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -47,12 +53,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_6bf16a21
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

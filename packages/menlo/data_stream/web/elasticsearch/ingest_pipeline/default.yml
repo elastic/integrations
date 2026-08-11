@@ -283,16 +283,6 @@ processors:
       target_field: menlo.web.is_iframe
       ignore_missing: true
   - rename:
-      tag: rename_json_event_product_to_observer_product_d119c06e
-      field: json.event.product
-      target_field: observer.product
-      ignore_missing: true
-  - rename:
-      tag: rename_json_event_protocol_to_network_protocol_81f122d4
-      field: json.event.protocol
-      target_field: network.protocol
-      ignore_missing: true
-  - rename:
       tag: rename_json_event_cached_to_menlo_web_cached_4a8a0c37
       field: json.event.cached
       target_field: menlo.web.cached
@@ -436,12 +426,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
