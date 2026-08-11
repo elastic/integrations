@@ -2,6 +2,10 @@
 
 Jamf Pro is a comprehensive management solution designed to help organizations deploy, configure, secure, and manage Apple devices. This integration enables organizations to seamlessly monitor and protect their Mac fleet through Elastic, providing a unified view of security events across all endpoints and facilitating a more effective response to threats. This integration encompasses both event and inventory data ingestion from Jamf Pro.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Data streams
 
@@ -97,6 +101,18 @@ By default these sections are included inventory documents:
  - `OPERATING_SYSTEM`
 
 All the sections can be enabled or disabled on the integration policy settings page.
+
+#### Latest inventory transform
+
+This integration includes a latest transform that maintains a single up-to-date
+document per device in a dedicated index. The transform destination is accessible
+via the `logs-jamf_pro_latest.inventory` alias.
+
+The source data stream accumulates all inventory snapshots (one per device per
+report cycle). A default ILM policy rolls the source index over every 7 days and
+deletes each rolled-over index 30 days later. The transform's retention policy
+removes devices from the latest index whose `@timestamp` is more than 30 days
+old.
 
 Here is an example inventory document:
 

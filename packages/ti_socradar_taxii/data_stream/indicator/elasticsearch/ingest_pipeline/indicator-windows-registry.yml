@@ -1,0 +1,47 @@
+---
+description: Pipeline for processing Windows Registry Key STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_windows_registry_pattern
+      patterns:
+        - "^\\[?windows-registry-key:key%{SPACE}=%{SPACE}'%{DATA:_tmp.reg_path}'\\]?$"
+        - "^\\[?windows-registry-key:key%{SPACE}LIKE%{SPACE}'%{DATA:_tmp.reg_path}'\\]?$"
+        - "^\\[?windows-registry-value-type:name%{SPACE}=%{SPACE}'%{DATA:_tmp.reg_key}'\\]?$"
+        - "^\\[?windows-registry-value-type:data%{SPACE}=%{SPACE}'%{DATA:_tmp.reg_value}'\\]?$"
+      ignore_failure: true
+
+  # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
+  - append:
+      field: threat.indicator.registry.path
+      value: '{{{ _tmp.reg_path }}}'
+      if: ctx._tmp?.reg_path != null
+      allow_duplicates: false
+  - append:
+      field: threat.indicator.registry.key
+      value: '{{{ _tmp.reg_key }}}'
+      if: ctx._tmp?.reg_key != null
+      allow_duplicates: false
+  - append:
+      field: threat.indicator.registry.value
+      value: '{{{ _tmp.reg_value }}}'
+      if: ctx._tmp?.reg_value != null
+      allow_duplicates: false
+  - remove:
+      field: _tmp
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

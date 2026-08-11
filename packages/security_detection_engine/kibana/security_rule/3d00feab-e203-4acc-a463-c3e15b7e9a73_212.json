@@ -1,0 +1,191 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious processes being spawned by the ScreenConnect server process (ScreenConnect.Service.exe). This activity may indicate exploitation activity or access to an existing web shell backdoor.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.pe.original_file_name",
+                "process.command_line",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.hash.sha256"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "ScreenConnect Server Spawning Suspicious Processes",
+        "note": "## Triage and analysis\n\n### Investigating ScreenConnect Server Spawning Suspicious Processes\n\n#### Possible investigation steps\n\n- Does the alert prove ScreenConnect application-server execution rather than client-side remote command use?\n  - Why: the reference separates server compromise from routine client deployment; server-side abuse uses \"ScreenConnect.Service.exe\", while client-side commands usually involve \"ScreenConnect.ClientService.exe\".\n  - Focus: alert-local `process.parent.name`, `process.parent.executable`, `process.name`, `process.pe.original_file_name`, `host.id`, and `host.name`.\n  - Implication: escalate sooner when \"ScreenConnect.Service.exe\" on the application server spawned \"cmd.exe\", PowerShell, or \"csc.exe\"; lower suspicion only when parent or host evidence proves this is not server-side execution, then resolve the mismatch before applying this guide.\n\n- Is the spawned child the genuine Windows tool expected by its name?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when the child runs from a user-writable or ScreenConnect content path, is unsigned or untrusted, or PE metadata does not match the shell, PowerShell, or compiler name; confirmed identity says what ran, not that the launch is benign.\n\n- What intent is visible in the child command line and service context?\n  - Why: ScreenConnect server exploitation often inherits the service identity, so SYSTEM or the expected service account does not reduce risk by itself.\n  - Focus: `process.command_line`, `process.parent.command_line`, and `user.id`.\n  - Implication: escalate when the command shows encoded PowerShell, download or staging, account creation, service changes, webshell-style shell use, or \"csc.exe\" compiling from temporary or ScreenConnect content paths; lower suspicion only for narrow maintenance, extension, or vendor-support action and later evidence agrees.\n\n- Do ScreenConnect server artifacts corroborate authentication bypass, extension traversal, or webshell staging?\n  - Why: the reference describes CVE-2024-1709 admin-user changes in \"Users.xml\" and CVE-2024-1708 web-accessible ASP.NET content under \"App_Extensions\".\n  - Focus: if file telemetry exists, query file events on `host.id` where `process.entity_id` equals server service `process.parent.entity_id`; if absent, pivot on `host.id`, service PID, and alert time, then review `file.path` and `file.name` for \"Users.xml\", \"App_Extensions\", ASP.NET files, or extension archives. !{investigate{\"description\":\"\",\"label\":\"File events for the ScreenConnect server process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if file telemetry is unavailable or empty, inspect those server paths directly; missing file telemetry is unresolved, not benign.\n  - Implication: escalate when \"Users.xml\" shows an unexpected admin, \"App_Extensions\" contains a lone ASP.NET file, or extension content appears outside GUID-scoped folders; lower suspicion only when artifacts stay inside expected extension paths and process evidence supports the same workflow.\n\n- Did the spawned child make network connections consistent with follow-on tooling or external control?\n  - Focus: if network telemetry exists, query `host.id` and child `process.entity_id`; if absent, pivot on `host.id`, `process.pid`, and alert time, separating DNS `dns.question.name` from connection `destination.ip`, `destination.port`, and `destination.as.organization.name`. !{investigate{\"description\":\"\",\"label\":\"Network events for the spawned child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: Missing network telemetry is unresolved, not benign.\n  - Implication: escalate when the shell, PowerShell, or compiler reaches a public destination with no ScreenConnect/vendor relationship, a staging domain, or any destination inconsistent with the recovered command; lower suspicion for absent destinations only after telemetry is verified and local process/artifact evidence resolve cleanly.\n\n- Do related host alerts change scope when local findings are suspicious or unresolved?\n  - Focus: child process starts, additional children from the same ScreenConnect service parent, plus related alerts for `host.id`, especially webshell, persistence, credential-access, service-creation, or secondary-RMM alerts. !{investigate{\"description\":\"\",\"label\":\"Child process events from the suspicious child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    !{investigate{\"description\":\"\",\"label\":\"Process events from the same ScreenConnect service\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response scope when the ScreenConnect server also shows exploitation, persistence, credential access, or secondary remote-access activity; keep scope local only when this alert is isolated and process, artifact, and destination evidence all resolve to one exact benign workflow.\n\n- Escalate when server-side parentage combines with suspicious child identity or command intent, or artifacts, destinations, or related alerts support compromise; close only when process evidence and recovery tie to one exact ScreenConnect maintenance, extension, or vendor-support workflow with no contradictions; preserve artifacts and escalate when evidence is mixed or visibility is incomplete.\n\n### False positive analysis\n\n- ScreenConnect server maintenance, extension installation, or vendor troubleshooting can legitimately spawn \"powershell.exe\", \"cmd.exe\", or \"csc.exe\". Confirm the same workflow across child identity, signer or hash, command intent, `host.id`, `user.id`, recovered server artifacts, and destinations when network telemetry exists. Use change records or vendor cases as corroboration, not a replacement for telemetry gaps.\n- Do not treat generic administrative scripting or compile activity as benign on a ScreenConnect server. Confirm only narrow recurring service workflow: same parent path, child identity, command pattern, `user.id`, and quiet artifact or destination pattern on the same `host.id` across prior alerts or source events when external records are unavailable. One-off shells, downloaders, account changes, or root-level \"App_Extensions\" files remain suspicious.\n- Before creating an exception, build it from the minimum confirmed workflow pattern: `process.parent.executable`, `process.executable`, a constrained `process.command_line` pattern, stable signer or hash, `host.id`, and the specific ScreenConnect maintenance or extension context. Avoid exceptions on `process.name` or \"ScreenConnect.Service.exe\" alone.\n\n### Response and remediation\n\n- Before restriction or cleanup in suspicious cases, preserve a case export of the alert process and parent records, recovered file and network events, ScreenConnect and IIS logs around the alert time, \"Users.xml\", the \"App_Extensions\" tree, suspicious extension archives or ASP.NET files, and staged payloads.\n- If confirmed benign, reverse temporary restrictions and document evidence proving the workflow: parent and child identity, command intent, server scope, expected ScreenConnect artifacts, and expected destinations if present. Build a narrow exception only after the same workflow recurs consistently.\n- If suspicious but unconfirmed, apply reversible containment tied to the findings: restrict public access to the ScreenConnect web interface, temporarily limit egress from the affected `host.id`, or suspend a newly created ScreenConnect admin account where operationally safe. Weigh server criticality before full host isolation.\n- If confirmed malicious, preserve the artifacts above before terminating processes or deleting files. Then isolate the server or disable public exposure, remove malicious admin accounts, webshells, extensions, secondary RMM services, and other persistence found during the investigation, and rotate compromised ScreenConnect, service, or domain credentials.\n- Patch ScreenConnect to a fixed version and review whether the attacker used the server to reach managed clients or create admin or service accounts.\n- After containment, retain process, file, and network telemetry needed for future ScreenConnect investigations, restrict who can manage extensions or internet exposure, and document any telemetry gaps that limited this investigation.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"ScreenConnect.Service.exe\" and\n  (process.name : (\"cmd.exe\", \"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\", \"csc.exe\") or\n  ?process.pe.original_file_name in (\"Cmd.Exe\", \"PowerShell.EXE\", \"pwsh.dll\", \"powershell_ise.EXE\", \"csc.exe\"))\n",
+        "references": [
+            "https://blackpointcyber.com/resources/blog/breaking-through-the-screen/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3d00feab-e203-4acc-a463-c3e15b7e9a73",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide",
+            "Tactic: Execution",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1505",
+                        "name": "Server Software Component",
+                        "reference": "https://attack.mitre.org/techniques/T1505/",
+                        "subtechnique": [
+                            {
+                                "id": "T1505.003",
+                                "name": "Web Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1505/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 212
+    },
+    "id": "3d00feab-e203-4acc-a463-c3e15b7e9a73_212",
+    "type": "security-rule"
+}

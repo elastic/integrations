@@ -37,9 +37,14 @@ type beatsConfig struct {
 	Version string `yaml:"version"`
 }
 
+type ecsConfig struct {
+	KeepFields []string `yaml:"keep_fields"`
+}
+
 type config struct {
 	Osquery versionConfig `yaml:"osquery"`
 	Beats   beatsConfig   `yaml:"beats"`
+	ECS     ecsConfig     `yaml:"ecs"`
 }
 
 type packageBuildYAML struct {
@@ -93,7 +98,7 @@ func main() {
 	}
 
 	log.Printf("Resolved versions: osquery=%s beats=%s ecs=%s", osqueryVersion, beatsRef, ecsVersion)
-	if err := generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, !*skipPackageCheck); err != nil {
+	if err := generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, cfg.ECS.KeepFields, !*skipPackageCheck); err != nil {
 		log.Fatalf("generate artifacts: %v", err)
 	}
 	log.Println("Done.")

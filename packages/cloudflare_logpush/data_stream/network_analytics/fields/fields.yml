@@ -76,6 +76,18 @@
     - name: direction
       type: keyword
       description: The direction in relation to customer network.
+    - name: dns
+      type: group
+      fields:
+        - name: query
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The DNS query name (domain) if the packet is a DNS query.
+            - name: type
+              type: keyword
+              description: The DNS query type if the packet is a DNS query.
     - name: gre
       type: group
       fields:
@@ -111,13 +123,13 @@
       fields:
         - name: checksum
           type: long
-          description: Value of the Checksum header field in the ICMP packet
+          description: Value of the Checksum header field in the ICMP packet.
         - name: code
           type: long
-          description: Value of the Code header field in the ICMP packet
+          description: Value of the Code header field in the ICMP packet.
         - name: type
           type: long
-          description: Value of the Type header field in the ICMP packet
+          description: Value of the Type header field in the ICMP packet.
     - name: ip
       type: group
       fields:
@@ -212,7 +224,7 @@
           type: long
           description: Value of the Explicit Congestion Notification header field in the IPv6 packet.
         - name: extension_headers
-          type: text
+          type: long
           description: List of Extension Header numbers included in the IPv6 packet header.
         - name: flow_label
           type: long
@@ -235,6 +247,9 @@
     - name: outcome
       type: keyword
       description: The action that Cloudflare systems took on the packet.
+    - name: pfp_custom_tag
+      type: keyword
+      description: The custom network analytics tag set by Programmable Flow Protection.
     - name: protocol_state
       type: keyword
       description: State of the packet in the context of the protocol, if any.
@@ -242,7 +257,7 @@
       type: group
       fields:
         - name: id
-          type: text
+          type: keyword
           description: Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any.
         - name: name
           type: text
@@ -257,7 +272,7 @@
               type: group
               fields:
                 - name: id
-                  type: text
+                  type: keyword
                   description: Unique identifier of the rule within the accounts root ddos_l4 phase ruleset which resulted in an override of the default sensitivity or action being applied/evaluated, if any.
     - name: sample_interval
       type: long
@@ -320,7 +335,7 @@
           type: long
           description: Value of the MSS option header field in the TCP packet.
         - name: options
-          type: text
+          type: long
           description: List of Options numbers included in the TCP packet header.
         - name: sack
           type: group

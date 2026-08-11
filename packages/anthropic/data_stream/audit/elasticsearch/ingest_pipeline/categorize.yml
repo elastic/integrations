@@ -1,0 +1,1284 @@
+---
+description: Pipeline for categorizing ECS event fields for Anthropic audit events
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Anthropic activity type to ECS categorization fields using exact lookups.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          account_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          admin_api_key_created:
+            category: ['iam']
+            type: ['admin', 'creation']
+            outcome: success
+          admin_api_key_deleted:
+            category: ['iam']
+            type: ['admin', 'deletion']
+            outcome: success
+          admin_api_key_updated:
+            category: ['iam']
+            type: ['admin', 'change']
+            outcome: success
+          admin_connector_request_resolved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          admin_request_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          age_verified:
+            category: ['iam']
+            type: ['user', 'info']
+            outcome: success
+          anonymous_mobile_login_attempted:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: unknown
+          api_key_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          audit_log_export_accessed:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          audit_log_export_started:
+            category: ['file']
+            type: ['creation', 'info']
+            outcome: success
+          billing_emails_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_artifact_access_failed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: failure
+          claude_artifact_created:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_artifact_published:
+            category: ['file', 'web']
+            type: ['creation', 'info']
+            outcome: success
+          claude_artifact_sharing_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_artifact_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_chat_access_failed:
+            category: ['web']
+            type: ['access']
+            outcome: failure
+          claude_chat_created:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_deleted:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_deletion_failed:
+            category: ['web']
+            type: ['info']
+            outcome: failure
+          claude_chat_settings_updated:
+            category: ['web', 'configuration']
+            type: ['info', 'change']
+            outcome: success
+          claude_chat_snapshot_created:
+            category: ['file', 'web']
+            type: ['creation', 'info']
+            outcome: success
+          claude_chat_snapshot_viewed:
+            category: ['file', 'web']
+            type: ['access', 'info']
+            outcome: success
+          claude_chat_updated:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_viewed:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_code_review_config_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_review_repository_added:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_code_review_repository_removed:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_code_review_repository_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_center_config_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_scan_cancelled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_scan_project_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_scan_schedule_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_code_security_scan_schedule_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_webhook_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_code_security_webhook_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_code_security_webhook_secret_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_webhook_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_team_memory_acl_updated:
+            category: ['iam']
+            type: ['change', 'group']
+            outcome: success
+          claude_command_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_command_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_command_replaced:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_file_access_failed:
+            category: ['file', 'web']
+            type: ['access', 'info']
+            outcome: failure
+          claude_file_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_file_uploaded:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_file_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_gdrive_integration_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_gdrive_integration_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_gdrive_integration_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_github_integration_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_github_integration_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_github_integration_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_organization_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_plugin_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_plugin_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_plugin_replaced:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_plugin_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_project_archived:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_created:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_project_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_document_access_failed:
+            category: ['file', 'web']
+            type: ['access', 'info']
+            outcome: failure
+          claude_project_document_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_document_deletion_failed:
+            category: ['file', 'web']
+            type: ['deletion', 'info']
+            outcome: failure
+          claude_project_document_uploaded:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_project_document_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_project_file_access_failed:
+            category: ['file', 'web']
+            type: ['access', 'info']
+            outcome: failure
+          claude_project_file_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_file_deletion_failed:
+            category: ['file', 'web']
+            type: ['deletion', 'info']
+            outcome: failure
+          claude_project_file_uploaded:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_project_reported:
+            category: ['file', 'web']
+            type: ['info']
+            outcome: success
+          claude_project_sharing_updated:
+            category: ['file', 'web']
+            type: ['change']
+            outcome: success
+          claude_project_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_published_artifact_deleted:
+            category: ['file']
+            type: ['deletion']
+            outcome: success
+          claude_pubsec_identity_configured:
+            category: ['iam']
+            type: ['admin', 'change']
+            outcome: success
+          claude_skill_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_skill_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_skill_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_skill_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_skill_replaced:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_user_role_updated:
+            category: ['iam', 'configuration']
+            type: ['user', 'change']
+            outcome: success
+          claude_user_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          cli_plugin_exec_policy_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          compliance_api_accessed:
+            category: ['api']
+            type: ['access']
+            outcome: unknown # It will be updated based on status_code of the request.
+          desktop_extension_allowlisted:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_blocklisted:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          desktop_extension_removed_from_allowlist:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_unblocked:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_uploaded:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          desktop_extension_version_uploaded:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          domain_claim_initiated:
+            category: ['configuration']
+            type: ['change']
+            outcome: unknown
+          end_user_invite_requested:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: unknown
+          extra_usage_billing_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          extra_usage_credit_granted:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          extra_usage_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          extra_usage_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          extra_usage_spend_limit_increase_request_approved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          extra_usage_spend_limit_increase_request_denied:
+            category: ['configuration']
+            type: ['change']
+            outcome: failure
+          extra_usage_spend_limit_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          ghe_configuration_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          ghe_configuration_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          ghe_configuration_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          ghe_user_connected:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          ghe_user_disconnected:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          ghe_webhook_signature_invalid:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          group_created:
+            category: ['iam']
+            type: ['group', 'creation']
+            outcome: success
+          group_deleted:
+            category: ['iam']
+            type: ['deletion', 'group']
+            outcome: success
+          group_list_viewed:
+            category: ['iam']
+            type: ['info', 'group']
+            outcome: success
+          group_member_added:
+            category: ['iam']
+            type: ['change', 'group']
+            outcome: success
+          group_member_list_viewed:
+            category: ['iam']
+            type: ['info', 'group']
+            outcome: success
+          group_member_removed:
+            category: ['iam']
+            type: ['change', 'group']
+            outcome: success
+          group_updated:
+            category: ['iam']
+            type: ['change', 'group']
+            outcome: success
+          group_viewed:
+            category: ['iam']
+            type: ['info', 'group']
+            outcome: success
+          integration_user_connected:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          integration_user_disconnected:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          invoice_collection_method_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          lti_launch_initiated:
+            category: ['configuration']
+            type: ['change']
+            outcome: unknown
+          lti_launch_success:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          lti_platform_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          lti_platform_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          magic_link_login_failed:
+            category: ['authentication']
+            type: ['start']
+            outcome: failure
+          magic_link_login_initiated:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: unknown
+          magic_link_login_succeeded:
+            category: ['authentication', 'session']
+            type: ['start', 'info']
+            outcome: success
+          managed_organization_setup_completed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          marketplace_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          marketplace_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          marketplace_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          marketplace_webhook_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          marketplace_webhook_provisioned:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          mcp_server_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          mcp_server_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          mcp_server_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          mcp_tool_policy_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_analytics_api_capability_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_bulk_delete_initiated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_data_sharing_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_data_sharing_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_desktop_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_desktop_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_compliance_api_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_agent_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_agent_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_creation_blocked:
+            category: ['configuration']
+            type: ['change', 'info']
+            outcome: failure
+          org_data_export_accessed:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          org_data_export_completed:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          org_data_export_started:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          org_deleted_via_bulk:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_deletion_requested:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_directory_resync_completed:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_resync_failed:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: failure
+          org_directory_resync_started:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_sync_activated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_sync_add_initiated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_sync_deleted:
+            category: ['iam', 'configuration']
+            type: ['deletion']
+            outcome: success
+          org_discoverability_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_discoverability_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_discoverability_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_domain_add_initiated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_domain_removed:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_domain_verified:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          org_hipaa_self_serve_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_link_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_link_generated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_link_regenerated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          org_invites_listed:
+            category: ['configuration']
+            type: ['access']
+            outcome: success
+          org_ip_restriction_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          org_ip_restriction_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_ip_restriction_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_proposal_decided:
+            category: ['configuration']
+            type: ['change']
+            outcome: unknown # It will be decided based on approved key in the response
+          org_join_request_approved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_request_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          org_join_request_dismissed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_request_instant_approved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_requests_bulk_dismissed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_magic_link_second_factor_toggled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_member_invites_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_member_invites_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_members_exported:
+            category: ['configuration']
+            type: ['access']
+            outcome: success
+          org_parent_join_proposal_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          org_parent_search_performed:
+            category: ['configuration']
+            type: ['access']
+            outcome: success
+          org_sso_add_initiated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_connection_activated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_connection_deactivated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_connection_deleted:
+            category: ['iam', 'configuration']
+            type: ['deletion']
+            outcome: success
+          org_sso_group_role_mappings_updated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_provisioning_mode_changed:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_seat_tier_assignment_toggled:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_seat_tier_mappings_updated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_toggled:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sync_deleting_synchronized_files_started:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_sync_synchronized_files_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_taint_added:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_taint_removed:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_user_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          org_user_invite_accepted:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_invite_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          org_user_invite_re_sent:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_invite_rejected:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: failure
+          org_user_invite_sent:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_left:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          org_user_viewed:
+            category: ['iam']
+            type: ['info', 'user']
+            outcome: success
+          org_users_listed:
+            category: ['iam']
+            type: ['info']
+            outcome: success
+          org_work_across_apps_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_work_across_apps_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          organization_address_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          organization_icon_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          organization_icon_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          owned_projects_access_restored:
+            category: ['iam', 'file']
+            type: ['change']
+            outcome: success
+          payment_method_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          phone_code_sent:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: success
+          phone_code_verified:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: success
+          platform_api_key_created:
+            category: ['iam']
+            type: ['creation']
+            outcome: success
+          platform_api_key_updated:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          platform_cost_report_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          platform_federation_issuer_archived:
+            category: ['iam', 'configuration']
+            type: ['admin', 'deletion']
+            outcome: success
+          platform_federation_issuer_updated:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_federation_rule_archived:
+            category: ['iam', 'configuration']
+            type: ['admin', 'deletion']
+            outcome: success
+          platform_federation_rule_updated:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_federation_rule_workspace_added:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_federation_rule_workspace_removed:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_file_content_downloaded:
+            category: ['file']
+            type: ['access']
+            outcome: success
+          platform_file_deleted:
+            category: ['file']
+            type: ['deletion']
+            outcome: success
+          platform_file_uploaded:
+            category: ['file']
+            type: ['creation']
+            outcome: success
+          platform_service_account_archived:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          platform_service_account_updated:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_service_account_workspace_member_added:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_service_account_workspace_member_removed:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_service_account_workspace_member_updated:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_signing_key_created:
+            category: ['configuration', 'iam']
+            type: ['creation']
+            outcome: success
+          platform_signing_key_deleted:
+            category: ['configuration', 'iam']
+            type: ['deletion']
+            outcome: success
+          platform_signing_key_rotated:
+            category: ['configuration', 'iam']
+            type: ['change']
+            outcome: success
+          platform_skill_version_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          platform_skill_version_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_spend_limit_alert_emails_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          platform_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_spend_limit_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_usage_report_claude_code_viewed:
+            category: ['configuration']
+            type: ['access', 'info']
+            outcome: success
+          platform_usage_report_messages_viewed:
+            category: ['configuration']
+            type: ['access', 'info']
+            outcome: success
+          platform_workspace_archived:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_workspace_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          platform_workspace_member_added:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_member_removed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_member_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_member_viewed:
+            category: ['configuration']
+            type: ['access', 'info']
+            outcome: success
+          platform_workspace_members_listed:
+            category: ['configuration']
+            type: ['access', 'info']
+            outcome: success
+          platform_workspace_rate_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_workspace_rate_limit_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          plugin_installation_preference_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_auto_recharge_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_auto_recharge_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_extra_usage_auto_reload_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_extra_usage_auto_reload_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_extra_usage_auto_reload_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          primary_owner_transferred:
+            category: ['iam', 'configuration']
+            type: ['change', 'user']
+            outcome: success
+          rbac_role_assigned:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          rbac_role_created:
+            category: ['iam']
+            type: ['creation']
+            outcome: success
+          rbac_role_deleted:
+            category: ['iam']
+            type: ['deletion']
+            outcome: success
+          rbac_role_permission_added:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          rbac_role_permission_removed:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          rbac_role_unassigned:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          rbac_role_updated:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          role_assignment_granted:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          role_assignment_revoked:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          scim_user_created:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          scim_user_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          scim_user_updated:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          scoped_api_key_deleted:
+            category: ['iam']
+            type: ['deletion']
+            outcome: success
+          scoped_api_key_updated:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          seat_tier_changes_cancelled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          seat_tiers_purchased:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          service_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          service_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          service_key_created:
+            category: ['iam']
+            type: ['creation']
+            outcome: success
+          service_key_revoked:
+            category: ['iam']
+            type: ['deletion']
+            outcome: success
+          session_revoked:
+            category: ['authentication', 'session']
+            type: ['end']
+            outcome: success
+          session_share_accessed:
+            category: ['session']
+            type: ['info']
+            outcome: success
+          session_share_created:
+            category: ['session']
+            type: ['info']
+            outcome: success
+          session_share_revoked:
+            category: ['session']
+            type: ['info']
+            outcome: success
+          social_login_succeeded:
+            category: ['authentication']
+            type: ['end']
+            outcome: success
+          sso_login_failed:
+            category: ['authentication']
+            type: ['end']
+            outcome: failure
+          sso_login_initiated:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: unknown
+          sso_login_succeeded:
+            category: ['authentication']
+            type: ['end']
+            outcome: success
+          sso_second_factor_magic_link:
+            category: ['authentication']
+            type: ['info']
+            outcome: success
+          subscription_cancellation_scheduled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          subscription_quantity_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          subscription_renewed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          subscription_resumed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          subscription_started:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          subscription_upgraded:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          tunnel_token_minted:
+            category: ['iam', 'configuration']
+            type: ['creation']
+            outcome: success
+          tunnel_token_revoked:
+            category: ['iam', 'configuration']
+            type: ['deletion']
+            outcome: success
+          user_consent_recorded:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          user_consent_revoked:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          user_logged_out:
+            category: ['authentication', 'session']
+            type: ['end']
+            outcome: success
+          workspace_member_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          workspace_member_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          workspace_member_spend_limit_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          workspace_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          workspace_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+      source: |-
+        def action = ctx.event.action;
+        ctx.event.kind = 'event';
+
+        if (params.exact.containsKey(action)) {
+          def m = params.exact[action];
+          ctx.event.category = m.category;
+          ctx.event.type = m.type;
+          if (m.containsKey('outcome')) {
+            ctx.event.outcome = m.outcome;
+          }
+        } else {
+          ctx.event.category = [];
+          ctx.event.type = ['info'];
+          ctx.event.outcome = 'unknown';
+        }
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_compliance_api_outcome_success
+      if: >-
+        ctx.event?.action == 'compliance_api_accessed' &&
+        ctx.http?.response?.status_code != null &&
+        ctx.http.response.status_code >= 200 &&
+        ctx.http.response.status_code < 300
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_compliance_api_outcome_failure
+      if: >-
+        ctx.event?.action == 'compliance_api_accessed' &&
+        ctx.http?.response?.status_code != null &&
+        ctx.http.response.status_code >= 400 &&
+        ctx.http.response.status_code < 500
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set_compliance_api_outcome_unknown
+      if: >-
+        ctx.event?.action == 'compliance_api_accessed' &&
+        ctx.http?.response?.status_code != null &&
+        ctx.http.response.status_code >= 500
+  - set:
+      field: event.outcome
+      value: 'success'
+      tag: set_org_join_proposal_decided_succcess
+      if: ctx.event?.action == 'org_join_proposal_decided' &&
+        ctx.anthropic?.audit?.approved == true
+  - set:
+      field: event.outcome
+      value: 'failure'
+      tag: set_org_join_proposal_decided_failure
+      if: ctx.event?.action == 'org_join_proposal_decided' &&
+        ctx.anthropic?.audit?.approved != true

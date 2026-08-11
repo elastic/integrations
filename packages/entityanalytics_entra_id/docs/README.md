@@ -12,9 +12,15 @@ The Microsoft Entra ID Entity Analytics integration collects two types of data: 
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
+
+### Elastic Managed deployment
+
+This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When using Elastic Managed deployment, the **request tracer** option is not available because it writes to the agent's local filesystem.
 
 ### Collect data from Microsoft Graph REST API
 
@@ -62,9 +68,13 @@ For more details on how to set up the necessary App Registration, permission gra
 
 ## Usage
 
-The integration periodically contacts Microsoft Entra ID using the Graph API, retrieving updates for users, devices and groups, updates its internal cache of user and device metadata and group membership information, and ships updated user metadata to Elasticsearch.
+The integration periodically contacts Microsoft Entra ID using the Graph API, retrieving updates for users, devices, and groups, updates its internal cache of metadata and group membership information, and ships updated records to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users and devices in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users and devices during that event. Changes on a user or device can come in many forms, whether it be a change to the user or device metadata, a user/device was added or deleted, or group membership was changed (either direct or transitive). By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, deletions, and group membership changes (direct or transitive). By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade.
+
+This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Entra ID objects (user modifications, deletions, group membership changes by an administrator, etc.), use the [Azure integration's](https://docs.elastic.co/integrations/azure) audit logs data stream, which collects [Entra ID audit logs](https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-audit-logs) via Event Hub.
 
 ## Sample Events
 
@@ -73,9 +83,6 @@ A user document:
 ```json
 {
   "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-  "event": {
-    "action": "user-discovered"
-  },
   "azure_ad": {
     "userPrincipalName": "example.user@example.com",
     "mail": "example.user@example.com",
@@ -112,9 +119,6 @@ A device document:
 ```json
 {
   "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-  "event": {
-    "action": "device-discovered"
-  },
   "azure_ad": {
     "accountEnabled": true,
     "displayName": "DESKTOP-LETW452G",
@@ -148,21 +152,6 @@ A device document:
 }
 ```
 
-Full synchronizations will be bounded on either side by "write marker" documents.
-
-```json
-{
-  "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-  "event": {
-    "action": "started",
-    "start": "2022-11-04T09:57:19.786056-05:00"
-  },
-  "labels": {
-    "identity_source": "azure-1"
-  }
-}
-```
-
 ## Logs reference
 
 ### Entity
@@ -175,41 +164,43 @@ An example event for `entity` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-01T18:07:36.482Z",
+    "@timestamp": "2026-07-29T09:35:46.444Z",
     "agent": {
-        "ephemeral_id": "91db5bd7-4c69-428c-83d2-01c1bf05ba7c",
-        "id": "c8d80307-c3e5-45ae-bb30-a0025259b7ae",
-        "name": "elastic-agent-65963",
+        "ephemeral_id": "ba88dec0-f6de-48e7-9946-8719b6f0cd06",
+        "id": "a08acbcd-2d58-4e0f-b909-c2e369278788",
+        "name": "elastic-agent-96580",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "entityanalytics_entra_id.entity",
-        "namespace": "55663",
+        "namespace": "93376",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c8d80307-c3e5-45ae-bb30-a0025259b7ae",
+        "id": "a08acbcd-2d58-4e0f-b909-c2e369278788",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "9.4.4"
     },
     "event": {
         "action": "started",
         "agent_id_status": "verified",
         "dataset": "entityanalytics_entra_id.entity",
-        "ingested": "2025-04-01T18:07:39Z",
+        "ingested": "2026-07-29T09:35:49Z",
         "kind": "asset",
-        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-65963\",\"id\":\"c8d80307-c3e5-45ae-bb30-a0025259b7ae\",\"type\":\"filebeat\",\"ephemeral_id\":\"91db5bd7-4c69-428c-83d2-01c1bf05ba7c\",\"version\":\"8.15.1\"},\"@timestamp\":\"2025-04-01T18:07:36.482Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"55663\",\"type\":\"logs\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"elastic_agent\":{\"id\":\"c8d80307-c3e5-45ae-bb30-a0025259b7ae\",\"version\":\"8.15.1\",\"snapshot\":false},\"event\":{\"start\":\"2025-04-01T18:07:36.482Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_entra_id.entity-b4dd8d01-dde7-48c9-8b0f-9c1f991c2117\"},\"tags\":[\"all-entities\",\"preserve_original_event\",\"forwarded\",\"entityanalytics_entra_id-entity\"],\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_entra_id.entity-55663\",\"_id\":null,\"_version\":-4}",
-        "start": "2025-04-01T18:07:36.482Z"
+        "module": "entityanalytics_entra_id",
+        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-96580\",\"id\":\"a08acbcd-2d58-4e0f-b909-c2e369278788\",\"type\":\"filebeat\",\"ephemeral_id\":\"ba88dec0-f6de-48e7-9946-8719b6f0cd06\",\"version\":\"9.4.4\"},\"@timestamp\":\"2026-07-29T09:35:46.444Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"93376\",\"type\":\"logs\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"elastic_agent\":{\"id\":\"a08acbcd-2d58-4e0f-b909-c2e369278788\",\"version\":\"9.4.4\",\"snapshot\":false},\"event\":{\"start\":\"2026-07-29T09:35:46.444Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_entra_id.entity-c223753b-856d-4a4c-94e8-68670d6b3985\"},\"tags\":[\"all-entities\",\"preserve_original_event\",\"forwarded\",\"entityanalytics_entra_id-entity\"],\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_entra_id.entity-93376\",\"_id\":null,\"_version\":-4}",
+        "provider": "Microsoft Entra ID",
+        "start": "2026-07-29T09:35:46.444Z"
     },
     "input": {
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-b4dd8d01-dde7-48c9-8b0f-9c1f991c2117"
+        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-c223753b-856d-4a4c-94e8-68670d6b3985"
     },
     "tags": [
         "all-entities",
@@ -313,8 +304,20 @@ An example event for `entity` looks as following:
 | entityanalytics_entra_id.device.trust_type | Type of trust for the joined device. Read-only. Possible values: Workplace (indicates bring your own personal devices), AzureAd (Cloud only joined devices), ServerAd (on-premises domain joined devices joined to Azure AD). | keyword |
 | entityanalytics_entra_id.device.version | For internal use only. | keyword |
 | entityanalytics_entra_id.user.account_enabled | true if the account is enabled; otherwise, false. | boolean |
+| entityanalytics_entra_id.user.app_role_assignments.app_role_display_name | The display name of the app role granted to the user. | keyword |
+| entityanalytics_entra_id.user.app_role_assignments.app_role_id | The id of the app role assigned to the principal. | keyword |
+| entityanalytics_entra_id.user.app_role_assignments.created_date_time | The time when the app role assignment was created. | date |
+| entityanalytics_entra_id.user.app_role_assignments.id | A unique identifier for the appRoleAssignment key. | keyword |
+| entityanalytics_entra_id.user.app_role_assignments.principal_display_name | The display name of the user that was granted the app role assignment. | keyword |
+| entityanalytics_entra_id.user.app_role_assignments.principal_id | The unique identifier of the user that was granted the app role. | keyword |
+| entityanalytics_entra_id.user.app_role_assignments.resource_display_name | The display name of the resource application to which the assignment was made. | keyword |
+| entityanalytics_entra_id.user.app_role_assignments.resource_id | The unique identifier of the resource application to which the assignment was made. | keyword |
 | entityanalytics_entra_id.user.business_phones | The telephone numbers for the user. | keyword |
 | entityanalytics_entra_id.user.department | The name of the department in which the user works. | keyword |
+| entityanalytics_entra_id.user.direct_reports.display_name | The display name of the direct report. | keyword |
+| entityanalytics_entra_id.user.direct_reports.id | The unique identifier of the direct report. | keyword |
+| entityanalytics_entra_id.user.direct_reports.mail | The SMTP address of the direct report. | keyword |
+| entityanalytics_entra_id.user.direct_reports.user_principal_name | The user principal name of the direct report. | keyword |
 | entityanalytics_entra_id.user.display_name | The name displayed in the address book for the user. This is usually the combination of the user's first name, middle initial and last name. | keyword |
 | entityanalytics_entra_id.user.given_name | The given name (first name) of the user. Maximum length is 64 characters. | keyword |
 | entityanalytics_entra_id.user.group.id | The unique identifier for the group. | keyword |
@@ -322,20 +325,45 @@ An example event for `entity` looks as following:
 | entityanalytics_entra_id.user.id | The unique identifier for the user. Should be treated as an opaque identifier. Inherited from directoryObject. | keyword |
 | entityanalytics_entra_id.user.job_title | The user's job title. Maximum length is 128 characters. | keyword |
 | entityanalytics_entra_id.user.mail | The SMTP address for the user. | keyword |
+| entityanalytics_entra_id.user.manager.display_name | The display name of the manager. | keyword |
+| entityanalytics_entra_id.user.manager.id | The unique identifier for the manager. | keyword |
+| entityanalytics_entra_id.user.manager.mail | The SMTP address of the manager. | keyword |
+| entityanalytics_entra_id.user.manager.user_principal_name | The user principal name of the manager. | keyword |
+| entityanalytics_entra_id.user.mfa.is_mfa_capable | Whether the user is capable of MFA. | boolean |
+| entityanalytics_entra_id.user.mfa.is_mfa_registered | Whether the user has registered for MFA. | boolean |
+| entityanalytics_entra_id.user.mfa.is_passwordless_capable | Whether the user is capable of passwordless authentication. | boolean |
+| entityanalytics_entra_id.user.mfa.is_sspr_capable | Whether the user is capable of self-service password reset. | boolean |
+| entityanalytics_entra_id.user.mfa.is_sspr_enabled | Whether the user has self-service password reset enabled. | boolean |
+| entityanalytics_entra_id.user.mfa.is_sspr_registered | Whether the user has registered for self-service password reset. | boolean |
+| entityanalytics_entra_id.user.mfa.is_system_preferred_authentication_method_enabled | Whether the system preferred authentication method is enabled for the user. | boolean |
+| entityanalytics_entra_id.user.mfa.methods_registered | Collection of authentication methods registered by the user. | keyword |
+| entityanalytics_entra_id.user.mfa.system_preferred_authentication_methods | Collection of authentication methods that the system determined to be the most secure for the user. | keyword |
+| entityanalytics_entra_id.user.mfa.user_preferred_method_for_secondary_authentication | The method the user selected as the default second-factor for performing multi-factor authentication. | keyword |
+| entityanalytics_entra_id.user.mfa.user_type | Identifies whether the user is a member or guest in the tenant. | keyword |
 | entityanalytics_entra_id.user.mobile_phone | The primary cellular telephone number for the user. Read-only for users synced from on-premises directory. Maximum length is 64 characters. | keyword |
 | entityanalytics_entra_id.user.office_location | The office location in the user's place of business. | keyword |
 | entityanalytics_entra_id.user.preferred_language | The preferred language for the user. Should follow ISO 639-1 Code; for example en-US. | keyword |
+| entityanalytics_entra_id.user.sign_in_activity.last_non_interactive_sign_in_date_time | The last non-interactive sign-in date and time. | date |
+| entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time | The last sign-in date and time. | date |
 | entityanalytics_entra_id.user.surname | The user's surname (family name or last name). Maximum length is 64 characters. | keyword |
 | entityanalytics_entra_id.user.user_principal_name | The user principal name (UPN) of the user. The UPN is an Internet-style login name for the user based on the Internet standard RFC 822. By convention, this should map to the user's email name. The general format is alias@domain, where domain must be present in the tenant's collection of verified domains. | keyword |
 | event.dataset | Name of the dataset. | constant_keyword |
 | event.message | Log message optimized for viewing in a log viewer. | text |
 | event.module | Name of the module this data is coming from. | constant_keyword |
 | event.provider | The event kind. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of Filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | user.enabled |  | boolean |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.relationships.supervises.user.email | Referenced user email addresses. | keyword |
+| user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | user.first_name |  | keyword |
 | user.group.id |  | keyword |
 | user.group.name |  | keyword |

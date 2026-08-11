@@ -1,6 +1,5 @@
 - name: cloudflare_logpush.network_session
   type: group
-  description: Integration for parsing Cloudflare Zero Trust Network Session logs.
   fields:
     - name: account_id
       type: keyword
@@ -59,9 +58,18 @@
         - name: colo_name
           type: keyword
           description: The name of the Cloudflare colo to which traffic ingressed.
+    - name: initial_origin_ip
+      type: ip
+      description: The IP used to correlate FQDN matching between Gateway DNS and proxy.
     - name: offramp
       type: keyword
       description: The type of destination to which the network session was routed.
+    - name: registration_id
+      type: keyword
+      description: Identifier of the client registration.
+    - name: resolved_fqdn
+      type: keyword
+      description: The fully qualified domain name of the destination.
     - name: rule_evaluation
       type: group
       fields:
@@ -80,6 +88,9 @@
         - name: start
           type: date
           description: The network session start timestamp with nanosecond precision.
+    - name: sni
+      type: keyword
+      description: The server name indication (SNI) value from the TLS handshake.
     - name: source
       type: group
       fields:

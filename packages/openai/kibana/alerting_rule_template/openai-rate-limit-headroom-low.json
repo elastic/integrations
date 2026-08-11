@@ -1,0 +1,51 @@
+{
+  "id": "openai-rate-limit-headroom-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when peak per-minute token usage reaches 80% or more of the configured rate limit (TPM) for a project and model. Sustained high utilization risks request throttling (HTTP 429).",
+    "name": "[OpenAI] Rate limit headroom low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "openai"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "openai-651bb059-f606-44fc-b704-2078d0af26da"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## OpenAI rate limit headroom low\n\n### What fired\nPeak 1-minute token usage (TPM) reached 80% or more of the configured per-minute token limit for a project and model during the look-back window.\n\n### Why it matters\nWhen usage approaches the configured rate limit, OpenAI begins rejecting requests with HTTP 429 (Too Many Requests). Sustained high utilization indicates the project is close to throttling and may already be dropping requests at peak.\n\n### How it is computed\nUsage from the `completions`, `embeddings` and `moderations` streams is summed per project, model and 1-minute bucket, then the peak minute in the window is compared against the limit collected by the `rate_limits` stream. The limit and the usage join on the exact `project_id`, while `model` is normalized by stripping a trailing dated snapshot suffix (`-YYYY-MM-DD`) on both sides, so dated usage snapshots (e.g. `omni-moderation-2024-09-26`) match base rate-limit names (e.g. `omni-moderation`). This requires the usage streams to run with `bucket_width: 1m`.\n\n### Triage\n1. Identify the project and model in the alert (`alert_key` is `project_id::model`).\n2. Open the OpenAI dashboard and review the \"Rate limit headroom\" panel to confirm the trend.\n3. Check for HTTP 429 errors in the consuming application.\n\n### Remediation\n- Spread load across time, projects, or models.\n- Request a rate limit increase from OpenAI for the affected project.\n- Add client-side backoff/retry handling.\n\n### Tuning\n- The 80% threshold lives inside the rule's ES|QL query (`WHERE tpm_utilization >= 0.8`). Edit the query to change it.\n- The query alerts on every project/model pair over the threshold, up to 1000 groups per run (aligned with the `xpack.alerting.rules.run.alerts.max` circuit breaker). Results are sorted by utilization descending, so if an organization ever exceeds 1000 breaching pairs the highest-utilization ones still alert and Kibana surfaces a truncation warning. Organizations near that scale should raise both the query's `LIMIT` and `xpack.alerting.rules.run.alerts.max`.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\")\n// audio_speeches, audio_transcriptions, and images contribute no tokens (RPM-only streams) — their exclusion here is intentional\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n// Normalize dated model snapshots (e.g. gpt-image-1-2025-04-23, omni-moderation-2024-09-26)\n// to their base family by stripping a trailing -YYYY-MM-DD. OpenAI's usage API reports per\n// dated snapshot, while rate_limits often lists only the base name, so without this the usage\n// row finds no matching limit and is dropped from the headroom join.\n| EVAL model = REPLACE(COALESCE(openai.rate_limits.model, openai.base.model), \"-[0-9]{4}-[0-9]{2}-[0-9]{2}$\", \"\")\n// usage_tokens is normalized by each usage pipeline into openai.base.usage_tokens,\n// so this rule resolves even when some usage streams have no data.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n// Peak 1-minute usage per project and model, joined to the configured limit\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    peak_tpm_used = MAX(tpm_used_minute),\n    tpm_limit = MAX(tpm_limit)\n  BY project_id, model\n| WHERE tpm_limit > 0\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = TO_DOUBLE(peak_tpm_used) / tpm_limit\n// 80% threshold — edit this value to tune sensitivity\n| WHERE tpm_utilization >= 0.8\n| EVAL alert_key = CONCAT(TO_STRING(project_id), \"::\", TO_STRING(model))\n// Highest-utilization groups first so that if the cap is ever hit the worst offenders\n// still alert. The cap is aligned with the alerting max-alerts circuit breaker\n// (xpack.alerting.rules.run.alerts.max, default 1000): Kibana always appends its own\n// | LIMIT <max-alerts> and ES applies the smallest LIMIT, so anything below 1000 here\n// would silently drop breaching groups with no truncation warning. At 1000 the cap\n// coincides with the circuit breaker, which does surface a truncation warning.\n| SORT tpm_utilization DESC\n| LIMIT 1000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 1000
+    }
+  }
+}

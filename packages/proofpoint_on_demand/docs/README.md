@@ -596,6 +596,13 @@ An example event for `message` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |

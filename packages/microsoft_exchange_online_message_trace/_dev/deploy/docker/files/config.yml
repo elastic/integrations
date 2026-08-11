@@ -20,8 +20,9 @@ rules:
   # data: checks that the first page is requested with a broken skiptoken
   # (double-quoted dates — Microsoft Graph beta API defect), the cleaned
   # second page link is followed, the third page link (clean skiptoken with
-  # padding) is followed, and a new request (empty response) completes the
-  # time range.
+  # padding) is followed, the fourth page link (single-quote-escaped
+  # recipient address) is followed, and a new request (empty response)
+  # completes the time range.
   - path: /beta/admin/exchange/tracing/messageTraces
     methods: [GET]
     request_headers:
@@ -78,6 +79,8 @@ rules:
             ]
           }
   # page 3: matched after the clean padded skiptoken is normalised (keys reordered).
+  # Returns a nextLink with a single-quote-escaped recipient address (Microsoft
+  # Graph beta API defect for addresses containing apostrophes).
   - path: /beta/admin/exchange/tracing/messageTraces
     methods: [GET]
     request_headers:
@@ -93,7 +96,29 @@ rules:
         body: |-
           {
             "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
+            "@odata.nextLink": "http://svc-graph-api:8080/beta/admin/exchange/tracing/messageTraces?$skiptoken=eyJTdGFydERhdGUiOiIyMDI1LTExLTI3VDE0OjE4OjM3LjYwNzAzOTBaIiwiRW5kRGF0ZSI6IjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFoiLCJTdGFydGluZ1JlY2lwaWVudEFkZHJlc3MiOiInZGFuLm8nJ2Nvbm5vckBlbGFzdGljNTk1Lm9ubWljcm9zb2Z0LmNvbSciLCJSZXN1bHRTaXplIjoiNCJ9",
             "value": [
               {"id":"48d3fcf5-2389-4390-926f-7f6e575b1fe6","messageId":"<123433a6-c7cb-473e-9c65-2ca41b93f2dd@az.westus3.microsoft.com>","status":"delivered","receivedDateTime":"2025-11-30T06:43:04.864Z","recipientAddress":"G@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 60aa0e13-5d8c-4325-ad81-e22998b1649e)","size":327783,"fromIP":"2a02:cf47:648c:e1da:2155:5eb2:8ead:fb05","toIP":""}
+            ]
+          }
+  # page 4: matched after the single-quote-escaped skiptoken is cleaned
+  # (outer quotes stripped, doubled apostrophes unescaped, keys reordered).
+  - path: /beta/admin/exchange/tracing/messageTraces
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+    query_params:
+      $skiptoken: "eyJFbmREYXRlIjoiMjAyNS0xMi0wMlQwNTozNDoxMi4zNzMwMDAwWiIsIlJlc3VsdFNpemUiOiI0IiwiU3RhcnREYXRlIjoiMjAyNS0xMS0yN1QxNDoxODozNy42MDcwMzkwWiIsIlN0YXJ0aW5nUmVjaXBpZW50QWRkcmVzcyI6ImRhbi5vJ2Nvbm5vckBlbGFzdGljNTk1Lm9ubWljcm9zb2Z0LmNvbSJ9"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
+            "value": [
+              {"id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","messageId":"<7a8b9c0d-e1f2-3456-7890-abcdef123456@az.northeurope.microsoft.com>","status":"delivered","receivedDateTime":"2025-11-29T14:22:31.109Z","recipientAddress":"dan.o'connor@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":298412,"fromIP":"2a02:cf41:d675:a90d:c0ef:b23f:f053:947e","toIP":""}
             ]
           }
