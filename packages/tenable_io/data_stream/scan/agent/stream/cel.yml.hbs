@@ -64,7 +64,7 @@ program: |
     (has(state.worklist) && size(state.worklist) > 0) ?
       state.worklist[0].as(scan,
         state.with(
-          request("GET", state.url.trim_right("/") + "/was/v2/scans/" + string(scan.id)).with({
+          request("GET", state.url.trim_right("/") + "/scans/" + string(scan.id)).with({
             "Header": {
               "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
               "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
@@ -90,7 +90,7 @@ program: |
                   "error": {
                     "code": string(details_resp.StatusCode),
                     "id": string(details_resp.Status),
-                    "message": "GET /was/v2/scans/" + string(scan.id) + ": " + (
+                    "message": "GET /scans/" + string(scan.id) + ": " + (
                       size(details_resp.Body) != 0 ?
                         string(details_resp.Body)
                       :
