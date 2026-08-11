@@ -949,12 +949,13 @@ processors:
       field: "message"
       description: "609002"
       pattern: "Teardown local-host %{_temp_.cisco.source_interface}:%{source.address} duration %{_temp_.duration_hms}"
-  - dissect:
+  - grok:
       if: '["611102", "611101"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_611101-611102
       field: "message"
       description: "611102, 611101"
-      pattern: 'User authentication %{}: IP address: %{source.address}, Uname: %{server.user.name}'
+      patterns:
+        - '^User authentication %{DATA}:(?:\s*IP address: %{IP:source.address},)? Uname: %{GREEDYDATA:server.user.name}$'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710003'"
       tag: parse_710003
