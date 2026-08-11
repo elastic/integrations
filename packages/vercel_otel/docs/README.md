@@ -6,7 +6,7 @@ The Vercel OpenTelemetry assets provide dashboards for Vercel logs, audit logs, 
 
 ## Compatibility
 
-The Vercel OpenTelemetry assets have been tested with Vercel Drains delivering to the Vercel path (`/vercel`) of the Elastic Cloud managed endpoint.
+The Vercel OpenTelemetry assets have been tested with Vercel Drains delivering to the Vercel path (`/inputs/vercel/_default_`) of the Elastic Cloud managed endpoint.
 
 ## Requirements
 
@@ -44,16 +44,16 @@ Find your Elastic Cloud public endpoint:
 2. Open your project or deployment and select **Manage**.
 3. In **Application endpoints, cluster and component IDs**, select the Vercel endpoint, then copy the public endpoint value.
 
-The managed endpoint URL for Vercel is that public endpoint plus `/vercel`, which is the path that accepts Vercel drain payloads:
+The managed endpoint URL for Vercel is that public endpoint plus `/inputs/vercel/_default_`, which is the path that accepts Vercel drain payloads:
 
 ```text
-https://<managed-endpoint>/vercel
+https://<managed-endpoint>/inputs/vercel/_default_
 ```
 
 For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the managed endpoint URL for Vercel is:
 
 ```text
-https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel
+https://abc123.ingest.us-east-1.aws.elastic.cloud/inputs/vercel/_default_
 ```
 
 Every project and deployment has its own host, so always build the managed endpoint URL for Vercel from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
@@ -72,13 +72,13 @@ For each data type, in Vercel:
 
 1. Open your team **Drains** settings and create a drain for that data type.
 2. Choose **Custom Endpoint** as the destination.
-3. Set the **Endpoint URL** to the managed endpoint URL for Vercel, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel`.
+3. Set the **Endpoint URL** to the managed endpoint URL for Vercel, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/inputs/vercel/_default_`.
 4. Under **Custom Headers**, add a header named `Authorization` with the value `ApiKey <your-api-key>`, for example `Authorization: ApiKey abc123`.
 5. Save the drain.
 
 For Logs drains, you can also narrow which sources, environments, and sampling rates are forwarded under **Additional configuration for logs**. Refer to [Log Drains reference](https://vercel.com/docs/drains/reference/logs).
 
-> **Note**: The managed endpoint URL for Vercel is always your Elastic Cloud public endpoint plus `/vercel`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
+> **Note**: The managed endpoint URL for Vercel is always your Elastic Cloud public endpoint plus `/inputs/vercel/_default_`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
 
 ## Reference
 
