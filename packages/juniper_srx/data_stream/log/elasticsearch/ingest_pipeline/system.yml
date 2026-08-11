@@ -327,7 +327,7 @@ processors:
     tag: "script_cleanup_system"
     if: ctx.juniper?.srx?.system != null
     source: >-
-        ctx.juniper.srx.system = ctx.juniper.srx.system.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue().trim()));
+        ctx.juniper.srx.system = ctx.juniper.srx.system.entrySet().stream().filter(e -> e.getValue() != null).collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue() instanceof String ? ((String) e.getValue()).trim() : e.getValue()));
 
 #######################
 ## SRX System Fields ##
