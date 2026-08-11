@@ -38,10 +38,11 @@ program: |-
   (
     (state.?cursor.next_link.orValue(null) != null) ?
       // There is a next link to follow for the current range.
-      // Work around Microsoft Graph beta API defect where
-      // skiptoken values are double-JSON-encoded, causing
-      // 400 errors on the next page request. Fixing on read
-      // also repairs cursors poisoned before this fix.
+      // Work around Microsoft Graph beta API defects where
+      // skiptoken values are either double-JSON-encoded or
+      // wrapped in single quotes with doubled apostrophes,
+      // causing 400 errors on the next page request. Fixing
+      // on read also repairs cursors poisoned before this fix.
       {
         "url": state.cursor.next_link.parse_url().as(u,
           u.RawQuery.parse_query().as(q,
@@ -58,6 +59,8 @@ program: |-
                           {
                             k: (v.has_prefix('"') && v.has_suffix('"')) ?
                               v.decode_json().as(dv, is_error(dv) ? v : dv)
+                            : (size(v) >= 2 && v.has_prefix("'") && v.has_suffix("'")) ?
+                              try(string(v).substring(1, size(v)-1).replace_all("''", "'")).as(dv, is_error(dv) ? v : dv)
                             :
                               v
                           }

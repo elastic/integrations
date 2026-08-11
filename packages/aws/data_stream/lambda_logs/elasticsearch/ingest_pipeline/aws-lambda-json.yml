@@ -2,12 +2,14 @@
 description: Pipeline for parsing AWS lambda logs in JSON format
 processors:
 - json:
+    tag: json_event_original_to_parsed_10ffb5ce
     field: event.original
     target_field: parsed
     ignore_failure: true
 
 # 1. Powertools structured logs (timestamp field)
 - date:
+    tag: date_parsed_timestamp_to_timestamp_97a41d9d
     if: "ctx.parsed?.timestamp != null"
     field: parsed.timestamp
     target_field: "@timestamp"
@@ -16,6 +18,7 @@ processors:
 
 # 2. Platform report logs (time field)
 - date:
+    tag: date_parsed_time_to_timestamp_fba879f2
     if: "ctx.parsed?.time != null"
     field: parsed.time
     target_field: "@timestamp"
@@ -24,6 +27,7 @@ processors:
 
 # 3. EMF metrics (_aws.Timestamp)
 - date:
+    tag: date_parsed__aws_Timestamp_to_timestamp_c68149cc
     if: "ctx.parsed?._aws?.Timestamp != null"
     field: parsed._aws.Timestamp
     target_field: "@timestamp"
@@ -32,33 +36,39 @@ processors:
 
 # Flatten important fields from each log type
 - set:
+    tag: set_aws_lambda_message_6544ba09
     field: aws.lambda.message
     if: "ctx.parsed?.record != null"
     copy_from: parsed.record
     ignore_failure: true
 
 - set:
+    tag: set_aws_lambda_message_3f326ec3
     field: aws.lambda.message
     if: "ctx.parsed?._aws != null"
     copy_from: parsed._aws
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_service_to_service_name_9caaaff4
     field: parsed.service
     target_field: service.name
     ignore_missing: true
 
 - rename:
+    tag: rename_parsed_level_to_log_level_862eec37
     field: parsed.level
     target_field: log.level
     ignore_missing: true
 
 - rename:
+    tag: rename_parsed_requestId_to_aws_lambda_request_id_18110ea2
     field: parsed.requestId
     target_field: aws.lambda.request_id
     ignore_missing: true
 
 - script:
+    tag: script_2a9075b4
     description: "Join stackTrace arrays into single multiline strings if present"
     if: "ctx.parsed instanceof Map"
     lang: painless
@@ -87,24 +97,28 @@ processors:
         }
 
 - rename:
+    tag: rename_parsed_record_functionArn_to_aws_lambda_arn_51703cf5
     field: parsed.record.functionArn
     target_field: aws.lambda.arn
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_requestId_to_aws_lambda_request_id_6a2d1562
     field: parsed.record.requestId
     target_field: aws.lambda.request_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_version_to_aws_lambda_version_7761b889
     field: parsed.record.version
     target_field: aws.lambda.version
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_status_to_aws_lambda_status_6b8d9e09
     field: parsed.record.status
     target_field: aws.lambda.status
     ignore_missing: true
@@ -134,90 +148,105 @@ processors:
 
 # Rename Lambda tracing fields
 - rename:
+    tag: rename_parsed_record_tracing_spanId_to_aws_lambda_tracing_span_id_256aad3c
     field: parsed.record.tracing.spanId
     target_field: aws.lambda.tracing.span_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_tracing_type_to_aws_lambda_tracing_type_39b45bd1
     field: parsed.record.tracing.type
     target_field: aws.lambda.tracing.type
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_tracing_value_to_aws_lambda_tracing_value_02ced129
     field: parsed.record.tracing.value
     target_field: aws.lambda.tracing.value
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_errorType_to_aws_lambda_error_type_88145965
     field: parsed.record.errorType
     target_field: aws.lambda.error.type
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_initializationType_to_aws_lambda_initialization_type_8046ddac
     field: parsed.record.initializationType
     target_field: aws.lambda.initialization_type
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_phase_to_aws_lambda_phase_308d50fd
     field: parsed.record.phase
     target_field: aws.lambda.phase
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_functionVersion_to_aws_lambda_version_8e78bc89
     field: parsed.record.functionVersion
     target_field: aws.lambda.version
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_functionName_to_aws_lambda_name_d0f84de3
     field: parsed.record.functionName
     target_field: aws.lambda.name
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_instanceId_to_aws_lambda_instance_id_b44195fe
     field: parsed.record.instanceId
     target_field: aws.lambda.instance_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_runtimeVersion_to_aws_lambda_runtime_version_b94b16e6
     field: parsed.record.runtimeVersion
     target_field: aws.lambda.runtime_version
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_runtimeVersionArn_to_aws_lambda_runtime_version_arn_0196eb2d
     field: parsed.record.runtimeVersionArn
     target_field: aws.lambda.runtime_version_arn
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_name_to_aws_lambda_extension_name_747c0f88
     field: parsed.record.name
     target_field: aws.lambda.extension.name
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_state_to_aws_lambda_extension_state_6295bd98
     field: parsed.record.state
     target_field: aws.lambda.extension.state
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_events_to_aws_lambda_extension_events_209e02f0
     field: parsed.record.events
     target_field: aws.lambda.extension.events
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_record_spans_to_aws_lambda_spans_26360141
     field: parsed.record.spans
     target_field: aws.lambda.spans
     ignore_missing: true
@@ -225,6 +254,7 @@ processors:
 
 # General fields
 - rename:
+    tag: rename_parsed_time_to_timestamp_e2d4f43a
     field: parsed.time
     target_field: "@timestamp"
     ignore_missing: true
@@ -232,84 +262,98 @@ processors:
     if: "ctx['@timestamp'] == null"
 
 - rename:
+    tag: rename_parsed_errorMessage_to_aws_lambda_error_message_90435096
     field: parsed.errorMessage
     target_field: aws.lambda.error.message
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_errorType_to_aws_lambda_error_type_41dc6cfe
     field: parsed.errorType
     target_field: aws.lambda.error.type
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_logger_to_log_logger_b2926610
     field: parsed.logger
     target_field: log.logger
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_stack_trace_flattened_to_aws_lambda_error_stack_trace_eb4f5110
     field: parsed.stack_trace_flattened
     target_field: aws.lambda.error.stack_trace
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_message_stack_trace_flattened_to_aws_lambda_error_stack_trace_e41d1f23
     field: parsed.message.stack_trace_flattened
     target_field: aws.lambda.error.stack_trace
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_message_errorType_to_aws_lambda_error_type_f7d435cb
     field: parsed.message.errorType
     target_field: aws.lambda.error.type
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_message_errorMessage_to_aws_lambda_error_message_33dc35cf
     field: parsed.message.errorMessage
     target_field: aws.lambda.error.message
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_time_to_timestamp_f0516457
     field: parsed.time
     target_field: "@timestamp"
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_timestamp_to_timestamp_6bf3188c
     field: parsed.timestamp
     target_field: "@timestamp"
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_type_to_aws_lambda_event_type_dc18588f
     field: parsed.type
     target_field: aws.lambda.event_type
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_cold_start_to_aws_lambda_cold_start_66f6c8a6
     field: parsed.cold_start
     target_field: aws.lambda.cold_start
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_correlation_id_to_aws_lambda_correlation_id_f0351420
     field: parsed.correlation_id
     target_field: aws.lambda.correlation_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_function_arn_to_aws_lambda_arn_f7c9939d
     field: parsed.function_arn
     target_field: aws.lambda.arn
     ignore_missing: true
     ignore_failure: true
 
 - convert:
+    tag: convert_parsed_function_memory_size_to_aws_lambda_metrics_memory_size_mb_88c72c01
     field: parsed.function_memory_size
     target_field: aws.lambda.metrics.memory_size_mb
     type: long
@@ -317,118 +361,138 @@ processors:
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_function_name_to_aws_lambda_name_13b2aecb
     field: parsed.function_name
     target_field: aws.lambda.name
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_function_request_id_to_aws_lambda_request_id_c469f1db
     field: parsed.function_request_id
     target_field: aws.lambda.request_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_location_to_aws_lambda_error_location_66753596
     field: parsed.location
     target_field: aws.lambda.error.location
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_message_to_aws_lambda_message_7c4e8659
     field: parsed.message
     target_field: aws.lambda.message
     ignore_missing: true
     ignore_failure: true
+    if: "ctx.parsed?.message instanceof Map"
+
+- set:
+    tag: set_message_43c20b27
+    field: message
+    copy_from: parsed.message
+    if: "ctx.parsed?.message != null && !(ctx.parsed.message instanceof Map)"
+
+- set:
+    tag: set_message_40e593a2
+    field: message
+    copy_from: event.original
+    if: "ctx.message == null && ctx.aws?.lambda?.message == null"
 
 - rename:
+    tag: rename_parsed_users_to_aws_lambda_users_2cbd7f64
     field: parsed.users
     target_field: aws.lambda.users
     ignore_missing: true
     ignore_failure: true
 
 - rename:
-    field: parsed.timestamp
-    target_field: "@timestamp"
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
+    tag: rename_parsed_tracing_xray_trace_id_to_aws_lambda_xray_trace_id_7af1af24
     field: parsed.tracing.xray_trace_id
     target_field: aws.lambda.xray_trace_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_ColdStart_to_aws_lambda_cold_start_int_a9f07947
     field: parsed.ColdStart
     target_field: aws.lambda.cold_start_int
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_FunctionName_to_aws_lambda_name_bc1732fa
     field: parsed.FunctionName
     target_field: aws.lambda.name
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_Service_to_aws_lambda_service_name_b05c7e13
     field: parsed.Service
     target_field: aws.lambda.service.name
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_executionEnvironment_to_aws_lambda_execution_environment_69e303a9
     field: parsed.executionEnvironment
     target_field: aws.lambda.execution_environment
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_functionVersion_to_aws_lambda_version_0ce7aa40
     field: parsed.functionVersion
     target_field: aws.lambda.version
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_logStreamId_to_aws_lambda_log_stream_id_cd3a949e
     field: parsed.logStreamId
     target_field: aws.lambda.log_stream_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_traceId_to_aws_lambda_trace_id_43e71591
     field: parsed.traceId
     target_field: aws.lambda.trace_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_AWSRequestId_to_aws_lambda_aws_request_id_1dfaf9e4
     field: parsed.AWSRequestId
     target_field: aws.lambda.aws_request_id
     ignore_missing: true
     ignore_failure: true
 
 - rename:
+    tag: rename_parsed_to_aws_lambda_message_7d198649
     field: parsed
     target_field: aws.lambda.message
     ignore_missing: true
     ignore_failure: true
-    if: "ctx.parsed instanceof Map && !(ctx.parsed.containsKey('message') || ctx.parsed.containsKey('record') || ctx.parsed.containsKey('_aws') || ctx.parsed.containsKey('time') || ctx.parsed.containsKey('timestamp'))"
-
-- set:
-    field: aws.lambda.message
-    copy_from: event.original
-    if: "ctx.parsed == null"
+    if: "ctx.parsed instanceof Map && !(ctx.parsed.containsKey('record') || ctx.parsed.containsKey('_aws') || ctx.parsed.containsKey('time') )"
 
 - remove:
+    tag: remove_parsed_d594d21c
     field: parsed
     ignore_missing: true
     ignore_failure: true
 
 - remove:
+    tag: remove_parsed__aws_5349e56c
     field: parsed._aws
     ignore_missing: true
     ignore_failure: true
 
 - script:
+    tag: script_4bd31a4f
     description: Drops null/empty values recursively
     lang: painless
     source: |
@@ -455,4 +519,4 @@ on_failure:
     value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

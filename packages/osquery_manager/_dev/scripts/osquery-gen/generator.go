@@ -6,7 +6,6 @@ package main
 
 import (
 	"bytes"
-	_ "embed"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -44,9 +43,6 @@ var (
 	excludeFromTopLevelSet = makeSet(excludeFromTopLevel)
 	ecsRestrictedSet       = makeSet(ecsRestrictedFields)
 )
-
-//go:embed ecs_keep_fields.txt
-var ecsKeepFieldsContent string
 
 type kibanaOsqueryTable struct {
 	Name        string             `json:"name"`
@@ -123,7 +119,7 @@ type columnInfo struct {
 	Column osqueryCol
 }
 
-func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef string, runPackageCheck bool) error {
+func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef string, ecsKeepFields []string, runPackageCheck bool) error {
 	outFields := filepath.Join(outputRoot, "packages", "osquery_manager", "data_stream", "result", "fields")
 	outSchemas := filepath.Join(outputRoot, "packages", "osquery_manager", "schemas")
 
@@ -165,7 +161,7 @@ func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef string, 
 	if err != nil {
 		return fmt.Errorf("download ECS fields: %w", err)
 	}
-	ecsOut, err := generateECSFieldsYAML(ecsYAML)
+	ecsOut, err := generateECSFieldsYAML(ecsYAML, ecsKeepFields)
 	if err != nil {
 		return fmt.Errorf("generate ecs.yml: %w", err)
 	}
@@ -500,20 +496,8 @@ func marshalYAMLWithIndent(v any, indent int) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func loadKeepFields() []string {
-	var out []string
-	for _, line := range strings.Split(ecsKeepFieldsContent, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		out = append(out, line)
-	}
-	return out
-}
-
-func generateECSFieldsYAML(ecsBeatsYAML []byte) ([]byte, error) {
-	keepFields := makeSet(loadKeepFields())
+func generateECSFieldsYAML(ecsBeatsYAML []byte, ecsKeepFields []string) ([]byte, error) {
+	keepFields := makeSet(ecsKeepFields)
 	var root any
 	if err := yaml.Unmarshal(ecsBeatsYAML, &root); err != nil {
 		return nil, err
@@ -550,12 +534,16 @@ func collectECSFieldNames(root any, parent string, keepFields map[string]struct{
 		if parent == "" && inSet(excludeFromTopLevelSet, name) {
 			continue
 		}
+		fieldName := joinPath(parent, name)
+		kept := inSet(keepFields, fieldName)
+		if kept && name != "@timestamp" {
+			*ecsFields = append(*ecsFields, fieldName)
+		}
 		if childFields, hasFields := m["fields"]; hasFields {
 			collectECSFieldNames(childFields, joinPath(parent, name), keepFields, ecsFields)
 		} else {
-			fieldName := joinPath(parent, name)
 			typ, _ := m["type"].(string)
-			if (inSet(keepFields, fieldName) || isAllowedECSType(typ)) && name != "@timestamp" {
+			if !kept && isAllowedECSType(typ) && name != "@timestamp" {
 				*ecsFields = append(*ecsFields, fieldName)
 			}
 		}

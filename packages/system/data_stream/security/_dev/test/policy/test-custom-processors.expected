@@ -1,0 +1,62 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: system
+      name: test-custom-processors-system
+      streams:
+        - batch_read_size: 50
+          condition: ${host.platform} == 'windows'
+          data_stream:
+            dataset: system.security
+          ignore_older: 72h
+          include_xml: true
+          name: Security
+          processors:
+            - decode_xml:
+                field: winlog.event_data.TaskContent
+                ignore_failure: true
+                ignore_missing: true
+                target_field: winlog._tmp.scheduled_task.task_content
+                to_lower: true
+                when:
+                    and:
+                        - has_fields:
+                            - winlog.event_data.TaskContent
+                        - equals:
+                            winlog.provider_name: Microsoft-Windows-Security-Auditing
+            - decode_xml:
+                field: winlog.event_data.TaskContentNew
+                ignore_failure: true
+                ignore_missing: true
+                target_field: winlog._tmp.scheduled_task.task_content_new
+                to_lower: true
+                when:
+                    and:
+                        - has_fields:
+                            - winlog.event_data.TaskContentNew
+                        - equals:
+                            winlog.provider_name: Microsoft-Windows-Security-Auditing
+            - add_fields:
+                fields:
+                    processors: preserved
+                target: winlog._tmp.policy_test
+          tags: null
+      type: winlog
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-system.security-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

@@ -1,0 +1,383 @@
+---
+# Keep this pipeline byte-identical in:
+# - packages/system/data_stream/security/elasticsearch/ingest_pipeline/scheduled_task.yml
+# - packages/windows/data_stream/forwarded/elasticsearch/ingest_pipeline/security_scheduled_task.yml
+description: Pipeline for normalizing decoded Windows Security scheduled task XML.
+processors:
+  - script:
+      tag: normalize_decoded_scheduled_task_xml
+      description: Normalize agent-side decode_xml output without parsing raw XML.
+      lang: painless
+      params:
+        action_types:
+          exec: exec
+          comhandler: com_handler
+        action_keys:
+          - exec
+          - comhandler
+        trigger_types:
+          boottrigger: boot
+          wnfstatechangetrigger: wnf_state_change
+          timetrigger: time
+          calendartrigger: calendar
+          logontrigger: logon
+          registrationtrigger: registration
+          sessionstatechangetrigger: session_state_change
+          eventtrigger: event
+          idletrigger: idle
+        trigger_keys:
+          - boottrigger
+          - wnfstatechangetrigger
+          - timetrigger
+          - calendartrigger
+          - logontrigger
+          - registrationtrigger
+          - sessionstatechangetrigger
+          - eventtrigger
+          - idletrigger
+        action_definition_keys:
+          - type
+          - context
+          - command
+          - arguments
+          - working_directory
+          - class_id
+        trigger_definition_keys:
+          - type
+          - enabled
+          - interval
+          - duration
+          - stop_at_duration_end
+      source: |
+        def asMap(def value) {
+          return value instanceof Map ? value : null;
+        }
+
+        ArrayList asList(def value) {
+          ArrayList values = new ArrayList();
+          if (value == null) {
+            return values;
+          }
+          if (value instanceof List) {
+            for (def item : value) {
+              values.add(item);
+            }
+            return values;
+          }
+          values.add(value);
+          return values;
+        }
+
+        String text(def value) {
+          if (value == null) {
+            return null;
+          }
+          def raw = value;
+          if (value instanceof Map) {
+            raw = value.get("#text");
+          }
+          if (raw == null) {
+            return null;
+          }
+          String s = raw.toString();
+          return s.length() == 0 ? null : s;
+        }
+
+        def boolValue(def value) {
+          String s = text(value);
+          if (s == null) {
+            return null;
+          }
+          String v = s.toLowerCase();
+          if (v.equals("true") || v.equals("1")) {
+            return true;
+          }
+          if (v.equals("false") || v.equals("0")) {
+            return false;
+          }
+          return null;
+        }
+
+        void putText(HashMap target, String field, def source, String key) {
+          if (!(source instanceof Map)) {
+            return;
+          }
+          String value = text(source.get(key));
+          if (value != null) {
+            target.put(field, value);
+          }
+        }
+
+        void putBool(HashMap target, String field, def source, String key) {
+          if (!(source instanceof Map)) {
+            return;
+          }
+          def value = boolValue(source.get(key));
+          if (value != null) {
+            target.put(field, value);
+          }
+        }
+
+        void putBoolDefault(HashMap target, String field, def source, String key, boolean defaultValue) {
+          if (!(source instanceof Map) || !source.containsKey(key)) {
+            target.put(field, defaultValue);
+            return;
+          }
+          def value = boolValue(source.get(key));
+          if (value != null) {
+            target.put(field, value);
+          }
+        }
+
+        String escapeDefinitionValue(String value) {
+          String hex = "0123456789ABCDEF";
+          StringBuilder escaped = new StringBuilder();
+          for (int i = 0; i < value.length(); i++) {
+            int code = value.charAt(i);
+            // Escape %, |, =, C0 control characters, and DEL.
+            if (code == 37 || code == 124 || code == 61 || code < 32 || code == 127) {
+              escaped.append("%");
+              escaped.append(hex.charAt((code >> 4) & 15));
+              escaped.append(hex.charAt(code & 15));
+            } else {
+              escaped.append(value.charAt(i));
+            }
+          }
+          return escaped.toString();
+        }
+
+        String canonicalDefinition(HashMap values, def keys) {
+          StringBuilder definition = new StringBuilder("v=1");
+          for (def keyValue : keys) {
+            String key = keyValue.toString();
+            definition.append("|");
+            definition.append(key);
+            definition.append("=");
+            if (!values.containsKey(key) || values.get(key) == null) {
+              continue;
+            }
+            definition.append(escapeDefinitionValue(values.get(key).toString()));
+          }
+          return definition.toString();
+        }
+
+        ArrayList normalizePrincipals(def task) {
+          def principalsBlock = asMap(task.get("principals"));
+          if (principalsBlock == null) {
+            return null;
+          }
+
+          ArrayList principals = new ArrayList();
+          for (def principalValue : asList(principalsBlock.get("principal"))) {
+            def principalBlock = asMap(principalValue);
+            if (principalBlock == null) {
+              continue;
+            }
+
+            HashMap principal = new HashMap();
+            putText(principal, "id", principalBlock, "id");
+
+            String userId = text(principalBlock.get("userid"));
+            if (userId != null) {
+              HashMap user = new HashMap();
+              user.put("identifier", userId);
+              principal.put("user", user);
+            }
+
+            String groupId = text(principalBlock.get("groupid"));
+            if (groupId != null) {
+              HashMap group = new HashMap();
+              group.put("identifier", groupId);
+              principal.put("group", group);
+            }
+
+            String logonType = text(principalBlock.get("logontype"));
+            if (logonType != null) {
+              HashMap logon = new HashMap();
+              logon.put("type", logonType);
+              principal.put("logon", logon);
+            }
+
+            putText(principal, "run_level", principalBlock, "runlevel");
+            if (principal.size() > 0) {
+              principals.add(principal);
+            }
+          }
+          return principals;
+        }
+
+        HashMap normalizeSettings(def task) {
+          def settingsBlock = asMap(task.get("settings"));
+          if (settingsBlock == null) {
+            return null;
+          }
+
+          HashMap settings = new HashMap();
+          putBool(settings, "enabled", settingsBlock, "enabled");
+          putBool(settings, "hidden", settingsBlock, "hidden");
+          return settings;
+        }
+
+        ArrayList normalizeTriggers(def task, def triggerKeys, def triggerTypes, def definitionKeys) {
+          def triggersBlock = asMap(task.get("triggers"));
+          if (triggersBlock == null) {
+            return null;
+          }
+
+          ArrayList triggers = new ArrayList();
+          // decode_xml groups child elements by name. Same-name elements remain ordered
+          // lists, but cross-type XML order is not available after agent-side decoding.
+          for (def triggerKey : triggerKeys) {
+            String type = triggerTypes.get(triggerKey);
+            for (def triggerValue : asList(triggersBlock.get(triggerKey))) {
+              def triggerBlock = asMap(triggerValue);
+              // Empty XML trigger elements decode as empty scalar strings. Ignore
+              // non-empty scalars because they cannot represent a valid trigger.
+              if (triggerBlock == null && text(triggerValue) != null) {
+                continue;
+              }
+
+              HashMap trigger = new HashMap();
+              trigger.put("type", type);
+              // Task Scheduler defaults an omitted trigger Enabled element to true.
+              putBoolDefault(trigger, "enabled", triggerBlock, "enabled", true);
+
+              // decode_xml represents empty elements (for example, <BootTrigger />)
+              // as scalar strings. Their presence still defines a trigger, even when
+              // there are no optional fields to extract from a map.
+              if (triggerBlock != null) {
+                def repetitionBlock = asMap(triggerBlock.get("repetition"));
+                if (repetitionBlock != null) {
+                  HashMap repetition = new HashMap();
+                  putText(repetition, "interval", repetitionBlock, "interval");
+                  putText(repetition, "duration", repetitionBlock, "duration");
+                  putBool(repetition, "stop_at_duration_end", repetitionBlock, "stopatdurationend");
+                  if (repetition.size() > 0) {
+                    trigger.put("repetition", repetition);
+                  }
+                }
+              }
+              HashMap definitionValues = new HashMap();
+              definitionValues.put("type", trigger.get("type"));
+              definitionValues.put("enabled", trigger.get("enabled"));
+              def repetition = asMap(trigger.get("repetition"));
+              if (repetition != null) {
+                for (def key : ["interval", "duration", "stop_at_duration_end"]) {
+                  if (repetition.containsKey(key)) {
+                    definitionValues.put(key, repetition.get(key));
+                  }
+                }
+              }
+              trigger.put("definition", canonicalDefinition(definitionValues, definitionKeys));
+              triggers.add(trigger);
+            }
+          }
+          return triggers;
+        }
+
+        ArrayList normalizeActions(def task, def actionKeys, def actionTypes, def definitionKeys) {
+          def actionsBlock = asMap(task.get("actions"));
+          if (actionsBlock == null) {
+            return null;
+          }
+
+          ArrayList actions = new ArrayList();
+          String context = text(actionsBlock.get("context"));
+          // Use a stable type order because decode_xml exposes actions by element name.
+          // Repeated same-name actions are still emitted in their decoded list order.
+          for (def actionKey : actionKeys) {
+            String type = actionTypes.get(actionKey);
+            for (def actionValue : asList(actionsBlock.get(actionKey))) {
+              def actionBlock = asMap(actionValue);
+              if (actionBlock == null) {
+                continue;
+              }
+
+              HashMap action = new HashMap();
+              action.put("type", type);
+              if (context != null) {
+                action.put("context", context);
+              }
+
+              if (type.equals("exec")) {
+                putText(action, "command", actionBlock, "command");
+                putText(action, "arguments", actionBlock, "arguments");
+                putText(action, "working_directory", actionBlock, "workingdirectory");
+              } else if (type.equals("com_handler")) {
+                putText(action, "class_id", actionBlock, "classid");
+              }
+              action.put("definition", canonicalDefinition(action, definitionKeys));
+              actions.add(action);
+            }
+          }
+          return actions;
+        }
+
+        if (ctx.event == null || ctx.winlog == null || !(ctx.winlog._tmp?.scheduled_task instanceof Map)) {
+          return;
+        }
+
+        String code = ctx.event.code == null ? null : ctx.event.code.toString();
+        if (code == null || !["4698", "4699", "4700", "4701", "4702"].contains(code)) {
+          return;
+        }
+
+        def tmp = ctx.winlog._tmp.scheduled_task;
+        def decoded = code.equals("4702") ? tmp.task_content_new : tmp.task_content;
+        def decodedMap = asMap(decoded);
+        if (decodedMap == null) {
+          return;
+        }
+
+        // decode_xml lowercases names and uses local element/attribute names.
+        def task = asMap(decodedMap.get("task"));
+        if (task == null) {
+          task = decodedMap;
+        }
+
+        HashMap normalized = new HashMap();
+
+        def registrationInfo = asMap(task.get("registrationinfo"));
+        putText(normalized, "uri", registrationInfo, "uri");
+
+        ArrayList principals = normalizePrincipals(task);
+        if (principals != null && principals.size() > 0) {
+          normalized.put("principals", principals);
+        }
+
+        HashMap settings = normalizeSettings(task);
+        if (settings != null && settings.size() > 0) {
+          normalized.put("settings", settings);
+        }
+
+        ArrayList triggers = normalizeTriggers(
+          task,
+          params.trigger_keys,
+          params.trigger_types,
+          params.trigger_definition_keys
+        );
+        if (triggers != null && triggers.size() > 0) {
+          normalized.put("triggers", triggers);
+        }
+
+        ArrayList actions = normalizeActions(
+          task,
+          params.action_keys,
+          params.action_types,
+          params.action_definition_keys
+        );
+        if (actions != null && actions.size() > 0) {
+          normalized.put("actions", actions);
+        }
+
+        // Publish only after every section has normalized successfully.
+        if (normalized.size() > 0) {
+          ctx.winlog.scheduled_task = normalized;
+        }
+      on_failure:
+        - append:
+            description: Mark events when scheduled task normalization fails unexpectedly.
+            field: tags
+            value: scheduled_task_normalization_failed
+            allow_duplicates: false
+            ignore_failure: true

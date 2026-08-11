@@ -1,0 +1,177 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+{{#if organization_id}}
+  organization_id:
+{{#each organization_id as |id|}}
+    - {{id}}
+{{/each}}
+{{/if}}
+  include_enterprise_level: {{include_enterprise_level}}
+  novel_only: {{novel_only}}
+{{#if detection_types}}
+  detection_types:
+{{#each detection_types as |t|}}
+    - {{t}}
+{{/each}}
+{{/if}}
+{{#if source_types}}
+  source_types:
+{{#each source_types as |t|}}
+    - {{t}}
+{{/each}}
+{{/if}}
+{{#if domains}}
+  domains:
+{{#each domains as |d|}}
+    - {{d}}
+{{/each}}
+{{/if}}
+  hash_password: {{hash_password}}
+  hash_cookies: {{hash_cookies}}
+{{#if hashing_key}}
+  hashing_key: {{hashing_key}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+    - hashing_key
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.drop("next").with(
+        {
+          "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        }
+      )
+  ).as(state,
+    state.with(
+      post_request(
+        state.url.trim_right("/") + "/identity/detections",
+        "application/json",
+        {
+          "limit": int(state.batch_size),
+          ?"offset": state.?next.offset,
+          ?"organization_id": state.?organization_id,
+          "include_enterprise_level": state.include_enterprise_level,
+          "filter": {
+            "created": {"gte": string(state.start_time)},
+            "novel_only": state.novel_only,
+            ?"detection_types": state.?detection_types,
+            ?"source_type": state.?source_types,
+            ?"domains": state.?domains,
+          },
+        }.encode_json()
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            "X-RFToken": [state.api_key],
+          },
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          body.?next_offset.as(next_offset,
+            (
+              (has(body.detections) && body.detections.size() > 0) ?
+                body.detections.map(e, timestamp(e.created)).max()
+              :
+                timestamp(0)
+            ).as(page_max,
+              max(page_max, timestamp(state.?cursor.max_created.orValue("1970-01-01T00:00:00Z"))).as(max_created,
+                {
+                  "events": (has(body.detections) && body.detections.size() > 0) ?
+                    body.detections.map(d,
+                      {
+                        // Optionally replace leaked secrets with keyed HMAC-SHA256 hashes before
+                        // indexing. Each patch key is only merged when its flag is on and the field
+                        // is present; otherwise the ?"key" entry is dropped and the original is kept.
+                        "message": bytes(state.?hashing_key.orValue("")).as(key,
+                          d.with({
+                            ?"password": (state.hash_password && has(d.password) && has(d.password.cleartext)) ?
+                              optional.of(d.password.with({"cleartext": d.password.cleartext.hmac("sha256", key).hex()}))
+                            :
+                              optional.none(),
+                            ?"cookies": (state.hash_cookies && has(d.cookies)) ?
+                              optional.of(d.cookies.map(c, has(c.value) ? c.with({"value": c.value.hmac("sha256", key).hex()}) : c))
+                            :
+                              optional.none(),
+                          }).encode_json()
+                        ),
+                      }
+                    )
+                  :
+                    [],
+                  "want_more": next_offset.hasValue(),
+                  "next": {
+                    ?"offset": next_offset,
+                  },
+                  "cursor": next_offset.hasValue() ?
+                    {
+                      ?"last_timestamp": state.?cursor.last_timestamp,
+                      "max_created": max_created,
+                    }
+                  :
+                    {
+                      ?"last_timestamp": (max_created > timestamp(0)) ?
+                        optional.of(string(max_created))
+                      :
+                        state.?cursor.last_timestamp,
+                    },
+                }
+              )
+            )
+          )
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "POST " + state.url.trim_right("/") + "/identity/detections: " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

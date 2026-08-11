@@ -2,6 +2,11 @@
 
 ForgeRock is a modern identity platform which helps organizations radically simplify identity and access management (IAM) and identity governance and administration (IGA). The ForgeRock integration collects audit logs from the [API](https://backstage.forgerock.com/knowledge/kb/article/a37739488).
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ### Configuration
 
 Authorization parameters for the ForgeRock Identity Cloud API (`API Key ID`, and `API Key Secret`) can be created [in the Identity Cloud admin UI](https://backstage.forgerock.com/docs/idcloud/latest/developer-docs/authenticate-to-rest-api-with-api-key-and-secret.html#get_an_api_key_and_secret). 

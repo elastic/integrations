@@ -1,0 +1,123 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_ticura
+      name: test-all-ti_ticura
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_ticura.indicator
+          interval: 30m
+          processors:
+            - add_fields:
+                fields:
+                    id: "574734885120952459"
+                    name: myproject
+                target: project
+          program: |
+            state.with(
+              // Step 1: with mode=url the Ticura API returns 200 + {"downloadUrl": "..."}
+              // (a short-lived direct blob URL) instead of a 307 redirect. Auto-following
+              // a 307 to the large feed body fails with "read on closed response body",
+              // so we resolve the URL here and download it directly in step 2.
+              // Append mode=url if it is missing: Fleet keeps a package policy's stored
+              // url across upgrades, so a policy created before mode=url existed would
+              // otherwise send the legacy endpoint (307) that this program cannot process.
+              // This makes such policies self-heal without needing the (hidden) var edited.
+              request("GET", state.url.contains("mode=url") ? state.url : state.url + "&mode=url").with({
+                "Header": {
+                  "x-api-key": [state.api_token],
+                }
+              }).do_request().as(meta, meta.StatusCode == 200 ?
+                meta.Body.decode_json().as(m, has(m.downloadUrl) ?
+                  // Step 2: download the feed directly from the resolved URL (no redirect).
+                  request("GET", m.downloadUrl).do_request().as(resp, resp.StatusCode == 200 ?
+                    {
+                      "events": string(resp.Body).split("\n")
+                        .filter(l, size(l) > 0)
+                        .map(l, {"message": l.trim_space()}),
+                      "want_more": false,
+                    }
+                  :
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET (feed download) " + m.downloadUrl + ": " + (
+                            size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  )
+                :
+                  {
+                    "events": { "error": { "message": "Ticura API response missing downloadUrl: " + string(meta.Body) } },
+                    "want_more": false,
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(meta.StatusCode),
+                      "id": string(meta.Status),
+                      "message": "GET " + state.url + ": " + (
+                        size(meta.Body) != 0 ? string(meta.Body) : string(meta.Status) + " (" + string(meta.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            delete: true
+            fields:
+                - api_token
+          resource.proxy_url: http://proxy.tld
+          resource.retry:
+            max_attempts: 5
+            wait_max: 1m
+            wait_min: 10s
+          resource.ssl:
+            supported_protocols:
+                - TLSv1.2
+                - TLSv1.3
+            verification_mode: full
+          resource.timeout: 60s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: http://host.tld
+          state:
+            api_token: ${SECRET_0}
+          tags:
+            - preserve_original_event
+            - forwarded
+            - ti_ticura-indicator
+            - test-policy
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_ticura.indicator-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

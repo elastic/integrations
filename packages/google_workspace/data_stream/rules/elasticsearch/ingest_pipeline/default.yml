@@ -206,9 +206,6 @@ processors:
       if: ctx.source?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - set:
-      field: event.kind
-      value: event
   - script:
       lang: painless
       description: Map Event parameters into key value pair.
@@ -503,6 +500,35 @@ processors:
       if: ctx.google_workspace?.rules?.actor_ip_address != null
       allow_duplicates: false
       ignore_failure: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category_for_rule_events
+      value: intrusion_detection
+      if: ctx.event?.action != null && ["rule_match","rule_trigger","action_complete"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_info_into_event_type_for_rule_events
+      value: info
+      if: ctx.event?.action != null && ["rule_match","rule_trigger","action_complete"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_change_into_event_type_for_label_events
+      value: change
+      if: ctx.event?.action != null && ["label_applied","label_field_value_changed"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type_for_label_removed
+      value: deletion
+      if: ctx.event?.action == 'label_removed'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+      if: ctx.google_workspace?.rules?.has_alert == true
   - remove:
       field:
         - json

@@ -2,7 +2,7 @@
 
 Config-driven generator for osquery_manager field/schema generation.
 
-This tool reads `osquery` version and `beats` git selection from `config.yml`,
+This tool reads `osquery` version, `beats` git selection, and ECS keep fields from `config.yml`,
 reads the ECS git ref from `packages/osquery_manager/_dev/build/build.yml`
 (`dependencies.ecs.reference`, e.g. `git@v9.3.0`), resolves the latest matching
 patch for osquery/beats when using semver config, and generates:
@@ -20,13 +20,16 @@ Extension metadata in osquery schema is enforced:
 
 ## Config
 
-`config.yml` — osquery and beats only:
+`config.yml`:
 
 ```yaml
 osquery:
   version: "5.21.0"
 beats:
   version: "9.3"
+ecs:
+  keep_fields:
+    - file.pe.sections
 ```
 
 **Beats** (extension specs under `elastic/beats`): set **either** an explicit git ref **or** a semver-style `version`. Precedence is **tag > branch > version**:
@@ -50,6 +53,10 @@ dependencies:
   ecs:
     reference: git@v9.3.0
 ```
+
+**ECS** `keep_fields` entries force specific ECS field names into the generated
+`data_stream/result/fields/ecs.yml` even when the field is an object/nested node
+or has a type outside the generator's default allow-list.
 
 Notes:
 

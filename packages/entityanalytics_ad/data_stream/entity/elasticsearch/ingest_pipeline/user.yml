@@ -81,8 +81,10 @@ processors:
       if: ctx.activedirectory?.user?.when_created != null && ctx.activedirectory.user.when_created != ''
       on_failure:
         - remove:
+            tag: on_failure_remove_date_user_created
             field: activedirectory.user.when_created
         - append:
+            tag: on_failure_append_date_user_created
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -94,8 +96,10 @@ processors:
       if: ctx.activedirectory?.user?.when_changed != null && ctx.activedirectory.user.when_changed != ''
       on_failure:
         - remove:
+            tag: on_failure_remove_date_user_changed
             field: activedirectory.user.when_changed
         - append:
+            tag: on_failure_append_date_user_changed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -107,16 +111,35 @@ processors:
       if: ctx.activedirectory?.user?.pwd_last_set != null && ctx.activedirectory.user.pwd_last_set != ''
       on_failure:
         - remove:
+            tag: on_failure_remove_date_user_pwd_last_set
             field: activedirectory.user.pwd_last_set
         - append:
+            tag: on_failure_append_date_user_pwd_last_set
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'       
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: activedirectory.user.last_logon_timestamp
+      target_field: user.entity.lifecycle.last_activity
+      tag: date_user_last_logon_timestamp
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.user?.last_logon_timestamp != null && ctx.activedirectory.user.last_logon_timestamp != ''
+      on_failure:
+        - remove:
+            tag: on_failure_remove_date_user_last_logon_timestamp
+            field: activedirectory.user.last_logon_timestamp
+        - append:
+            tag: on_failure_append_date_user_last_logon_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
+      tag: set_user_asset_name
       field: asset.name
       copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
   - set:
+      tag: set_user_name
       field: user.name
       copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
@@ -139,64 +162,83 @@ processors:
       replacement: '.'
       if: ctx.user?.domain != null
   - set:
+      tag: set_user_asset_id
       field: asset.id
       copy_from: activedirectory.user.object_sid
   - set:
+      tag: set_user_id
       field: user.id
       copy_from: activedirectory.user.object_sid
 
   - set:
+      tag: set_user_logon_script_enabled
       field: activedirectory.user.logon_script_enabled
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('SCRIPT') == true
   - set:
+      tag: set_user_enabled_true
       field: activedirectory.user.enabled
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE') == false
   - set:
+      tag: set_user_enabled_false
       field: activedirectory.user.enabled
       value: false
       if: ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE') == true
 
   - set:
+      tag: set_user_locked
       field: activedirectory.user.locked
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('LOCKOUT') == true
 
   - set:
+      tag: set_user_password_not_required
       field: activedirectory.user.password_not_required
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('PASSWD_NOTREQD') == true
 
   - set:
+      tag: set_user_reversible_encryption_password
       field: activedirectory.user.reversible_encryption_password
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED') == true
 
   - set:
+      tag: set_user_unconstrained_delegation
       field: activedirectory.user.unconstrained_delegation
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_FOR_DELEGATION') == true
 
   - set:
+      tag: set_user_sensitive_object
       field: activedirectory.user.sensitive_object
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('NOT_DELEGATED') == true
 
   - set:
+      tag: set_user_use_des_key_only
       field: activedirectory.user.use_des_key_only
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('USE_DES_KEY_ONLY') == true
 
   - set:
+      tag: set_user_dont_require_preauth
       field: activedirectory.user.dont_require_preauth
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('DONT_REQUIRE_PREAUTH') == true
 
   - set:
+      tag: set_user_constrained_delegation
       field: activedirectory.user.constrained_delegation
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
+
+  - set:
+      tag: set_user_mfa_enabled
+      field: user.entity.attributes.mfa_enabled
+      value: true
+      if: ctx.activedirectory?.user?.uac_list?.contains('SMARTCARD_REQUIRED') == true
 
   - script:
       lang: painless
@@ -250,7 +292,96 @@ processors:
           ctx.activedirectory.user.privileged_group_member = false;
         }
 
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: set_user_relationships
+      description: Build user.entity.relationships from managedObjects (administers) and directReports (supervises).
+      if: ctx.activedirectory?.user?.managed_objects != null || ctx.activedirectory?.user?.direct_reports != null
+      source: |-
+        def parseDn(def dn) {
+          def result = ['id': dn];
+          int start = 0;
+          def dcParts = new ArrayList();
+          boolean cnFound = false;
+          while (start < dn.length()) {
+            int end = start;
+            while (true) {
+              end = dn.indexOf(',', end);
+              if (end == -1) { end = dn.length(); break; }
+              if (end > 0 && dn.charAt(end - 1) == (char)'\\') { end++; continue; }
+              break;
+            }
+            def part = dn.substring(start, end).replace('\\,', ',').trim();
+            if (!cnFound && part.length() > 3 && part.substring(0, 3).equalsIgnoreCase('CN=')) {
+              result['name'] = part.substring(3);
+              cnFound = true;
+            } else if (part.length() > 3 && part.substring(0, 3).equalsIgnoreCase('DC=')) {
+              dcParts.add(part.substring(3));
+            }
+            start = end + 1;
+          }
+          if (!dcParts.isEmpty()) {
+            def domain = dcParts[0];
+            for (int i = 1; i < dcParts.size(); i++) {
+              domain += '.' + dcParts[i];
+            }
+            result['domain'] = domain;
+          }
+          return result;
+        }
+        def buildHostRel(def dns) {
+          def rel = ['host': [:]];
+          def dnList = (dns instanceof List) ? dns : [dns];
+          for (def dn : dnList) {
+            if (!(dn instanceof String) || dn.isEmpty()) continue;
+            def p = parseDn(dn);
+            if (!rel['host'].containsKey('id')) rel['host']['id'] = new ArrayList();
+            rel['host']['id'].add(p['id']);
+            if (p.containsKey('name')) {
+              if (!rel['host'].containsKey('name')) rel['host']['name'] = new ArrayList();
+              def fqdn = p.containsKey('domain') ? p['name'].toLowerCase() + '.' + p['domain'] : p['name'];
+              rel['host']['name'].add(fqdn);
+            }
+            if (p.containsKey('domain')) {
+              if (!rel.containsKey('user')) rel['user'] = [:];
+              if (!rel['user'].containsKey('domain')) rel['user']['domain'] = new ArrayList();
+              rel['user']['domain'].add(p['domain']);
+            }
+          }
+          return rel;
+        }
+        def buildUserRel(def dns) {
+          def rel = ['user': [:]];
+          def dnList = (dns instanceof List) ? dns : [dns];
+          for (def dn : dnList) {
+            if (!(dn instanceof String) || dn.isEmpty()) continue;
+            def p = parseDn(dn);
+            if (!rel['user'].containsKey('id')) rel['user']['id'] = new ArrayList();
+            rel['user']['id'].add(p['id']);
+            if (p.containsKey('name')) {
+              if (!rel['user'].containsKey('name')) rel['user']['name'] = new ArrayList();
+              rel['user']['name'].add(p['name']);
+            }
+            if (p.containsKey('domain')) {
+              if (!rel['user'].containsKey('domain')) rel['user']['domain'] = new ArrayList();
+              rel['user']['domain'].add(p['domain']);
+            }
+          }
+          return rel;
+        }
+        ctx.user = ctx.user ?: [:];
+        ctx.user.entity = ctx.user.entity ?: [:];
+        ctx.user.entity.relationships = ctx.user.entity.relationships ?: [:];
+        if (ctx.activedirectory?.user?.managed_objects != null) {
+          ctx.user.entity.relationships.administers = buildHostRel(ctx.activedirectory.user.managed_objects);
+        }
+        if (ctx.activedirectory?.user?.direct_reports != null) {
+          ctx.user.entity.relationships.supervises = buildUserRel(ctx.activedirectory.user.direct_reports);
+        }
+
   - set:
+      tag: set_user_account_never_expires
       field: activedirectory.user.account_never_expires
       value: true
       if: ctx.activedirectory?.user?.account_expires == "0" || ctx.activedirectory?.user?.account_expires == "9223372036854775807"
@@ -287,17 +418,26 @@ processors:
       if: ctx.activedirectory?.user?.user_principal_name != null
 
   - rename:
+      tag: rename_activedirectory_id_to_user_object_dn
       field: activedirectory.id
       target_field: activedirectory.user.object_dn
 
   - rename:
+      tag: rename_activedirectory_to_entityanalytics_ad
       field: activedirectory
       target_field: entityanalytics_ad
 
 on_failure:
   - append:
+      tag: pipeline_error
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: pipeline_error_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

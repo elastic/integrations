@@ -1,0 +1,488 @@
+---
+description: Pipeline for processing Ticura threat intelligence feed
+processors:
+
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - terminate:
+      tag: data_collection_error
+      description: Stop early when the collector emitted an error placeholder with no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # Preserve the raw NDJSON line in event.original when the user enabled the
+  # preserve_original_event toggle (signalled by the preserve_original_event tag
+  # set on the CEL input). Set before the json step while the tag is still in
+  # ctx.tags.
+  - set:
+      field: event.original
+      copy_from: message
+      tag: copy_original_message
+      if: ctx.tags?.contains('preserve_original_event') == true
+      ignore_empty_value: true
+
+  - json:
+      tag: json_decode_message
+      field: message
+      add_to_root: true
+      add_to_root_conflict_strategy: merge
+      ignore_failure: true
+
+  # The json step above (add_to_root) merges the feed line's own `tags` array,
+  # which replaces ctx.tags and drops the `preserve_original_event` tag. Fleet's
+  # final pipeline removes event.original unless that tag is present at the end
+  # of ingest, so re-add it whenever event.original was set — otherwise the raw
+  # copy is silently stripped after the pipeline runs.
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.event?.original != null
+
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+
+  - drop:
+      tag: drop_missing_uuid
+      if: ctx.ticura?.indicator?.uuid == null
+      ignore_failure: true
+
+  # ----- ECS event.* canonical values -----
+  # A Ticura record is always a threat-indicator enrichment. Set the canonical ECS
+  # event.kind/type/category as arrays. The feed may deliver event.category/type as
+  # a scalar or array; `set` with a list value guarantees the ECS-correct array
+  # shape and value regardless of what the source sent (append would either
+  # duplicate an existing value or leave a matching scalar un-promoted).
+  - set:
+      tag: set_event_kind_enrichment
+      field: event.kind
+      value: enrichment
+  - set:
+      tag: set_event_type_indicator
+      field: event.type
+      value: ["indicator"]
+  - set:
+      tag: set_event_category_threat
+      field: event.category
+      value: ["threat"]
+  # threat.indicator.id is ECS array-typed, but the ECSV1 feed delivers it as a
+  # scalar. Wrap it in a list when needed. (An `append` with `value: []` promoted a
+  # scalar to an array on 8.x but is a no-op on 9.x, so use an explicit script for
+  # version-stable output.)
+  - script:
+      tag: normalize_threat_indicator_id
+      if: ctx.threat?.indicator?.id != null
+      lang: painless
+      source: |
+        if (!(ctx.threat.indicator.id instanceof List)) {
+          ctx.threat.indicator.id = [ctx.threat.indicator.id];
+        }
+
+  # Deterministic _id from the stable UUID plus Ticura's content fingerprint. The raw
+  # stream is a data stream (indexed op_type=create): an unchanged indicator re-exported
+  # keeps the same _id and is rejected as a duplicate (no churn), while a content change
+  # yields a new fingerprint -> new _id -> a fresh version is ingested. The
+  # latest_indicator transform then keeps the newest version per UUID (by event.ingested)
+  # and collapses duplicates that accumulate across index rollovers.
+  - fingerprint:
+      tag: fingerprint_id
+      fields:
+        - ticura.indicator.uuid
+        - ticura.indicator.fingerprint
+      target_field: "_id"
+      ignore_missing: true
+
+  - set:
+      tag: set_ticura_feed_ingest_timestamp
+      field: ticura.indicator.feed_ingest_timestamp
+      value: "{{{_ingest.timestamp}}}"
+
+  # Activity classification for filtering and Elastic Security UI grouping.
+  - set:
+      tag: set_event_action
+      field: event.action
+      value: indicator-update
+      override: false
+
+  # ----- @timestamp from event time -----
+  # ECS @timestamp must represent when the indicator was last relevant in the
+  # wild. Order of preference:
+  #   1. threat.indicator.last_seen — most ECS-semantic-correct (most-recent observation)
+  #   2. threat.indicator.first_seen — fallback when last_seen is missing
+  # We deliberately do NOT fall back to threat.indicator.modified_at: Ticura
+  # assigns modified_at per scoring-batch (all indicators in one poll share the
+  # same value), which gives Discover a useless single-spike time distribution.
+  # If neither last_seen nor first_seen is present, @timestamp keeps the
+  # Filebeat-supplied ingest time as a last resort.
+  - date:
+      tag: date_threat_indicator_last_seen
+      field: threat.indicator.last_seen
+      target_field: '@timestamp'
+      formats: ['ISO8601']
+      if: ctx.threat?.indicator?.last_seen != null
+      ignore_failure: true
+  - date:
+      tag: date_threat_indicator_first_seen
+      field: threat.indicator.first_seen
+      target_field: '@timestamp'
+      formats: ['ISO8601']
+      if: ctx.threat?.indicator?.last_seen == null && ctx.threat?.indicator?.first_seen != null
+      ignore_failure: true
+
+  # ----- Document-level provenance -----
+  # Document provenance. event.module and event.dataset are declared as
+  # constant_keyword fields in base-fields.yml (stored once in the mapping, not
+  # stamped on every document); event.provider and observer.* are set here.
+  - set:
+      tag: set_event_provider
+      field: event.provider
+      value: Ticura
+      override: false
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Ticura
+      override: false
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Ticura
+      override: false
+
+  # ----- ECS canonical severity -----
+  # Mirror Ticura's 0-100 risk score into event.severity. ECS does not constrain
+  # event.severity to a fixed range, so the 0-100 scale is kept as-is. override: false
+  # so a value the source already supplied in the ECS namespace wins; ignore_empty_value
+  # skips when risk is absent.
+  - set:
+      tag: set_event_severity
+      field: event.severity
+      copy_from: ticura.indicator.risk
+      override: false
+      ignore_empty_value: true
+
+  # ----- MITRE ATT&CK: Ticura namespace -> ECS canonical fields -----
+  # Mirror with override: false so values Ticura already wrote into the ECS
+  # namespace are never replaced. The ticura.indicator.* fields are preserved as-is,
+  # giving customers a per-field provenance signal (see README).
+  - set:
+      tag: set_threat_technique_id
+      field: threat.technique.id
+      copy_from: ticura.indicator.technique.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_technique_name
+      field: threat.technique.name
+      copy_from: ticura.indicator.technique.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_technique_reference
+      field: threat.technique.reference
+      copy_from: ticura.indicator.technique.reference
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_technique_subtechnique_id
+      field: threat.technique.subtechnique.id
+      copy_from: ticura.indicator.technique.subtechnique.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_technique_subtechnique_name
+      field: threat.technique.subtechnique.name
+      copy_from: ticura.indicator.technique.subtechnique.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_technique_subtechnique_reference
+      field: threat.technique.subtechnique.reference
+      copy_from: ticura.indicator.technique.subtechnique.reference
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_software_id
+      field: threat.software.id
+      copy_from: ticura.indicator.software.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_software_name
+      field: threat.software.name
+      copy_from: ticura.indicator.software.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_software_type
+      field: threat.software.type
+      copy_from: ticura.indicator.software.type
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_software_platforms
+      field: threat.software.platforms
+      copy_from: ticura.indicator.software.platforms
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_software_alias
+      field: threat.software.alias
+      copy_from: ticura.indicator.software.alias
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_software_reference
+      field: threat.software.reference
+      copy_from: ticura.indicator.software.reference
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_group_id
+      field: threat.group.id
+      copy_from: ticura.indicator.group.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_group_name
+      field: threat.group.name
+      copy_from: ticura.indicator.group.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_group_reference
+      field: threat.group.reference
+      copy_from: ticura.indicator.group.reference
+      override: false
+      ignore_empty_value: true
+
+  # ----- Hash indicator: fall back to sub_type when source omits the hash field -----
+  # Ticura usually sets threat.indicator.file.hash.{sha256,md5} directly, but
+  # when only threat.indicator.name (= the hash string) is present, derive the
+  # ECS field from the sub_type. override: false so source-supplied hashes win.
+  # Runs BEFORE the related.hash appends so the derived hash reaches related.hash.
+  - set:
+      tag: set_threat_indicator_file_hash_sha256
+      field: threat.indicator.file.hash.sha256
+      copy_from: threat.indicator.name
+      override: false
+      if: ctx.ticura?.indicator?.sub_type == 'HASHSHA256' && ctx.threat?.indicator?.name != null
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_hash_md5
+      field: threat.indicator.file.hash.md5
+      copy_from: threat.indicator.name
+      override: false
+      if: ctx.ticura?.indicator?.sub_type == 'HASHMD5' && ctx.threat?.indicator?.name != null
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_hash_sha1
+      field: threat.indicator.file.hash.sha1
+      copy_from: threat.indicator.name
+      override: false
+      if: ctx.ticura?.indicator?.sub_type == 'HASHSHA1' && ctx.threat?.indicator?.name != null
+      ignore_empty_value: true
+
+  # ----- Populate ECS related.* correlation fields -----
+  # related.* arrays let analysts, Discover searches, and Indicator Match rules
+  # pivot on an IP/hash/host without knowing which specific threat.indicator.*
+  # field holds it. Each append is guarded to the matching indicator type and
+  # de-duplicated.
+  - append:
+      field: related.ip
+      tag: append_threat_indicator_ip_to_related_ip
+      value: "{{{threat.indicator.ip}}}"
+      if: ctx.threat?.indicator?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_threat_indicator_sha256_to_related_hash
+      value: "{{{threat.indicator.file.hash.sha256}}}"
+      if: ctx.threat?.indicator?.file?.hash?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_threat_indicator_sha1_to_related_hash
+      value: "{{{threat.indicator.file.hash.sha1}}}"
+      if: ctx.threat?.indicator?.file?.hash?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_threat_indicator_md5_to_related_hash
+      value: "{{{threat.indicator.file.hash.md5}}}"
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_threat_indicator_domain_to_related_hosts
+      value: "{{{threat.indicator.url.domain}}}"
+      if: ctx.threat?.indicator?.url?.domain != null
+      allow_duplicates: false
+
+  # ----- IP indicator: GeoIP + ASN enrichment -----
+  # Uses the GeoLite2 databases bundled with Elasticsearch (no external calls).
+  # Both processors are conditional on threat.indicator.ip so domain/URL/hash
+  # indicators skip them, and on the target being absent so a value Ticura already
+  # supplied in the ECS namespace wins (override: false intent — the ECSV1 feed
+  # delivers threat.indicator.as for resolved IPs). Failures are tolerated (e.g.,
+  # private/test IPs).
+  - geoip:
+      tag: geoip_geo
+      field: threat.indicator.ip
+      target_field: threat.indicator.geo
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.geo == null
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: threat.indicator.geo
+            ignore_missing: true
+  - geoip:
+      tag: geoip_as
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties: [asn, organization_name]
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.as == null
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: threat.indicator.as
+            ignore_missing: true
+  # Rename GeoLite2-ASN raw fields to ECS-canonical names.
+  - rename:
+      tag: rename_threat_indicator_as_number
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_threat_indicator_as_organization_name
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
+
+
+  - script:
+      tag: painless_merge_enrichment
+      description: Merge the ticura and additional_info country/industry/actor lists into deduplicated, sorted merged.* arrays.
+      lang: painless
+      source: |
+        if (ctx.ticura.indicator.merged == null || !(ctx.ticura.indicator.merged instanceof Map)) {
+            ctx.ticura.indicator.merged = [:];
+        }
+
+        List mergedCountries = [];
+        if (ctx.ticura?.indicator?.countries != null) {
+            if (ctx.ticura.indicator.countries instanceof List) {
+                mergedCountries.addAll(ctx.ticura.indicator.countries);
+            } else {
+                mergedCountries.add(ctx.ticura.indicator.countries);
+            }
+        }
+        if (ctx.ticura?.indicator?.additional_info?.countries != null) {
+            if (ctx.ticura.indicator.additional_info.countries instanceof List) {
+                mergedCountries.addAll(ctx.ticura.indicator.additional_info.countries);
+            } else {
+                mergedCountries.add(ctx.ticura.indicator.additional_info.countries);
+            }
+        }
+        ctx.ticura.indicator.merged.countries = new ArrayList(new HashSet(mergedCountries));
+        ctx.ticura.indicator.merged.countries.sort(null);
+
+        List mergedIndustries = [];
+        if (ctx.ticura?.indicator?.industries != null) {
+            if (ctx.ticura.indicator.industries instanceof List) {
+                mergedIndustries.addAll(ctx.ticura.indicator.industries);
+            } else {
+                mergedIndustries.add(ctx.ticura.indicator.industries);
+            }
+        }
+        if (ctx.ticura?.indicator?.additional_info?.industries != null) {
+            if (ctx.ticura.indicator.additional_info.industries instanceof List) {
+                mergedIndustries.addAll(ctx.ticura.indicator.additional_info.industries);
+            } else {
+                mergedIndustries.add(ctx.ticura.indicator.additional_info.industries);
+            }
+        }
+        ctx.ticura.indicator.merged.industries = new ArrayList(new HashSet(mergedIndustries));
+        ctx.ticura.indicator.merged.industries.sort(null);
+
+        List mergedActors = [];
+        if (ctx.ticura?.indicator?.actors != null) {
+            if (ctx.ticura.indicator.actors instanceof List) {
+                mergedActors.addAll(ctx.ticura.indicator.actors);
+            } else {
+                mergedActors.add(ctx.ticura.indicator.actors);
+            }
+        }
+        if (ctx.ticura?.indicator?.additional_info?.actors != null) {
+            if (ctx.ticura.indicator.additional_info.actors instanceof List) {
+                mergedActors.addAll(ctx.ticura.indicator.additional_info.actors);
+            } else {
+                mergedActors.add(ctx.ticura.indicator.additional_info.actors);
+            }
+        }
+        ctx.ticura.indicator.merged.actors = new ArrayList(new HashSet(mergedActors));
+        ctx.ticura.indicator.merged.actors.sort(null);
+      ignore_failure: true
+
+  # ----- Cleanup: drop empty strings/arrays/maps left by conditional enrichment -----
+  - script:
+      tag: remove_empty_fields
+      description: Recursively remove empty strings, arrays, and maps so indexed indicators stay clean.
+      lang: painless
+      ignore_failure: true
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) { handleMap((Map) v); return ((Map) v).isEmpty(); }
+            else if (v instanceof List) { handleList((List) v); return ((List) v).isEmpty(); }
+            else if (v instanceof String) { return ((String) v).isEmpty(); }
+            return v == null;
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) { handleMap((Map) v); return ((Map) v).isEmpty(); }
+            else if (v instanceof List) { handleList((List) v); return ((List) v).isEmpty(); }
+            else if (v instanceof String) { return ((String) v).isEmpty(); }
+            return v == null;
+          });
+        }
+        handleMap(ctx);
+
+  # If an earlier processor's on_failure recorded an error.message without aborting
+  # the pipeline, flag the document as a pipeline error and keep its original copy
+  # (mirrors the top-level on_failure below).
+  - set:
+      tag: set_event_kind_pipeline_error
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_3
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error
+  # Fleet's final pipeline strips event.original unless the preserve_original_event
+  # tag is present at end of ingest; re-add it so an errored document keeps its raw
+  # copy when the user enabled preserve_original_event.
+  - append:
+      tag: append_preserve_original_event_tag_2
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
