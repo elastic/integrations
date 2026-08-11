@@ -123,9 +123,6 @@ An example event for `system` looks as following:
     "log": {
         "level": "info"
     },
-    "network": {
-        "name": "null"
-    },
     "okta": {
         "actor": {
             "alternate_id": "xxxxxx@elastic.co",
@@ -143,7 +140,8 @@ An example event for `system` looks as following:
                 "browser": "FIREFOX",
                 "os": "Mac OS X",
                 "raw_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0"
-            }
+            },
+            "zone": "null"
         },
         "debug_context": {
             "debug_data": {
@@ -293,7 +291,7 @@ An example event for `system` looks as following:
 | okta.client.user_agent.os | The OS informaton. | keyword |
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.user_agent.raw_user_agent.text | Multi-field of `okta.client.user_agent.raw_user_agent`. | match_only_text |
-| okta.client.zone | The Okta network zone the client request matched, as configured under Security \> Networks. Requests that match no configured zone carry the literal string "null" rather than omitting the field, so filter on that value rather than on the field's absence. Deprecated. Use the ECS `network.name` field. | alias |
+| okta.client.zone | The Okta network zone the client request matched, as configured under Security \> Networks. Requests that match no configured zone carry the literal string "null" rather than omitting the field, so filter on that value rather than on the field's absence. Also available as `network.name`, which omits the "null" sentinel. | keyword |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
 | okta.debug_context.debug_data.behaviors |  | keyword |

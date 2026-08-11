@@ -377,9 +377,18 @@ processors:
   - rename:
       tag: rename_zone
       field: json.client.zone
-      target_field: network.name
+      target_field: okta.client.zone
       ignore_missing: true
       ignore_failure: true
+  - set:
+      tag: set_network_name
+      field: network.name
+      copy_from: okta.client.zone
+      ignore_empty_value: true
+      if: ctx.okta?.client?.zone != "null"
+      description: >-
+        The Okta network zone the client request matched. Requests matching no
+        configured zone report the literal string "null", which is not copied.
   - rename:
       tag: rename_reason
       field: json.outcome.reason
