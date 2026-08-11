@@ -137,6 +137,7 @@ The `alert` data stream provides threat intelligence alerts from Resecurity RISK
 | resecurity_risk.alert.updated_at | Timestamp the alert was last updated. | date |
 | tags | List of keywords used to tag each event. | keyword |
 
+
 An example event for `alert` looks as following:
 
 ```json
@@ -266,6 +267,7 @@ The `ioc` data stream provides indicators of compromise from Resecurity RISK.
 | resecurity_risk.ioc.update_date | Timestamp the IOC was last updated. | date |
 | tags | List of keywords used to tag each event. | keyword |
 
+
 An example event for `ioc` looks as following:
 
 ```json
@@ -359,6 +361,7 @@ The `ioc_lookup` data stream provides the result of looking up each configured h
 | resecurity_risk.ioc.sha256 | SHA-256 hash of the observed file. | keyword |
 | resecurity_risk.ioc.update_date | Timestamp the IOC was last updated. | date |
 | tags | List of keywords used to tag each event. | keyword |
+
 
 An example event for `ioc_lookup` looks as following:
 
@@ -464,6 +467,7 @@ The `breach` data stream provides leaked-credential records and their breach sou
 | resecurity_risk.breach.username | Leaked username. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
+
 
 An example event for `breach` looks as following:
 
@@ -585,6 +589,7 @@ The `dark_web` data stream provides dark web and underground forum posts from Re
 | resecurity_risk.dark_web.url | URL of the post, if available. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
+
 An example event for `dark_web` looks as following:
 
 ```json
@@ -649,6 +654,7 @@ To collect logs via API endpoint, configure the following parameters:
 - API credentials (tokens, keys, or username/password)
 - Request interval (how often to fetch data)
 </details>
+
 
 ### API usage
 
