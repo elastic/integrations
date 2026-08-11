@@ -1,0 +1,107 @@
+resource.url: {{resource_url}}
+resource.timeout: {{resource_timeout}}
+interval: {{resource_interval}}
+secret_state:
+  api_key: {{api_key}}
+state:
+  date: "{{resource_date}}"
+redact:
+  fields: ~
+program: |
+  request(
+      "GET",
+      state.url + "?" + {
+          "whois": ["true"],
+          "apiKey": [state.secret.api_key],
+          ?"date": state.date != "" ? optional.of([state.date]) : optional.none(),
+      }.format_query()
+  ).do_request().as(resp,
+      resp.StatusCode != 200 ?
+          {
+              "events": [{
+                  "error": {
+                      "code": string(resp.StatusCode),
+                      "message": "WhoisFreaks request failed with status " + string(resp.StatusCode) +
+                          ": " + string(resp.Body),
+                  },
+              }],
+              "url": state.url,
+              "secret": state.secret,
+              "date": state.date,
+          }
+      :
+          resp.Body.mime("application/gzip").mime("text/csv; header=present").as(rows, {
+              "events": rows.map(row, {
+                  "whoisfreaks": {
+                      "num": int(row.num),
+                      "domain_name": row.domain_name,
+                      "query_time": row.query_time,
+                      "create_date": row.create_date,
+                      "update_date": row.update_date,
+                      "expiry_date": row.expiry_date,
+                      "domain_registrar_id": row.domain_registrar_id,
+                      "domain_registrar_name": row.domain_registrar_name,
+                      "domain_registrar_whois": row.domain_registrar_whois,
+                      "domain_registrar_url": row.domain_registrar_url,
+                      "registrant_name": row.registrant_name,
+                      "registrant_company": row.registrant_company,
+                      "registrant_address": row.registrant_address,
+                      "registrant_city": row.registrant_city,
+                      "registrant_state": row.registrant_state,
+                      "registrant_zip": row.registrant_zip,
+                      "registrant_country_code": row.registrant_country_code,
+                      "registrant_country": row.registrant_country,
+                      "registrant_email": row.registrant_email,
+                      "registrant_phone": row.registrant_phone,
+                      "registrant_fax": row.registrant_fax,
+                      "administrative_name": row.administrative_name,
+                      "administrative_company": row.administrative_company,
+                      "administrative_address": row.administrative_address,
+                      "administrative_city": row.administrative_city,
+                      "administrative_state": row.administrative_state,
+                      "administrative_zip": row.administrative_zip,
+                      "administrative_country_code": row.administrative_country_code,
+                      "administrative_country": row.administrative_country,
+                      "administrative_email": row.administrative_email,
+                      "administrative_phone": row.administrative_phone,
+                      "administrative_fax": row.administrative_fax,
+                      "technical_name": row.technical_name,
+                      "technical_company": row.technical_company,
+                      "technical_address": row.technical_address,
+                      "technical_city": row.technical_city,
+                      "technical_state": row.technical_state,
+                      "technical_zip": row.technical_zip,
+                      "technical_country_code": row.technical_country_code,
+                      "technical_country": row.technical_country,
+                      "technical_email": row.technical_email,
+                      "technical_phone": row.technical_phone,
+                      "technical_fax": row.technical_fax,
+                      "billing_name": row.billing_name,
+                      "billing_company": row.billing_company,
+                      "billing_address": row.billing_address,
+                      "billing_city": row.billing_city,
+                      "billing_state": row.billing_state,
+                      "billing_zip": row.billing_zip,
+                      "billing_country_code": row.billing_country_code,
+                      "billing_country": row.billing_country,
+                      "billing_email": row.billing_email,
+                      "billing_phone": row.billing_phone,
+                      "billing_fax": row.billing_fax,
+                      "name_server_1": row.name_server_1,
+                      "name_server_2": row.name_server_2,
+                      "name_server_3": row.name_server_3,
+                      "name_server_4": row.name_server_4,
+                      "domain_status_1": row.domain_status_1,
+                      "domain_status_2": row.domain_status_2,
+                      "domain_status_3": row.domain_status_3,
+                      "domain_status_4": row.domain_status_4,
+                      "reseller_name": row.reseller_name,
+                      "reseller_email": row.reseller_email,
+                      "reseller_phone": row.reseller_phone,
+                  },
+              }),
+              "url": state.url,
+              "secret": state.secret,
+              "date": state.date,
+          })
+  )

@@ -1,0 +1,64 @@
+title: "WHOIS"
+type: logs
+streams:
+  - input: cel
+    title: "WhoisFreaks Domainer WHOIS (gTLD) via CEL"
+    description: |-
+      Collect the daily WhoisFreaks gTLD domainer WHOIS CSV feed via the CEL input.
+    template_path: cel.yml.hbs
+    vars:
+      - name: resource_url
+        type: text
+        title: "Resource URL"
+        description: |-
+          The base HTTPS URL of the WhoisFreaks gTLD domainer download endpoint,
+          without any query parameters (no apiKey, whois, or date). The input
+          builds the query string itself.
+        required: true
+        show_user: true
+        default: https://files.whoisfreaks.com/v3.1/download/domainer/gtld
+      - name: api_key
+        type: password
+        secret: true
+        title: "API Key"
+        description: |-
+          Your WhoisFreaks API Key, from the WhoisFreaks billing dashboard. This
+          is sent as the `apiKey` query parameter on every request, per WhoisFreaks'
+          authentication scheme (WhoisFreaks does not use header-based auth).
+        required: true
+        show_user: true
+      - name: resource_date
+        type: text
+        title: "File Date (optional)"
+        description: |-
+          Specific file date to download, format yyyy-MM-dd (e.g. 2026-08-10).
+          Leave empty to always fetch the most recently published file, which
+          is the recommended setting for a recurring poll.
+        required: false
+        show_user: true
+        default: ""
+      - name: resource_interval
+        type: text
+        title: "Resource Interval"
+        description: |-
+          How often the API is polled. WhoisFreaks publishes current-day gTLD
+          files by 17:00 UTC, so polling more often than once a day will
+          re-download the same file (harmless: ingestion is deduplicated).
+          Supports seconds, minutes and hours.
+        required: true
+        show_user: true
+        default: 24h
+      - name: resource_timeout
+        type: text
+        title: "Request Timeout"
+        description: |-
+          Timeout for downloading the CSV.gz file. The bulk gTLD file can be
+          large, so this is set higher than the 30s default.
+        required: false
+        show_user: false
+        default: 5m
+
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
