@@ -144,16 +144,6 @@ processors:
     target_field: zoom.phone.callee.number_type
     ignore_missing: true
 - rename:
-    tag: rename_zoom_phone_callee_user_id_to_zoom_phone_callee_user_id_1d5f957b
-    field: zoom.phone.callee_user_id
-    target_field: zoom.phone.callee.user_id
-    ignore_missing: true
-- rename:
-    tag: rename_zoom_phone_callee_extension_type_to_zoom_phone_callee_extension_type_ad5f4941
-    field: zoom.phone.callee_extension_type
-    target_field: zoom.phone.callee.extension_type
-    ignore_missing: true
-- rename:
     tag: rename_zoom_phone_caller_id_to_zoom_phone_caller_id_b945a761
     field: zoom.phone.caller_id
     target_field: zoom.phone.caller.id
@@ -208,12 +198,15 @@ processors:
     ignore_empty_value: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

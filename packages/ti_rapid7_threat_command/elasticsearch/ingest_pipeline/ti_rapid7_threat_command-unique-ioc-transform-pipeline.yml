@@ -2,6 +2,7 @@
 description: Pipeline for processing unique IOCs
 processors:
   - script:
+      tag: script
       lang: painless
       description: This script processor creates threat.indicator.description field.
       if: ctx.rapid7?.tc?.ioc != null;
@@ -26,6 +27,7 @@ processors:
         ctx.threat.indicator.description = String.join('|', fields);
       ignore_failure: true
   - script:
+      tag: script_0c53762a
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: >
@@ -45,12 +47,15 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

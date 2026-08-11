@@ -17,7 +17,7 @@ processors:
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_event_type_e8d102b8
+      tag: set_event_type_e8d102b8
       value: denied
       allow_duplicates: false
       if: ctx.trendmicro?.deep_security?.signature_id != null && ctx.trendmicro.deep_security.signature_id != 6002100 && ctx.trendmicro.deep_security.signature_id != 6002200
@@ -35,12 +35,15 @@ processors:
       if: ctx.trendmicro?.deep_security?.extensions?.device?.custom_string3?.value != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

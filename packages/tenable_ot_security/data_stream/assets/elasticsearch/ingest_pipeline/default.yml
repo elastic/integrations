@@ -170,6 +170,7 @@ processors:
       if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
       processor:
         append:
+          tag: append_related_hosts
           field: related.hosts
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
@@ -180,6 +181,7 @@ processors:
       if: ctx.tenable_ot_security.assets.direct_macs instanceof List && ctx.tenable_ot_security.assets.direct_macs.length > 0
       processor:
         append:
+          tag: append_related_hosts_65dccd4e
           field: related.hosts
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
@@ -192,6 +194,7 @@ processors:
       if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
       processor:
         convert:
+          tag: convert_ingest_value
           field: _ingest._value
           type: ip
           ignore_missing: true
@@ -202,6 +205,7 @@ processors:
       if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
       processor:
         append:
+          tag: append_host_ip
           field: host.ip
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
@@ -217,13 +221,16 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
 
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

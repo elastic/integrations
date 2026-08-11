@@ -75,6 +75,7 @@ processors:
       ignore_missing: true
       processor:
         set:
+          tag: set_zeronetworks_audit_destinationEntitiesList_name
           field: zeronetworks.audit.destinationEntitiesList.name
           value: '{{{_ingest._value.name}}}'
   - foreach:
@@ -83,6 +84,7 @@ processors:
       ignore_missing: true
       processor:
         set:
+          tag: set_zeronetworks_audit_destinationEntitiesList_id
           field: zeronetworks.audit.destinationEntitiesList.id
           value: '{{{_ingest._value.id}}}'
   - json:
@@ -115,7 +117,7 @@ processors:
       copy_from: event.id
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization
       params:
         ## Audit Types
         "1":
@@ -1163,12 +1165,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

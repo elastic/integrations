@@ -380,7 +380,7 @@ processors:
       allow_duplicates: false
   - append:
       field: gti.linux.attributes.top_level_domain
-      tag: append_gti_linux_attributes_top_level_domain_f0c53368
+      tag: append_data_attributes_vhash_into_related_hash_f0c53368
       value: '{{{json.data.attributes.tld}}}'
       if: ctx.json?.data?.attributes?.tld instanceof String
   - rename:
@@ -446,7 +446,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.type
-      tag: rename_json_data_type_to_gti_linux_type_fb3b4598
+      tag: rename_data_type_fb3b4598
       target_field: gti.linux.type
       ignore_missing: true
   - script:
@@ -612,6 +612,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -622,6 +623,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

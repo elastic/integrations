@@ -311,6 +311,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline
           name: '{{ IngestPipeline "indicator-asn" }}'
   - foreach:
       tag: foreach_threat_indicator_as_number_cf4eaae5
@@ -318,6 +319,7 @@ processors:
       ignore_missing: true
       processor:
         convert:
+          tag: convert_ingest_value
           field: _ingest._value
           type: integer
           ignore_missing: true
@@ -329,6 +331,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_4822c7b8
           name: '{{ IngestPipeline "indicator-domain-name" }}'
 
   - foreach:
@@ -338,6 +341,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_f4a3b312
           name: '{{ IngestPipeline "indicator-email" }}'
 
   - foreach:
@@ -347,6 +351,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_8b39669a
           name: '{{ IngestPipeline "indicator-file" }}'
 
   - foreach:
@@ -356,6 +361,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_308d92ae
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
@@ -365,6 +371,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_dc220995
           name: '{{ IngestPipeline "indicator-url" }}'
 
   - foreach:
@@ -374,6 +381,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_24bdc58d
           name: '{{ IngestPipeline "indicator-windows-registry" }}'
 
   - foreach:
@@ -383,6 +391,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_a75a5350
           name: '{{ IngestPipeline "indicator-x509" }}'
 
   - remove:
@@ -437,13 +446,16 @@ processors:
         drop(ctx);
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_ac363fc2
       field: tags
       value: preserve_original_event
       allow_duplicates: false

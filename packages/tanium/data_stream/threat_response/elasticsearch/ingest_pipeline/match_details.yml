@@ -156,6 +156,7 @@ processors:
             - UNIX_MS
           on_failure:
             - append:
+                tag: append_error_message_4223b377
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
@@ -205,6 +206,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline
           name: '{{ IngestPipeline "match_details_whats" }}'
 
   - set:
@@ -250,6 +252,7 @@ on_failure:
         in pipeline "{{{ _ingest.on_failure_pipeline }}}"
         failed with message "{{{ _ingest.on_failure_message }}}"
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -23,9 +23,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -65,15 +67,17 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_gateway_ip
                 field: _ingest._value.gateway_ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_164abdcf
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_ses_device_networks_2c7a3ac0
+      tag: foreach_device_networks_gateway_2c7a3ac0
       processor:
         append:
           field: related.ip
@@ -93,9 +97,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ipv4
                 field: _ingest._value.ipv4
                 ignore_missing: true
             - append:
+                tag: append_error_message_36749599
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -111,7 +117,7 @@ processors:
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_ses_device_networks_1f116e3d
+      tag: foreach_device_networks_ipv4_1f116e3d
       processor:
         append:
           field: related.ip
@@ -131,15 +137,17 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ipv6
                 field: _ingest._value.ipv6
                 ignore_missing: true
             - append:
+                tag: append_error_message_b692a605
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_ses_device_networks_140d82a3
+      tag: foreach_device_networks_ipv6_140d82a3
       processor:
         append:
           field: related.ip
@@ -159,9 +167,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_public
                 field: _ingest._value.is_public
                 ignore_missing: true
             - append:
+                tag: append_error_message_f0b1e5d3
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -212,9 +222,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_rep_score_id
                 field: _ingest._value.rep_score_id
                 ignore_missing: true
             - append:
+                tag: append_error_message_b2a9d559
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -229,9 +241,11 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_type_id
                 field: _ingest._value.type_id
                 ignore_missing: true
             - append:
+                tag: append_error_message_0bb574ce
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -245,6 +259,7 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
   - append:
+      tag: append_error_message_3278b90b
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -252,6 +267,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

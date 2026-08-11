@@ -16,7 +16,7 @@ processors:
         )
   - append:
       field: event.type
-      tag: append_event_type_3ebdc42a
+      tag: append_event_type_sys_user_group_member_3ebdc42a
       value: user
       if: ctx.servicenow?.event?.table_name == 'sys_user'
   - append:
@@ -217,7 +217,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login.display_value
-      tag: date_servicenow_event_last_login_display_value_to_servicenow_event_last_login_display_value_fbab9d75
+      tag: date_last_login_display_value_fbab9d75
       target_field: servicenow.event.last_login.display_value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -279,7 +279,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login.value
-      tag: date_servicenow_event_last_login_value_to_servicenow_event_last_login_value_c5b78d6c
+      tag: date_last_login_value_c5b78d6c
       target_field: servicenow.event.last_login.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -341,7 +341,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login_time.display_value
-      tag: date_servicenow_event_last_login_time_display_value_to_servicenow_event_last_login_time_display_value_76fd858f
+      tag: date_last_login_time_display_value_76fd858f
       target_field: servicenow.event.last_login_time.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -404,7 +404,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login_time.value
-      tag: date_servicenow_event_last_login_time_value_to_servicenow_event_last_login_time_value_4587082e
+      tag: date_last_login_time_value_4587082e
       target_field: servicenow.event.last_login_time.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -608,6 +608,7 @@ processors:
       if: ctx.servicenow?.event?.middle_name?.display_value != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -620,6 +621,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -506,13 +506,13 @@ processors:
       ignore_failure: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_11d9b7da
+      tag: set_network_iana_number_if_network_transport_is_tcp_11d9b7da
       value: '17'
       if: ctx.network?.transport == 'udp'
       ignore_failure: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_66e4924b
+      tag: set_network_iana_number_if_network_transport_is_tcp_66e4924b
       value: '1'
       if: ctx.network?.transport == 'icmp'
       ignore_failure: true
@@ -795,6 +795,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -802,6 +803,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

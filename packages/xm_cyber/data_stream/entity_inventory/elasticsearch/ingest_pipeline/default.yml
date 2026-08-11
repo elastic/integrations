@@ -1974,6 +1974,7 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.tags_str != null
       processor:
         append:
+          tag: append_tags
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -1986,6 +1987,7 @@ processors:
       if: ctx.host?.ip != null
       processor:
         append:
+          tag: append_related_ip
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -1996,6 +1998,7 @@ processors:
       if: ctx.host?.mac != null
       processor:
         append:
+          tag: append_related_hosts
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -2152,7 +2155,7 @@ on_failure:
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_d879010c
       field: event.kind
       value: pipeline_error
   - append:

@@ -15,6 +15,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Retain event.dataset and event.module from the matched source index in temp_fields,
@@ -22,12 +23,12 @@ processors:
 # and are essential for navigating to the corresponding document.
   - rename:
       field: event.dataset
-      tag : keep_event_dataset_from_alert
+      tag: keep_event_dataset_from_alert
       target_field: temp_fields.dataset
       ignore_missing: true
   - rename:
       field: event.module
-      tag : keep_event_module_from_alert
+      tag: keep_event_module_from_alert
       target_field: temp_fields.module
       ignore_missing: true
   - script:
@@ -49,6 +50,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c0d3e94f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Define hardcoded values required for processing.
@@ -87,27 +89,27 @@ processors:
 # Extract relevant fields from temp_fields and map them to threat.indicator.
   - rename:
       field: temp_fields.indicator
-      tag : rename_temp_fields_to_indicator
+      tag: rename_temp_fields_to_indicator
       target_field: gti.threat.indicator
       ignore_missing: true
   - rename:
       field: temp_fields.matched.atomic
-      tag : rename_temp_fields_to_matched_value
+      tag: rename_temp_fields_to_matched_value
       target_field: gti.threat.indicator.matched.value
       ignore_missing: true
   - rename:
       field: temp_fields.matched.field
-      tag : rename_temp_fields_to_matched_field
+      tag: rename_temp_fields_to_matched_field
       target_field: gti.threat.indicator.matched.field
       ignore_missing: true
   - rename:
       field: temp_fields.dataset
-      tag : rename_temp_fields_to_matched_field
+      tag: rename_temp_fields_to_matched_field_5908ef1b
       target_field: gti.threat.indicator.matched.dataset
       ignore_missing: true
   - rename:
       field: temp_fields.module
-      tag : rename_temp_fields_to_matched_field
+      tag: rename_temp_fields_to_matched_field_a2b52235
       target_field: gti.threat.indicator.matched.module
       ignore_missing: true
 # Set threat.indicator ECS fields.
@@ -137,6 +139,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5e0a60ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -205,6 +208,7 @@ processors:
         ctx.threat.indicator.type = params[ctx.gti.threat.indicator.type];
       on_failure:
         - append:
+            tag: append_error_message_ef7886b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Create ECS-compliant mappings for threat.indicator fields.
@@ -345,6 +349,7 @@ processors:
       copy_from: gti.threat.indicator.attributes.meaningful_name
       ignore_empty_value: true
   - foreach:
+      tag: foreach_gti_threat_indicator_attributes_names
       field: gti.threat.indicator.attributes.names
       if: ctx.gti?.threat?.indicator?.attributes?.names instanceof List
       processor:
@@ -417,6 +422,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_d026de35
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -427,6 +433,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

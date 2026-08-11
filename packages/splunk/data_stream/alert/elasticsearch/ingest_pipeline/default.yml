@@ -128,6 +128,7 @@ processors:
             - epoch_second
           on_failure:
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
                 ignore_missing: true
   - date:
@@ -197,7 +198,7 @@ processors:
       processor:
         date:
           field: _ingest._value
-          tag: date_Time
+          tag: date_Time_10e764c1
           target_field: _ingest._value
           formats:
             - MM/dd/yy HH:mm:ss
@@ -206,11 +207,12 @@ processors:
             - epoch_second
           on_failure:
             - remove:
+                tag: remove_ingest_value_e0981122
                 field: _ingest._value
                 ignore_missing: true
   - date:
       field: splunk.alert.Time
-      tag: date_Time
+      tag: date_Time_7ce87b50
       target_field: splunk.alert.Time
       formats:
         - MM/dd/yy HH:mm:ss
@@ -774,7 +776,7 @@ processors:
       processor:
         date:
           field: _ingest._value
-          tag: date_Time
+          tag: date_Time_c4f24f99
           target_field: _ingest._value
           formats:
             - MM/dd/yy HH:mm:ss
@@ -784,6 +786,7 @@ processors:
             - epoch_second
           on_failure:
             - remove:
+                tag: remove_ingest_value_f7c79e41
                 field: _ingest._value
                 ignore_missing: true
   - date:
@@ -1053,15 +1056,17 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_5a4569c4
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: splunk.alert.infected_hosts
       if: ctx.splunk?.alert?.infected_hosts instanceof List
-      tag: foreach_splunk_alert_infected_hosts_ea3121d1
+      tag: foreach_infected_hosts_ea3121d1
       processor:
         append:
           field: related.hosts
@@ -1088,7 +1093,7 @@ processors:
       processor:
         date:
           field: _ingest._value
-          tag: date_Time
+          tag: date_Time_7ccbb8b7
           target_field: _ingest._value
           formats:
             - MM/dd/yy HH:mm:ss
@@ -1097,6 +1102,7 @@ processors:
             - epoch_second
           on_failure:
             - remove:
+                tag: remove_ingest_value_2c293c52
                 field: _ingest._value
                 ignore_missing: true
   - date:
@@ -1116,11 +1122,11 @@ processors:
   - foreach:
       field: splunk.alert.info_min_time
       if: ctx.splunk?.alert?.info_min_time instanceof List
-      tag: foreach_splunk_alert_info_min_time_b4b38c56
+      tag: foreach_alert_info_min_Time_b4b38c56
       processor:
         date:
           field: _ingest._value
-          tag: date_Time
+          tag: date_Time_375951f4
           target_field: _ingest._value
           formats:
             - MM/dd/yy HH:mm:ss
@@ -1129,6 +1135,7 @@ processors:
             - epoch_second
           on_failure:
             - remove:
+                tag: remove_ingest_value_3e13271f
                 field: _ingest._value
                 ignore_missing: true
   - date:
@@ -1624,7 +1631,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: script_5330c403
+      tag: set_event_severity_5330c403
       if: ctx.splunk?.alert?.event?.SeverityName instanceof String && ctx.event?.severity == null
       source: |-
         def severity = ctx.splunk.alert.event.SeverityName.toLowerCase();
@@ -1886,7 +1893,7 @@ processors:
             field: splunk.alert.srcport
   - date:
       field: splunk.alert._time
-      tag: date_splunk_alert__time_to_splunk_alert__time_535b41ce
+      tag: date_time_535b41ce
       target_field: splunk.alert._time
       formats:
         - ISO8601
@@ -2126,12 +2133,6 @@ processors:
       value: '{{{splunk.alert.user_nick}}}'
       allow_duplicates: false
       if: ctx.splunk?.alert?.user_nick instanceof String
-  - append:
-      tag: append_tags_9fe66b2c
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
-      if: ctx.error?.message != null
   - remove:
       field:
         - splunk.alert.annotations.mitre_attack.mitre_tactic
@@ -2219,6 +2220,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_ff8517c4
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -2226,9 +2228,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_f7c8cb60
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

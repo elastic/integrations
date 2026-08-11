@@ -97,7 +97,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.l2ParentId
-      tag: convert_json_attributes_l2ParentId_to_trellix_epo_cloud_group_attributes_l2_parent_id_993a3695
+      tag: convert_parentId_to_string_993a3695
       target_field: trellix_epo_cloud.group.attributes.l2_parent.id
       type: string
       ignore_missing: true
@@ -129,7 +129,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.attributes.parentId
-      tag: convert_json_attributes_parentId_to_trellix_epo_cloud_group_attributes_parent_id_4b4cc6aa
+      tag: convert_parentId_to_string_4b4cc6aa
       target_field: trellix_epo_cloud.group.attributes.parent.id
       type: string
       ignore_missing: true
@@ -218,12 +218,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

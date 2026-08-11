@@ -313,13 +313,16 @@ processors:
       if: ctx.json?.ipv4s instanceof List
       processor:
         convert:
+          tag: convert_ingest_value
           field: _ingest._value
           type: ip
           on_failure:
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -333,6 +336,7 @@ processors:
       if: ctx.tenable_io?.asset?.ipv4s instanceof List
       processor:
         append:
+          tag: append_host_ip
           field: host.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -342,13 +346,16 @@ processors:
       if: ctx.json?.ipv6s instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_e9849c46
           field: _ingest._value
           type: ip
           on_failure:
             - remove:
+                tag: remove_ingest_value_94c9e25e
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_8b1a673e
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -362,6 +369,7 @@ processors:
       if: ctx.tenable_io?.asset?.ipv6s instanceof List
       processor:
         append:
+          tag: append_host_ip_63000419
           field: host.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -396,6 +404,7 @@ processors:
       if: ctx.tenable_io?.asset?.mac_addresses instanceof List
       processor:
         append:
+          tag: append_host_mac
           field: host.mac
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -498,15 +507,18 @@ processors:
       if: ctx.json?.sources instanceof List
       processor:
         date:
+          tag: date_ingest_value_first_seen_to_ingest_value_first_seen
           field: _ingest._value.first_seen
           target_field: _ingest._value.first_seen
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_seen
                 field: _ingest._value.first_seen
                 ignore_missing: true
             - append:
+                tag: append_error_message_b3400c8a
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -515,15 +527,18 @@ processors:
       if: ctx.json?.sources instanceof List
       processor:
         date:
+          tag: date_ingest_value_last_seen_to_ingest_value_last_seen
           field: _ingest._value.last_seen
           target_field: _ingest._value.last_seen
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_seen
                 field: _ingest._value.last_seen
                 ignore_missing: true
             - append:
+                tag: append_error_message_e0fe5726
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -537,15 +552,18 @@ processors:
       if: ctx.json?.tags instanceof List
       processor:
         date:
+          tag: date_ingest_value_added_at_to_ingest_value_added_at
           field: _ingest._value.added_at
           target_field: _ingest._value.added_at
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_added_at
                 field: _ingest._value.added_at
                 ignore_missing: true
             - append:
+                tag: append_error_message_cece211a
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -559,18 +577,22 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_ipv4s
           field: _ingest._value.ipv4s
           ignore_missing: true
           processor:
             convert:
+              tag: convert_ingest_value_959fb9df
               field: _ingest._value
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_b5736ef7
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_0c246ea8
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -579,10 +601,12 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_ipv4s_0f866f0a
           field: _ingest._value.ipv4s
           ignore_missing: true
           processor:
             append:
+              tag: append_related_ip
               field: related.ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -592,18 +616,22 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_ipv6s
           field: _ingest._value.ipv6s
           ignore_missing: true
           processor:
             convert:
+              tag: convert_ingest_value_355adc31
               field: _ingest._value
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_16782546
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_30d56f2a
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -612,10 +640,12 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_ipv6s_dabe158c
           field: _ingest._value.ipv6s
           ignore_missing: true
           processor:
             append:
+              tag: append_related_ip_1aaccea6
               field: related.ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -625,10 +655,12 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_fqdns
           field: _ingest._value.fqdns
           ignore_missing: true
           processor:
             append:
+              tag: append_related_hosts
               field: related.hosts
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -638,14 +670,17 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_aliased
           field: _ingest._value.aliased
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_aliased
                 field: _ingest._value.aliased
                 ignore_missing: true
             - append:
+                tag: append_error_message_13be60b2
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -654,10 +689,12 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_mac_addresses
           field: _ingest._value.mac_addresses
           ignore_missing: true
           processor:
             gsub:
+              tag: gsub_ingest_value
               field: _ingest._value
               pattern: '[:.]'
               replacement: '-'
@@ -668,10 +705,12 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_mac_addresses_779ffcfb
           field: _ingest._value.mac_addresses
           ignore_missing: true
           processor:
             uppercase:
+              tag: uppercase_ingest_value
               field: _ingest._value
               ignore_missing: true
   - foreach:
@@ -680,10 +719,12 @@ processors:
       if: ctx.json?.network_interfaces instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_mac_addresses_c03b2328
           field: _ingest._value.mac_addresses
           ignore_missing: true
           processor:
             append:
+              tag: append_host_mac_a2ab7066
               field: host.mac
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
@@ -855,6 +896,7 @@ processors:
       if: ctx.host?.ip instanceof List
       processor:
         append:
+          tag: append_related_ip_5e5befde
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -864,6 +906,7 @@ processors:
       if: ctx.host?.name instanceof List
       processor:
         append:
+          tag: append_related_hosts_c67cb515
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -873,6 +916,7 @@ processors:
       if: ctx.host?.hostname instanceof List
       processor:
         append:
+          tag: append_related_hosts_37cad94d
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -882,6 +926,7 @@ processors:
       if: ctx.host?.domain instanceof List
       processor:
         append:
+          tag: append_related_hosts_ff6b2bbb
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -943,12 +988,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_a74044c6
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

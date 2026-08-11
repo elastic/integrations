@@ -72,6 +72,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tags
           field: tags
           value: "{{{ _ingest._value }}}"
       if: 'ctx.maltiverse?.tag != null'
@@ -189,12 +190,6 @@ processors:
       target_field: threat.indicator.geo.city_name
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.city != null'
-  - rename:
-      tag: rename_maltiverse_country_code_to_threat_indicator_geo_country_iso_code_028a31fb
-      field: maltiverse.country_code
-      target_field: threat.indicator.geo.country_iso_code
-      ignore_missing: true
-      if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.country_code != null'
   - rename:
       tag: rename_maltiverse_country_code_to_threat_indicator_geo_country_iso_code_028a31fb
       field: maltiverse.country_code
@@ -359,12 +354,15 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_78170f77
       field: tags
       value: preserve_original_event
       allow_duplicates: false

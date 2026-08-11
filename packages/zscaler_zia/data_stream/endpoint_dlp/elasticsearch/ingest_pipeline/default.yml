@@ -147,7 +147,7 @@ processors:
       if: ctx.event?.action != null && ctx.event.action == 'allow'
   - append:
       field: event.type
-      tag: append_event_type_125ce331
+      tag: append_event_action_into_event_type_125ce331
       value: 'denied'
       allow_duplicates: false
       if: ctx.event?.action != null && ctx.event.action == 'block'
@@ -884,6 +884,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -891,6 +892,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

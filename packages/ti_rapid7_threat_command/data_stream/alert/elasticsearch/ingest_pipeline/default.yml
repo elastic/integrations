@@ -194,6 +194,7 @@ processors:
       field: rapid7.tc.alert.assets
       processor:
         rename:
+          tag: rename_ingest_value_Type_to_ingest_value_type
           field: _ingest._value.Type
           target_field: _ingest._value.type
           ignore_missing: true
@@ -203,6 +204,7 @@ processors:
       field: rapid7.tc.alert.assets
       processor:
         rename:
+          tag: rename_ingest_value_Value_to_ingest_value_value
           field: _ingest._value.Value
           target_field: _ingest._value.value
           ignore_missing: true
@@ -212,6 +214,7 @@ processors:
       field: rapid7.tc.alert.details.tags
       processor:
         rename:
+          tag: rename_ingest_value_CreatedBy_to_ingest_value_created_by
           field: _ingest._value.CreatedBy
           target_field: _ingest._value.created_by
           ignore_missing: true
@@ -221,6 +224,7 @@ processors:
       field: rapid7.tc.alert.details.tags
       processor:
         rename:
+          tag: rename_ingest_value_Name_to_ingest_value_name
           field: _ingest._value.Name
           target_field: _ingest._value.name
           ignore_missing: true
@@ -230,6 +234,7 @@ processors:
       field: rapid7.tc.alert.details.tags
       processor:
         rename:
+          tag: rename_ingest_value_id_to_ingest_value_id
           field: _ingest._value._id
           target_field: _ingest._value.id
           ignore_missing: true
@@ -239,6 +244,7 @@ processors:
       field: rapid7.tc.alert.details.tags
       processor:
         append:
+          tag: append_tags
           field: tags
           value: "{{{_ingest._value.name}}}"
           ignore_failure: true
@@ -297,12 +303,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_dad1a2cb
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

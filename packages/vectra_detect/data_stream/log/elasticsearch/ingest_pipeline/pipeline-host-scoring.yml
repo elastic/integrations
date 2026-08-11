@@ -74,6 +74,7 @@ processors:
       if: ctx.json?.host_groups instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_groupType_to_ingest_value_group_type
           field: _ingest._value.groupType
           target_field: _ingest._value.group_type
           ignore_missing: true
@@ -83,6 +84,7 @@ processors:
       if: ctx.json?.host_groups instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_lastModifiedBy_to_ingest_value_last_modified_by
           field: _ingest._value.lastModifiedBy
           target_field: _ingest._value.last_modified_by
           ignore_missing: true
@@ -92,10 +94,12 @@ processors:
       if: ctx.json?.host_groups instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_triageFilters
           field: _ingest._value.triageFilters
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_triageAs_to_ingest_value_triage_as
               field: _ingest._value.triageAs
               target_field: _ingest._value.triage_as
               ignore_missing: true
@@ -105,6 +109,7 @@ processors:
       if: ctx.json?.host_groups instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_triageFilters_to_ingest_value_triage_filters
           field: _ingest._value.triageFilters
           target_field: _ingest._value.triage_filters
           ignore_missing: true
@@ -121,6 +126,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -136,6 +142,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_e0444351
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -151,6 +158,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_ec5c7a1f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -159,6 +167,7 @@ processors:
       if: ctx.json?.host_groups instanceof List
       processor:
         date:
+          tag: date_ingest_value_lastModified_to_ingest_value_last_modified
           field: _ingest._value.lastModified
           target_field: _ingest._value.last_modified
           formats:
@@ -177,6 +186,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_7cac6583
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -185,6 +195,7 @@ processors:
       if: ctx.json?.host_groups instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_filterCount
           field:
             - _ingest._value.filterCount
             - _ingest._value.canDelete
@@ -435,6 +446,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_733b362a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -443,6 +455,7 @@ processors:
       if: ctx.vectra_detect?.log?.account?.access_history instanceof List
       processor:
         date:
+          tag: date_ingest_value_lastSeen_to_ingest_value_last_seen
           field: _ingest._value.lastSeen
           target_field: _ingest._value.last_seen
           formats:
@@ -461,6 +474,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_95ab0b50
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -469,6 +483,7 @@ processors:
       if: ctx.vectra_detect?.log?.account?.access_history instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_privilegeCategory_to_ingest_value_privilege_category
           field: _ingest._value.privilegeCategory
           target_field: _ingest._value.privilege_category
           ignore_missing: true
@@ -479,6 +494,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user
           field: related.user
           value: '{{{_ingest._value.uid}}}'
           allow_duplicates: false
@@ -488,6 +504,7 @@ processors:
       if: ctx.vectra_detect?.log?.account?.access_history instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_lastSeen
           field:
             - _ingest._value.lastSeen
             - _ingest._value.privilege
@@ -518,6 +535,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_7437eab5
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -526,6 +544,7 @@ processors:
       if: ctx.vectra_detect?.log?.service?.access_history instanceof List
       processor:
         date:
+          tag: date_ingest_value_lastSeen_to_ingest_value_last_seen_b8e42013
           field: _ingest._value.lastSeen
           target_field: _ingest._value.last_seen
           formats:
@@ -544,6 +563,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_7303850f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -552,6 +572,7 @@ processors:
       if: ctx.vectra_detect?.log?.service?.access_history instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_privilegeCategory_to_ingest_value_privilege_category_f26afd17
           field: _ingest._value.privilegeCategory
           target_field: _ingest._value.privilege_category
           ignore_missing: true
@@ -562,6 +583,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_c21e5574
           field: related.user
           value: '{{{_ingest._value.uid}}}'
           allow_duplicates: false
@@ -571,6 +593,7 @@ processors:
       if: ctx.vectra_detect?.log?.service?.access_history instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_lastSeen_e0d282c1
           field:
             - _ingest._value.lastSeen
             - _ingest._value.privilege
@@ -592,12 +615,15 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_ed01c738
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

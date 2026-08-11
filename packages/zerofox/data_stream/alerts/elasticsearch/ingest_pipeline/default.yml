@@ -172,6 +172,7 @@ processors:
       field: zerofox.entity.labels
       processor:
         convert:
+          tag: convert_ingest_value_id
           field: _ingest._value.id
           type: string
       if: ctx?.zerofox?.entity?.labels != null && ctx.zerofox.entity.labels.size() > 0
@@ -213,12 +214,15 @@ processors:
       source: ctx?.zerofox?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

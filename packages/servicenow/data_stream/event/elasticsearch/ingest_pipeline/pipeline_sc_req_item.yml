@@ -131,7 +131,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.estimated_delivery.display_value
-      tag: date_servicenow_event_estimated_delivery_display_value_to_servicenow_event_estimated_delivery_display_value_c062b1d5
+      tag: date_estimated_delivery_display_value_c062b1d5
       target_field: servicenow.event.estimated_delivery.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -194,7 +194,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.estimated_delivery.value
-      tag: date_servicenow_event_estimated_delivery_value_to_servicenow_event_estimated_delivery_value_453e429c
+      tag: date_estimated_delivery_value_453e429c
       target_field: servicenow.event.estimated_delivery.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -224,6 +224,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -232,9 +233,11 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message
         }}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

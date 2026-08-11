@@ -17,12 +17,12 @@ processors:
 - dot_expander:
     field: '*'
     path: sysdig.content
-    tag: 'Primary doc_expander for sysdig.content'
+    tag: primary_doc_expander_for_sysdig_content
     ignore_failure: true
 - dot_expander:
     field: '*'
     path: sysdig.labels
-    tag: 'Primary doc_expander for sysdig.labels'
+    tag: primary_doc_expander_for_sysdig_labels
     ignore_failure: true
 - set:
     tag: set_event_id_4e2d09de
@@ -175,11 +175,6 @@ processors:
     tag: set_container_image_name_9705f777
     field: container.image.name
     copy_from: sysdig.content.fields.container.name
-    ignore_empty_value: true
-- set:
-    tag: set_rule_ruleset_735b8683
-    field: rule.ruleset
-    copy_from: sysdig.name
     ignore_empty_value: true
 - set:
     tag: set_message_1e35db1b
@@ -348,12 +343,15 @@ processors:
         ctx.sysdig?.labels?.kubernetes?.workload?.type != null
 on_failure:
 - append:
+    tag: append_error_message
     field: error.message
     value: 'Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"'
 - set:
+    tag: set_event_kind
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags
     field: tags
     value: preserve_original_event
     allow_duplicates: false

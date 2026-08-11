@@ -79,6 +79,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -88,6 +89,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user
           field: related.user
           value: '{{{_ingest._value.account_uid}}}'
           allow_duplicates: false
@@ -98,6 +100,7 @@ processors:
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_count
           field:
             - _ingest._value.count
           ignore_missing: true
@@ -174,6 +177,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_35c5558c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -183,6 +187,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_d6949d28
           field: related.user
           value: '{{{_ingest._value.account_uid}}}'
           allow_duplicates: false
@@ -193,6 +198,7 @@ processors:
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_count_69e692fa
           field:
             - _ingest._value.count
           ignore_missing: true
@@ -355,12 +361,15 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_787ad68a
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

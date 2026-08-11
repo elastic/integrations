@@ -102,6 +102,7 @@ processors:
       ignore_missing: true
       processor:
         date:
+          tag: date_ingest_value_creation_date_to_ingest_value_creation_date
           field: _ingest._value.creation_date
           target_field: _ingest._value.creation_date
           formats:
@@ -113,6 +114,7 @@ processors:
       ignore_missing: true
       processor:
         date:
+          tag: date_ingest_value_last_modification_date_to_ingest_value_last_modification_date
           field: _ingest._value.last_modification_date
           target_field: _ingest._value.last_modification_date
           formats:
@@ -214,12 +216,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

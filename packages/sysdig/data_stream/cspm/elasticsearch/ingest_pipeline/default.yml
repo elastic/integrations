@@ -200,7 +200,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: sysdig.cspm.control.supported_distributions
-      tag: foreach_sysdig_cspm_control_supported_distributions_006757c9
+      tag: foreach_control_supported_distributions_006757c9
       if: ctx.sysdig?.cspm?.control?.supported_distributions instanceof List
       processor:
         convert:
@@ -487,6 +487,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -497,6 +498,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

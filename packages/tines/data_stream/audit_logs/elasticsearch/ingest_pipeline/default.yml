@@ -161,7 +161,7 @@ processors:
             field: tines.audit_log.inputs.fieldId
             ignore_failure: true
   - convert:
-      tag: convert_tines_audit_log_inputs_inputs_multiSelect_6848a57a
+      tag: convert_field_id_long_6848a57a
       field: tines.audit_log.inputs.inputs.multiSelect
       type: boolean
       if: ctx.tines?.audit_log?.inputs?.inputs?.multiSelect != null
@@ -178,7 +178,7 @@ processors:
             field: tines.audit_log.inputs.inputs.multiSelect
             ignore_failure: true
   - convert:
-      tag: convert_tines_audit_log_inputs_inputs_required_1c139056
+      tag: convert_field_id_long_1c139056
       field: tines.audit_log.inputs.inputs.required
       type: boolean
       if: ctx.tines?.audit_log?.inputs?.inputs?.required != null
@@ -236,12 +236,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

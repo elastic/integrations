@@ -194,6 +194,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -202,6 +203,7 @@ processors:
       if: ctx.vectra_detect?.log?.host?.access_history instanceof List
       processor:
         date:
+          tag: date_ingest_value_lastSeen_to_ingest_value_last_seen
           field: _ingest._value.lastSeen
           target_field: _ingest._value.last_seen
           formats:
@@ -220,6 +222,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_cc8cbe7c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -228,6 +231,7 @@ processors:
       if: ctx.vectra_detect?.log?.host?.access_history instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_privilegeCategory_to_ingest_value_privilege_category
           field: _ingest._value.privilegeCategory
           target_field: _ingest._value.privilege_category
           ignore_missing: true
@@ -237,6 +241,7 @@ processors:
       if: ctx.vectra_detect?.log?.host?.access_history instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_lastSeen
           field:
             - _ingest._value.lastSeen
             - _ingest._value.privilege
@@ -267,6 +272,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_97c697f1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -275,6 +281,7 @@ processors:
       if: ctx.vectra_detect?.log?.service?.access_history instanceof List
       processor:
         date:
+          tag: date_ingest_value_lastSeen_to_ingest_value_last_seen_3a2780b9
           field: _ingest._value.lastSeen
           target_field: _ingest._value.last_seen
           formats:
@@ -293,6 +300,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_03e50628
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -301,6 +309,7 @@ processors:
       if: ctx.vectra_detect?.log?.service?.access_history instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_privilegeCategory_to_ingest_value_privilege_category_4ee69f28
           field: _ingest._value.privilegeCategory
           target_field: _ingest._value.privilege_category
           ignore_missing: true
@@ -311,6 +320,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user
           field: related.user
           value: '{{{_ingest._value.uid}}}'
           allow_duplicates: false
@@ -320,6 +330,7 @@ processors:
       if: ctx.vectra_detect?.log?.service?.access_history instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_lastSeen_89c9def1
           field:
             - _ingest._value.lastSeen
             - _ingest._value.privilege
@@ -336,12 +347,15 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_99a49937
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

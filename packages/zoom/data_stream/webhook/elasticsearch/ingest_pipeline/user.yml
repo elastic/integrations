@@ -141,16 +141,6 @@ processors:
     value: '{{{zoom.old_values.id}}}'
     ignore_empty_value: true
 - set:
-    tag: set_user_target_id_93d8cb63
-    field: user.target.id
-    value: '{{{zoom.old_values.id}}}'
-    ignore_empty_value: true
-- set:
-    tag: set_user_target_email_093c5961
-    field: user.target.email
-    value: '{{{zoom.old_values.email}}}'
-    ignore_empty_value: true
-- set:
     tag: set_user_target_email_093c5961
     field: user.target.email
     value: '{{{zoom.old_values.email}}}'
@@ -165,13 +155,6 @@ processors:
 # set user.target.* from user.* without overriding old_values.
 # This is necessary because some fields doesn't exist in old_values.
 #
-- set:
-    tag: set_user_target_id_61220a98
-    field: user.target.id
-    value: '{{{zoom.user.id}}}'
-    ignore_empty_value: true
-    override: false
-    if: ctx.zoom?.old_values != null || ctx.zoom?.operator != null || ctx.zoom?.operator_id != null
 - set:
     tag: set_user_target_id_61220a98
     field: user.target.id
@@ -240,12 +223,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

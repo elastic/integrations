@@ -85,7 +85,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json._time
-      tag: date_json__time_f6c8847b
+      tag: date_json_time_f6c8847b
       formats:
         - ISO8601
       if: ctx.json?._time != null && ctx.json._time != ''
@@ -486,6 +486,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value
           field: _ingest._value
           ignore_missing: true
           processor:
@@ -501,6 +502,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_66a69990
           field: _ingest._value
           ignore_missing: true
           processor:
@@ -516,12 +518,13 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_5d2e96a8
           field: _ingest._value
           ignore_missing: true
           processor:
             append:
               field: related.hash
-              tag: append_related_hash
+              tag: append_related_hash_dd3d99a6
               value: '{{{_ingest._value.public_key_hash}}}'
               allow_duplicates: false
   - rename:
@@ -542,7 +545,7 @@ processors:
       processor:
         append:
           field: process.command_line
-          tag: append_process_command_line
+          tag: append_process_command_line_0093f90d
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
@@ -968,12 +971,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_95071f84
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

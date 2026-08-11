@@ -87,6 +87,7 @@ processors:
       field: eti.labels
       processor:
         append:
+          tag: append_eset_labels
           field: eset.labels
           value: "{{{_ingest._value}}}"
       ignore_missing: true
@@ -119,6 +120,7 @@ processors:
       field: eti._patterns
       processor:
         grok:
+          tag: grok_ingest_value
           field: _ingest._value
           patterns:
             - "^\\[ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:threat.indicator.ip}:%{NUMBER:threat.indicator.port:int}'\\]?"
@@ -171,6 +173,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
@@ -178,6 +181,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -109,7 +109,7 @@ processors:
       formats:
         - "ISO8601"
       if: ctx.stix.created != null
-      tag: date_stix_created_to_threat_indicator_first_seen_e1b496f2
+      tag: date_created_e1b496f2
   - rename:
       field: stix.name
       target_field: threat.indicator.name
@@ -299,6 +299,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline
           name: '{{ IngestPipeline "indicator-domain-name" }}'
 
   - foreach:
@@ -308,6 +309,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_6ceea7f4
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
@@ -317,6 +319,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_85a1700c
           name: '{{ IngestPipeline "indicator-url" }}'
 
   - remove:
@@ -382,6 +385,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -389,9 +393,11 @@ on_failure:
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_414f2c3d
       field: tags
       value: preserve_original_event
       allow_duplicates: false

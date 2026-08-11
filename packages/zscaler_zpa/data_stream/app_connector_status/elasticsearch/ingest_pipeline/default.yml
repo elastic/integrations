@@ -166,11 +166,6 @@ processors:
       target_field: organization.name
       ignore_missing: true
   - rename:
-      tag: rename_json_Customer_to_organization_name_98de5dda
-      field: json.Customer
-      target_field: organization.name
-      ignore_missing: true
-  - rename:
       tag: rename_json_SessionID_to_zscaler_zpa_app_connector_status_session_id_3eafc216
       field: json.SessionID
       target_field: zscaler_zpa.app_connector_status.session.id
@@ -405,12 +400,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

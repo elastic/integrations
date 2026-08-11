@@ -125,6 +125,7 @@ processors:
         ctx?._temp_?.type instanceof List
       processor:
         set:
+          tag: set_threat_indicator_type
           field: threat.indicator.type
           value: "{{{_ingest._value}}}"
           override: false
@@ -317,6 +318,7 @@ processors:
       field: _temp_.tags
       processor:
         append:
+          tag: append_tags
           field: tags
           value: "{{{_ingest._value}}}"
       ignore_missing: true
@@ -397,12 +399,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_37e7b8e8
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

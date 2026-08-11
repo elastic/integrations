@@ -108,6 +108,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_temp_providers
           field: _temp_.providers
           value: "{{{ _ingest._value.EvidenceString }}}"
   - foreach:
@@ -116,6 +117,7 @@ processors:
       ignore_missing: true
       processor:
         gsub:
+          tag: gsub_ingest_value
           field: '_ingest._value'
           pattern: '^(?:.+sources?(?: including)?: (.*?)(?:\. |$))|(.*)$'
           replacement: '$1'
@@ -125,6 +127,7 @@ processors:
       ignore_missing: true
       processor:
         split:
+          tag: split_ingest_value
           field: '_ingest._value'
           separator: ', *'
   - script:
@@ -144,10 +147,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value
           field: '_ingest._value'
           ignore_missing: true
           processor:
             append:
+              tag: append_threat_indicator_provider
               field: threat.indicator.provider
               value: '{{{ _ingest._value }}}'
               allow_duplicates: false
@@ -209,9 +214,11 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp
                 field: '_ingest._value.timestamp'
                 ignore_missing: true
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -412,12 +419,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_b59a12f6
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

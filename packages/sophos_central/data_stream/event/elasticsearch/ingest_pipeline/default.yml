@@ -379,6 +379,7 @@ processors:
       if: ctx.json?.core_remedy_items?.items instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_sophosPid_to_ingest_value_sophos_pid
           field: _ingest._value.sophosPid
           target_field: _ingest._value.sophos_pid
           ignore_missing: true
@@ -388,6 +389,7 @@ processors:
       if: ctx.json?.core_remedy_items?.items instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_suspendResult_to_ingest_value_suspend_result
           field: _ingest._value.suspendResult
           target_field: _ingest._value.suspend_result
           ignore_missing: true
@@ -397,6 +399,7 @@ processors:
       if: ctx.json?.core_remedy_items?.items instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_processPath_to_ingest_value_process_path
           field: _ingest._value.processPath
           target_field: _ingest._value.process_path
           ignore_missing: true
@@ -538,12 +541,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

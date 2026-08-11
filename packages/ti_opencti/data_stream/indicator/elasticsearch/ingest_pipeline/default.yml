@@ -228,6 +228,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tags
           field: tags
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -241,6 +242,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_opencti_indicator_kill_chain_phase
           field: opencti.indicator.kill_chain_phase
           value: "[{{{_ingest._value.kill_chain_name}}}] {{{_ingest._value.phase_name}}}"
   - remove:
@@ -296,6 +298,7 @@ processors:
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_node_value
           field: _ingest._value.node.value
           ignore_missing: true
   - foreach:
@@ -304,6 +307,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_observable_value_to_ingest_value_node_value
           field: _ingest._value.node.observable_value
           target_field: _ingest._value.node.value
 
@@ -313,6 +317,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_x_opencti_description_to_ingest_value_node_description
           field: _ingest._value.node.x_opencti_description
           target_field: _ingest._value.node.description
           ignore_missing: true
@@ -323,6 +328,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_x_opencti_additional_names_to_ingest_value_node_additional_names
           field: _ingest._value.node.x_opencti_additional_names
           target_field: _ingest._value.node.additional_names
           ignore_missing: true
@@ -333,6 +339,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_obsContent_to_ingest_value_node_content
           field: _ingest._value.node.obsContent
           target_field: _ingest._value.node.content
           ignore_missing: true
@@ -343,10 +350,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_node_serviceDlls_edges
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_node_x_opencti_additional_names_to_ingest_node_value_additional_names
               field: _ingest._value.node.x_opencti_additional_names
               target_field: _ingest.node._value.additional_names
 
@@ -356,10 +365,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_node_serviceDlls_edges_84c967f1
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_node_obsContent_to_ingest_value_node_content_cc70dc3f
               field: _ingest._value.node.obsContent
               target_field: _ingest._value.node.content
 
@@ -369,10 +380,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_node_serviceDlls_edges_1098f7d8
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_node_to_ingest_value
               field: _ingest._value.node
               target_field: _ingest._value
 
@@ -382,6 +395,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_serviceDlls_edges_to_ingest_value_node_service_dlls
           field: _ingest._value.node.serviceDlls.edges
           target_field: _ingest._value.node.service_dlls
           ignore_missing: true
@@ -524,6 +538,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_email_address
           field: threat.indicator.email.address
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -534,6 +549,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_ip
           field: threat.indicator.ip
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -544,6 +560,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_ip_fcc2116a
           field: threat.indicator.ip
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -555,6 +572,7 @@ processors:
       ignore_missing: true
       processor:
         gsub:
+          tag: gsub_ingest_value
           field: _ingest._value
           pattern: '/\d+$'
           replacement: ""
@@ -565,6 +583,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_port
           field: threat.indicator.port
           value: "{{{_ingest._value.src_port}}}"
           allow_duplicates: false
@@ -574,6 +593,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_port_830fbf53
           field: threat.indicator.port
           value: "{{{_ingest._value.dst_port}}}"
           allow_duplicates: false
@@ -584,6 +604,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline
           name: '{{ IngestPipeline "ecs_from_autonomous_system" }}'
 
   - foreach:
@@ -592,6 +613,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_057f9744
           name: '{{ IngestPipeline "ecs_from_windows_registry_key" }}'
 
   - foreach:
@@ -600,6 +622,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_1f8a5dd2
           name: '{{ IngestPipeline "ecs_from_windows_registry_value_type" }}'
 
   - foreach:
@@ -608,6 +631,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ee366c4b
           name: '{{ IngestPipeline "ecs_from_x509_certificate" }}'
 
   - foreach:
@@ -616,6 +640,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls
           field: _tmp_found_urls
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -625,6 +650,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_a9938349
           field: _tmp_found_urls
           value: "{{{_ingest._value.url}}}"
           allow_duplicates: false
@@ -634,6 +660,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_c9ce3ff9
           field: _tmp_found_urls
           value: "{{{_ingest._value.content?.url}}}"
           allow_duplicates: false
@@ -643,6 +670,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_a23364ec
           field: _tmp_found_urls
           value: "{{{_ingest._value.url}}}"
           allow_duplicates: false
@@ -652,10 +680,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_service_dll
           field: _ingest._value.service_dll
           ignore_missing: true
           processor:
             append:
+              tag: append_tmp_found_urls_2f11da43
               field: _tmp_found_urls
               value: "{{{_ingest._value.content?.url}}}"
               allow_duplicates: false
@@ -679,6 +709,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_e1c73fd6
           name: '{{ IngestPipeline "ecs_from_url_field" }}'
   - remove:
       tag: remove__tmp_found_urls_420f0d34
@@ -691,6 +722,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_domain_names_and_hostnames
           field: _tmp_found_domain_names_and_hostnames
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -700,6 +732,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_domain_names_and_hostnames_23a8b6c6
           field: _tmp_found_domain_names_and_hostnames
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -709,6 +742,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_d10d9028
           name: '{{ IngestPipeline "ecs_from_domain_name_or_hostname" }}'
   - remove:
       tag: remove__tmp_found_domain_names_and_hostnames_ebaf9c4a
@@ -721,6 +755,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_34633f97
           name: '{{ IngestPipeline "ecs_from_file" }}'
 
   - foreach:
@@ -729,10 +764,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_service_dll_4e86c638
           field: _ingest._value.service_dll
           ignore_missing: true
           processor:
             pipeline:
+              tag: pipeline_1e36a118
               name: '{{ IngestPipeline "ecs_from_file" }}'
 
   - foreach:
@@ -741,6 +778,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_5d30c115
           name: '{{ IngestPipeline "ecs_from_directory" }}'
 
   - foreach:
@@ -749,6 +787,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ae3fe7a9
           name: '{{ IngestPipeline "ecs_from_artifact" }}'
 
   #####################################
@@ -770,6 +809,7 @@ processors:
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_006ce604
           name: '{{ IngestPipeline "ecs_from_pattern" }}'
 
   - remove:
@@ -787,10 +827,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_hash
           field: _ingest._value.hash
           ignore_missing: true
           processor:
             append:
+              tag: append_related_hash
               field: related.hash
               value: "{{{_ingest._value}}}"
               allow_duplicates: false
@@ -829,10 +871,12 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_hash_56857a2e
           field: _ingest._value.hash
           ignore_missing: true
           processor:
             append:
+              tag: append_related_hash_b178d925
               field: related.hash
               value: "{{{_ingest._value}}}"
               allow_duplicates: false
@@ -842,14 +886,17 @@ processors:
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_service_dll_c9aebbde
           field: _ingest._value.service_dll
           ignore_missing: true
           processor:
             foreach:
+              tag: foreach_ingest_value_hash_b2d29982
               field: _ingest._value.hash
               ignore_missing: true
               processor:
                 append:
+                  tag: append_related_hash_45742abd
                   field: related.hash
                   value: "{{{_ingest._value}}}"
                   allow_duplicates: false
@@ -860,6 +907,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_hosts
           field: related.hosts
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
@@ -869,6 +917,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_hosts_961fe142
           field: related.hosts
           value: "{{{_ingest._value.domain}}}"
           allow_duplicates: false
@@ -885,6 +934,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user
           field: related.user
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
@@ -894,6 +944,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_91f0560a
           field: related.user
           value: "{{{_ingest._value.username}}}"
           allow_duplicates: false
@@ -903,6 +954,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_f808821c
           field: related.user
           value: "{{{_ingest._value.user_id}}}"
           allow_duplicates: false
@@ -912,6 +964,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_759a12d9
           field: related.user
           value: "{{{_ingest._value.account_login}}}"
           allow_duplicates: false
@@ -1133,6 +1186,7 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"
@@ -1140,9 +1194,11 @@ on_failure:
         in pipeline "{{{ _ingest.on_failure_pipeline }}}"
         failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_0d5052d2
       field: tags
       value: preserve_original_event
       allow_duplicates: false

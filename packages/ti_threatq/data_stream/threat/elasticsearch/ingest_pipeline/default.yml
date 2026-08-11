@@ -220,7 +220,7 @@ processors:
       ignore_missing: true
   - convert:
       field: threatq.status_id
-      tag: convert_threatq_status_id_feee1c97
+      tag: convert_status_id_to_string_feee1c97
       type: string
       ignore_missing: true
   - convert:
@@ -230,7 +230,7 @@ processors:
       ignore_missing: true
   - convert:
       field: threatq.type_id
-      tag: convert_threatq_type_id_31ace4fb
+      tag: convert_type_id_to_string_31ace4fb
       type: string
       ignore_missing: true
   #####################
@@ -431,7 +431,7 @@ processors:
   # Indicator type: IPv6 Address
   - set:
       field: threat.indicator.ip
-      tag: set_threat_indicator_ip_42434401
+      tag: set_indicator_ip_from_indicator_value_42434401
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'IPv6 Address'
       ignore_empty_value: true
@@ -475,7 +475,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type_ad1f563b
+      tag: set_indicator_type_file_ad1f563b
       value: file
       if: ctx.threatq?.type?.name == 'SHA-1'
   - append:
@@ -494,7 +494,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type_41069f19
+      tag: set_indicator_type_file_41069f19
       value: file
       if: ctx.threatq?.type?.name == 'SHA-256'
   - append:
@@ -513,7 +513,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type_de2f4392
+      tag: set_indicator_type_file_de2f4392
       value: file
       if: ctx.threatq?.type?.name == 'SHA-512'
   - append:
@@ -537,7 +537,7 @@ processors:
       if: ctx.threatq?.type?.name == 'Filename'
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type_1b2fae7e
+      tag: set_indicator_type_file_1b2fae7e
       value: file
       if: ctx.threatq?.type?.name == 'Filename'
 
@@ -672,6 +672,7 @@ processors:
           type: long
           on_failure:
             - remove:
+                tag: remove_ingest_value_source_score
                 field: _ingest._value.source_score
                 ignore_missing: true
   - foreach:
@@ -688,6 +689,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_at
                 field: _ingest._value.created_at
                 ignore_missing: true
   - foreach:
@@ -704,6 +706,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_published_at
                 field: _ingest._value.published_at
                 ignore_missing: true
   - foreach:
@@ -720,6 +723,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_updated_at
                 field: _ingest._value.updated_at
                 ignore_missing: true
   - script:
@@ -808,7 +812,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.indicator_id
-          tag: convert_indicator_id_to_string
+          tag: convert_indicator_id_to_string_7b842289
           type: string
           ignore_missing: true
   - foreach:
@@ -825,6 +829,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_at_ed0f7fd3
                 field: _ingest._value.created_at
                 ignore_missing: true
   - foreach:
@@ -841,6 +846,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_updated_at_623fb6c4
                 field: _ingest._value.updated_at
                 ignore_missing: true
   - foreach:
@@ -857,6 +863,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_touched_at
                 field: _ingest._value.touched_at
                 ignore_missing: true
   - convert:
@@ -1183,7 +1190,7 @@ processors:
 
   - foreach:
       field: threatq.adversaries
-      tag: foreach_threatq_adversaries_01985e9d
+      tag: foreach_adversaries_01985e9d
       ignore_missing: true
       processor:
         append:
@@ -1279,6 +1286,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1286,6 +1294,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

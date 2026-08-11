@@ -78,6 +78,7 @@ processors:
       field: snyk.issues.attributes.classes
       processor:
         append:
+          tag: append_vulnerability_enumeration
           field: vulnerability.enumeration
           value: '{{{ _ingest._value.source }}}'
           allow_duplicates: false
@@ -89,6 +90,7 @@ processors:
       field: snyk.issues.attributes.problems
       processor:
         append:
+          tag: append_vulnerability_id
           field: vulnerability.id
           value: '{{{ _ingest._value.id }}}'
           allow_duplicates: false
@@ -100,6 +102,7 @@ processors:
       field: snyk.issues.attributes.problems
       processor:
         append:
+          tag: append_vulnerability_enumeration_b418e484
           field: vulnerability.enumeration
           value: '{{{ _ingest._value.source }}}'
           allow_duplicates: false
@@ -111,6 +114,7 @@ processors:
       field: snyk.issues.attributes.problems
       processor:
         append:
+          tag: append_vulnerability_reference
           field: vulnerability.reference
           value: '{{{ _ingest._value.url }}}'
           allow_duplicates: false
@@ -197,12 +201,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

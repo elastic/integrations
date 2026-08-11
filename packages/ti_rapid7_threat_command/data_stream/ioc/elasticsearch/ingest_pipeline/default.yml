@@ -373,6 +373,7 @@ processors:
       field: json.reported_feeds
       processor:
         rename:
+          tag: rename_ingest_value_confidenceLevel_to_ingest_value_confidence
           field: _ingest._value.confidenceLevel
           target_field: _ingest._value.confidence
       ignore_failure: true
@@ -381,6 +382,7 @@ processors:
       field: json.reported_feeds
       processor:
         append:
+          tag: append_threat_indicator_provider
           field: threat.indicator.provider
           value: '{{{_ingest._value.name}}}'
       ignore_failure: true
@@ -389,6 +391,7 @@ processors:
       field: json.tags
       processor:
         append:
+          tag: append_tags
           field: tags
           value: '{{{_ingest._value}}}'
       if: ctx.json?.tags != null
@@ -523,12 +526,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_1b30454f
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

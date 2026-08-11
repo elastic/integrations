@@ -118,6 +118,7 @@ processors:
           type: ip
           on_failure:
             - remove:
+                tag: remove_ingest_value
                 field: _ingest._value
   - rename:
       field: json.kill_chains
@@ -143,6 +144,7 @@ processors:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_on
                 field: _ingest._value.created_on
                 ignore_missing: true
   - foreach:
@@ -159,6 +161,7 @@ processors:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_valid_on
                 field: _ingest._value.last_valid_on
                 ignore_missing: true
   - script:
@@ -282,6 +285,7 @@ processors:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_date
                 field: _ingest._value.created_date
                 ignore_missing: true
   - foreach:
@@ -298,6 +302,7 @@ processors:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_valid_date
                 field: _ingest._value.last_valid_date
                 ignore_missing: true
   - rename:
@@ -481,12 +486,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_4889055a
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false

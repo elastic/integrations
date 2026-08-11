@@ -163,7 +163,7 @@ processors:
       if: ctx.event?.action != null && ctx.event.action == 'allowed'
   - append:
       field: event.type
-      tag: append_event_type_b2c0bdd2
+      tag: append_event_action_into_event_type_b2c0bdd2
       value: 'denied'
       allow_duplicates: false
       if: ctx.event?.action != null && ctx.event.action == 'blocked'
@@ -878,6 +878,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -928,6 +929,7 @@ processors:
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_f264d0ae
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1182,6 +1184,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_2f048735
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1189,6 +1192,7 @@ on_failure:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
