@@ -76,14 +76,6 @@ vars:
     multi: false
     required: false
     show_user: false
-  - name: external_id
-    type: text
-    title: External ID
-    multi: false
-    required: false
-    show_user: false
-    secret: true
-    description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
   - name: assume_role_duration
     type: duration
     title: Assume Role Duration
@@ -127,10 +119,10 @@ var_groups:
     options:
       - name: identity_federation
         title: Identity Federation
-        vars: [role_arn, external_id, supports_identity_federation]
+        vars: [role_arn, supports_identity_federation]
         hide_in_deployment_modes: [default]
         provider: aws
-        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.4.0.yml&param_ElasticResourceId=RESOURCE_ID
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.4.0.yml
       - name: direct_access_key
         title: Direct Access Keys
         vars: [access_key_id, secret_access_key]
@@ -141,10 +133,6 @@ var_groups:
       - name: assume_role
         title: Assume Role
         vars: [role_arn]
-        hide_in_deployment_modes: [agentless]
-      - name: assume_role_external_id
-        title: Assume Role with External ID
-        vars: [role_arn, external_id]
         hide_in_deployment_modes: [agentless]
       - name: shared_credentials
         title: Shared Credentials
