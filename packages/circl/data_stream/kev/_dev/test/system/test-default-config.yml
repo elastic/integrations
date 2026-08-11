@@ -1,0 +1,15 @@
+input: cel
+service: circl-kev
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    interval: 10s
+    batch_size: 2
+    enable_request_tracer: true
+wait_for_data_timeout: 1m
+assert:
+  # 5 assertions from the unfiltered first-run walk (2 + 2 + 1 across three
+  # pages), then 1 more from the first date_from poll made with the persisted
+  # cursor. Every later poll returns an empty page, whose placeholder event is
+  # dropped, so the count is stable.
+  hit_count: 6

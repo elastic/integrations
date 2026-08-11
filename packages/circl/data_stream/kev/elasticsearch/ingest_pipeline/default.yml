@@ -1,0 +1,733 @@
+---
+description: Pipeline for processing CIRCL Vulnerability-Lookup KEV assertions.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: parse_event_original
+      target_field: json
+      if: ctx.event?.original != null
+
+  ####################
+  # Document identity #
+  ####################
+  - fingerprint:
+      tag: fingerprint_document_id
+      fields:
+        - json.uuid
+        - json.status.status_updated_at
+      target_field: _id
+      method: SHA-256
+      if: ctx.json?.uuid != null && ctx.json?.status?.status_updated_at != null
+      description: >-
+        Data streams accept `create` operations only, so an existing `_id` is rejected rather than
+        overwritten. Keying on the assertion UUID together with the exploitation-status timestamp
+        makes an unchanged re-collected record collide and drop, while a status change lands as a
+        new document that preserves the previous state as history.
+
+  #####################
+  # ECS categorization #
+  #####################
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: vulnerability
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      allow_duplicates: false
+
+  ##############
+  # Timestamps #
+  ##############
+  - date:
+      field: json.status.status_updated_at
+      tag: date_status_updated_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.status?.status_updated_at != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_status_updated_at
+            value: 'failed to parse status.status_updated_at: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.timestamps.first_seen_at
+      tag: date_first_seen_at
+      target_field: event.start
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamps?.first_seen_at != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_first_seen_at
+            value: 'failed to parse timestamps.first_seen_at: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.timestamps.last_seen_at
+      tag: date_last_seen_at
+      target_field: event.end
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamps?.last_seen_at != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_last_seen_at
+            value: 'failed to parse timestamps.last_seen_at: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.timestamps.recorded_at
+      tag: date_recorded_at
+      target_field: event.created
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamps?.recorded_at != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_recorded_at
+            value: 'failed to parse timestamps.recorded_at: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.timestamps.asserted_at
+      tag: date_asserted_at
+      target_field: circl.kev.timestamps.asserted_at
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamps?.asserted_at != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_asserted_at
+            value: 'failed to parse timestamps.asserted_at: {{{ _ingest.on_failure_message }}}'
+
+  ####################
+  # Assertion record #
+  ####################
+  - rename:
+      field: json.uuid
+      tag: rename_uuid
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.vulnerability.vulnId
+      tag: rename_vuln_id
+      target_field: vulnerability.id
+      ignore_missing: true
+  - remove:
+      field: json.vulnerability.altId
+      tag: remove_empty_alt_id
+      ignore_missing: true
+      if: ctx.json?.vulnerability?.altId instanceof List && (ctx.json.vulnerability.altId.isEmpty() || (ctx.json.vulnerability.altId.size() == 1 && '[]'.equals(ctx.json.vulnerability.altId.get(0))))
+      description: >-
+        `altId` is emitted as an empty array on almost every record, and two records carry the
+        literal two-character string `[]` from an upstream serialization bug rather than an
+        identifier.
+  - rename:
+      field: json.vulnerability.altId
+      tag: rename_alt_id
+      target_field: circl.kev.vulnerability.alt_id
+      ignore_missing: true
+  - rename:
+      field: json.gcve.origin_uuid
+      tag: rename_gcve_origin_uuid
+      target_field: circl.kev.gcve.origin_uuid
+      ignore_missing: true
+  - rename:
+      field: json.gcve.object_uuid
+      tag: rename_gcve_object_uuid
+      target_field: circl.kev.gcve.object_uuid
+      ignore_missing: true
+  - rename:
+      field: json.gcve.gna
+      tag: rename_gcve_gna
+      target_field: circl.kev.gcve.gna
+      ignore_missing: true
+  - rename:
+      field: json.status.exploited
+      tag: rename_status_exploited
+      target_field: circl.kev.status.exploited
+      ignore_missing: true
+  - rename:
+      field: json.status.status_reason
+      tag: rename_status_reason
+      target_field: circl.kev.status.reason
+      ignore_missing: true
+  - rename:
+      field: json.characteristics.severity
+      tag: rename_characteristics_severity
+      target_field: circl.kev.characteristics.severity
+      ignore_missing: true
+  - rename:
+      field: json.characteristics.remote_code_execution
+      tag: rename_characteristics_remote_code_execution
+      target_field: circl.kev.characteristics.remote_code_execution
+      ignore_missing: true
+  - rename:
+      field: json.characteristics.authentication_required
+      tag: rename_characteristics_authentication_required
+      target_field: circl.kev.characteristics.authentication_required
+      ignore_missing: true
+  - rename:
+      field: json.characteristics.local_access_required
+      tag: rename_characteristics_local_access_required
+      target_field: circl.kev.characteristics.local_access_required
+      ignore_missing: true
+  - rename:
+      field: json.scope.asset_exposure
+      tag: rename_scope_asset_exposure
+      target_field: circl.kev.scope.asset_exposure
+      ignore_missing: true
+  - rename:
+      field: json.scope.sector
+      tag: rename_scope_sector
+      target_field: circl.kev.scope.sector
+      ignore_missing: true
+  - rename:
+      field: json.scope.victim_countries
+      tag: rename_scope_victim_countries
+      target_field: circl.kev.scope.victim_countries
+      ignore_missing: true
+  - rename:
+      field: json.scope.observation_regions
+      tag: rename_scope_observation_regions
+      target_field: circl.kev.scope.observation_regions
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: collect_references
+      description: >-
+        Every reference item carries a `url` but only some carry an `id`, and a `foreach` child
+        processor cannot read `_ingest._value` from its condition, so both arrays are projected in
+        a single pass instead.
+      if: ctx.json?.references instanceof List
+      source: |-
+        def urls = new ArrayList();
+        def ids = new ArrayList();
+        for (def reference : ctx.json.references) {
+          if (!(reference instanceof Map)) {
+            continue;
+          }
+          def url = reference.get('url');
+          if (url instanceof String && !((String) url).trim().isEmpty() && !urls.contains(url)) {
+            urls.add(url);
+          }
+          def id = reference.get('id');
+          if (id instanceof String && !((String) id).trim().isEmpty() && !ids.contains(id)) {
+            ids.add(id);
+          }
+        }
+        if (!urls.isEmpty() || !ids.isEmpty()) {
+          ctx._tmp = ctx._tmp ?: [:];
+          if (!urls.isEmpty()) {
+            ctx._tmp.reference_urls = urls;
+          }
+          if (!ids.isEmpty()) {
+            ctx._tmp.reference_ids = ids;
+          }
+        }
+  - rename:
+      field: _tmp.reference_urls
+      tag: rename_reference_urls
+      target_field: vulnerability.reference
+      ignore_missing: true
+  - rename:
+      field: _tmp.reference_ids
+      tag: rename_reference_ids
+      target_field: circl.kev.references.id
+      ignore_missing: true
+
+  ###############
+  # scope.notes #
+  ###############
+  - rename:
+      field: json.scope.notes
+      tag: rename_scope_notes
+      target_field: circl.kev.scope.notes
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: parse_scope_notes_segments
+      description: >-
+        `scope.notes` is a machine-synthesized ` | `-delimited string of `Label: value` segments
+        rather than prose, and the label set differs per catalog. Extract only the labels that
+        carry human-readable prose; a parse miss leaves the targets unset.
+      if: ctx.circl?.kev?.scope?.notes instanceof String
+      params:
+        segment_targets:
+          'Description': description
+          'Required action': required_action
+          'Notes (KEV)': notes
+      source: |-
+        def segments = new HashMap();
+        for (def segment : ctx.circl.kev.scope.notes.splitOnToken(' | ')) {
+          int separator = segment.indexOf(': ');
+          if (separator <= 0) {
+            continue;
+          }
+          def target = params.segment_targets.get(segment.substring(0, separator).trim());
+          if (target != null && !segments.containsKey(target)) {
+            segments.put(target, segment.substring(separator + 2).trim());
+          }
+        }
+        if (!segments.isEmpty()) {
+          ctx._tmp = ctx._tmp ?: [:];
+          ctx._tmp.notes_segments = segments;
+        }
+  - rename:
+      field: _tmp.notes_segments.description
+      tag: rename_notes_description
+      target_field: vulnerability.description
+      ignore_missing: true
+  - rename:
+      field: _tmp.notes_segments.required_action
+      tag: rename_notes_required_action
+      target_field: circl.kev.vulnerability.required_action
+      ignore_missing: true
+  - rename:
+      field: _tmp.notes_segments.notes
+      tag: rename_notes_kev
+      target_field: circl.kev.vulnerability.notes
+      ignore_missing: true
+
+  ##############
+  # evidence[] #
+  ##############
+  - set:
+      field: _tmp.evidence
+      tag: set_tmp_evidence
+      copy_from: json.evidence.0
+      if: ctx.json?.evidence instanceof List && ctx.json.evidence.size() != 0
+      description: >-
+        `evidence` is an array that is 0 or 1 items long across the whole catalog and is mapped as
+        a group, so the single item is collapsed into a flat object.
+  - append:
+      field: tags
+      tag: append_evidence_truncated
+      value: circl_kev_evidence_truncated
+      allow_duplicates: false
+      if: ctx.json?.evidence instanceof List && ctx.json.evidence.size() > 1
+      description: >-
+        BCP-07 permits several evidence items even though the whole catalog only ever emits 0 or 1,
+        so a new upstream feed could start emitting more. Only the first item is kept; tag the
+        document so the dropped items are discoverable instead of silent.
+  - remove:
+      field: json.evidence
+      tag: remove_json_evidence
+      ignore_missing: true
+  - rename:
+      field: _tmp.evidence.source
+      tag: rename_evidence_source
+      target_field: event.provider
+      ignore_missing: true
+  - rename:
+      field: _tmp.evidence.type
+      tag: rename_evidence_type
+      target_field: circl.kev.evidence.type
+      ignore_missing: true
+  - rename:
+      field: _tmp.evidence.signal
+      tag: rename_evidence_signal
+      target_field: circl.kev.evidence.signal
+      ignore_missing: true
+  - rename:
+      field: _tmp.evidence.confidence
+      tag: rename_evidence_confidence
+      target_field: circl.kev.evidence.confidence
+      ignore_missing: true
+  - convert:
+      field: circl.kev.evidence.confidence
+      tag: convert_evidence_confidence
+      type: double
+      ignore_missing: true
+      description: >-
+        The server-enforced schema allows `confidence` to be an arbitrary string even though only
+        the values 0.7, 0.75, 0.8 and 1.0 have ever been emitted. Drop a non-numeric value and tag
+        the document rather than failing it; this is a permitted variation, not a pipeline error.
+      on_failure:
+        - remove:
+            field: circl.kev.evidence.confidence
+            tag: remove_non_numeric_evidence_confidence
+            ignore_missing: true
+        - append:
+            field: tags
+            tag: append_non_numeric_evidence_confidence_tag
+            value: circl_kev_confidence_not_numeric
+            allow_duplicates: false
+  - rename:
+      field: _tmp.evidence.gcve
+      tag: rename_evidence_gcve
+      target_field: circl.kev.evidence.gcve
+      ignore_missing: true
+  - rename:
+      field: _tmp.evidence.details
+      tag: rename_evidence_details_to_tmp
+      target_field: _tmp.details
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: remove_evidence_details_placeholders
+      description: >-
+        The details object uses three coexisting null conventions - absent key, explicit null, and
+        `-` as a placeholder throughout the ENISA CNW data. Empty strings appear on vendor, product
+        and vulnerabilityName. Drop all of them so placeholders are not mapped through.
+      if: ctx._tmp?.details instanceof Map
+      source: |-
+        def details = ctx._tmp.details;
+        for (def key : new ArrayList(details.keySet())) {
+          def value = details.get(key);
+          if (value == null) {
+            details.remove(key);
+          } else if (value instanceof String) {
+            def trimmed = ((String) value).trim();
+            if (trimmed.isEmpty() || '-'.equals(trimmed)) {
+              details.remove(key);
+            }
+          }
+        }
+
+  #############################################
+  # Promoted evidence[].details - scoring     #
+  #############################################
+  - rename:
+      field: _tmp.details.cvss_score
+      tag: rename_cvss_score
+      target_field: vulnerability.score.base
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.vulnerability_score
+      tag: rename_vulnerability_score
+      target_field: vulnerability.score.base
+      ignore_missing: true
+      if: ctx.vulnerability?.score?.base == null
+  - rename:
+      field: _tmp.details.cvss_severity
+      tag: rename_cvss_severity
+      target_field: vulnerability.severity
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.vulnerability_severity
+      tag: rename_vulnerability_severity
+      target_field: vulnerability.severity
+      ignore_missing: true
+      if: ctx.vulnerability?.severity == null
+  - uppercase:
+      field: vulnerability.severity
+      tag: uppercase_vulnerability_severity
+      ignore_missing: true
+      description: >-
+        KEVIntel emits upper case, Shadowserver emits title case and one stray upper case value, so
+        the casing is normalised to stop aggregations splitting buckets.
+  - rename:
+      field: _tmp.details.vulnerability_class
+      tag: rename_vulnerability_class
+      target_field: vulnerability.classification
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.cwes
+      tag: rename_cwes
+      target_field: circl.kev.cwe
+      ignore_missing: true
+  - split:
+      field: circl.kev.cwe
+      tag: split_cwe
+      separator: ','
+      if: ctx.circl?.kev?.cwe instanceof String
+      description: >-
+        The CISA catalog emits `cwes` as a JSON array while the ENISA CNW catalog emits a bare
+        string on the same path, so scalars are normalised into a single-element array.
+  - remove:
+      field: _tmp.details.threatActorsExploiting
+      tag: remove_unknown_threat_actor
+      ignore_missing: true
+      if: ctx._tmp?.details?.threatActorsExploiting instanceof String && ctx._tmp.details.threatActorsExploiting.equalsIgnoreCase('unknown')
+  - rename:
+      field: _tmp.details.threatActorsExploiting
+      tag: rename_threat_group_name
+      target_field: threat.group.name
+      ignore_missing: true
+
+  #############################################
+  # Promoted evidence[].details - descriptive #
+  #############################################
+  - rename:
+      field: _tmp.details.vendorProject
+      tag: rename_vendor_project
+      target_field: circl.kev.vendor
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.vendor
+      tag: rename_vendor
+      target_field: circl.kev.vendor
+      ignore_missing: true
+      if: ctx.circl?.kev?.vendor == null
+  - rename:
+      field: _tmp.details.product
+      tag: rename_product
+      target_field: circl.kev.product
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.vulnerabilityName
+      tag: rename_vulnerability_name
+      target_field: circl.kev.vulnerability.name
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.title
+      tag: rename_title
+      target_field: circl.kev.vulnerability.name
+      ignore_missing: true
+      if: ctx.circl?.kev?.vulnerability?.name == null
+  - rename:
+      field: _tmp.details.euvd
+      tag: rename_euvd
+      target_field: circl.kev.euvd
+      ignore_missing: true
+
+  #############################################
+  # Promoted evidence[].details - EPSS        #
+  #############################################
+  - rename:
+      field: _tmp.details.epss_score
+      tag: rename_epss_score
+      target_field: circl.kev.epss.score
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.epss_percentile
+      tag: rename_epss_percentile
+      target_field: circl.kev.epss.percentile
+      ignore_missing: true
+
+  #############################################
+  # Promoted evidence[].details - yes/no flags #
+  #############################################
+  - rename:
+      field: _tmp.details.knownRansomwareCampaignUse
+      tag: rename_known_ransomware_campaign_use
+      target_field: circl.kev.known_ransomware_campaign_use
+      ignore_missing: true
+      description: >-
+        The catalogs encode the same yes/no facts four different ways, so the source wording is
+        preserved verbatim rather than coerced.
+  - rename:
+      field: _tmp.details.used_in_malware
+      tag: rename_used_in_malware
+      target_field: circl.kev.used_in_malware
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.iot
+      tag: rename_iot
+      target_field: circl.kev.iot
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.cisa_kev
+      tag: rename_cisa_kev
+      target_field: circl.kev.cisa_kev
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.not_yet_in_cisa_kev
+      tag: rename_not_yet_in_cisa_kev
+      target_field: circl.kev.not_yet_in_cisa_kev
+      ignore_missing: true
+
+  ##############################################
+  # Promoted evidence[].details - honeypot     #
+  ##############################################
+  - rename:
+      field: _tmp.details.connections
+      tag: rename_honeypot_connections
+      target_field: circl.kev.honeypot.connections
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.1d
+      tag: rename_honeypot_connections_1d
+      target_field: circl.kev.honeypot.connections_1d
+      ignore_missing: true
+  - convert:
+      field: circl.kev.honeypot.connections_1d
+      tag: convert_honeypot_connections_1d
+      type: long
+      ignore_missing: true
+      description: >-
+        Shadowserver emits the one-day counter as a string while its rolling-average siblings are
+        integers, so a non-numeric string is a plausible upstream variation rather than a pipeline
+        error. Drop it and tag the document.
+      on_failure:
+        - remove:
+            field: circl.kev.honeypot.connections_1d
+            tag: remove_non_numeric_honeypot_connections_1d
+            ignore_missing: true
+        - append:
+            field: tags
+            tag: append_non_numeric_honeypot_connections_1d_tag
+            value: circl_kev_honeypot_1d_not_numeric
+            allow_duplicates: false
+  - rename:
+      field: _tmp.details.7d_avg
+      tag: rename_honeypot_avg_7d
+      target_field: circl.kev.honeypot.avg_7d
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.30d_avg
+      tag: rename_honeypot_avg_30d
+      target_field: circl.kev.honeypot.avg_30d
+      ignore_missing: true
+  - rename:
+      field: _tmp.details.90d_avg
+      tag: rename_honeypot_avg_90d
+      target_field: circl.kev.honeypot.avg_90d
+      ignore_missing: true
+
+  ##############################################
+  # Promoted evidence[].details - dates        #
+  ##############################################
+  - date:
+      field: _tmp.details.due_date
+      tag: date_due_date
+      target_field: circl.kev.due_date
+      formats:
+        - yyyy-MM-dd
+      if: ctx._tmp?.details?.due_date != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_due_date
+            value: 'failed to parse evidence details due_date: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.details.date_added
+      tag: date_date_added
+      target_field: circl.kev.date_added
+      formats:
+        - yyyy-MM-dd
+      if: ctx._tmp?.details?.date_added != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_date_added
+            value: 'failed to parse evidence details date_added: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.details.added_date
+      tag: date_added_date
+      target_field: circl.kev.added_date
+      formats:
+        - ISO8601
+      if: ctx._tmp?.details?.added_date != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_added_date
+            value: 'failed to parse evidence details added_date: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.details.observation_date
+      tag: date_observation_date
+      target_field: circl.kev.observation_date
+      formats:
+        - yyyy-MM-dd
+      if: ctx._tmp?.details?.observation_date != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_observation_date
+            value: 'failed to parse evidence details observation_date: {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.details.dateReported
+      tag: date_date_reported
+      target_field: circl.kev.date_reported
+      formats:
+        - yyyy/MM/dd
+        - dd/MM/yy
+      if: ctx._tmp?.details?.dateReported != null
+      description: >-
+        The ENISA CNW JSON sub-catalog reports `yyyy/MM/dd` while its CSV sub-catalog reports a
+        two-digit-year day-first `dd/MM/yy` on the same key.
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_date_reported
+            value: 'failed to parse evidence details dateReported: {{{ _ingest.on_failure_message }}}'
+  - remove:
+      field:
+        - _tmp.details.due_date
+        - _tmp.details.date_added
+        - _tmp.details.added_date
+        - _tmp.details.observation_date
+        - _tmp.details.dateReported
+      tag: remove_promoted_detail_dates
+      ignore_missing: true
+  - rename:
+      field: _tmp.details
+      tag: rename_remaining_evidence_details
+      target_field: circl.kev.evidence.details
+      ignore_missing: true
+      if: ctx._tmp?.details instanceof Map && ctx._tmp.details.size() != 0
+      description: >-
+        Whatever the catalog-specific details object still holds after promotion is kept as a
+        flattened blob, because a new upstream feed adds a new key set with no notice.
+
+  ###########
+  # Cleanup #
+  ###########
+  - remove:
+      field:
+        - _tmp
+        - json
+      tag: remove_temporary_fields
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

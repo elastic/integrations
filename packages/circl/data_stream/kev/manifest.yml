@@ -1,0 +1,96 @@
+title: "Known Exploited Vulnerabilities"
+type: logs
+streams:
+  - input: cel
+    title: "CIRCL Vulnerability-Lookup KEV assertions"
+    description: "Collect Known Exploited Vulnerability assertions from a CIRCL Vulnerability-Lookup instance."
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: url
+        title: URL
+        description: Base URL of the Vulnerability-Lookup instance, including scheme. Use the public CIRCL instance or your own self-hosted deployment.
+        multi: false
+        required: true
+        show_user: true
+        default: https://vulnerability.circl.lu
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the KEV catalog is polled. Supports seconds, minutes and hours. The public instance is cached for 30 minutes, so polling faster than that cannot return anything new.
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+      - name: api_key
+        type: password
+        title: API Key
+        description: Optional API key for the Vulnerability-Lookup instance. It is not required to read KEV data. Supplying one moves the client to the higher per-key rate-limit tier of 40 requests per minute, instead of 20 requests per minute for anonymous clients.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to collect on the first run, for example `720h`. The API filters at whole-day granularity, so this is rounded down to a date. Leave empty to perform a complete catalog backfill, which is the default and the recommended setting.
+        multi: false
+        required: false
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of records requested per page. The server silently clamps values above 1000.
+        multi: false
+        required: true
+        show_user: false
+        default: 1000
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. This must comfortably exceed 30 seconds, because cache-miss requests to the public instance occasionally stall for that long before returning a transient error.
+        multi: false
+        required: false
+        show_user: false
+        default: 120s
+      - name: proxy_url
+        type: url
+        title: Proxy URL
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options, relevant mainly for self-hosted instances using a private CA. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags applied to every document.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - circl-kev
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+        multi: false
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracer
+        description: The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        multi: false
+        required: true
+        show_user: false
+        default: false
