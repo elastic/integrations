@@ -38,7 +38,8 @@ processors:
       tag: drop_empty_events
   - set:
       field: event.kind
-      value: [event]
+      tag: set_event_kind
+      value: event
   - date:
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
@@ -238,6 +239,36 @@ processors:
       value: '{{{source.user.email}}}'
       if: ctx.source?.user?.name != null
       allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+      if: ctx.event?.action != null
+  - append:
+      field: event.type
+      tag: append_creation_into_event_type
+      value: creation
+      if: ctx.event?.action == 'IMPORT_SSH_PUBLIC_KEY'
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type
+      value: deletion
+      if: ctx.event?.action != null && ["DELETE_POSIX_ACCOUNT","DELETE_SSH_PUBLIC_KEY"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_access_into_event_type
+      value: access
+      if: ctx.event?.action != null && ["GET_SSH_PUBLIC_KEY","GET_LOGIN_PROFILE"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      value: change
+      if: ctx.event?.action == 'UPDATE_SSH_PUBLIC_KEY'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type_for_unknown_gcp_action
+      value: info
+      if: ctx.event?.action != null && !["IMPORT_SSH_PUBLIC_KEY","DELETE_POSIX_ACCOUNT","DELETE_SSH_PUBLIC_KEY","GET_SSH_PUBLIC_KEY","GET_LOGIN_PROFILE","UPDATE_SSH_PUBLIC_KEY"].contains(ctx.event.action)
   - script:
       lang: painless
       description: Map Event parameters into key value pair.

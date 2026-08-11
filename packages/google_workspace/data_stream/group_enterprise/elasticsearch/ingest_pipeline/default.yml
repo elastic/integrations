@@ -36,9 +36,6 @@ processors:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
       tag: drop_empty_events
-  - set:
-      field: event.kind
-      value: [event]
   - date:
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
@@ -192,6 +189,48 @@ processors:
       field: user.id
       copy_from: source.user.id
       ignore_empty_value: true
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_group_into_event_type
+      value: group
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      value: configuration
+      if: ctx.event?.action != null && ["add_info_setting", "remove_info_setting", "change_info_setting", "add_security_setting", "remove_security_setting", "change_security_setting", "change_security_setting_state", "add_service_account_permission", "remove_service_account_permission", "add_dynamic_group_query", "change_dynamic_group_query", "create_namespace", "delete_namespace"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      value: change
+      if: ctx.event?.action != null && ["change_info_setting", "change_security_setting", "change_security_setting_state", "change_dynamic_group_query", "update_membership_expiry", "approve_join_request", "join", "unban_member"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      if: ctx.event?.action != null && ["accept_invitation", "request_to_join", "reject_invitation", "reject_join_request", "ban_member_with_moderation"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_user_into_event_type
+      value: user
+      if: ctx.event?.action != null && ["accept_invitation", "add_member", "remove_member", "invite_member", "join", "reject_invitation", "reject_join_request", "request_to_join", "revoke_invitation", "ban_member_with_moderation", "unban_member", "approve_join_request"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_creation_into_event_type
+      value: creation
+      if: ctx.event?.action != null && ["create_group", "create_namespace", "add_info_setting", "add_security_setting", "add_service_account_permission", "add_member", "add_member_role", "add_dynamic_group_query", "add_membership_expiry", "invite_member"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type
+      value: deletion
+      if: ctx.event?.action != null && ["delete_group", "delete_namespace", "remove_info_setting", "remove_security_setting", "remove_service_account_permission", "remove_member", "remove_member_role", "remove_membership_expiry", "revoke_invitation"].contains(ctx.event.action)
   - script:
       lang: painless
       description: Extract User name and User domain from Email.
