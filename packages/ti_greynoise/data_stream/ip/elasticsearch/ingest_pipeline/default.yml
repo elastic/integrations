@@ -3,15 +3,15 @@ description: Pipeline for processing ip logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - remove:
       field:
         - organization
@@ -19,184 +19,184 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.ip
         - json.internet_scanner_intelligence.last_seen_timestamp
-      tag: fingerprint_ip
+      tag: fingerprint_ip_1651e2e5
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_enrichment
+      tag: set_event_kind_to_enrichment_3410a97a
       value: enrichment
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_4039b90d
       value: threat
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_d4da06cc
       value: indicator
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_1b3fbbe2
       value: Threat Intelligence
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_f5e077d1
       value: GreyNoise
   - rename:
       field: json.ip
-      tag: rename_ip
+      tag: rename_ip_268915d2
       target_field: threat.indicator.ip
       ignore_missing: true
   - set:
       field: greynoise.ip.indicator.ip
-      tag: set_indicator_ip
+      tag: set_indicator_ip_5729433b
       copy_from: threat.indicator.ip
       ignore_empty_value: true
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name
+      tag: set_threat_indicator_name_754c9cb2
       copy_from: threat.indicator.ip
       ignore_empty_value: true
   - convert:
       field: json.business_service_intelligence.found
-      tag: convert_business_service_intelligence_found_to_boolean
+      tag: convert_business_service_intelligence_found_to_boolean_e08b8a3a
       target_field: greynoise.ip.business_service_intelligence.found
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_a8154e27
+            tag: append_error_message_e6fbccb1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.business_service_intelligence.category
-      tag: rename_business_service_intelligence_category
+      tag: rename_business_service_intelligence_category_84fc3f1d
       target_field: greynoise.ip.business_service_intelligence.category
       ignore_missing: true
   - rename:
       field: json.business_service_intelligence.description
-      tag: rename_business_service_intelligence_description
+      tag: rename_business_service_intelligence_description_1ce665d6
       target_field: greynoise.ip.business_service_intelligence.description
       ignore_missing: true
   - rename:
       field: json.business_service_intelligence.explanation
-      tag: rename_business_service_intelligence_explanation
+      tag: rename_business_service_intelligence_explanation_223603f9
       target_field: greynoise.ip.business_service_intelligence.explanation
       ignore_missing: true
   - date:
       field: json.business_service_intelligence.last_updated
-      tag: date_business_service_intelligence_last_updated
+      tag: date_business_service_intelligence_last_updated_9b8bb192
       target_field: greynoise.ip.business_service_intelligence.last_updated
       formats:
         - yyyy-MM-dd'T'HH:mm:ss'Z'
       if: ctx.json?.business_service_intelligence?.last_updated != null && ctx.json.business_service_intelligence.last_updated != ''
       on_failure:
         - append:
-            tag: append_error_message_34b0379d
+            tag: append_error_message_d6cfc13e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.business_service_intelligence.name
-      tag: rename_business_service_intelligence_name
+      tag: rename_business_service_intelligence_name_377d066c
       target_field: greynoise.ip.business_service_intelligence.name
       ignore_missing: true
   - rename:
       field: json.business_service_intelligence.reference
-      tag: rename_business_service_intelligence_reference
+      tag: rename_business_service_intelligence_reference_5ac5a3d2
       target_field: greynoise.ip.business_service_intelligence.reference
       ignore_missing: true
   - set:
       field: threat.indicator.url.full
-      tag: set_threat_indicator_url_full
+      tag: set_threat_indicator_url_full_daa8d84d
       copy_from: greynoise.ip.business_service_intelligence.reference
       ignore_empty_value: true
   - rename:
       field: json.business_service_intelligence.trust_level
-      tag: rename_business_service_intelligence_trust_level
+      tag: rename_business_service_intelligence_trust_level_85a6ddcb
       target_field: greynoise.ip.business_service_intelligence.trust_level
       ignore_missing: true
   - rename:
       field: json.internet_scanner_intelligence.actor
-      tag: rename_internet_scanner_intelligence_actor
+      tag: rename_internet_scanner_intelligence_actor_5503a8df
       target_field: greynoise.ip.internet_scanner_intelligence.actor
       ignore_missing: true
   - set:
       field: organization.name
-      tag: set_organization_name_from_ip_internet_scanner_intelligence_actor
+      tag: set_organization_name_from_ip_internet_scanner_intelligence_actor_ff62ec1d
       copy_from: greynoise.ip.internet_scanner_intelligence.actor
       ignore_empty_value: true
   - convert:
       field: json.internet_scanner_intelligence.bot
-      tag: convert_internet_scanner_intelligence_bot_to_boolean
+      tag: convert_internet_scanner_intelligence_bot_to_boolean_ed563d75
       target_field: greynoise.ip.internet_scanner_intelligence.bot
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_609e00a8
+            tag: append_error_message_ffe3c3dd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.internet_scanner_intelligence.classification
-      tag: rename_internet_scanner_intelligence_classification
+      tag: rename_internet_scanner_intelligence_classification_cf4b3256
       target_field: greynoise.ip.internet_scanner_intelligence.classification
       ignore_missing: true
   - convert:
       field: json.internet_scanner_intelligence.found
-      tag: convert_internet_scanner_intelligence_found_to_boolean
+      tag: convert_internet_scanner_intelligence_found_to_boolean_bacbc3ce
       target_field: greynoise.ip.internet_scanner_intelligence.found
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_e634be79
+            tag: append_error_message_cb8a3bd3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.internet_scanner_intelligence.last_seen
-      tag: date_internet_scanner_intelligence_last_seen
+      tag: date_internet_scanner_intelligence_last_seen_aa6a3d49
       target_field: greynoise.ip.internet_scanner_intelligence.last_seen
       formats:
         - yyyy-MM-dd
       if: ctx.json?.internet_scanner_intelligence?.last_seen != null && ctx.json.internet_scanner_intelligence.last_seen != ''
       on_failure:
         - append:
-            tag: append_error_message_4d5bfd01
+            tag: append_error_message_ee7fb58f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.internet_scanner_intelligence.last_seen_timestamp
-      tag: date_internet_scanner_intelligence_last_seen_timestamp
+      tag: date_internet_scanner_intelligence_last_seen_timestamp_9da4028c
       target_field: greynoise.ip.internet_scanner_intelligence.last_seen_timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss
@@ -204,26 +204,26 @@ processors:
       if: ctx.json?.internet_scanner_intelligence?.last_seen_timestamp != null && ctx.json.internet_scanner_intelligence.last_seen_timestamp != ''
       on_failure:
         - append:
-            tag: append_error_message_22202546
+            tag: append_error_message_06da2ffb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_ip_internet_scanner_intelligence_last_seen_timestamp
+      tag: set_@timestamp_from_ip_internet_scanner_intelligence_last_seen_timestamp_9a61dee4
       copy_from: greynoise.ip.internet_scanner_intelligence.last_seen_timestamp
       ignore_empty_value: true
   - set:
       field: threat.indicator.last_seen
-      tag: set_threat_indicator_last_seen_from_ip_internet_scanner_intelligence_last_seen_timestamp
+      tag: set_threat_indicator_last_seen_from_ip_internet_scanner_intelligence_last_seen_timestamp_a130ae4f
       copy_from: greynoise.ip.internet_scanner_intelligence.last_seen_timestamp
       ignore_empty_value: true
   - rename:
       field: json.internet_scanner_intelligence.metadata.asn
-      tag: rename_internet_scanner_intelligence_metadata_asn
+      tag: rename_internet_scanner_intelligence_metadata_asn_d294ba7e
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.asn
       ignore_missing: true
   - gsub:
-      tag: gsub_greynoise_ip_internet_scanner_intelligence_metadata_asn_to_threat_indicator_as_number_a8b7373b
+      tag: gsub_greynoise_ip_internet_scanner_intelligence_metadata_asn_to_threat_indicator_as_number_d60dc398
       field: greynoise.ip.internet_scanner_intelligence.metadata.asn
       target_field: threat.indicator.as.number
       pattern: 'AS'
@@ -231,158 +231,158 @@ processors:
       if: ctx.greynoise?.ip?.internet_scanner_intelligence?.metadata?.asn != null && ctx.greynoise.ip.internet_scanner_intelligence.metadata.asn != ''
   - convert:
       field: threat.indicator.as.number
-      tag: convert_threat_indicator_as_number
+      tag: convert_threat_indicator_as_number_69f78850
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_98a16d98
+            tag: append_error_message_6ad17b67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_threat_indicator_as_number_80cd56a8
+            tag: remove_threat_indicator_as_number_860ff97d
             field: threat.indicator.as.number
   - rename:
       field: json.internet_scanner_intelligence.metadata.category
-      tag: rename_internet_scanner_intelligence_metadata_category
+      tag: rename_internet_scanner_intelligence_metadata_category_d522cbcf
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.category
       ignore_missing: true
   - convert:
       field: json.internet_scanner_intelligence.metadata.mobile
-      tag: convert_internet_scanner_intelligence_metadata_mobile_to_boolean
+      tag: convert_internet_scanner_intelligence_metadata_mobile_to_boolean_b2444528
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.mobile
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_58bd188f
+            tag: append_error_message_cd394212
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.internet_scanner_intelligence.metadata.organization
-      tag: rename_internet_scanner_intelligence_metadata_organization
+      tag: rename_internet_scanner_intelligence_metadata_organization_536963fe
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.organization
       ignore_missing: true
   - set:
       field: threat.indicator.as.organization.name
-      tag: set_threat_indicator_as_organization_name_from_ip_internet_scanner_intelligence_metadata_organization
+      tag: set_threat_indicator_as_organization_name_from_ip_internet_scanner_intelligence_metadata_organization_a97613ff
       copy_from: greynoise.ip.internet_scanner_intelligence.metadata.organization
       ignore_empty_value: true
   - rename:
       field: json.internet_scanner_intelligence.metadata.rdns
-      tag: rename_internet_scanner_intelligence_metadata_rdns
+      tag: rename_internet_scanner_intelligence_metadata_rdns_74e0a334
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.rdns
       ignore_missing: true
   - rename:
       field: json.internet_scanner_intelligence.metadata.region
-      tag: rename_internet_scanner_intelligence_metadata_region
+      tag: rename_internet_scanner_intelligence_metadata_region_4ed45673
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.region
       ignore_missing: true
   - set:
       field: threat.indicator.geo.region_name
-      tag: set_threat_indicator_geo_region_name_from_ip_internet_scanner_intelligence_metadata_region
+      tag: set_threat_indicator_geo_region_name_from_ip_internet_scanner_intelligence_metadata_region_8ac003e5
       copy_from: greynoise.ip.internet_scanner_intelligence.metadata.region
       ignore_empty_value: true
   - rename:
       field: json.internet_scanner_intelligence.metadata.source_city
-      tag: rename_internet_scanner_intelligence_metadata_source_city
+      tag: rename_internet_scanner_intelligence_metadata_source_city_e38a89d7
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.source_city
       ignore_missing: true
   - set:
       field: threat.indicator.geo.city_name
-      tag: set_threat_indicator_geo_city_name_from_ip_internet_scanner_intelligence_metadata_source_city
+      tag: set_threat_indicator_geo_city_name_from_ip_internet_scanner_intelligence_metadata_source_city_d7196cf2
       copy_from: greynoise.ip.internet_scanner_intelligence.metadata.source_city
       ignore_empty_value: true
   - rename:
       field: json.internet_scanner_intelligence.metadata.source_country
-      tag: rename_internet_scanner_intelligence_metadata_source_country
+      tag: rename_internet_scanner_intelligence_metadata_source_country_a8cd6b5b
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.source_country
       ignore_missing: true
   - set:
       field: threat.indicator.geo.country_name
-      tag: set_threat_indicator_geo_country_name_from_ip_internet_scanner_intelligence_metadata_source_country
+      tag: set_threat_indicator_geo_country_name_from_ip_internet_scanner_intelligence_metadata_source_country_b2bc01ef
       copy_from: greynoise.ip.internet_scanner_intelligence.metadata.source_country
       ignore_empty_value: true
   - rename:
       field: json.internet_scanner_intelligence.metadata.source_country_code
-      tag: rename_internet_scanner_intelligence_metadata_source_country_code
+      tag: rename_internet_scanner_intelligence_metadata_source_country_code_6b562b7e
       target_field: greynoise.ip.internet_scanner_intelligence.metadata.source_country_code
       ignore_missing: true
   - set:
       field: threat.indicator.geo.country_iso_code
-      tag: set_threat_indicator_geo_country_iso_code_from_ip_internet_scanner_intelligence_metadata_source_country_code
+      tag: set_threat_indicator_geo_country_iso_code_from_ip_internet_scanner_intelligence_metadata_source_country_code_95cc2fc5
       copy_from: greynoise.ip.internet_scanner_intelligence.metadata.source_country_code
       ignore_empty_value: true
   - convert:
       field: json.internet_scanner_intelligence.spoofable
-      tag: convert_internet_scanner_intelligence_spoofable_to_boolean
+      tag: convert_internet_scanner_intelligence_spoofable_to_boolean_44fd2792
       target_field: greynoise.ip.internet_scanner_intelligence.spoofable
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_ee717e58
+            tag: append_error_message_5b31a761
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_internet_scanner_intelligence_tags_efbc068a
+      tag: foreach_json_internet_scanner_intelligence_tags_d0109995
       field: json.internet_scanner_intelligence.tags
       if: ctx.json?.internet_scanner_intelligence?.tags instanceof List
       processor:
         append:
           field: greynoise.ip.internet_scanner_intelligence.tag.names
-          tag: append_internet_scanner_intelligence_tag_names
+          tag: append_internet_scanner_intelligence_tag_names_78b5d65f
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_greynoise_ip_internet_scanner_intelligence_tag_names_5fd52255
+      tag: foreach_greynoise_ip_internet_scanner_intelligence_tag_names_d99a3557
       field: greynoise.ip.internet_scanner_intelligence.tag.names
       if: ctx.greynoise?.ip?.internet_scanner_intelligence?.tag?.names instanceof List
       processor:
         append:
           field: tags
-          tag: append_tags
+          tag: append_tags_0a6c2d9a
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - convert:
       field: json.internet_scanner_intelligence.tor
-      tag: convert_internet_scanner_intelligence_tor_to_boolean
+      tag: convert_internet_scanner_intelligence_tor_to_boolean_7f76a778
       target_field: greynoise.ip.internet_scanner_intelligence.tor
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_414373e4
+            tag: append_error_message_e2220f90
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.internet_scanner_intelligence.vpn
-      tag: convert_internet_scanner_intelligence_vpn_to_boolean
+      tag: convert_internet_scanner_intelligence_vpn_to_boolean_2d9e6184
       target_field: greynoise.ip.internet_scanner_intelligence.vpn
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_223c1b15
+            tag: append_error_message_e93832fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.internet_scanner_intelligence.vpn_service
-      tag: rename_internet_scanner_intelligence_vpn_service
+      tag: rename_internet_scanner_intelligence_vpn_service_ae32873b
       target_field: greynoise.ip.internet_scanner_intelligence.vpn_service
       ignore_missing: true
   - set:
       field: threat.indicator.reference
-      tag: set_threat_indicator_reference_from_ip_internet_scanner_intelligence_ip
+      tag: set_threat_indicator_reference_from_ip_internet_scanner_intelligence_ip_d5c7a4f7
       value: 'https://www.greynoise.io/ip/{{{threat.indicator.ip}}}'
       if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip != ''
   - set:
       field: threat.indicator.provider
-      tag: set_threat_indicator_provider
+      tag: set_threat_indicator_provider_594f8887
       value: GreyNoise
   - set:
       field: threat.indicator.description
-      tag: set_threat_indicator_description
+      tag: set_threat_indicator_description_32aca49b
       value: '{{{threat.indicator.ip}}} IP has been observed mass scanning the internet by GreyNoise with a classification of {{{greynoise.ip.internet_scanner_intelligence.classification}}}'
       if: >-
         ctx.threat?.indicator?.ip != null &&
@@ -391,32 +391,32 @@ processors:
         ctx.greynoise.ip.internet_scanner_intelligence.classification != ''
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type
+      tag: set_threat_indicator_type_08395b94
       value: ipv4-addr
   - set:
       field: threat.feed.description
-      tag: set_threat_feed_description
+      tag: set_threat_feed_description_c96789f2
       value: 'Threat feed from the GreyNoise cybersecurity platform'
   - set:
       field: threat.feed.name
-      tag: set_threat_feed_name
+      tag: set_threat_feed_name_2cf27abf
       value: 'GreyNoise IP'
   - set:
       field: threat.feed.reference
-      tag: set_threat_feed_provider
+      tag: set_threat_feed_provider_7f77d1af
       value: 'https://docs.greynoise.io/docs/using-greynoise-as-an-indicator-feed'
   - append:
       field: related.ip
-      tag: append_threat_indicator_ip_into_related_ip
+      tag: append_threat_indicator_ip_into_related_ip_d57eade3
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip != ''
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -435,18 +435,18 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -454,10 +454,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags_fbf50489
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

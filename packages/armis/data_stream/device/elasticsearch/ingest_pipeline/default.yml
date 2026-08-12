@@ -3,15 +3,15 @@ description: Pipeline for processing Device logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - remove:
       field:
         - organization
@@ -19,97 +19,97 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.lastSeen
         - json.id
-      tag: fingerprint_device
+      tag: fingerprint_device_fcf3cecb
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_5098f71a
       value: host
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_1e721121
       value: Armis
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_4f1031b1
       value: Asset Management and Security
   - rename:
       field: json.accessSwitch
-      tag: rename_accessSwitch
+      tag: rename_accessSwitch_7e57417d
       target_field: armis.device.access_switch
       ignore_missing: true
   - rename:
       field: json.boundaries
-      tag: rename_boundaries
+      tag: rename_boundaries_ae6da29b
       target_field: armis.device.boundaries
       ignore_missing: true
   - rename:
       field: json.businessImpact
-      tag: rename_businessImpact
+      tag: rename_businessImpact_7ed1280e
       target_field: armis.device.business_impact
       ignore_missing: true
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_4527ef3e
       target_field: armis.device.category
       ignore_missing: true
   - set:
       field: host.type
-      tag: set_event_start_from_device_first_seen
+      tag: set_host_type_from_device_category_835a5a5a
       copy_from: armis.device.category
       ignore_empty_value: true
   - rename:
       field: json.customProperties
-      tag: rename_customProperties
+      tag: rename_customProperties_fe8512d4
       target_field: armis.device.custom_properties
       ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources
+      tag: foreach_dataSources_3b66f9ec
       if: ctx.json?.dataSources instanceof List
       processor:
         date:
           field: _ingest._value.firstSeen
-          tag: date_dataSources_firstSeen
+          tag: date_dataSources_firstSeen_fa0aa546
           target_field: _ingest._value.first_seen
           formats:
             - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -117,22 +117,22 @@ processors:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_firstSeen
+                tag: remove_ingest_value_firstSeen_961a288c
                 field: _ingest._value.firstSeen
                 ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources_44a528e5
+      tag: foreach_dataSources_b33cbb26
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
-          tag: foreach_ingest_value_instances
+          tag: foreach_ingest_value_instances_4c4f4b0a
           field: _ingest._value.instances
           ignore_failure: true
           processor:
             date:
               field: _ingest._value.firstSeen
-              tag: date_dataSources_instances_firstSeen
+              tag: date_dataSources_instances_firstSeen_af483c50
               target_field: _ingest._value.first_seen
               formats:
                 - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -140,22 +140,22 @@ processors:
                 - ISO8601
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_firstSeen_743481c2
+                    tag: remove_ingest_value_firstSeen_04537305
                     field: _ingest._value.firstSeen
                     ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources_80aabde7
+      tag: foreach_dataSources_b5c9ea75
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
-          tag: foreach_ingest_value_instances_2129e376
+          tag: foreach_ingest_value_instances_a1bc8789
           field: _ingest._value.instances
           ignore_failure: true
           processor:
             date:
               field: _ingest._value.lastSeen
-              tag: date_dataSources_instances_lastSeen
+              tag: date_dataSources_instances_lastSeen_5572b597
               target_field: _ingest._value.last_seen
               formats:
                 - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -163,17 +163,17 @@ processors:
                 - ISO8601
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_lastSeen
+                    tag: remove_ingest_value_lastSeen_d7120d9b
                     field: _ingest._value.lastSeen
                     ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources_b14257f2
+      tag: foreach_dataSources_f5389b51
       if: ctx.json?.dataSources instanceof List
       processor:
         date:
           field: _ingest._value.lastSeen
-          tag: date_dataSources_lastSeen
+          tag: date_dataSources_lastSeen_304d6a5b
           target_field: _ingest._value.last_seen
           formats:
             - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -181,16 +181,16 @@ processors:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_lastSeen_c3795701
+                tag: remove_ingest_value_lastSeen_085eec64
                 field: _ingest._value.lastSeen
                 ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources_23b1bbea
+      tag: foreach_dataSources_3207fb3a
       if: ctx.json?.dataSources instanceof List
       processor:
         foreach:
-          tag: foreach_ingest_value_instances_20f07e12
+          tag: foreach_ingest_value_instances_c914fc86
           field: _ingest._value.instances
           ignore_failure: true
           processor:
@@ -198,32 +198,32 @@ processors:
               field:
                 - _ingest._value.firstSeen
                 - _ingest._value.lastSeen
-              tag: remove_dataSources_instances
+              tag: remove_dataSources_instances_b8fb7882
               ignore_missing: true
   - foreach:
       field: json.dataSources
-      tag: foreach_dataSources_17aa49c5
+      tag: foreach_dataSources_9ef5e1cd
       if: ctx.json?.dataSources instanceof List
       processor:
         remove:
           field:
             - _ingest._value.firstSeen
             - _ingest._value.lastSeen
-          tag: remove_dataSources
+          tag: remove_dataSources_cd3d55dd
           ignore_missing: true
   - rename:
       field: json.dataSources
-      tag: rename_dataSources
+      tag: rename_dataSources_00cf83b0
       target_field: armis.device.data_sources
       ignore_missing: true
   - rename:
       field: json.displayTitle
-      tag: rename_displayTitle
+      tag: rename_displayTitle_37135cc0
       target_field: armis.device.display_title
       ignore_missing: true
   - date:
       field: json.firstSeen
-      tag: date_firstSeen
+      tag: date_firstSeen_aee83ac6
       target_field: armis.device.first_seen
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -232,113 +232,113 @@ processors:
       if: ctx.json?.firstSeen != null && ctx.json.firstSeen != ''
       on_failure:
         - append:
-            tag: append_error_message_3f050535
+            tag: append_error_message_0097a93c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_device_first_seen_62b39146
+      tag: set_event_start_from_device_first_seen_2b893b8a
       copy_from: armis.device.first_seen
       ignore_empty_value: true
   - convert:
       field: json.id
-      tag: convert_id_to_string
+      tag: convert_id_to_string_a9441eec
       target_field: armis.device.id
       type: string
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_device_id
+      tag: set_host_id_from_device_id_2b6248f0
       copy_from: armis.device.id
       ignore_empty_value: true
   - split:
       field: json.ipAddress
       separator: ', '
-      tag: split_ipAddress
+      tag: split_ipAddress_a3996da5
       target_field: armis.device.ip_address
       ignore_missing: true
       if: ctx.json?.ipAddress instanceof String && ctx.json.ipAddress != ''
       on_failure:
         - append:
-            tag: append_error_message_1ef97379
+            tag: append_error_message_8d28a041
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: armis.device.ip_address
-      tag: foreach_armis_device_ip_address
+      tag: foreach_armis_device_ip_address_7c4bd811
       if: ctx.armis?.device?.ip_address instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_ip_address_to_ip
+          tag: convert_ip_address_to_ip_de3bf6b9
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value
+                tag: remove_ingest_value_c074057b
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_2e352249
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: armis.device.ip_address
-      tag: foreach_armis_device_ip_address_83fc270f
+      tag: foreach_armis_device_ip_address_e8f30162
       if: ctx.armis?.device?.ip_address instanceof List
       processor:
         append:
           field: host.ip
-          tag: append_armis_device_ip_address_into_host_ip
+          tag: append_armis_device_ip_address_into_host_ip_1526220b
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: armis.device.ip_address
-      tag: foreach_armis_device_ip_address_cbd753d5
+      tag: foreach_armis_device_ip_address_1376e630
       if: ctx.armis?.device?.ip_address instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_armis_device_ip_address_into_related_ip
+          tag: append_armis_device_ip_address_into_related_ip_b9d29c99
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: json.ipv6
-      tag: foreach_ipv6
+      tag: foreach_ipv6_b292a2cb
       if: ctx.json?.ipv6 instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_ipv6_to_ip
+          tag: convert_ipv6_to_ip_71b93569
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_2b6b117d
+                tag: remove_ingest_value_930cd818
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message_ed446288
+                tag: append_error_message_1309c10b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ipv6
-      tag: rename_ipv6
+      tag: rename_ipv6_feafdcf9
       target_field: armis.device.ip_v6
       ignore_missing: true
   - foreach:
       field: armis.device.ip_v6
-      tag: foreach_armis_device_ip_v6
+      tag: foreach_armis_device_ip_v6_04fe69fe
       if: ctx.armis?.device?.ip_v6 instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_armis_device_user_ids_into_related_ip
+          tag: append_armis_device_user_ids_into_related_ip_f73808d9
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - date:
       field: json.lastSeen
-      tag: date_lastSeen
+      tag: date_lastSeen_f63f951d
       target_field: armis.device.last_seen
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -347,169 +347,169 @@ processors:
       if: ctx.json?.lastSeen != null && ctx.json.lastSeen != ''
       on_failure:
         - append:
-            tag: append_error_message_36ac071d
+            tag: append_error_message_2aa199e6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_device_last_seen
+      tag: set_@timestamp_from_device_last_seen_5369de33
       copy_from: armis.device.last_seen
       ignore_empty_value: true
   - split:
       field: json.macAddress
       separator: ', '
-      tag: split_mac_address
+      tag: split_mac_address_c8604337
       target_field: armis.device.mac_address
       ignore_missing: true
       if: ctx.json?.macAddress instanceof String && ctx.json.macAddress != ''
       on_failure:
         - append:
-            tag: append_error_message_304849a2
+            tag: append_error_message_9dd916b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_armis_device_mac_address_886e7aa3
+      tag: foreach_armis_device_mac_address_eecd0985
       field: armis.device.mac_address
       if: ctx.armis?.device?.mac_address instanceof List
       ignore_failure: true
       processor:
         append:
           field: host.mac
-          tag: append_armis_device_mac_address_into_host_mac
+          tag: append_armis_device_mac_address_into_host_mac_1a266910
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_host_mac_cf1efd0d
+      tag: foreach_host_mac_f72245a2
       field: host.mac
       if: ctx.host?.mac instanceof List
       ignore_failure: true
       processor:
         gsub:
           field: _ingest._value
-          tag: gsub_host_mac_for_each_mac
+          tag: gsub_host_mac_for_each_mac_7dd8ad91
           pattern: ':'
           replacement: '-'
           ignore_missing: true
           on_failure:
             - append:
-                tag: append_error_message_808486c0
+                tag: append_error_message_94b901ab
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_host_mac_15ece91a
+      tag: foreach_host_mac_de0cd755
       field: host.mac
       if: ctx.host?.mac instanceof List
       ignore_failure: true
       processor:
         uppercase:
           field: _ingest._value
-          tag: uppercase_host_mac_for_each_mac
+          tag: uppercase_host_mac_for_each_mac_ebf4297c
           ignore_missing: true
   - rename:
       field: json.manufacturer
-      tag: rename_manufacturer
+      tag: rename_manufacturer_b46203f6
       target_field: armis.device.manufacturer
       ignore_missing: true
   - set:
       field: device.manufacturer
-      tag: set_device_manufacturer_from_device_manufacturer
+      tag: set_device_manufacturer_from_device_manufacturer_90e232d6
       copy_from: armis.device.manufacturer
       ignore_empty_value: true
   - rename:
       field: json.model
-      tag: rename_model
+      tag: rename_model_78bffe6d
       target_field: armis.device.model
       ignore_missing: true
   - set:
       field: device.model.name
-      tag: set_device_model_name_from_device_model
+      tag: set_device_model_name_from_device_model_2a3620f1
       copy_from: armis.device.model
       ignore_empty_value: true
   - rename:
       field: json.name
-      tag: rename_name
+      tag: rename_name_7782a2e0
       target_field: armis.device.name
       ignore_missing: true
   - split:
       field: json.names
       separator: ','
-      tag: split_names
+      tag: split_names_0e1777f1
       target_field: armis.device.names
       ignore_missing: true
       if: ctx.json?.names instanceof String && ctx.json.names != ''
       on_failure:
         - append:
-            tag: append_error_message_76b1b9d9
+            tag: append_error_message_1e8b6e9f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_armis_device_names_01a73f31
+      tag: foreach_armis_device_names_9f7526b5
       field: armis.device.names
       if: ctx.armis?.device?.names instanceof List
       ignore_failure: true
       processor:
         append:
           field: host.name
-          tag: append_armis_device_names_into_host_name
+          tag: append_armis_device_names_into_host_name_954091d0
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: host.name
-      tag: foreach_host_name
+      tag: foreach_host_name_ca07f4d8
       if: ctx.host?.name instanceof List
       processor:
         lowercase:
           field: _ingest._value
-          tag: lowercase_host_name
+          tag: lowercase_host_name_a483eca9
           ignore_missing: true
   - foreach:
-      tag: foreach_host_name_13da92ce
+      tag: foreach_host_name_3adea8f9
       field: host.name
       if: ctx.host?.name instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.hosts
-          tag: append_host_name_into_related_hosts
+          tag: append_host_name_into_related_hosts_6a520d26
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.operatingSystem
-      tag: rename_operatingSystem
+      tag: rename_operatingSystem_6d3dda96
       target_field: armis.device.operating_system
       ignore_missing: true
   - set:
       field: host.os.family
-      tag: set_host_os_family_from_device_operating_system
+      tag: set_host_os_family_from_device_operating_system_48c49e60
       copy_from: armis.device.operating_system
       ignore_empty_value: true
   - lowercase:
       field: host.os.family
-      tag: lowercase_host_os_family
+      tag: lowercase_host_os_family_8fdfcf7a
       ignore_missing: true
   - set:
       field: host.os.type
-      tag: set_host_os_type_from_host_os_family
+      tag: set_host_os_type_from_host_os_family_b3a835d4
       copy_from: host.os.family
       ignore_empty_value: true
   - rename:
       field: json.operatingSystemVersion
-      tag: rename_operatingSystemVersion
+      tag: rename_operatingSystemVersion_2c464f51
       target_field: armis.device.operating_system_version
       ignore_missing: true
   - set:
       field: host.os.version
-      tag: set_host_os_version_from_device_operating_system_version
+      tag: set_host_os_version_from_device_operating_system_version_e778f52d
       copy_from: armis.device.operating_system_version
       ignore_empty_value: true
   - foreach:
       field: json.protections
-      tag: foreach_json_protections
+      tag: foreach_json_protections_072bd316
       if: ctx.json?.protections instanceof List
       processor:
         date:
           field: _ingest._value.creationTime
-          tag: date_protections_creationTime
+          tag: date_protections_creationTime_c253c9ba
           target_field: _ingest._value.creation_time
           formats:
             - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -517,28 +517,28 @@ processors:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_creationTime
+                tag: remove_ingest_value_creationTime_4d57dc60
                 field: _ingest._value.creationTime
                 ignore_missing: true
   - foreach:
       field: json.protections
-      tag: foreach_json_protections_ab2da63a
+      tag: foreach_json_protections_6f70a97a
       if: ctx.json?.protections instanceof List
       processor:
         convert:
           field: _ingest._value.deviceId
-          tag: convert_deviceIds_to_string
+          tag: convert_deviceIds_to_string_cef4c108
           target_field: _ingest._value.device_id
           type: string
           ignore_missing: true
   - foreach:
       field: json.protections
-      tag: foreach_json_protections_7ad79d22
+      tag: foreach_json_protections_adbbd5d4
       if: ctx.json?.protections instanceof List
       processor:
         date:
           field: _ingest._value.lastSeenTime
-          tag: date_protections_lastSeenTime
+          tag: date_protections_lastSeenTime_e76ba941
           target_field: _ingest._value.last_seen_time
           formats:
             - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -546,21 +546,21 @@ processors:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_lastSeenTime
+                tag: remove_ingest_value_lastSeenTime_a2f3a1a8
                 field: _ingest._value.lastSeenTime
                 ignore_missing: true
   - foreach:
-      tag: foreach_json_protections_40ae4388
+      tag: foreach_json_protections_469ea9f9
       field: json.protections
       if: ctx.json?.protections instanceof List
       processor:
         rename:
           field: _ingest._value.protectionName
-          tag: rename_protections_protectionName
+          tag: rename_protections_protectionName_47ec59ac
           target_field: _ingest._value.protection_name
           ignore_missing: true
   - foreach:
-      tag: foreach_json_protections_dc8b0544
+      tag: foreach_json_protections_a3212a20
       field: json.protections
       if: ctx.json?.protections instanceof List
       processor:
@@ -569,114 +569,114 @@ processors:
             - _ingest._value.creationTime
             - _ingest._value.lastSeenTime
             - _ingest._value.deviceId
-          tag: remove_protections
+          tag: remove_protections_a842abc4
           ignore_missing: true
   - rename:
       field: json.protections
-      tag: rename_protections
+      tag: rename_protections_52347b09
       target_field: armis.device.protections
       ignore_missing: true
   - convert:
       field: json.purdueLevel
-      tag: convert_purdueLevel_to_double
+      tag: convert_purdueLevel_to_double_90d3f68d
       target_field: armis.device.purdue_level
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_750fa912
+            tag: append_error_message_ab7e09fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.riskLevel
-      tag: convert_riskLevel_to_long
+      tag: convert_riskLevel_to_long_6f02d90f
       target_field: armis.device.risk_level
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_e1222968
+            tag: append_error_message_2d5ed7ef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.risk.static_score
-      tag: set_host_risk_static_score_from_device_risk_level
+      tag: set_host_risk_static_score_from_device_risk_level_33839526
       copy_from: armis.device.risk_level
       ignore_empty_value: true
   - convert:
       field: host.risk.static_score
-      tag: convert_armis_device_risk_level_to_double
+      tag: convert_armis_device_risk_level_to_double_f8cb2821
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_3141b072
+            tag: append_error_message_9b638634
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sensor.name
-      tag: rename_sensor_name
+      tag: rename_sensor_name_067ef44c
       target_field: armis.device.sensor.name
       ignore_missing: true
   - rename:
       field: json.sensor.type
-      tag: rename_sensor_type
+      tag: rename_sensor_type_962deb0d
       target_field: armis.device.sensor.type
       ignore_missing: true
   - rename:
       field: json.site.location
-      tag: rename_site_location
+      tag: rename_site_location_861fb09c
       target_field: armis.device.site.location
       ignore_missing: true
   - rename:
       field: json.site.name
-      tag: rename_site_name
+      tag: rename_site_name_a7e7e4c8
       target_field: armis.device.site.name
       ignore_missing: true
   - rename:
       field: json.tags
-      tag: rename_tags
+      tag: rename_tags_fdad5fba
       target_field: armis.device.tags
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_8556b451
       target_field: armis.device.type
       ignore_missing: true
   - rename:
       field: json.typeEnum
-      tag: rename_typeEnum
+      tag: rename_typeEnum_aefb1488
       target_field: armis.device.type_enum
       ignore_missing: true
   - convert:
       field: json.userIds
-      tag: convert_userIds
+      tag: convert_userIds_c28d11b3
       target_field: armis.device.user_ids
       type: string
       ignore_missing: true
   - foreach:
       field: armis.device.user_ids
-      tag: foreach_armis_device_user_ids
+      tag: foreach_armis_device_user_ids_989b472b
       if: ctx.armis?.device?.user_ids instanceof List
       processor:
         append:
           field: user.id
-          tag: append_armis_device_user_ids_into_user_id
+          tag: append_armis_device_user_ids_into_user_id_2ae8753e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: armis.device.user_ids
-      tag: foreach_armis_device_user_ids_eb2fdd9d
+      tag: foreach_armis_device_user_ids_b99bac61
       if: ctx.armis?.device?.user_ids instanceof List
       processor:
         append:
           field: related.user
-          tag: append_armis_device_user_ids_into_related_user
+          tag: append_armis_device_user_ids_into_related_user_193f1038
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.visibility
-      tag: rename_visibility
+      tag: rename_visibility_b21c5fe1
       target_field: armis.device.visibility
       ignore_missing: true
   - remove:
@@ -693,16 +693,16 @@ processors:
         - armis.device.user_ids
         - armis.device.category
         - armis.device.operating_system
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_98ef0dc0
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -728,18 +728,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message_dfb15182
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -747,10 +747,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,7 +2,7 @@
 description: Pipeline for processing Datastore logs.
 processors:
   - drop:
-      tag: drop_8a0518c5
+      tag: drop_aa8574ed
       description: Ignore retry placeholder message.
       if: ctx.message == 'retry'
   - remove:
@@ -12,555 +12,555 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_d5c66e22
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - fingerprint:
       fields:
         - json.uid
         - json.lastModifiedTime
         - json.createdDate
-      tag: fingerprint_datastore
+      tag: fingerprint_datastore_d52d7b6b
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: json.account.inPlatformIdentifier
-      tag: rename_account_inPlatformIdentifier
+      tag: rename_account_inPlatformIdentifier_174a532e
       target_field: cyera.datastore.account.in_platform_identifier
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_datastore_account_in_platform_identifier
+      tag: set_cloud_account_id_from_datastore_account_in_platform_identifier_28ede25f
       copy_from: cyera.datastore.account.in_platform_identifier
       ignore_empty_value: true
   - rename:
       field: json.account.name
-      tag: rename_account_name
+      tag: rename_account_name_80c7dac6
       target_field: cyera.datastore.account.name
       ignore_missing: true
   - set:
       field: cloud.account.name
-      tag: set_cloud_account_name_from_datastore_account_name
+      tag: set_cloud_account_name_from_datastore_account_name_ba115175
       copy_from: cyera.datastore.account.name
       ignore_empty_value: true
   - rename:
       field: json.arn
-      tag: rename_arn
+      tag: rename_arn_aca286c1
       target_field: cyera.datastore.arn
       ignore_missing: true
   - convert:
       field: json.autoScan
-      tag: convert_autoScan_to_boolean
+      tag: convert_autoScan_to_boolean_468b5787
       target_field: cyera.datastore.auto_scan
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_45d7036a
+            tag: append_error_message_35356442
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.azureId
-      tag: rename_azureId
+      tag: rename_azureId_d6e7ba65
       target_field: cyera.datastore.azure_id
       ignore_missing: true
   - rename:
       field: json.classificationGroups
-      tag: rename_classificationGroups
+      tag: rename_classificationGroups_23f6dd76
       target_field: cyera.datastore.classification.groups
       ignore_missing: true
   - rename:
       field: json.classificationLevel
-      tag: rename_classificationLevel
+      tag: rename_classificationLevel_558a0536
       target_field: cyera.datastore.classification.level
       ignore_missing: true
   - rename:
       field: json.cloudProviderTags
-      tag: rename_cloudProviderTags
+      tag: rename_cloudProviderTags_416efceb
       target_field: cyera.datastore.cloud_provider.tags
       ignore_missing: true
   - rename:
       field: json.cloudProviderUrl
-      tag: rename_cloudProviderUrl
+      tag: rename_cloudProviderUrl_eeb1de1b
       target_field: cyera.datastore.cloud_provider.url
       ignore_missing: true
   - rename:
       field: json.collections
-      tag: rename_collections
+      tag: rename_collections_1d75f915
       target_field: cyera.datastore.collections
       ignore_missing: true
   - date:
       field: json.createdDate
-      tag: date_createdDate
+      tag: date_createdDate_d2d11051
       target_field: cyera.datastore.created_date
       formats:
         - ISO8601
       if: ctx.json?.createdDate != null && ctx.json.createdDate != ''
       on_failure:
         - append:
-            tag: append_error_message_e3b068e9
+            tag: append_error_message_79793df3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_datastore_created_date
+      tag: set_event_created_from_datastore_created_date_8069483a
       copy_from: cyera.datastore.created_date
       ignore_empty_value: true
   - rename:
       field: json.customCollections
-      tag: rename_customCollections
+      tag: rename_customCollections_2db423b6
       target_field: cyera.datastore.custom_collections
       ignore_missing: true
   - rename:
       field: json.dataType
-      tag: rename_dataType
+      tag: rename_dataType_6cd6b315
       target_field: cyera.datastore.data_type
       ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_datastoreOwners_datastoreUid
+      tag: foreach_datastoreOwners_datastoreUid_d17caf59
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         rename:
           field: _ingest._value.datastoreUid
-          tag: rename_datastoreOwners_datastoreUid
+          tag: rename_datastoreOwners_datastoreUid_f2bb2e7d
           target_field: _ingest._value.datastore_uid
           ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_datastoreOwners_email
+      tag: foreach_datastoreOwners_email_c2467a54
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         append:
           field: related.user
-          tag: append_datastoreOwners_email_into_related_user
+          tag: append_datastoreOwners_email_into_related_user_fb9dd976
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_datastoreOwners_ownerType
+      tag: foreach_datastoreOwners_ownerType_b519bea8
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         rename:
           field: _ingest._value.ownerType
-          tag: rename_datastoreOwners_ownerType
+          tag: rename_datastoreOwners_ownerType_87fc9dbb
           target_field: _ingest._value.owner_type
           ignore_missing: true
   - foreach:
       field: json.datastoreOwners
-      tag: foreach_datastoreOwners_datastoreOwnerUid
+      tag: foreach_datastoreOwners_datastoreOwnerUid_5cbe40aa
       if: ctx.json?.datastoreOwners instanceof List
       processor:
         rename:
           field: _ingest._value.datastoreOwnerUid
-          tag: rename_datastoreOwners_datastoreOwnerUid
+          tag: rename_datastoreOwners_datastoreOwnerUid_cda38674
           target_field: _ingest._value.uid
           ignore_missing: true
   - rename:
       field: json.datastoreOwners
-      tag: rename_datastoreOwners
+      tag: rename_datastoreOwners_078e572f
       target_field: cyera.datastore.datastore.owners
       ignore_missing: true
   - convert:
       field: json.datastoreSizeInGiB
-      tag: convert_datastoreSizeInGiB_to_double
+      tag: convert_datastoreSizeInGiB_to_double_2ecba3e2
       target_field: cyera.datastore.datastore.size_in_gi_b
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_0efb3603
+            tag: append_error_message_137761bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.discoveredDate
-      tag: date_discoveredDate
+      tag: date_discoveredDate_7c699daa
       target_field: cyera.datastore.discovered_date
       formats:
         - ISO8601
       if: ctx.json?.discoveredDate != null && ctx.json.discoveredDate != ''
       on_failure:
         - append:
-            tag: append_error_message_cd2ce22b
+            tag: append_error_message_e5931fef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.driveId
-      tag: rename_driveId
+      tag: rename_driveId_b0df2b65
       target_field: cyera.datastore.drive_id
       ignore_missing: true
   - convert:
       field: json.encrypted
-      tag: convert_encrypted_to_boolean
+      tag: convert_encrypted_to_boolean_0bf0d429
       target_field: cyera.datastore.encrypted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_4f35a635
+            tag: append_error_message_8578ef56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.engine
-      tag: rename_engine
+      tag: rename_engine_5c46f585
       target_field: cyera.datastore.engine
       ignore_missing: true
   - rename:
       field: json.frameworks
-      tag: rename_frameworks
+      tag: rename_frameworks_ac8d4bb1
       target_field: cyera.datastore.frameworks
       ignore_missing: true
   - convert:
       field: json.ghost
-      tag: convert_ghost_to_boolean
+      tag: convert_ghost_to_boolean_1f1333f5
       target_field: cyera.datastore.ghost
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_3bdea7e6
+            tag: append_error_message_87cfdc40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.infrastructure
-      tag: rename_infrastructure
+      tag: rename_infrastructure_5b879219
       target_field: cyera.datastore.infrastructure
       ignore_missing: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name_from_datastore_infrastructure
+      tag: set_cloud_service_name_from_datastore_infrastructure_3e5a7ee2
       copy_from: cyera.datastore.infrastructure
       ignore_empty_value: true
   - convert:
       field: json.issues.closed
-      tag: convert_issues_closed_to_long
+      tag: convert_issues_closed_to_long_ab020d52
       target_field: cyera.datastore.issues.closed
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_d8f829ba
+            tag: append_error_message_012b990d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.issues.inProgress
-      tag: convert_issues_inProgress_to_long
+      tag: convert_issues_inProgress_to_long_bea20f39
       target_field: cyera.datastore.issues.in_progress
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_32971783
+            tag: append_error_message_1352ddf3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.issues.open
-      tag: convert_issues_open_to_long
+      tag: convert_issues_open_to_long_8b83cda8
       target_field: cyera.datastore.issues.open
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_ce35ec72
+            tag: append_error_message_d47e8aa1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.lastDataRefresh
-      tag: date_lastDataRefresh
+      tag: date_lastDataRefresh_19862368
       target_field: cyera.datastore.last.data_refresh
       formats:
         - ISO8601
       if: ctx.json?.lastDataRefresh != null && ctx.json.lastDataRefresh != ''
       on_failure:
         - append:
-            tag: append_error_message_269ab3c0
+            tag: append_error_message_ebfe9d4f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.lastModifiedTime
-      tag: date_lastModifiedTime
+      tag: date_lastModifiedTime_b16cdfcc
       target_field: cyera.datastore.last.modified_time
       formats:
         - ISO8601
       if: ctx.json?.lastModifiedTime != null && ctx.json.lastModifiedTime != ''
       on_failure:
         - append:
-            tag: append_error_message_4c9672f7
+            tag: append_error_message_51dc07fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_datastore_last_modified_time
+      tag: set_@timestamp_from_datastore_last_modified_time_a7a7c42b
       copy_from: cyera.datastore.last.modified_time
       ignore_empty_value: true
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_datastore_created_date
+      tag: set_@timestamp_from_datastore_created_date_451c5bdf
       copy_from: cyera.datastore.created_date
       if: ctx.cyera?.datastore?.last?.modified_time == null
       ignore_empty_value: true
   - convert:
       field: json.learned
-      tag: convert_learned_to_boolean
+      tag: convert_learned_to_boolean_ecc56bd2
       target_field: cyera.datastore.learned
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_69afca3a
+            tag: append_error_message_60983174
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.logging
-      tag: rename_logging
+      tag: rename_logging_aab81a8e
       target_field: cyera.datastore.logging
       ignore_missing: true
   - rename:
       field: json.name
-      tag: rename_name
+      tag: rename_name_c8474a42
       target_field: cyera.datastore.name
       ignore_missing: true
   - set:
       field: service.name
-      tag: set_service_name_from_datastore_name
+      tag: set_service_name_from_datastore_name_7be570b2
       copy_from: cyera.datastore.name
       ignore_empty_value: true
   - rename:
       field: json.owner
-      tag: rename_owner
+      tag: rename_owner_41d28665
       target_field: cyera.datastore.owner
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_datastore_owner
+      tag: set_user_email_from_datastore_owner_34fd3058
       copy_from: cyera.datastore.owner
       ignore_empty_value: true
       if: ctx.cyera?.datastore?.owner != null && ctx.cyera.datastore.owner.contains('@')
   - set:
       field: user.name
-      tag: set_user_name_from_datastore_owner
+      tag: set_user_name_from_datastore_owner_893ada15
       copy_from: cyera.datastore.owner
       ignore_empty_value: true
       if: ctx.user?.email == null
   - dissect:
       field: cyera.datastore.owner
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_cyera_datastore_owner
+      tag: dissect_cyera_datastore_owner_394be18b
       ignore_missing: true
       if: ctx.cyera?.datastore?.owner != null && ctx.cyera.datastore.owner.contains('@')
   - append:
       field: related.user
-      tag: append_datastore_owner_into_related_user
+      tag: append_datastore_owner_into_related_user_830754bc
       value: '{{{cyera.datastore.owner}}}'
       allow_duplicates: false
       if: ctx.cyera?.datastore?.owner != null
   - rename:
       field: json.projectIds
-      tag: rename_projectIds
+      tag: rename_projectIds_c79cda35
       target_field: cyera.datastore.project_ids
       ignore_missing: true
   - rename:
       field: json.provider
-      tag: rename_provider
+      tag: rename_provider_1598d955
       target_field: cyera.datastore.provider
       ignore_missing: true
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_from_datastore_provider
+      tag: set_cloud_provider_from_datastore_provider_be3aad95
       copy_from: cyera.datastore.provider
       ignore_empty_value: true
   - lowercase:
       field: cloud.provider
-      tag: lowercase_cloud_provider
+      tag: lowercase_cloud_provider_1a17fc24
       ignore_missing: true
   - rename:
       field: json.publicAccessibilityState
-      tag: rename_publicAccessibilityState
+      tag: rename_publicAccessibilityState_57300fe0
       target_field: cyera.datastore.public_accessibility_state
       ignore_missing: true
   - rename:
       field: json.rdsEndpoint
-      tag: rename_rdsEndpoint
+      tag: rename_rdsEndpoint_a5a6c510
       target_field: cyera.datastore.rds_endpoint
       ignore_missing: true
   - convert:
       field: json.recordCountBySensitivity.Internal
-      tag: convert_recordCountBySensitivity_Internal_to_long
+      tag: convert_recordCountBySensitivity_Internal_to_long_f6a05141
       target_field: cyera.datastore.record_count_by_sensitivity.internal
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_aac85816
+            tag: append_error_message_3eb9d1b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.recordCountBySensitivity.NotSensitive
-      tag: convert_recordCountBySensitivity_NotSensitive_to_long
+      tag: convert_recordCountBySensitivity_NotSensitive_to_long_4a478219
       target_field: cyera.datastore.record_count_by_sensitivity.not_sensitive
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_041de9d5
+            tag: append_error_message_f6e07797
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.recordCountBySensitivity.Sensitive
-      tag: convert_recordCountBySensitivity_Sensitive_to_long
+      tag: convert_recordCountBySensitivity_Sensitive_to_long_6010efe3
       target_field: cyera.datastore.record_count_by_sensitivity.sensitive
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_93410457
+            tag: append_error_message_264584cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.recordCountBySensitivity.Unclassified
-      tag: convert_recordCountBySensitivity_Unclassified_to_long
+      tag: convert_recordCountBySensitivity_Unclassified_to_long_92029e7a
       target_field: cyera.datastore.record_count_by_sensitivity.unclassified
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_917f772d
+            tag: append_error_message_6bcf4cb1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.recordCountBySensitivity.VerySensitive
-      tag: convert_recordCountBySensitivity_VerySensitive_to_long
+      tag: convert_recordCountBySensitivity_VerySensitive_to_long_2a1d99c3
       target_field: cyera.datastore.record_count_by_sensitivity.very_sensitive
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_34ec9088
+            tag: append_error_message_3fa7ec8a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.regions
-      tag: foreach_regions
+      tag: foreach_regions_03117b9a
       if: ctx.json?.regions instanceof List
       processor:
         append:
           field: cloud.region
-          tag: append_regions_into_cloud_region
+          tag: append_regions_into_cloud_region_b238a601
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.regions
-      tag: rename_regions
+      tag: rename_regions_b4e39e51
       target_field: cyera.datastore.regions
       ignore_missing: true
   - rename:
       field: json.scanningState
-      tag: rename_scanningState
+      tag: rename_scanningState_2b6f0125
       target_field: cyera.datastore.scanning_state
       ignore_missing: true
   - rename:
       field: json.sensitivityDisplayName
-      tag: rename_sensitivityDisplayName
+      tag: rename_sensitivityDisplayName_ed4b18d8
       target_field: cyera.datastore.sensitivity.display_name
       ignore_missing: true
   - rename:
       field: json.sensitivity
-      tag: rename_sensitivity
+      tag: rename_sensitivity_2b8b3cd2
       target_field: cyera.datastore.sensitivity.value
       ignore_missing: true
   - rename:
       field: json.siteId
-      tag: rename_siteId
+      tag: rename_siteId_b1a04154
       target_field: cyera.datastore.site.id
       ignore_missing: true
   - rename:
       field: json.siteName
-      tag: rename_siteName
+      tag: rename_siteName_aaa48564
       target_field: cyera.datastore.site.name
       ignore_missing: true
   - rename:
       field: json.sslEnforced
-      tag: rename_sslEnforced
+      tag: rename_sslEnforced_7f893f8d
       target_field: cyera.datastore.ssl_enforced
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_47061c06
       target_field: cyera.datastore.type
       ignore_missing: true
   - set:
       field: service.type
-      tag: set_service_type_from_datastore_type
+      tag: set_service_type_from_datastore_type_0adf93f3
       copy_from: cyera.datastore.type
       ignore_empty_value: true
   - rename:
       field: json.uid
-      tag: rename_uid
+      tag: rename_uid_e49903dc
       target_field: cyera.datastore.uid
       ignore_missing: true
   - set:
       field: service.id
-      tag: set_service_id_from_datastore_uid
+      tag: set_service_id_from_datastore_uid_568f1c2e
       copy_from: cyera.datastore.uid
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_datastore_uid
+      tag: set_event_id_from_datastore_uid_4c9bc91a
       copy_from: cyera.datastore.uid
       ignore_empty_value: true
   - rename:
       field: json.userId
-      tag: rename_userId
+      tag: rename_userId_8e62950e
       target_field: cyera.datastore.user.id
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_datastore_userId
+      tag: set_user_id_from_datastore_userId_6733cff1
       copy_from: cyera.datastore.user.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_datastore_user_id_into_related_user
+      tag: append_datastore_user_id_into_related_user_62428ee2
       value: '{{{cyera.datastore.user.id}}}'
       allow_duplicates: false
       if: ctx.cyera?.datastore?.user?.id != null
   - rename:
       field: json.userTags
-      tag: rename_userTags
+      tag: rename_userTags_571abde6
       target_field: cyera.datastore.user.tags
       ignore_missing: true
   - rename:
       field: json.vpc
-      tag: rename_vpc
+      tag: rename_vpc_b08c4c90
       target_field: cyera.datastore.vpc
       ignore_missing: true
   - remove:
@@ -576,15 +576,15 @@ processors:
         - cyera.datastore.type
         - cyera.datastore.uid
         - cyera.datastore.user.id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_a110d764
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -611,18 +611,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -630,10 +630,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

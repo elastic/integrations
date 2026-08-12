@@ -2,31 +2,31 @@
 description: Pipeline for Swimlane Audit Logs
 processors:
   - set:
-      tag: set_event_original_b9758751
+      tag: set_event_original_990fc2f3
       field: event.original
       copy_from: message
   - json:
-      tag: json_message_to_json_576c813b
+      tag: json_message_to_json_649b2289
       field: message
       target_field: json
       ignore_failure: true
   - drop:
-      tag: drop_631a5346
+      tag: drop_acb5b6f4
       if: ctx.json == null || !(ctx.json instanceof Map)
   - remove:
-      tag: remove_974dbe77
+      tag: remove_2cf04eba
       field:
         - message
         - input
         - log
       ignore_missing: true
   - rename:
-      tag: rename_json_to_swimlane_audit_log_d2655548
+      tag: rename_json_to_swimlane_audit_log_abd84bef
       field: json
       target_field: swimlane.audit_log
       ignore_missing: true
   - drop:
-      tag: drop_5063c354
+      tag: drop_1e0aa322
       if: >-
         ctx.swimlane?.audit_log?.description != null &&
         (
@@ -34,43 +34,43 @@ processors:
           ctx.swimlane.audit_log.description.toLowerCase().contains('created a new record')
         )
   - json:
-      tag: json_swimlane_audit_log_newValue_561e4375
+      tag: json_swimlane_audit_log_newValue_3c186eb2
       field: swimlane.audit_log.newValue
       if: ctx.swimlane?.audit_log?.newValue != null
       ignore_failure: true
   - rename:
-      tag: rename_swimlane_audit_log_user_to_user_name_dbbc9be1
+      tag: rename_swimlane_audit_log_user_to_user_name_d834976b
       field: swimlane.audit_log.user
       target_field: user.name
       ignore_missing: true
   - append:
-      tag: append_related_user_837e080f
+      tag: append_related_user_325195a6
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - rename:
-      tag: rename_swimlane_audit_log_accountId_to_cloud_origin_account_id_f309b8fd
+      tag: rename_swimlane_audit_log_accountId_to_cloud_origin_account_id_2a854e81
       field: swimlane.audit_log.accountId
       target_field: cloud.origin.account.id
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_tenantId_to_cloud_origin_project_id_a841958a
+      tag: rename_swimlane_audit_log_tenantId_to_cloud_origin_project_id_cbd32487
       field: swimlane.audit_log.tenantId
       target_field: cloud.origin.project.id
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_logLevel_to_log_level_519425d8
+      tag: rename_swimlane_audit_log_logLevel_to_log_level_3ee0906b
       field: swimlane.audit_log.logLevel
       target_field: log.level
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_path_to_url_path_0515a08d
+      tag: rename_swimlane_audit_log_path_to_url_path_04f39696
       field: swimlane.audit_log.path
       target_field: url.path
       ignore_missing: true
   - script:
-      tag: script_0fb4f610
+      tag: script_db8ff8d6
       lang: painless
       description: Normalize SourceIp to a single value
       source: >-
@@ -83,7 +83,7 @@ processors:
             }
         }
   - grok:
-      tag: grok_swimlane_audit_log_sourceIp_30e91ffc
+      tag: grok_swimlane_audit_log_sourceIp_6ac73999
       field: swimlane.audit_log.sourceIp
       patterns:
         - '::ffff:%{IPV4:source.ip}'
@@ -91,53 +91,53 @@ processors:
         - '%{IPV6:source.ip}'
       ignore_failure: true
   - geoip:
-      tag: geoip_source_ip_to_source_geo_da2e41b2
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_tenant_to_cloud_origin_tenant_id_4e46bff8
+      tag: rename_swimlane_audit_log_tenant_to_cloud_origin_tenant_id_3094457b
       field: swimlane.audit_log.tenant
       target_field: cloud.origin.tenant.id
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_category_to_log_category_fa1d4a96
+      tag: rename_swimlane_audit_log_category_to_log_category_10749655
       field: swimlane.audit_log.category
       target_field: log.category
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_logFeatureCategory_to_log_feature_category_e1839923
+      tag: rename_swimlane_audit_log_logFeatureCategory_to_log_feature_category_537607be
       field: swimlane.audit_log.logFeatureCategory
       target_field: log.feature_category
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_logSource_to_log_source_type_d85318e8
+      tag: rename_swimlane_audit_log_logSource_to_log_source_type_c80e4851
       field: swimlane.audit_log.logSource
       target_field: log.source.type
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_logType_to_log_type_f49fe23a
+      tag: rename_swimlane_audit_log_logType_to_log_type_1a9d70da
       field: swimlane.audit_log.logType
       target_field: log.type
       ignore_missing: true
   - rename:
-      tag: rename_swimlane_audit_log_description_to_message_7e7bb22b
+      tag: rename_swimlane_audit_log_description_to_message_f44e3632
       field: swimlane.audit_log.description
       target_field: message
       ignore_missing: true
   - set:
-      tag: set_message_da12ebac
+      tag: set_message_3e28ea47
       field: message
       value: '{{{message}}}'
       if: ctx.message != null && ctx.message != ''
   - rename:
-      tag: rename_swimlane_audit_log_userId_to_user_id_aab25936
+      tag: rename_swimlane_audit_log_userId_to_user_id_ddfbf50d
       field: swimlane.audit_log.userId
       target_field: user.id
       ignore_missing: true
   - script:
       lang: painless
-      tag: add_ecs_categorization_5da2a2f7
+      tag: add_ecs_categorization_907dba2d
       params:
         Create:
           type:
@@ -169,68 +169,68 @@ processors:
         def hm = new HashMap(params.get(ctx.swimlane?.audit_log?.ActionType));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - grok:
-      tag: grok_swimlane_audit_log_endpoint_2bf2105a
+      tag: grok_swimlane_audit_log_endpoint_27df0c58
       field: swimlane.audit_log.endpoint
       patterns:
         - '%{GREEDYDATA:url.path}'
       ignore_missing: true
   - drop:
-      tag: drop_df5a2f3e
+      tag: drop_064ef718
       description: Drop events related to the hubs/record endpoint
       if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().contains('hubs/record')
   - drop:
-      tag: drop_1abc01dd
+      tag: drop_d39d6301
       description: Drop events related to any record updates
       if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().endsWith('/values')
   - rename:
-      tag: rename_swimlane_audit_log_eventOutcome_to_event_outcome_b878d118
+      tag: rename_swimlane_audit_log_eventOutcome_to_event_outcome_79410360
       field: swimlane.audit_log.eventOutcome
       target_field: event.outcome
       ignore_missing: true
   - lowercase:
-      tag: lowercase_event_outcome_eb9dfc47
+      tag: lowercase_event_outcome_cfcf3a0f
       field: event.outcome
       ignore_missing: true
   - set:
-      tag: set_user_roles_558b689e
+      tag: set_user_roles_be8afef5
       field: user.roles
       value: ['administrator']
       if: ctx.swimlane?.audit_log?.isAdmin == 'True'
   - rename:
-      tag: rename_swimlane_audit_log_authenticationType_to_user_authentication_type_b4a5d0bb
+      tag: rename_swimlane_audit_log_authenticationType_to_user_authentication_type_c401d607
       field: swimlane.audit_log.authenticationType
       target_field: user.authentication.type
       ignore_missing: true
   - lowercase:
-      tag: lowercase_user_authentication_type_f3146340
+      tag: lowercase_user_authentication_type_41c30272
       field: user.authentication.type
       ignore_missing: true
   - user_agent:
-      tag: user_agent_swimlane_audit_log_userAgent_30bda3c1
+      tag: user_agent_swimlane_audit_log_userAgent_3d632f44
       field: swimlane.audit_log.userAgent
       ignore_missing: true
   - date:
-      tag: date_swimlane_audit_log_eventTime_to_timestamp_a7ebb4c6
+      tag: date_swimlane_audit_log_eventTime_to_timestamp_9e2f0013
       field: swimlane.audit_log.eventTime
       target_field: '@timestamp'
       formats:
         - ISO8601
   - remove:
-      tag: remove_swimlane_96409c73
+      tag: remove_swimlane_1b248413
       field: swimlane
       ignore_missing: false
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

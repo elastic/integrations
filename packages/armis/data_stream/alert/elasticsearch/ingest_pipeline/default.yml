@@ -3,15 +3,15 @@ description: Pipeline for processing alert logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - remove:
       field:
         - organization
@@ -19,132 +19,132 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.time
         - json.alertId
-      tag: fingerprint_alert
+      tag: fingerprint_alert_d7a9e6f7
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_ab1166ce
       value: alert
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_1e721121
       value: Armis
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_4f1031b1
       value: Asset Management and Security
   - rename:
       field: json.activityUUIDs
-      tag: rename_activityUUIDs
+      tag: rename_activityUUIDs_bc8cbe85
       target_field: armis.alert.activity_uuids
       ignore_missing: true
   - convert:
       field: json.affectedDevicesCount
-      tag: convert_affectedDevicesCount_to_long
+      tag: convert_affectedDevicesCount_to_long_2bf40759
       target_field: armis.alert.affected_devices_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_6bf4e364
+            tag: append_error_message_eb9ad3ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.alertId
-      tag: convert_alertId_to_string
+      tag: convert_alertId_to_string_af908a61
       target_field: armis.alert.alert_id
       type: string
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_alert_alert_id
+      tag: set_event_id_from_alert_alert_id_f3a3be33
       copy_from: armis.alert.alert_id
       ignore_empty_value: true
   - rename:
       field: json.classification
-      tag: rename_classification
+      tag: rename_classification_82be00c7
       target_field: armis.alert.classification
       ignore_missing: true
   - rename:
       field: json.connectionIds
-      tag: rename_connectionIds
+      tag: rename_connectionIds_78169558
       target_field: armis.alert.connection_ids
       ignore_missing: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_1830810d
       target_field: armis.alert.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_alert_description
+      tag: set_message_from_alert_description_1a0e396b
       copy_from: armis.alert.description
       ignore_empty_value: true
   - rename:
       field: json.destinationEndpoints
-      tag: rename_destinationEndpoints
+      tag: rename_destinationEndpoints_0593a116
       target_field: armis.alert.destination_endpoints
       ignore_missing: true
   - convert:
       field: json.deviceIds
-      tag: convert_deviceIds_to_string
+      tag: convert_deviceIds_to_string_bf1f6fce
       target_field: armis.alert.device_ids
       type: string
       ignore_missing: true
   - foreach:
       field: armis.alert.device_ids
-      tag: foreach_deviceIds
+      tag: foreach_deviceIds_2c57ad89
       if: ctx.armis?.alert?.device_ids instanceof List
       processor:
         append:
           field: host.id
-          tag: append_deviceIds_into_host_id
+          tag: append_deviceIds_into_host_id_f392fb5f
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: armis.alert.device_ids
-      tag: foreach_deviceIds_4938258b
+      tag: foreach_deviceIds_4dad0bd9
       if: ctx.armis?.alert?.device_ids instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_deviceIds_into_related_hosts
+          tag: append_deviceIds_into_related_hosts_d4e7db0d
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - date:
       field: json.lastAlertUpdateTime
-      tag: date_lastAlertUpdateTime
+      tag: date_lastAlertUpdateTime_1ca28d43
       target_field: armis.alert.last_alert_update_time
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -153,60 +153,60 @@ processors:
       if: ctx.json?.lastAlertUpdateTime != null && ctx.json.lastAlertUpdateTime != ''
       on_failure:
         - append:
-            tag: append_error_message_962c6444
+            tag: append_error_message_76d6ade2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.mitreAttackLabels
-      tag: rename_mitreAttackLabels
+      tag: rename_mitreAttackLabels_9f54e46e
       target_field: armis.alert.mitre_attack_labels
       ignore_missing: true
   - append:
       field: threat.technique.name
-      tag: append_mitre_attack_labels_into_threat_technique_name
+      tag: append_mitre_attack_labels_into_threat_technique_name_59fdd6bf
       value: '{{{armis.alert.mitre_attack_labels}}}'
       allow_duplicates: false
       if: ctx.armis?.alert?.mitre_attack_labels != null
   - convert:
       field: json.policyId
-      tag: convert_policyId_to_string
+      tag: convert_policyId_to_string_2290a807
       target_field: armis.alert.policy_id
       type: string
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_alert_policy_id
+      tag: set_rule_id_from_alert_policy_id_99a49515
       copy_from: armis.alert.policy_id
       ignore_empty_value: true
   - rename:
       field: json.policyLabels
-      tag: rename_policyLabels
+      tag: rename_policyLabels_512c7420
       target_field: armis.alert.policy_labels
       ignore_missing: true
   - rename:
       field: json.policyTitle
-      tag: rename_policyTitle
+      tag: rename_policyTitle_f0e31c36
       target_field: armis.alert.policy_title
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_alert_policy_title
+      tag: set_rule_name_from_alert_policy_title_fb6b6b7a
       copy_from: armis.alert.policy_title
       ignore_empty_value: true
   - set:
       field: armis.alert.friendly_name
-      tag: set_armis_alert_friendly_name_from_alert_policy_title
+      tag: set_armis_alert_friendly_name_from_alert_policy_title_e64923f1
       copy_from: armis.alert.policy_title
       ignore_empty_value: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_34a6b985
       target_field: armis.alert.severity
       ignore_missing: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_8d987b89
       if: ctx.armis?.alert?.severity instanceof String
       source: |-
         String severity = ctx.armis.alert.severity;
@@ -221,22 +221,22 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_b608e76d
+            tag: append_error_message_8985b3cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sourceEndpoints
-      tag: rename_sourceEndpoints
+      tag: rename_sourceEndpoints_27538fe7
       target_field: armis.alert.source_endpoints
       ignore_missing: true
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_49c9c205
       target_field: armis.alert.status
       ignore_missing: true
   - date:
       field: json.statusChangeTime
-      tag: date_statusChangeTime
+      tag: date_statusChangeTime_51885014
       target_field: armis.alert.status_change_time
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -245,17 +245,17 @@ processors:
       if: ctx.json?.statusChangeTime != null && ctx.json.statusChangeTime != ''
       on_failure:
         - append:
-            tag: append_error_message_9981e61c
+            tag: append_error_message_9b8291d1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_status_change_time
+      tag: set_@timestamp_from_status_change_time_b58429fe
       copy_from: armis.alert.status_change_time
       ignore_empty_value: true
   - date:
       field: json.time
-      tag: date_time
+      tag: date_time_15aea5bd
       target_field: armis.alert.time
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
@@ -264,17 +264,17 @@ processors:
       if: ctx.json?.time != null && ctx.json.time != ''
       on_failure:
         - append:
-            tag: append_error_message_7ab96520
+            tag: append_error_message_a4c1ae4a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.title
-      tag: rename_title
+      tag: rename_title_89d82af8
       target_field: armis.alert.title
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_6bf00cc7
       target_field: armis.alert.type
       ignore_missing: true
   - remove:
@@ -286,16 +286,16 @@ processors:
         - armis.alert.policy_title
         - armis.alert.status_change_time
         - armis.alert.mitre_attack_labels
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_7784b98f
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -321,18 +321,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -340,10 +340,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

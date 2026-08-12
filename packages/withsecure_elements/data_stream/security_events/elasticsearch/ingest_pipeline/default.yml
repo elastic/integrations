@@ -7,12 +7,12 @@ processors:
       copy_from: message
       if: ctx.event?.original == null && ctx.message != null
       ignore_failure: true
-      tag: set_event_original
+      tag: set_event_original_9fef8b10
   - remove:
       field: message
       if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_edcbffed
 
   # Parse JSON directly into custom namespace
   - json:
@@ -21,41 +21,41 @@ processors:
       if: ctx.event?.original != null && ctx.event.original instanceof String
       on_failure:
         - set:
-            tag: set_error_message_ed130b04
+            tag: set_error_message_8b43f7cf
             field: error.message
             value: 'Failed to parse JSON from event.original'
-      tag: json_decode
+      tag: json_decode_4c694c9f
       description: Decode JSON from event.original into withsecure_elements.security_events
 
   # Set ECS version and basic fields
   - set:
       field: ecs.version
       value: '8.11.0'
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
   - set:
       field: event.dataset
       value: withsecure_elements.security_events
-      tag: set_event_dataset
+      tag: set_event_dataset_622541f0
   - set:
       field: event.module
       value: withsecure_elements
-      tag: set_event_module
+      tag: set_event_module_614d9fa0
   - set:
       field: event.category
       value: [threat]
-      tag: set_event_category
+      tag: set_event_category_4675e36d
   - set:
       field: event.type
       value: [info]
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
   - set:
       field: event.kind
       value: event
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
   - set:
       field: event.provider
       value: withsecure_elements
-      tag: set_event_provider
+      tag: set_event_provider_9379fd36
 
   # Generate unique _id for automatic deduplication
   - fingerprint:
@@ -64,7 +64,7 @@ processors:
         - withsecure_elements.security_events.persistenceTimestamp
       target_field: _id
       ignore_missing: true
-      tag: generate_document_id
+      tag: generate_document_id_f51c916c
 
   # Map to ECS fields using copy_from
   - set:
@@ -72,16 +72,16 @@ processors:
       copy_from: withsecure_elements.security_events.id
       if: ctx.withsecure_elements?.security_events?.id != null
       ignore_failure: true
-      tag: set_event_id
+      tag: set_event_id_0cff88d9
   - set:
       field: event.action
       copy_from: withsecure_elements.security_events.action
       if: ctx.withsecure_elements?.security_events?.action != null
       ignore_failure: true
-      tag: set_event_action
+      tag: set_event_action_b53546aa
   - script:
       lang: painless
-      tag: normalize_security_event_severity
+      tag: normalize_security_event_severity_f7523b29
       if: ctx.withsecure_elements?.security_events?.severity != null
       source: >
         def severityValue = ctx.withsecure_elements.security_events.severity;
@@ -106,10 +106,10 @@ processors:
         - UNIX_MS
         - ISO8601
       if: ctx.withsecure_elements?.security_events?.serverTimestamp != null
-      tag: set_timestamp
+      tag: set_timestamp_90203686
       on_failure:
         - append:
-            tag: append_error_message_4512bd14
+            tag: append_error_message_075d3d98
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -119,10 +119,10 @@ processors:
         - UNIX_MS
         - ISO8601
       if: ctx.withsecure_elements?.security_events?.persistenceTimestamp != null
-      tag: convert_persistence_timestamp
+      tag: convert_persistence_timestamp_65ee3cc4
       on_failure:
         - append:
-            tag: append_error_message_62c01212
+            tag: append_error_message_d968284a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -132,10 +132,10 @@ processors:
         - UNIX_MS
         - ISO8601
       if: ctx.withsecure_elements?.security_events?.clientTimestamp != null
-      tag: convert_client_timestamp
+      tag: convert_client_timestamp_27248e4f
       on_failure:
         - append:
-            tag: append_error_message_ff605dc2
+            tag: append_error_message_ddda4a03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -146,33 +146,33 @@ processors:
         - withsecure_elements.security_events.persistenceTimestamp
         - withsecure_elements.security_events.clientTimestamp
       ignore_missing: true
-      tag: remove_raw_timestamps
+      tag: remove_raw_timestamps_31d9fc23
 
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - set:
-      tag: set_error_message
+  - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_event_kind_0dea3c49
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

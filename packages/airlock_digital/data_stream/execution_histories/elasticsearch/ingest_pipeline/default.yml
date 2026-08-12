@@ -3,22 +3,22 @@ description: Pipeline for processing execution histories logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -29,92 +29,92 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - append:
       field: event.category
-      tag: append_host_into_event_category
+      tag: append_host_into_event_category_5098f71a
       value: host
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: json.checkpoint
-      tag: rename_checkpoint
+      tag: rename_checkpoint_7420eccf
       target_field: airlock_digital.execution_histories.checkpoint
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_execution_histories_checkpoint
+      tag: set_event_id_from_execution_histories_checkpoint_9618b014
       copy_from: airlock_digital.execution_histories.checkpoint
       ignore_empty_value: true
   - rename:
       field: json.commandline
-      tag: rename_commandline
+      tag: rename_commandline_7a0c06b6
       target_field: airlock_digital.execution_histories.commandline
       ignore_missing: true
   - set:
       field: process.command_line
-      tag: set_process_command_line_from_execution_histories_commandline
+      tag: set_process_command_line_from_execution_histories_commandline_18d1aa0d
       copy_from: airlock_digital.execution_histories.commandline
       ignore_empty_value: true
   - date:
       field: json.datetime
-      tag: date_datetime
+      tag: date_datetime_1c151f24
       target_field: airlock_digital.execution_histories.datetime
       formats:
         - ISO8601
       if: ctx.json?.datetime != null && ctx.json.datetime != ''
       on_failure:
         - append:
-            tag: append_error_message_bf22f8e7
+            tag: append_error_message_aa577e32
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_execution_histories_datetime
+      tag: set_@timestamp_from_execution_histories_datetime_bf66cac9
       copy_from: airlock_digital.execution_histories.datetime
       ignore_empty_value: true
   - rename:
       field: json.filename
-      tag: rename_filename
+      tag: rename_filename_c82f1adc
       target_field: airlock_digital.execution_histories.filename
       ignore_missing: true
   - set:
       field: file.path
-      tag: set_file_path_from_execution_histories_filename
+      tag: set_file_path_from_execution_histories_filename_161fabdc
       copy_from: airlock_digital.execution_histories.filename
       ignore_empty_value: true
   - gsub:
-      tag: gsub_file_path_517235af
+      tag: gsub_file_path_25477c37
       field: file.path
       pattern: '\\'
       replacement: '/'
       ignore_failure: true
   - split:
-      tag: split_file_path_to_file_name_19cfdeb5
+      tag: split_file_path_to_file_name_414c6a55
       field: file.path
       separator: '/'
       target_field: file.name
       if: ctx.file?.path != null
       ignore_failure: true
   - script:
-      tag: script_file_name
+      tag: script_file_name_a689a8f4
       description: Set file.name to the last element of file.path.
       lang: painless
       source: |
@@ -122,158 +122,158 @@ processors:
       if: ctx.file?.name instanceof List && ctx.file.name.length > 0
   - rename:
       field: json.hostname
-      tag: rename_hostname
+      tag: rename_hostname_97eaad5e
       target_field: airlock_digital.execution_histories.hostname
       ignore_missing: true
   - set:
       field: host.hostname
-      tag: set_host_name_from_execution_histories_hostname
+      tag: set_host_name_from_execution_histories_hostname_47294fe5
       copy_from: airlock_digital.execution_histories.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_execution_histories_hostname_into_related_host
+      tag: append_execution_histories_hostname_into_related_host_308fd2b5
       value: '{{{airlock_digital.execution_histories.hostname}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.hostname != null
   - rename:
       field: json.md5
-      tag: rename_md5
+      tag: rename_md5_88c510b5
       target_field: airlock_digital.execution_histories.md5
       ignore_missing: true
   - set:
       field: process.hash.md5
-      tag: set_process_hash_md5_from_execution_histories_md5
+      tag: set_process_hash_md5_from_execution_histories_md5_ccf6f429
       copy_from: airlock_digital.execution_histories.md5
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_execution_histories_md5_into_related_hash
+      tag: append_execution_histories_md5_into_related_hash_fe141408
       value: '{{{airlock_digital.execution_histories.md5}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.md5 != null
   - rename:
       field: json.netdomain
-      tag: rename_netdomain
+      tag: rename_netdomain_b0965b2b
       target_field: airlock_digital.execution_histories.netdomain
       ignore_missing: true
   - rename:
       field: json.policyname
-      tag: rename_policyname
+      tag: rename_policyname_41d1c0ba
       target_field: airlock_digital.execution_histories.policyname
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_execution_histories_policyname
+      tag: set_rule_name_from_execution_histories_policyname_9c83f0a2
       copy_from: airlock_digital.execution_histories.policyname
       ignore_empty_value: true
   - rename:
       field: json.policyver
-      tag: rename_policyver
+      tag: rename_policyver_7f9928e9
       target_field: airlock_digital.execution_histories.policyver
       ignore_missing: true
   - set:
       field: rule.version
-      tag: set_rule_version_from_execution_histories_policyver
+      tag: set_rule_version_from_execution_histories_policyver_bdab5d1b
       copy_from: airlock_digital.execution_histories.policyver
       ignore_empty_value: true
   - rename:
       field: json.ppolicy
-      tag: rename_ppolicy
+      tag: rename_ppolicy_319e7087
       target_field: airlock_digital.execution_histories.ppolicy
       ignore_missing: true
   - set:
       field: rule.ruleset
-      tag: set_rule_ruleset_from_execution_histories_ppolicy
+      tag: set_rule_ruleset_from_execution_histories_ppolicy_68c9d545
       copy_from: airlock_digital.execution_histories.ppolicy
       ignore_empty_value: true
   - rename:
       field: json.pprocess
-      tag: rename_pprocess
+      tag: rename_pprocess_958ea2b6
       target_field: airlock_digital.execution_histories.pprocess
       ignore_missing: true
   - set:
       field: process.parent.name
-      tag: set_process_parent_name_from_execution_histories_pprocess
+      tag: set_process_parent_name_from_execution_histories_pprocess_3852a4fe
       copy_from: airlock_digital.execution_histories.pprocess
       ignore_empty_value: true
   - rename:
       field: json.publisher
-      tag: rename_publisher
+      tag: rename_publisher_64fcbac9
       target_field: airlock_digital.execution_histories.publisher
       ignore_missing: true
   - rename:
       field: json.sha128
-      tag: rename_sha128
+      tag: rename_sha128_29f8dafc
       target_field: airlock_digital.execution_histories.sha128
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_execution_histories_sha128_into_related_hash
+      tag: append_execution_histories_sha128_into_related_hash_0362ea16
       value: '{{{airlock_digital.execution_histories.sha128}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.sha128 != null
   - rename:
       field: json.sha256
-      tag: rename_sha256
+      tag: rename_sha256_94762ff7
       target_field: airlock_digital.execution_histories.sha256
       ignore_missing: true
   - set:
       field: process.hash.sha256
-      tag: set_process_hash_sha256_from_execution_histories_sha256
+      tag: set_process_hash_sha256_from_execution_histories_sha256_a2741c71
       copy_from: airlock_digital.execution_histories.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_execution_histories_sha256_into_related_hash
+      tag: append_execution_histories_sha256_into_related_hash_0e05c48e
       value: '{{{airlock_digital.execution_histories.sha256}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.sha256 != null
   - rename:
       field: json.sha384
-      tag: rename_sha384
+      tag: rename_sha384_c9e59812
       target_field: airlock_digital.execution_histories.sha384
       ignore_missing: true
   - set:
       field: process.hash.sha384
-      tag: set_process_hash_sha384_from_execution_histories_sha384
+      tag: set_process_hash_sha384_from_execution_histories_sha384_3a10a4de
       copy_from: airlock_digital.execution_histories.sha384
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_execution_histories_sha384_into_related_hash
+      tag: append_execution_histories_sha384_into_related_hash_a2c255a4
       value: '{{{airlock_digital.execution_histories.sha384}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.sha384 != null
   - rename:
       field: json.sha512
-      tag: rename_sha512
+      tag: rename_sha512_506cc39e
       target_field: airlock_digital.execution_histories.sha512
       ignore_missing: true
   - set:
       field: process.hash.sha512
-      tag: set_process_hash_sha512_from_execution_histories_sha512
+      tag: set_process_hash_sha512_from_execution_histories_sha512_0be3d2d2
       copy_from: airlock_digital.execution_histories.sha512
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_execution_histories_sha512_into_related_hash
+      tag: append_execution_histories_sha512_into_related_hash_05808766
       value: '{{{airlock_digital.execution_histories.sha512}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.sha512 != null
   - convert:
       field: json.type
-      tag: convert_type_to_long
+      tag: convert_type_to_long_fd969e74
       target_field: airlock_digital.execution_histories.type
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_d064192d
+            tag: append_error_message_f73820a7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_5a14c280
+      tag: script_dfd09bea
       description: Map type to corresponding execution type.
       lang: painless
       params:
@@ -301,17 +301,17 @@ processors:
         ctx.airlock_digital.execution_histories.type_value = params[(ctx.json.type).toString()];
   - rename:
       field: json.username
-      tag: rename_username
+      tag: rename_username_ec01dc4c
       target_field: airlock_digital.execution_histories.username
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_execution_histories_username
+      tag: set_user_name_from_execution_histories_username_ec7de462
       copy_from: airlock_digital.execution_histories.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_execution_histories_username_into_related_user
+      tag: append_execution_histories_username_into_related_user_4c4d2013
       value: '{{{airlock_digital.execution_histories.username}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.execution_histories?.username != null
@@ -331,15 +331,15 @@ processors:
         - airlock_digital.execution_histories.sha384
         - airlock_digital.execution_histories.sha512
         - airlock_digital.execution_histories.username
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_098b464c
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -366,18 +366,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -385,10 +385,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

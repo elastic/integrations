@@ -3,25 +3,25 @@ description: Pipeline for processing health logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_3f675d2b
       value: Vectra RUX
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -31,100 +31,100 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.network.interfaces
-      tag: rename_network_interfaces
+      tag: rename_network_interfaces_9c1d1917
       target_field: vectra_rux.health.network.interfaces
       ignore_missing: true
   - foreach:
-      tag: foreach_json_connectivity_sensors_bb60514d
+      tag: foreach_json_connectivity_sensors_0f5e734a
       field: json.connectivity.sensors
       if: ctx.json?.connectivity?.sensors instanceof List
       processor:
         convert:
           field: _ingest._value.ip_address
-          tag: convert_connectivity_sensors_ip_address_to_ip
+          tag: convert_connectivity_sensors_ip_address_to_ip_1e294ffb
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ip_address
+                tag: remove_ingest_value_ip_address_84882d9c
                 field: _ingest._value.ip_address
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_c892c26c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_connectivity_sensors_885beff1
+      tag: foreach_json_connectivity_sensors_0833e0d2
       field: json.connectivity.sensors
       if: ctx.json?.connectivity?.sensors instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_connectivity_sensors_ip_address
+          tag: append_connectivity_sensors_ip_address_a15dc0e5
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - rename:
       field: json.connectivity.sensors
-      tag: rename_connectivity_sensors
+      tag: rename_connectivity_sensors_6fdacae7
       target_field: vectra_rux.health.connectivity.sensors
       ignore_missing: true
   - convert:
       field: json.cpu.idle_percent
-      tag: convert_cpu_idle_percent_to_double
+      tag: convert_cpu_idle_percent_to_double_06016a54
       target_field: vectra_rux.health.cpu.idle_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_8e22c31a
+            tag: append_error_message_05c3ae0c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.cpu.nice_percent
-      tag: convert_cpu_nice_percent_to_double
+      tag: convert_cpu_nice_percent_to_double_11a05e06
       target_field: vectra_rux.health.cpu.nice_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_43453a8d
+            tag: append_error_message_1f3b19f1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.cpu.system_percent
-      tag: convert_cpu_system_percent_to_double
+      tag: convert_cpu_system_percent_to_double_b52e1054
       target_field: vectra_rux.health.cpu.system_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_6d950525
+            tag: append_error_message_b557fcd4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.cpu.updated_at
-      tag: date_cpu_updated_at
+      tag: date_cpu_updated_at_cdaa3064
       target_field: vectra_rux.health.cpu.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -134,68 +134,68 @@ processors:
       if: ctx.json?.cpu?.updated_at != null && ctx.json.cpu.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_9c1d5e39
+            tag: append_error_message_003c30e0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.cpu.user_percent
-      tag: convert_cpu_user_percent_to_double
+      tag: convert_cpu_user_percent_to_double_4eaaea14
       target_field: vectra_rux.health.cpu.user_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_b1eda2c3
+            tag: append_error_message_de7f2a38
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.cpu.usage
-      tag: set_host_cpu_usage_from_health_cpu_user_percent
+      tag: set_host_cpu_usage_from_health_cpu_user_percent_85cbb15c
       copy_from: vectra_rux.health.cpu.user_percent
       ignore_empty_value: true
   - rename:
       field: json.detection.check_results
-      tag: rename_detection_check_results
+      tag: rename_detection_check_results_f5d8f7a6
       target_field: vectra_rux.health.detection.check_results
       ignore_missing: true
   - rename:
       field: json.detection.detection_type
-      tag: rename_detection_detection_type
+      tag: rename_detection_detection_type_b9ced65a
       target_field: vectra_rux.health.detection.detection_type
       ignore_missing: true
   - rename:
       field: json.detection.message
-      tag: rename_detection_message
+      tag: rename_detection_message_5800f3cd
       target_field: vectra_rux.health.detection.message
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_health_detection_message
+      tag: set_message_from_health_detection_message_e39e0961
       copy_from: vectra_rux.health.detection.message
       ignore_empty_value: true
   - set:
       field: threat.indicator.description
-      tag: set_threat_indicator_description_from_health_detection_message
+      tag: set_threat_indicator_description_from_health_detection_message_e456b51e
       copy_from: vectra_rux.health.detection.message
       ignore_empty_value: true
   - rename:
       field: json.detection.name
-      tag: rename_detection_name
+      tag: rename_detection_name_3062ef9a
       target_field: vectra_rux.health.detection.name
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_health_detection_name
+      tag: set_rule_name_from_health_detection_name_fb4720e0
       copy_from: vectra_rux.health.detection.name
       ignore_empty_value: true
   - rename:
       field: json.detection.status
-      tag: rename_detection_status
+      tag: rename_detection_status_5c4aa583
       target_field: vectra_rux.health.detection.status
       ignore_missing: true
   - date:
       field: json.detection.updated_at
-      tag: date_detection_updated_at
+      tag: date_detection_updated_at_7c99ea02
       target_field: vectra_rux.health.detection.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -205,101 +205,101 @@ processors:
       if: ctx.json?.detection?.updated_at != null && ctx.json.detection.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_b71d3574
+            tag: append_error_message_bbe5c5d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.disk.degraded_raid_volume.error
-      tag: rename_disk_degraded_raid_volume_error
+      tag: rename_disk_degraded_raid_volume_error_8bd85072
       target_field: vectra_rux.health.disk.degraded_raid_volume.error
       ignore_missing: true
   - rename:
       field: json.disk.degraded_raid_volume.output
-      tag: rename_disk_degraded_raid_volume_output
+      tag: rename_disk_degraded_raid_volume_output_1b454d27
       target_field: vectra_rux.health.disk.degraded_raid_volume.output
       ignore_missing: true
   - rename:
       field: json.disk.degraded_raid_volume.status
-      tag: rename_disk_degraded_raid_volume_status
+      tag: rename_disk_degraded_raid_volume_status_22a1a40e
       target_field: vectra_rux.health.disk.degraded_raid_volume.status
       ignore_missing: true
   - rename:
       field: json.disk.disk_raid.error
-      tag: rename_disk_disk_raid_error
+      tag: rename_disk_disk_raid_error_9b7df429
       target_field: vectra_rux.health.disk.disk_raid.error
       ignore_missing: true
   - rename:
       field: json.disk.disk_raid.output
-      tag: rename_disk_disk_raid_output
+      tag: rename_disk_disk_raid_output_b83e6f9c
       target_field: vectra_rux.health.disk.disk_raid.output
       ignore_missing: true
   - rename:
       field: json.disk.disk_raid.status
-      tag: rename_disk_disk_raid_status
+      tag: rename_disk_disk_raid_status_f2b0f358
       target_field: vectra_rux.health.disk.disk_raid.status
       ignore_missing: true
   - convert:
       field: json.disk.disk_utilization.free_bytes
-      tag: convert_disk_disk_utilization_free_bytes_to_long
+      tag: convert_disk_disk_utilization_free_bytes_to_long_456befc8
       target_field: vectra_rux.health.disk.disk_utilization.free_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_66249cd8
+            tag: append_error_message_98482439
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.disk.disk_utilization.total_bytes
-      tag: convert_disk_disk_utilization_total_bytes_to_long
+      tag: convert_disk_disk_utilization_total_bytes_to_long_b26931d8
       target_field: vectra_rux.health.disk.disk_utilization.total_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_bc337510
+            tag: append_error_message_97bf44c1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.disk.disk_utilization.usage_percent
-      tag: convert_disk_disk_utilization_usage_percent_to_double
+      tag: convert_disk_disk_utilization_usage_percent_to_double_37f1e93a
       target_field: vectra_rux.health.disk.disk_utilization.usage_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_286e9087
+            tag: append_error_message_2f6ffdb6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.disk.disk_utilization.used_bytes
-      tag: convert_disk_disk_utilization_used_bytes_to_long
+      tag: convert_disk_disk_utilization_used_bytes_to_long_70360935
       target_field: vectra_rux.health.disk.disk_utilization.used_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_97b7bb5f
+            tag: append_error_message_08d14fee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.disk.raid_disks_missing.error
-      tag: rename_disk_raid_disks_missing_error
+      tag: rename_disk_raid_disks_missing_error_739543bf
       target_field: vectra_rux.health.disk.raid_disks_missing.error
       ignore_missing: true
   - rename:
       field: json.disk.raid_disks_missing.output
-      tag: rename_disk_raid_disks_missing_output
+      tag: rename_disk_raid_disks_missing_output_db65ec79
       target_field: vectra_rux.health.disk.raid_disks_missing.output
       ignore_missing: true
   - rename:
       field: json.disk.raid_disks_missing.status
-      tag: rename_disk_raid_disks_missing_status
+      tag: rename_disk_raid_disks_missing_status_cdc4c171
       target_field: vectra_rux.health.disk.raid_disks_missing.status
       ignore_missing: true
   - date:
       field: json.disk.updated_at
-      tag: date_disk_updated_at
+      tag: date_disk_updated_at_e75b1290
       target_field: vectra_rux.health.disk.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -309,67 +309,67 @@ processors:
       if: ctx.json?.disk?.updated_at != null && ctx.json.disk.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_41e4a47a
+            tag: append_error_message_d97e4265
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.event_timestamp
-      tag: date_event_timestamp
+      tag: date_event_timestamp_b42f1a29
       target_field: vectra_rux.health.event_timestamp
       formats:
         - ISO8601
       if: ctx.json?.event_timestamp != null && ctx.json.event_timestamp != ''
       on_failure:
         - append:
-            tag: append_error_message_a94eb2f3
+            tag: append_error_message_f92308ad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_health_event_timestamp
+      tag: set_@timestamp_from_health_event_timestamp_090cf6a0
       copy_from: vectra_rux.health.event_timestamp
       ignore_empty_value: true
   - rename:
       field: json.hostid.artifact_counts
-      tag: rename_hostid_artifact_counts
+      tag: rename_hostid_artifact_counts_25662f2d
       target_field: vectra_rux.health.hostid.artifact_counts
       ignore_missing: true
   - convert:
       field: json.hostid.ip_always_percent
-      tag: convert_hostid_ip_always_percent_to_double
+      tag: convert_hostid_ip_always_percent_to_double_f8fa4b1b
       target_field: vectra_rux.health.hostid.ip_always_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_f3aecd30
+            tag: append_error_message_4cdf71db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.hostid.ip_sometimes_percent
-      tag: convert_hostid_ip_sometimes_percent_to_double
+      tag: convert_hostid_ip_sometimes_percent_to_double_4d00ed6e
       target_field: vectra_rux.health.hostid.ip_never_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_36479aed
+            tag: append_error_message_a8efdb4f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.hostid.ip_never_percent
-      tag: convert_hostid_ip_never_percent_to_double
+      tag: convert_hostid_ip_never_percent_to_double_d328827e
       target_field: vectra_rux.health.hostid.ip_sometimes_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_be67519d
+            tag: append_error_message_7fd27010
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.hostid.updated_at
-      tag: date_hostid_updated_at
+      tag: date_hostid_updated_at_b51fcd2c
       target_field: vectra_rux.health.hostid.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -379,34 +379,34 @@ processors:
       if: ctx.json?.hostid?.updated_at != null && ctx.json.hostid.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_841133ac
+            tag: append_error_message_ddd991f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.memory.free_bytes
-      tag: convert_memory_free_bytes_to_long
+      tag: convert_memory_free_bytes_to_long_fa4f7793
       target_field: vectra_rux.health.memory.free_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_9d505463
+            tag: append_error_message_85c82fe5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.memory.total_bytes
-      tag: convert_memory_total_bytes_to_long
+      tag: convert_memory_total_bytes_to_long_70f8f36f
       target_field: vectra_rux.health.memory.total_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_d5a09987
+            tag: append_error_message_b8beb38f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.memory.updated_at
-      tag: date_memory_updated_at
+      tag: date_memory_updated_at_53ca0ea6
       target_field: vectra_rux.health.memory.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -416,39 +416,39 @@ processors:
       if: ctx.json?.memory?.updated_at != null && ctx.json.memory.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_bc94db90
+            tag: append_error_message_cdd69ef4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.memory.usage_percent
-      tag: convert_memory_usage_percent_to_double
+      tag: convert_memory_usage_percent_to_double_ee206bdd
       target_field: vectra_rux.health.memory.usage_percent
       type: double
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_995b2880
+            tag: append_error_message_40a0007a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.memory.used_bytes
-      tag: convert_memory_used_bytes_to_long
+      tag: convert_memory_used_bytes_to_long_838cde73
       target_field: vectra_rux.health.memory.used_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_1b3bbdd6
+            tag: append_error_message_25865588
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.network.traffic
-      tag: rename_network_traffic
+      tag: rename_network_traffic_713d89d0
       target_field: vectra_rux.health.network.traffic
       ignore_missing: true
   - date:
       field: json.network.updated_at
-      tag: date_network_updated_at
+      tag: date_network_updated_at_c1530ecb
       target_field: vectra_rux.health.network.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -458,53 +458,53 @@ processors:
       if: ctx.json?.network?.updated_at != null && ctx.json.network.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_878ce00d
+            tag: append_error_message_f1baf716
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.network.vlans.count
-      tag: convert_network_vlans_count_to_long
+      tag: convert_network_vlans_count_to_long_a7f3e2a6
       target_field: vectra_rux.health.network.vlans.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_efb5f6b6
+            tag: append_error_message_9338e0bc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_network_vlans_vlan_ids_d37b9a1c
+      tag: foreach_json_network_vlans_vlan_ids_992f1a72
       field: json.network.vlans.vlan_ids
       if: ctx.json?.network?.vlans?.vlan_ids instanceof List
       processor:
         append:
           field: network.vlan.id
-          tag: append_network_vlans_vlan_ids_into_network_vlan_id
+          tag: append_network_vlans_vlan_ids_into_network_vlan_id_85bcb79e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.network.vlans.vlan_ids
-      tag: rename_network_vlans_vlan_ids
+      tag: rename_network_vlans_vlan_ids_33105367
       target_field: vectra_rux.health.network.vlans.vlan_ids
       ignore_missing: true
   - rename:
       field: json.power.error
-      tag: rename_power_error
+      tag: rename_power_error_9ed5332f
       target_field: vectra_rux.health.power.error
       ignore_missing: true
   - rename:
       field: json.power.power_supplies
-      tag: rename_power_power_supplies
+      tag: rename_power_power_supplies_29b812f1
       target_field: vectra_rux.health.power.power_supplies
       ignore_missing: true
   - rename:
       field: json.power.status
-      tag: rename_power_status
+      tag: rename_power_status_a45eec01
       target_field: vectra_rux.health.power.status
       ignore_missing: true
   - date:
       field: json.power.updated_at
-      tag: date_power_updated_at
+      tag: date_power_updated_at_ddcf77ea
       target_field: vectra_rux.health.power.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -514,131 +514,131 @@ processors:
       if: ctx.json?.power?.updated_at != null && ctx.json.power.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_dcefbc5a
+            tag: append_error_message_7b83f73d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_sensors_cc2adddd
+      tag: foreach_json_sensors_4bf4875f
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         convert:
           field: _ingest._value.headend_uri
-          tag: convert_sensors_headend_uri_to_ip
+          tag: convert_sensors_headend_uri_to_ip_cb4078c2
           target_field: _ingest._value.headend_ip
           type: ip
           ignore_missing: true
           on_failure:
             - set:
                 field: _ingest._value.headend_url
-                tag: set_sensors_headend_uri
+                tag: set_sensors_headend_uri_6890e749
                 value: '{{{_ingest._value.headend_uri}}}'
   - foreach:
-      tag: foreach_json_sensors_8007c8b4
+      tag: foreach_json_sensors_6dbf9027
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         convert:
           field: _ingest._value.ip_address
-          tag: convert_sensors_ip_address_to_ip
+          tag: convert_sensors_ip_address_to_ip_323f5706
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ip_address_ac3230f5
+                tag: remove_ingest_value_ip_address_001f391a
                 field: _ingest._value.ip_address
                 ignore_missing: true
             - append:
-                tag: append_error_message_263fb6e9
+                tag: append_error_message_5b36f65d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_sensors_59fe3c47
+      tag: foreach_json_sensors_567e7216
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         append:
           field: observer.ip
-          tag: append_sensors_ip_address_into_observer_ip
+          tag: append_sensors_ip_address_into_observer_ip_a4dc8f4d
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_json_sensors_ea469ea7
+      tag: foreach_json_sensors_717af6de
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_sensors_ip_address_into_related_ip
+          tag: append_sensors_ip_address_into_related_ip_25008ec1
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_json_sensors_7846c061
+      tag: foreach_json_sensors_c267b75a
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         date:
           field: _ingest._value.last_seen
-          tag: date_sensors_last_seen
+          tag: date_sensors_last_seen_c61ab04d
           target_field: _ingest._value.last_seen
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_last_seen
+                tag: remove_ingest_value_last_seen_7253fe1a
                 field: _ingest._value.last_seen
                 ignore_missing: true
   - foreach:
-      tag: foreach_json_sensors_abe59fe3
+      tag: foreach_json_sensors_0092d4d0
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         append:
           field: observer.name
-          tag: append_sensors_name_into_observer_name
+          tag: append_sensors_name_into_observer_name_b84fc087
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_json_sensors_62a04cad
+      tag: foreach_json_sensors_ea38d3e6
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         append:
           field: observer.serial_number
-          tag: append_sensors_serial_number_into_observer_serial_number
+          tag: append_sensors_serial_number_into_observer_serial_number_81db2072
           value: '{{{_ingest._value.serial_number}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_json_sensors_394710ab
+      tag: foreach_json_sensors_b9257835
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         convert:
           field: _ingest._value.update_count
-          tag: convert_sensors_update_count_to_long
+          tag: convert_sensors_update_count_to_long_4ade8fdd
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_update_count
+                tag: remove_ingest_value_update_count_ec0eee4e
                 field: _ingest._value.update_count
                 ignore_missing: true
             - append:
-                tag: append_error_message_def17ce7
+                tag: append_error_message_1a39438b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_sensors_399086f9
+      tag: foreach_json_sensors_bf947e86
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
         append:
           field: observer.version
-          tag: append_sensors_version_into_observer_version
+          tag: append_sensors_version_into_observer_version_9f59c8d0
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_json_sensors_be14c680
+      tag: foreach_json_sensors_86a72a17
       field: json.sensors
       if: ctx.json?.sensors instanceof List
       processor:
@@ -647,46 +647,46 @@ processors:
             - _ingest._value.ip_address
             - _ingest._value.last_seen
             - _ingest._value.headend_uri
-          tag: remove_sensors
+          tag: remove_sensors_218d8b94
           ignore_missing: true
   - rename:
       field: json.sensors
-      tag: rename_sensors
+      tag: rename_sensors_885824c8
       target_field: vectra_rux.health.sensors
       ignore_missing: true
   - foreach:
       field: vectra_rux.health.sensors
-      tag: foreach_vectra_rux_health_sensors_id
+      tag: foreach_vectra_rux_health_sensors_id_ae83b9c5
       if: ctx.vectra_rux?.health?.sensors instanceof List
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_vectra_rux_health_sensors_id_to_string
+          tag: convert_vectra_rux_health_sensors_id_to_string_75f814eb
           type: string
           ignore_missing: true
   - foreach:
       field: vectra_rux.health.sensors
-      tag: foreach_vectra_rux_health_sensors_headend_ip
+      tag: foreach_vectra_rux_health_sensors_headend_ip_b2e09e15
       if: ctx.vectra_rux?.health?.sensors instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_vectra_rux_health_sensors_headend_ip_into_related_ip
+          tag: append_vectra_rux_health_sensors_headend_ip_into_related_ip_cf95f6a9
           value: '{{{_ingest._value.headend_ip}}}'
           allow_duplicates: false
   - rename:
       field: json.system.serial_number
-      tag: rename_system_serial_number
+      tag: rename_system_serial_number_eace8b0c
       target_field: vectra_rux.health.system.serial_number
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_health_system_serial_number
+      tag: set_host_id_from_health_system_serial_number_0d39e386
       copy_from: vectra_rux.health.system.serial_number
       ignore_empty_value: true
   - date:
       field: json.system.updated_at
-      tag: date_system_updated_at
+      tag: date_system_updated_at_936c333f
       target_field: vectra_rux.health.system.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -696,40 +696,40 @@ processors:
       if: ctx.json?.system?.updated_at != null && ctx.json.system.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_663b07f6
+            tag: append_error_message_e55714e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.system.uptime
-      tag: rename_system_uptime
+      tag: rename_system_uptime_a575ef45
       target_field: vectra_rux.health.system.uptime
       ignore_missing: true
   - convert:
       field: json.system.version.cloud_bridge
-      tag: convert_system_version_cloud_bridge_to_boolean
+      tag: convert_system_version_cloud_bridge_to_boolean_b69b3b18
       target_field: vectra_rux.health.system.version.cloud_bridge
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_23701d3d
+            tag: append_error_message_5d50b2da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.system.version.gmt
-      tag: date_system_version_gmt
+      tag: date_system_version_gmt_1f331a55
       target_field: vectra_rux.health.system.version.gmt
       formats:
         - ISO8601
       if: ctx.json?.system?.version?.gmt != null && ctx.json.system.version.gmt != ''
       on_failure:
         - append:
-            tag: append_error_message_d39962ff
+            tag: append_error_message_e567ae10
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.system.version.last_update
-      tag: date_system_version_last_update
+      tag: date_system_version_last_update_6777dfd6
       target_field: vectra_rux.health.system.version.last_update
       formats:
         - 'EEE MMM dd HH:mm:ss yyyy'
@@ -739,88 +739,88 @@ processors:
       if: ctx.json?.system?.version?.last_update != null && ctx.json.system.version.last_update != ''
       on_failure:
         - append:
-            tag: append_error_message_7c4732f7
+            tag: append_error_message_038765cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.system.version.last_update_utc
-      tag: date_system_version_last_update_utc
+      tag: date_system_version_last_update_utc_d83833f1
       target_field: vectra_rux.health.system.version.last_update_utc
       formats:
         - ISO8601
       if: ctx.json?.system?.version?.last_update_utc != null && ctx.json.system.version.last_update_utc != ''
       on_failure:
         - append:
-            tag: append_error_message_5dcf4c28
+            tag: append_error_message_25d03756
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.system.version.mode
-      tag: rename_system_version_mode
+      tag: rename_system_version_mode_39c97d53
       target_field: vectra_rux.health.system.version.mode
       ignore_missing: true
   - rename:
       field: json.system.version.model
-      tag: rename_system_version_model
+      tag: rename_system_version_model_d3d630f4
       target_field: vectra_rux.health.system.version.model
       ignore_missing: true
   - rename:
       field: json.system.version.vectra_instance_type
-      tag: rename_system_version_vectra_instance_type
+      tag: rename_system_version_vectra_instance_type_bd1723d0
       target_field: vectra_rux.health.system.version.vectra_instance_type
       ignore_missing: true
   - rename:
       field: json.system.version.vectra_version
-      tag: rename_system_version_vectra_version
+      tag: rename_system_version_vectra_version_2ff9370d
       target_field: vectra_rux.health.system.version.vectra_version
       ignore_missing: true
   - rename:
       field: json.system.version.vm_type
-      tag: rename_system_version_vm_type
+      tag: rename_system_version_vm_type_b97c0e68
       target_field: vectra_rux.health.system.version.vm_type
       ignore_missing: true
   - set:
       field: host.type
-      tag: set_host_type_from_health_system_version_vm_type
+      tag: set_host_type_from_health_system_version_vm_type_ea890167
       copy_from: vectra_rux.health.system.version.vm_type
       ignore_empty_value: true
   - foreach:
-      tag: foreach_json_trafficdrop_sensors_bcf04b56
+      tag: foreach_json_trafficdrop_sensors_4d0479c2
       field: json.trafficdrop.sensors
       if: ctx.json?.trafficdrop?.sensors instanceof List
       processor:
         convert:
           field: _ingest._value.ip_address
-          tag: convert_trafficdrop_sensors_ip_address_to_ip
+          tag: convert_trafficdrop_sensors_ip_address_to_ip_d3be2bb9
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ip_address_f675b353
+                tag: remove_ingest_value_ip_address_3dad040e
                 field: _ingest._value.ip_address
                 ignore_missing: true
             - append:
-                tag: append_error_message_138b9be5
+                tag: append_error_message_da106a8b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_json_trafficdrop_sensors_19e83dbc
+      tag: foreach_json_trafficdrop_sensors_71e94189
       field: json.trafficdrop.sensors
       if: ctx.json?.trafficdrop?.sensors instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_trafficdrop_sensors_ip_address
+          tag: append_trafficdrop_sensors_ip_address_13781e44
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - rename:
       field: json.trafficdrop.sensors
-      tag: rename_trafficdrop_sensors
+      tag: rename_trafficdrop_sensors_7b8238ce
       target_field: vectra_rux.health.trafficdrop.sensors
       ignore_missing: true
   - date:
       field: json.trafficdrop.updated_at
-      tag: date_trafficdrop_updated_at
+      tag: date_trafficdrop_updated_at_84ee99ea
       target_field: vectra_rux.health.trafficdrop.updated_at
       formats:
         - yyyy-MM-dd HH:mm:ssXXXXX
@@ -830,11 +830,11 @@ processors:
       if: ctx.json?.trafficdrop?.updated_at != null && ctx.json.trafficdrop.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_06f98d37
+            tag: append_error_message_fd26aae7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_vectra_rux_health_sensors_9b375788
+      tag: foreach_vectra_rux_health_sensors_f73472a5
       field: vectra_rux.health.sensors
       if: ctx.vectra_rux?.health?.sensors instanceof List
       processor:
@@ -844,7 +844,7 @@ processors:
             - _ingest._value.version
             - _ingest._value.ip_address
             - _ingest._value.name
-          tag: remove_custom_duplicate_fields_from_vectra_rux_health_sensors
+          tag: remove_custom_duplicate_fields_from_vectra_rux_health_sensors_24c7a92f
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
@@ -860,17 +860,17 @@ processors:
         - vectra_rux.health.sensors.ip_address
         - vectra_rux.health.sensors.name
         - vectra_rux.health.cpu.user_percent
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_9caf8434
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -896,26 +896,26 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message_7c7a2933
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind_68926a8f
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

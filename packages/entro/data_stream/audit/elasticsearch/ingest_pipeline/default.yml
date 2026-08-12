@@ -3,10 +3,10 @@ description: Pipeline for processing and enriching Entro audit logs according to
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: '8.17.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - date:
@@ -15,14 +15,14 @@ processors:
       formats:
         - ISO8601
       timezone: UTC
-      tag: date_parse_timestamp
+      tag: date_parse_timestamp_6a33e08a
       if: ctx.date != null
       on_failure:
         - remove:
-            tag: remove_date_1a15cc9b
+            tag: remove_date_42d31a68
             field: date
         - append:
-            tag: append_error_message_bf1997ac
+            tag: append_error_message_6d328dab
             field: error.message
             value: >-
                 Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -34,53 +34,53 @@ processors:
         - secret_type
         - exposed_value
         - date
-      tag: fingerprint
+      tag: fingerprint_df5b820d
       target_field: _id
       ignore_missing: true
   - set:
-      tag: set_event_id_7cf3f855
+      tag: set_event_id_1a7342bb
       field: event.id
       copy_from: request_id
       ignore_empty_value: true
   - set:
-      tag: set_vulnerability_value_d873757a
+      tag: set_vulnerability_value_fa04a43a
       field: vulnerability.value
       copy_from: exposed_value
       ignore_empty_value: true
   - set:
-      tag: set_log_origin_file_line_d1fd2935
+      tag: set_log_origin_file_line_d5b1440d
       field: log.origin.file.line
       copy_from: line_number
       ignore_empty_value: true
   - set:
-      tag: set_vulnerability_category_31985606
+      tag: set_vulnerability_category_6b2c33ed
       field: vulnerability.category
       value: ["Secret"]
       ignore_empty_value: true
       if: ctx.secret_type != null
   - set:
-      tag: set_vulnerability_description_a3826a5e
+      tag: set_vulnerability_description_cdcd2049
       field: vulnerability.description
       copy_from: secret_type
       ignore_empty_value: true
   - set:
-      tag: set_event_kind_de80643c
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - set:
-      tag: set_event_category_13b30ef2
+      tag: set_event_category_f174b464
       field: event.category
       value: ["vulnerability"]
   - set:
-      tag: set_event_type_ec95f7f2
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: ["info"]
   - set:
-      tag: set_event_dataset_d3e82901
+      tag: set_event_dataset_5e226b9a
       field: event.dataset
       value: "entro.audit"
   - remove:
-      tag: remove_07170528
+      tag: remove_60df4cd4
       field:
         - date
         - request_id
@@ -90,16 +90,16 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

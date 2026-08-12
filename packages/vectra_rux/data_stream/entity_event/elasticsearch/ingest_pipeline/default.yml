@@ -8,251 +8,251 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_3f675d2b
       value: Vectra RUX
   - append:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_91eb2116
       value: host
       if: ctx.json?.type == 'host'
   - append:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_ea9c2a21
       value: info
       if: ctx.json?.type == 'host'
   - append:
       field: tags
-      tag: append_host_tag
+      tag: append_host_tag_663c2843
       value: vectra_rux-entity_event-host
       allow_duplicates: false
       if: ctx.json?.type == 'host'
   - append:
       field: tags
-      tag: append_account_tag
+      tag: append_account_tag_40e5d7d6
       value: vectra_rux-entity_event-account
       allow_duplicates: false
       if: ctx.json?.type == 'account'
   - rename:
       field: json.active_detection_types
-      tag: rename_active_detection_types
+      tag: rename_active_detection_types_47a1aa04
       target_field: vectra_rux.entity_event.active_detection_types
       ignore_missing: true
   - convert:
       field: json.attack_rating
-      tag: convert_attack_rating_to_long
+      tag: convert_attack_rating_to_long_ecf8a63a
       target_field: vectra_rux.entity_event.attack_rating
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_d1fdfb15
+            tag: append_error_message_b2731d47
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.breadth_contrib
-      tag: convert_breadth_contrib_to_long
+      tag: convert_breadth_contrib_to_long_f9032fad
       target_field: vectra_rux.entity_event.breadth_contrib
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_fa02e0d5
+            tag: append_error_message_7d145c65
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_981bd3df
       target_field: vectra_rux.entity_event.category
       ignore_missing: true
   - convert:
       field: json.entity_id
-      tag: convert_entity_id
+      tag: convert_entity_id_20235f3d
       type: string
       target_field: vectra_rux.entity_event.entity_id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_entity_event_entity_id
+      tag: set_event_id_from_entity_event_entity_id_33ceb2de
       copy_from: vectra_rux.entity_event.entity_id
       ignore_empty_value: true
   - set:
       field: user.id
-      tag: set_user_id_from_entity_event_entity_id
+      tag: set_user_id_from_entity_event_entity_id_2ff256b3
       copy_from: vectra_rux.entity_event.entity_id
       ignore_empty_value: true
       if: ctx.json?.type == 'account'
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_user_id_into_related_user_23cff8dc
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - set:
       field: host.id
-      tag: set_host_id_from_entity_event_entity_id
+      tag: set_host_id_from_entity_event_entity_id_10849338
       copy_from: vectra_rux.entity_event.entity_id
       ignore_empty_value: true
       if: ctx.json?.type == 'host'
   - append:
       field: related.hosts
-      tag: append_host_id_into_related_hosts
+      tag: append_host_id_into_related_hosts_bd1f7443
       value: '{{{host.id}}}'
       allow_duplicates: false
       if: ctx.host?.id != null
   - date:
       field: json.event_timestamp
-      tag: date_event_timestamp
+      tag: date_event_timestamp_9f8276fd
       target_field: vectra_rux.entity_event.event_timestamp
       formats:
         - ISO8601
       if: ctx.json?.event_timestamp != null && ctx.json.event_timestamp != ''
       on_failure:
         - append:
-            tag: append_error_message_a57ad9ed
+            tag: append_error_message_a96695b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_entity_event_event_timestamp
+      tag: set_@timestamp_from_entity_event_event_timestamp_f8f2d458
       copy_from: vectra_rux.entity_event.event_timestamp
       ignore_empty_value: true
   - convert:
       field: json.id
-      tag: convert_id
+      tag: convert_id_9824612d
       type: string
       target_field: vectra_rux.entity_event.id
       ignore_missing: true
   - convert:
       field: json.importance
-      tag: convert_importance_to_long
+      tag: convert_importance_to_long_32d86f30
       target_field: vectra_rux.entity_event.importance
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_8705a74b
+            tag: append_error_message_16b36eb0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.is_prioritized
-      tag: convert_is_prioritized_to_boolean
+      tag: convert_is_prioritized_to_boolean_775ca1b0
       target_field: vectra_rux.entity_event.is_prioritized
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_1848ee77
+            tag: append_error_message_134de6fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.last_detection.id
-      tag: convert_last_detection_id
+      tag: convert_last_detection_id_b87a265b
       type: string
       target_field: vectra_rux.entity_event.last_detection.id
       ignore_missing: true
   - rename:
       field: json.last_detection.type
-      tag: rename_last_detection_type
+      tag: rename_last_detection_type_7297c984
       target_field: vectra_rux.entity_event.last_detection.type
       ignore_missing: true
   - rename:
       field: json.last_detection.url
-      tag: rename_last_detection_url
+      tag: rename_last_detection_url_a3d7ea4b
       target_field: vectra_rux.entity_event.last_detection.url
       ignore_missing: true
   - set:
       field: event.reference
-      tag: set_event_reference_from_last_detection_url
+      tag: set_event_reference_from_last_detection_url_cb8427b1
       copy_from: vectra_rux.entity_event.last_detection.url
       ignore_empty_value: true
   - set:
       field: threat.indicator.reference
-      tag: set_threat_indicator_reference_from_entity_event_last_detection_url
+      tag: set_threat_indicator_reference_from_entity_event_last_detection_url_f132e11b
       copy_from: vectra_rux.entity_event.last_detection.url
       ignore_empty_value: true
   - uri_parts:
       field: event.reference
-      tag: uri_parts_event_reference
+      tag: uri_parts_event_reference_4536448f
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_067fe3ec
+            tag: append_error_message_8d0abaac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.name
-      tag: rename_name
+      tag: rename_name_fad10abf
       target_field: vectra_rux.entity_event.name
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_entity_event_name
+      tag: set_user_email_from_entity_event_name_e351b987
       copy_from: vectra_rux.entity_event.name
       ignore_empty_value: true
       if: ctx.json?.type == 'account' && ctx.vectra_rux?.entity_event?.name.contains("@")
   - append:
       field: related.user
-      tag: append_user_email_into_related_user
+      tag: append_user_email_into_related_user_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - set:
       field: host.name
-      tag: set_user_name_from_entity_event_name
+      tag: set_user_name_from_entity_event_name_5d6f35e8
       copy_from: vectra_rux.entity_event.name
       ignore_empty_value: true
       if: ctx.json?.type == 'host'
   - append:
       field: related.hosts
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_c83678fe
       target_field: vectra_rux.entity_event.severity
       ignore_missing: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_0a5484ad
       if: ctx.vectra_rux?.entity_event?.severity instanceof String
       source: |-
         def severity = ctx.vectra_rux.entity_event.severity.toLowerCase();
@@ -265,49 +265,49 @@ processors:
           }
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_1cae1fd4
       target_field: vectra_rux.entity_event.type
       ignore_missing: true
   - rename:
       field: json.urgency_reason
-      tag: rename_urgency_reason
+      tag: rename_urgency_reason_69b88ef6
       target_field: vectra_rux.entity_event.urgency.reason
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_entity_event_urgency_reason
+      tag: set_message_from_entity_event_urgency_reason_04ff3f37
       copy_from: vectra_rux.entity_event.urgency.reason
       ignore_empty_value: true
   - convert:
       field: json.urgency_score
-      tag: convert_urgency_score_to_long
+      tag: convert_urgency_score_to_long_28abf440
       target_field: vectra_rux.entity_event.urgency.score
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_bbe378dc
+            tag: append_error_message_6d31c7f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.url
-      tag: rename_url
+      tag: rename_url_8ccbf52a
       target_field: vectra_rux.entity_event.url
       ignore_missing: true
   - set:
       field: event.url
-      tag: set_event_url_from_entity_event_url
+      tag: set_event_url_from_entity_event_url_329f2ded
       copy_from: vectra_rux.entity_event.url
       ignore_empty_value: true
   - convert:
       field: json.velocity_contrib
-      tag: convert_velocity_contrib_to_long
+      tag: convert_velocity_contrib_to_long_7b74b008
       target_field: vectra_rux.entity_event.velocity_contrib
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_639b6b30
+            tag: append_error_message_f65a98a6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -317,17 +317,17 @@ processors:
         - vectra_rux.entity_event.urgency.reason
         - vectra_rux.entity_event.url
         - vectra_rux.entity_event.last_detection.url
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_b3cf84eb
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -353,26 +353,26 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind_162fd445
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
