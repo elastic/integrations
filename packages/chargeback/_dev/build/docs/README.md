@@ -260,6 +260,12 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 
 ## Upgrade Notes
 
+### Upgrading to 0.4.3
+
+1. Upgrade the Fleet package to **0.4.3**. Kibana requirement remains `^9.2.0`.
+2. This release updates managed dashboard ES|QL only. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
+3. No transform reset is required for these dashboard fixes.
+
 ### Upgrading to 0.4.2
 
 1. Upgrade the Fleet package to **0.4.2**. Kibana requirement remains `^9.2.0`.
@@ -291,4 +297,4 @@ If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard
 
 ### Upgrading from 0.2.x to 0.3.0
 
-Field names changed from ECU to chargeable units: `total_ecu` to `total_chargeable_units`, `conf_ecu_rate` to `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` to `conf_chargeable_unit_rate_unit`. Dashboard ES|QL uses `COALESCE` across both names; both columns must exist in the lookup index mapping or panels fail at query time.
+Field names changed from ECU to chargeable units: `total_ecu` to `total_chargeable_units`, `conf_ecu_rate` to `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` to `conf_chargeable_unit_rate_unit`. Dashboard ES|QL uses the chargeable-unit field names (`total_chargeable_units`, `conf_chargeable_unit_rate`). ES|QL does not resolve mapping aliases, so panels must not reference the legacy names even inside `COALESCE`.

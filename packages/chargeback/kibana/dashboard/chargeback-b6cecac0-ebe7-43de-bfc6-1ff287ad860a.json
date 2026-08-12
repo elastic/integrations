@@ -229,7 +229,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment\n| SORT @timestamp DESC\n| LIMIT 5000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment\n| SORT @timestamp DESC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -239,7 +239,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment\n| SORT @timestamp DESC\n| LIMIT 5000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment\n| SORT @timestamp DESC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -393,7 +393,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment_group\n| SORT @timestamp DESC\n| LIMIT 5000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment_group\n| SORT @timestamp DESC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -403,7 +403,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment_group\n| SORT @timestamp DESC\n| LIMIT 5000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment_group\n| SORT @timestamp DESC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -637,7 +637,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -647,7 +647,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -678,7 +678,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -775,7 +775,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -785,7 +785,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -821,7 +821,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -921,7 +921,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -931,7 +931,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1209,7 +1209,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1219,7 +1219,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -1260,7 +1260,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1400,7 +1400,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1410,7 +1410,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1573,7 +1573,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1583,7 +1583,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
