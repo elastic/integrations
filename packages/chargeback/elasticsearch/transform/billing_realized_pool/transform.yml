@@ -30,6 +30,26 @@ source:
                     - wildcard:
                         ess.billing.sku: "*.es.datacontent.*"
                   minimum_should_match: 1
+        # Serverless projects (deployment_type: elasticsearch) bill VCU and retained storage
+        # instead of ECH data-tier node SKUs, so the *.es.data*.* patterns above never match
+        # them. Without this their cost stays is_allocatable: false and
+        # billing_realized_pool_lookup has no serverless rows, leaving the dashboards with no
+        # pool to allocate against. Search and ingest VCU plus retained storage are the
+        # serverless equivalent of data-tier capacity. ML VCU is deliberately excluded to
+        # match ECH semantics, where ML is cost_category "platform" and not allocatable.
+        - bool:
+            must:
+              - term:
+                  ess.billing.deployment_type: elasticsearch
+              - bool:
+                  should:
+                    - wildcard:
+                        ess.billing.sku: "elasticsearch.*-search-vcu_*"
+                    - wildcard:
+                        ess.billing.sku: "elasticsearch.*-ingest-vcu_*"
+                    - wildcard:
+                        ess.billing.sku: "elasticsearch.retained_*"
+                  minimum_should_match: 1
       minimum_should_match: 1
   runtime_mappings:
     deployment_group:
@@ -55,7 +75,7 @@ source:
           emit('');
 dest:
   index: billing_realized_pool_lookup
-  pipeline: 0.4.3-realized_pool
+  pipeline: 0.5.0-realized_pool
 frequency: 60m
 sync:
   time:
@@ -95,4 +115,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.4.3
+  fleet_transform_version: 0.5.0
