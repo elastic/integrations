@@ -70,7 +70,7 @@ processors:
       target_field: url.path
       ignore_missing: true
   - script:
-      tag: script_db8ff8d6
+      tag: script_normalize_sourceip_to_single_value_db8ff8d6
       lang: painless
       description: Normalize SourceIp to a single value
       source: >-
@@ -175,11 +175,11 @@ processors:
         - '%{GREEDYDATA:url.path}'
       ignore_missing: true
   - drop:
-      tag: drop_064ef718
+      tag: drop_events_related_to_hubs_record_endpoint_064ef718
       description: Drop events related to the hubs/record endpoint
       if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().contains('hubs/record')
   - drop:
-      tag: drop_d39d6301
+      tag: drop_events_related_to_record_updates_d39d6301
       description: Drop events related to any record updates
       if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().endsWith('/values')
   - rename:
