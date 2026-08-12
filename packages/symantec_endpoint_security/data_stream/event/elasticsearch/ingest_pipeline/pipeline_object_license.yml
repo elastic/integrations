@@ -3,22 +3,22 @@ description: Pipeline for processing license object.
 processors:
   - convert:
       field: ses.license.count
-      tag: convert_license_count_to_long
+      tag: convert_license_count_to_long_9f4c4445
       type: long
       if: ctx.ses?.license?.count != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_0d181bdd
+            tag: append_error_message_b973ab2f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_license_count_59d3b1a5
+            tag: remove_ses_license_count_869eb3a6
             field: ses.license.count
             ignore_missing: true
   - date:
       field: ses.license.end_time
-      tag: date_license_end_time
+      tag: date_license_end_time_41989958
       target_field: ses.license.end_time
       formats:
         - UNIX_MS
@@ -26,16 +26,16 @@ processors:
       if: ctx.ses?.license?.end_time != null && ctx.ses.license.end_time != ''
       on_failure:
         - append:
-            tag: append_error_message_8c2b63fa
+            tag: append_error_message_520616fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_license_end_time_7089e918
+            tag: remove_ses_license_end_time_f533ce75
             field: ses.license.end_time
             ignore_missing: true
   - date:
       field: ses.license.start_time
-      tag: date_license_start_time
+      tag: date_license_start_time_96637e4b
       target_field: ses.license.start_time
       formats:
         - UNIX_MS
@@ -43,40 +43,40 @@ processors:
       if: ctx.ses?.license?.start_time != null && ctx.ses.license.start_time != ''
       on_failure:
         - append:
-            tag: append_error_message_0162ae9c
+            tag: append_error_message_8595e57b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_license_start_time_b4416025
+            tag: remove_ses_license_start_time_0dbeb05e
             field: ses.license.start_time
             ignore_missing: true
   - convert:
       field: ses.license.type_id
-      tag: convert_license_type_id_to_string
+      tag: convert_license_type_id_to_string_221ba4e6
       type: string
       if: ctx.ses?.license?.type_id != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_096da375
+            tag: append_error_message_95f2bdde
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_license_type_id_a8ff2cba
+            tag: remove_ses_license_type_id_1579b945
             field: ses.license.type_id
             ignore_missing: true
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

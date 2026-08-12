@@ -3,7 +3,7 @@ description: Pipeline for processing email STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_email_pattern
+      tag: grok_email_pattern_14e87fb8
       patterns:
         - "^\\[?email-addr:value%{SPACE}=%{SPACE}'%{DATA:_tmp.email_addr}'\\]?$"
         - "^\\[?email-message:value%{SPACE}=%{SPACE}'%{DATA:_tmp.email_addr}'\\]?$"
@@ -13,28 +13,28 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_email_address_19e6d348
+      tag: append_threat_indicator_email_address_37a6b4e2
       field: threat.indicator.email.address
       value: '{{{ _tmp.email_addr }}}'
       if: ctx._tmp?.email_addr != null
       allow_duplicates: false
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

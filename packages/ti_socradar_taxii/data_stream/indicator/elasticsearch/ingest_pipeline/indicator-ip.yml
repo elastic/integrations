@@ -3,7 +3,7 @@ description: Pipeline for processing IPv4 and IPv6 STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_ip_pattern
+      tag: grok_ip_pattern_d9397c47
       patterns:
         - "^\\[?ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?$"
         - "^\\[?ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}/%{NUMBER}'\\]?$"
@@ -13,34 +13,34 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_ip_a9d26913
+      tag: append_threat_indicator_ip_d948c816
       field: threat.indicator.ip
       value: '{{{ _tmp.ip }}}'
       if: ctx._tmp?.ip != null
       allow_duplicates: false
   - append:
-      tag: append_related_ip_fb155127
+      tag: append_related_ip_ccb4aece
       field: related.ip
       value: '{{{ _tmp.ip }}}'
       if: ctx._tmp?.ip != null
       allow_duplicates: false
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

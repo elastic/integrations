@@ -3,41 +3,41 @@ description: Pipeline for processing URL STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_url_pattern
+      tag: grok_url_pattern_eae039c1
       patterns:
         - "^\\[?url:value%{SPACE}=%{SPACE}'%{DATA:_tmp.url}'\\]?$"
       ignore_failure: true
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_url_original_c87da56a
+      tag: append_threat_indicator_url_original_6f6f8c91
       field: threat.indicator.url.original
       value: '{{{ _tmp.url }}}'
       if: ctx._tmp?.url != null
       allow_duplicates: false
   - append:
-      tag: append_threat_indicator_url_full_afc7c300
+      tag: append_threat_indicator_url_full_09ba7c51
       field: threat.indicator.url.full
       value: '{{{ _tmp.url }}}'
       if: ctx._tmp?.url != null
       allow_duplicates: false
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

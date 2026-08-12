@@ -2,7 +2,7 @@
 description: Pipeline to process Thycotic Secret Server logs
 processors:
   - set:
-      tag: set_ecs_version_0f7334bb
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
 
@@ -11,27 +11,27 @@ processors:
   ## ECS event fields ##
   #########################
   - set:
-      tag: set_event_kind_9be6ae1f
+      tag: set_event_kind_fdd96388
       field: event.kind
       value: event
       description: "Set default event kind"
 
   - set:
-      tag: set_event_type_9c101065
+      tag: set_event_type_67e4b247
       field: event.type
       value:
         - info
       description: "Set default event type"
 
   - append:
-      tag: append_event_category_02e1aeb8
+      tag: append_event_category_ec241769
       field: event.category
       value:
         - iam
       description: "Set default event category"
 
   - script:
-      tag: script_bdf4308a
+      tag: script_dd9f51a2
       description: "Used to set event.category and event.type sanely based on cef.name provided by SS"
       if: ctx.cef?.name != null
       lang: painless
@@ -121,7 +121,7 @@ processors:
           ctx.event.type = schema.type;
         }
   - grok:
-      tag: grok_cef_name_17d63c34
+      tag: grok_cef_name_56f2acc5
       field: cef.name
       patterns:
         - '%{DATA:event.provider} - %{GREEDYDATA:event.action}'
@@ -131,17 +131,17 @@ processors:
       description: "Parse cef.name into more usable ECS event.provider and event.action fields"
 
   - lowercase:
-      tag: lowercase_event_provider_5d7afab4
+      tag: lowercase_event_provider_fc81d479
       field: event.provider
       ignore_missing: true
 
   - lowercase:
-      tag: lowercase_event_action_9334b869
+      tag: lowercase_event_action_945f0fcf
       field: event.action
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_device_event_class_id_to_event_code_ade75d46
+      tag: convert_cef_device_event_class_id_to_event_code_91556135
       field: cef.device.event_class_id
       type: string
       target_field: event.code
@@ -149,7 +149,7 @@ processors:
       description: "The CEF name is the basic event description used by Thycotic SS"
 
   - grok:
-      tag: grok__tmp_pre_cef_032acc99
+      tag: grok__tmp_pre_cef_73bfe21c
       field: _tmp.pre_cef
       patterns:
         - '%{TIME} %{HOSTNAME:log.syslog.hostname}'
@@ -158,7 +158,7 @@ processors:
       description: "If Elastic Agent read the event from a log file, try to extract the hostname of the original sender from before the CEF:0 header"
 
   - convert:
-      tag: convert_log_syslog_hostname_to_host_name_94a6130b
+      tag: convert_log_syslog_hostname_to_host_name_a5281ec6
       field: log.syslog.hostname
       type: string
       target_field: host.name
@@ -166,14 +166,14 @@ processors:
       description: "Store syslog source hostname if available to host.name"
 
   - append:
-      tag: append_related_hosts_44434d87
+      tag: append_related_hosts_49b76d01
       field: related.hosts
       value:
         - '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host?.name != ""
 
   - grok:
-      tag: grok_log_source_address_cf168c19
+      tag: grok_log_source_address_2b3274e9
       field: log.source.address
       patterns:
         - '%{IP:_tmp.host.ip:ip}:%{NUMBER}'
@@ -181,19 +181,19 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove__tmp_host_ip_03cb6350
+            tag: remove__tmp_host_ip_b012f51d
             field: _tmp.host.ip
       description: "Parse syslog source address if available to host.ip"
 
   - append:
-      tag: append_host_ip_b70e0a3e
+      tag: append_host_ip_e4b3bb85
       field: host.ip
       value:
         - '{{{_tmp.host.ip}}}'
       if: ctx._tmp?.host?.ip != null && ctx._tmp?.host?.ip != ""
 
   - append:
-      tag: append_related_ip_959d57cb
+      tag: append_related_ip_b626a33a
       field: related.ip
       value:
         - '{{{_tmp.host.ip}}}'
@@ -204,7 +204,7 @@ processors:
   ## ECS source fields ##
   #########################
   - grok:
-      tag: grok_cef_extensions_sourceAddress_0416c6d4
+      tag: grok_cef_extensions_sourceAddress_2e697332
       field: cef.extensions.sourceAddress
       patterns:
         - '%{IP:source.ip}:%{NUMBER:source.port}'
@@ -214,7 +214,7 @@ processors:
       description: "The CEF source address is a record of the client IP that was communicating with Thycotic SS"
 
   - append:
-      tag: append_related_ip_042cb504
+      tag: append_related_ip_b40772bd
       field: related.ip
       value:
         - '{{{source.ip}}}'
@@ -225,7 +225,7 @@ processors:
   ## ECS observer fields ##
   #########################
   - convert:
-      tag: convert_log_syslog_hostname_to_observer_hostname_dac8243f
+      tag: convert_log_syslog_hostname_to_observer_hostname_6c1d56d2
       field: log.syslog.hostname
       type: string
       target_field: observer.hostname
@@ -233,28 +233,28 @@ processors:
       description: "Store syslog source hostname if available to observer.hostname"
 
   - append:
-      tag: append_observer_ip_48a9b496
+      tag: append_observer_ip_4a3afc94
       field: observer.ip
       value:
         - '{{{_tmp.host.ip}}}'
       if: ctx._tmp?.host?.ip != null && ctx._tmp?.host?.ip != ""
 
   - convert:
-      tag: convert_cef_device_product_to_observer_product_e55795c2
+      tag: convert_cef_device_product_to_observer_product_4ab6eb0b
       field: cef.device.product
       type: string
       target_field: observer.product
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_device_vendor_to_observer_vendor_58b35770
+      tag: convert_cef_device_vendor_to_observer_vendor_d211dbdc
       field: cef.device.vendor
       type: string
       target_field: observer.vendor
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_device_version_to_observer_version_54753e4e
+      tag: convert_cef_device_version_to_observer_version_dc60f329
       field: cef.device.version
       type: string
       target_field: observer.version
@@ -265,14 +265,14 @@ processors:
   ## ECS user fields     ##
   #########################
   - convert:
-      tag: convert_cef_extensions_sourceUserId_to_user_id_0127c615
+      tag: convert_cef_extensions_sourceUserId_to_user_id_171b0df8
       field: cef.extensions.sourceUserId
       type: string
       target_field: user.id
       ignore_missing: true
 
   - grok:
-      tag: grok_cef_extensions_sourceUserName_39bce307
+      tag: grok_cef_extensions_sourceUserName_4671d45e
       field: cef.extensions.sourceUserName
       patterns:
         - '%{DATA:_tmp.source_user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
@@ -283,14 +283,14 @@ processors:
       if: ctx.cef?.extensions?.sourceUserName != null && ctx.cef?.extensions?.sourceUserName != ""
 
   - append:
-      tag: append_related_user_c7396af2
+      tag: append_related_user_d9fabf70
       field: related.user
       value:
         - '{{{user.name}}}'
       if: ctx.user?.name != null && ctx.user?.name != ""
 
   - convert:
-      tag: convert_cef_extensions_deviceCustomString1_to_thycotic_ss_event_role_name_14a9e613
+      tag: convert_cef_extensions_deviceCustomString1_to_thycotic_ss_event_role_name_fe4dea8c
       field: cef.extensions.deviceCustomString1
       type: string
       target_field: thycotic_ss.event.role.name
@@ -298,7 +298,7 @@ processors:
       if: ctx.cef?.extensions?.deviceCustomString1Label == "Role"
 
   - convert:
-      tag: convert_cef_extensions_deviceCustomString2_to_thycotic_ss_event_role_to_0abfe0cf
+      tag: convert_cef_extensions_deviceCustomString2_to_thycotic_ss_event_role_to_df7782f9
       field: cef.extensions.deviceCustomString2
       type: string
       target_field: thycotic_ss.event.role.to
@@ -306,7 +306,7 @@ processors:
       if: ctx.cef?.extensions?.deviceCustomString2Label == "Group or User" && ctx.cef?.extensions?.fileType == "Role"
 
   - convert:
-      tag: convert_cef_extensions_deviceCustomString2_to_thycotic_ss_event_group_name_2d4e0f95
+      tag: convert_cef_extensions_deviceCustomString2_to_thycotic_ss_event_group_name_921803cb
       field: cef.extensions.deviceCustomString2
       type: string
       target_field: thycotic_ss.event.group.name
@@ -314,7 +314,7 @@ processors:
       if: ctx.cef?.extensions?.deviceCustomString2Label == "Group or User" && ctx.cef?.extensions?.fileType == "User"
 
   - convert:
-      tag: convert_cef_extensions_deviceCustomString3_to_thycotic_ss_event_secret_folder_8dddc773
+      tag: convert_cef_extensions_deviceCustomString3_to_thycotic_ss_event_secret_folder_6f5ab26a
       field: cef.extensions.deviceCustomString3
       type: string
       target_field: thycotic_ss.event.secret.folder
@@ -323,7 +323,7 @@ processors:
       description: "The CEF device custom string 3 is the secret folder/group in Thycotic SS"
 
   - grok:
-      tag: grok_cef_extensions_deviceCustomString4_97e0b9e8
+      tag: grok_cef_extensions_deviceCustomString4_1f85fdd1
       field: cef.extensions.deviceCustomString4
       patterns:
         - '%{DATA:_tmp.cs4_leading_domain}\\%{GREEDYDATA:user.full_name}'
@@ -332,7 +332,7 @@ processors:
       if: ctx.cef?.extensions?.deviceCustomString4Label == "suser Display Name"
 
   - convert:
-      tag: convert_cef_extensions_filename_to_thycotic_ss_event_secret_name_8475aad0
+      tag: convert_cef_extensions_filename_to_thycotic_ss_event_secret_name_bbc326e9
       if: ctx.cef?.extensions?.fileType == "Secret"
       field: cef.extensions.filename
       type: string
@@ -340,7 +340,7 @@ processors:
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_extensions_fileId_to_thycotic_ss_event_secret_id_9277a4ec
+      tag: convert_cef_extensions_fileId_to_thycotic_ss_event_secret_id_75689059
       if: ctx.cef?.extensions?.fileType == "Secret"
       field: cef.extensions.fileId
       type: string
@@ -348,7 +348,7 @@ processors:
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_extensions_filename_to_thycotic_ss_event_folder_name_89aa0d04
+      tag: convert_cef_extensions_filename_to_thycotic_ss_event_folder_name_97d4f2c4
       if: ctx.cef?.extensions?.fileType == "Folder"
       field: cef.extensions.filename
       type: string
@@ -356,7 +356,7 @@ processors:
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_extensions_fileId_to_thycotic_ss_event_folder_id_340feb38
+      tag: convert_cef_extensions_fileId_to_thycotic_ss_event_folder_id_07624063
       if: ctx.cef?.extensions?.fileType == "Folder"
       field: cef.extensions.fileId
       type: string
@@ -364,7 +364,7 @@ processors:
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_extensions_filename_to_thycotic_ss_event_role_name_714477bc
+      tag: convert_cef_extensions_filename_to_thycotic_ss_event_role_name_8a797426
       if: ctx.cef?.extensions?.fileType == "Role"
       field: cef.extensions.filename
       type: string
@@ -372,7 +372,7 @@ processors:
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_extensions_fileId_to_thycotic_ss_event_role_id_405cfef8
+      tag: convert_cef_extensions_fileId_to_thycotic_ss_event_role_id_faf83ec2
       if: ctx.cef?.extensions?.fileType == "Role"
       field: cef.extensions.fileId
       type: string
@@ -380,7 +380,7 @@ processors:
       ignore_missing: true
 
   - convert:
-      tag: convert_cef_extensions_filename_to_thycotic_ss_event_permission_name_f5b37808
+      tag: convert_cef_extensions_filename_to_thycotic_ss_event_permission_name_1a9c62d2
       if: ctx.cef?.extensions?.fileType == "Permission"
       field: cef.extensions.filename
       type: string
@@ -392,14 +392,14 @@ processors:
   ## Thycotic SS user fields, e.g. these describe target user that another use (described in ECS user.* fields) is acting upon     ##
   ###################################################################################################################################
   - convert:
-      tag: convert_cef_extensions_destinationUserId_to_thycotic_ss_event_user_id_4f677e0a
+      tag: convert_cef_extensions_destinationUserId_to_thycotic_ss_event_user_id_2883bf4b
       field: cef.extensions.destinationUserId
       type: string
       target_field: thycotic_ss.event.user.id
       ignore_missing: true
 
   - grok:
-      tag: grok_cef_extensions_destinationUserName_697e1033
+      tag: grok_cef_extensions_destinationUserName_e84cdbb6
       field: cef.extensions.destinationUserName
       patterns:
         - '%{DATA:_tmp.destination_user_leading_domain}\\%{DATA:thycotic_ss.event.user.name}@%{GREEDYDATA:thycotic_ss.event.user.domain}'
@@ -410,14 +410,14 @@ processors:
       if: ctx.cef?.extensions?.destinationUserName != null && ctx.cef?.extensions?.destinationUserName != ""
 
   - append:
-      tag: append_related_user_625795b8
+      tag: append_related_user_98bd38aa
       field: related.user
       value:
         - '{{{thycotic_ss.event.user.name}}}'
       if: ctx.thycotic_ss?.event?.user?.name != null && ctx.thycotic_ss?.event?.user?.name != ""
 
   - remove:
-      tag: remove_b166b24c
+      tag: remove_59c8bdb4
       field:
         - thycotic_ss.event.user
       ignore_missing: true
@@ -430,14 +430,14 @@ processors:
   ##################################################################################################################################################
   - date:
       field: cef.extensions.deviceReceiptTime
-      tag: date_deviceReceiptTime
+      tag: date_deviceReceiptTime_5e04a0a6
       target_field: thycotic_ss.event.time
       formats:
         - ISO8601
       if: ctx.cef?.extensions?.deviceReceiptTime != null && ctx.cef.extensions.deviceReceiptTime != ''
       on_failure:
         - append:
-            tag: append_error_message_6c8cfd38
+            tag: append_error_message_b507c054
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       description: "Store CEF time as a thycotic_ss specific field, some delay appears to exist between event occurrence and Thycotic SS log transmission"
@@ -447,7 +447,7 @@ processors:
   ## message ##
   #############
   - convert:
-      tag: convert_cef_extensions_message_to_message_9c9e1337
+      tag: convert_cef_extensions_message_to_message_aa11d751
       field: cef.extensions.message
       type: string
       target_field: message
@@ -459,13 +459,13 @@ processors:
   ## Standard ECS Field Enrichments  ##
   #####################################
   - geoip:
-      tag: geoip_source_ip_to_source_geo_da2e41b2
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
 
   - geoip:
-      tag: geoip_source_ip_to_source_as_28d69883
+      tag: geoip_source_ip_to_source_as_58199963
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -475,13 +475,13 @@ processors:
       ignore_missing: true
 
   - rename:
-      tag: rename_source_as_asn_to_source_as_number_a917047d
+      tag: rename_source_as_asn_to_source_as_number_168bbbaf
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
 
   - rename:
-      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+      tag: rename_source_as_organization_name_to_source_as_organization_name_aa06a00b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -491,7 +491,7 @@ processors:
   ## Cleanup Fields ##
   ####################
   - remove:
-      tag: remove_07fa1651
+      tag: remove_732f14d5
       field:
         - cef
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_cef'))"
@@ -500,7 +500,7 @@ processors:
       description: "Remove cef.* unless tags indicate we shold not"
 
   - remove:
-      tag: remove_905f8a68
+      tag: remove_0136c1f1
       field:
         - log
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_log'))"
@@ -509,14 +509,14 @@ processors:
       description: "Remove log.* fields unless tags indicate we shold not"
 
   - remove:
-      tag: remove_64487954
+      tag: remove_79092ad6
       field:
         - _tmp
       ignore_missing: true
       description: "Remove temporary fields"
 
   - script:
-      tag: script_dc723014
+      tag: script_94a974d1
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values. This should be the last non-on_failure processor.
       source: |
@@ -544,15 +544,15 @@ processors:
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

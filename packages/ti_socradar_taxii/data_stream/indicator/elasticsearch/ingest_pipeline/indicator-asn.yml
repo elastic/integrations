@@ -3,7 +3,7 @@ description: Pipeline for processing Autonomous System STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_asn_pattern
+      tag: grok_asn_pattern_22d74b73
       patterns:
         - "^\\[?autonomous-system:number%{SPACE}=%{SPACE}%{INT:_tmp.as_number}\\]?$"
         - "^\\[?autonomous-system:number%{SPACE}=%{SPACE}'%{INT:_tmp.as_number}'\\]?$"
@@ -11,28 +11,28 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_as_number_6837c40d
+      tag: append_threat_indicator_as_number_ba488ad6
       field: threat.indicator.as.number
       value: '{{{ _tmp.as_number }}}'
       if: ctx._tmp?.as_number != null
       allow_duplicates: false
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

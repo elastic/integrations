@@ -2,15 +2,15 @@
 description: Pipeline for processing Alert logs.
 processors:
   - drop:
-      tag: drop_38a062da
+      tag: drop_bf775c7f
       description: Ignore retry placeholder document.
       if: ctx.retry == true
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -20,47 +20,47 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - fingerprint:
-      tag: fingerprint_02243b84
+      tag: fingerprint_5df148ab
       fields:
         - event.original
       target_field: _id
       ignore_missing: true
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_2a02be13
       target_field: splunk.search
       if: ctx.event?.original != null
       on_failure:
         - append:
-            tag: append_error_message_add4987b
+            tag: append_error_message_06a6e8c1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dot_expander:
-      tag: dot_expander_*_9713e4d5
+      tag: dot_expander_*_b6f542ad
       field: "*"
       path: splunk.search.ecs_result
       if: ctx.splunk?.search?.ecs_result instanceof Map && ctx.splunk.search.ecs_result.size() != 0
       ignore_failure: true
   - script:
-      tag: distribute_expanded_fields
+      tag: distribute_expanded_fields_b9d03282
       if: ctx.splunk?.search?.ecs_result instanceof Map && ctx.splunk.search.ecs_result.size() != 0
       source: |-
         def merge(Map dst, Map src) {
@@ -84,12 +84,12 @@ processors:
         ctx.splunk.search.remove("ecs_result");
       on_failure:
         - append:
-            tag: append_error_message_f6426474
+            tag: append_error_message_3ddbe635
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: splunk.search._time
-      tag: date_raw_timestamp
+      tag: date_raw_timestamp_98013546
       target_field: splunk.search._time
       formats:
         - ISO8601
@@ -99,43 +99,43 @@ processors:
       if: ctx.splunk?.search?._time instanceof String && ctx.splunk.search._time != ''
       on_failure:
         - append:
-            tag: append_error_message_9136411e
+            tag: append_error_message_5773e6cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_splunk_search__time_83fa8f77
+            tag: remove_splunk_search__time_1418b3fa
             field: splunk.search._time
   - set:
-      tag: set_timestamp_3e07f34b
+      tag: set_timestamp_ac9d06fa
       field: '@timestamp'
       copy_from: splunk.search.result._time
       ignore_empty_value: true
   - dissect:
-      tag: dissect_splunk_search_result__raw_994cbb19
+      tag: dissect_splunk_search_result__raw_3072e1b1
       field: splunk.search.result._raw
       pattern: "%{}, %{message}"
       ignore_failure: true
   - set:
-      tag: set_message_3d78f369
+      tag: set_message_45f8282c
       field: message
       copy_from: splunk.search.result._raw
       ignore_empty_value: true
       if: ctx.message == null
 
   - append:
-      tag: append_related_user_5b770e4f
+      tag: append_related_user_b547c7b4
       field: related.user
       value: '{{{splunk.search.author}}}'
       if: ctx.splunk?.search?.author != null && ctx.splunk.search.author != ''
       allow_duplicates: false
   - append:
-      tag: append_related_hosts_555b812b
+      tag: append_related_hosts_a10af9f3
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
   - append:
-      tag: append_related_hosts_f290754b
+      tag: append_related_hosts_2c703672
       field: related.hosts
       value: '{{{splunk.search.result.splunk_server}}}'
       if: ctx.splunk?.search?.result?.splunk_server != null && ctx.splunk.search.result.splunk_server != ''
@@ -143,15 +143,15 @@ processors:
   - remove:
       field:
         - splunk.alert
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_05b9fa28
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: tmp
-      tag: remove_temp
+      tag: remove_temp_09b23d22
       ignore_missing: true
   - script:
-      tag: remove-nulls
+      tag: remove-nulls_ef08549b
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -178,18 +178,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -197,10 +197,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind_20b94d44
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

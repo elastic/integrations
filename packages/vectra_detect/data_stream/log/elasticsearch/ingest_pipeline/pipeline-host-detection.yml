@@ -2,214 +2,214 @@
 description: Pipeline for processing Vectra Detect Host Detection logs.
 processors:
   - set:
-      tag: set_event_kind_39295792
+      tag: set_event_kind_ab1166ce
       field: event.kind
       value: alert
   - set:
-      tag: set_event_category_b73dcf46
+      tag: set_event_category_515e306d
       field: event.category
       value: [host, threat]
   - set:
-      tag: set_event_type_ec95f7f2
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - convert:
       field: json.dd_dst_port
-      tag: 'convert_dd_dst_port_to_long'
+      tag: convert_dd_dst_port_to_long_e63709e4
       target_field: vectra_detect.log.dd.dst.port
       type: long
       ignore_missing: true
       if: ctx.json?.dd_dst_port != ''
       on_failure:
         - append:
-            tag: append_error_message_36b62998
+            tag: append_error_message_d2a17e24
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_destination_port_f018c129
+      tag: set_destination_port_dff6876f
       field: destination.port
       copy_from: vectra_detect.log.dd.dst.port
       ignore_empty_value: true
   - convert:
       field: json.dd_dst_ip
-      tag: 'convert_dd_dst_ip_to_ip'
+      tag: convert_dd_dst_ip_to_ip_cf7ef6fc
       target_field: vectra_detect.log.dd.dst.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.dd_dst_ip != ''
       on_failure:
         - append:
-            tag: append_error_message_c4235902
+            tag: append_error_message_d512f540
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_destination_ip_6ad134f5
+      tag: set_destination_ip_42c68687
       field: destination.ip
       copy_from: vectra_detect.log.dd.dst.ip
       ignore_empty_value: true
   - append:
-      tag: append_related_ip_c1a6356b
+      tag: append_related_ip_44bf5f52
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - geoip:
-      tag: geoip_destination_ip_to_destination_geo_ab5e2968
+      tag: geoip_destination_ip_to_destination_geo_71881fab
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - rename:
-      tag: rename_json_dd_dst_dns_to_vectra_detect_log_dd_dst_dns_1562a22f
+      tag: rename_json_dd_dst_dns_to_vectra_detect_log_dd_dst_dns_e0ffa1f9
       field: json.dd_dst_dns
       target_field: vectra_detect.log.dd.dst.dns
       ignore_missing: true
   - set:
-      tag: set_destination_domain_75f7781e
+      tag: set_destination_domain_d958bbc6
       field: destination.domain
       copy_from: vectra_detect.log.dd.dst.dns
       ignore_empty_value: true
   - convert:
       field: json.detection_id
-      tag: 'convert_detection_id_to_string'
+      tag: convert_detection_id_to_string_3b26939d
       target_field: vectra_detect.log.detection.id
       type: string
       ignore_missing: true
       if: ctx.json?.detection_id != ''
       on_failure:
         - append:
-            tag: append_error_message_58faf20b
+            tag: append_error_message_70663202
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_id_0ceed287
+      tag: set_event_id_1517f530
       field: event.id
       copy_from: vectra_detect.log.detection.id
       ignore_empty_value: true
   - rename:
-      tag: rename_json_reason_to_vectra_detect_log_reason_15ca8c63
+      tag: rename_json_reason_to_vectra_detect_log_reason_b048cc9c
       field: json.reason
       target_field: vectra_detect.log.reason
       ignore_missing: true
   - set:
-      tag: set_event_reason_317fd0f6
+      tag: set_event_reason_cf7f294a
       field: event.reason
       copy_from: vectra_detect.log.reason
       ignore_empty_value: true
   - rename:
-      tag: rename_json_href_to_vectra_detect_log_href_d5d12613
+      tag: rename_json_href_to_vectra_detect_log_href_c5f1b0a3
       field: json.href
       target_field: vectra_detect.log.href
       ignore_missing: true
   - set:
-      tag: set_event_reference_d36b06ee
+      tag: set_event_reference_1dd82971
       field: event.reference
       copy_from: vectra_detect.log.href
       ignore_empty_value: true
   - uri_parts:
       field: event.reference
-      tag: 'uri_parts_to_split_reference'
+      tag: uri_parts_to_split_reference_14a1e47a
       if: ctx.event?.reference != null
       on_failure:
         - append:
-            tag: append_error_message_526c25fa
+            tag: append_error_message_1da20a05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_host_name_to_vectra_detect_log_host_name_8bf68b92
+      tag: rename_json_host_name_to_vectra_detect_log_host_name_09171707
       field: json.host_name
       target_field: vectra_detect.log.host.name
       ignore_missing: true
   - set:
-      tag: set_host_name_b0ebdab0
+      tag: set_host_name_fe74ce07
       field: host.name
       copy_from: vectra_detect.log.host.name
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts_452ef445
+      tag: append_related_hosts_82ac1e98
       field: related.hosts
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
-      tag: rename_json_http_method_to_vectra_detect_log_http_method_dbf6f30e
+      tag: rename_json_http_method_to_vectra_detect_log_http_method_e33c105a
       field: json.http_method
       target_field: vectra_detect.log.http.method
       ignore_missing: true
   - set:
-      tag: set_http_request_method_3c8953df
+      tag: set_http_request_method_2ad7c0e3
       field: http.request.method
       copy_from: vectra_detect.log.http.method
       ignore_empty_value: true
   - convert:
       field: json.response_code
-      tag: 'convert_response_code_to_string'
+      tag: convert_response_code_to_string_06a2318a
       target_field: vectra_detect.log.http.response_code
       type: string
       ignore_missing: true
       if: ctx.json?.response_code != ''
       on_failure:
         - append:
-            tag: append_error_message_97b57b20
+            tag: append_error_message_2c8634b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_dd_proto_to_vectra_detect_log_dd_proto_764ce6bc
+      tag: rename_json_dd_proto_to_vectra_detect_log_dd_proto_618e6d26
       field: json.dd_proto
       target_field: vectra_detect.log.dd.proto
       ignore_missing: true
   - set:
-      tag: set_network_transport_c58dbb43
+      tag: set_network_transport_b2a4745d
       field: network.transport
       copy_from: vectra_detect.log.dd.proto
       ignore_empty_value: true
   - convert:
       field: json.bytes_sent
-      tag: 'convert_bytes_sent_to_long'
+      tag: convert_bytes_sent_to_long_dd624118
       target_field: vectra_detect.log.bytes.sent
       type: long
       ignore_missing: true
       if: ctx.json?.bytes_sent != ''
       on_failure:
         - append:
-            tag: append_error_message_6939920b
+            tag: append_error_message_5646ee39
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_host_network_egress_bytes_ceea27e5
+      tag: set_host_network_egress_bytes_a4e6795a
       field: host.network.egress.bytes
       copy_from: vectra_detect.log.bytes.sent
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts_6950b885
+      tag: append_related_hosts_95f05bd2
       field: related.hosts
       value: '{{{host.network.egress.bytes}}}'
       allow_duplicates: false
       if: ctx.host?.network?.egress?.bytes != null
   - convert:
       field: json.bytes_received
-      tag: 'convert_bytes_received_to_long'
+      tag: convert_bytes_received_to_long_8759c41b
       target_field: vectra_detect.log.bytes.received
       type: long
       ignore_missing: true
       if: ctx.json?.bytes_received != ''
       on_failure:
         - append:
-            tag: append_error_message_8293cd07
+            tag: append_error_message_79fd2745
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_host_network_ingress_bytes_2338ece6
+      tag: set_host_network_ingress_bytes_ad3434dc
       field: host.network.ingress.bytes
       copy_from: vectra_detect.log.bytes.received
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts_373e63a5
+      tag: append_related_hosts_d6ce0e39
       field: related.hosts
       value: '{{{host.network.ingress.bytes}}}'
       allow_duplicates: false
       if: ctx.host?.network?.ingress?.bytes != null
   - script:
-      tag: script_0cebfcd8
+      tag: script_a6516498
       lang: painless
       description: Add bytes.sent and bytes.received and store in temp.
       source: >-
@@ -217,611 +217,611 @@ processors:
           ctx.temp = ctx.vectra_detect.log.bytes.sent + ctx.vectra_detect.log.bytes.received;
         }
   - set:
-      tag: set_network_bytes_fb23822a
+      tag: set_network_bytes_5c3513f7
       field: network.bytes
       copy_from: temp
       ignore_empty_value: true
   - convert:
       field: json.dd_bytes_sent
-      tag: 'convert_dd_bytes_sent_to_long'
+      tag: convert_dd_bytes_sent_to_long_529b1530
       target_field: vectra_detect.log.dd.bytes.sent
       type: long
       ignore_missing: true
       if: ctx.json?.dd_bytes_sent != ''
       on_failure:
         - append:
-            tag: append_error_message_41fad9d8
+            tag: append_error_message_420df746
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_protocol_to_vectra_detect_log_protocol_c8fbf677
+      tag: rename_json_protocol_to_vectra_detect_log_protocol_8214613d
       field: json.protocol
       target_field: vectra_detect.log.protocol
       ignore_missing: true
   - set:
-      tag: set_network_protocol_cef6c90c
+      tag: set_network_protocol_736f75e9
       field: network.protocol
       copy_from: vectra_detect.log.protocol
       ignore_empty_value: true
   - rename:
-      tag: rename_json_dvchost_to_vectra_detect_log_dvchost_45c085f9
+      tag: rename_json_dvchost_to_vectra_detect_log_dvchost_f8ea4df9
       field: json.dvchost
       target_field: vectra_detect.log.dvchost
       ignore_missing: true
   - set:
-      tag: set_observer_hostname_5a621980
+      tag: set_observer_hostname_501a5b0f
       field: observer.hostname
       copy_from: vectra_detect.log.dvchost
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts_199e34d5
+      tag: append_related_hosts_55a3f259
       field: related.hosts
       value: '{{{observer.hostname}}}'
       allow_duplicates: false
       if: ctx.observer?.hostname != null
   - convert:
       field: json.host_ip
-      tag: 'convert_host_ip_to_ip'
+      tag: convert_host_ip_to_ip_f63d57ff
       target_field: vectra_detect.log.host.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.host_ip != ''
       on_failure:
         - append:
-            tag: append_error_message_c66a35cb
+            tag: append_error_message_8fd870c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_source_ip_109846d7
+      tag: set_source_ip_4f3e082b
       field: source.ip
       copy_from: vectra_detect.log.host.ip
       ignore_empty_value: true
   - append:
-      tag: append_related_ip_8121c591
+      tag: append_related_ip_723473d3
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - geoip:
-      tag: geoip_source_ip_to_source_geo_da2e41b2
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - rename:
-      tag: rename_json_extensions_to_vectra_detect_log_extensions_9ed04e6b
+      tag: rename_json_extensions_to_vectra_detect_log_extensions_88e0066d
       field: json.extensions
       target_field: vectra_detect.log.extensions
       ignore_missing: true
   - set:
-      tag: set_threat_indicator_file_extension_63474eb8
+      tag: set_threat_indicator_file_extension_ddf9e0ae
       field: threat.indicator.file.extension
       copy_from: vectra_detect.log.extensions
       ignore_empty_value: true
   - rename:
-      tag: rename_json_threat_feeds_to_vectra_detect_log_threat_feeds_41d1960c
+      tag: rename_json_threat_feeds_to_vectra_detect_log_threat_feeds_26a05773
       field: json.threat_feeds
       target_field: vectra_detect.log.threat.feeds
       ignore_missing: true
   - set:
-      tag: set_threat_feed_name_c30d396e
+      tag: set_threat_feed_name_d43f5ca6
       field: threat.feed.name
       copy_from: vectra_detect.log.threat.feeds
       ignore_empty_value: true
   - rename:
-      tag: rename_json_url_to_vectra_detect_log_url_3130ede1
+      tag: rename_json_url_to_vectra_detect_log_url_8f3430ff
       field: json.url
       target_field: vectra_detect.log.url
       ignore_missing: true
   - set:
-      tag: set_threat_indicator_url_a2638b8d
+      tag: set_threat_indicator_url_17d09ffb
       field: threat.indicator.url
       copy_from: vectra_detect.log.url
       ignore_empty_value: true
   - convert:
       field: json.threat
-      tag: 'convert_threat_to_long'
+      tag: convert_threat_to_long_b9214d85
       target_field: vectra_detect.log.threat.score
       type: long
       ignore_missing: true
       if: ctx.json?.threat != ''
       on_failure:
         - append:
-            tag: append_error_message_7ebf7392
+            tag: append_error_message_f327fbb3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_account_name_to_vectra_detect_log_account_name_9a85f1ae
+      tag: rename_json_account_name_to_vectra_detect_log_account_name_f7158309
       field: json.account_name
       target_field: vectra_detect.log.account.name
       ignore_missing: true
   - set:
-      tag: set_user_target_name_b59ce001
+      tag: set_user_target_name_3c0f778c
       field: user.target.name
       copy_from: vectra_detect.log.account.name
       ignore_empty_value: true
   - rename:
-      tag: rename_json_role_to_vectra_detect_log_role_11e94a83
+      tag: rename_json_role_to_vectra_detect_log_role_3c071ec2
       field: json.role
       target_field: vectra_detect.log.role
       ignore_missing: true
   - append:
-      tag: append_user_roles_905f46d8
+      tag: append_user_roles_52c516b7
       field: user.roles
       value: '{{{vectra_detect.log.role}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.role != null
   - append:
-      tag: append_related_user_fcffd9bc
+      tag: append_related_user_d36be592
       field: related.user
       value: '{{{vectra_detect.log.role}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.role != null
   - convert:
       field: json.count
-      tag: 'convert_count_to_long'
+      tag: convert_count_to_long_3c87d2dd
       target_field: vectra_detect.log.count
       type: long
       ignore_missing: true
       if: ctx.json?.count != ''
       on_failure:
         - append:
-            tag: append_error_message_0197693c
+            tag: append_error_message_c22d26cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_normal_servers_to_vectra_detect_log_normal_servers_7dba7520
+      tag: rename_json_normal_servers_to_vectra_detect_log_normal_servers_a9414154
       field: json.normal_servers
       target_field: vectra_detect.log.normal.servers
       ignore_missing: true
   - rename:
-      tag: rename_json_category_to_vectra_detect_log_category_ffa4bf2b
+      tag: rename_json_category_to_vectra_detect_log_category_d7208fbe
       field: json.category
       target_field: vectra_detect.log.category
       ignore_missing: true
   - convert:
       field: json.certainty
-      tag: 'convert_certainty_to_long'
+      tag: convert_certainty_to_long_3926611f
       target_field: vectra_detect.log.certainty
       type: long
       ignore_missing: true
       if: ctx.json?.certainty != ''
       on_failure:
         - append:
-            tag: append_error_message_2972dd30
+            tag: append_error_message_5693c84c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_d_type_vname_to_vectra_detect_log_d_type_vname_89c90ce4
+      tag: rename_json_d_type_vname_to_vectra_detect_log_d_type_vname_592e31af
       field: json.d_type_vname
       target_field: vectra_detect.log.d_type.vname
       ignore_missing: true
   - rename:
-      tag: rename_json_d_type_to_vectra_detect_log_d_type_name_51387326
+      tag: rename_json_d_type_to_vectra_detect_log_d_type_name_6efc13f6
       field: json.d_type
       target_field: vectra_detect.log.d_type.name
       ignore_missing: true
   - convert:
       field: json.triaged
-      tag: 'convert_triaged_to_boolean'
+      tag: convert_triaged_to_boolean_785e0e43
       target_field: vectra_detect.log.triaged
       type: boolean
       ignore_missing: true
       if: ctx.json?.triaged != ''
       on_failure:
         - append:
-            tag: append_error_message_519ae8b6
+            tag: append_error_message_daebaa15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.dd_bytes_rcvd
-      tag: 'convert_dd_bytes_rcvd_to_long'
+      tag: convert_dd_bytes_rcvd_to_long_133f8ac3
       target_field: vectra_detect.log.dd.bytes.rcvd
       type: long
       ignore_missing: true
       if: ctx.json?.dd_bytes_rcvd != ''
       on_failure:
         - append:
-            tag: append_error_message_e8600df4
+            tag: append_error_message_53896b88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_dos_type_to_vectra_detect_log_dos_type_f9b901f3
+      tag: rename_json_dos_type_to_vectra_detect_log_dos_type_4f3afe31
       field: json.dos_type
       target_field: vectra_detect.log.dos_type
       ignore_missing: true
   - convert:
       field: json.num_attempts
-      tag: 'convert_num_attempts_to_long'
+      tag: convert_num_attempts_to_long_499c8e96
       target_field: vectra_detect.log.num_attempts
       type: long
       ignore_missing: true
       if: ctx.json?.num_attempts != ''
       on_failure:
         - append:
-            tag: append_error_message_aae7f5e6
+            tag: append_error_message_60ab932e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_networks_to_vectra_detect_log_networks_3f102f13
+      tag: rename_json_networks_to_vectra_detect_log_networks_ede0f562
       field: json.networks
       target_field: vectra_detect.log.networks
       ignore_missing: true
   - rename:
-      tag: rename_json_shares_to_vectra_detect_log_shares_cdb32b1f
+      tag: rename_json_shares_to_vectra_detect_log_shares_d95bfa70
       field: json.shares
       target_field: vectra_detect.log.shares
       ignore_missing: true
   - rename:
-      tag: rename_json_user_agent_to_vectra_detect_log_user_agent_609b1dfc
+      tag: rename_json_user_agent_to_vectra_detect_log_user_agent_632c20d2
       field: json.user_agent
       target_field: vectra_detect.log.user.agent
       ignore_missing: true
   - user_agent:
       field: vectra_detect.log.user.agent
-      tag: 'user_agent_to_split_user_agent'
+      tag: user_agent_to_split_user_agent_a8442eee
       on_failure:
         - set:
-            tag: set_user_agent_original_8f7ddda1
+            tag: set_user_agent_original_1815392d
             field: user_agent.original
             copy_from: vectra_detect.log.user.agent
             ignore_failure: true
   - rename:
-      tag: rename_json_ransom_notes_to_vectra_detect_log_ransom_notes_9c4aca43
+      tag: rename_json_ransom_notes_to_vectra_detect_log_ransom_notes_95db4a97
       field: json.ransom_notes
       target_field: vectra_detect.log.ransom_notes
       ignore_missing: true
   - rename:
-      tag: rename_json_sent_pattern_to_vectra_detect_log_sent_pattern_63007ac8
+      tag: rename_json_sent_pattern_to_vectra_detect_log_sent_pattern_940a3b69
       field: json.sent_pattern
       target_field: vectra_detect.log.sent.pattern
       ignore_missing: true
   - rename:
-      tag: rename_json_sent_normal_pattern_to_vectra_detect_log_sent_normal_pattern_7ad02be8
+      tag: rename_json_sent_normal_pattern_to_vectra_detect_log_sent_normal_pattern_1c52a378
       field: json.sent_normal_pattern
       target_field: vectra_detect.log.sent.normal_pattern
       ignore_missing: true
   - rename:
-      tag: rename_json_received_pattern_to_vectra_detect_log_received_pattern_7d7a510c
+      tag: rename_json_received_pattern_to_vectra_detect_log_received_pattern_ddc97d41
       field: json.received_pattern
       target_field: vectra_detect.log.received.pattern
       ignore_missing: true
   - rename:
-      tag: rename_json_received_normal_pattern_to_vectra_detect_log_received_normal_pattern_f0e8c27a
+      tag: rename_json_received_normal_pattern_to_vectra_detect_log_received_normal_pattern_a9616314
       field: json.received_normal_pattern
       target_field: vectra_detect.log.received.normal_pattern
       ignore_missing: true
   - split:
-      tag: split_json_accounts_to_vectra_detect_log_accounts_bffe9a5e
+      tag: split_json_accounts_to_vectra_detect_log_accounts_4780556d
       field: json.accounts
       separator: ","
       target_field: vectra_detect.log.accounts
       ignore_missing: true
   - rename:
-      tag: rename_json_sql_fragment_to_vectra_detect_log_sql_fragment_53a1f0f7
+      tag: rename_json_sql_fragment_to_vectra_detect_log_sql_fragment_3dd69180
       field: json.sql_fragment
       target_field: vectra_detect.log.sql_fragment
       ignore_missing: true
   - rename:
-      tag: rename_json_http_segment_to_vectra_detect_log_http_segment_36dce483
+      tag: rename_json_http_segment_to_vectra_detect_log_http_segment_dc41e5c8
       field: json.http_segment
       target_field: vectra_detect.log.http_segment
       ignore_missing: true
   - rename:
-      tag: rename_json_normal_admins_to_vectra_detect_log_normal_admins_454cf62e
+      tag: rename_json_normal_admins_to_vectra_detect_log_normal_admins_5aa9e325
       field: json.normal_admins
       target_field: vectra_detect.log.normal.admins
       ignore_missing: true
   - rename:
-      tag: rename_json_client_token_to_vectra_detect_log_client_token_ab245ae0
+      tag: rename_json_client_token_to_vectra_detect_log_client_token_a79f8416
       field: json.client_token
       target_field: vectra_detect.log.client.token
       ignore_missing: true
   - rename:
-      tag: rename_json_client_name_to_vectra_detect_log_client_name_d6e2dd1c
+      tag: rename_json_client_name_to_vectra_detect_log_client_name_f8f62a00
       field: json.client_name
       target_field: vectra_detect.log.client.name
       ignore_missing: true
   - rename:
-      tag: rename_json_keyboard_id_to_vectra_detect_log_keyboard_id_cf2fff90
+      tag: rename_json_keyboard_id_to_vectra_detect_log_keyboard_id_98c96663
       field: json.keyboard_id
       target_field: vectra_detect.log.keyboard.id
       ignore_missing: true
   - rename:
-      tag: rename_json_keyboard_name_to_vectra_detect_log_keyboard_name_df47d028
+      tag: rename_json_keyboard_name_to_vectra_detect_log_keyboard_name_3a839145
       field: json.keyboard_name
       target_field: vectra_detect.log.keyboard.name
       ignore_missing: true
   - rename:
-      tag: rename_json_product_id_to_vectra_detect_log_product_id_72a2584f
+      tag: rename_json_product_id_to_vectra_detect_log_product_id_a2380ad5
       field: json.product_id
       target_field: vectra_detect.log.product_id
       ignore_missing: true
   - rename:
-      tag: rename_json_function_to_vectra_detect_log_function_5518c197
+      tag: rename_json_function_to_vectra_detect_log_function_436c56cb
       field: json.function
       target_field: vectra_detect.log.function
       ignore_missing: true
   - rename:
-      tag: rename_json_uuid_to_vectra_detect_log_uuid_2bc48617
+      tag: rename_json_uuid_to_vectra_detect_log_uuid_29102167
       field: json.uuid
       target_field: vectra_detect.log.uuid
       ignore_missing: true
   - rename:
-      tag: rename_json_namedpipe_to_vectra_detect_log_named_pipe_b1225e58
+      tag: rename_json_namedpipe_to_vectra_detect_log_named_pipe_8dae09a3
       field: json.namedpipe
       target_field: vectra_detect.log.named_pipe
       ignore_missing: true
   - rename:
-      tag: rename_json_request_to_vectra_detect_log_request_13149005
+      tag: rename_json_request_to_vectra_detect_log_request_1e8b540e
       field: json.request
       target_field: vectra_detect.log.request
       ignore_missing: true
   - rename:
-      tag: rename_json_base_object_to_vectra_detect_log_base_object_54e6fa09
+      tag: rename_json_base_object_to_vectra_detect_log_base_object_85c6b963
       field: json.base_object
       target_field: vectra_detect.log.base_object
       ignore_missing: true
   - rename:
-      tag: rename_json_cookie_to_vectra_detect_log_cookie_bbe87dc3
+      tag: rename_json_cookie_to_vectra_detect_log_cookie_7180520e
       field: json.cookie
       target_field: vectra_detect.log.cookie
       ignore_missing: true
   - rename:
-      tag: rename_json_dst_ips_to_vectra_detect_log_dst_ips_7fd397f0
+      tag: rename_json_dst_ips_to_vectra_detect_log_dst_ips_8943566e
       field: json.dst_ips
       target_field: vectra_detect.log.dst.ips
       ignore_missing: true
   - rename:
-      tag: rename_json_ports_to_vectra_detect_log_ports_15e93793
+      tag: rename_json_ports_to_vectra_detect_log_ports_df0afdba
       field: json.ports
       target_field: vectra_detect.log.ports
       ignore_missing: true
   - rename:
-      tag: rename_json_successes_to_vectra_detect_log_successes_45f39499
+      tag: rename_json_successes_to_vectra_detect_log_successes_c547f7b5
       field: json.successes
       target_field: vectra_detect.log.successes
       ignore_missing: true
   - rename:
-      tag: rename_json_tunnel_type_to_vectra_detect_log_tunnel_type_f91cdadd
+      tag: rename_json_tunnel_type_to_vectra_detect_log_tunnel_type_b76066ee
       field: json.tunnel_type
       target_field: vectra_detect.log.tunnel_type
       ignore_missing: true
   - rename:
-      tag: rename_json_matched_domain_to_vectra_detect_log_matched_domain_4addab13
+      tag: rename_json_matched_domain_to_vectra_detect_log_matched_domain_c214e9f8
       field: json.matched.domain
       target_field: vectra_detect.log.matched.domain
       ignore_missing: true
   - convert:
       field: json.matched_ip
-      tag: 'convert_matched_ip_to_ip'
+      tag: convert_matched_ip_to_ip_928e236d
       target_field: vectra_detect.log.matched.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.matched_ip != ''
       on_failure:
         - append:
-            tag: append_error_message_c95ad2b7
+            tag: append_error_message_f5e72ed9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_matched_user_agent_to_vectra_detect_log_matched_user_agent_1e1777aa
+      tag: rename_json_matched_user_agent_to_vectra_detect_log_matched_user_agent_472b557c
       field: json.matched_user_agent
       target_field: vectra_detect.log.matched.user_agent
       ignore_missing: true
   - rename:
-      tag: rename_json_referer_to_vectra_detect_log_referer_41a28ce1
+      tag: rename_json_referer_to_vectra_detect_log_referer_b3d7e962
       field: json.referer
       target_field: vectra_detect.log.referer
       ignore_missing: true
   - convert:
       field: json.host
-      tag: 'convert_host_to_ip'
+      tag: convert_host_to_ip_ebd69c7c
       target_field: vectra_detect.log.host.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.host != ''
       on_failure:
         - append:
-            tag: append_error_message_4af41441
+            tag: append_error_message_d176369c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_reply_cache_control_to_vectra_detect_log_reply_cache_control_6bc9d241
+      tag: rename_json_reply_cache_control_to_vectra_detect_log_reply_cache_control_4259aed2
       field: json.reply_cache_control
       target_field: vectra_detect.log.reply_cache_control
       ignore_missing: true
   - convert:
       field: json.ip
-      tag: 'convert_ip_to_ip'
+      tag: convert_ip_to_ip_1851a79f
       target_field: vectra_detect.log.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.ip != ''
       on_failure:
         - append:
-            tag: append_error_message_ec2f169e
+            tag: append_error_message_1a673637
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
-      tag: append_host_ip_e6a36a2d
+      tag: append_host_ip_5f47b04d
       field: host.ip
       value: '{{{vectra_detect.log.ip}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.ip != null
   - append:
-      tag: append_related_ip_802bcaee
+      tag: append_related_ip_715cdd2e
       field: related.ip
       value: '{{{vectra_detect.log.ip}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.ip != null
   - geoip:
-      tag: geoip_host_ip_to_host_geo_d8a29594
+      tag: geoip_host_ip_to_host_geo_b3cb3264
       field: host.ip
       target_field: host.geo
       ignore_missing: true
   - convert:
       field: json.port
-      tag: 'convert_port_to_long'
+      tag: convert_port_to_long_cd31b258
       target_field: vectra_detect.log.port
       type: long
       ignore_missing: true
       if: ctx.json?.port != ''
       on_failure:
         - append:
-            tag: append_error_message_64365486
+            tag: append_error_message_862c978f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_proxied_dst_to_vectra_detect_log_proxied_dst_605f39bd
+      tag: rename_json_proxied_dst_to_vectra_detect_log_proxied_dst_86288034
       field: json.proxied_dst
       target_field: vectra_detect.log.proxied_dst
       ignore_missing: true
   - json:
       field: json.service_info
-      tag: 'json_to_split_service_info'
+      tag: json_to_split_service_info_e8ac0fb0
       if: ctx.json?.service_info instanceof String
       on_failure:
         - append:
-            tag: append_error_message_d500b4d1
+            tag: append_error_message_ff52d5af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_service_info_to_vectra_detect_log_service_info_9885c5a2
+      tag: rename_json_service_info_to_vectra_detect_log_service_info_bf47cdb3
       field: json.service_info
       target_field: vectra_detect.log.service.info
       ignore_missing: true
   - foreach:
-      tag: foreach_vectra_detect_log_service_info_847d9f9b
+      tag: foreach_vectra_detect_log_service_info_fd027f37
       field: vectra_detect.log.service.info
       if: ctx.vectra_detect?.log?.service?.info instanceof List
       processor:
         convert:
           field: _ingest._value.count
           target_field: _ingest._value.counts
-          tag: 'convert_service_info_count_to_long'
+          tag: convert_service_info_count_to_long_f8bf494e
           type: long
           ignore_missing: true
           on_failure:
             - append:
-                tag: append_error_message
+                tag: append_error_message_4cd117ef
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_vectra_detect_log_service_info_86fef490
+      tag: foreach_vectra_detect_log_service_info_8408b4ad
       field: vectra_detect.log.service.info
       if: ctx.vectra_detect?.log?.service?.info instanceof List
       ignore_missing: true
       processor:
         append:
-          tag: append_related_user
+          tag: append_related_user_ebe9b025
           field: related.user
           value: '{{{_ingest._value.account_uid}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_vectra_detect_log_service_info_1ed0a004
+      tag: foreach_vectra_detect_log_service_info_ea195da6
       field: vectra_detect.log.service.info
       if: ctx.vectra_detect?.log?.service?.info instanceof List
       ignore_missing: true
       processor:
         remove:
-          tag: remove_ingest_value_count
+          tag: remove_ingest_value_count_f52ebba5
           field:
             - _ingest._value.count
           ignore_missing: true
   - json:
       field: json.account_info
-      tag: 'json_to_split_account_info'
+      tag: json_to_split_account_info_e4281451
       if: ctx.json?.account_info instanceof String
       on_failure:
         - append:
-            tag: append_error_message_0fa4a2ad
+            tag: append_error_message_5f3f3d8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_account_info_to_vectra_detect_log_account_info_a4db9e5a
+      tag: rename_json_account_info_to_vectra_detect_log_account_info_70708dcb
       field: json.account_info
       target_field: vectra_detect.log.account.info
       ignore_missing: true
   - foreach:
-      tag: foreach_vectra_detect_log_account_info_3e2aca1b
+      tag: foreach_vectra_detect_log_account_info_c66497b6
       field: vectra_detect.log.account.info
       if: ctx.vectra_detect?.log?.account?.info instanceof List
       processor:
         convert:
           field: _ingest._value.count
           target_field: _ingest._value.counts
-          tag: 'convert_account_info_count_to_long'
+          tag: convert_account_info_count_to_long_cf1bd701
           type: long
           ignore_missing: true
           on_failure:
             - append:
-                tag: append_error_message_b25159c8
+                tag: append_error_message_ef1fda0a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_vectra_detect_log_account_info_05424dd0
+      tag: foreach_vectra_detect_log_account_info_81243060
       field: vectra_detect.log.account.info
       if: ctx.vectra_detect?.log?.account?.info instanceof List
       ignore_missing: true
       processor:
         append:
-          tag: append_related_user_4197afde
+          tag: append_related_user_cc57cc1a
           field: related.user
           value: '{{{_ingest._value.account_uid}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_vectra_detect_log_account_info_c79b6ec4
+      tag: foreach_vectra_detect_log_account_info_d0e8ae27
       field: vectra_detect.log.account.info
       if: ctx.vectra_detect?.log?.account?.info instanceof List
       ignore_missing: true
       processor:
         remove:
-          tag: remove_ingest_value_count_3869dc64
+          tag: remove_ingest_value_count_60406d2b
           field:
             - _ingest._value.count
           ignore_missing: true
   - rename:
-      tag: rename_json_service_name_to_vectra_detect_log_service_name_bd3bd3ea
+      tag: rename_json_service_name_to_vectra_detect_log_service_name_ea535f08
       field: json.service_name
       target_field: vectra_detect.log.service.name
       ignore_missing: true
   - convert:
       field: json.severity
-      tag: 'convert_severity_to_double'
+      tag: convert_severity_to_double_be132718
       target_field: vectra_detect.log.severity
       type: double
       ignore_missing: true
       if: ctx.json?.severity != ''
       on_failure:
         - append:
-            tag: append_error_message_a98a6c36
+            tag: append_error_message_23d0bcfe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_account_to_vectra_detect_log_account_id_3746eb26
+      tag: rename_json_account_to_vectra_detect_log_account_id_e0978066
       field: json.account
       target_field: vectra_detect.log.account.id
       ignore_missing: true
   - rename:
-      tag: rename_json_dst_ports_to_vectra_detect_log_dst_ports_1813d3b8
+      tag: rename_json_dst_ports_to_vectra_detect_log_dst_ports_db70759a
       field: json.dst_ports
       target_field: vectra_detect.log.dst.ports
       ignore_missing: true
   - remove:
-      tag: remove_temp_e34a5ad0
+      tag: remove_temp_4c2cc505
       field: temp
       ignore_missing: true
 on_failure:
   - append:
-      tag: append_error_message_81dbdcad
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

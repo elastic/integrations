@@ -2,37 +2,37 @@
 description: Pipeline for parsing Zoom webinar webhooks
 processors:
 - append:
-    tag: append_event_type_d7e4d0d1
+    tag: append_event_type_610dc29b
     field: event.type
     value: info
     if: ctx.event?.action != 'webinar.alert'
 - append:
-    tag: append_event_type_b55574a1
+    tag: append_event_type_eed3f2c5
     field: event.type
     value: error
     if: ctx.event?.action == 'webinar.alert'
 - append:
-    tag: append_event_type_79613ca2
+    tag: append_event_type_169a38a0
     field: event.type
     value: creation
     if: "['webinar.created', 'webinar.registration_created'].contains(ctx.event?.action)"
 - append:
-    tag: append_event_type_dea6eb7a
+    tag: append_event_type_6f691b01
     field: event.type
     value: deletion
     if: ctx.event?.action == 'webinar.deleted'
 - append:
-    tag: append_event_type_b7a6df48
+    tag: append_event_type_3421dd1f
     field: event.type
     value: allowed
     if: ctx.event?.action == 'webinar.registration_approved'
 - append:
-    tag: append_event_type_24805bed
+    tag: append_event_type_740f3111
     field: event.type
     value: denied
     if: ctx.event?.action == 'webinar.registration_denied'
 - append:
-    tag: append_event_type_64976023
+    tag: append_event_type_a8d89432
     field: event.type
     value: change
     if: >-
@@ -43,22 +43,22 @@ processors:
         'webinar.registration_cancelled'
       ].contains(ctx.event?.action)
 - append:
-    tag: append_event_type_812ae362
+    tag: append_event_type_d4467f1c
     field: event.type
     value: start
     if: "['webinar.started', 'webinar.sharing_started'].contains(ctx.event?.action)"
 - append:
-    tag: append_event_type_4cb37ecf
+    tag: append_event_type_104941fe
     field: event.type
     value: end
     if: "['webinar.ended', 'webinar.sharing_ended'].contains(ctx.event?.action)"
 - rename:
-    tag: rename_zoom_object_to_zoom_webinar_aa84e5bf
+    tag: rename_zoom_object_to_zoom_webinar_0b59e5de
     field: zoom.object
     target_field: zoom.webinar
     ignore_missing: true
 - date:
-    tag: date_zoom_time_stamp_to_timestamp_9fdc1c83
+    tag: date_zoom_time_stamp_to_timestamp_8d303d8a
     field: zoom.time_stamp
     target_field: '@timestamp'
     formats:
@@ -66,7 +66,7 @@ processors:
     if: ctx.event?.action == 'webinar.updated'
     ignore_failure: true
 - date:
-    tag: date_zoom_webinar_start_time_to_timestamp_a37e208a
+    tag: date_zoom_webinar_start_time_to_timestamp_70137904
     field: zoom.webinar.start_time
     target_field: '@timestamp'
     formats:
@@ -74,7 +74,7 @@ processors:
     if: ctx.event?.action == 'webinar.started'
     ignore_failure: true
 - date:
-    tag: date_zoom_participant_join_time_to_timestamp_f4c8b411
+    tag: date_zoom_participant_join_time_to_timestamp_64f9b5aa
     field: zoom.participant.join_time
     target_field: '@timestamp'
     formats:
@@ -82,7 +82,7 @@ processors:
     if: ctx.event?.action == 'webinar.participant_joined'
     ignore_failure: true
 - date:
-    tag: date_zoom_participant_leave_time_to_timestamp_52b5013e
+    tag: date_zoom_participant_leave_time_to_timestamp_f1d20bd7
     field: zoom.participant.leave_time
     target_field: '@timestamp'
     formats:
@@ -94,19 +94,19 @@ processors:
 # set user.* from participant
 #
 - set:
-    tag: set_user_id_a5e179ad
+    tag: set_user_id_89655143
     field: user.id
     value: '{{{zoom.participant.id}}}'
     ignore_empty_value: true
     if: ctx.zoom?.participant != null
 - set:
-    tag: set_user_full_name_2f06dec5
+    tag: set_user_full_name_60a5ace5
     field: user.full_name
     value: '{{{zoom.participant.user_name}}}'
     ignore_empty_value: true
     if: ctx.zoom?.participant != null
 - set:
-    tag: set_user_email_e19c22c6
+    tag: set_user_email_86e89266
     field: user.email
     copy_from: zoom.participant.email
     ignore_empty_value: true
@@ -115,19 +115,19 @@ processors:
 # set user.* from registrant
 #
 - set:
-    tag: set_user_id_fd954f8b
+    tag: set_user_id_a6f9b9aa
     field: user.id
     value: '{{{zoom.registrant.id}}}'
     ignore_empty_value: true
     if: ctx.zoom?.registrant != null
 - set:
-    tag: set_user_email_ffa55563
+    tag: set_user_email_b0c50fa8
     field: user.email
     value: '{{{zoom.registrant.email}}}'
     ignore_empty_value: true
     if: ctx.zoom?.registrant != null
 - set:
-    tag: set_user_full_name_938640ae
+    tag: set_user_full_name_722d6213
     field: user.full_name
     value: '{{{zoom.registrant.first_name}}} {{{zoom.registrant.last_name}}}'
     ignore_empty_value: true
@@ -137,13 +137,13 @@ processors:
 # set user.* from operator
 #
 - set:
-    tag: set_user_id_78f1d99e
+    tag: set_user_id_5a883f4f
     field: user.id
     value: '{{{zoom.operator_id}}}'
     ignore_empty_value: true
     if: ctx.zoom?.registrant == null && ctx.zoom?.participant == null
 - set:
-    tag: set_user_email_6915eaad
+    tag: set_user_email_809b663b
     field: user.email
     value: '{{{zoom.operator}}}'
     ignore_empty_value: true
@@ -153,60 +153,60 @@ processors:
 # append to related.user
 #
 - append:
-    tag: append_related_user_3d1d6eac
+    tag: append_related_user_5ccba503
     field: related.user
     value: "{{{zoom.webinar.host_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.webinar?.host_id != null
 - append:
-    tag: append_related_user_bd2cc438
+    tag: append_related_user_a814d982
     field: related.user
     value: "{{{zoom.registrant.id}}}"
     allow_duplicates: false
     if: ctx.zoom?.registrant?.id != null
 - append:
-    tag: append_related_user_2068ad2e
+    tag: append_related_user_ae6e77fb
     field: related.user
     value: "{{{zoom.participant.id}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.id != null
 - append:
-    tag: append_related_user_abb29256
+    tag: append_related_user_d89f1036
     field: related.user
     value: "{{{zoom.participant.user_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.user_id != null
 - append:
-    tag: append_related_user_59473576
+    tag: append_related_user_6023eff3
     field: related.user
     value: "{{{zoom.participant.participant_uuid}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.participant_uuid != null
 
 - convert:
-    tag: convert_zoom_participant_public_ip_to_source_ip_18e1d5b3
+    tag: convert_zoom_participant_public_ip_to_source_ip_94cfcdc8
     field: zoom.participant.public_ip
     target_field: source.ip
     type: ip
     if: ctx.zoom?.participant?.public_ip != null && ctx.zoom.participant.public_ip != ''
     ignore_failure: true
 - append:
-    tag: append_related_ip_8121c591
+    tag: append_related_ip_c47af1f5
     field: related.ip
     value: '{{{source.ip}}}'
     if: ctx.source?.ip != null
     allow_duplicates: false
 - remove:
-    tag: remove_zoom_participant_public_ip_8c802041
+    tag: remove_zoom_participant_public_ip_9aa9fb96
     field: zoom.participant.public_ip
     ignore_missing: true
 - geoip:
-    tag: geoip_source_ip_to_source_geo_da2e41b2
+    tag: geoip_source_ip_to_source_geo_9a2d4d31
     field: source.ip
     target_field: source.geo
     ignore_missing: true
 - geoip:
-    tag: geoip_source_ip_to_source_as_28d69883
+    tag: geoip_source_ip_to_source_as_58199963
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -215,27 +215,27 @@ processors:
       - organization_name
     ignore_missing: true
 - rename:
-    tag: rename_source_as_asn_to_source_as_number_a917047d
+    tag: rename_source_as_asn_to_source_as_number_168bbbaf
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
-    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+    tag: rename_source_as_organization_name_to_source_as_organization_name_aa06a00b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

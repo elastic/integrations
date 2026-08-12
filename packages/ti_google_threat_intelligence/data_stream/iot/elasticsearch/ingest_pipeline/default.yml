@@ -3,13 +3,13 @@ description: Pipeline for processing IOT events.
 processors:
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -19,440 +19,440 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.data.id
         - json.data.attributes.last_modification_date
-      tag: fingerprint_iot
+      tag: fingerprint_iot_5ad50cf0
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_enrichment
+      tag: set_event_kind_to_enrichment_3410a97a
       value: enrichment
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_4039b90d
       value: threat
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_d4da06cc
       value: indicator
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_60acb7ec
       value: Google
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_1b3fbbe2
       value: Threat Intelligence
   - set:
       field: threat.feed.name
-      tag: set_threat_feed_name
+      tag: set_threat_feed_name_72d04afb
       value: GTI IOT
   - set:
       field: threat.feed.dashboard_id
-      tag: set_threat_feed_dashboard_id
+      tag: set_threat_feed_dashboard_id_d660ac1f
       value:
         - ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a
         - ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531
         - ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e
   - rename:
       field: json.data.attributes.as_owner
-      tag: rename_data_attributes_as_owner
+      tag: rename_data_attributes_as_owner_a0f81b56
       target_field: gti.iot.attributes.as_owner
       ignore_missing: true
   - convert:
       field: json.data.attributes.asn
-      tag: convert_data_attributes_asn_to_long
+      tag: convert_data_attributes_asn_to_long_d6ea67c6
       target_field: gti.iot.attributes.as_number
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_6e694717
+            tag: append_error_message_83b178ef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.as.number
-      tag: set_threat_indicator_as_number_from_iot_attributes_as_number
+      tag: set_threat_indicator_as_number_from_iot_attributes_as_number_1cd3f045
       copy_from: gti.iot.attributes.as_number
       ignore_empty_value: true
   - rename:
       field: json.data.attributes.categories
-      tag: rename_data_attributes_categories
+      tag: rename_data_attributes_categories_a9345c57
       target_field: gti.iot.attributes.categories
       ignore_missing: true
   - rename:
       field: json.data.attributes.continent
-      tag: rename_data_attributes_continent
+      tag: rename_data_attributes_continent_dfe86888
       target_field: gti.iot.attributes.continent
       ignore_missing: true
   - set:
       field: threat.indicator.geo.continent_code
-      tag: set_threat_indicator_geo_continent_code_from_iot_attributes_continent
+      tag: set_threat_indicator_geo_continent_code_from_iot_attributes_continent_7aa59691
       copy_from: gti.iot.attributes.continent
       ignore_empty_value: true
   - rename:
       field: json.data.attributes.country
-      tag: rename_data_attributes_country
+      tag: rename_data_attributes_country_e82ff08a
       target_field: gti.iot.attributes.country
       ignore_missing: true
   - set:
       field: threat.indicator.geo.country_iso_code
-      tag: set_threat_indicator_geo_country_iso_code_from_iot_attributes_country
+      tag: set_threat_indicator_geo_country_iso_code_from_iot_attributes_country_a1d7cbe1
       copy_from: gti.iot.attributes.country
       ignore_empty_value: true
   - date:
       field: json.data.attributes.creation_date
-      tag: date_data_attributes_creation_date
+      tag: date_data_attributes_creation_date_ad9436a7
       target_field: gti.iot.attributes.creation_date
       formats:
         - UNIX
       if: ctx.json?.data?.attributes?.creation_date != null
       on_failure:
         - append:
-            tag: append_error_message_3c6e228e
+            tag: append_error_message_ce5a0621
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_iot_attributes_creation_date
+      tag: set_event_created_from_iot_attributes_creation_date_f53a0628
       copy_from: gti.iot.attributes.creation_date
       ignore_empty_value: true
   - set:
       field: threat.indicator.first_seen
-      tag: set_threat_indicator_first_seen_from_event_created
+      tag: set_threat_indicator_first_seen_from_event_created_7f75b048
       copy_from: event.created
       ignore_empty_value: true
   - date:
       field: json.data.attributes.first_submission_date
-      tag: date_data_attributes_first_submission_date
+      tag: date_data_attributes_first_submission_date_336ff146
       target_field: gti.iot.attributes.first_submission_date
       formats:
         - UNIX
       if: ctx.json?.data?.attributes?.first_submission_date != null && ctx.json.data.attributes.first_submission_date != ''
       on_failure:
         - append:
-            tag: append_error_message_154fa5c2
+            tag: append_error_message_3b85f2e6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.attributes.gti_assessment.severity.value
-      tag: rename_data_attributes_gti_assessment_severity
+      tag: rename_data_attributes_gti_assessment_severity_c126675b
       target_field: gti.iot.attributes.gti_assessment.severity
       ignore_missing: true
   - convert:
       field: json.data.attributes.gti_assessment.threat_score.value
-      tag: convert_data_attributes_gti_assessment_threat_score_to_long
+      tag: convert_data_attributes_gti_assessment_threat_score_to_long_def229c6
       target_field: gti.iot.attributes.gti_assessment.threat_score
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_65ccc49b
+            tag: append_error_message_3c0b5901
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.attributes.gti_assessment.verdict.value
-      tag: rename_data_attributes_gti_assessment_verdict
+      tag: rename_data_attributes_gti_assessment_verdict_7c80c552
       target_field: gti.iot.attributes.gti_assessment.verdict
       ignore_missing: true
   - rename:
       field: json.data.attributes.jarm
-      tag: rename_data_attributes_jarm
+      tag: rename_data_attributes_jarm_cd3c490c
       target_field: gti.iot.attributes.jarm
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_data_attributes_jarm_into_related_hash
+      tag: append_data_attributes_jarm_into_related_hash_6846402c
       value: '{{{gti.iot.attributes.jarm}}}'
       allow_duplicates: false
   - date:
       field: json.data.attributes.last_analysis_date
-      tag: date_data_attributes_last_analysis_date
+      tag: date_data_attributes_last_analysis_date_eea9a716
       target_field: gti.iot.attributes.last_analysis_date
       formats:
         - UNIX
       if: ctx.json?.data?.attributes?.last_analysis_date != null
       on_failure:
         - append:
-            tag: append_error_message_1fa7926c
+            tag: append_error_message_5b077eb8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.last_seen
-      tag: set_threat_indicator_last_seen_from_iot_attributes_last_analysis_date
+      tag: set_threat_indicator_last_seen_from_iot_attributes_last_analysis_date_feec7059
       copy_from: gti.iot.attributes.last_analysis_date
       ignore_empty_value: true
   - rename:
       field: json.data.attributes.url
-      tag: rename_data_attributes_url
+      tag: rename_data_attributes_url_48ab6dd0
       target_field: gti.iot.attributes.url
       ignore_missing: true
   - set:
       field: threat.indicator.url.original
-      tag: set_threat_indicator_url_original_from_iot_attributes_url
+      tag: set_threat_indicator_url_original_from_iot_attributes_url_72cc6e93
       copy_from: gti.iot.attributes.url
       ignore_empty_value: true
   - rename:
       field: json.data.attributes.last_final_url
-      tag: rename_data_attributes_last_final_url
+      tag: rename_data_attributes_last_final_url_bef2099b
       target_field: gti.iot.attributes.last_final_url
       ignore_missing: true
   - set:
       field: threat.indicator.url.full
-      tag: set_threat_indicator_url_full_from_url_original
+      tag: set_threat_indicator_url_full_from_url_original_c0a310e4
       copy_from: threat.indicator.url.original
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.full
-      tag: set_threat_indicator_url_full_from_iot_attributes_last_final_url
+      tag: set_threat_indicator_url_full_from_iot_attributes_last_final_url_4c2103eb
       copy_from: gti.iot.attributes.last_final_url
       ignore_empty_value: true
   - convert:
       field: json.data.attributes.last_http_response_code
-      tag: convert_data_attributes_last_http_response_code_to_long
+      tag: convert_data_attributes_last_http_response_code_to_long_920aba4b
       target_field: gti.iot.attributes.last_http_response_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_a9037762
+            tag: append_error_message_57e8c274
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
-      tag: set_http_response_status_code_from_iot_attributes_last_http_response_code
+      tag: set_http_response_status_code_from_iot_attributes_last_http_response_code_45c243ee
       copy_from: gti.iot.attributes.last_http_response_code
       ignore_empty_value: true
   - date:
       field: json.data.attributes.last_modification_date
-      tag: date_data_attributes_last_modification_date
+      tag: date_data_attributes_last_modification_date_8ce9db16
       target_field: gti.iot.attributes.last_modification_date
       formats:
         - UNIX
       if: ctx.json?.data?.attributes?.last_modification_date != null
       on_failure:
         - append:
-            tag: append_error_message_a61aa1c0
+            tag: append_error_message_ee2e23c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_iot_attributes_last_modification_date
+      tag: set_@timestamp_from_iot_attributes_last_modification_date_b6a5989e
       copy_from: gti.iot.attributes.last_modification_date
       ignore_empty_value: true
   - set:
       field: threat.indicator.modified_at
-      tag: set_threat_indicator_modified_at_from_iot_attributes_last_modification_date
+      tag: set_threat_indicator_modified_at_from_iot_attributes_last_modification_date_115d1b47
       copy_from: gti.iot.attributes.last_modification_date
       ignore_empty_value: true
   - date:
       field: json.data.attributes.last_submission_date
-      tag: date_data_attributes_last_submission_date
+      tag: date_data_attributes_last_submission_date_b32a411a
       target_field: gti.iot.attributes.last_submission_date
       formats:
         - UNIX
       if: ctx.json?.data?.attributes?.last_submission_date != null
       on_failure:
         - append:
-            tag: append_error_message_d69772c0
+            tag: append_error_message_7ba9a68f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.attributes.md5
-      tag: rename_data_attributes_md5
+      tag: rename_data_attributes_md5_8c0c0420
       target_field: gti.iot.attributes.md5
       ignore_missing: true
   - set:
       field: threat.indicator.file.hash.md5
-      tag: set_threat_indicator_file_hash_md5_from_iot_attributes_md5
+      tag: set_threat_indicator_file_hash_md5_from_iot_attributes_md5_fb286e98
       copy_from: gti.iot.attributes.md5
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_data_attributes_md5_into_related_hash
+      tag: append_data_attributes_md5_into_related_hash_1c5d774e
       value: '{{{gti.iot.attributes.md5}}}'
       allow_duplicates: false
   - rename:
       field: json.data.attributes.meaningful_name
-      tag: rename_data_attributes_meaningful_name
+      tag: rename_data_attributes_meaningful_name_2c5b8455
       target_field: gti.iot.attributes.meaningful_name
       ignore_missing: true
   - rename:
       field: json.data.attributes.names
-      tag: rename_data_attributes_names
+      tag: rename_data_attributes_names_23296935
       target_field: gti.iot.attributes.names
       ignore_missing: true
   - set:
       field: threat.indicator.file.name
-      tag: set_threat_indicator_file_name_from_iot_attributes_names
+      tag: set_threat_indicator_file_name_from_iot_attributes_names_7d74772d
       copy_from: gti.iot.attributes.names
       ignore_empty_value: true
   - rename:
       field: json.data.attributes.network
-      tag: rename_data_attributes_network
+      tag: rename_data_attributes_network_8d0cdc00
       target_field: gti.iot.attributes.network
       ignore_missing: true
   - rename:
       field: json.data.attributes.outgoing_links
-      tag: rename_data_attributes_outgoing_links
+      tag: rename_data_attributes_outgoing_links_92d2e254
       target_field: gti.iot.attributes.outgoing_links
       ignore_missing: true
   - rename:
       field: json.data.attributes.regional_internet_registry
-      tag: rename_data_attributes_regional_internet_registry
+      tag: rename_data_attributes_regional_internet_registry_214d790e
       target_field: gti.iot.attributes.regional_internet_registry
       ignore_missing: true
   - rename:
       field: json.data.attributes.tags
-      tag: rename_data_attributes_tags
+      tag: rename_data_attributes_tags_2aca7f46
       target_field: gti.iot.attributes.tags
       ignore_missing: true
   - convert:
       field: json.data.attributes.positives
-      tag: convert_data_attributes_positives_to_long
+      tag: convert_data_attributes_positives_to_long_1f1e57ea
       target_field: gti.iot.attributes.positives
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_882548b3
+            tag: append_error_message_cbf12c67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.attributes.times_submitted
-      tag: convert_data_attributes_times_submitted_to_long
+      tag: convert_data_attributes_times_submitted_to_long_81c914d1
       target_field: gti.iot.attributes.times_submitted
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_40ac686f
+            tag: append_error_message_59d9071e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.attributes.title
-      tag: rename_data_attributes_title
+      tag: rename_data_attributes_title_df0a7064
       target_field: gti.iot.attributes.title
       ignore_missing: true
   - rename:
       field: json.data.attributes.type_tags
-      tag: rename_data_attributes_type_tags
+      tag: rename_data_attributes_type_tags_4f114fa9
       target_field: gti.iot.attributes.type_tags
       ignore_missing: true
   - rename:
       field: json.data.attributes.vhash
-      tag: rename_data_attributes_vhash
+      tag: rename_data_attributes_vhash_c829cc91
       target_field: gti.iot.attributes.vhash
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_data_attributes_vhash_into_related_hash
+      tag: append_data_attributes_vhash_into_related_hash_103f2b24
       value: '{{{gti.iot.attributes.vhash}}}'
       allow_duplicates: false
   - append:
       field: gti.iot.attributes.top_level_domain
-      tag: append_data_attributes_vhash_into_related_hash_a19bdc5a
+      tag: append_data_attributes_vhash_into_related_hash_336bdcb6
       value: '{{{json.data.attributes.tld}}}'
       if: ctx.json?.data?.attributes?.tld instanceof String
   - rename:
       field: json.data.attributes.tld
-      tag: rename_data_type
+      tag: rename_data_type_77e03965
       target_field: gti.iot.attributes.top_level_domain
       ignore_missing: true
       if: ctx.json?.data?.attributes?.tld instanceof List
   - convert:
       field: json.data.attributes.last_analysis_stats.harmless
-      tag: convert_data_attributes_last_analysis_stats_harmless_to_long
+      tag: convert_data_attributes_last_analysis_stats_harmless_to_long_d706127c
       target_field: gti.iot.attributes.last_analysis_stats.harmless
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_eb16b186
+            tag: append_error_message_e86b1423
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.attributes.last_analysis_stats.malicious
-      tag: convert_data_attributes_last_analysis_stats_malicious_to_long
+      tag: convert_data_attributes_last_analysis_stats_malicious_to_long_ad783c6c
       target_field: gti.iot.attributes.last_analysis_stats.malicious
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_a8fb499d
+            tag: append_error_message_b341aeea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.attributes.last_analysis_stats.suspicious
-      tag: convert_data_attributes_last_analysis_stats_suspicious_to_long
+      tag: convert_data_attributes_last_analysis_stats_suspicious_to_long_a893ec62
       target_field: gti.iot.attributes.last_analysis_stats.suspicious
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_db72475e
+            tag: append_error_message_0263b17f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.attributes.last_analysis_stats.timeout
-      tag: convert_data_attributes_last_analysis_stats_timeout_to_long
+      tag: convert_data_attributes_last_analysis_stats_timeout_to_long_403ecdc5
       target_field: gti.iot.attributes.last_analysis_stats.timeout
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_97f9b6de
+            tag: append_error_message_bc4195d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.attributes.last_analysis_stats.undetected
-      tag: convert_data_attributes_last_analysis_stats_undetected_to_long
+      tag: convert_data_attributes_last_analysis_stats_undetected_to_long_ae707bf2
       target_field: gti.iot.attributes.last_analysis_stats.undetected
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_41684978
+            tag: append_error_message_ef976403
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.type
-      tag: rename_data_type_02b1805a
+      tag: rename_data_type_f2083fd0
       target_field: gti.iot.type
       ignore_missing: true
   - script:
       description: Set threat indicator type from gti iot type.
       if: ctx.gti?.iot?.type != null
-      tag: set_threat_indicator_type_from_gti_iot_type
+      tag: set_threat_indicator_type_from_gti_iot_type_96440705
       lang: painless
       params:
         domain: domain-name
@@ -469,120 +469,120 @@ processors:
         ctx.threat.indicator.type = params[ctx.gti.iot.type];
       on_failure:
         - append:
-            tag: append_error_message_e1e6f2ce
+            tag: append_error_message_d3981052
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: threat.indicator.id
-      tag: append_threat_indicator_id
+      tag: append_threat_indicator_id_db53048e
       value: '{{{json.data.id}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name_from_id
+      tag: set_threat_indicator_name_from_id_cd1c8cda
       copy_from: json.data.id
       ignore_empty_value: true
   - rename:
       field: json.data.id
-      tag: rename_data_id_with_url
+      tag: rename_data_id_with_url_63136387
       target_field: gti.iot.id
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_data_id_domain
+      tag: append_data_id_domain_882d565d
       value: '{{{gti.iot.id}}}'
       allow_duplicates: false
       if: ctx.gti?.iot?.type == 'domain'
   - set:
       field: threat.indicator.file.hash.sha256
-      tag: set_threat_indicator_file_hash_sha256_from_iot_id
+      tag: set_threat_indicator_file_hash_sha256_from_iot_id_c1447ccb
       copy_from: gti.iot.id
       if: ctx.gti?.iot?.type == 'file'
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_data_id_file_into_related_hash
+      tag: append_data_id_file_into_related_hash_d1900164
       value: '{{{gti.iot.id}}}'
       allow_duplicates: false
       if: ctx.gti?.iot?.type == 'file'
   - append:
       field: related.hash
-      tag: append_id
+      tag: append_id_fd9baa8f
       value: '{{{gti.iot.id}}}'
       allow_duplicates: false
       if: ctx.gti?.iot?.type == 'url'
   - set:
       field: threat.indicator.ip
-      tag: set_threat_indicator_url_from_iot_id
+      tag: set_threat_indicator_url_from_iot_id_4281a984
       copy_from: gti.iot.id
       if: ctx.gti?.iot?.type == 'ip_address'
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_data_id_ip_into_related_ip
+      tag: append_data_id_ip_into_related_ip_45a465cb
       value: '{{{gti.iot.id}}}'
       allow_duplicates: false
       if: ctx.gti?.iot?.type == 'ip_address'
   - uri_parts:
       field: threat.indicator.url.original
-      tag: uri_parts_url_original
+      tag: uri_parts_url_original_be2411f5
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_dcd5c447
+            tag: append_error_message_701601a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
-      tag: append_data_url_domain_into_related_host
+      tag: append_data_url_domain_into_related_host_410be38f
       value: '{{{url.domain}}}'
       allow_duplicates: false
   - rename:
       field: json.data.attributes.last_analysis_results
-      tag: rename_data_attributes_last_analysis_results
+      tag: rename_data_attributes_last_analysis_results_ad53241b
       target_field: gti.iot.attributes.last_analysis_results
       ignore_missing: true
   - rename:
       field: json.data.relationships.campaigns.data
-      tag: rename_data_relationships_campaigns_data
+      tag: rename_data_relationships_campaigns_data_14317d94
       target_field: gti.iot.relationships.campaigns
       ignore_missing: true
   - rename:
       field: json.data.relationships.collections.data
-      tag: rename_data_relationships_collections_data
+      tag: rename_data_relationships_collections_data_fecb669f
       target_field: gti.iot.relationships.collections
       ignore_missing: true
   - rename:
       field: json.data.relationships.malware_families.data
-      tag: rename_data_relationships_malware_families_data
+      tag: rename_data_relationships_malware_families_data_6d1e6aa6
       target_field: gti.iot.relationships.malware_families
       ignore_missing: true
   - rename:
       field: json.data.relationships.reports.data
-      tag: rename_data_relationships_reports_data
+      tag: rename_data_relationships_reports_data_06210546
       target_field: gti.iot.relationships.reports
       ignore_missing: true
   - rename:
       field: json.data.relationships.software_toolkits.data
-      tag: rename_data_relationships_software_toolkits_data
+      tag: rename_data_relationships_software_toolkits_data_0dbc4170
       target_field: gti.iot.relationships.software_toolkits
       ignore_missing: true
   - rename:
       field: json.data.relationships.threat_actors.data
-      tag: rename_data_relationships_threat_actors_data
+      tag: rename_data_relationships_threat_actors_data_d0e1bc3a
       target_field: gti.iot.relationships.threat_actors
       ignore_missing: true
   - rename:
       field: json.data.relationships.vulnerabilities.data
-      tag: rename_data_relationships_vulnerabilities_data
+      tag: rename_data_relationships_vulnerabilities_data_cc82bf4c
       target_field: gti.iot.relationships.vulnerabilities
       ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -601,18 +601,18 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -620,10 +620,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

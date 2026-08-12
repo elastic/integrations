@@ -3,7 +3,7 @@ description: Pipeline for processing policy object.
 processors:
   - date:
       field: ses.policy.effective_date
-      tag: date_policy_effective_date
+      tag: date_policy_effective_date_5d3ba3ab
       target_field: ses.policy.effective_date
       formats:
         - UNIX_MS
@@ -11,173 +11,173 @@ processors:
       if: ctx.ses?.policy?.effective_date != null && ctx.ses.policy.effective_date != ''
       on_failure:
         - append:
-            tag: append_error_message_907c81f6
+            tag: append_error_message_b2886c1a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_policy_effective_date_b98f0f72
+            tag: remove_ses_policy_effective_date_c49b1fa5
             field: ses.policy.effective_date
             ignore_missing: true
   - convert:
       field: ses.policy.rule_category_id
-      tag: convert_policy_rule_category_id_to_string
+      tag: convert_policy_rule_category_id_to_string_63407592
       type: string
       if: ctx.ses?.policy?.rule_category_id != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_dfec719b
+            tag: append_error_message_4384fb51
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_policy_rule_category_id_d02d9e74
+            tag: remove_ses_policy_rule_category_id_5f4de4d1
             field: ses.policy.rule_category_id
             ignore_missing: true
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_policy_rules_category_id
+      tag: foreach_policy_rules_category_id_84abf187
       processor:
         convert:
           field: _ingest._value.category_id
-          tag: convert_policy_rules_category_id_to_string
+          tag: convert_policy_rules_category_id_to_string_1f7c4f04
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_category_id
+                tag: remove_ingest_value_category_id_84b89f32
                 field: _ingest._value.category_id
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_9cb5580a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_policy_rules_desc
+      tag: foreach_policy_rules_desc_f5322d87
       processor:
         append:
           field: rule.description
-          tag: append_policy_rules_desc_into_rule_description
+          tag: append_policy_rules_desc_into_rule_description_40a5caa4
           value: '{{{_ingest._value.desc}}}'
           allow_duplicates: false
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_policy_rules_dlp_type_id
+      tag: foreach_policy_rules_dlp_type_id_8d3a4085
       processor:
         convert:
           field: _ingest._value.dlp_type_id
-          tag: convert_policy_rules_dlp_type_id_to_string
+          tag: convert_policy_rules_dlp_type_id_to_string_74cae8e3
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_dlp_type_id
+                tag: remove_ingest_value_dlp_type_id_e530f587
                 field: _ingest._value.dlp_type_id
                 ignore_missing: true
             - append:
-                tag: append_error_message_3f6c9e33
+                tag: append_error_message_c62d3fc8
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_policy_rules_name
+      tag: foreach_policy_rules_name_1b194755
       processor:
         append:
           field: rule.name
-          tag: append_policy_rules_name_into_rule_name
+          tag: append_policy_rules_name_into_rule_name_2918e1fd
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_policy_rules_num_violations
+      tag: foreach_policy_rules_num_violations_0b6a2e40
       processor:
         convert:
           field: _ingest._value.num_violations
-          tag: convert_policy_rules_num_violations_to_long
+          tag: convert_policy_rules_num_violations_to_long_34d56bb8
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_num_violations
+                tag: remove_ingest_value_num_violations_9940f9ad
                 field: _ingest._value.num_violations
                 ignore_missing: true
             - append:
-                tag: append_error_message_bd806455
+                tag: append_error_message_0953fbfd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_policy_rules_uid
+      tag: foreach_policy_rules_uid_3f689a8b
       processor:
         append:
           field: rule.id
-          tag: append_policy_rules_uid_into_rule_id
+          tag: append_policy_rules_uid_into_rule_id_7eddff9e
           value: '{{{_ingest._value.uid}}}'
           allow_duplicates: false
   - foreach:
       field: ses.policy.state_ids
       if: ctx.ses?.policy?.state_ids instanceof List
-      tag: foreach_policy_state_ids
+      tag: foreach_policy_state_ids_54fec359
       processor:
         convert:
           field: _ingest._value
-          tag: convert_policy_state_ids_to_string
+          tag: convert_policy_state_ids_to_string_6799bf1f
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value
+                tag: remove_ingest_value_cb634098
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message_ab71895a
+                tag: append_error_message_a4749d5a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.policy.type_id
-      tag: convert_policy_type_id_to_string
+      tag: convert_policy_type_id_to_string_5bff39a5
       type: string
       if: ctx.ses?.policy?.type_id != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_60b58ab3
+            tag: append_error_message_e0c16e9f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_policy_type_id_da3ef2d9
+            tag: remove_ses_policy_type_id_a6eccf30
             field: ses.policy.type_id
             ignore_missing: true
   - foreach:
       field: ses.policy.rules
       if: ctx.ses?.policy?.rules instanceof List
-      tag: foreach_remove_custom_duplicate_fields_from_ses_policy_rules
+      tag: foreach_remove_custom_duplicate_fields_from_ses_policy_rules_b19dbdc3
       processor:
         remove:
           field:
             - _ingest._value.desc
             - _ingest._value.uid
             - _ingest._value.name
-          tag: remove_custom_duplicate_fields_from_ses_policy_rules
+          tag: remove_custom_duplicate_fields_from_ses_policy_rules_970ce0ad
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
   - append:
-      tag: append_error_message_5e9baeb6
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

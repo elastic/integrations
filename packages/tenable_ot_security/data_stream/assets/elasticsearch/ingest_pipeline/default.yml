@@ -3,7 +3,7 @@ description: Pipeline for processing tenable OT security cloud assets
 processors:
 
   - rename:
-      tag: rename_message_to_tenable_ot_security_assets_5423af97
+      tag: rename_message_to_tenable_ot_security_assets_934bcc8a
       field: message
       target_field: tenable_ot_security.assets
 
@@ -16,19 +16,19 @@ processors:
         - tenable_ot_security.assets.lastSnapshot
         - tenable_ot_security.assets.lastUpdate
         - tenable_ot_security.assets.runStatusTime
-      tag: fingerprinting
+      tag: fingerprinting_24a5e1f5
       target_field: "_id"
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_3e3aded1
+            tag: append_error_message_8f3586ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 
   ##################### Scripts for processing input #####################
   - script:
-      tag: script_924392cb
+      tag: script_82f51bf1
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -48,7 +48,7 @@ processors:
 
   - script:
       description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
+      tag: additional-info-keys-to-snake-case_2c62275b
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -77,7 +77,7 @@ processors:
         }
 
   - script:
-      tag: script_544eee51
+      tag: script_5384ed97
       description: Recursively normalize every occurrence of 'nodes'.
       lang: painless
       source: |
@@ -113,75 +113,75 @@ processors:
         }
 
   - convert:
-      tag: convert_total_risk_to_double
+      tag: convert_total_risk_to_double_2f9570db
       field: tenable_ot_security.assets.risk.total_risk
       type: double
       if: ctx.tenable_ot_security?.assets?.risk?.total_risk != null
       on_failure:
         - append:
-            tag: append_error_message_f582a807
+            tag: append_error_message_b7efbbba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_tenable_ot_security_assets_risk_total_risk_76a96735
+            tag: remove_tenable_ot_security_assets_risk_total_risk_9eb63d3f
             field: tenable_ot_security.assets.risk.total_risk
 
 
   ##################### ECS Fields #####################
   - set:
-      tag: set_event_kind_de80643c
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
 
   - set:
-      tag: set_ecs_version_f5923549
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: "8.17.0"
 
   - append:
-      tag: append_event_category_576de059
+      tag: append_event_category_0eb47497
       field: event.category
       value: iam
 
   - set:
-      tag: set_event_module_3a52d21c
+      tag: set_event_module_c6a78e99
       field: event.module
       value: tenable_ot_security
 
   - set:
-      tag: set_event_type_ec95f7f2
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: ["info"]
 
   - set:
-      tag: set_event_dataset_739c1a23
+      tag: set_event_dataset_6e0d15b2
       field: event.dataset
       value: tenable_ot_security.assets
 
   - set:
-      tag: set_event_id_a1a9001c
+      tag: set_event_id_a75231ca
       field: event.id
       copy_from: tenable_ot_security.assets.id
       ignore_empty_value: true
 
   - foreach:
-      tag: foreach_tenable_ot_security_assets_direct_ips_1d27e58b
+      tag: foreach_tenable_ot_security_assets_direct_ips_9156b652
       field: tenable_ot_security.assets.direct_ips
       if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
       processor:
         append:
-          tag: append_related_hosts
+          tag: append_related_hosts_bcdd2e90
           field: related.hosts
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
 
   - foreach:
-      tag: foreach_tenable_ot_security_assets_direct_macs_d7b55529
+      tag: foreach_tenable_ot_security_assets_direct_macs_186b3e09
       field: tenable_ot_security.assets.direct_macs
       if: ctx.tenable_ot_security.assets.direct_macs instanceof List && ctx.tenable_ot_security.assets.direct_macs.length > 0
       processor:
         append:
-          tag: append_related_hosts_65dccd4e
+          tag: append_related_hosts_cb07e598
           field: related.hosts
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
@@ -189,29 +189,29 @@ processors:
 
   #################### Override host.ip ####################
   - foreach:
-      tag: foreach_tenable_ot_security_assets_direct_ips_5e2e51e6
+      tag: foreach_tenable_ot_security_assets_direct_ips_03e4edb8
       field: tenable_ot_security.assets.direct_ips
       if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
       processor:
         convert:
-          tag: convert_ingest_value
+          tag: convert_ingest_value_b6438ab7
           field: _ingest._value
           type: ip
           ignore_missing: true
 
   - foreach:
-      tag: foreach_tenable_ot_security_assets_direct_ips_3d84db38
+      tag: foreach_tenable_ot_security_assets_direct_ips_cc5d7a4a
       field: tenable_ot_security.assets.direct_ips
       if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
       processor:
         append:
-          tag: append_host_ip
+          tag: append_host_ip_accc7843
           field: host.ip
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
 
   - geoip:
-      tag: geoip_host_ip_to_host_geo_b6f95445
+      tag: geoip_host_ip_to_host_geo_165841ea
       field: host.ip
       target_field: host.geo
       ignore_missing: true
@@ -221,16 +221,16 @@ processors:
 
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
 
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

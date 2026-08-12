@@ -3,10 +3,10 @@ description: Pipeline for processing audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,326 +16,326 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_cea45f41
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.created_at
         - json.id
-      tag: fingerprint_audit_event
+      tag: fingerprint_audit_event_03dbf771
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_30e754e3
       value: Sublime Security
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_1bab5e03
       value: Sublime Security
   - date:
       field: json.created_at
-      tag: date_created_at
+      tag: date_created_at_f672ae11
       target_field: sublime_security.audit.created_at
       formats:
         - ISO8601
       if: ctx.json?.created_at != null && ctx.json.created_at != ''
       on_failure:
         - append:
-            tag: append_error_message_0dfb5e96
+            tag: append_error_message_dd0946d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_created_at
+      tag: set_@timestamp_from_audit_created_at_edf22013
       copy_from: sublime_security.audit.created_at
       ignore_empty_value: true
   - convert:
       field: json.created_by.active
-      tag: convert_created_by_active_to_boolean
+      tag: convert_created_by_active_to_boolean_6dcbd2f9
       target_field: sublime_security.audit.created_by.active
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_c9b2b3f6
+            tag: append_error_message_7623cfcb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.created_by.created_at
-      tag: date_created_by_created_at
+      tag: date_created_by_created_at_9f55ae33
       target_field: sublime_security.audit.created_by.created_at
       formats:
         - ISO8601
       if: ctx.json?.created_by?.created_at != null && ctx.json.created_by.created_at != ''
       on_failure:
         - append:
-            tag: append_error_message_2158e662
+            tag: append_error_message_d5bb7341
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.created_by.deleted_at
-      tag: date_created_by_deleted_at
+      tag: date_created_by_deleted_at_bf629dc8
       target_field: sublime_security.audit.created_by.deleted_at
       formats:
         - ISO8601
       if: ctx.json?.created_by?.deleted_at != null && ctx.json.created_by.deleted_at != ''
       on_failure:
         - append:
-            tag: append_error_message_634049f1
+            tag: append_error_message_9d1128e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.created_by.email_address
-      tag: rename_created_by_email_address
+      tag: rename_created_by_email_address_8fe08cb0
       target_field: sublime_security.audit.created_by.email_address
       ignore_missing: true
   - dissect:
       field: sublime_security.audit.created_by.email_address
-      tag: dissect_created_by_email_address
+      tag: dissect_created_by_email_address_222eaae9
       description: Extract username and domain from email address.
       pattern: '%{user.name}@%{user.domain}'
       if: ctx.sublime_security?.audit?.created_by?.email_address != null
       on_failure:
       - append:
-          tag: append_error_message_01802697
+          tag: append_error_message_611dca89
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.email
-      tag: set_user_email_from_audit_created_by_email_address
+      tag: set_user_email_from_audit_created_by_email_address_adbbf775
       copy_from: sublime_security.audit.created_by.email_address
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_audit_created_by_email_address_into_related_user
+      tag: append_audit_created_by_email_address_into_related_user_33fcf375
       value: '{{{sublime_security.audit.created_by.email_address}}}'
       allow_duplicates: false
       if: ctx.sublime_security?.audit?.created_by?.email_address != null
   - rename:
       field: json.created_by.first_name
-      tag: rename_created_by_first_name
+      tag: rename_created_by_first_name_1c212911
       target_field: sublime_security.audit.created_by.first_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_audit_created_by_first_name_into_related_user
+      tag: append_audit_created_by_first_name_into_related_user_67633cd5
       value: '{{{sublime_security.audit.created_by.first_name}}}'
       allow_duplicates: false
       if: ctx.sublime_security?.audit?.created_by?.email_address != null
   - rename:
       field: json.created_by.last_name
-      tag: rename_created_by_last_name
+      tag: rename_created_by_last_name_3c3eb304
       target_field: sublime_security.audit.created_by.last_name
       ignore_missing: true
   - set:
       field: user.full_name
-      tag: set_user_name_from_audit_created_by_first_name_and_last_name
+      tag: set_user_name_from_audit_created_by_first_name_and_last_name_d6851570
       value: '{{{sublime_security.audit.created_by.first_name}}} {{{sublime_security.audit.created_by.last_name}}}'
       if: ctx.sublime_security?.audit?.created_by?.first_name != null && ctx.sublime_security.audit.created_by?.last_name != null
       ignore_empty_value: true
   - rename:
       field: json.created_by.google_oauth_user_id
-      tag: rename_created_by_google_oauth_user_id
+      tag: rename_created_by_google_oauth_user_id_e60e64a4
       target_field: sublime_security.audit.created_by.google_oauth_user_id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_audit_created_by_google_oauth_user_id_into_related_user
+      tag: append_audit_created_by_google_oauth_user_id_into_related_user_9bf24a07
       value: '{{{sublime_security.audit.created_by.google_oauth_user_id}}}'
       allow_duplicates: false
       if: ctx.sublime_security?.audit?.created_by?.google_oauth_user_id != null
   - rename:
       field: json.created_by.id
-      tag: rename_created_by_id
+      tag: rename_created_by_id_334b7536
       target_field: sublime_security.audit.created_by.id
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_audit_created_by_id
+      tag: set_user_id_from_audit_created_by_id_d7077782
       copy_from: sublime_security.audit.created_by.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_audit_created_by_id_into_related_user
+      tag: append_audit_created_by_id_into_related_user_0876bccf
       value: '{{{sublime_security.audit.created_by.id}}}'
       allow_duplicates: false
       if: ctx.sublime_security?.audit?.created_by?.id != null
   - convert:
       field: json.created_by.is_enrolled
-      tag: convert_created_by_is_enrolled_to_boolean
+      tag: convert_created_by_is_enrolled_to_boolean_23a74e61
       target_field: sublime_security.audit.created_by.is_enrolled
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_d763c038
+            tag: append_error_message_406e9c22
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.created_by.microsoft_oauth_user_id
-      tag: rename_created_by_microsoft_oauth_user_id
+      tag: rename_created_by_microsoft_oauth_user_id_7c8bfa6b
       target_field: sublime_security.audit.created_by.microsoft_oauth_user_id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_audit_created_by_microsoft_oauth_user_id_into_related_user
+      tag: append_audit_created_by_microsoft_oauth_user_id_into_related_user_c2cbec60
       value: '{{{sublime_security.audit.created_by.microsoft_oauth_user_id}}}'
       allow_duplicates: false
       if: ctx.sublime_security?.audit?.created_by?.microsoft_oauth_user_id != null
   - rename:
       field: json.created_by.phone_number
-      tag: rename_created_by_phone_number
+      tag: rename_created_by_phone_number_9fd82945
       target_field: sublime_security.audit.created_by.phone_number
       ignore_missing: true
   - rename:
       field: json.created_by.role
-      tag: rename_created_by_role
+      tag: rename_created_by_role_dad66d55
       target_field: sublime_security.audit.created_by.role
       ignore_missing: true
   - append:
       field: user.roles
-      tag: append_sublime_security_audit_created_by_role_into_user_roles
+      tag: append_sublime_security_audit_created_by_role_into_user_roles_f3bb5ad2
       value: '{{{sublime_security.audit.created_by.role}}}'
       allow_duplicates: false
       if: ctx.sublime_security?.audit?.created_by?.role != null
   - date:
       field: json.created_by.updated_at
-      tag: date_created_by_updated_at
+      tag: date_created_by_updated_at_377ce8f0
       target_field: sublime_security.audit.created_by.updated_at
       formats:
         - ISO8601
       if: ctx.json?.created_by?.updated_at != null && ctx.json.created_by.updated_at != ''
       on_failure:
         - append:
-            tag: append_error_message_f56e1567
+            tag: append_error_message_29228b3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.data.message.id
-      tag: rename_data_message_id
+      tag: rename_data_message_id_6d6c0b8b
       target_field: sublime_security.audit.data.message.id
       ignore_missing: true
   - rename:
       field: json.data.message_group.id
-      tag: rename_data_message_group_id
+      tag: rename_data_message_group_id_f9c489ce
       target_field: sublime_security.audit.data.message_group.id
       ignore_missing: true
   - rename:
       field: json.data.request.api_key_name
-      tag: rename_data_request_api_key_name
+      tag: rename_data_request_api_key_name_59f9828b
       target_field: sublime_security.audit.data.request.api_key_name
       ignore_missing: true
   - rename:
       field: json.data.request.authentication_method
-      tag: rename_data_request_authentication_method
+      tag: rename_data_request_authentication_method_cf61f065
       target_field: sublime_security.audit.data.request.authentication_method
       ignore_missing: true
   - rename:
       field: json.data.request.body
-      tag: rename_data_request_body
+      tag: rename_data_request_body_8b5dcd14
       target_field: sublime_security.audit.data.request.body
       ignore_missing: true
   - set:
       field: http.request.body.content
-      tag: set_http_request_body_content_from_audit_data_request_body
+      tag: set_http_request_body_content_from_audit_data_request_body_9b97c60a
       copy_from: sublime_security.audit.data.request.body
       ignore_empty_value: true
   - rename:
       field: json.data.request.id
-      tag: rename_data_request_id
+      tag: rename_data_request_id_e0c9ff6c
       target_field: sublime_security.audit.data.request.id
       ignore_missing: true
   - set:
       field: http.request.id
-      tag: set_http_request_id_from_audit_data_request_id
+      tag: set_http_request_id_from_audit_data_request_id_f32a9321
       copy_from: sublime_security.audit.data.request.id
       ignore_empty_value: true
   - convert:
       field: json.data.request.ip
-      tag: convert_data_request_ip_to_ip
+      tag: convert_data_request_ip_to_ip_de58a349
       target_field: sublime_security.audit.data.request.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.data?.request?.ip != null && ctx.json.data.request.ip != ''
       on_failure:
         - append:
-            tag: append_error_message_53e42654
+            tag: append_error_message_76646984
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_audit_data_request_ip
+      tag: set_source_ip_from_audit_data_request_ip_097944c4
       copy_from: sublime_security.audit.data.request.ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_723473d3
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - rename:
       field: json.data.request.method
-      tag: rename_data_request_method
+      tag: rename_data_request_method_9978b296
       target_field: sublime_security.audit.data.request.method
       ignore_missing: true
   - set:
       field: http.request.method
-      tag: set_http_request_method_from_audit_data_request_method
+      tag: set_http_request_method_from_audit_data_request_method_562e5e78
       copy_from: sublime_security.audit.data.request.method
       ignore_empty_value: true
   - rename:
       field: json.data.request.path
-      tag: rename_data_request_path
+      tag: rename_data_request_path_575ab716
       target_field: sublime_security.audit.data.request.path
       ignore_missing: true
   - set:
       field: url.path
-      tag: set_url_path_from_audit_data_request_path
+      tag: set_url_path_from_audit_data_request_path_c92d5846
       copy_from: sublime_security.audit.data.request.path
       ignore_empty_value: true
   - rename:
       field: json.data.request.query
-      tag: rename_data_request_query
+      tag: rename_data_request_query_209859b4
       target_field: sublime_security.audit.data.request.query
       ignore_missing: true
   - script:
       lang: painless
       description: Painless script to set url_query.
-      tag: painless_set_url_query
+      tag: painless_set_url_query_f16938c4
       if: ctx.sublime_security?.audit?.data?.request?.query != null
       source: |-
         StringBuilder sb = new StringBuilder();
@@ -349,37 +349,37 @@ processors:
         ctx.url.query = sb.length() > 0 ? sb.substring(0, sb.length() - 1) : null;
   - rename:
       field: json.data.request.user_agent
-      tag: rename_data_request_user_agent
+      tag: rename_data_request_user_agent_f82f5521
       target_field: sublime_security.audit.data.request.user_agent
       ignore_missing: true
   - user_agent:
-      tag: user_agent_sublime_security_audit_data_request_user_agent_ad39f6b0
+      tag: user_agent_sublime_security_audit_data_request_user_agent_98856231
       field: sublime_security.audit.data.request.user_agent
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_606dd6c2
       target_field: sublime_security.audit.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_audit_id
+      tag: set_event_id_from_audit_id_c3edcdf2
       copy_from: sublime_security.audit.id
       ignore_empty_value: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_285b8c0e
       target_field: sublime_security.audit.type
       ignore_missing: true
   - grok:
       field: sublime_security.audit.type
-      tag: grok_event_action_from_audit_type
+      tag: grok_event_action_from_audit_type_47d48a92
       patterns:
         - '.*.%{WORD:event.action}'
       ignore_missing: true
   - script:
       lang: painless
-      tag: painless_ecs_categorization
+      tag: painless_ecs_categorization_5a70bf06
       description: Map the Sublime audit `type` to ECS event.category/event.type.
       if: ctx.sublime_security?.audit?.type != null
       params:
@@ -468,12 +468,12 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_c1818ddd
+            tag: append_error_message_f89be054
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_ac08dcbd
       value: info
       allow_duplicates: false
       if: ctx.event?.type == null
@@ -490,17 +490,17 @@ processors:
         - sublime_security.audit.data.request.path
         - sublime_security.audit.data.request.user_agent
         - sublime_security.audit.id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d454192e
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -518,25 +518,25 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

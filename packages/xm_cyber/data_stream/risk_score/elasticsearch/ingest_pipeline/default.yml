@@ -3,20 +3,20 @@ description: Pipeline for processing risk score logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8c2c9474
       value: 9.4.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_f2e4d3c3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - drop:
       description: Drop the CEL token-refresh placeholder event before JSON parsing.
-      tag: drop_cel_retry_placeholder
+      tag: drop_cel_retry_placeholder_7e185a8c
       if: ctx.message instanceof String && ctx.message == 'retry'
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -26,27 +26,27 @@ processors:
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a4b0426e
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_662e8126
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
-      tag: json_event_original_into_json
+      tag: json_event_original_into_json_5a9041da
       field: event.original
       target_field: xm_cyber.risk_score
   - set:
       field: event.kind
-      tag: set_event_kind_event
+      tag: set_event_kind_event_d452ef2c
       value: event
   - fingerprint:
-      tag: fingerprint_with_id
+      tag: fingerprint_with_id_f3d9bf65
       fields:
         - xm_cyber.risk_score.scenario.id
         - xm_cyber.risk_score.graphData.fromDate
@@ -58,7 +58,7 @@ processors:
         Convert field names from camelCase to snake_case recursively.
         NOTE: This processor reassigns the normalized output back to
         ctx.xm_cyber.risk_score.
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_80bc9f47
       lang: painless
       source: |-
         // Helper function to convert camelCase to snake_case
@@ -105,69 +105,69 @@ processors:
       field: xm_cyber.risk_score.stats.score
       type: float
       ignore_missing: true
-      tag: convert_stats_score_to_long
+      tag: convert_stats_score_to_long_df1e2876
       on_failure:
         - remove:
-            tag: remove_stats_score
+            tag: remove_stats_score_63886724
             field:
               - xm_cyber.risk_score.stats.score
         - append:
-            tag: append_error_message
+            tag: append_error_message_b91e1d18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: xm_cyber.risk_score.stats.trend
       type: long
       ignore_missing: true
-      tag: convert_stats_trend_to_long
+      tag: convert_stats_trend_to_long_d57d2a6a
       on_failure:
         - remove:
-            tag: remove_stats_trend
+            tag: remove_stats_trend_27993a6a
             field:
               - xm_cyber.risk_score.stats.trend
         - append:
-            tag: append_error_message_87aa1c55
+            tag: append_error_message_e5c77bc3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Convert avg_graph_data[] inner fields
   - foreach:
-      tag: foreach_of_xm_cyber_risk_score_avg_graph_data_date
+      tag: foreach_of_xm_cyber_risk_score_avg_graph_data_date_ff48e816
       if: ctx.xm_cyber?.risk_score?.avg_graph_data instanceof List
       field: xm_cyber.risk_score.avg_graph_data
       processor:
         date:
-          tag: date__ingest__value_date_into__ingest__value_date
+          tag: date__ingest__value_date_into__ingest__value_date_ddf17c06
           field: _ingest._value.date
           target_field: _ingest._value.date
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove__ingest__value_date
+                tag: remove__ingest__value_date_24493d56
                 field:
                   - _ingest._value.date
   - foreach:
-      tag: foreach_of_xm_cyber_risk_score_avg_graph_data_score
+      tag: foreach_of_xm_cyber_risk_score_avg_graph_data_score_c1d44d54
       if: ctx.xm_cyber?.risk_score?.avg_graph_data instanceof List
       field: xm_cyber.risk_score.avg_graph_data
       processor:
         convert:
-          tag: convert__ingest__value_score_to_long
+          tag: convert__ingest__value_score_to_long_e18285db
           field: _ingest._value.score
           type: float
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove__ingest__value_score
+                tag: remove__ingest__value_score_9d0c923c
                 field:
                   - _ingest._value.score
             - append:
-                tag: append_error_message_8ed6738d
+                tag: append_error_message_b77d67b2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Convert graph_data inner fields (single object after splitting events per scenario/graphData entry)
   - date:
-      tag: date_xm_cyber_risk_score_graph_data_from_date
+      tag: date_xm_cyber_risk_score_graph_data_from_date_0a7e0ba1
       if: ctx.xm_cyber?.risk_score?.graph_data?.from_date != null && ctx.xm_cyber.risk_score.graph_data.from_date != ''
       field: xm_cyber.risk_score.graph_data.from_date
       target_field: xm_cyber.risk_score.graph_data.from_date
@@ -175,15 +175,15 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_xm_cyber_risk_score_graph_data_from_date
+            tag: remove_xm_cyber_risk_score_graph_data_from_date_8e2d13d4
             field:
               - xm_cyber.risk_score.graph_data.from_date
         - append:
-            tag: append_error_message_xm_cyber_risk_score_graph_data_from_date
+            tag: append_error_message_xm_cyber_risk_score_graph_data_from_date_eac93408
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_xm_cyber_risk_score_graph_data_to_date
+      tag: date_xm_cyber_risk_score_graph_data_to_date_f55b213b
       if: ctx.xm_cyber?.risk_score?.graph_data?.to_date != null && ctx.xm_cyber.risk_score.graph_data.to_date != ''
       field: xm_cyber.risk_score.graph_data.to_date
       target_field: xm_cyber.risk_score.graph_data.to_date
@@ -191,65 +191,65 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_xm_cyber_risk_score_graph_data_to_date
+            tag: remove_xm_cyber_risk_score_graph_data_to_date_f0372bd8
             field:
               - xm_cyber.risk_score.graph_data.to_date
         - append:
-            tag: append_error_message_xm_cyber_risk_score_graph_data_to_date
+            tag: append_error_message_xm_cyber_risk_score_graph_data_to_date_863c2303
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_xm_cyber_risk_score_graph_data_score_to_float
+      tag: convert_xm_cyber_risk_score_graph_data_score_to_float_b6ba8dbd
       field: xm_cyber.risk_score.graph_data.score
       type: float
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_xm_cyber_risk_score_graph_data_score
+            tag: remove_xm_cyber_risk_score_graph_data_score_b5729e1c
             field:
               - xm_cyber.risk_score.graph_data.score
         - append:
-            tag: append_error_message_4d4a67e5
+            tag: append_error_message_e3bcdba7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Map custom fields to corresponding ECS and related fields.
   - set:
-      tag: set_labels_scenario_name_from_xm_cyber_risk_score_data_scenario_name
+      tag: set_labels_scenario_name_from_xm_cyber_risk_score_data_scenario_name_f56ddc5e
       field: labels.scenario_name
       copy_from: xm_cyber.risk_score.scenario.name
       ignore_empty_value: true
   - set:
-      tag: set_labels_risk_grade_from_xm_cyber_risk_score_data_scenario_grade
+      tag: set_labels_risk_grade_from_xm_cyber_risk_score_data_scenario_grade_36baadb3
       field: labels.risk_grade
       copy_from: xm_cyber.risk_score.scenario.grade
       ignore_empty_value: true
   - convert:
-      tag: convert_labels_risk_score_from_xm_cyber_risk_score_data_scenario_score
+      tag: convert_labels_risk_score_from_xm_cyber_risk_score_data_scenario_score_19f49edf
       field: xm_cyber.risk_score.scenario.score
       type: string
       ignore_missing: true
   - set:
-      tag: set_labels_risk_score_from_xm_cyber_risk_score_data_scenario_score
+      tag: set_labels_risk_score_from_xm_cyber_risk_score_data_scenario_score_6f07b75d
       field: labels.risk_score
       copy_from: xm_cyber.risk_score.scenario.score
       ignore_empty_value: true
   - convert:
-      tag: convert_xm_cyber_risk_score_scenario_score_to_float
+      tag: convert_xm_cyber_risk_score_scenario_score_to_float_c1257e28
       field: xm_cyber.risk_score.scenario.score
       type: float
       ignore_missing: true
       target_field: xm_cyber.risk_score.scenario.score_float
       on_failure:
         - remove:
-            tag: remove_xm_cyber_risk_score_scenario_score
+            tag: remove_xm_cyber_risk_score_scenario_score_5a6458a8
             field:
               - xm_cyber.risk_score.scenario.score
         - append:
-            tag: append_error_message_4a7b4d3f
+            tag: append_error_message_ecce6125
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
-      tag: remove_fields_mapped_to_ecs
+      tag: remove_fields_mapped_to_ecs_a1e37b4b
       field:
         - xm_cyber.risk_score.scenario.name
         - xm_cyber.risk_score.scenario.grade
@@ -258,7 +258,7 @@ processors:
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_68df5c53
       lang: painless
       source: |-
         void handleMap(Map map) {
@@ -283,27 +283,27 @@ processors:
         }
         handleMap(ctx);
   - set:
-      tag: set_event_kind_to_pipeline_error
+      tag: set_event_kind_to_pipeline_error_33727aaa
       if: ctx.error?.message != null
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_26fd6ca5
       if: ctx.error?.message != null
       field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
   - append:
-      tag: append_error_message_a13b5632
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_to_pipeline_error_2b9ef9eb
+      tag: set_event_kind_to_pipeline_error_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_fccc94e9
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

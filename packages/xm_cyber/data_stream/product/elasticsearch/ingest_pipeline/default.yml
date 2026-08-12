@@ -2,20 +2,20 @@
 description: Pipeline for processing XM Cyber VRM products.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_8c2c9474
       field: ecs.version
       value: 9.4.0
   - terminate:
       description: Error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_b07d8c2c
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - drop:
       description: Drop the CEL token-refresh placeholder event before JSON parsing.
-      tag: drop_cel_retry_placeholder
+      tag: drop_cel_retry_placeholder_7e185a8c
       if: ctx.message instanceof String && ctx.message == 'retry'
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -24,29 +24,29 @@ processors:
       ignore_missing: true
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_c565ea00
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_662e8126
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
-      tag: json_event_original_into_xm_cyber_product
+      tag: json_event_original_into_xm_cyber_product_8e547898
       field: event.original
       target_field: xm_cyber.product
       if: ctx.event?.original != null
   - set:
-      tag: set_event_kind_event
+      tag: set_event_kind_event_d452ef2c
       field: event.kind
       value: event
   - script:
       description: Convert field names from camelCase to snake_case recursively under xm_cyber.product.
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_993053ec
       lang: painless
       source: |-
         String camelToSnake(String str) {
@@ -87,93 +87,93 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_script_camel_to_snake
+            tag: append_error_message_script_camel_to_snake_8df1641f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
-      tag: fingerprint_with_event_original
+      tag: fingerprint_with_event_original_a1c49e1c
       description: Stable document id from the canonical raw payload (product rows lack a unique id field).
       fields:
         - xm_cyber.product.product_name
       target_field: _id
       ignore_missing: true
   - convert:
-      tag: convert_affected_critical_assets_long
+      tag: convert_affected_critical_assets_long_48746169
       field: xm_cyber.product.affected_critical_assets
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.product?.affected_critical_assets != ''
       on_failure:
         - remove:
-            tag: remove_xm_cyber_product_affected_critical_assets_bc0234ec
+            tag: remove_xm_cyber_product_affected_critical_assets_498297e4
             field: xm_cyber.product.affected_critical_assets
             ignore_missing: true
         - append:
-            tag: append_error_message_0102e9e7
+            tag: append_error_message_7fdeaec6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_choke_points_found_on_long
+      tag: convert_choke_points_found_on_long_c7017d1d
       field: xm_cyber.product.choke_points_found_on
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.product?.choke_points_found_on != ''
       on_failure:
         - remove:
-            tag: remove_xm_cyber_product_choke_points_found_on_58cadb0d
+            tag: remove_xm_cyber_product_choke_points_found_on_91c4a1a4
             field: xm_cyber.product.choke_points_found_on
             ignore_missing: true
         - append:
-            tag: append_error_message_266d12a3
+            tag: append_error_message_19c91c9f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_devices_found_on_long
+      tag: convert_devices_found_on_long_1dc88cdb
       field: xm_cyber.product.devices_found_on
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.product?.devices_found_on != ''
       on_failure:
         - remove:
-            tag: remove_xm_cyber_product_devices_found_on_dd2074ac
+            tag: remove_xm_cyber_product_devices_found_on_f9f0afa1
             field: xm_cyber.product.devices_found_on
             ignore_missing: true
         - append:
-            tag: append_error_message_669ee04b
+            tag: append_error_message_bd24a87a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_product_vulnerabilities_long
+      tag: convert_product_vulnerabilities_long_64c1aaec
       field: xm_cyber.product.product_vulnerabilities
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.product?.product_vulnerabilities != ''
       on_failure:
         - remove:
-            tag: remove_xm_cyber_product_product_vulnerabilities_13cb780c
+            tag: remove_xm_cyber_product_product_vulnerabilities_114c8a04
             field: xm_cyber.product.product_vulnerabilities
             ignore_missing: true
         - append:
-            tag: append_error_message_11e1ac9b
+            tag: append_error_message_bd03f26e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_products_critical_assets_at_risk_long
+      tag: convert_products_critical_assets_at_risk_long_ccfc2265
       field: xm_cyber.product.products_critical_assets_at_risk
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.product?.products_critical_assets_at_risk != ''
       on_failure:
         - remove:
-            tag: remove_xm_cyber_product_products_critical_assets_at_risk_2ac45282
+            tag: remove_xm_cyber_product_products_critical_assets_at_risk_8413b801
             field: xm_cyber.product.products_critical_assets_at_risk
             ignore_missing: true
         - append:
-            tag: append_error_message_563c6cdf
+            tag: append_error_message_f7223dc1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -200,25 +200,25 @@ processors:
         handleMap(ctx);
 
   - append:
-      tag: append_preserve_on_collector_error
+      tag: append_preserve_on_collector_error_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: pipeline_on_failure_error_message
+      tag: pipeline_on_failure_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_on_failure_preserve_original
+      tag: pipeline_on_failure_preserve_original_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

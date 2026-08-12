@@ -3,30 +3,30 @@ description: Pipeline for processing IP IOC Stream events from Google Threat Int
 processors:
   - rename:
       field: gti.ioc_stream
-      tag: rename_gti_ioc_stream_to_gti_threat_indicator
+      tag: rename_gti_ioc_stream_to_gti_threat_indicator_9995c3f7
       target_field: gti.threat.indicator
       ignore_missing: true
   - set:
       field: gti.threat.indicator.feed.name
-      tag: set_threat_indicator_type_from_threat_indicator_feed_name
+      tag: set_threat_indicator_type_from_threat_indicator_feed_name_2e78597a
       copy_from: threat.feed.name
       ignore_empty_value: true
   - set:
       field: gti.threat.indicator.feed.dashboard_id
-      tag: set_threat_indicator_dashboard_id_from_threat_indicator_dashboard_id
+      tag: set_threat_indicator_dashboard_id_from_threat_indicator_dashboard_id_d4fc147a
       copy_from: threat.feed.dashboard_id
       ignore_empty_value: true
   - set:
       field: data_stream.dataset
-      tag: set_data_stream_dataset
+      tag: set_data_stream_dataset_2aa3e037
       value: ti_google_threat_intelligence.ip_ioc_stream
   - set:
       field: event.dataset
-      tag: set_event_dataset
+      tag: set_event_dataset_298e99e6
       value: ti_google_threat_intelligence.ip_ioc_stream
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -34,10 +34,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

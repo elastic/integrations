@@ -2,40 +2,40 @@
 description: Pipeline for processing endpoint config logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - append:
-      tag: append_event_kind
+      tag: append_event_kind_6cc5985b
       field: event.kind
       value: state
       allow_duplicates: false
   - set:
-      tag: set_event_category
+      tag: set_event_category_14959316
       field: event.category
       value: [host]
   - set:
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - rename:
-      tag: rename_message
+      tag: rename_message_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
-      tag: json_event_original
+      tag: json_event_original_6ef32e07
       field: event.original
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_9215cfc1
+            tag: append_error_message_1379d1ee
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
-      tag: date_json_timestamp
+      tag: date_json_timestamp_bc8269e8
       field: json.timestamp
       target_field: tanium.endpoint_config.timestamp
       if: ctx.json?.timestamp != null
@@ -46,187 +46,187 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ
       on_failure:
         - append:
-            tag: append_error_message_465081ca
+            tag: append_error_message_214ceabb
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_action
+      tag: rename_json_action_51dff883
       field: json.action
       target_field: tanium.endpoint_config.action
       ignore_missing: true
   - set:
-      tag: set_event_action
+      tag: set_event_action_4c9304be
       field: event.action
       copy_from: tanium.endpoint_config.action
       ignore_empty_value: true
   - convert:
-      tag: convert_json_user_user_id
+      tag: convert_json_user_user_id_c8a45ad0
       field: json.user.user_id
       target_field: tanium.endpoint_config.user.id
       type: string
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_ecaea206
+            tag: append_error_message_9450d87a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_user_id
+      tag: set_user_id_bfc5cd89
       field: user.id
       copy_from: tanium.endpoint_config.user.id
       ignore_empty_value: true
   - append:
-      tag: append_related_user
+      tag: append_related_user_6c345768
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - convert:
-      tag: convert_json_user_persona_id
+      tag: convert_json_user_persona_id_cbc69710
       field: json.user.persona_id
       target_field: tanium.endpoint_config.user.persona_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_da4fd474
+            tag: append_error_message_c4d60192
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_config_item_id
+      tag: convert_json_config_item_id_8ef592f5
       field: json.config_item.id
       target_field: tanium.endpoint_config.item.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_2c8d89a1
+            tag: append_error_message_29d3b983
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_config_item_domain
+      tag: rename_json_config_item_domain_e14365f5
       field: json.config_item.domain
       target_field: tanium.endpoint_config.item.domain
       ignore_missing: true
   - rename:
-      tag: rename_json_config_item_data_category
+      tag: rename_json_config_item_data_category_d2c35ee0
       field: json.config_item.data_category
       target_field: tanium.endpoint_config.item.data_category
       ignore_missing: true
   - rename:
-      tag: rename_json_module_solution_id
+      tag: rename_json_module_solution_id_863c4ad8
       field: json.module.solution_id
       target_field: tanium.endpoint_config.module.solution_id
       ignore_missing: true
   - rename:
-      tag: rename_json_module_solution_context_id
+      tag: rename_json_module_solution_context_id_a06fcfdd
       field: json.module.solution_context_id
       target_field: tanium.endpoint_config.module.solution_context_id
       ignore_missing: true
   - convert:
-      tag: convert_json_manifest_windows_saved_action_id
+      tag: convert_json_manifest_windows_saved_action_id_26f6805c
       field: json.manifest.windows_saved_action_id
       target_field: tanium.endpoint_config.manifest.windows_saved_action_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_521bab06
+            tag: append_error_message_7b4a1eac
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_manifest_non_windows_saved_action_id
+      tag: convert_json_manifest_non_windows_saved_action_id_c89f0262
       field: json.manifest.non_windows_saved_action_id
       target_field: tanium.endpoint_config.manifest.non_windows_saved_action_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_863c1602
+            tag: append_error_message_ee2740f2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_manifest_manifest_revision
+      tag: convert_json_manifest_manifest_revision_ba2594c7
       field: json.manifest.manifest_revision
       target_field: tanium.endpoint_config.manifest.revision
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_c75d82a9
+            tag: append_error_message_43400ba5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_manifest_service_uuid
+      tag: rename_json_manifest_service_uuid_e601aff7
       field: json.manifest.service_uuid
       target_field: tanium.endpoint_config.manifest.service_uuid
       ignore_missing: true
   - convert:
-      tag: convert_json_manifest_item_count
+      tag: convert_json_manifest_item_count_a6888984
       field: json.manifest.item_count
       target_field: tanium.endpoint_config.manifest.item_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_be22b0bd
+            tag: append_error_message_eafb4a52
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - foreach:
-      tag: foreach_json_manifest_items
+      tag: foreach_json_manifest_items_1ab5d40e
       field: json.manifest.items
       if: ctx.json?.manifest?.items instanceof List
       processor:
         foreach:
-          tag: foreach_ingest_value_ids
+          tag: foreach_ingest_value_ids_05412be5
           field: _ingest._value.ids
           processor:
             convert:
-              tag: convert_ingest_value
+              tag: convert_ingest_value_a0e8e3de
               field: _ingest._value
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value
+                    tag: remove_ingest_value_3bdf8e2f
                     field: _ingest._value
                 - append:
-                    tag: append_error_message
+                    tag: append_error_message_d1f1d043
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - rename:
-      tag: rename_json_manifest_items
+      tag: rename_json_manifest_items_fc1bf913
       field: json.manifest.items
       target_field: tanium.endpoint_config.manifest.items
       ignore_missing: true
   - append:
-      tag: append_event_kind_2
+      tag: append_event_kind_2_c23e36e0
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
-      tag: remove_json
+      tag: remove_json_94dc55cd
       field: json
       ignore_missing: true
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_fe55ecd5
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tanium.endpoint_config.action
         - tanium.endpoint_config.user.id
       ignore_missing: true
   - script:
-      tag: script_drops_null_empty_values_recursively
+      tag: script_drops_null_empty_values_recursively_853d4e94
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -245,16 +245,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message_b82e03b4
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

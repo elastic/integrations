@@ -2,212 +2,212 @@
 description: Pipeline for parsing Slack Audit logs
 processors:
   - set:
-      tag: set_ecs_version_0f7334bb
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - rename:
-      tag: rename_message_to_event_original_56a77271
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
-      tag: remove_message_2ee3a7d4
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
-      tag: json_event_original_to_slack_107dfc1c
+      tag: json_event_original_to_slack_fc45e6f2
       field: event.original
       target_field: slack
   - date:
-      tag: date_slack_date_create_to_timestamp_9b3d37a2
+      tag: date_slack_date_create_to_timestamp_9b1c2671
       field: slack.date_create
       formats:
         - UNIX
       target_field: "@timestamp"
   - remove:
-      tag: remove_slack_date_create_110adfc5
+      tag: remove_slack_date_create_8eb7d123
       field: slack.date_create
       ignore_missing: true
   - rename:
-      tag: rename_slack_action_to_event_action_887c8d10
+      tag: rename_slack_action_to_event_action_4fbdb98f
       field: slack.action
       target_field: event.action
       ignore_missing: true
   - rename:
-      tag: rename_slack_id_to_event_id_9020d75c
+      tag: rename_slack_id_to_event_id_1429b10f
       field: slack.id
       target_field: event.id
       ignore_missing: true
   - fingerprint:
-      tag: fingerprint_f716d506
+      tag: fingerprint_a6fb57f9
       fields:
         - event.id
       target_field: _id
       ignore_missing: true
   - rename:
-      tag: rename_slack_actor_user_id_to_user_id_87e1f78f
+      tag: rename_slack_actor_user_id_to_user_id_c9db93ac
       field: slack.actor.user.id
       target_field: user.id
       ignore_missing: true
   - rename:
-      tag: rename_slack_actor_user_name_to_user_full_name_eae6be7d
+      tag: rename_slack_actor_user_name_to_user_full_name_137a1c1b
       field: slack.actor.user.name
       target_field: user.full_name
       ignore_missing: true
   - rename:
-      tag: rename_slack_actor_user_email_to_user_email_1e727c39
+      tag: rename_slack_actor_user_email_to_user_email_4b140422
       field: slack.actor.user.email
       target_field: user.email
       ignore_missing: true
   - rename:
-      tag: rename_slack_actor_to_slack_audit_actor_85ebc187
+      tag: rename_slack_actor_to_slack_audit_actor_01f2711a
       field: slack.actor
       target_field: slack.audit.actor
       ignore_missing: true
   - rename:
-      tag: rename_slack_entity_workspace_to_slack_audit_entity_73a0f9e1
+      tag: rename_slack_entity_workspace_to_slack_audit_entity_0d042222
       field: slack.entity.workspace
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_enterprise_to_slack_audit_entity_ac85deab
+      tag: rename_slack_entity_enterprise_to_slack_audit_entity_b35fb70a
       field: slack.entity.enterprise
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_user_to_slack_audit_entity_19b00a27
+      tag: rename_slack_entity_user_to_slack_audit_entity_d82c34d5
       field: slack.entity.user
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_file_to_slack_audit_entity_7a1b6d60
+      tag: rename_slack_entity_file_to_slack_audit_entity_879fd801
       field: slack.entity.file
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_channel_to_slack_audit_entity_bddcced7
+      tag: rename_slack_entity_channel_to_slack_audit_entity_0106db2a
       field: slack.entity.channel
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_app_to_slack_audit_entity_ef363c2b
+      tag: rename_slack_entity_app_to_slack_audit_entity_23bc509c
       field: slack.entity.app
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_workflow_to_slack_audit_entity_3ec15d51
+      tag: rename_slack_entity_workflow_to_slack_audit_entity_edc92f3e
       field: slack.entity.workflow
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_usergroup_to_slack_audit_entity_91e07a68
+      tag: rename_slack_entity_usergroup_to_slack_audit_entity_25704b95
       field: slack.entity.usergroup
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_barrier_to_slack_audit_entity_9c6ec0d3
+      tag: rename_slack_entity_barrier_to_slack_audit_entity_de1e7c1a
       field: slack.entity.barrier
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_message_to_slack_audit_entity_4024e9a3
+      tag: rename_slack_entity_message_to_slack_audit_entity_82207eb5
       field: slack.entity.message
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_role_to_slack_audit_entity_33cd2d0a
+      tag: rename_slack_entity_role_to_slack_audit_entity_12fba8a5
       field: slack.entity.role
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_account_type_role_to_slack_audit_entity_b2044765
+      tag: rename_slack_entity_account_type_role_to_slack_audit_entity_e45e763d
       field: slack.entity.account_type_role
       target_field: slack.audit.entity
       ignore_missing: true
       if: ctx.slack?.audit?.entity == null
   - rename:
-      tag: rename_slack_entity_type_to_slack_audit_entity_entity_type_5e23d6e5
+      tag: rename_slack_entity_type_to_slack_audit_entity_entity_type_293e40c2
       field: slack.entity.type
       target_field: slack.audit.entity.entity_type
       ignore_missing: true
   - rename:
-      tag: rename_slack_context_ua_to_user_agent_original_d611f2d9
+      tag: rename_slack_context_ua_to_user_agent_original_32465c62
       field: slack.context.ua
       target_field: user_agent.original
       ignore_missing: true
   - user_agent:
-      tag: user_agent_user_agent_original_6a886ea1
+      tag: user_agent_user_agent_original_f3df46da
       field: user_agent.original
       ignore_failure: true
   - remove:
-      tag: remove_slack_context_ip_address_5b72ec4a
+      tag: remove_slack_context_ip_address_86c75753
       field: slack.context.ip_address
       ignore_missing: true
       if: ctx.slack?.context?.ip_address == ""
   - rename:
-      tag: rename_slack_context_ip_address_to_source_address_c6d6f524
+      tag: rename_slack_context_ip_address_to_source_address_b1762bf9
       field: slack.context.ip_address
       target_field: source.address
       ignore_missing: true
   - rename:
-      tag: rename_slack_details_to_slack_audit_details_a5f2c2fd
+      tag: rename_slack_details_to_slack_audit_details_87f20f47
       field: slack.details
       target_field: slack.audit.details
       ignore_missing: true
   - convert:
-      tag: convert_slack_audit_details_previous_ip_address_to_slack_audit_details_previous_ip_address_717a4e39
+      tag: convert_slack_audit_details_previous_ip_address_to_slack_audit_details_previous_ip_address_e7cd14f0
       type: ip
       field: slack.audit.details.previous_ip_address
       target_field: slack.audit.details.previous_ip_address
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_slack_audit_details_previous_ip_address_dedfbfd3
+            tag: remove_slack_audit_details_previous_ip_address_ff903a13
             field: slack.audit.details.previous_ip_address
             ignore_failure: true
         - set:
-            tag: set_event_kind_c0847361
+            tag: set_event_kind_33213210
             field: event.kind
             value: pipeline_error
         - append:
-            tag: append_error_message_2c221fe6
+            tag: append_error_message_831c1114
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - rename:
-      tag: rename_slack_audit_details_previous_ua_to_slack_audit_details_previous_user_agent_a9c60689
+      tag: rename_slack_audit_details_previous_ua_to_slack_audit_details_previous_user_agent_d2833235
       field: slack.audit.details.previous_ua
       target_field: slack.audit.details.previous_user_agent
       ignore_missing: true
   - rename:
-      tag: rename_slack_audit_details_md5_hash_to_slack_audit_details_md5_111a4bc9
+      tag: rename_slack_audit_details_md5_hash_to_slack_audit_details_md5_04062ece
       field: slack.audit.details.md5_hash
       target_field: slack.audit.details.md5
       ignore_missing: true
   - append:
-      tag: append_related_hash_bc2dce76
+      tag: append_related_hash_4f161df6
       field: related.hash
       value: '{{{slack.audit.details.md5}}}'
       allow_duplicates: false
       if: ctx.slack?.audit?.details?.md5 != null
   - set:
-      tag: set_file_hash_md5_5d67419d
+      tag: set_file_hash_md5_ced3847f
       field: file.hash.md5
       copy_from: slack.audit.details.md5
       ignore_empty_value: true
@@ -215,55 +215,55 @@ processors:
   - script:
       if: ctx.slack?.audit?.details?.action_timestamp != null && ctx.slack.audit.details.action_timestamp > 1e13
       description: Parse action_timestamp as microseconds since unix epoch.
-      tag: action-timestamp-microseconds
+      tag: action-timestamp-microseconds_bc10949b
       source: |
         def secs = (long)(ctx.slack.audit.details.action_timestamp/1e6);
         def nanos = (long)(ctx.slack.audit.details.action_timestamp % 1e6) * 1000;
         ctx["@timestamp"] = Instant.ofEpochSecond(secs, nanos).atZone(ZoneId.of("UTC"));
         ctx.slack.audit.details.remove("action_timestamp");
   - date:
-      tag: date_slack_audit_details_action_timestamp_1ba6a3ee
+      tag: date_slack_audit_details_action_timestamp_4be5c91c
       if: ctx.slack?.audit?.details?.action_timestamp != null
       field: slack.audit.details.action_timestamp
       formats:
         - UNIX_MS
       on_failure:
         - remove:
-            tag: remove_slack_audit_details_action_timestamp_cff2c60d
+            tag: remove_slack_audit_details_action_timestamp_dad58bd5
             field: slack.audit.details.action_timestamp
             ignore_failure: true
         - set:
-            tag: set_event_kind_33293fe6
+            tag: set_event_kind_21eb1c92
             field: event.kind
             value: pipeline_error
         - append:
-            tag: append_error_message_b0efad9f
+            tag: append_error_message_05090387
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_slack_audit_details_action_timestamp_53982ef6
+      tag: remove_slack_audit_details_action_timestamp_f3767abc
       field: slack.audit.details.action_timestamp
       ignore_missing: true
   - uri_parts:
-      tag: uri_parts_slack_audit_details_url_private_408425d1
+      tag: uri_parts_slack_audit_details_url_private_a2e2c3e4
       field: slack.audit.details.url_private
       ignore_missing: true
   - convert:
-      tag: convert_source_address_to_source_ip_48c76f83
+      tag: convert_source_address_to_source_ip_7f5fe63a
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - geoip:
-      tag: geoip_source_ip_to_source_geo_da2e41b2
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
-      tag: geoip_source_ip_to_source_as_28d69883
+      tag: geoip_source_ip_to_source_as_58199963
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -272,50 +272,50 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
-      tag: rename_source_as_asn_to_source_as_number_a917047d
+      tag: rename_source_as_asn_to_source_as_number_168bbbaf
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
-      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+      tag: rename_source_as_organization_name_to_source_as_organization_name_aa06a00b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
-      tag: rename_slack_context_location_to_slack_audit_context_371ca096
+      tag: rename_slack_context_location_to_slack_audit_context_a78e7b13
       field: slack.context.location
       target_field: slack.audit.context
       ignore_missing: true
   - rename:
-      tag: rename_slack_context_session_id_to_slack_audit_context_session_id_254dbadd
+      tag: rename_slack_context_session_id_to_slack_audit_context_session_id_0f592044
       field: slack.context.session_id
       target_field: slack.audit.context.session_id
       ignore_missing: true
   - convert:
-      tag: convert_slack_audit_context_session_id_15e7654c
+      tag: convert_slack_audit_context_session_id_8e4564e3
       field: slack.audit.context.session_id
       type: string
       ignore_missing: true
   - append:
-      tag: append_related_user_7f407fef
+      tag: append_related_user_23cff8dc
       field: related.user
       value: "{{{user.id}}}"
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
-      tag: append_related_user_34fcf415
+      tag: append_related_user_b9ac313b
       field: related.user
       value: "{{{user.email}}}"
       allow_duplicates: false
       if: ctx.user?.email != null
   - append:
-      tag: append_related_ip_86933b04
+      tag: append_related_ip_0ad9dd67
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
   - script:
       lang: painless
-      tag: add_ecs_categorization
+      tag: add_ecs_categorization_56becfe2
       params:
         ## User Actions
         user_login:
@@ -502,7 +502,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
-      tag: script_4d6993cb
+      tag: script_a0a1a21a
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -529,18 +529,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

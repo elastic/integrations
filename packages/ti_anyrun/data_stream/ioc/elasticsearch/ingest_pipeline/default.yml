@@ -3,36 +3,36 @@ description: Pipeline for processing ANY.RUN TI Feeds IOCs
 processors:
   # Fail if error during the CEL program evaluation
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_59f7570c
       if: ctx.error?.message != null
       description: error message set and no data to process.
   ####################
   # Event ECS fields #
   ####################
   - set:
-      tag: set_event_kind_a131107f
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - append:
-      tag: append_event_category_4cc22c32
+      tag: append_event_category_4039b90d
       field: event.category
       value: threat
   - append:
-      tag: append_event_type_7779ef85
+      tag: append_event_type_d4da06cc
       field: event.type
       value: indicator
   ######################
   # General ECS fields #
   ######################
   - rename:
-      tag: rename_message_to_event_original_56a77271
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -40,16 +40,16 @@ processors:
   - json:
       field: event.original
       target_field: stix
-      tag: stix_event_original
+      tag: stix_event_original_92864458
   - drop:
       if: ctx.stix.type != 'indicator'
-      tag: drop_no_indicator
+      tag: drop_no_indicator_384fa117
   - drop:
       if: ctx.stix.spec_version != '2.1'
-      tag: drop_no_stix_2_1
+      tag: drop_no_stix_2_1_1ce317c8
 
   - fingerprint:
-      tag: fingerprint_8fd388a3
+      tag: fingerprint_f5eb309b
       fields:
         - stix.id
         - stix.modified
@@ -58,19 +58,19 @@ processors:
       ignore_missing: true
 
   - set:
-      tag: set_threat_feed_name_01ac7e20
+      tag: set_threat_feed_name_92f40f9d
       field: threat.feed.name
       value: ANY.RUN TI Feeds
   - set:
-      tag: set_threat_feed_description_34aebca7
+      tag: set_threat_feed_description_e999dc72
       field: threat.feed.description
       value: Indicator from the ANY.RUN TI Feeds
   - set:
-      tag: set_threat_feed_reference_a717c23c
+      tag: set_threat_feed_reference_089a1e3f
       field: threat.feed.reference
       value: https://intelligence.any.run/feeds
   - set:
-      tag: set_threat_indicator_provider_772e91b3
+      tag: set_threat_indicator_provider_85b160b4
       field: threat.indicator.provider
       value: ANY.RUN
   ################
@@ -82,12 +82,12 @@ processors:
       formats:
         - "ISO8601"
       if: ctx.stix.modified != null
-      tag: date_created
+      tag: date_created_3350f2ad
   #####################
   # Threat ECS Fields #
   #####################
   - append:
-      tag: append_threat_indicator_id_caf54fc8
+      tag: append_threat_indicator_id_851c4a31
       field: threat.indicator.id
       value: '{{{stix.id}}}'
       allow_duplicates: false
@@ -97,34 +97,34 @@ processors:
       formats:
         - "ISO8601"
       if: ctx.stix.modified != null
-      tag: date_modified
+      tag: date_modified_0bc72ddf
   - set:
       field: threat.indicator.modified_at
       copy_from: threat.indicator.last_seen
       if: ctx.threat?.indicator?.last_seen != null
-      tag: set_threat_indicator_last_seen
+      tag: set_threat_indicator_last_seen_84bbc9df
   - date:
       field: stix.created
       target_field: threat.indicator.first_seen
       formats:
         - "ISO8601"
       if: ctx.stix.created != null
-      tag: date_created_e1b496f2
+      tag: date_created_7ab09731
   - rename:
       field: stix.name
       target_field: threat.indicator.name
       ignore_missing: true
-      tag: rename_name
+      tag: rename_name_72ee1849
   - rename:
       field: stix.description
       target_field: threat.indicator.description
       ignore_missing: true
-      tag: rename_description
+      tag: rename_description_fecb2a33
   - script:
       lang: painless
       if: ctx.stix.confidence != null
       description: Normalize confidence level.
-      tag: script_normalize_confidence
+      tag: script_normalize_confidence_f8be41c3
       source: >
         def value = ctx.stix.confidence;
         if (value == 0) {
@@ -139,22 +139,22 @@ processors:
           ctx.threat.indicator.confidence = "Not Specified";
         }
   - foreach:
-      tag: foreach_stix_labels_ba882095
+      tag: foreach_stix_labels_c4888632
       field: stix.labels
       if: ctx.stix.labels != null
       processor:
         append:
           field: tags
           value: '{{{ _ingest._value }}}'
-          tag: append_tags
+          tag: append_tags_05b78755
       ignore_missing: true
       ignore_failure: true
   - remove:
-      tag: remove_stix_labels_34842181
+      tag: remove_stix_labels_b8ff2b53
       field: stix.labels
       ignore_missing: true
   - gsub:
-      tag: gsub_tags_a0590d98
+      tag: gsub_tags_522e9da0
       field: tags
       pattern: '\\\"'
       replacement: '\"'
@@ -168,7 +168,7 @@ processors:
       formats:
         - "ISO8601"
       if: ctx.stix.valid_until != null
-      tag: date_ioc_expiration_valid_until
+      tag: date_ioc_expiration_valid_until_762d1e10
   - set:
       field: stix.ioc_expiration_date
       copy_from: threat.indicator.modified_at
@@ -176,11 +176,11 @@ processors:
         ctx.stix.ioc_expiration_date == null &&
         ctx.stix.revoked != null &&
         ctx.stix.revoked == true
-      tag: "set_ioc_expiration_revoked"
+      tag: set_ioc_expiration_revoked_38c27d2f
 
   - script:
       lang: painless
-      tag: script_conf_ioc_expiration
+      tag: script_conf_ioc_expiration_9c653cf7
       if: >-
         ctx.stix.ioc_expiration_date == null &&
         ctx._conf?.ioc_expiration_duration != null &&
@@ -223,13 +223,13 @@ processors:
         ctx.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
-            tag: append_error_message_eafe31b7
+            tag: append_error_message_3d3c0dbd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       lang: painless
-      tag: script_set_ioc_expiration_reason
+      tag: script_set_ioc_expiration_reason_2bdd060c
       if: ctx.stix.ioc_expiration_date != null
       params:
         valid_until: "Expiration set from valid_until field"
@@ -246,41 +246,41 @@ processors:
 
   - date:
       field: stix.ioc_expiration_date
-      tag: date_ioc_expiration_date
+      tag: date_ioc_expiration_date_e239b09b
       target_field: stix.ioc_expiration_date
       formats:
         - "ISO8601"
         - "UNIX"
       on_failure:
         - append:
-            tag: append_error_message_ad4a1b1d
+            tag: append_error_message_816150ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
         - fail:
-            tag: fail_24af1a5a
+            tag: fail_debbf6db
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
       field: _conf.ioc_expiration_duration
-      tag: rename_conf_ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration_40f4075f
       target_field: stix.ioc_expiration_duration
       ignore_missing: true
   ################
   # IOC patterns #
   ################
   - set:
-      tag: set_threat_indicator_type_fbf871e7
+      tag: set_threat_indicator_type_cf3ac7b3
       field: threat.indicator.type
       value: domain-name
       if: ctx.stix.pattern?.startsWith('[domain-name') == true
   - set:
-      tag: set_threat_indicator_type_276a5ad7
+      tag: set_threat_indicator_type_3742b6f7
       field: threat.indicator.type
       value: ipv4-addr
       if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
-      tag: set_threat_indicator_type_60ba33af
+      tag: set_threat_indicator_type_e4083707
       field: threat.indicator.type
       value: url
       if: ctx.stix.pattern?.startsWith('[url') == true
@@ -290,40 +290,40 @@ processors:
       target_field: stix._patterns
       separator: '\s+AND\s+|\s+OR\s+'
       if: ctx.threat?.indicator?.type != null && ctx.stix.pattern != null
-      tag: split_pattern
+      tag: split_pattern_61ae3ad5
 
   - foreach:
-      tag: foreach_stix__patterns_6bd37c40
+      tag: foreach_stix__patterns_a557c2bb
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline
+          tag: pipeline_ed4c583d
           name: '{{ IngestPipeline "indicator-domain-name" }}'
 
   - foreach:
-      tag: foreach_stix__patterns_00f5a031
+      tag: foreach_stix__patterns_2a193093
       field: stix._patterns
       if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_6ceea7f4
+          tag: pipeline_5e41cf40
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
-      tag: foreach_stix__patterns_f9bd611a
+      tag: foreach_stix__patterns_735eb346
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_85a1700c
+          tag: pipeline_3617c244
           name: '{{ IngestPipeline "indicator-url" }}'
 
   - remove:
-      tag: remove_3f098879
+      tag: remove_5360bf6d
       field:
         - "_conf"
         - "stix._patterns"
@@ -332,7 +332,7 @@ processors:
   - script:
       lang: painless
       description: Unscape values recursively.
-      tag: script_unscape_values
+      tag: script_unscape_values_964e71a6
       source: >
         void unescape(Object obj) {
           if (obj instanceof Map) {
@@ -357,7 +357,7 @@ processors:
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: drop_null_empty_values
+      tag: drop_null_empty_values_31b06a30
       source: >
         boolean drop(Object o) {
           if (o == null || o == '') {
@@ -375,17 +375,17 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_dba3695f
       field: error.message
       value: >
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -393,11 +393,11 @@ on_failure:
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_414f2c3d
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

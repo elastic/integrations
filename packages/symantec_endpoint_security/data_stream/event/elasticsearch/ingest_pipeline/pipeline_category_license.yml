@@ -3,69 +3,69 @@ description: Pipeline for processing License category logs.
 processors:
   - set:
       field: ses.category_name
-      tag: set_category_name
+      tag: set_category_name_2e35c881
       value: License
   - convert:
       field: ses.days_left
-      tag: convert_days_left_to_long
+      tag: convert_days_left_to_long_41372ce2
       type: long
       if: ctx.ses?.days_left != ''
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_ses_days_left_1699a7ee
+            tag: remove_ses_days_left_223a0cbe
             field: ses.days_left
             ignore_missing: true
         - append:
-            tag: append_error_message_3392ad6b
+            tag: append_error_message_8477bd53
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_container" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && ctx.ses?.container != null
-      tag: pipeline_object_container
+      tag: pipeline_object_container_3bb4816e
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_cybox" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && ctx.ses?.cybox != null
-      tag: pipeline_object_cybox
+      tag: pipeline_object_cybox_edc9119e
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && (ctx.ses?.device_cloud_vm != null || ctx.ses?.device_location != null || ctx.ses?.device_networks != null)
-      tag: pipeline_object_device
+      tag: pipeline_object_device_1170539d
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_license" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && ctx.ses?.license != null
-      tag: pipeline_object_license
+      tag: pipeline_object_license_1ca63c82
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_session" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && (ctx.ses?.session != null || ctx.ses?.sessions != null)
-      tag: pipeline_object_session
+      tag: pipeline_object_session_da2f8364
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_source" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && ctx.ses?.source != null
-      tag: pipeline_object_source
+      tag: pipeline_object_source_1872297c
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
       if: ctx.ses?.type_id != null && ['30', '31'].contains(ctx.ses.type_id) && ctx.ses?.user != null
-      tag: pipeline_object_user
+      tag: pipeline_object_user_a9b35c30
       ignore_missing_pipeline: true
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

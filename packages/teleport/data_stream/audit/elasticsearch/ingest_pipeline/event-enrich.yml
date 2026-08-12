@@ -5,14 +5,14 @@ description: >
 processors:
   # Enrich address fields.
   - grok:
-      tag: grok_client_address_d56f3d15
+      tag: grok_client_address_39432f36
       field: client.address
       ignore_missing: true
       patterns:
         - ^(%{IP:client.ip}|%{HOSTNAME:client.domain})$
   - geoip:
       field: client.ip
-      tag: geoip_client_ip
+      tag: geoip_client_ip_edd84e02
       target_field: client.geo
       ignore_missing: true
       ignore_failure: true
@@ -20,7 +20,7 @@ processors:
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
-      tag: geoip_client_asn
+      tag: geoip_client_asn_052c8ba1
       target_field: client.as
       ignore_failure: true
       properties:
@@ -28,23 +28,23 @@ processors:
         - organization_name
   - rename:
       field: client.as.asn
-      tag: rename_client_as_asn
+      tag: rename_client_as_asn_f9002c6d
       target_field: client.as.number
       ignore_missing: true
   - rename:
       field: client.as.organization_name
-      tag: rename_client_as_organization_name
+      tag: rename_client_as_organization_name_2d607f74
       target_field: client.as.organization.name
       ignore_missing: true
   - grok:
-      tag: grok_server_address_b7df9419
+      tag: grok_server_address_01024a80
       field: server.address
       ignore_missing: true
       patterns:
         - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
   - geoip:
       field: server.ip
-      tag: geoip_server_ip
+      tag: geoip_server_ip_37ff3abb
       target_field: server.geo
       ignore_missing: true
       ignore_failure: true
@@ -52,7 +52,7 @@ processors:
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
       field: server.ip
-      tag: geoip_server_asn
+      tag: geoip_server_asn_67f079f0
       target_field: server.as
       ignore_failure: true
       properties:
@@ -60,16 +60,16 @@ processors:
         - organization_name
   - rename:
       field: server.as.asn
-      tag: rename_server_as_asn
+      tag: rename_server_as_asn_15f84c9d
       target_field: server.as.number
       ignore_missing: true
   - rename:
       field: server.as.organization_name
-      tag: rename_server_as_organization_name
+      tag: rename_server_as_organization_name_d027d228
       target_field: server.as.organization.name
       ignore_missing: true
   - grok:
-      tag: grok_source_address_e9c98238
+      tag: grok_source_address_15b7df14
       field: source.address
       ignore_missing: true
       ignore_failure: true
@@ -77,14 +77,14 @@ processors:
         - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_cbeab55b
       target_field: source.geo
       ignore_missing: true
       ignore_failure: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
-      tag: geoip_source_asn
+      tag: geoip_source_asn_87edcb06
       target_field: source.as
       properties:
         - asn
@@ -93,16 +93,16 @@ processors:
       ignore_failure: true
   - rename:
       field: source.as.asn
-      tag: rename_source_as_asn
+      tag: rename_source_as_asn_168bbbaf
       target_field: source.as.number
       ignore_missing: true
   - rename:
       field: source.as.organization_name
-      tag: rename_source_as_organization_name
+      tag: rename_source_as_organization_name_aa06a00b
       target_field: source.as.organization.name
       ignore_missing: true
   - grok:
-      tag: grok_destination_address_7f3b17f7
+      tag: grok_destination_address_8bddf196
       field: destination.address
       ignore_missing: true
       ignore_failure: true
@@ -110,14 +110,14 @@ processors:
         - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})$
   - geoip:
       field: destination.ip
-      tag: geoip_destination_ip
+      tag: geoip_destination_ip_3c188642
       target_field: destination.geo
       ignore_missing: true
       ignore_failure: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
-      tag: geoip_destination_asn
+      tag: geoip_destination_asn_9502c6c9
       target_field: destination.as
       properties:
         - asn
@@ -126,160 +126,160 @@ processors:
       ignore_failure: true
   - rename:
       field: destination.as.asn
-      tag: rename_destination_as_asn
+      tag: rename_destination_as_asn_4968f9c8
       target_field: destination.as.number
       ignore_missing: true
   - rename:
       field: destination.as.organization_name
-      tag: rename_destination_as_organization_name
+      tag: rename_destination_as_organization_name_fb88b41e
       target_field: destination.as.organization.name
       ignore_missing: true
   # Normalize user fields
   - rename:
       field: user.name
       target_field: user.email
-      tag: rename_user_email
+      tag: rename_user_email_91712953
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - dissect:
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
+      tag: dissect_user_email_d5fb5c7e
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null
   # Add related fields.
   - append:
-      tag: append_related_ip_4d0c13e2
+      tag: append_related_ip_378e5620
       field: related.ip
       value:
         - '{{{client.ip}}}'
       allow_duplicates: false
       if: ctx?.client?.ip != null
   - append:
-      tag: append_related_ip_e9f5ee48
+      tag: append_related_ip_a3ce4de7
       field: related.ip
       value:
         - '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx?.destination?.ip != null
   - append:
-      tag: append_related_ip_10a35842
+      tag: append_related_ip_4ab90a4d
       field: related.ip
       value:
         - '{{{server.ip}}}'
       allow_duplicates: false
       if: ctx?.server?.ip != null
   - append:
-      tag: append_related_ip_545db65a
+      tag: append_related_ip_3d7e55aa
       field: related.ip
       value:
         - '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx?.source?.ip != null
   - append:
-      tag: append_related_ip_0a22138b
+      tag: append_related_ip_ca56d2e2
       field: related.ip
       value:
         - '{{{teleport.audit.certificate.identity.client_ip}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.certificate?.identity?.client_ip != null
   - append:
-      tag: append_related_hosts_b70c9e18
+      tag: append_related_hosts_f168c5cf
       field: related.hosts
       value:
         - '{{{host.hostname}}}'
       allow_duplicates: false
       if: ctx?.host?.hostname != null
   - append:
-      tag: append_related_hosts_87696696
+      tag: append_related_hosts_0b0573b7
       field: related.hosts
       value:
         - '{{{client.domain}}}'
       allow_duplicates: false
       if: ctx?.client?.domain != null
   - append:
-      tag: append_related_hosts_186dc0be
+      tag: append_related_hosts_e158372d
       field: related.hosts
       value:
         - '{{{destination.domain}}}'
       allow_duplicates: false
       if: ctx?.destination?.domain != null
   - append:
-      tag: append_related_hosts_cfd7abae
+      tag: append_related_hosts_6e673ece
       field: related.hosts
       value:
         - '{{{server.domain}}}'
       allow_duplicates: false
       if: ctx?.server?.domain != null
   - append:
-      tag: append_related_hosts_35798d6a
+      tag: append_related_hosts_dd6c4118
       field: related.hosts
       value:
         - '{{{source.domain}}}'
       allow_duplicates: false
       if: ctx?.source?.domain != null
   - append:
-      tag: append_related_hosts_74bf460e
+      tag: append_related_hosts_e2bef1b3
       field: related.hosts
       value:
         - '{{{url.domain}}}'
       allow_duplicates: false
       if: ctx?.url?.domain != null
   - append:
-      tag: append_related_hosts_10daf4da
+      tag: append_related_hosts_9191a933
       field: related.hosts
       value:
         - '{{{teleport.audit.app.public_address}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.app?.public_address != null
   - set:
-      tag: set_related_user_2840fd7c
+      tag: set_related_user_15a9b1ca
       field: related.user
       value: ""
   - append:
-      tag: append_related_user_3628e268
+      tag: append_related_user_b764ed69
       field: related.user
       value:
         - '{{{user.name}}}'
       allow_duplicates: false
       if: ctx?.user?.name != null
   - append:
-      tag: append_related_user_fe07d47a
+      tag: append_related_user_fa10d5d1
       field: related.user
       value:
         - '{{{user.email}}}'
       allow_duplicates: false
       if: ctx?.user?.email != null
   - append:
-      tag: append_related_user_e8c00c00
+      tag: append_related_user_d6c27ff7
       field: related.user
       value:
         - '{{{teleport.audit.resource.name}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.resource?.name != null && ctx.event.action.startsWith("user.")
   - append:
-      tag: append_related_user_58c53f73
+      tag: append_related_user_7b3766d4
       field: related.user
       value:
         - '{{{process.user.name}}}'
       allow_duplicates: false
       if: ctx?.process?.user?.name != null
   - append:
-      tag: append_related_user_37c375be
+      tag: append_related_user_79233be9
       field: related.user
       value:
         - '{{{teleport.audit.database.user}}}'
       allow_duplicates: false
       if: ctx?.teleport.audit.database?.user != null
   - append:
-      tag: append_related_user_f7a06f61
+      tag: append_related_user_67a46b97
       field: related.user
       value:
         - '{{{teleport.audit.database.user_change.username}}}'
       allow_duplicates: false
       if: ctx?.teleport.audit.database?.user_change?.username != null
   - append:
-      tag: append_related_user_61815ea9
+      tag: append_related_user_1d6df6af
       field: related.user
       value:
         - '{{{teleport.audit.certificate.identity.user}}}'
@@ -288,7 +288,7 @@ processors:
   - script:
       description: >
         Add lists of related users.
-      tag: script_add_related_user_lists
+      tag: script_add_related_user_lists_2b637c14
       lang: painless
       source: |
         if (ctx.teleport?.audit?.certificate?.identity?.logins != null) {
@@ -301,14 +301,14 @@ processors:
           ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.database_users);
         }
   - append:
-      tag: append_related_user_4fddb329
+      tag: append_related_user_5df8799f
       field: related.user
       value:
         - '{{{teleport.audit.certificate.identity.impersonator}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.certificate?.identity?.impersonator != null
   - append:
-      tag: append_related_hosts_5e2df659
+      tag: append_related_hosts_a8b65faf
       field: related.hosts
       value:
         - '{{{teleport.audit.server.labels.hostname}}}'

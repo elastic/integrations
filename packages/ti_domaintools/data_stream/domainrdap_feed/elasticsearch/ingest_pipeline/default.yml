@@ -2,17 +2,17 @@
 description: Pipeline for processing domain rdap feed
 processors:
   - set:
-      tag: set_ecs_version_f5923549
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: '8.17.0'
 
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_59f7570c
       if: ctx.error?.message != null
       description: error message set and no data to process.
 
   - rename:
-      tag: rename_message_to_event_original_56a77271
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
@@ -20,28 +20,28 @@ processors:
 
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
 
   - json:
-      tag: json_event_original_to_domaintools_4eea6ad1
+      tag: json_event_original_to_domaintools_32485161
       field: event.original
       target_field: domaintools
 
   - set:
-      tag: set_domaintools_first_request_timestamp_5cdd8a98
+      tag: set_domaintools_first_request_timestamp_d24eba65
       if: ctx.domaintools?.raw_record?.first_request_timestamp != null
       field: domaintools.first_request_timestamp
       copy_from: domaintools.raw_record.first_request_timestamp
 
   - foreach:
-      tag: foreach_domaintools_raw_record_requests_7de2ca88
+      tag: foreach_domaintools_raw_record_requests_709592d3
       field: domaintools.raw_record.requests
       processor:
         append:
-          tag: append_domaintools_requests_url
+          tag: append_domaintools_requests_url_f9403fec
           field: domaintools.requests_url
           value: "{{{ _ingest._value.url }}}"
 
@@ -50,11 +50,11 @@ processors:
     ############################
 
   - set:
-      tag: set_threat_indicator_type_b65d5b6f
+      tag: set_threat_indicator_type_bc4f4ba5
       field: threat.indicator.type
       value: domain-name
   - set:
-      tag: set_threat_indicator_name_1bc8d54d
+      tag: set_threat_indicator_name_46c4b8f6
       if: ctx.domaintools?.domain != null
       field: threat.indicator.name
       copy_from: domaintools.domain
@@ -63,20 +63,20 @@ processors:
     # Event ECS fields #
     ####################
   - set:
-      tag: set_event_kind_a131107f
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - set:
-      tag: set_event_category_cceb7c22
+      tag: set_event_category_4675e36d
       field: event.category
       value: ['threat']
   - set:
-      tag: set_event_type_97bb78b9
+      tag: set_event_type_acbc82af
       field: event.type
       value: ['indicator']
 
   - remove:
-      tag: remove_d27ddb54
+      tag: remove_3ecf1470
       field:
         - domaintools.raw_record
         - domaintools.parsed_record.parsed_fields.conformance
@@ -93,16 +93,16 @@ processors:
 
 on_failure:
 - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
 - append:
-    tag: append_tags
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

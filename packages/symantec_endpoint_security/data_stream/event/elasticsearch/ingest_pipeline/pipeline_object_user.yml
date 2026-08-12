@@ -3,74 +3,74 @@ description: Pipeline for processing user object.
 processors:
   - convert:
       field: ses.user.account_disabled
-      tag: convert_user_account_disabled_to_boolean
+      tag: convert_user_account_disabled_to_boolean_4ba9df67
       type: boolean
       if: ctx.ses?.user?.account_disabled != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_e454d915
+            tag: append_error_message_a8350c2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_user_account_disabled_4b45c5c4
+            tag: remove_ses_user_account_disabled_f86ef13c
             field: ses.user.account_disabled
             ignore_missing: true
   - append:
       field: user.domain
-      tag: append_user_domain_from_user_domain
+      tag: append_user_domain_from_user_domain_571efd93
       value: '{{{ses.user.domain}}}'
       allow_duplicates: false
       if: ctx.ses?.user?.domain != null
   - convert:
       field: ses.user.is_admin
-      tag: convert_user_is_admin_to_boolean
+      tag: convert_user_is_admin_to_boolean_d618bffc
       type: boolean
       if: ctx.ses?.user?.is_admin != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_cbe95225
+            tag: append_error_message_2db6affd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_user_is_admin_5723c860
+            tag: remove_ses_user_is_admin_c920bfca
             field: ses.user.is_admin
             ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_user_name
+      tag: set_user_name_from_user_name_3f1f5088
       copy_from: ses.user.name
       ignore_empty_value: true
   - convert:
       field: ses.user.password_expires
-      tag: convert_user_password_expires_to_boolean
+      tag: convert_user_password_expires_to_boolean_78d454a2
       type: boolean
       if: ctx.ses?.user?.password_expires != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_26e6d629
+            tag: append_error_message_b49099bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_user_password_expires_f65d30c2
+            tag: remove_ses_user_password_expires_8b24837c
             field: ses.user.password_expires
             ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_user_uid
+      tag: set_user_id_from_user_uid_7ce3b959
       copy_from: ses.user.uid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_related_user_from_user_uid
+      tag: append_related_user_from_user_uid_f71d02a8
       value: '{{{ses.user.uid}}}'
       allow_duplicates: false
       if: ctx.ses?.user?.uid != null && ctx.ses.user.uid != ''
   - append:
       field: related.user
-      tag: append_related_user_from_user_name
+      tag: append_related_user_from_user_name_e8f6ecb9
       value: '{{{ses.user.name}}}'
       allow_duplicates: false
       if: ctx.ses?.user?.name != null && ctx.ses.user.name != ''
@@ -79,20 +79,20 @@ processors:
         - ses.user.domain
         - ses.user.name
         - ses.user.uid
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_dbcd7519
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

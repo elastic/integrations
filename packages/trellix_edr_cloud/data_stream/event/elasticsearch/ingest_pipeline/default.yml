@@ -3,30 +3,30 @@ description: Pipeline for processing Event logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: message
-      tag: rename_message
+      tag: rename_message_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_57b2b93d
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_5ca4cc71
+            tag: append_error_message_bbf171cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_to_set_event_category
+      tag: script_to_set_event_category_05b33ac6
       description: Script to set event.category for all the event types.
       if: ctx.json?._eventType != null
       source: >-
@@ -46,12 +46,12 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_90c754e7
+            tag: append_error_message_1ddef513
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_to_set_event_type
+      tag: script_to_set_event_type_34501bd8
       description: Script to set event.type for all the event types.
       if: ctx.event?.category != null
       source: >-
@@ -68,35 +68,35 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_03c4837e
+            tag: append_error_message_a92b4858
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json._time
-      tag: date_json_time
+      tag: date_json_time_75fbde23
       target_field: trellix_edr_cloud.event.time
       formats:
         - ISO8601
       if: ctx.json?._time != null && ctx.json._time != ''
       on_failure:
         - append:
-            tag: append_error_message_296238e0
+            tag: append_error_message_4738806d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json._time
-      tag: date_json_time_f6c8847b
+      tag: date_json_time_173dbf1c
       formats:
         - ISO8601
       if: ctx.json?._time != null && ctx.json._time != ''
       on_failure:
         - append:
-            tag: append_error_message_27dffc53
+            tag: append_error_message_18123af1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.destAddress
-      tag: convert_json_destAddress
+      tag: convert_json_destAddress_44e41d9e
       target_field: trellix_edr_cloud.event.dest.address
       type: ip
       ignore_missing: true
@@ -104,802 +104,802 @@ processors:
       on_failure:
         - rename:
             field: json.destAddress
-            tag: rename_json_destAddress
+            tag: rename_json_destAddress_461893f9
             target_field: trellix_edr_cloud.event.destination_address
             ignore_missing: true
   - append:
       field: related.ip
-      tag: append_related_ip
+      tag: append_related_ip_058c36b2
       value: '{{{trellix_edr_cloud.event.dest.address}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.dest?.address != null
   - set:
       field: destination.ip
-      tag: set_destination_ip
+      tag: set_destination_ip_5a201ecd
       copy_from: trellix_edr_cloud.event.dest.address
       ignore_empty_value: true
   - convert:
       field: json.destPort
-      tag: convert_json_destPort
+      tag: convert_json_destPort_2a095d41
       target_field: trellix_edr_cloud.event.dest.port
       type: long
       ignore_missing: true
       if: ctx.json?.destPort != ''
       on_failure:
         - append:
-            tag: append_error_message_454e6f5b
+            tag: append_error_message_72799f7f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port
+      tag: set_destination_port_679e48c1
       copy_from: trellix_edr_cloud.event.dest.port
       ignore_empty_value: true
   - rename:
       field: json._deviceId
-      tag: rename_json_deviceId
+      tag: rename_json_deviceId_463a6174
       target_field: trellix_edr_cloud.event.device_id
       ignore_missing: true
   - set:
       field: device.id
-      tag: set_device_id
+      tag: set_device_id_625d2e62
       copy_from: trellix_edr_cloud.event.device_id
       ignore_empty_value: true
   - rename:
       field: json.action
-      tag: rename_json_action
+      tag: rename_json_action_f5ff12be
       target_field: trellix_edr_cloud.event.action
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action
+      tag: set_event_action_43c30336
       copy_from: trellix_edr_cloud.event.action
       ignore_empty_value: true
   - rename:
       field: json._eventId
-      tag: rename_json_eventId
+      tag: rename_json_eventId_8dcbcb24
       target_field: trellix_edr_cloud.event.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_5ad81b9f
       copy_from: trellix_edr_cloud.event.id
       ignore_empty_value: true
   - date:
       field: json.fileCreationDate
-      tag: date_json_fileCreationDate
+      tag: date_json_fileCreationDate_30bad20d
       target_field: trellix_edr_cloud.event.file.creation_date
       formats:
         - ISO8601
       if: ctx.json?.fileCreationDate != null && ctx.json.fileCreationDate != ''
       on_failure:
         - append:
-            tag: append_error_message_b890e25a
+            tag: append_error_message_6be83238
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.created
-      tag: set_file_created
+      tag: set_file_created_9e95fc1f
       copy_from: trellix_edr_cloud.event.file.creation_date
       ignore_empty_value: true
   - rename:
       field: json.fileMd5
-      tag: rename_json_fileMd5
+      tag: rename_json_fileMd5_6b9b271d
       target_field: trellix_edr_cloud.event.file.md5
       ignore_missing: true
   - set:
       field: file.hash.md5
-      tag: set_file_hash_md5
+      tag: set_file_hash_md5_4340d2c4
       copy_from: trellix_edr_cloud.event.file.md5
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_related_hash
+      tag: append_related_hash_9ae1052a
       value: '{{{file.hash.md5}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.md5 != null
   - rename:
       field: json.fileSha1
-      tag: rename_json_fileSha1
+      tag: rename_json_fileSha1_deef2243
       target_field: trellix_edr_cloud.event.file.sha1
       ignore_missing: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1
+      tag: set_file_hash_sha1_05f25aa6
       copy_from: trellix_edr_cloud.event.file.sha1
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_related_hash_296b9886
+      tag: append_related_hash_61dc27a3
       value: '{{{file.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha1 != null
   - rename:
       field: json.fileSha256
-      tag: rename_json_fileSha256
+      tag: rename_json_fileSha256_92423111
       target_field: trellix_edr_cloud.event.file.sha256
       ignore_missing: true
   - set:
       field: file.hash.sha256
-      tag: set_file_hash_sha256
+      tag: set_file_hash_sha256_eb8f3749
       copy_from: trellix_edr_cloud.event.file.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_related_hash_a5bee2ee
+      tag: append_related_hash_caf9f974
       value: '{{{file.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha256 != null
   - date:
       field: json.fileModificationDate
-      tag: date_json_fileModificationDate
+      tag: date_json_fileModificationDate_425cc892
       target_field: trellix_edr_cloud.event.file.modification_date
       formats:
         - ISO8601
       if: ctx.json?.fileModificationDate != null && ctx.json.fileModificationDate != ''
       on_failure:
         - append:
-            tag: append_error_message_87de5e65
+            tag: append_error_message_c5d92870
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.mtime
-      tag: set_file_mtime
+      tag: set_file_mtime_ca9553e1
       copy_from: trellix_edr_cloud.event.file.modification_date
       ignore_empty_value: true
   - rename:
       field: json.filePath
-      tag: rename_json_filePath
+      tag: rename_json_filePath_29bdb7aa
       target_field: trellix_edr_cloud.event.file.path
       ignore_missing: true
   - set:
       field: file.path
-      tag: set_file_path
+      tag: set_file_path_6e42a687
       copy_from: trellix_edr_cloud.event.file.path
       ignore_empty_value: true
   - convert:
       field: json.fileSize
-      tag: convert_json_fileSize
+      tag: convert_json_fileSize_400ab08e
       target_field: trellix_edr_cloud.event.file.size
       type: long
       ignore_missing: true
       if: ctx.json?.fileSize != ''
       on_failure:
         - append:
-            tag: append_error_message_59a602ff
+            tag: append_error_message_d36f012d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.size
-      tag: set_file_size
+      tag: set_file_size_987141a3
       copy_from: trellix_edr_cloud.event.file.size
       ignore_empty_value: true
   - rename:
       field: json.fileType
-      tag: rename_json_fileType
+      tag: rename_json_fileType_e3e68ff5
       target_field: trellix_edr_cloud.event.file.type
       ignore_missing: true
   - set:
       field: file.type
-      tag: set_file_type
+      tag: set_file_type_fc7a8eb8
       copy_from: trellix_edr_cloud.event.file.type
       ignore_empty_value: true
   - rename:
       field: json.direction
-      tag: rename_json_direction
+      tag: rename_json_direction_00196436
       target_field: trellix_edr_cloud.event.direction
       ignore_missing: true
   - set:
       field: network.direction
-      tag: set_network_direction
+      tag: set_network_direction_953d7c4d
       copy_from: trellix_edr_cloud.event.direction
       ignore_empty_value: true
   - rename:
       field: json.protocol
-      tag: rename_json_protocol
+      tag: rename_json_protocol_6f0115a7
       target_field: trellix_edr_cloud.event.protocol
       ignore_missing: true
   - lowercase:
       field: trellix_edr_cloud.event.protocol
-      tag: lowercase_network_protocol
+      tag: lowercase_network_protocol_f2dbbe53
       target_field: network.protocol
       ignore_missing: true
       if: ctx.trellix_edr_cloud?.event?.protocol != ''
       on_failure:
         - append:
-            tag: append_error_message_39c07790
+            tag: append_error_message_cd4d905e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.cmdLine
-      tag: rename_json_cmdLine
+      tag: rename_json_cmdLine_02336734
       target_field: trellix_edr_cloud.event.cmd_line
       ignore_missing: true
   - append:
       field: process.command_line
-      tag: append_process_command_line
+      tag: append_process_command_line_2adb661a
       value: '{{{trellix_edr_cloud.event.cmd_line}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.cmd_line != null
   - convert:
       field: json.pid
-      tag: convert_json_pid
+      tag: convert_json_pid_2e30d12c
       target_field: trellix_edr_cloud.event.pid
       type: long
       ignore_missing: true
       if: ctx.json?.pid != ''
       on_failure:
         - append:
-            tag: append_error_message_c3bfc1db
+            tag: append_error_message_5b3dc894
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.pid
-      tag: set_process_pid
+      tag: set_process_pid_d7486bc5
       copy_from: trellix_edr_cloud.event.pid
       ignore_empty_value: true
   - rename:
       field: json.serviceName
-      tag: rename_json_serviceName
+      tag: rename_json_serviceName_75877797
       target_field: trellix_edr_cloud.event.service.name
       ignore_missing: true
   - set:
       field: service.name
-      tag: set_service_name
+      tag: set_service_name_e69793b0
       copy_from: trellix_edr_cloud.event.service.name
       ignore_empty_value: true
   - convert:
       field: json.sourceAddress
-      tag: convert_json_sourceAddress
+      tag: convert_json_sourceAddress_d3a0f351
       target_field: trellix_edr_cloud.event.source.address
       type: ip
       ignore_missing: true
       if: ctx.json?.sourceAddress != ''
       on_failure:
         - append:
-            tag: append_error_message_e6d77cd6
+            tag: append_error_message_dc60d592
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_related_ip_abe358a3
+      tag: append_related_ip_24f68298
       value: '{{{trellix_edr_cloud.event.source.address}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.source?.address != null
   - set:
       field: source.ip
-      tag: set_source_ip
+      tag: set_source_ip_0745975f
       copy_from: trellix_edr_cloud.event.source.address
       ignore_empty_value: true
   - convert:
       field: json.sourcePort
-      tag: convert_json_sourcePort
+      tag: convert_json_sourcePort_601f779f
       target_field: trellix_edr_cloud.event.source.port
       type: long
       ignore_missing: true
       if: ctx.json?.sourcePort != ''
       on_failure:
         - append:
-            tag: append_error_message_f99b2c6f
+            tag: append_error_message_c897fac4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
-      tag: set_source_port
+      tag: set_source_port_90be3c55
       copy_from: trellix_edr_cloud.event.source.port
       ignore_empty_value: true
   - rename:
       field: json.userDomain
-      tag: rename_json_userDomain
+      tag: rename_json_userDomain_251276d1
       target_field: trellix_edr_cloud.event.user.domain
       ignore_missing: true
   - set:
       field: user.domain
-      tag: set_user_domain
+      tag: set_user_domain_83c10db5
       copy_from: trellix_edr_cloud.event.user.domain
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_related_user
+      tag: append_related_user_fb27e11b
       value: '{{{user.domain}}}'
       allow_duplicates: false
       if: ctx.user?.domain != null
   - rename:
       field: json.userName
-      tag: rename_json_userName
+      tag: rename_json_userName_c4dfa24f
       target_field: trellix_edr_cloud.event.user.name
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_14ca7bd7
       copy_from: trellix_edr_cloud.event.user.name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_related_user_56737f2b
+      tag: append_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - rename:
       field: json._eventType
-      tag: rename_json_eventType
+      tag: rename_json_eventType_89f99cf2
       target_field: trellix_edr_cloud.event.type
       ignore_missing: true
   - rename:
       field: json._parentEventId
-      tag: rename_json_parentEventId
+      tag: rename_json_parentEventId_453ff832
       target_field: trellix_edr_cloud.event.parent_event_id
       ignore_missing: true
   - rename:
       field: json._serverId
-      tag: rename_json_serverId
+      tag: rename_json_serverId_6d24a2a2
       target_field: trellix_edr_cloud.event.server_id
       ignore_missing: true
   - convert:
       field: json._ver
-      tag: convert_json_ver
+      tag: convert_json_ver_c734b9b3
       target_field: trellix_edr_cloud.event.ver
       type: string
       ignore_missing: true
       if: ctx.json?._ver != ''
       on_failure:
         - append:
-            tag: append_error_message_587c3686
+            tag: append_error_message_7c1b3244
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.accessType
-      tag: rename_json_accessType
+      tag: rename_json_accessType_3cd72855
       target_field: trellix_edr_cloud.event.access_type
       ignore_missing: true
   - rename:
       field: json.arguments
-      tag: rename_json_arguments
+      tag: rename_json_arguments_c56bd407
       target_field: trellix_edr_cloud.event.arguments
       ignore_missing: true
   - rename:
       field: json.authorName
-      tag: rename_json_authorName
+      tag: rename_json_authorName_c9227273
       target_field: trellix_edr_cloud.event.author_name
       ignore_missing: true
   - convert:
       field: json.bytesReceived
-      tag: rename_json_bytesReceived
+      tag: rename_json_bytesReceived_f4992175
       target_field: trellix_edr_cloud.event.bytes_received
       type: long
       ignore_missing: true
       if: ctx.json?.bytesReceived != ''
       on_failure:
         - append:
-            tag: append_error_message_73caa645
+            tag: append_error_message_c1fa7026
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.bytes
-      tag: set_source_bytes
+      tag: set_source_bytes_f505a8e6
       copy_from: trellix_edr_cloud.event.bytes_received
       ignore_empty_value: true
   - foreach:
-      tag: foreach_json_certs_a7eee106
+      tag: foreach_json_certs_db0f9846
       field: json.certs
       if: ctx.json?.certs instanceof List
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value
+          tag: foreach_ingest_value_2a9e61bb
           field: _ingest._value
           ignore_missing: true
           processor:
             rename:
               field: _ingest._value.publicKeyHash
-              tag: rename_json_certs_publicKeyHash
+              tag: rename_json_certs_publicKeyHash_ea6f2249
               target_field: _ingest._value.public_key_hash
               ignore_missing: true
   - foreach:
-      tag: foreach_json_certs_9c6cb4bf
+      tag: foreach_json_certs_89a1af7b
       field: json.certs
       if: ctx.json?.certs instanceof List
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_66a69990
+          tag: foreach_ingest_value_577de5fa
           field: _ingest._value
           ignore_missing: true
           processor:
             rename:
               field: _ingest._value.issuerName
-              tag: rename_json_certs_issuerName
+              tag: rename_json_certs_issuerName_1375dae7
               target_field: _ingest._value.issuer_name
               ignore_missing: true
   - foreach:
-      tag: foreach_json_certs_5d5e96e8
+      tag: foreach_json_certs_5dd87bf6
       field: json.certs
       if: ctx.json?.certs instanceof List
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_5d2e96a8
+          tag: foreach_ingest_value_31850759
           field: _ingest._value
           ignore_missing: true
           processor:
             append:
               field: related.hash
-              tag: append_related_hash_dd3d99a6
+              tag: append_related_hash_da5003fc
               value: '{{{_ingest._value.public_key_hash}}}'
               allow_duplicates: false
   - rename:
       field: json.certs
-      tag: rename_json_certs_type
+      tag: rename_json_certs_type_abe11d76
       target_field: trellix_edr_cloud.event.certs
       ignore_missing: true
   - rename:
       field: json.commands
-      tag: rename_json_commands
+      tag: rename_json_commands_c63b9ff0
       target_field: trellix_edr_cloud.event.commands
       ignore_missing: true
   - foreach:
-      tag: foreach_trellix_edr_cloud_event_commands_c7ea3439
+      tag: foreach_trellix_edr_cloud_event_commands_146333c8
       field: trellix_edr_cloud.event.commands
       if: ctx.trellix_edr_cloud?.event?.commands instanceof List
       ignore_failure: true
       processor:
         append:
           field: process.command_line
-          tag: append_process_command_line_0093f90d
+          tag: append_process_command_line_844031c9
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.data
-      tag: rename_json_data
+      tag: rename_json_data_1538f393
       target_field: trellix_edr_cloud.event.data
       ignore_missing: true
   - convert:
       field: json.dnsClass
-      tag: convert_json_dnsClass
+      tag: convert_json_dnsClass_19d5b775
       target_field: trellix_edr_cloud.event.dns.class
       type: long
       ignore_missing: true
       if: ctx.json?.dnsClass != ''
       on_failure:
         - append:
-            tag: append_error_message_1eaa5b9d
+            tag: append_error_message_0761916e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dnsName
-      tag: rename_json_dnsName
+      tag: rename_json_dnsName_78f0e0c9
       target_field: trellix_edr_cloud.event.dns.name
       ignore_missing: true
   - rename:
       field: json.dnsNames
-      tag: rename_json_dnsNames
+      tag: rename_json_dnsNames_1bf51fd3
       target_field: trellix_edr_cloud.event.dns.names
       ignore_missing: true
   - convert:
       field: json.dnsType
-      tag: convert_json_dnsType
+      tag: convert_json_dnsType_c58ecc2d
       target_field: trellix_edr_cloud.event.dns.type
       type: long
       ignore_missing: true
       if: ctx.json?.dnsType != ''
       on_failure:
         - append:
-            tag: append_error_message_2e6c05db
+            tag: append_error_message_f894826a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.evid
-      tag: rename_json_evid
+      tag: rename_json_evid_1b2ccb48
       type: string
       target_field: trellix_edr_cloud.event.evid
       ignore_missing: true
       if: ctx.json?.evid != ''
       on_failure:
         - append:
-            tag: append_error_message_38b6e203
+            tag: append_error_message_bb0136bc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.fileAttributes
-      tag: convert_json_fileAttributes
+      tag: convert_json_fileAttributes_13a27223
       target_field: trellix_edr_cloud.event.file.attributes
       type: long
       ignore_missing: true
       if: ctx.json?.fileAttributes != ''
       on_failure:
         - append:
-            tag: append_error_message_89a44c2b
+            tag: append_error_message_481e5d03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.fileMagicBytes
-      tag: rename_json_fileMagicBytes
+      tag: rename_json_fileMagicBytes_8e23b034
       target_field: trellix_edr_cloud.event.file.magic_bytes
       ignore_missing: true
   - rename:
       field: json.fqdn
-      tag: rename_json_fqdn
+      tag: rename_json_fqdn_11123cb8
       target_field: trellix_edr_cloud.event.fqdn
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name
+      tag: set_host_name_c70e4c94
       copy_from: trellix_edr_cloud.event.fqdn
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_related_hosts
+      tag: append_related_hosts_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
       field: json.httpRequestHeaders
-      tag: rename_json_httpRequestHeaders
+      tag: rename_json_httpRequestHeaders_dea4d3a5
       target_field: trellix_edr_cloud.event.http.request_headers
       ignore_missing: true
   - rename:
       field: json.httpResponseHeaders
-      tag: rename_json_httpResponseHeaders
+      tag: rename_json_httpResponseHeaders_dcb52c51
       target_field: trellix_edr_cloud.event.http.response_headers
       ignore_missing: true
   - rename:
       field: json.httpUrl
-      tag: rename_json_httpUrl
+      tag: rename_json_httpUrl_1966b74f
       target_field: trellix_edr_cloud.event.http.url
       ignore_missing: true
   - set:
       field: url.full
-      tag: set_url_full
+      tag: set_url_full_b9a60a0f
       copy_from: trellix_edr_cloud.event.http.url
       ignore_empty_value: true
   - convert:
       field: json.integrityLevel
-      tag: convert_json_integrityLevel
+      tag: convert_json_integrityLevel_62d9a9cf
       target_field: trellix_edr_cloud.event.integrity_level
       type: long
       ignore_missing: true
       if: ctx.json?.integrityLevel != ''
       on_failure:
         - append:
-            tag: append_error_message_0cc810fe
+            tag: append_error_message_42afc5b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.keyName
-      tag: rename_json_keyName
+      tag: rename_json_keyName_c1324fa8
       target_field: trellix_edr_cloud.event.key.name
       ignore_missing: true
   - rename:
       field: json.keyOldValue
-      tag: rename_json_keyOldValue
+      tag: rename_json_keyOldValue_065abc5c
       target_field: trellix_edr_cloud.event.key.old_value
       ignore_missing: true
   - rename:
       field: json.keyValue
-      tag: rename_json_keyValue
+      tag: rename_json_keyValue_692ddf0d
       target_field: trellix_edr_cloud.event.key.val
       ignore_missing: true
   - rename:
       field: json.keyValueName
-      tag: rename_json_keyValueName
+      tag: rename_json_keyValueName_bdd376a6
       target_field: trellix_edr_cloud.event.value.name
       ignore_missing: true
   - rename:
       field: json.keyValueType
-      tag: rename_json_keyValueType
+      tag: rename_json_keyValueType_018e28a7
       target_field: trellix_edr_cloud.event.value.type
       ignore_missing: true
   - set:
       field: registry.data.type
-      tag: set_registry_data_type
+      tag: set_registry_data_type_8029564d
       copy_from: trellix_edr_cloud.event.value.type
       ignore_empty_value: true
   - rename:
       field: json.moduleName
-      tag: rename_json_moduleName
+      tag: rename_json_moduleName_e5daa949
       target_field: trellix_edr_cloud.event.module_name
       ignore_missing: true
   - rename:
       field: json.name
-      tag: rename_json_name
+      tag: rename_json_name_ed6c0671
       target_field: trellix_edr_cloud.event.name
       ignore_missing: true
   - rename:
       field: json.operationName
-      tag: rename_json_operationName
+      tag: rename_json_operationName_4adac036
       target_field: trellix_edr_cloud.event.operation_name
       ignore_missing: true
   - rename:
       field: json.pipeName
-      tag: rename_json_pipeName
+      tag: rename_json_pipeName_cb803382
       target_field: trellix_edr_cloud.event.pipe_name
       ignore_missing: true
   - convert:
       field: json.result
-      tag: convert_json_result
+      tag: convert_json_result_a6045bd5
       target_field: trellix_edr_cloud.event.result
       type: long
       ignore_missing: true
       if: ctx.json?.result != ''
       on_failure:
         - append:
-            tag: append_error_message_69dcf141
+            tag: append_error_message_89754f69
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.serviceDescription
-      tag: rename_json_serviceDescription
+      tag: rename_json_serviceDescription_c3edb452
       target_field: trellix_edr_cloud.event.service.description
       ignore_missing: true
   - rename:
       field: json.serviceLoadOrderGroup
-      tag: rename_json_serviceLoadOrderGroup
+      tag: rename_json_serviceLoadOrderGroup_29bc19f4
       target_field: trellix_edr_cloud.event.service.load_order_group
       ignore_missing: true
   - convert:
       field: json.serviceStartType
-      tag: convert_json_serviceStartType
+      tag: convert_json_serviceStartType_8a2f3c44
       target_field: trellix_edr_cloud.event.service.start_type
       type: long
       ignore_missing: true
       if: ctx.json?.serviceStartType != ''
       on_failure:
         - append:
-            tag: append_error_message_71325a94
+            tag: append_error_message_3fbc7983
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.serviceType
-      tag: convert_json_serviceType
+      tag: convert_json_serviceType_c22fcf9c
       target_field: trellix_edr_cloud.event.service.type
       type: long
       ignore_missing: true
       if: ctx.json?.serviceType != ''
       on_failure:
         - append:
-            tag: append_error_message_8de2bfc7
+            tag: append_error_message_bf4d04e2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.subsystem
-      tag: convert_json_subsystem
+      tag: convert_json_subsystem_607d84fe
       target_field: trellix_edr_cloud.event.subsystem
       type: long
       ignore_missing: true
       if: ctx.json?.subsystem != ''
       on_failure:
         - append:
-            tag: append_error_message_48b6a023
+            tag: append_error_message_8233bdb4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.tagId
-      tag: convert_json_tagId
+      tag: convert_json_tagId_3df5bdbd
       target_field: trellix_edr_cloud.event.tag_id
       type: string
       ignore_missing: true
       if: ctx.json?.tagId != ''
       on_failure:
         - append:
-            tag: append_error_message_6dd71a2d
+            tag: append_error_message_3dfb56d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.targetPid
-      tag: convert_json_targetPid
+      tag: convert_json_targetPid_7309f9da
       target_field: trellix_edr_cloud.event.target_pid
       type: string
       ignore_missing: true
       if: ctx.json?.targetPid != ''
       on_failure:
         - append:
-            tag: append_error_message_4a9e79d7
+            tag: append_error_message_ef9c7669
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.taskDescription
-      tag: rename_json_taskDescription
+      tag: rename_json_taskDescription_e0ee4c15
       target_field: trellix_edr_cloud.event.task.description
       ignore_missing: true
   - rename:
       field: json.taskName
-      tag: rename_json_taskName
+      tag: rename_json_taskName_e241b6b1
       target_field: trellix_edr_cloud.event.task.name
       ignore_missing: true
   - rename:
       field: json.userCid
-      tag: rename_json_userCid
+      tag: rename_json_userCid_4d267094
       target_field: trellix_edr_cloud.event.user.cid
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_related_user_e815b037
+      tag: append_related_user_ca99edd9
       value: '{{{trellix_edr_cloud.event.user.cid}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.user?.cid != null
   - rename:
       field: json.userGroups
-      tag: rename_json_userGroups
+      tag: rename_json_userGroups_4601a6cc
       target_field: trellix_edr_cloud.event.user.groups
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_related_user_f617b077
+      tag: append_related_user_a1105c5a
       value: '{{{trellix_edr_cloud.event.user.groups}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.user?.groups != null
   - rename:
       field: json.userNames
-      tag: rename_json_userNames
+      tag: rename_json_userNames_180c9d48
       target_field: trellix_edr_cloud.event.user.names
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_related_user_f597d663
+      tag: append_related_user_a4bb1935
       value: '{{{trellix_edr_cloud.event.user.names}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.user?.names != null
   - rename:
       field: json.userSid
-      tag: rename_json_userSid
+      tag: rename_json_userSid_becb83c6
       target_field: trellix_edr_cloud.event.user.sid
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_related_user_930e5af7
+      tag: append_related_user_3289adb9
       value: '{{{trellix_edr_cloud.event.user.sid}}}'
       allow_duplicates: false
       if: ctx.trellix_edr_cloud?.event?.user?.sid != null
   - set:
       field: user.id
-      tag: set_user_id
+      tag: set_user_id_bf5f657a
       copy_from: trellix_edr_cloud.event.user.sid
       ignore_empty_value: true
   - rename:
       field: json.versionInfoFileVersion
-      tag: rename_json_versionInfoFileVersion
+      tag: rename_json_versionInfoFileVersion_29fb0caa
       target_field: trellix_edr_cloud.event.version_info.file.version
       ignore_missing: true
   - rename:
       field: json.versionInfoFilename
-      tag: rename_json_versionInfoFilename
+      tag: rename_json_versionInfoFilename_ccf4cfa7
       target_field: trellix_edr_cloud.event.version_info.file.name
       ignore_missing: true
   - rename:
       field: json.versionInfoProductName
-      tag: rename_json_versionInfoProductName
+      tag: rename_json_versionInfoProductName_70bab0e3
       target_field: trellix_edr_cloud.event.version_info.product.name
       ignore_missing: true
   - rename:
       field: json.versionInfoProductVersion
-      tag: rename_json_versionInfoProductVersion
+      tag: rename_json_versionInfoProductVersion_de72957b
       target_field: trellix_edr_cloud.event.version_info.product.version
       ignore_missing: true
   - rename:
       field: json.versionInfoVendorName
-      tag: rename_json_versionInfoVendorName
+      tag: rename_json_versionInfoVendorName_9d944aa0
       target_field: trellix_edr_cloud.event.version_info.vendor_name
       ignore_missing: true
   - convert:
       field: json.wmiLocal
-      tag: convert_json_wmiLocal
+      tag: convert_json_wmiLocal_affe511d
       target_field: trellix_edr_cloud.event.wmi.local
       type: boolean
       ignore_missing: true
       if: ctx.json?.wmiLocal != ''
       on_failure:
         - append:
-            tag: append_error_message_f89757f3
+            tag: append_error_message_08a9bc24
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.wmiNS
-      tag: rename_json_wmiNS
+      tag: rename_json_wmiNS_0674ea49
       target_field: trellix_edr_cloud.event.wmi.ns
       ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - remove:
       field:
@@ -932,12 +932,12 @@ processors:
         - trellix_edr_cloud.event.http.url
         - trellix_edr_cloud.event.value.type
         - trellix_edr_cloud.event.user.sid
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_dd1486fc
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:
       lang: painless
-      tag: script_to_remove_null_values
+      tag: script_to_remove_null_values_106fb347
       description: Drops null/empty values recursively.
       source: |-
         boolean drop(Object object) {
@@ -955,31 +955,31 @@ processors:
         drop(ctx);
       on_failure:
         - append:
-            tag: append_error_message_0795a564
+            tag: append_error_message_f59c0891
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind_04f2e27e
+      tag: set_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_1c0a2b12
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_95071f84
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

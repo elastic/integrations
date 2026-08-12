@@ -3,19 +3,19 @@ description: Build ECS fields from an OpenCTI domain name or hostname observable
 processors:
 
   - rename:
-      tag: rename__ingest__value_to__tmp_url_domain_4edfb54c
+      tag: rename__ingest__value_to__tmp_url_domain_3c8e7283
       field: _ingest._value
       target_field: _tmp_url.domain
 
   - registered_domain:
-      tag: registered_domain__tmp_url_domain_to__tmp_url_2141d2a3
+      tag: registered_domain__tmp_url_domain_to__tmp_url_36c78ada
       field: _tmp_url.domain
       target_field: _tmp_url
       ignore_missing: true
 
   # append object
   - script:
-      tag: script_de8b81a4
+      tag: script_33e60f88
       description: Append to the destination
       lang: painless
       source: |
@@ -25,5 +25,5 @@ processors:
         ctx.threat.indicator.url.add(ctx._tmp_url);
 
   - remove:
-      tag: remove__tmp_url_049933dd
+      tag: remove__tmp_url_591f5f34
       field: _tmp_url

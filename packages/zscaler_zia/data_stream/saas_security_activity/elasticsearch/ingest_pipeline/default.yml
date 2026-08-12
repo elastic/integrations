@@ -3,13 +3,13 @@ description: Pipeline for processing SaaS Security Activity logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: '8.11.0'
 
   # parse the event JSON
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_f20434b5
       target_field: event.original
       ignore_missing: true
       description: >-
@@ -18,13 +18,13 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - remove:
       field: json
-      tag: remove_json_if_input_type_http_endpoint
+      tag: remove_json_if_input_type_http_endpoint_f6728e93
       ignore_missing: true
       description: >-
         For the http_endpoint input, Filebeat auto-parses the JSON request body into `json.*`.
@@ -33,12 +33,12 @@ processors:
 
   - json:
       field: event.original
-      tag: json_parse_event_original
+      tag: json_parse_event_original_8361852f
       target_field: zscaler_zia.saas_security_activity
       if: ctx.event?.original != null
 
   - script:
-      tag: check_template_version
+      tag: check_template_version_cae11939
       lang: painless
       params:
         pkg_version: 3.21.0
@@ -54,59 +54,59 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_cbf7393a
+            tag: append_error_message_11e770a9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # convert values
   - convert:
       field: zscaler_zia.saas_security_activity.activity.count
-      tag: convert_activity_count_to_long
+      tag: convert_activity_count_to_long_ee976ca8
       type: long
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_zscaler_zia_saas_security_activity_activity_count_c47c9143
+            tag: remove_zscaler_zia_saas_security_activity_activity_count_9fe012d8
             field: zscaler_zia.saas_security_activity.activity.count
             ignore_missing: true
         - append:
-            tag: append_error_message_9b2b8688
+            tag: append_error_message_34680fcd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: zscaler_zia.saas_security_activity.src_ip
-      tag: convert_src_ip_to_ip
+      tag: convert_src_ip_to_ip_b6054b8b
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_zscaler_zia_saas_security_activity_src_ip_23d6b08c
+            tag: remove_zscaler_zia_saas_security_activity_src_ip_e3a6b202
             field: zscaler_zia.saas_security_activity.src_ip
             ignore_missing: true
         - append:
-            tag: append_error_message_9afe5101
+            tag: append_error_message_82abcd42
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: zscaler_zia.saas_security_activity.is_admin
-      tag: set_is_admin_to_true
+      tag: set_is_admin_to_true_28176db4
       value: true
       if: "['1', 'true', 'yes'].contains(((ctx.zscaler_zia?.saas_security_activity?.is_admin)?.toString())?.toLowerCase())"
   - set:
       field: zscaler_zia.saas_security_activity.is_admin
-      tag: set_is_admin_to_false
+      tag: set_is_admin_to_false_003552be
       value: false
       if: "['0', 'false', 'no'].contains(((ctx.zscaler_zia?.saas_security_activity?.is_admin)?.toString())?.toLowerCase())"
   - remove:
       field: zscaler_zia.saas_security_activity.is_admin
-      tag: remove_is_admin_when_unrecognized
+      tag: remove_is_admin_when_unrecognized_24a71809
       ignore_missing: true
       if: "ctx.zscaler_zia?.saas_security_activity?.is_admin != null && !(ctx.zscaler_zia.saas_security_activity.is_admin instanceof Boolean)"
 
   # date parsing
   - date:
       field: zscaler_zia.saas_security_activity.time
-      tag: date_time
+      tag: date_time_b5d7bdd9
       target_field: zscaler_zia.saas_security_activity.time
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -117,16 +117,16 @@ processors:
       if: ctx.zscaler_zia?.saas_security_activity?.time != null && ctx.zscaler_zia.saas_security_activity.time != ''
       on_failure:
         - remove:
-            tag: remove_zscaler_zia_saas_security_activity_time_88c65c46
+            tag: remove_zscaler_zia_saas_security_activity_time_5ff93d62
             field: zscaler_zia.saas_security_activity.time
             ignore_missing: true
         - append:
-            tag: append_error_message_85e7b0c0
+            tag: append_error_message_e31baccf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: zscaler_zia.saas_security_activity.event_time
-      tag: date_event_time
+      tag: date_event_time_fd230c34
       target_field: zscaler_zia.saas_security_activity.event_time
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -137,28 +137,28 @@ processors:
       if: ctx.zscaler_zia?.saas_security_activity?.event_time != null && ctx.zscaler_zia.saas_security_activity.event_time != ''
       on_failure:
         - remove:
-            tag: remove_zscaler_zia_saas_security_activity_event_time_edb2db51
+            tag: remove_zscaler_zia_saas_security_activity_event_time_c8615dda
             field: zscaler_zia.saas_security_activity.event_time
             ignore_missing: true
         - append:
-            tag: append_error_message_e9f23f5e
+            tag: append_error_message_5456ea63
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # populate ECS fields
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_time
+      tag: set_@timestamp_from_time_874de942
       copy_from: zscaler_zia.saas_security_activity.time
       ignore_empty_value: true
 
   # event.*
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - script:
-      tag: script_set_event_category_type_from_activity_type
+      tag: script_set_event_category_type_from_activity_type_e0be5d9c
       lang: painless
       description: >-
         Maps ECS event.category, event.type, and event.outcome based on the activity type (zscaler_zia.saas_security_activity.activity.type).
@@ -233,51 +233,51 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_088215c5
+            tag: append_error_message_5f204351
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.timezone
-      tag: set_event_timezone_from_tz
+      tag: set_event_timezone_from_tz_85396419
       copy_from: zscaler_zia.saas_security_activity.tz
       ignore_empty_value: true
   - set:
       field: event.action
-      tag: set_event_action_from_activity_type
+      tag: set_event_action_from_activity_type_c946050a
       copy_from: zscaler_zia.saas_security_activity.activity.type
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - set:
       field: event.provider
-      tag: set_event_provider_to_zscaler
+      tag: set_event_provider_to_zscaler_3289ce8c
       value: Zscaler
 
   # observer.*
   - set:
       field: observer.vendor
-      tag: set_observer_vendor_to_zscaler
+      tag: set_observer_vendor_to_zscaler_4f25b0ef
       value: Zscaler
   - set:
       field: observer.product
-      tag: set_observer_product_to_zia
+      tag: set_observer_product_to_zia_353b8955
       value: Zscaler ZIA
 
   # source.*
   - set:
       field: source.ip
-      tag: set_source_ip_from_src_ip
+      tag: set_source_ip_from_src_ip_108f7119
       copy_from: zscaler_zia.saas_security_activity.src_ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
-      tag: geoip_source_ip
+      tag: geoip_source_ip_ffccf8a9
       if: ctx.source?.ip != null
   - geoip:
-      tag: geoip_source_ip_to_source_as_5a30a433
+      tag: geoip_source_ip_to_source_as_ecab96c8
       field: source.ip
       target_field: source.as
       database_file: GeoLite2-ASN.mmdb
@@ -287,12 +287,12 @@ processors:
       ignore_missing: true
       if: ctx.source?.ip != null
   - rename:
-      tag: rename_source_as_asn_to_source_as_number_a917047d
+      tag: rename_source_as_asn_to_source_as_number_168bbbaf
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
-      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+      tag: rename_source_as_organization_name_to_source_as_organization_name_aa06a00b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -300,42 +300,42 @@ processors:
   # user.*
   - set:
       field: user.name
-      tag: set_user_name_from_user_name
+      tag: set_user_name_from_user_name_6140aaf0
       copy_from: zscaler_zia.saas_security_activity.user_name
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_user_name
+      tag: set_user_email_from_user_name_0c248741
       copy_from: zscaler_zia.saas_security_activity.user_name
       ignore_empty_value: true
       if: ctx.zscaler_zia?.saas_security_activity?.user_name != null && ctx.zscaler_zia.saas_security_activity.user_name.contains('@')
   - dissect:
       field: zscaler_zia.saas_security_activity.user_name
-      tag: dissect_user_name_to_user_domain
+      tag: dissect_user_name_to_user_domain_ba0a1d4e
       pattern: '%{}@%{user.domain}'
       if: ctx.zscaler_zia?.saas_security_activity?.user_name != null && ctx.zscaler_zia.saas_security_activity.user_name.contains('@')
       on_failure:
         - append:
-            tag: append_error_message_166fb05a
+            tag: append_error_message_e57b9def
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # related.*
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_3b9feac9
       value: '{{{zscaler_zia.saas_security_activity.user_name}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.saas_security_activity?.user_name != null
   - append:
       field: related.user
-      tag: append_external_owner_into_related_user
+      tag: append_external_owner_into_related_user_cf303994
       value: '{{{zscaler_zia.saas_security_activity.external_owner}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.saas_security_activity?.external_owner != null
   - append:
       field: related.ip
-      tag: append_src_ip_into_related_ip
+      tag: append_src_ip_into_related_ip_d7cb6025
       value: '{{{zscaler_zia.saas_security_activity.src_ip}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.saas_security_activity?.src_ip != null
@@ -348,10 +348,10 @@ processors:
         - zscaler_zia.saas_security_activity.src_ip
         - zscaler_zia.saas_security_activity.tz
         - _conf
-      tag: remove_unused_and_duplicate_vendor_fields_mapped_to_ecs
+      tag: remove_unused_and_duplicate_vendor_fields_mapped_to_ecs_8235afb4
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_8cd14c59
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -386,26 +386,26 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_event_kind_to_pipeline_error
+      tag: set_event_kind_to_pipeline_error_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
       field: tags
-      tag: append_preserve_original_event_into_tags
+      tag: append_preserve_original_event_into_tags_b6c08950
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind_to_pipeline_error_636e6826
+      tag: set_event_kind_to_pipeline_error_72b1902f
       value: pipeline_error
   - append:
       field: tags
-      tag: append_preserve_original_event_into_tags_b9354bd5
+      tag: append_preserve_original_event_into_tags_279d5a5c
       value: preserve_original_event
       allow_duplicates: false

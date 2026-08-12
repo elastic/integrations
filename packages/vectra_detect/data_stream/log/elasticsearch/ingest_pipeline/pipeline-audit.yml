@@ -2,134 +2,134 @@
 description: Pipeline for processing Vectra Detect Audit logs.
 processors:
   - set:
-      tag: set_event_kind_de80643c
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - append:
-      tag: append_event_category_adea1b04
+      tag: append_event_category_8ed0362f
       field: event.category
       value: session
       allow_duplicates: false
       if: ctx.json?.message?.contains('session') == true
   - append:
-      tag: append_event_category_f26c87c7
+      tag: append_event_category_684be3c0
       field: event.category
       value: authentication
       allow_duplicates: false
       if: ctx.json?.message?.contains('authentication') == true || ctx.json?.message?.contains('log in') == true
   - append:
-      tag: append_event_category_104cb540
+      tag: append_event_category_e2fee173
       field: event.category
       value: configuration
       allow_duplicates: false
       if: ctx.json?.message?.contains('configuration') == true
   - append:
-      tag: append_event_type_1678fa17
+      tag: append_event_type_5e786d48
       field: event.type
       value: end
       allow_duplicates: false
       if: ctx.json?.message?.contains('timeout') == true || ctx.json?.message?.contains('log in') == true
   - rename:
-      tag: rename_json_result_to_vectra_detect_log_result_fdb7e62b
+      tag: rename_json_result_to_vectra_detect_log_result_9ab34fee
       field: json.result
       target_field: vectra_detect.log.result
       ignore_missing: true
   - set:
-      tag: set_event_outcome_2531b4af
+      tag: set_event_outcome_394b1b1c
       field: event.outcome
       value: success
       if: "'success'.equalsIgnoreCase(ctx.vectra_detect?.log?.result) || 'true'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - set:
-      tag: set_event_outcome_ea523cd4
+      tag: set_event_outcome_adadbc0d
       field: event.outcome
       value: failure
       if: "'failure'.equalsIgnoreCase(ctx.vectra_detect?.log?.result) || 'false'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - set:
-      tag: set_event_outcome_cf4c12d5
+      tag: set_event_outcome_eb44ceb0
       field: event.outcome
       value: unknown
       if: "'pending'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - rename:
-      tag: rename_json_dvchost_to_vectra_detect_log_dvchost_45c085f9
+      tag: rename_json_dvchost_to_vectra_detect_log_dvchost_f8ea4df9
       field: json.dvchost
       target_field: vectra_detect.log.dvchost
       ignore_missing: true
   - set:
-      tag: set_observer_hostname_5a621980
+      tag: set_observer_hostname_501a5b0f
       field: observer.hostname
       copy_from: vectra_detect.log.dvchost
       ignore_empty_value: true
   - convert:
       field: json.source_ip
-      tag: 'convert_source_ip_to_ip'
+      tag: convert_source_ip_to_ip_d48ff9ca
       target_field: vectra_detect.log.source.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.source_ip != ''
       on_failure:
         - append:
-            tag: append_error_message_3e8a7ceb
+            tag: append_error_message_936ebaeb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_source_ip_0cf2d520
+      tag: set_source_ip_7fdb588f
       field: source.ip
       copy_from: vectra_detect.log.source.ip
       ignore_empty_value: true
   - append:
-      tag: append_related_ip_b03d78ff
+      tag: append_related_ip_f09ee1c3
       field: related.ip
       value: '{{{vectra_detect.log.source.ip}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.source?.ip != null
   - geoip:
-      tag: geoip_source_ip_to_source_geo_da2e41b2
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - rename:
-      tag: rename_json_user_to_vectra_detect_log_user_name_c118b136
+      tag: rename_json_user_to_vectra_detect_log_user_name_498f2b3b
       field: json.user
       target_field: vectra_detect.log.user.name
       ignore_missing: true
   - set:
-      tag: set_user_name_3ba7f22c
+      tag: set_user_name_6ae9abde
       field: user.name
       copy_from: vectra_detect.log.user.name
       ignore_empty_value: true
   - rename:
-      tag: rename_json_role_to_vectra_detect_log_role_11e94a83
+      tag: rename_json_role_to_vectra_detect_log_role_3c071ec2
       field: json.role
       target_field: vectra_detect.log.role
       ignore_missing: true
   - append:
-      tag: append_user_roles_905f46d8
+      tag: append_user_roles_52c516b7
       field: user.roles
       value: '{{{vectra_detect.log.role}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.role != null
   - rename:
-      tag: rename_json_message_to_vectra_detect_log_message_50575791
+      tag: rename_json_message_to_vectra_detect_log_message_3174027a
       field: json.message
       target_field: vectra_detect.log.message
       ignore_missing: true
   - append:
-      tag: append_related_hosts_199e34d5
+      tag: append_related_hosts_55a3f259
       field: related.hosts
       value: '{{{observer.hostname}}}'
       allow_duplicates: false
       if: ctx.observer?.hostname != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -5,23 +5,23 @@ processors:
   # Event ECS fields #
   ####################
   - set:
-      tag: set_ecs_version_0f7334bb
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - set:
-      tag: set_event_kind_a131107f
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - append:
-      tag: append_event_category_4cc22c32
+      tag: append_event_category_4039b90d
       field: event.category
       value: threat
   - append:
-      tag: append_event_type_7779ef85
+      tag: append_event_type_d4da06cc
       field: event.type
       value: indicator
   - set:
-      tag: set_threat_indicator_provider_fb6fe083
+      tag: set_threat_indicator_provider_0c416717
       field: threat.indicator.provider
       value: OTX
 
@@ -31,24 +31,24 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_4217da53
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: otx
-      tag: json_event_original
+      tag: json_event_original_91a06b30
   # Add default expiration to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
   - script:
       lang: painless
-      tag: script-default-expiration
+      tag: script-default-expiration_4dbc3bdb
       if: ctx.otx?.created != null && ctx.otx.expiration == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
       description: >
         Add default expiration
@@ -83,13 +83,13 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_c17a5769
+            tag: append_error_message_15bc2cf7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: otx.created
       target_field: otx.created
-      tag: date_created
+      tag: date_created_7544bfd2
       formats:
         - ISO8601
       if: "ctx.otx?.created != null"
@@ -97,12 +97,12 @@ processors:
       field: "@timestamp"
       copy_from: otx.created
       if: "ctx.otx?.created != null"
-      tag: set_timestamp
+      tag: set_timestamp_4e86b54a
 
   - date:
       field: otx.expiration
       target_field: otx.expiration
-      tag: date_expiration
+      tag: date_expiration_b90611b8
       formats:
       - ISO8601
       if: "ctx.otx?.expiration != null"
@@ -110,47 +110,47 @@ processors:
       field: otx.id
       type: string
       if: "ctx.otx?.id != null"
-      tag: convert_otx_id
+      tag: convert_otx_id_622609d7
   - convert:
       field: otx.count
       type: integer
       if: "ctx.otx?.count != null"
-      tag: convert_otx_count
+      tag: convert_otx_count_c68aa4a9
   - convert:
       field: otx.t
       type: double
       if: "ctx.otx?.t != null"
-      tag: convert_otx_t
+      tag: convert_otx_t_00fc49a4
   - convert:
       field: otx.t2
       type: double
       if: "ctx.otx?.t2 != null"
-      tag: convert_otx_t2
+      tag: convert_otx_t2_5b75c27b
   - convert:
       field: otx.t3
       type: double
       if: "ctx.otx?.t3 != null"
-      tag: convert_otx_t3
+      tag: convert_otx_t3_929a3f32
   - convert:
       field: otx.revision
       type: integer
       if: "ctx.otx?.revision != null"
-      tag: convert_otx_revision
+      tag: convert_otx_revision_deb3e548
   - json:
       field: otx.pulse_raw
       target_field: otx.pulse
-      tag: json_otx_pulse_raw
+      tag: json_otx_pulse_raw_5082e572
   - date:
       field: otx.pulse.created
       target_field: otx.pulse.created
-      tag: date_pulse_created
+      tag: date_pulse_created_c7ee270f
       formats:
         - ISO8601
       if: "ctx.otx?.pulse?.created != null"
   - date:
       field: otx.pulse.modified
       target_field: otx.pulse.modified
-      tag: date_pulse_modified
+      tag: date_pulse_modified_b289e698
       formats:
         - ISO8601
       if: "ctx.otx?.pulse?.modified != null"
@@ -163,113 +163,113 @@ processors:
       field: threat.indicator.type
       value: file
       if: "ctx.otx?.type.startsWith('FileHash') || ctx.otx?.type == 'filepath'"
-      tag: set_threat_indicator_type_file
+      tag: set_threat_indicator_type_file_a28b0bfa
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-MD5'"
-      tag: rename_threat_indicator_file_hash_md5
+      tag: rename_threat_indicator_file_hash_md5_a04465d1
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.sha1
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-SHA1'"
-      tag: rename_threat_indicator_file_hash_sha1
+      tag: rename_threat_indicator_file_hash_sha1_ca9d1578
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-SHA256'"
-      tag: rename_threat_indicator_file_hash_sha256
+      tag: rename_threat_indicator_file_hash_sha256_24e1b369
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.pehash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-PEHASH'"
-      tag: rename_threat_indicator_file_hash_pehash
+      tag: rename_threat_indicator_file_hash_pehash_720e9941
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.imphash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-IMPHASH'"
-      tag: rename_threat_indicator_file_hash_imphash
+      tag: rename_threat_indicator_file_hash_imphash_8532dee3
 
   ## IP indicator operations
   - set:
       field: threat.indicator.type
       value: ipv4-addr
       if: ctx.otx?.type == 'IPv4'
-      tag: set_threat_indicator_type_ipv4
+      tag: set_threat_indicator_type_ipv4_266bc5d1
   - set:
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.otx?.type == 'IPv6'
-      tag: set_threat_indicator_type_ipv6
+      tag: set_threat_indicator_type_ipv6_7017721f
   - rename:
       field: otx.indicator
       target_field: threat.indicator.ip
       ignore_missing: true
       if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
-      tag: rename_threat_indicator_ip
+      tag: rename_threat_indicator_ip_71a7fa5b
 
   ## URL indicator operations
   - set:
       field: threat.indicator.type
       value: url
       if: "ctx.threat?.indicator?.type == null && ['URL', 'URI'].contains(ctx.otx?.type)"
-      tag: set_threat_indicator_type_url
+      tag: set_threat_indicator_type_url_37238c0a
   - uri_parts:
       field: otx.indicator
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
       if: ctx.threat?.indicator?.type == 'url'
-      tag: uri_parts_indicator
+      tag: uri_parts_indicator_f755531a
   - set:
       field: threat.indicator.url.full
       value: "{{{threat.indicator.url.original}}}"
       ignore_empty_value: true
       if: "ctx.otx?.type == 'URL'"
-      tag: set_threat_indicator_url_full
+      tag: set_threat_indicator_url_full_07062558
 
   ## Email indicator operations
   - set:
       field: threat.indicator.type
       value: email-addr
       if: ctx.otx?.type == 'email'
-      tag: set_threat_indicator_type_email
+      tag: set_threat_indicator_type_email_af989494
   - rename:
       field: otx.indicator
       target_field: threat.indicator.email.address
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'email-addr'"
-      tag: rename_threat_indicator_email_address
+      tag: rename_threat_indicator_email_address_adada48e
 
   ## Domain indicator operations
   - set:
       field: threat.indicator.type
       value: domain-name
       if: "ctx.threat?.indicator?.type == null && ['domain', 'hostname'].contains(ctx.otx?.type)"
-      tag: set_threat_indicator_type_domain
+      tag: set_threat_indicator_type_domain_2955201d
   - rename:
       field: otx.indicator
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'domain-name' && ctx.threat?.indicator?.url?.domain == null"
-      tag: rename_threat_indicator_url_domain
+      tag: rename_threat_indicator_url_domain_89f06aa9
 
   #########################
   # Base ECS Field - Tags #
   #########################
   - foreach:
-      tag: foreach_otx_pulse_tags_54ad760e
+      tag: foreach_otx_pulse_tags_40943e4a
       field: otx.pulse.tags
       if: "ctx.otx?.pulse?.tags instanceof List && ctx.otx.pulse.tags.size() > 0"
       processor:
         append:
           field: tags
-          tag: foreach_pulse_tags_append_tag
+          tag: foreach_pulse_tags_append_tag_8f79a73a
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
 
@@ -280,9 +280,9 @@ processors:
       field: threat.indicator.type
       value: unknown
       if: ctx.threat?.indicator?.type == null
-      tag: set_threat_indicator_type_null
+      tag: set_threat_indicator_type_null_7fff9e89
   - script:
-      tag: script_f541a1c3
+      tag: script_e6109ff4
       lang: painless
       if: ctx.otx != null
       source: |
@@ -307,31 +307,31 @@ processors:
         }
         handleMap(ctx);
   - remove:
-      tag: remove_e4b0336f
+      tag: remove_b29e5561
       field:
         - otx.content
       ignore_missing: true
       if: ctx.otx?.content == ""
   - remove:
-      tag: remove_fcc33869
+      tag: remove_9e111e64
       field:
         - otx.description
       ignore_missing: true
       if: ctx.otx?.description == ""
   - remove:
-      tag: remove_d636cafd
+      tag: remove_7088694a
       field:
         - otx.title
       ignore_missing: true
       if: ctx.otx?.title == ""
   - remove:
-      tag: remove_2b57e28c
+      tag: remove_c13f9c29
       field:
         - otx.pulse.adversary
       ignore_missing: true
       if: ctx.otx?.pulse?.adversary == ""
   - remove:
-      tag: remove_207e438c
+      tag: remove_059f53c3
       field:
         - otx.type
         - otx.pulse.tags
@@ -340,22 +340,22 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
-      tag: remove_f80cc633
+      tag: remove_6544ce4b
       field:
         - otx
       ignore_missing: true
       if: ctx.otx == null
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -2,24 +2,24 @@
 description: Pipeline for processing XM Cyber entity inventory events from CEL `message` JSON.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_8c2c9474
       field: ecs.version
       value: 9.4.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_f2e4d3c3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # drop CEL informational refresh-token marker events
   - drop:
       description: Drops the CEL token-refresh retry marker event so it does not become a phantom pipeline_error document.
-      tag: drop_cel_refresh_token_retry
+      tag: drop_cel_refresh_token_retry_a8a7270a
       if: ctx.message instanceof String && ctx.message == 'retry'
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -30,31 +30,31 @@ processors:
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a4b0426e
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_662e8126
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
 
   - json:
-      tag: json_event_original_into_xm_cyber_entity_inventory
+      tag: json_event_original_into_xm_cyber_entity_inventory_2922b9c4
       field: event.original
       target_field: xm_cyber.entity_inventory
       if: ctx.event?.original != null
   # Normalise vendor field names to snake_case recursively under xm_cyber.entity_inventory.*
   # ----- event.kind / event.category / event.type -----
   - set:
-      tag: set_event_kind_asset
+      tag: set_event_kind_asset_50075a0b
       field: event.kind
       value: asset
   - fingerprint:
-      tag: fingerprint_with_id
+      tag: fingerprint_with_id_3f60b4ee
       fields:
         - xm_cyber.entity_inventory.id
       target_field: _id
@@ -65,7 +65,7 @@ processors:
         Convert field names from camelCase to snake_case recursively.
         NOTE: This processor reassigns the normalized output back to
         ctx.xm_cyber.entity_inventory.
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_72dcdb9f
       lang: painless
       source: |-
         // Helper function to convert camelCase to snake_case
@@ -110,7 +110,7 @@ processors:
 
   # ----- Date proc for every date field (in-place ISO8601 normalization) -----
   - date:
-      tag: date_first_seen
+      tag: date_first_seen_e4906cce
       field: xm_cyber.entity_inventory.first_seen
       target_field: xm_cyber.entity_inventory.first_seen
       formats:
@@ -118,15 +118,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.first_seen != null && ctx.xm_cyber.entity_inventory.first_seen != '' && ctx.xm_cyber.entity_inventory.first_seen != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_first_seen_on_failure
+            tag: remove_first_seen_on_failure_c981d28c
             field: xm_cyber.entity_inventory.first_seen
             ignore_missing: true
         - append:
-            tag: append_error_message_first_seen
+            tag: append_error_message_first_seen_259a116c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_last_connection_time
+      tag: date_last_connection_time_5db9fddf
       field: xm_cyber.entity_inventory.last_connection_time
       target_field: xm_cyber.entity_inventory.last_connection_time
       formats:
@@ -134,15 +134,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_connection_time != null && ctx.xm_cyber.entity_inventory.last_connection_time != '' && ctx.xm_cyber.entity_inventory.last_connection_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_connection_time_on_failure
+            tag: remove_last_connection_time_on_failure_41e1be14
             field: xm_cyber.entity_inventory.last_connection_time
             ignore_missing: true
         - append:
-            tag: append_error_message_last_connection_time
+            tag: append_error_message_last_connection_time_13810358
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_last_reboot_time
+      tag: date_last_reboot_time_e3eab637
       field: xm_cyber.entity_inventory.last_reboot_time
       target_field: xm_cyber.entity_inventory.last_reboot_time
       formats:
@@ -150,15 +150,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_reboot_time != null && ctx.xm_cyber.entity_inventory.last_reboot_time != '' && ctx.xm_cyber.entity_inventory.last_reboot_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_reboot_time_on_failure
+            tag: remove_last_reboot_time_on_failure_92c9bba8
             field: xm_cyber.entity_inventory.last_reboot_time
             ignore_missing: true
         - append:
-            tag: append_error_message_last_reboot_time
+            tag: append_error_message_last_reboot_time_bc26e001
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_last_status_change
+      tag: date_last_status_change_18d4dd36
       field: xm_cyber.entity_inventory.last_status_change
       target_field: xm_cyber.entity_inventory.last_status_change
       formats:
@@ -166,15 +166,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_status_change != null && ctx.xm_cyber.entity_inventory.last_status_change != '' && ctx.xm_cyber.entity_inventory.last_status_change != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_status_change_on_failure
+            tag: remove_last_status_change_on_failure_f3c2cd95
             field: xm_cyber.entity_inventory.last_status_change
             ignore_missing: true
         - append:
-            tag: append_error_message_last_status_change
+            tag: append_error_message_last_status_change_fee78831
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_last_updated_at
+      tag: date_last_updated_at_16020900
       field: xm_cyber.entity_inventory.last_updated_at
       target_field: xm_cyber.entity_inventory.last_updated_at
       formats:
@@ -182,15 +182,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_updated_at != null && ctx.xm_cyber.entity_inventory.last_updated_at != '' && ctx.xm_cyber.entity_inventory.last_updated_at != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_updated_at_on_failure
+            tag: remove_last_updated_at_on_failure_b92bed8b
             field: xm_cyber.entity_inventory.last_updated_at
             ignore_missing: true
         - append:
-            tag: append_error_message_last_updated_at
+            tag: append_error_message_last_updated_at_ba90322c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_disabled_changed_at
+      tag: date_disabled_changed_at_8fc1f926
       field: xm_cyber.entity_inventory.disabled_changed_at
       target_field: xm_cyber.entity_inventory.disabled_changed_at
       formats:
@@ -198,15 +198,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.disabled_changed_at != null && ctx.xm_cyber.entity_inventory.disabled_changed_at != '' && ctx.xm_cyber.entity_inventory.disabled_changed_at != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_disabled_changed_at_on_failure
+            tag: remove_disabled_changed_at_on_failure_25e16d9f
             field: xm_cyber.entity_inventory.disabled_changed_at
             ignore_missing: true
         - append:
-            tag: append_error_message_disabled_changed_at
+            tag: append_error_message_disabled_changed_at_7f832115
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_kms_key_creation_date
+      tag: date_kms_key_creation_date_b47f85d8
       field: xm_cyber.entity_inventory.kms_key_creation_date
       target_field: xm_cyber.entity_inventory.kms_key_creation_date
       formats:
@@ -214,15 +214,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.kms_key_creation_date != null && ctx.xm_cyber.entity_inventory.kms_key_creation_date != '' && ctx.xm_cyber.entity_inventory.kms_key_creation_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_kms_key_creation_date_on_failure
+            tag: remove_kms_key_creation_date_on_failure_dd611169
             field: xm_cyber.entity_inventory.kms_key_creation_date
             ignore_missing: true
         - append:
-            tag: append_error_message_kms_key_creation_date
+            tag: append_error_message_kms_key_creation_date_5392fa05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_ssm_parameter_last_modified_date
+      tag: date_ssm_parameter_last_modified_date_18d95bd3
       field: xm_cyber.entity_inventory.ssm_parameter_last_modified_date
       target_field: xm_cyber.entity_inventory.ssm_parameter_last_modified_date
       formats:
@@ -230,15 +230,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.ssm_parameter_last_modified_date != null && ctx.xm_cyber.entity_inventory.ssm_parameter_last_modified_date != '' && ctx.xm_cyber.entity_inventory.ssm_parameter_last_modified_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_ssm_parameter_last_modified_date_on_failure
+            tag: remove_ssm_parameter_last_modified_date_on_failure_a3488905
             field: xm_cyber.entity_inventory.ssm_parameter_last_modified_date
             ignore_missing: true
         - append:
-            tag: append_error_message_ssm_parameter_last_modified_date
+            tag: append_error_message_ssm_parameter_last_modified_date_63990d16
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_time_to_revive_at
+      tag: date_time_to_revive_at_b2dd0638
       field: xm_cyber.entity_inventory.time_to_revive_at
       target_field: xm_cyber.entity_inventory.time_to_revive_at
       formats:
@@ -246,15 +246,15 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.time_to_revive_at != null && ctx.xm_cyber.entity_inventory.time_to_revive_at != '' && ctx.xm_cyber.entity_inventory.time_to_revive_at != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_time_to_revive_at_on_failure
+            tag: remove_time_to_revive_at_on_failure_400d582c
             field: xm_cyber.entity_inventory.time_to_revive_at
             ignore_missing: true
         - append:
-            tag: append_error_message_time_to_revive_at
+            tag: append_error_message_time_to_revive_at_60afeddb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_xm_update_time
+      tag: date_xm_update_time_1288a8c7
       field: xm_cyber.entity_inventory.xm_update_time
       target_field: xm_cyber.entity_inventory.xm_update_time
       formats:
@@ -262,16 +262,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.xm_update_time != null && ctx.xm_cyber.entity_inventory.xm_update_time != '' && ctx.xm_cyber.entity_inventory.xm_update_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_xm_update_time_on_failure
+            tag: remove_xm_update_time_on_failure_af654715
             field: xm_cyber.entity_inventory.xm_update_time
             ignore_missing: true
         - append:
-            tag: append_error_message_xm_update_time
+            tag: append_error_message_xm_update_time_a5b7cdb6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_created_date
+      tag: date_created_date_d50802cf
       field: xm_cyber.entity_inventory.created_date
       target_field: xm_cyber.entity_inventory.created_date
       formats:
@@ -279,16 +279,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.created_date != null && ctx.xm_cyber.entity_inventory.created_date != '' && ctx.xm_cyber.entity_inventory.created_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_created_date_on_failure
+            tag: remove_created_date_on_failure_e220f535
             field: xm_cyber.entity_inventory.created_date
             ignore_missing: true
         - append:
-            tag: append_error_message_created_date
+            tag: append_error_message_created_date_9e9cdf5e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_last_activity_date
+      tag: date_last_activity_date_dc265656
       field: xm_cyber.entity_inventory.last_activity_date
       target_field: xm_cyber.entity_inventory.last_activity_date
       formats:
@@ -296,16 +296,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_activity_date != null && ctx.xm_cyber.entity_inventory.last_activity_date != '' && ctx.xm_cyber.entity_inventory.last_activity_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_activity_date_on_failure
+            tag: remove_last_activity_date_on_failure_233f362a
             field: xm_cyber.entity_inventory.last_activity_date
             ignore_missing: true
         - append:
-            tag: append_error_message_last_activity_date
+            tag: append_error_message_last_activity_date_7caf54d2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_ebs_volume_create_time
+      tag: date_ebs_volume_create_time_bccaa789
       field: xm_cyber.entity_inventory.ebs_volume_create_time
       target_field: xm_cyber.entity_inventory.ebs_volume_create_time
       formats:
@@ -313,16 +313,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_create_time != null && ctx.xm_cyber.entity_inventory.ebs_volume_create_time != '' && ctx.xm_cyber.entity_inventory.ebs_volume_create_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_ebs_volume_create_time_on_failure
+            tag: remove_ebs_volume_create_time_on_failure_8ffa66fd
             field: xm_cyber.entity_inventory.ebs_volume_create_time
             ignore_missing: true
         - append:
-            tag: append_error_message_ebs_volume_create_time
+            tag: append_error_message_ebs_volume_create_time_46b366dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_creation_timestamp
+      tag: date_creation_timestamp_6012b09b
       field: xm_cyber.entity_inventory.creation_timestamp
       target_field: xm_cyber.entity_inventory.creation_timestamp
       formats:
@@ -330,16 +330,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.creation_timestamp != null && ctx.xm_cyber.entity_inventory.creation_timestamp != '' && ctx.xm_cyber.entity_inventory.creation_timestamp != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_creation_timestamp_on_failure
+            tag: remove_creation_timestamp_on_failure_7144149a
             field: xm_cyber.entity_inventory.creation_timestamp
             ignore_missing: true
         - append:
-            tag: append_error_message_creation_timestamp
+            tag: append_error_message_creation_timestamp_46e0ed36
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_access_key_creation_date
+      tag: date_access_key_creation_date_2a684065
       field: xm_cyber.entity_inventory.access_key_creation_date
       target_field: xm_cyber.entity_inventory.access_key_creation_date
       formats:
@@ -347,16 +347,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.access_key_creation_date != null && ctx.xm_cyber.entity_inventory.access_key_creation_date != '' && ctx.xm_cyber.entity_inventory.access_key_creation_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_access_key_creation_date_on_failure
+            tag: remove_access_key_creation_date_on_failure_9ed385ec
             field: xm_cyber.entity_inventory.access_key_creation_date
             ignore_missing: true
         - append:
-            tag: append_error_message_access_key_creation_date
+            tag: append_error_message_access_key_creation_date_b2193433
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_last_running_time
+      tag: date_last_running_time_cb900768
       field: xm_cyber.entity_inventory.last_running_time
       target_field: xm_cyber.entity_inventory.last_running_time
       formats:
@@ -364,16 +364,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_running_time != null && ctx.xm_cyber.entity_inventory.last_running_time != '' && ctx.xm_cyber.entity_inventory.last_running_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_running_time_on_failure
+            tag: remove_last_running_time_on_failure_3418c360
             field: xm_cyber.entity_inventory.last_running_time
             ignore_missing: true
         - append:
-            tag: append_error_message_last_running_time
+            tag: append_error_message_last_running_time_37128af8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_ecr_repository_creation_date
+      tag: date_ecr_repository_creation_date_3047edb8
       field: xm_cyber.entity_inventory.ecr_repository_creation_date
       target_field: xm_cyber.entity_inventory.ecr_repository_creation_date
       formats:
@@ -381,16 +381,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.ecr_repository_creation_date != null && ctx.xm_cyber.entity_inventory.ecr_repository_creation_date != '' && ctx.xm_cyber.entity_inventory.ecr_repository_creation_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_ecr_repository_creation_date_on_failure
+            tag: remove_ecr_repository_creation_date_on_failure_8a72794c
             field: xm_cyber.entity_inventory.ecr_repository_creation_date
             ignore_missing: true
         - append:
-            tag: append_error_message_ecr_repository_creation_date
+            tag: append_error_message_ecr_repository_creation_date_b267eeef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_dynamo_db_table_creation_date_time
+      tag: date_dynamo_db_table_creation_date_time_0d421e10
       field: xm_cyber.entity_inventory.dynamo_db_table_creation_date_time
       target_field: xm_cyber.entity_inventory.dynamo_db_table_creation_date_time
       formats:
@@ -398,16 +398,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.dynamo_db_table_creation_date_time != null && ctx.xm_cyber.entity_inventory.dynamo_db_table_creation_date_time != '' && ctx.xm_cyber.entity_inventory.dynamo_db_table_creation_date_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_dynamo_db_table_creation_date_time_on_failure
+            tag: remove_dynamo_db_table_creation_date_time_on_failure_6989390e
             field: xm_cyber.entity_inventory.dynamo_db_table_creation_date_time
             ignore_missing: true
         - append:
-            tag: append_error_message_dynamo_db_table_creation_date_time
+            tag: append_error_message_dynamo_db_table_creation_date_time_9195970a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_elasticache_cache_cluster_create_time
+      tag: date_elasticache_cache_cluster_create_time_ec408fca
       field: xm_cyber.entity_inventory.elasticache_cache_cluster_create_time
       target_field: xm_cyber.entity_inventory.elasticache_cache_cluster_create_time
       formats:
@@ -415,16 +415,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.elasticache_cache_cluster_create_time != null && ctx.xm_cyber.entity_inventory.elasticache_cache_cluster_create_time != '' && ctx.xm_cyber.entity_inventory.elasticache_cache_cluster_create_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_elasticache_cache_cluster_create_time_on_failure
+            tag: remove_elasticache_cache_cluster_create_time_on_failure_644ac5d5
             field: xm_cyber.entity_inventory.elasticache_cache_cluster_create_time
             ignore_missing: true
         - append:
-            tag: append_error_message_elasticache_cache_cluster_create_time
+            tag: append_error_message_elasticache_cache_cluster_create_time_ca1c493c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_sqs_queue_last_modified_date
+      tag: date_sqs_queue_last_modified_date_67f98a30
       field: xm_cyber.entity_inventory.sqs_queue_last_modified_date
       target_field: xm_cyber.entity_inventory.sqs_queue_last_modified_date
       formats:
@@ -432,16 +432,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.sqs_queue_last_modified_date != null && ctx.xm_cyber.entity_inventory.sqs_queue_last_modified_date != '' && ctx.xm_cyber.entity_inventory.sqs_queue_last_modified_date != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_sqs_queue_last_modified_date_on_failure
+            tag: remove_sqs_queue_last_modified_date_on_failure_e039c740
             field: xm_cyber.entity_inventory.sqs_queue_last_modified_date
             ignore_missing: true
         - append:
-            tag: append_error_message_sqs_queue_last_modified_date
+            tag: append_error_message_sqs_queue_last_modified_date_984670f5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_create_time
+      tag: date_create_time_f69ada3d
       field: xm_cyber.entity_inventory.create_time
       target_field: xm_cyber.entity_inventory.create_time
       formats:
@@ -449,16 +449,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.create_time != null && ctx.xm_cyber.entity_inventory.create_time != '' && ctx.xm_cyber.entity_inventory.create_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_create_time_on_failure
+            tag: remove_create_time_on_failure_ac381700
             field: xm_cyber.entity_inventory.create_time
             ignore_missing: true
         - append:
-            tag: append_error_message_create_time
+            tag: append_error_message_create_time_ada79e3f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_created
+      tag: date_created_edcd42fe
       field: xm_cyber.entity_inventory.created
       target_field: xm_cyber.entity_inventory.created
       formats:
@@ -466,16 +466,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.created != null && ctx.xm_cyber.entity_inventory.created != '' && ctx.xm_cyber.entity_inventory.created != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_created_on_failure
+            tag: remove_created_on_failure_04f13b4e
             field: xm_cyber.entity_inventory.created
             ignore_missing: true
         - append:
-            tag: append_error_message_created
+            tag: append_error_message_created_d4141005
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_last_modified
+      tag: date_last_modified_1c9f07a9
       field: xm_cyber.entity_inventory.last_modified
       target_field: xm_cyber.entity_inventory.last_modified
       formats:
@@ -483,16 +483,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.last_modified != null && ctx.xm_cyber.entity_inventory.last_modified != '' && ctx.xm_cyber.entity_inventory.last_modified != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_last_modified_on_failure
+            tag: remove_last_modified_on_failure_7e0cc222
             field: xm_cyber.entity_inventory.last_modified
             ignore_missing: true
         - append:
-            tag: append_error_message_last_modified
+            tag: append_error_message_last_modified_20327624
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_expire_at
+      tag: date_expire_at_40ba4944
       field: xm_cyber.entity_inventory.expire_at
       target_field: xm_cyber.entity_inventory.expire_at
       formats:
@@ -500,16 +500,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.expire_at != null && ctx.xm_cyber.entity_inventory.expire_at != '' && ctx.xm_cyber.entity_inventory.expire_at != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_expire_at_on_failure
+            tag: remove_expire_at_on_failure_8ab65986
             field: xm_cyber.entity_inventory.expire_at
             ignore_missing: true
         - append:
-            tag: append_error_message_expire_at
+            tag: append_error_message_expire_at_2f9f2008
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_when_created
+      tag: date_when_created_dac1591e
       field: xm_cyber.entity_inventory.when_created
       target_field: xm_cyber.entity_inventory.when_created
       formats:
@@ -517,16 +517,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.when_created != null && ctx.xm_cyber.entity_inventory.when_created != '' && ctx.xm_cyber.entity_inventory.when_created != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_when_created_on_failure
+            tag: remove_when_created_on_failure_7db6ec57
             field: xm_cyber.entity_inventory.when_created
             ignore_missing: true
         - append:
-            tag: append_error_message_when_created
+            tag: append_error_message_when_created_8f50b547
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_xm_mongo_update_time
+      tag: date_xm_mongo_update_time_4b32ea9e
       field: xm_cyber.entity_inventory.xm_mongo_update_time
       target_field: xm_cyber.entity_inventory.xm_mongo_update_time
       formats:
@@ -534,16 +534,16 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.xm_mongo_update_time != null && ctx.xm_cyber.entity_inventory.xm_mongo_update_time != '' && ctx.xm_cyber.entity_inventory.xm_mongo_update_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_xm_mongo_update_time_on_failure
+            tag: remove_xm_mongo_update_time_on_failure_e4893e14
             field: xm_cyber.entity_inventory.xm_mongo_update_time
             ignore_missing: true
         - append:
-            tag: append_error_message_xm_mongo_update_time
+            tag: append_error_message_xm_mongo_update_time_35ead4d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
-      tag: date_redshift_cluster_create_time
+      tag: date_redshift_cluster_create_time_e857802f
       field: xm_cyber.entity_inventory.redshift_cluster_create_time
       target_field: xm_cyber.entity_inventory.redshift_cluster_create_time
       formats:
@@ -551,274 +551,274 @@ processors:
       if: ctx.xm_cyber?.entity_inventory?.redshift_cluster_create_time != null && ctx.xm_cyber.entity_inventory.redshift_cluster_create_time != '' && ctx.xm_cyber.entity_inventory.redshift_cluster_create_time != 'Unknown'
       on_failure:
         - remove:
-            tag: remove_redshift_cluster_create_time_on_failure
+            tag: remove_redshift_cluster_create_time_on_failure_8dc7561b
             field: xm_cyber.entity_inventory.redshift_cluster_create_time
             ignore_missing: true
         - append:
-            tag: append_error_message_redshift_cluster_create_time
+            tag: append_error_message_redshift_cluster_create_time_b100917c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ----- Per-element date proc for ebs_volume_attachments[].attach_time -----
   - foreach:
-      tag: foreach_ebs_volume_attachments_attach_time
+      tag: foreach_ebs_volume_attachments_attach_time_e040d963
       field: xm_cyber.entity_inventory.ebs_volume_attachments
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_attachments instanceof List
       processor:
         date:
-          tag: date_ebs_volume_attachments_attach_time_element
+          tag: date_ebs_volume_attachments_attach_time_element_eae80158
           field: _ingest._value.attach_time
           target_field: _ingest._value.attach_time
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ebs_volume_attachments_attach_time_element_on_failure
+                tag: remove_ebs_volume_attachments_attach_time_element_on_failure_3710488d
                 field: _ingest._value.attach_time
                 ignore_missing: true
   # ----- Convert procs for long fields -----
   - convert:
-      tag: convert_connection_counter_long
+      tag: convert_connection_counter_long_224519dd
       field: xm_cyber.entity_inventory.connection_counter
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.connection_counter != ''
       on_failure:
         - remove:
-            tag: remove_connection_counter_on_failure
+            tag: remove_connection_counter_on_failure_74c270bb
             field: xm_cyber.entity_inventory.connection_counter
             ignore_missing: true
         - append:
-            tag: append_error_message_connection_counter
+            tag: append_error_message_connection_counter_9ab88549
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_agent_version_major_long
+      tag: convert_agent_version_major_long_6e9e4f3c
       field: xm_cyber.entity_inventory.agent_version.major
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.agent_version?.major != ''
       on_failure:
         - remove:
-            tag: remove_agent_version_major_on_failure
+            tag: remove_agent_version_major_on_failure_5fc715bc
             field: xm_cyber.entity_inventory.agent_version.major
             ignore_missing: true
         - append:
-            tag: append_error_message_agent_version_major
+            tag: append_error_message_agent_version_major_20c22b7b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_agent_version_minor_long
+      tag: convert_agent_version_minor_long_a0dcb57e
       field: xm_cyber.entity_inventory.agent_version.minor
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.agent_version?.minor != ''
       on_failure:
         - remove:
-            tag: remove_agent_version_minor_on_failure
+            tag: remove_agent_version_minor_on_failure_88955079
             field: xm_cyber.entity_inventory.agent_version.minor
             ignore_missing: true
         - append:
-            tag: append_error_message_agent_version_minor
+            tag: append_error_message_agent_version_minor_4d2673f0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_agent_version_patch_long
+      tag: convert_agent_version_patch_long_5f693af2
       field: xm_cyber.entity_inventory.agent_version.patch
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.agent_version?.patch != ''
       on_failure:
         - remove:
-            tag: remove_agent_version_patch_on_failure
+            tag: remove_agent_version_patch_on_failure_c03b4bc1
             field: xm_cyber.entity_inventory.agent_version.patch
             ignore_missing: true
         - append:
-            tag: append_error_message_agent_version_patch
+            tag: append_error_message_agent_version_patch_c490f935
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_latest_possible_agent_version_major_long
+      tag: convert_latest_possible_agent_version_major_long_a8b815b3
       field: xm_cyber.entity_inventory.latest_possible_agent_version.major
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.latest_possible_agent_version?.major != ''
       on_failure:
         - remove:
-            tag: remove_latest_possible_agent_version_major_on_failure
+            tag: remove_latest_possible_agent_version_major_on_failure_83c3310d
             field: xm_cyber.entity_inventory.latest_possible_agent_version.major
             ignore_missing: true
         - append:
-            tag: append_error_message_latest_possible_agent_version_major
+            tag: append_error_message_latest_possible_agent_version_major_0601c936
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_latest_possible_agent_version_minor_long
+      tag: convert_latest_possible_agent_version_minor_long_8ed3d5e6
       field: xm_cyber.entity_inventory.latest_possible_agent_version.minor
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.latest_possible_agent_version?.minor != ''
       on_failure:
         - remove:
-            tag: remove_latest_possible_agent_version_minor_on_failure
+            tag: remove_latest_possible_agent_version_minor_on_failure_6652161c
             field: xm_cyber.entity_inventory.latest_possible_agent_version.minor
             ignore_missing: true
         - append:
-            tag: append_error_message_latest_possible_agent_version_minor
+            tag: append_error_message_latest_possible_agent_version_minor_929c8ec3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_latest_possible_agent_version_patch_long
+      tag: convert_latest_possible_agent_version_patch_long_2cf0fa71
       field: xm_cyber.entity_inventory.latest_possible_agent_version.patch
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.latest_possible_agent_version?.patch != ''
       on_failure:
         - remove:
-            tag: remove_latest_possible_agent_version_patch_on_failure
+            tag: remove_latest_possible_agent_version_patch_on_failure_75fca59b
             field: xm_cyber.entity_inventory.latest_possible_agent_version.patch
             ignore_missing: true
         - append:
-            tag: append_error_message_latest_possible_agent_version_patch
+            tag: append_error_message_latest_possible_agent_version_patch_c25c6178
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_service_pack_build_long
+      tag: convert_os_service_pack_build_long_e13bd7a4
       field: xm_cyber.entity_inventory.os.service_pack.build
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.service_pack?.build != ''
       on_failure:
         - remove:
-            tag: remove_os_service_pack_build_on_failure
+            tag: remove_os_service_pack_build_on_failure_051fb25a
             field: xm_cyber.entity_inventory.os.service_pack.build
             ignore_missing: true
         - append:
-            tag: append_error_message_os_service_pack_build
+            tag: append_error_message_os_service_pack_build_013178de
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_service_pack_major_long
+      tag: convert_os_service_pack_major_long_17ca97c2
       field: xm_cyber.entity_inventory.os.service_pack.major
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.service_pack?.major != ''
       on_failure:
         - remove:
-            tag: remove_os_service_pack_major_on_failure
+            tag: remove_os_service_pack_major_on_failure_d40a5e4c
             field: xm_cyber.entity_inventory.os.service_pack.major
             ignore_missing: true
         - append:
-            tag: append_error_message_os_service_pack_major
+            tag: append_error_message_os_service_pack_major_e0cc7a30
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_service_pack_minor_long
+      tag: convert_os_service_pack_minor_long_f1d7f14b
       field: xm_cyber.entity_inventory.os.service_pack.minor
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.service_pack?.minor != ''
       on_failure:
         - remove:
-            tag: remove_os_service_pack_minor_on_failure
+            tag: remove_os_service_pack_minor_on_failure_1a17b9f8
             field: xm_cyber.entity_inventory.os.service_pack.minor
             ignore_missing: true
         - append:
-            tag: append_error_message_os_service_pack_minor
+            tag: append_error_message_os_service_pack_minor_78e4862f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_service_pack_patch_long
+      tag: convert_os_service_pack_patch_long_8bd803dd
       field: xm_cyber.entity_inventory.os.service_pack.patch
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.service_pack?.patch != ''
       on_failure:
         - remove:
-            tag: remove_os_service_pack_patch_on_failure
+            tag: remove_os_service_pack_patch_on_failure_dfe3d68a
             field: xm_cyber.entity_inventory.os.service_pack.patch
             ignore_missing: true
         - append:
-            tag: append_error_message_os_service_pack_patch
+            tag: append_error_message_os_service_pack_patch_1b3f2ad3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_version_build_long
+      tag: convert_os_version_build_long_ad94bbc3
       field: xm_cyber.entity_inventory.os.version.build
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.version?.build != ''
       on_failure:
         - remove:
-            tag: remove_os_version_build_on_failure
+            tag: remove_os_version_build_on_failure_486c4793
             field: xm_cyber.entity_inventory.os.version.build
             ignore_missing: true
         - append:
-            tag: append_error_message_os_version_build
+            tag: append_error_message_os_version_build_d18ceefc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_version_major_long
+      tag: convert_os_version_major_long_e69169e5
       field: xm_cyber.entity_inventory.os.version.major
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.version?.major != ''
       on_failure:
         - remove:
-            tag: remove_os_version_major_on_failure
+            tag: remove_os_version_major_on_failure_6d7ffd1e
             field: xm_cyber.entity_inventory.os.version.major
             ignore_missing: true
         - append:
-            tag: append_error_message_os_version_major
+            tag: append_error_message_os_version_major_b1fa5960
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_version_minor_long
+      tag: convert_os_version_minor_long_8ccd1c5d
       field: xm_cyber.entity_inventory.os.version.minor
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.version?.minor != ''
       on_failure:
         - remove:
-            tag: remove_os_version_minor_on_failure
+            tag: remove_os_version_minor_on_failure_c7375335
             field: xm_cyber.entity_inventory.os.version.minor
             ignore_missing: true
         - append:
-            tag: append_error_message_os_version_minor
+            tag: append_error_message_os_version_minor_69308e40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_os_version_patch_long
+      tag: convert_os_version_patch_long_021e05e7
       field: xm_cyber.entity_inventory.os.version.patch
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.os?.version?.patch != ''
       on_failure:
         - remove:
-            tag: remove_os_version_patch_on_failure
+            tag: remove_os_version_patch_on_failure_563b696e
             field: xm_cyber.entity_inventory.os.version.patch
             ignore_missing: true
         - append:
-            tag: append_error_message_os_version_patch
+            tag: append_error_message_os_version_patch_b4e676a1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_ssm_parameter_version_long
+      tag: convert_ssm_parameter_version_long_c66d8b3e
       field: xm_cyber.entity_inventory.ssm_parameter_version
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ssm_parameter_version != ''
       on_failure:
         - remove:
-            tag: remove_ssm_parameter_version_on_failure
+            tag: remove_ssm_parameter_version_on_failure_549ba298
             field: xm_cyber.entity_inventory.ssm_parameter_version
             ignore_missing: true
         - append:
-            tag: append_error_message_ssm_parameter_version
+            tag: append_error_message_ssm_parameter_version_e0bd6546
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_split_xm_cyber_entity_inventory_ipv4_by_shape
+      tag: script_split_xm_cyber_entity_inventory_ipv4_by_shape_45705d9b
       description: >
         Splits xm_cyber.entity_inventory.ipv4 by element shape so that each shape
         lands at a field path with a compatible mapping. String elements (e.g.
@@ -850,11 +850,11 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_script_split_ipv4_by_shape
+            tag: append_error_message_script_split_ipv4_by_shape_adaa5bdb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_split_xm_cyber_entity_inventory_ipv6_by_shape
+      tag: script_split_xm_cyber_entity_inventory_ipv6_by_shape_18e8b018
       description: >
         Splits xm_cyber.entity_inventory.ipv6 by element shape so that each shape
         lands at a field path with a compatible mapping. String elements stay in
@@ -886,848 +886,848 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_script_split_ipv6_by_shape
+            tag: append_error_message_script_split_ipv6_by_shape_2f704a3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_convert_ipv4_num_long
+      tag: foreach_convert_ipv4_num_long_65e3f4e6
       field: xm_cyber.entity_inventory.ipv4num
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ipv4num != null
       processor:
         convert:
-          tag: convert_ipv4_num_long_element
+          tag: convert_ipv4_num_long_element_ea50f59f
           field: _ingest._value
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ipv4_num_element_on_failure
+                tag: remove_ipv4_num_element_on_failure_3f28af3f
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message_ipv4_num_element
+                tag: append_error_message_ipv4_num_element_51924e0b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_custom_properties_hardware_info_cpu_core_count_long
+      tag: convert_custom_properties_hardware_info_cpu_core_count_long_375902d4
       field: xm_cyber.entity_inventory.custom_properties.hardware_info.cpu_core_count
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.custom_properties?.hardware_info?.cpu_core_count != ''
       on_failure:
         - remove:
-            tag: remove_custom_properties_hardware_info_cpu_core_count_on_failure
+            tag: remove_custom_properties_hardware_info_cpu_core_count_on_failure_eb137faa
             field: xm_cyber.entity_inventory.custom_properties.hardware_info.cpu_core_count
             ignore_missing: true
         - append:
-            tag: append_error_message_custom_properties_hardware_info_cpu_core_count
+            tag: append_error_message_custom_properties_hardware_info_cpu_core_count_0ff8f684
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_custom_properties_hardware_info_cpu_count_long
+      tag: convert_custom_properties_hardware_info_cpu_count_long_a2fdbef9
       field: xm_cyber.entity_inventory.custom_properties.hardware_info.cpu_count
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.custom_properties?.hardware_info?.cpu_count != ''
       on_failure:
         - remove:
-            tag: remove_custom_properties_hardware_info_cpu_count_on_failure
+            tag: remove_custom_properties_hardware_info_cpu_count_on_failure_55eecd87
             field: xm_cyber.entity_inventory.custom_properties.hardware_info.cpu_count
             ignore_missing: true
         - append:
-            tag: append_error_message_custom_properties_hardware_info_cpu_count
+            tag: append_error_message_custom_properties_hardware_info_cpu_count_f97f11c5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_custom_properties_hardware_info_cpu_speed_mhz_long
+      tag: convert_custom_properties_hardware_info_cpu_speed_mhz_long_075568d9
       field: xm_cyber.entity_inventory.custom_properties.hardware_info.cpu_speed_mhz
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.custom_properties?.hardware_info?.cpu_speed_mhz != ''
       on_failure:
         - remove:
-            tag: remove_custom_properties_hardware_info_cpu_speed_mhz_on_failure
+            tag: remove_custom_properties_hardware_info_cpu_speed_mhz_on_failure_5d5923b3
             field: xm_cyber.entity_inventory.custom_properties.hardware_info.cpu_speed_mhz
             ignore_missing: true
         - append:
-            tag: append_error_message_custom_properties_hardware_info_cpu_speed_mhz
+            tag: append_error_message_custom_properties_hardware_info_cpu_speed_mhz_c739d2a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_role_max_session_duration_long
+      tag: convert_role_max_session_duration_long_3daf6996
       field: xm_cyber.entity_inventory.role_max_session_duration
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.role_max_session_duration != ''
       on_failure:
         - remove:
-            tag: remove_role_max_session_duration_on_failure
+            tag: remove_role_max_session_duration_on_failure_5be088a6
             field: xm_cyber.entity_inventory.role_max_session_duration
             ignore_missing: true
         - append:
-            tag: append_error_message_role_max_session_duration
+            tag: append_error_message_role_max_session_duration_97572d1f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_ebs_volume_iops_long
+      tag: convert_ebs_volume_iops_long_f67c7d18
       field: xm_cyber.entity_inventory.ebs_volume_iops
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_iops != ''
       on_failure:
         - remove:
-            tag: remove_ebs_volume_iops_on_failure
+            tag: remove_ebs_volume_iops_on_failure_8586aebe
             field: xm_cyber.entity_inventory.ebs_volume_iops
             ignore_missing: true
         - append:
-            tag: append_error_message_ebs_volume_iops
+            tag: append_error_message_ebs_volume_iops_933ae36b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_ebs_volume_size_long
+      tag: convert_ebs_volume_size_long_de027e2b
       field: xm_cyber.entity_inventory.ebs_volume_size
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_size != ''
       on_failure:
         - remove:
-            tag: remove_ebs_volume_size_on_failure
+            tag: remove_ebs_volume_size_on_failure_be82bb9a
             field: xm_cyber.entity_inventory.ebs_volume_size
             ignore_missing: true
         - append:
-            tag: append_error_message_ebs_volume_size
+            tag: append_error_message_ebs_volume_size_4fe5eb9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_user_access_keys_count_long
+      tag: convert_user_access_keys_count_long_247c5d3d
       field: xm_cyber.entity_inventory.user_access_keys_count
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.user_access_keys_count != ''
       on_failure:
         - remove:
-            tag: remove_user_access_keys_count_on_failure
+            tag: remove_user_access_keys_count_on_failure_385d7895
             field: xm_cyber.entity_inventory.user_access_keys_count
             ignore_missing: true
         - append:
-            tag: append_error_message_user_access_keys_count
+            tag: append_error_message_user_access_keys_count_87238d4a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_dynamo_db_table_item_count_long
+      tag: convert_dynamo_db_table_item_count_long_f4dcef37
       field: xm_cyber.entity_inventory.dynamo_db_table_item_count
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.dynamo_db_table_item_count != ''
       on_failure:
         - remove:
-            tag: remove_dynamo_db_table_item_count_on_failure
+            tag: remove_dynamo_db_table_item_count_on_failure_f39176ad
             field: xm_cyber.entity_inventory.dynamo_db_table_item_count
             ignore_missing: true
         - append:
-            tag: append_error_message_dynamo_db_table_item_count
+            tag: append_error_message_dynamo_db_table_item_count_b1dad1aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_dynamo_db_table_size_bytes_long
+      tag: convert_dynamo_db_table_size_bytes_long_31479ef0
       field: xm_cyber.entity_inventory.dynamo_db_table_size_bytes
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.dynamo_db_table_size_bytes != ''
       on_failure:
         - remove:
-            tag: remove_dynamo_db_table_size_bytes_on_failure
+            tag: remove_dynamo_db_table_size_bytes_on_failure_71a8145c
             field: xm_cyber.entity_inventory.dynamo_db_table_size_bytes
             ignore_missing: true
         - append:
-            tag: append_error_message_dynamo_db_table_size_bytes
+            tag: append_error_message_dynamo_db_table_size_bytes_5ac48fbf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_elasticache_cache_cache_security_groups_long
+      tag: convert_elasticache_cache_cache_security_groups_long_8c9b685e
       field: xm_cyber.entity_inventory.elasticache_cache_cache_security_groups
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.elasticache_cache_cache_security_groups != ''
       on_failure:
         - remove:
-            tag: remove_elasticache_cache_cache_security_groups_on_failure
+            tag: remove_elasticache_cache_cache_security_groups_on_failure_5ed8461f
             field: xm_cyber.entity_inventory.elasticache_cache_cache_security_groups
             ignore_missing: true
         - append:
-            tag: append_error_message_elasticache_cache_cache_security_groups
+            tag: append_error_message_elasticache_cache_cache_security_groups_59c5d35f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_elasticache_cache_cluster_num_cache_nodes_long
+      tag: convert_elasticache_cache_cluster_num_cache_nodes_long_71226cb4
       field: xm_cyber.entity_inventory.elasticache_cache_cluster_num_cache_nodes
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.elasticache_cache_cluster_num_cache_nodes != ''
       on_failure:
         - remove:
-            tag: remove_elasticache_cache_cluster_num_cache_nodes_on_failure
+            tag: remove_elasticache_cache_cluster_num_cache_nodes_on_failure_6ec8eaef
             field: xm_cyber.entity_inventory.elasticache_cache_cluster_num_cache_nodes
             ignore_missing: true
         - append:
-            tag: append_error_message_elasticache_cache_cluster_num_cache_nodes
+            tag: append_error_message_elasticache_cache_cluster_num_cache_nodes_4ac3aa83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_elasticache_cache_security_groups_long
+      tag: convert_elasticache_cache_security_groups_long_8336a883
       field: xm_cyber.entity_inventory.elasticache_cache_security_groups
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.elasticache_cache_security_groups != ''
       on_failure:
         - remove:
-            tag: remove_elasticache_cache_security_groups_on_failure
+            tag: remove_elasticache_cache_security_groups_on_failure_a1ede23d
             field: xm_cyber.entity_inventory.elasticache_cache_security_groups
             ignore_missing: true
         - append:
-            tag: append_error_message_elasticache_cache_security_groups
+            tag: append_error_message_elasticache_cache_security_groups_b69f6cfb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_version_number_long
+      tag: convert_version_number_long_6943dff7
       field: xm_cyber.entity_inventory.version_number
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.version_number != ''
       on_failure:
         - remove:
-            tag: remove_version_number_on_failure
+            tag: remove_version_number_on_failure_a7cacfc2
             field: xm_cyber.entity_inventory.version_number
             ignore_missing: true
         - append:
-            tag: append_error_message_version_number
+            tag: append_error_message_version_number_c4187329
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_nodes_in_node_group_count_long
+      tag: convert_nodes_in_node_group_count_long_770aff6e
       field: xm_cyber.entity_inventory.nodes_in_node_group_count
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.nodes_in_node_group_count != ''
       on_failure:
         - remove:
-            tag: remove_nodes_in_node_group_count_on_failure
+            tag: remove_nodes_in_node_group_count_on_failure_d174f8fc
             field: xm_cyber.entity_inventory.nodes_in_node_group_count
             ignore_missing: true
         - append:
-            tag: append_error_message_nodes_in_node_group_count
+            tag: append_error_message_nodes_in_node_group_count_89165021
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_machine_account_quota_long
+      tag: convert_machine_account_quota_long_e686fbc7
       field: xm_cyber.entity_inventory.machine_account_quota
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.machine_account_quota != ''
       on_failure:
         - remove:
-            tag: remove_machine_account_quota_on_failure
+            tag: remove_machine_account_quota_on_failure_bae3c30c
             field: xm_cyber.entity_inventory.machine_account_quota
             ignore_missing: true
         - append:
-            tag: append_error_message_machine_account_quota
+            tag: append_error_message_machine_account_quota_f18fbe3d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_endpoint_port_long
+      tag: convert_endpoint_port_long_b59061ff
       field: xm_cyber.entity_inventory.endpoint_port
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.endpoint_port != ''
       on_failure:
         - remove:
-            tag: remove_endpoint_port_on_failure
+            tag: remove_endpoint_port_on_failure_7ce93667
             field: xm_cyber.entity_inventory.endpoint_port
             ignore_missing: true
         - append:
-            tag: append_error_message_endpoint_port
+            tag: append_error_message_endpoint_port_903080a1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_redshift_cluster_number_of_nodes_long
+      tag: convert_redshift_cluster_number_of_nodes_long_51a29960
       field: xm_cyber.entity_inventory.redshift_cluster_number_of_nodes
       type: long
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.redshift_cluster_number_of_nodes != ''
       on_failure:
         - remove:
-            tag: remove_redshift_cluster_number_of_nodes_on_failure
+            tag: remove_redshift_cluster_number_of_nodes_on_failure_8ff5e9ba
             field: xm_cyber.entity_inventory.redshift_cluster_number_of_nodes
             ignore_missing: true
         - append:
-            tag: append_error_message_redshift_cluster_number_of_nodes
+            tag: append_error_message_redshift_cluster_number_of_nodes_67139e41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ----- Per-element long proc for ebs_volume_attachments[].ebs_card_index -----
   - foreach:
-      tag: foreach_ebs_volume_attachments_ebs_card_index
+      tag: foreach_ebs_volume_attachments_ebs_card_index_5d8539df
       field: xm_cyber.entity_inventory.ebs_volume_attachments
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_attachments instanceof List
       processor:
         convert:
-          tag: convert_ebs_volume_attachments_ebs_card_index_element_long
+          tag: convert_ebs_volume_attachments_ebs_card_index_element_long_b2e59ba0
           field: _ingest._value.ebs_card_index
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ebs_volume_attachments_ebs_card_index_element_on_failure
+                tag: remove_ebs_volume_attachments_ebs_card_index_element_on_failure_7a278968
                 field: _ingest._value.ebs_card_index
                 ignore_missing: true
             - append:
-                tag: append_error_message_ebs_volume_attachments_ebs_card_index_element
+                tag: append_error_message_ebs_volume_attachments_ebs_card_index_element_451a07bd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ----- Convert procs for boolean fields -----
   - convert:
-      tag: convert_disabled_boolean
+      tag: convert_disabled_boolean_29d27f91
       field: xm_cyber.entity_inventory.disabled
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.disabled != ''
       on_failure:
         - remove:
-            tag: remove_disabled_on_failure
+            tag: remove_disabled_on_failure_d7ceba96
             field: xm_cyber.entity_inventory.disabled
             ignore_missing: true
         - append:
-            tag: append_error_message_disabled
+            tag: append_error_message_disabled_fb98abe2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_has_matching_sid_boolean
+      tag: convert_has_matching_sid_boolean_5f959276
       field: xm_cyber.entity_inventory.has_matching_sid
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.has_matching_sid != ''
       on_failure:
         - remove:
-            tag: remove_has_matching_sid_on_failure
+            tag: remove_has_matching_sid_on_failure_b080a7dc
             field: xm_cyber.entity_inventory.has_matching_sid
             ignore_missing: true
         - append:
-            tag: append_error_message_has_matching_sid
+            tag: append_error_message_has_matching_sid_c000f74d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_has_update_available_boolean
+      tag: convert_has_update_available_boolean_c0f5a83f
       field: xm_cyber.entity_inventory.has_update_available
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.has_update_available != ''
       on_failure:
         - remove:
-            tag: remove_has_update_available_on_failure
+            tag: remove_has_update_available_on_failure_baef96df
             field: xm_cyber.entity_inventory.has_update_available
             ignore_missing: true
         - append:
-            tag: append_error_message_has_update_available
+            tag: append_error_message_has_update_available_8504f033
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_not_included_in_attacks_boolean
+      tag: convert_not_included_in_attacks_boolean_ef9b2abc
       field: xm_cyber.entity_inventory.not_included_in_attacks
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.not_included_in_attacks != ''
       on_failure:
         - remove:
-            tag: remove_not_included_in_attacks_on_failure
+            tag: remove_not_included_in_attacks_on_failure_9524a669
             field: xm_cyber.entity_inventory.not_included_in_attacks
             ignore_missing: true
         - append:
-            tag: append_error_message_not_included_in_attacks
+            tag: append_error_message_not_included_in_attacks_c2b98320
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_entity_details_is_asset_boolean
+      tag: convert_entity_details_is_asset_boolean_7ee0d99e
       field: xm_cyber.entity_inventory.entity_details.is_asset
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.entity_details?.is_asset != ''
       on_failure:
         - remove:
-            tag: remove_entity_details_is_asset_on_failure
+            tag: remove_entity_details_is_asset_on_failure_9566b2d1
             field: xm_cyber.entity_inventory.entity_details.is_asset
             ignore_missing: true
         - append:
-            tag: append_error_message_entity_details_is_asset
+            tag: append_error_message_entity_details_is_asset_1bfbf13e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_custom_properties_sniffer_status_changeable_boolean
+      tag: convert_custom_properties_sniffer_status_changeable_boolean_b468446f
       field: xm_cyber.entity_inventory.custom_properties.sniffer_status_changeable
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.custom_properties?.sniffer_status_changeable != ''
       on_failure:
         - remove:
-            tag: remove_custom_properties_sniffer_status_changeable_on_failure
+            tag: remove_custom_properties_sniffer_status_changeable_on_failure_7aebd734
             field: xm_cyber.entity_inventory.custom_properties.sniffer_status_changeable
             ignore_missing: true
         - append:
-            tag: append_error_message_custom_properties_sniffer_status_changeable
+            tag: append_error_message_custom_properties_sniffer_status_changeable_f6379418
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_is_highly_privileged_boolean
+      tag: convert_is_highly_privileged_boolean_7b35ccff
       field: xm_cyber.entity_inventory.is_highly_privileged
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.is_highly_privileged != ''
       on_failure:
         - remove:
-            tag: remove_is_highly_privileged_on_failure
+            tag: remove_is_highly_privileged_on_failure_e9c0f3d5
             field: xm_cyber.entity_inventory.is_highly_privileged
             ignore_missing: true
         - append:
-            tag: append_error_message_is_highly_privileged
+            tag: append_error_message_is_highly_privileged_dba40d83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_encryption_boolean
+      tag: convert_encryption_boolean_1037fbdf
       field: xm_cyber.entity_inventory.encryption
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.encryption != ''
       on_failure:
         - remove:
-            tag: remove_encryption_on_failure
+            tag: remove_encryption_on_failure_e0687e8b
             field: xm_cyber.entity_inventory.encryption
             ignore_missing: true
         - append:
-            tag: append_error_message_encryption
+            tag: append_error_message_encryption_4828916f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_ebs_volume_multi_attach_enabled_boolean
+      tag: convert_ebs_volume_multi_attach_enabled_boolean_09561d58
       field: xm_cyber.entity_inventory.ebs_volume_multi_attach_enabled
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_multi_attach_enabled != ''
       on_failure:
         - remove:
-            tag: remove_ebs_volume_multi_attach_enabled_on_failure
+            tag: remove_ebs_volume_multi_attach_enabled_on_failure_ba3a008b
             field: xm_cyber.entity_inventory.ebs_volume_multi_attach_enabled
             ignore_missing: true
         - append:
-            tag: append_error_message_ebs_volume_multi_attach_enabled
+            tag: append_error_message_ebs_volume_multi_attach_enabled_3c4e1cbf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_is_mfaenabled_boolean
+      tag: convert_is_mfaenabled_boolean_f2544a1c
       field: xm_cyber.entity_inventory.is_mfaenabled
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.is_mfaenabled != ''
       on_failure:
         - remove:
-            tag: remove_is_mfaenabled_on_failure
+            tag: remove_is_mfaenabled_on_failure_ab917bdf
             field: xm_cyber.entity_inventory.is_mfaenabled
             ignore_missing: true
         - append:
-            tag: append_error_message_is_mfaenabled
+            tag: append_error_message_is_mfaenabled_5ceb1b51
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_public_boolean
+      tag: convert_public_boolean_c1cb371b
       field: xm_cyber.entity_inventory.public
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.public != ''
       on_failure:
         - remove:
-            tag: remove_public_on_failure
+            tag: remove_public_on_failure_2a728e9a
             field: xm_cyber.entity_inventory.public
             ignore_missing: true
         - append:
-            tag: append_error_message_public
+            tag: append_error_message_public_627492d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_is_running_boolean
+      tag: convert_is_running_boolean_14bd7cb4
       field: xm_cyber.entity_inventory.is_running
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.is_running != ''
       on_failure:
         - remove:
-            tag: remove_is_running_on_failure
+            tag: remove_is_running_on_failure_0831958a
             field: xm_cyber.entity_inventory.is_running
             ignore_missing: true
         - append:
-            tag: append_error_message_is_running
+            tag: append_error_message_is_running_5be20011
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_ecr_repository_image_scanning_on_push_boolean
+      tag: convert_ecr_repository_image_scanning_on_push_boolean_6314b1e8
       field: xm_cyber.entity_inventory.ecr_repository_image_scanning_on_push
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ecr_repository_image_scanning_on_push != ''
       on_failure:
         - remove:
-            tag: remove_ecr_repository_image_scanning_on_push_on_failure
+            tag: remove_ecr_repository_image_scanning_on_push_on_failure_07d93860
             field: xm_cyber.entity_inventory.ecr_repository_image_scanning_on_push
             ignore_missing: true
         - append:
-            tag: append_error_message_ecr_repository_image_scanning_on_push
+            tag: append_error_message_ecr_repository_image_scanning_on_push_2d8726fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_is_valid_boolean
+      tag: convert_is_valid_boolean_da3d4f17
       field: xm_cyber.entity_inventory.is_valid
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.is_valid != ''
       on_failure:
         - remove:
-            tag: remove_is_valid_on_failure
+            tag: remove_is_valid_on_failure_02c77a32
             field: xm_cyber.entity_inventory.is_valid
             ignore_missing: true
         - append:
-            tag: append_error_message_is_valid
+            tag: append_error_message_is_valid_ac1fcf30
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_elasticache_cache_cluster_auth_token_boolean
+      tag: convert_elasticache_cache_cluster_auth_token_boolean_0324d6ab
       field: xm_cyber.entity_inventory.elasticache_cache_cluster_auth_token
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.elasticache_cache_cluster_auth_token != ''
       on_failure:
         - remove:
-            tag: remove_elasticache_cache_cluster_auth_token_on_failure
+            tag: remove_elasticache_cache_cluster_auth_token_on_failure_e3f429d7
             field: xm_cyber.entity_inventory.elasticache_cache_cluster_auth_token
             ignore_missing: true
         - append:
-            tag: append_error_message_elasticache_cache_cluster_auth_token
+            tag: append_error_message_elasticache_cache_cluster_auth_token_f1f6f16d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_elasticache_cache_cluster_transit_encryption_boolean
+      tag: convert_elasticache_cache_cluster_transit_encryption_boolean_a1742734
       field: xm_cyber.entity_inventory.elasticache_cache_cluster_transit_encryption
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.elasticache_cache_cluster_transit_encryption != ''
       on_failure:
         - remove:
-            tag: remove_elasticache_cache_cluster_transit_encryption_on_failure
+            tag: remove_elasticache_cache_cluster_transit_encryption_on_failure_55b37234
             field: xm_cyber.entity_inventory.elasticache_cache_cluster_transit_encryption
             ignore_missing: true
         - append:
-            tag: append_error_message_elasticache_cache_cluster_transit_encryption
+            tag: append_error_message_elasticache_cache_cluster_transit_encryption_32110621
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_default_version_boolean
+      tag: convert_default_version_boolean_2dcc9462
       field: xm_cyber.entity_inventory.default_version
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.default_version != ''
       on_failure:
         - remove:
-            tag: remove_default_version_on_failure
+            tag: remove_default_version_on_failure_ce30a650
             field: xm_cyber.entity_inventory.default_version
             ignore_missing: true
         - append:
-            tag: append_error_message_default_version
+            tag: append_error_message_default_version_782d9db2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_is_public_boolean
+      tag: convert_is_public_boolean_297551b9
       field: xm_cyber.entity_inventory.is_public
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.is_public != ''
       on_failure:
         - remove:
-            tag: remove_is_public_on_failure
+            tag: remove_is_public_on_failure_f82d83b4
             field: xm_cyber.entity_inventory.is_public
             ignore_missing: true
         - append:
-            tag: append_error_message_is_public
+            tag: append_error_message_is_public_8f05c082
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_is_watched_boolean
+      tag: convert_is_watched_boolean_2dc1b6dc
       field: xm_cyber.entity_inventory.is_watched
       type: boolean
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.is_watched != ''
       on_failure:
         - remove:
-            tag: remove_is_watched_on_failure
+            tag: remove_is_watched_on_failure_33aa599a
             field: xm_cyber.entity_inventory.is_watched
             ignore_missing: true
         - append:
-            tag: append_error_message_is_watched
+            tag: append_error_message_is_watched_39e7d2cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ----- Per-element boolean proc for ebs_volume_attachments[].delete_on_termination -----
   - foreach:
-      tag: foreach_ebs_volume_attachments_delete_on_termination
+      tag: foreach_ebs_volume_attachments_delete_on_termination_032585ed
       field: xm_cyber.entity_inventory.ebs_volume_attachments
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_attachments instanceof List
       processor:
         convert:
-          tag: convert_ebs_volume_attachments_delete_on_termination_element_boolean
+          tag: convert_ebs_volume_attachments_delete_on_termination_element_boolean_02ce015d
           field: _ingest._value.delete_on_termination
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ebs_volume_attachments_delete_on_termination_element_on_failure
+                tag: remove_ebs_volume_attachments_delete_on_termination_element_on_failure_a77fcacd
                 field: _ingest._value.delete_on_termination
                 ignore_missing: true
             - append:
-                tag: append_error_message_ebs_volume_attachments_delete_on_termination_element
+                tag: append_error_message_ebs_volume_attachments_delete_on_termination_element_7af65154
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ----- Convert procs for IP fields -----
   - foreach:
-      tag: foreach_convert_ipv4str_ip
+      tag: foreach_convert_ipv4str_ip_c7e0700c
       field: xm_cyber.entity_inventory.ipv4str
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ipv4str != null
       processor:
         convert:
-          tag: convert_ipv4str_ip_element
+          tag: convert_ipv4str_ip_element_d73e9226
           field: _ingest._value
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ipv4str_element_on_failure
+                tag: remove_ipv4str_element_on_failure_68a4ca83
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message_ipv4str_element
+                tag: append_error_message_ipv4str_element_2d318852
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_convert_ipv6str_ip
+      tag: foreach_convert_ipv6str_ip_0a974975
       field: xm_cyber.entity_inventory.ipv6str
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ipv6str != null
       processor:
         convert:
-          tag: convert_ipv6str_ip_element
+          tag: convert_ipv6str_ip_element_ad0ce48a
           field: _ingest._value
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ipv6str_element_on_failure
+                tag: remove_ipv6str_element_on_failure_23427c1b
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message_ipv6str_element
+                tag: append_error_message_ipv6str_element_452ec35d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_ec2private_ip_address_ip
+      tag: convert_ec2private_ip_address_ip_cca01f51
       field: xm_cyber.entity_inventory.ec2private_ip_address
       type: ip
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ec2private_ip_address != ''
       on_failure:
         - remove:
-            tag: remove_ec2private_ip_address_on_failure
+            tag: remove_ec2private_ip_address_on_failure_32374e41
             field: xm_cyber.entity_inventory.ec2private_ip_address
             ignore_missing: true
         - append:
-            tag: append_error_message_ec2private_ip_address
+            tag: append_error_message_ec2private_ip_address_8aeb14d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_ec2public_ip_address_ip
+      tag: convert_ec2public_ip_address_ip_bbb92500
       field: xm_cyber.entity_inventory.ec2public_ip_address
       type: ip
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ec2public_ip_address != ''
       on_failure:
         - remove:
-            tag: remove_ec2public_ip_address_on_failure
+            tag: remove_ec2public_ip_address_on_failure_98734e2c
             field: xm_cyber.entity_inventory.ec2public_ip_address
             ignore_missing: true
         - append:
-            tag: append_error_message_ec2public_ip_address
+            tag: append_error_message_ec2public_ip_address_5614e086
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_host_ip_ip
+      tag: convert_host_ip_ip_adcb81da
       field: xm_cyber.entity_inventory.host_ip
       type: ip
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.host_ip != ''
       on_failure:
         - remove:
-            tag: remove_host_ip_on_failure
+            tag: remove_host_ip_on_failure_7bdbc400
             field: xm_cyber.entity_inventory.host_ip
             ignore_missing: true
         - append:
-            tag: append_error_message_host_ip
+            tag: append_error_message_host_ip_7a207f73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_pod_ip_ip
+      tag: convert_pod_ip_ip_12541d95
       field: xm_cyber.entity_inventory.pod_ip
       type: ip
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.pod_ip != ''
       on_failure:
         - remove:
-            tag: remove_pod_ip_on_failure
+            tag: remove_pod_ip_on_failure_3290268f
             field: xm_cyber.entity_inventory.pod_ip
             ignore_missing: true
         - append:
-            tag: append_error_message_pod_ip
+            tag: append_error_message_pod_ip_6faef7bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_redshift_cluster_private_ipaddress_ip
+      tag: convert_redshift_cluster_private_ipaddress_ip_52954072
       field: xm_cyber.entity_inventory.redshift_cluster_private_ipaddress
       type: ip
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.redshift_cluster_private_ipaddress != ''
       on_failure:
         - remove:
-            tag: remove_redshift_cluster_private_ipaddress_on_failure
+            tag: remove_redshift_cluster_private_ipaddress_on_failure_6ebb8e03
             field: xm_cyber.entity_inventory.redshift_cluster_private_ipaddress
             ignore_missing: true
         - append:
-            tag: append_error_message_redshift_cluster_private_ipaddress
+            tag: append_error_message_redshift_cluster_private_ipaddress_ffe00e59
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
-      tag: convert_redshift_cluster_public_ipaddress_ip
+      tag: convert_redshift_cluster_public_ipaddress_ip_3db6b71f
       field: xm_cyber.entity_inventory.redshift_cluster_public_ipaddress
       type: ip
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.redshift_cluster_public_ipaddress != ''
       on_failure:
         - remove:
-            tag: remove_redshift_cluster_public_ipaddress_on_failure
+            tag: remove_redshift_cluster_public_ipaddress_on_failure_58660056
             field: xm_cyber.entity_inventory.redshift_cluster_public_ipaddress
             ignore_missing: true
         - append:
-            tag: append_error_message_redshift_cluster_public_ipaddress
+            tag: append_error_message_redshift_cluster_public_ipaddress_053441c1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ----- @timestamp resolution -----
   - set:
-      tag: set_at_timestamp_from_xm_update_time
+      tag: set_at_timestamp_from_xm_update_time_35db7b46
       field: '@timestamp'
       copy_from: xm_cyber.entity_inventory.xm_update_time
       ignore_empty_value: true
 
   # ----- Device (agent) ECS host.* mappings -----
   - foreach:
-      tag: foreach_append_host_ip
+      tag: foreach_append_host_ip_c16f9c73
       field: xm_cyber.entity_inventory.ipv4str
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.ipv4str != null
       processor:
         append:
-          tag: append_host_ip_element
+          tag: append_host_ip_element_37acc0e5
           field: host.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
-      tag: set_host_os_family
+      tag: set_host_os_family_6816816c
       field: host.os.family
       copy_from: xm_cyber.entity_inventory.os_type
       ignore_empty_value: true
   - set:
-      tag: set_host_os_name_from_distribution_name
+      tag: set_host_os_name_from_distribution_name_6bb585e1
       field: host.os.name
       copy_from: xm_cyber.entity_inventory.os.distribution_name
       ignore_empty_value: true
   - set:
-      tag: set_host_os_version_from_distribution_version
+      tag: set_host_os_version_from_distribution_version_9b83bb18
       field: host.os.version
       copy_from: xm_cyber.entity_inventory.os.distribution_version
       ignore_empty_value: true
   - set:
-      tag: set_host_os_full_from_os_name
+      tag: set_host_os_full_from_os_name_bbc78a32
       field: host.os.full
       copy_from: xm_cyber.entity_inventory.os.name
       ignore_empty_value: true
   - set:
-      tag: set_host_id_from_machine_id
+      tag: set_host_id_from_machine_id_79589146
       field: host.id
       copy_from: xm_cyber.entity_inventory.machine_id
       ignore_empty_value: true
   - set:
-      tag: set_host_architecture_from_arch
+      tag: set_host_architecture_from_arch_118b9911
       field: host.architecture
       copy_from: xm_cyber.entity_inventory.arch
       ignore_empty_value: true
   - set:
-      tag: set_host_domain_from_domain_name
+      tag: set_host_domain_from_domain_name_26974f27
       field: host.domain
       copy_from: xm_cyber.entity_inventory.domain_name
       ignore_empty_value: true
   - set:
-      tag: set_host_os_kernel_from_kernel_version
+      tag: set_host_os_kernel_from_kernel_version_bbbe43ff
       field: host.os.kernel
       copy_from: xm_cyber.entity_inventory.kernel_version
       ignore_empty_value: true
   - set:
-      tag: set_host_os_full_fallback_from_os_image
+      tag: set_host_os_full_fallback_from_os_image_1ded5526
       field: host.os.full
       copy_from: xm_cyber.entity_inventory.os_image
       ignore_empty_value: true
       if: ctx.host?.os?.full == null
   - set:
-      tag: set_host_hostname_from_dns_host_name
+      tag: set_host_hostname_from_dns_host_name_080b53c8
       field: host.hostname
       copy_from: xm_cyber.entity_inventory.dns_host_name
       ignore_empty_value: true
   - set:
-      tag: set_host_name_from_fqdn
+      tag: set_host_name_from_fqdn_f1ad55ec
       field: host.name
       copy_from: xm_cyber.entity_inventory.fqdn
       ignore_empty_value: true
@@ -1735,37 +1735,37 @@ processors:
 
   # ----- host.ip (append from all IP sources) -----
   - append:
-      tag: append_host_ip_from_host_ip
+      tag: append_host_ip_from_host_ip_ef621587
       field: host.ip
       value: '{{{xm_cyber.entity_inventory.host_ip}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.host_ip != null && ctx.xm_cyber.entity_inventory.host_ip != ''
   - append:
-      tag: append_host_ip_from_pod_ip
+      tag: append_host_ip_from_pod_ip_ab6a5a86
       field: host.ip
       value: '{{{xm_cyber.entity_inventory.pod_ip}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.pod_ip != null && ctx.xm_cyber.entity_inventory.pod_ip != ''
   - append:
-      tag: append_host_ip_from_ec2private_ip_address
+      tag: append_host_ip_from_ec2private_ip_address_f2a98679
       field: host.ip
       value: '{{{xm_cyber.entity_inventory.ec2private_ip_address}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.ec2private_ip_address != null && ctx.xm_cyber.entity_inventory.ec2private_ip_address != ''
   - append:
-      tag: append_host_ip_from_ec2public_ip_address
+      tag: append_host_ip_from_ec2public_ip_address_dcdd9a62
       field: host.ip
       value: '{{{xm_cyber.entity_inventory.ec2public_ip_address}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.ec2public_ip_address != null && ctx.xm_cyber.entity_inventory.ec2public_ip_address != ''
   - append:
-      tag: append_host_ip_from_redshift_cluster_private_ipaddress
+      tag: append_host_ip_from_redshift_cluster_private_ipaddress_00caa5cf
       field: host.ip
       value: '{{{xm_cyber.entity_inventory.redshift_cluster_private_ipaddress}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.redshift_cluster_private_ipaddress != null && ctx.xm_cyber.entity_inventory.redshift_cluster_private_ipaddress != ''
   - append:
-      tag: append_host_ip_from_redshift_cluster_public_ipaddress
+      tag: append_host_ip_from_redshift_cluster_public_ipaddress_e853c63c
       field: host.ip
       value: '{{{xm_cyber.entity_inventory.redshift_cluster_public_ipaddress}}}'
       allow_duplicates: false
@@ -1773,154 +1773,154 @@ processors:
 
   # ----- event.* / organization.* mappings -----
   - set:
-      tag: set_event_id_from_id
+      tag: set_event_id_from_id_2bc9143b
       field: event.id
       copy_from: xm_cyber.entity_inventory.id
       ignore_empty_value: true
   - set:
-      tag: set_organization_id_from_organization_id
+      tag: set_organization_id_from_organization_id_a62d82a3
       field: organization.id
       copy_from: xm_cyber.entity_inventory.organization_id
       ignore_empty_value: true
 
   # ----- Cloud (AWS) ECS cloud.* mappings -----
   - set:
-      tag: set_cloud_account_id_from_account_id
+      tag: set_cloud_account_id_from_account_id_ba6723bf
       field: cloud.account.id
       copy_from: xm_cyber.entity_inventory.account_id
       ignore_empty_value: true
       if: ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('aws')
   - set:
-      tag: set_cloud_account_name_from_account_name
+      tag: set_cloud_account_name_from_account_name_4277066c
       field: cloud.account.name
       copy_from: xm_cyber.entity_inventory.account_name
       ignore_empty_value: true
       if: ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('aws')
   - set:
-      tag: set_cloud_region_from_region
+      tag: set_cloud_region_from_region_9d0c80c7
       field: cloud.region
       copy_from: xm_cyber.entity_inventory.region
       ignore_empty_value: true
   - set:
-      tag: set_cloud_instance_id_from_ec2instance_id
+      tag: set_cloud_instance_id_from_ec2instance_id_d1717a52
       field: cloud.instance.id
       copy_from: xm_cyber.entity_inventory.ec2instance_id
       ignore_empty_value: true
   - set:
-      tag: set_cloud_instance_id_from_instance_id
+      tag: set_cloud_instance_id_from_instance_id_f1803992
       field: cloud.instance.id
       copy_from: xm_cyber.entity_inventory.instance_id
       ignore_empty_value: true
       if: ctx.cloud?.instance?.id == null
   - set:
-      tag: set_cloud_instance_name_from_name
+      tag: set_cloud_instance_name_from_name_1f2412c0
       field: cloud.instance.name
       copy_from: xm_cyber.entity_inventory.name
       ignore_empty_value: true
       if: ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('aws')
   - set:
-      tag: set_cloud_availability_zone_from_availability_zone
+      tag: set_cloud_availability_zone_from_availability_zone_0445391b
       field: cloud.availability_zone
       copy_from: xm_cyber.entity_inventory.availability_zone
       ignore_empty_value: true
   - set:
-      tag: set_cloud_provider_from_cloud_provider
+      tag: set_cloud_provider_from_cloud_provider_1108df89
       field: cloud.provider
       copy_from: xm_cyber.entity_inventory.cloud_provider
       ignore_empty_value: true
       if: ctx.xm_cyber?.entity_inventory?.cloud_provider != null && ctx.xm_cyber.entity_inventory.cloud_provider != '' && ctx.xm_cyber.entity_inventory.cloud_provider.toUpperCase() != 'UNSUPPORTED_CLOUD_PROVIDER'
   - lowercase:
-      tag: lowercase_cloud_provider
+      tag: lowercase_cloud_provider_1a17fc24
       field: cloud.provider
       ignore_missing: true
 
   # ----- host.mac (normalised to ECS format: dash-separated, uppercase) -----
   - foreach:
-      tag: foreach_append_host_mac
+      tag: foreach_append_host_mac_2d350452
       field: xm_cyber.entity_inventory.entity_details.mac_addresses
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.entity_details?.mac_addresses != null
       processor:
         append:
-          tag: append_host_mac_element
+          tag: append_host_mac_element_e75b0742
           field: host.mac
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_host_mac_gsub
+      tag: foreach_host_mac_gsub_4be4368c
       field: host.mac
       ignore_missing: true
       if: ctx.host?.mac instanceof List
       processor:
         gsub:
-          tag: gsub_host_mac_element
+          tag: gsub_host_mac_element_0f27a8c0
           field: _ingest._value
           pattern: '[:.]'
           replacement: '-'
           ignore_missing: true
           on_failure:
             - append:
-                tag: append_error_message_host_mac_gsub_element
+                tag: append_error_message_host_mac_gsub_element_d5805163
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      tag: foreach_host_mac_uppercase
+      tag: foreach_host_mac_uppercase_ce011bcd
       field: host.mac
       ignore_missing: true
       if: ctx.host?.mac instanceof List
       processor:
         uppercase:
-          tag: uppercase_host_mac_element
+          tag: uppercase_host_mac_element_49bffb56
           field: _ingest._value
           ignore_missing: true
 
   # ----- orchestrator.* mappings (Kubernetes) -----
   - set:
-      tag: set_orchestrator_cluster_name_from_cluster_name
+      tag: set_orchestrator_cluster_name_from_cluster_name_fbcbfd58
       field: orchestrator.cluster.name
       copy_from: xm_cyber.entity_inventory.cluster_name
       ignore_empty_value: true
   - set:
-      tag: set_orchestrator_cluster_id_from_cluster_unique_id
+      tag: set_orchestrator_cluster_id_from_cluster_unique_id_4f45e4d2
       field: orchestrator.cluster.id
       copy_from: xm_cyber.entity_inventory.cluster_unique_id
       ignore_empty_value: true
   - set:
-      tag: set_orchestrator_namespace_from_namespace
+      tag: set_orchestrator_namespace_from_namespace_dff45e26
       field: orchestrator.namespace
       copy_from: xm_cyber.entity_inventory.namespace
       ignore_empty_value: true
   - set:
-      tag: set_orchestrator_type_kubernetes
+      tag: set_orchestrator_type_kubernetes_31b05580
       field: orchestrator.type
       value: kubernetes
       if: ctx.orchestrator?.cluster?.name != null || ctx.xm_cyber?.entity_inventory?.kubelet_version != null || ctx.xm_cyber?.entity_inventory?.pod_ip != null || ctx.xm_cyber?.entity_inventory?.kube_proxy_version != null
 
   # ----- user.* mappings -----
   - set:
-      tag: set_user_name_from_aws_user_name
+      tag: set_user_name_from_aws_user_name_42b66dd1
       field: user.name
       copy_from: xm_cyber.entity_inventory.aws_user_name
       ignore_empty_value: true
   - set:
-      tag: set_user_name_from_user_name
+      tag: set_user_name_from_user_name_15a99c88
       field: user.name
       copy_from: xm_cyber.entity_inventory.user_name
       ignore_empty_value: true
       if: ctx.user?.name == null
   - set:
-      tag: set_user_id_from_iam_unique_id
+      tag: set_user_id_from_iam_unique_id_252d15af
       field: user.id
       copy_from: xm_cyber.entity_inventory.iam_unique_id
       ignore_empty_value: true
   - set:
-      tag: set_user_id_from_sid
+      tag: set_user_id_from_sid_f391fb06
       field: user.id
       copy_from: xm_cyber.entity_inventory.sid
       ignore_empty_value: true
       if: ctx.user?.id == null
   - set:
-      tag: set_user_full_name_from_distinguished_name
+      tag: set_user_full_name_from_distinguished_name_4a385a62
       field: user.full_name
       copy_from: xm_cyber.entity_inventory.distinguished_name
       ignore_empty_value: true
@@ -1928,21 +1928,21 @@ processors:
   # ----- entity.* mappings (ECS entity extension) -----
   # Device-shaped entities: last_activity is the device's last connection time.
   - set:
-      tag: set_host_entity_lifecycle_last_activity_from_last_connection_time
+      tag: set_host_entity_lifecycle_last_activity_from_last_connection_time_6fcc393c
       field: host.entity.lifecycle.last_activity
       copy_from: xm_cyber.entity_inventory.last_connection_time
       ignore_empty_value: true
       if: ctx.xm_cyber?.entity_inventory?.last_connection_time != null && ctx.xm_cyber.entity_inventory.last_connection_time != 'Unknown' && ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('agent')
   # User-shaped entities: last_activity is the principal's last activity date.
   - set:
-      tag: set_user_entity_lifecycle_last_activity_from_last_activity_date
+      tag: set_user_entity_lifecycle_last_activity_from_last_activity_date_e49de40d
       field: user.entity.lifecycle.last_activity
       copy_from: xm_cyber.entity_inventory.last_activity_date
       ignore_empty_value: true
       if: ctx.xm_cyber?.entity_inventory?.last_activity_date != null && ctx.xm_cyber.entity_inventory.last_activity_date != 'Unknown' && ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('user')
   # MFA flag is a user-only attribute.
   - set:
-      tag: set_user_entity_attributes_mfa_enabled_from_is_mfaenabled
+      tag: set_user_entity_attributes_mfa_enabled_from_is_mfaenabled_0c325a14
       field: user.entity.attributes.mfa_enabled
       copy_from: xm_cyber.entity_inventory.is_mfaenabled
       ignore_empty_value: true
@@ -1950,102 +1950,102 @@ processors:
 
   # ----- service.* mappings -----
   - set:
-      tag: set_service_type_from_engine
+      tag: set_service_type_from_engine_68abc65a
       field: service.type
       copy_from: xm_cyber.entity_inventory.engine
       ignore_empty_value: true
   - set:
-      tag: set_service_type_from_lambda_runtime
+      tag: set_service_type_from_lambda_runtime_49b4dea2
       field: service.type
       copy_from: xm_cyber.entity_inventory.lambda_runtime
       ignore_empty_value: true
       if: ctx.service?.type == null
   - set:
-      tag: set_service_version_from_engine_version
+      tag: set_service_version_from_engine_version_d95ac9e5
       field: service.version
       copy_from: xm_cyber.entity_inventory.engine_version
       ignore_empty_value: true
 
   # ----- Vendor tags merged into top-level tags -----
   - foreach:
-      tag: foreach_vendor_tags_str
+      tag: foreach_vendor_tags_str_152184b7
       field: xm_cyber.entity_inventory.tags_str
       ignore_missing: true
       if: ctx.xm_cyber?.entity_inventory?.tags_str != null
       processor:
         append:
-          tag: append_tags
+          tag: append_tags_6bfa4532
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
 
   # ----- related.* enrichment -----
   - foreach:
-      tag: foreach_host_ip_related_ip
+      tag: foreach_host_ip_related_ip_ed04565a
       field: host.ip
       ignore_missing: true
       if: ctx.host?.ip != null
       processor:
         append:
-          tag: append_related_ip
+          tag: append_related_ip_b437efd5
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_host_mac_related_hosts
+      tag: foreach_host_mac_related_hosts_03bc21b9
       field: host.mac
       ignore_missing: true
       if: ctx.host?.mac != null
       processor:
         append:
-          tag: append_related_hosts
+          tag: append_related_hosts_3a37227a
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
-      tag: append_related_hosts_from_arn
+      tag: append_related_hosts_from_arn_d9738afc
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.arn}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.arn != null && ctx.xm_cyber.entity_inventory.arn != ''
   - append:
-      tag: append_related_hosts_from_ecr_repository_arn
+      tag: append_related_hosts_from_ecr_repository_arn_ab1ea186
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.ecr_repository_arn}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.ecr_repository_arn != null && ctx.xm_cyber.entity_inventory.ecr_repository_arn != ''
   - append:
-      tag: append_related_hosts_from_ebs_volume_kms_key_id
+      tag: append_related_hosts_from_ebs_volume_kms_key_id_52f3dd16
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.ebs_volume_kms_key_id}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.ebs_volume_kms_key_id != null && ctx.xm_cyber.entity_inventory.ebs_volume_kms_key_id != ''
   - append:
-      tag: append_related_hosts_from_secret_rotation_lambda_arn
+      tag: append_related_hosts_from_secret_rotation_lambda_arn_8dd8cd96
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.secret_rotation_lambda_arn}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.secret_rotation_lambda_arn != null && ctx.xm_cyber.entity_inventory.secret_rotation_lambda_arn != ''
   - append:
-      tag: append_related_hosts_from_dns_host_name
+      tag: append_related_hosts_from_dns_host_name_a20327a1
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.dns_host_name}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.dns_host_name != null && ctx.xm_cyber.entity_inventory.dns_host_name != ''
   - append:
-      tag: append_related_hosts_from_fqdn
+      tag: append_related_hosts_from_fqdn_b16fe807
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.fqdn}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.fqdn != null && ctx.xm_cyber.entity_inventory.fqdn != ''
   - append:
-      tag: append_related_hash_from_password_hash
+      tag: append_related_hash_from_password_hash_64a687b4
       field: related.hash
       value: '{{{xm_cyber.entity_inventory.password_hash}}}'
       allow_duplicates: false
       if: ctx.xm_cyber?.entity_inventory?.password_hash != null && ctx.xm_cyber.entity_inventory.password_hash != ''
   - append:
-      tag: append_related_hosts_from_name
+      tag: append_related_hosts_from_name_71fe9007
       field: related.hosts
       value: '{{{xm_cyber.entity_inventory.name}}}'
       allow_duplicates: false
@@ -2053,7 +2053,7 @@ processors:
 
   - remove:
       description: Remove vendor-specific fields that are duplicated to ECS.
-      tag: remove_fields_mapped_to_ecs
+      tag: remove_fields_mapped_to_ecs_8d108254
       ignore_missing: true
       field:
         # ----- host.* sources -----
@@ -2108,7 +2108,7 @@ processors:
 
   # ----- Drop null/empty leaf values from the document -----
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_547f54ab
       description: Drop null/empty leaf values from the document.
       lang: painless
       source: |-
@@ -2135,31 +2135,31 @@ processors:
         handleMap(ctx);
 
   - append:
-      tag: append_preserve_on_collector_error
+      tag: append_preserve_on_collector_error_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
   - set:
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 
 on_failure:
   - append:
-      tag: pipeline_on_failure_error_message
+      tag: pipeline_on_failure_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_pipeline_error_to_event_kind_d879010c
+      tag: set_pipeline_error_to_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_on_failure_preserve_original
+      tag: pipeline_on_failure_preserve_original_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

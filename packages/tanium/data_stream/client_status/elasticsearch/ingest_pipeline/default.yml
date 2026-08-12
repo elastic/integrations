@@ -2,41 +2,41 @@
 description: Pipeline for processing Client Status logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - append:
-      tag: append_event_kind
+      tag: append_event_kind_6cc5985b
       field: event.kind
       value: state
       allow_duplicates: false
   - set:
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - rename:
-      tag: rename_message
+      tag: rename_message_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
-      tag: json_event_original
+      tag: json_event_original_6ef32e07
       field: event.original
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_9215cfc1
+            tag: append_error_message_1379d1ee
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_status
+      tag: rename_json_status_3ccee5cf
       field: json.Status
       target_field: tanium.client_status.value
       ignore_missing: true
   - date:
-      tag: date_json_lastregistration
+      tag: date_json_lastregistration_890bb9f0
       field: json.LastRegistration
       target_field: tanium.client_status.last_registration
       if: ctx.json?.LastRegistration!= null && ctx.json.LastRegistration!= ''
@@ -44,151 +44,151 @@ processors:
         - ISO8601
       on_failure:
         - append:
-            tag: append_error_message_866904b8
+            tag: append_error_message_d188408a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_protocolversion
+      tag: convert_json_protocolversion_5625d837
       field: json.ProtocolVersion
       target_field: tanium.client_status.protocol_version
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_df36b90d
+            tag: append_error_message_91f0a58c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_validkey
+      tag: convert_json_validkey_b3dffb91
       field: json.ValidKey
       target_field: tanium.client_status.valid_key
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_db2314da
+            tag: append_error_message_8f7d60aa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_registeredwithtls
+      tag: convert_json_registeredwithtls_e394b056
       field: json.RegisteredWithTLS
       target_field: tanium.client_status.registered_with_tLS
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_68dd8bf7
+            tag: append_error_message_26016b28
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_sendstate
+      tag: rename_json_sendstate_43c401ec
       field: json.SendState
       target_field: tanium.client_status.send_state
       ignore_missing: true
   - rename:
-      tag: rename_json_receivestate
+      tag: rename_json_receivestate_ed83f560
       field: json.ReceiveState
       target_field: tanium.client_status.receive_state
       ignore_missing: true
   - rename:
-      tag: rename_json_fullversion
+      tag: rename_json_fullversion_5be5df9c
       field: json.FullVersion
       target_field: tanium.client_status.full_version
       ignore_missing: true
   - rename:
-      tag: rename_json_hostname
+      tag: rename_json_hostname_6b3bbbae
       field: json.HostName
       target_field: tanium.client_status.host_name
       ignore_missing: true
   - set:
-      tag: set_host_name
+      tag: set_host_name_a4ec1777
       field: host.name
       copy_from: tanium.client_status.host_name
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts
+      tag: append_related_hosts_6dcd7c16
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
   - rename:
-      tag: rename_json_computerid
+      tag: rename_json_computerid_803c495b
       field: json.ComputerId
       target_field: tanium.client_status.computer_id
       ignore_missing: true
   - set:
-      tag: set_host_id
+      tag: set_host_id_9eb99873
       field: host.id
       copy_from: tanium.client_status.computer_id
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts_2
+      tag: append_related_hosts_2_b53d274b
       field: related.hosts
       value: '{{{host.id}}}'
       if: ctx.host?.id != null
       allow_duplicates: false
   - convert:
-      tag: convert_json_clientnetworklocation
+      tag: convert_json_clientnetworklocation_8c97d8f1
       field: json.ClientNetworkLocation
       target_field: tanium.client_status.client_network_location
       type: ip
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_0ab1b819
+            tag: append_error_message_6ab40b50
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_client_ip
+      tag: set_client_ip_72a0255d
       field: client.ip
       copy_from: tanium.client_status.client_network_location
       ignore_empty_value: true
   - append:
-      tag: append_related_ip
+      tag: append_related_ip_a8eb3233
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
   - convert:
-      tag: convert_json_servernetworklocation
+      tag: convert_json_servernetworklocation_9ef4408b
       field: json.ServerNetworkLocation
       target_field: tanium.client_status.server_network_location
       type: ip
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_3f62818d
+            tag: append_error_message_b245a408
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_server_ip
+      tag: set_server_ip_db3179ad
       field: server.ip
       copy_from: tanium.client_status.server_network_location
       ignore_empty_value: true
   - append:
-      tag: append_related_ip_2
+      tag: append_related_ip_2_801a57bb
       field: related.ip
       value: '{{{server.ip}}}'
       if: ctx.server?.ip != null
       allow_duplicates: false
   - append:
-      tag: append_event_kind_2
+      tag: append_event_kind_2_c23e36e0
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
-      tag: remove_json
+      tag: remove_json_94dc55cd
       field: json
       ignore_missing: true
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_b58653c6
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tanium.client_status.host_name
@@ -197,7 +197,7 @@ processors:
         - tanium.client_status.server_network_location
       ignore_missing: true
   - script:
-      tag: script_drops_null_empty_values_recursively
+      tag: script_drops_null_empty_values_recursively_53dd9140
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -216,16 +216,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

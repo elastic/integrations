@@ -2,238 +2,238 @@
 description: Pipeline for mapping Sysdig fields to ECS / sysdig-namespaced fields
 processors:
 - set:
-    tag: set_event_kind_39295792
+    tag: set_event_kind_ab1166ce
     field: event.kind
     value: 'alert'
 - json:
-    tag: json_message_to_json_35b459f0
+    tag: json_message_to_json_9973aadf
     field: message
     target_field: json
     if: ctx.message != null
 - rename:
-    tag: rename_json_to_sysdig_1710e84c
+    tag: rename_json_to_sysdig_a0a0a57a
     field: json
     target_field: sysdig
 - dot_expander:
     field: '*'
     path: sysdig.content
-    tag: primary_doc_expander_for_sysdig_content
+    tag: primary_doc_expander_for_sysdig_content_86cb84d1
     ignore_failure: true
 - dot_expander:
     field: '*'
     path: sysdig.labels
-    tag: primary_doc_expander_for_sysdig_labels
+    tag: primary_doc_expander_for_sysdig_labels_f906ce2e
     ignore_failure: true
 - set:
-    tag: set_event_id_4e2d09de
+    tag: set_event_id_6dedc75c
     field: event.id
     copy_from: sysdig.id
     ignore_empty_value: true
 - set:
-    tag: set_event_provider_5ca6a152
+    tag: set_event_provider_585a5b4f
     field: event.provider
     copy_from: sysdig.source
     ignore_empty_value: true
 - set:
-    tag: set_event_severity_4ee5c8aa
+    tag: set_event_severity_3252076d
     field: event.severity
     copy_from: sysdig.severity
     ignore_empty_value: true
 - set:
-    tag: set_log_syslog_severity_code_b4e765ba
+    tag: set_log_syslog_severity_code_12312b81
     field: log.syslog.severity.code
     copy_from: sysdig.severity
     ignore_empty_value: true
 - set:
-    tag: set_log_syslog_severity_name_da85efdf
+    tag: set_log_syslog_severity_name_fa9d6084
     field: log.syslog.severity.name
     value: "emergency"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 0"
 - set:
-    tag: set_log_syslog_severity_name_642772f7
+    tag: set_log_syslog_severity_name_7d95e1c9
     field: log.syslog.severity.name
     value: "alert"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 1"
 - set:
-    tag: set_log_syslog_severity_name_cf41ab69
+    tag: set_log_syslog_severity_name_6a389b94
     field: log.syslog.severity.name
     value: "critical"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 2"
 - set:
-    tag: set_log_syslog_severity_name_9e8c89c5
+    tag: set_log_syslog_severity_name_0c8f01b3
     field: log.syslog.severity.name
     value: "error"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 3"
 - set:
-    tag: set_log_syslog_severity_name_aeeadf54
+    tag: set_log_syslog_severity_name_0832b1c9
     field: log.syslog.severity.name
     value: "warning"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 4"
 - set:
-    tag: set_log_syslog_severity_name_704dceab
+    tag: set_log_syslog_severity_name_9bf2e497
     field: log.syslog.severity.name
     value: "notice"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 5"
 - set:
-    tag: set_log_syslog_severity_name_560ad8cf
+    tag: set_log_syslog_severity_name_eaa61b2f
     field: log.syslog.severity.name
     value: "informational"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 6"
 - set:
-    tag: set_log_syslog_severity_name_902e73c2
+    tag: set_log_syslog_severity_name_2aafe6a3
     field: log.syslog.severity.name
     value: "debug"
     if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 7"
 - set:
-    tag: set_rule_author_c12afa79
+    tag: set_rule_author_62ce607e
     field: rule.author
     value: ["{{{sysdig.content.policyOrigin}}}"]
     ignore_empty_value: true
 - set:
-    tag: set_rule_name_d7651e2b
+    tag: set_rule_name_d6866c66
     field: rule.name
     copy_from: sysdig.content.ruleName
     ignore_empty_value: true
 - convert:
-    tag: convert_sysdig_content_policyVersion_to_rule_version_7939b676
+    tag: convert_sysdig_content_policyVersion_to_rule_version_ea5300d2
     target_field: rule.version
     field: sysdig.content.policyVersion
     type: string
     ignore_missing: true
 - set:
-    tag: set_rule_category_4d68a38f
+    tag: set_rule_category_7fd0e2de
     field: rule.category
     copy_from: sysdig.content.ruleType
     ignore_empty_value: true
 - set:
-    tag: set_rule_ruleset_735b8683
+    tag: set_rule_ruleset_e3f8dcd2
     field: rule.ruleset
     copy_from: sysdig.name
     ignore_empty_value: true
 - set:
-    tag: set_sysdig_event_description_92d5eadb
+    tag: set_sysdig_event_description_b8522d09
     field: sysdig.event.description
     copy_from: sysdig.description
     ignore_empty_value: true
 - set:
-    tag: set_sysdig_event_category_3d2e0a89
+    tag: set_sysdig_event_category_b302eab3
     field: sysdig.event.category
     copy_from: sysdig.category
     ignore_empty_value: true
 - set:
-    tag: set_sysdig_event_type_ba302f3d
+    tag: set_sysdig_event_type_3b5f57dd
     field: sysdig.event.type
     copy_from: sysdig.type
     ignore_empty_value: true
 - set:
-    tag: set_tags_b539565b
+    tag: set_tags_8d6fb7b7
     field: tags
     copy_from: sysdig.content.ruleTags
     ignore_empty_value: true
 - convert:
-    tag: convert_sysdig_agentId_to_agent_id_1ae7cc8d
+    tag: convert_sysdig_agentId_to_agent_id_0880da51
     target_field: agent.id
     field: sysdig.agentId
     type: string
     ignore_missing: true
 - set:
-    tag: set_host_id_444e9e79
+    tag: set_host_id_2615cdbe
     field: host.id
     copy_from: sysdig.machineId
     ignore_empty_value: true
 - append:
-    tag: append_host_mac_6027b0dd
+    tag: append_host_mac_117e08a6
     field: host.mac
     value: "{{{sysdig.hostMac}}}"
     if: ctx.sysdig?.hostMac != null
 - gsub:
-    tag: gsub_host_mac_d1faae6a
+    tag: gsub_host_mac_a9688a5e
     field: host.mac
     pattern: '[-:.]'
     replacement: '-'
     ignore_missing: true
 - uppercase:
-    tag: uppercase_host_mac_73cd4413
+    tag: uppercase_host_mac_375e4c11
     field: host.mac
     ignore_missing: true
 - set:
-    tag: set_host_name_47ac0a4f
+    tag: set_host_name_3961d984
     field: host.name
     copy_from: sysdig.labels.host.hostName
     ignore_empty_value: true
 - set:
-    tag: set_container_id_4127a1ee
+    tag: set_container_id_1c5beef9
     field: container.id
     copy_from: sysdig.containerId
     ignore_empty_value: true
 - set:
-    tag: set_container_image_tag_0d0f8d7c
+    tag: set_container_image_tag_2e15d66a
     field: container.image.tag
     copy_from: sysdig.content.fields.container.image.tag
     ignore_empty_value: true
 - set:
-    tag: set_container_image_name_9705f777
+    tag: set_container_image_name_3f6b6fdd
     field: container.image.name
     copy_from: sysdig.content.fields.container.name
     ignore_empty_value: true
 - set:
-    tag: set_message_1e35db1b
+    tag: set_message_699b53c0
     field: message
     copy_from: sysdig.content.output
     ignore_empty_value: true
 - set:
-    tag: set_process_executable_9e3aa26a
+    tag: set_process_executable_6439deb4
     field: process.executable
     copy_from: sysdig.content.fields.proc.exepath
     ignore_empty_value: true
 - set:
-    tag: set_process_working_directory_6ed2d4f0
+    tag: set_process_working_directory_4684141f
     field: process.working_directory
     copy_from: sysdig.content.fields.proc.cwd
     ignore_empty_value: true
 - set:
-    tag: set_process_pid_177cf63b
+    tag: set_process_pid_716b3195
     field: process.pid
     copy_from: sysdig.content.fields.proc.pid
     ignore_empty_value: true
 - set:
-    tag: set_process_name_9cd5ca17
+    tag: set_process_name_29720103
     field: process.name
     copy_from: sysdig.content.fields.proc.name
     ignore_empty_value: true
 - set:
-    tag: set_process_command_line_77f6b6cb
+    tag: set_process_command_line_045399b5
     field: process.command_line
     copy_from: sysdig.content.fields.proc.cmdline
     ignore_empty_value: true
 - set:
-    tag: set_process_parent_pid_f4d496a5
+    tag: set_process_parent_pid_ddb1c2e7
     field: process.parent.pid
     copy_from: sysdig.content.fields.proc.ppid
     ignore_empty_value: true
 - set:
-    tag: set_process_parent_name_7e1701b9
+    tag: set_process_parent_name_b5d14b40
     field: process.parent.name
     copy_from: sysdig.content.fields.proc.pname
     ignore_empty_value: true
 - set:
-    tag: set_process_parent_command_line_ecad4c5f
+    tag: set_process_parent_command_line_d5a8d2fa
     field: process.parent.command_line
     copy_from: sysdig.content.fields.proc.pcmdline
     ignore_empty_value: true
 - set:
-    tag: set_user_id_0870ad57
+    tag: set_user_id_00f60f2c
     field: user.id
     copy_from: sysdig.content.fields.user.uid
     ignore_empty_value: true
 - set:
-    tag: set_user_name_400638b0
+    tag: set_user_name_c3172853
     field: user.name
     copy_from: sysdig.content.fields.user.name
     ignore_empty_value: true
 - script:
     lang: painless
-    tag: 'painless_set_threat_technique_id'
+    tag: painless_set_threat_technique_id_ae8d9e23
     if: ctx.sysdig?.content?.ruleTags != null
     source: |
         def mitreRegex = /T\d{4}/;
@@ -246,94 +246,94 @@ processors:
             }
         }
 - set:
-    tag: set_cloud_account_id_0c155598
+    tag: set_cloud_account_id_11b398e5
     field: cloud.account.id
     copy_from: sysdig.labels.cloudProvider.account.id
     ignore_empty_value: true
 - set:
-    tag: set_cloud_availability_zone_38241635
+    tag: set_cloud_availability_zone_aa2d1069
     field: cloud.availability_zone
     copy_from: sysdig.labels.gcp.availabilityZone
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.cloudProvider?.name != null && ctx.sysdig?.labels?.cloudProvider?.name == "gcp"
 - set:
-    tag: set_cloud_instance_id_056f4c02
+    tag: set_cloud_instance_id_033a572d
     field: cloud.instance.id
     copy_from: sysdig.labels.gcp.instanceId
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.gcp?.instanceId != null
 - set:
-    tag: set_cloud_instance_id_af6a651a
+    tag: set_cloud_instance_id_6159eb3f
     field: cloud.instance.id
     copy_from: sysdig.labels.azure.instanceId
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.azure?.instanceId != null
 - set:
-    tag: set_cloud_instance_name_a7a6c7b4
+    tag: set_cloud_instance_name_0fefdb82
     field: cloud.instance.name
     copy_from: sysdig.labels.gcp.instanceName
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.gcp?.instanceName != null
 - set:
-    tag: set_cloud_instance_name_fef4858b
+    tag: set_cloud_instance_name_45f57eac
     field: cloud.instance.name
     copy_from: sysdig.labels.gcp.instanceName
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.azure?.instanceName != null
 - set:
-    tag: set_cloud_machine_type_b96444fd
+    tag: set_cloud_machine_type_0eba812a
     field: cloud.machine.type
     copy_from: sysdig.labels.gcp.machineType
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.gcp?.machineType != null
 - set:
-    tag: set_cloud_machine_type_47970337
+    tag: set_cloud_machine_type_55e1af7c
     field: cloud.machine.type
     copy_from: sysdig.labels.azure.instanceSize
     ignore_empty_value: true
     if: ctx.sysdig?.labels?.azure?.instanceSize != null
 - set:
-    tag: set_cloud_project_id_ca1bb550
+    tag: set_cloud_project_id_ef078912
     field: cloud.project.id
     copy_from: sysdig.labels.gcp.projectId
     ignore_empty_value: true
 - set:
-    tag: set_cloud_project_name_62680a3c
+    tag: set_cloud_project_name_404235de
     field: cloud.project.name
     copy_from: sysdig.labels.gcp.projectName
     ignore_empty_value: true
 - set:
-    tag: set_cloud_provider_123f9590
+    tag: set_cloud_provider_2fc1bf48
     field: cloud.provider
     copy_from: sysdig.labels.cloudProvider.name
     ignore_empty_value: true
 - set:
-    tag: set_cloud_region_8e8f7764
+    tag: set_cloud_region_836482ce
     field: cloud.region
     copy_from: sysdig.labels.cloudProvider.region
     ignore_empty_value: true
 - set:
-    tag: set_orchestrator_cluster_name_e53ffe69
+    tag: set_orchestrator_cluster_name_9109ca5d
     field: orchestrator.cluster.name
     copy_from: sysdig.labels.kubernetes.cluster.name
     ignore_empty_value: true
 - set:
-    tag: set_orchestrator_namespace_39e271de
+    tag: set_orchestrator_namespace_80833453
     field: orchestrator.namespace
     copy_from: sysdig.labels.kubernetes.namespace.name
     ignore_empty_value: true
 - set:
-    tag: set_orchestrator_resource_name_5b33c340
+    tag: set_orchestrator_resource_name_5eee2850
     field: orchestrator.resource.name
     copy_from: sysdig.labels.kubernetes.pod.name
     ignore_empty_value: true
 - set:
-    tag: set_orchestrator_resource_parent_type_cb1aac0c
+    tag: set_orchestrator_resource_parent_type_0efcf72c
     field: orchestrator.resource.parent.type
     copy_from: sysdig.labels.kubernetes.workload.type
     ignore_empty_value: true
 - set:
-    tag: set_orchestrator_type_d2e46597
+    tag: set_orchestrator_type_c96d38c1
     field: orchestrator.type
     value: kubernetes
     if: >-
@@ -343,15 +343,15 @@ processors:
         ctx.sysdig?.labels?.kubernetes?.workload?.type != null
 on_failure:
 - append:
-    tag: append_error_message
+    tag: append_error_message_9c9ce5dc
     field: error.message
     value: 'Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"'
 - set:
-    tag: set_event_kind
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
-    tag: append_tags
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false

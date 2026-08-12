@@ -3,14 +3,14 @@ description: Pipeline for processing Playbook Alerts.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - set:
       field: event.kind
-      tag: set_alert_to_event_kind
+      tag: set_alert_to_event_kind_ab1166ce
       value: alert
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -20,36 +20,36 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_ec36929f
       target_field: recordedfuture.playbook_alert
       if: ctx.event?.original != null
       on_failure:
         - append:
-            tag: append_error_message_3f0871ed
+            tag: append_error_message_f533ef19
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: set_panel_status_target_str
+      tag: set_panel_status_target_str_8fcd3db8
       description: Target field may be list of objects or strings hence this will rename if it is a string.
       if: ctx.recordedfuture?.playbook_alert?.panel_status?.targets instanceof List
       source: |-
@@ -60,7 +60,7 @@ processors:
         }
   - script:
       lang: painless
-      tag: set_changes_field
+      tag: set_changes_field_f8c747d0
       description: Target field may be list of objects or strings hence this will rename if it is a string.
       if: ctx.recordedfuture?.playbook_alert?.panel_log_v2 instanceof List
       source: |-
@@ -90,462 +90,462 @@ processors:
   - foreach:
       field: recordedfuture.playbook_alert.panel_action
       if: ctx.recordedfuture?.playbook_alert?.panel_action instanceof List
-      tag: foreach_panel_action
+      tag: foreach_panel_action_44e90ace
       processor:
         append:
           field: related.user
-          tag: append_panel_action_assignee_name_into_related_user
+          tag: append_panel_action_assignee_name_into_related_user_43c068f7
           value: '{{{_ingest._value.assignee_name}}}'
           allow_duplicates: false
   - foreach:
       field: recordedfuture.playbook_alert.panel_action
       if: ctx.recordedfuture?.playbook_alert?.panel_action instanceof List
-      tag: foreach_panel_action_67da7ea2
+      tag: foreach_panel_action_d1dfefb0
       processor:
         date:
           field: _ingest._value.updated
-          tag: date_panel_action_updated
+          tag: date_panel_action_updated_018c52ea
           target_field: _ingest._value.updated
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_updated
+                tag: remove_ingest_value_updated_4ce32847
                 field: _ingest._value.updated
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_dns.ip_list
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_dns?.ip_list instanceof List
-      tag: foreach_panel_evidence_dns_ip_list
+      tag: foreach_panel_evidence_dns_ip_list_4a1620cf
       processor:
         convert:
           field: _ingest._value.risk_score
-          tag: convert_panel_evidence_dns_ip_list_risk_score_to_long
+          tag: convert_panel_evidence_dns_ip_list_risk_score_to_long_c7400192
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_risk_score
+                tag: remove_ingest_value_risk_score_c60b2c30
                 field: _ingest._value.risk_score
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_103d6760
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_dns.mx_list
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_dns?.mx_list instanceof List
-      tag: foreach_panel_evidence_dns_mx_list
+      tag: foreach_panel_evidence_dns_mx_list_d344826a
       processor:
         convert:
           field: _ingest._value.risk_score
-          tag: convert_panel_evidence_dns_mx_list_risk_score_to_long
+          tag: convert_panel_evidence_dns_mx_list_risk_score_to_long_7db07658
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_risk_score_ccf067fe
+                tag: remove_ingest_value_risk_score_bbc810d4
                 field: _ingest._value.risk_score
                 ignore_missing: true
             - append:
-                tag: append_error_message_d2fd4ec8
+                tag: append_error_message_4c15ec88
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_dns.ns_list
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_dns?.ns_list instanceof List
-      tag: foreach_panel_evidence_dns_ns_list
+      tag: foreach_panel_evidence_dns_ns_list_fc43475a
       processor:
         convert:
           field: _ingest._value.risk_score
-          tag: convert_panel_evidence_dns_ns_list_risk_score_to_long
+          tag: convert_panel_evidence_dns_ns_list_risk_score_to_long_e46c54d6
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_risk_score_618cb596
+                tag: remove_ingest_value_risk_score_c39d1a32
                 field: _ingest._value.risk_score
                 ignore_missing: true
             - append:
-                tag: append_error_message_7a577348
+                tag: append_error_message_c754e9d7
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.name
-      tag: set_host_name_from_playbook_alert_panel_evidence_summary_compromised_host_computer_name
+      tag: set_host_name_from_playbook_alert_panel_evidence_summary_compromised_host_computer_name_e4ab0eb1
       copy_from: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.computer_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - date:
       field: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date
-      tag: date_panel_evidence_summary_compromised_host_exfiltration_date
+      tag: date_panel_evidence_summary_compromised_host_exfiltration_date_7fa31a96
       target_field: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date
       formats:
         - ISO8601
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.compromised_host?.exfiltration_date != null && ctx.recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date != ''
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_compromised_host_exfiltration_date_9a922226
+            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_compromised_host_exfiltration_date_3e7c3cf0
             field: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date
         - append:
-            tag: append_error_message_9579a2db
+            tag: append_error_message_8415356f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_playbook_alert_panel_evidence_summary_compromised_host_os
+      tag: set_host_os_full_from_playbook_alert_panel_evidence_summary_compromised_host_os_1121e4d7
       copy_from: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.os
       ignore_empty_value: true
   - convert:
       field: recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.effectively_clear
-      tag: convert_panel_evidence_summary_exposed_secret_effectively_clear_to_boolean
+      tag: convert_panel_evidence_summary_exposed_secret_effectively_clear_to_boolean_a1669b58
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_exposed_secret_effectively_clear_e6f926ed
+            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_exposed_secret_effectively_clear_8eba7f49
             field: recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.effectively_clear
         - append:
-            tag: append_error_message_82a84066
+            tag: append_error_message_a74cfb40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: recordedfuture.playbook_alert.panel_evidence_summary.infrastructure.ip
-      tag: convert_panel_evidence_summary_infrastructure_ip_to_ip
+      tag: convert_panel_evidence_summary_infrastructure_ip_to_ip_b9764ea5
       type: ip
       ignore_missing: true
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.infrastructure?.ip != ''
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_infrastructure_ip_948893a1
+            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_infrastructure_ip_3baeea7a
             field: recordedfuture.playbook_alert.panel_evidence_summary.infrastructure.ip
         - append:
-            tag: append_error_message_3d8b2a1b
+            tag: append_error_message_e8b87075
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_infrastructure_ip_into_related_ip
+      tag: append_infrastructure_ip_into_related_ip_f2d50993
       value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.infrastructure.ip}}}'
       allow_duplicates: false
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.infrastructure?.ip != null
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_summary.insikt_notes
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.insikt_notes instanceof List
-      tag: foreach_evidence_summary_insikt_notes
+      tag: foreach_evidence_summary_insikt_notes_aa2a46d5
       processor:
         date:
           field: _ingest._value.published
-          tag: date_panel_evidence_summary_insikt_notes_published
+          tag: date_panel_evidence_summary_insikt_notes_published_e7dd2371
           target_field: _ingest._value.published
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_published
+                tag: remove_ingest_value_published_056ab9b2
                 field: _ingest._value.published
                 ignore_missing: true
   - append:
       field: threat.indicator.id
-      tag: append_recordedfuture_playbook_alert_panel_evidence_summary_malware_family_id_into_threat_indicator_id
+      tag: append_recordedfuture_playbook_alert_panel_evidence_summary_malware_family_id_into_threat_indicator_id_d479218e
       value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.malware_family.id}}}'
       allow_duplicates: false
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.malware_family?.id != null
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name_from_playbook_alert_panel_evidence_summary_malware_family_name
+      tag: set_threat_indicator_name_from_playbook_alert_panel_evidence_summary_malware_family_name_130c03a9
       copy_from: recordedfuture.playbook_alert.panel_evidence_summary.malware_family.name
       ignore_empty_value: true
   - date:
       field: recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration
-      tag: date_panel_evidence_summary_reregistration_expiration
+      tag: date_panel_evidence_summary_reregistration_expiration_2ff82a83
       target_field: recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration
       formats:
         - ISO8601
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.reregistration?.expiration != null && ctx.recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration != ''
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_reregistration_expiration_2a911736
+            tag: remove_recordedfuture_playbook_alert_panel_evidence_summary_reregistration_expiration_7583da99
             field: recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration
         - append:
-            tag: append_error_message_ee835339
+            tag: append_error_message_56e810a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_summary.resolved_record_list
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.resolved_record_list instanceof List
-      tag: foreach_panel_evidence_summary_resolved_record_list
+      tag: foreach_panel_evidence_summary_resolved_record_list_ccdef463
       processor:
         convert:
           field: _ingest._value.risk_score
-          tag: convert_panel_evidence_summary_resolved_record_list_risk_score_to_long
+          tag: convert_panel_evidence_summary_resolved_record_list_risk_score_to_long_6d9b7def
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_risk_score_4d588fc1
+                tag: remove_ingest_value_risk_score_f1d39cd6
                 field: _ingest._value.risk_score
                 ignore_missing: true
             - append:
-                tag: append_error_message_3d35e6c2
+                tag: append_error_message_47d8c7c0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_summary.screenshot_mentions
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshot_mentions instanceof List
-      tag: foreach_panel_evidence_summary_screenshot_mentions
+      tag: foreach_panel_evidence_summary_screenshot_mentions_cf19b0ac
       processor:
         date:
           field: _ingest._value.analyzed
-          tag: date_panel_evidence_summary_screenshot_mentions_analyzed
+          tag: date_panel_evidence_summary_screenshot_mentions_analyzed_c8a871dc
           target_field: _ingest._value.analyzed
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_analyzed
+                tag: remove_ingest_value_analyzed_27f5d0dc
                 field: _ingest._value.analyzed
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_summary.screenshot_mentions
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshot_mentions instanceof List
-      tag: foreach_panel_evidence_summary_screenshot_mentions_dcc526e9
+      tag: foreach_panel_evidence_summary_screenshot_mentions_ab5a6e4f
       processor:
         append:
           field: url.full
-          tag: append_panel_evidence_summary_screenshot_mentions_url_into_url_full
+          tag: append_panel_evidence_summary_screenshot_mentions_url_into_url_full_17e8c81b
           value: '{{{_ingest._value.url}}}'
           allow_duplicates: false
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_summary.screenshots
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshots instanceof List
-      tag: foreach_panel_evidence_summary_evidence_screenshots
+      tag: foreach_panel_evidence_summary_evidence_screenshots_ccea5288
       processor:
         date:
           field: _ingest._value.created
-          tag: date_panel_evidence_summary_screenshots_created
+          tag: date_panel_evidence_summary_screenshots_created_0154a67b
           target_field: _ingest._value.created
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_created
+                tag: remove_ingest_value_created_a55ac3db
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body
+      tag: foreach_panel_evidence_whois_body_e0b60ad2
       processor:
         date:
           field: _ingest._value.added
-          tag: date_panel_evidence_whois_body_added
+          tag: date_panel_evidence_whois_body_added_c76b8928
           target_field: _ingest._value.added
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_added
+                tag: remove_ingest_value_added_ad071299
                 field: _ingest._value.added
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body_42033755
+      tag: foreach_panel_evidence_whois_body_1a056fb6
       processor:
         date:
           field: _ingest._value.removed
-          tag: date_panel_evidence_whois_body_removed
+          tag: date_panel_evidence_whois_body_removed_09e214ae
           target_field: _ingest._value.removed
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_removed
+                tag: remove_ingest_value_removed_7ce5c06f
                 field: _ingest._value.removed
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body_2dc5c6f6
+      tag: foreach_panel_evidence_whois_body_e2995619
       processor:
         date:
           field: _ingest._value.value.createdDate
-          tag: date_panel_evidence_whois_body_value_createdDate
+          tag: date_panel_evidence_whois_body_value_createdDate_285c487a
           target_field: _ingest._value.value.createdDate
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_value_createdDate
+                tag: remove_ingest_value_value_createdDate_05ef21e0
                 field: _ingest._value.value.createdDate
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body_f1f5553a
+      tag: foreach_panel_evidence_whois_body_32d3957e
       processor:
         date:
           field: _ingest._value.value.expiresDate
-          tag: date_panel_evidence_whois_body_value_expiresDate
+          tag: date_panel_evidence_whois_body_value_expiresDate_ab0c4da6
           target_field: _ingest._value.value.expiresDate
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_value_expiresDate
+                tag: remove_ingest_value_value_expiresDate_f20c9c59
                 field: _ingest._value.value.expiresDate
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body_12051d0e
+      tag: foreach_panel_evidence_whois_body_992eaf90
       processor:
         convert:
           field: _ingest._value.value.privateRegistration
-          tag: convert_panel_evidence_whois_body_value_privateRegistration_to_boolean
+          tag: convert_panel_evidence_whois_body_value_privateRegistration_to_boolean_3ac8fcea
           target_field: _ingest._value.value.privateRegistration
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_value_privateRegistration
+                tag: remove_ingest_value_value_privateRegistration_92efb7d3
                 field: _ingest._value.value.privateRegistration
                 ignore_missing: true
             - append:
-                tag: append_error_message_ea3f83a8
+                tag: append_error_message_8012f9ad
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body_62c2f60f
+      tag: foreach_panel_evidence_whois_body_0240630d
       processor:
         append:
           field: related.user
-          tag: append_contact_email_into_related_user
+          tag: append_contact_email_into_related_user_341dc401
           value: '{{{_ingest._value.value.contact_email}}}'
           allow_duplicates: false
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_whois.body
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
-      tag: foreach_panel_evidence_whois_body_7cda7e5a
+      tag: foreach_panel_evidence_whois_body_82d69b8d
       processor:
         date:
           field: _ingest._value.value.updatedDate
-          tag: date_panel_evidence_whois_body_value_updatedDate
+          tag: date_panel_evidence_whois_body_value_updatedDate_1eb43ef6
           target_field: _ingest._value.value.updatedDate
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_value_updatedDate
+                tag: remove_ingest_value_value_updatedDate_35f47079
                 field: _ingest._value.value.updatedDate
                 ignore_missing: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_log_v2
       if: ctx.recordedfuture?.playbook_alert?.panel_log_v2 instanceof List
-      tag: foreach_panel_log_v2
+      tag: foreach_panel_log_v2_b72396f1
       processor:
         foreach:
-          tag: foreach_ingest_value_changes
+          tag: foreach_ingest_value_changes_ecc8b712
           field: _ingest._value.changes
           ignore_failure: true
           processor:
             foreach:
-              tag: foreach_ingest_value_added_contacts
+              tag: foreach_ingest_value_added_contacts_cfefb30e
               field: _ingest._value.added_contacts
               ignore_failure: true
               processor:
                 append:
                   field: related.user
-                  tag: append_email_into_related_user
+                  tag: append_email_into_related_user_4bafed93
                   value: '{{{_ingest._value.email}}}'
                   allow_duplicates: false
   - foreach:
       field: recordedfuture.playbook_alert.panel_log_v2
       if: ctx.recordedfuture?.playbook_alert?.panel_log_v2 instanceof List
-      tag: foreach_panel_log_v2_0d745a14
+      tag: foreach_panel_log_v2_bf015abb
       processor:
         date:
           field: _ingest._value.created
-          tag: date_panel_log_v2_created
+          tag: date_panel_log_v2_created_d87b9a5b
           target_field: _ingest._value.created
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_created_676840fc
+                tag: remove_ingest_value_created_a4649580
                 field: _ingest._value.created
                 ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_playbook_alert_panel_status_case_rule_id
+      tag: set_rule_id_from_playbook_alert_panel_status_case_rule_id_fb2e9bd5
       copy_from: recordedfuture.playbook_alert.panel_status.case_rule_id
       ignore_empty_value: true
   - date:
       field: recordedfuture.playbook_alert.panel_status.created
-      tag: date_panel_status_created
+      tag: date_panel_status_created_82aa043e
       target_field: recordedfuture.playbook_alert.panel_status.created
       formats:
         - ISO8601
       if: ctx.recordedfuture?.playbook_alert?.panel_status?.created != null && ctx.recordedfuture.playbook_alert.panel_status.created != ''
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_status_created_f07d7b59
+            tag: remove_recordedfuture_playbook_alert_panel_status_created_05d97823
             field: recordedfuture.playbook_alert.panel_status.created
         - append:
-            tag: append_error_message_e43f56ad
+            tag: append_error_message_dc7729b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_playbook_alert_panel_status_created
+      tag: set_event_created_from_playbook_alert_panel_status_created_230e57af
       copy_from: recordedfuture.playbook_alert.panel_status.created
       ignore_empty_value: true
   - set:
       field: user.id
-      tag: set_user_id_from_playbook_alert_panel_status_creator_id
+      tag: set_user_id_from_playbook_alert_panel_status_creator_id_1d62d65c
       copy_from: recordedfuture.playbook_alert.panel_status.creator_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_user_id_into_related_user_23cff8dc
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
       field: related.user
-      tag: append_host_os_username_into_related_user
+      tag: append_host_os_username_into_related_user_b1f29791
       value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.os_username}}}'
       allow_duplicates: false
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.compromised_host?.os_username != null
   - append:
       field: related.user
-      tag: append_panel_status_assignee_name_into_related_user
+      tag: append_panel_status_assignee_name_into_related_user_30ff7164
       value: '{{{recordedfuture.playbook_alert.panel_status.assignee_name}}}'
       allow_duplicates: false
       if: ctx.recordedfuture?.playbook_alert?.panel_status?.assignee_name != null
   - set:
       field: user.name
-      tag: set_user_name_from_playbook_alert_panel_status_creator_name
+      tag: set_user_name_from_playbook_alert_panel_status_creator_name_886d2180
       copy_from: recordedfuture.playbook_alert.panel_status.creator_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_177a70c6
       if: ctx.recordedfuture?.playbook_alert?.panel_status?.priority instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -561,61 +561,61 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_6c89da5b
+            tag: append_error_message_3a08cc7a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: recordedfuture.playbook_alert.panel_status.risk_score
-      tag: convert_panel_status_risk_score_to_double
+      tag: convert_panel_status_risk_score_to_double_f49ee103
       type: double
       ignore_missing: true
       if: ctx.recordedfuture?.playbook_alert?.panel_status?.risk_score != ''
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_status_risk_score_4113d475
+            tag: remove_recordedfuture_playbook_alert_panel_status_risk_score_ba28ae5d
             field: recordedfuture.playbook_alert.panel_status.risk_score
         - append:
-            tag: append_error_message_24a0695d
+            tag: append_error_message_074515b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.risk_score
-      tag: set_event_risk_score_from_playbook_alert_panel_status_risk_score
+      tag: set_event_risk_score_from_playbook_alert_panel_status_risk_score_e0d9388c
       copy_from: recordedfuture.playbook_alert.panel_status.risk_score
       ignore_empty_value: true
   - date:
       field: recordedfuture.playbook_alert.panel_status.updated
-      tag: date_panel_status_updated
+      tag: date_panel_status_updated_19f50238
       target_field: recordedfuture.playbook_alert.panel_status.updated
       formats:
         - ISO8601
       if: ctx.recordedfuture?.playbook_alert?.panel_status?.updated != null && ctx.recordedfuture.playbook_alert.panel_status.updated != ''
       on_failure:
         - remove:
-            tag: remove_recordedfuture_playbook_alert_panel_status_updated_4b867d4a
+            tag: remove_recordedfuture_playbook_alert_panel_status_updated_da1d5a0e
             field: recordedfuture.playbook_alert.panel_status.updated
         - append:
-            tag: append_error_message_40fa3593
+            tag: append_error_message_7b16c336
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_playbook_alert_panel_status_updated
+      tag: set_@timestamp_from_playbook_alert_panel_status_updated_35c01d70
       copy_from: recordedfuture.playbook_alert.panel_status.updated
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_playbook_alert_playbook_alert_id
+      tag: set_event_id_from_playbook_alert_playbook_alert_id_e2cbcf18
       copy_from: recordedfuture.playbook_alert.playbook_alert_id
       ignore_empty_value: true
   - foreach:
       field: recordedfuture.playbook_alert.panel_evidence_summary.screenshot_mentions
       if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshot_mentions instanceof List
-      tag: foreach_panel_evidence_summary_screenshots
+      tag: foreach_panel_evidence_summary_screenshots_ae6a1574
       processor:
         remove:
           field: _ingest._value.url
-          tag: remove_custom_duplicate_fields_from_recordedfuture_playbook_alert_panel_evidence_summary_screenshot_mentions
+          tag: remove_custom_duplicate_fields_from_recordedfuture_playbook_alert_panel_evidence_summary_screenshot_mentions_b11c2537
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
@@ -631,13 +631,13 @@ processors:
         - recordedfuture.playbook_alert.panel_status.risk_score
         - recordedfuture.playbook_alert.panel_status.updated
         - recordedfuture.playbook_alert.playbook_alert_id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d7f69209
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -663,18 +663,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message_443d2a30
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -682,10 +682,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind_9e779f68
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

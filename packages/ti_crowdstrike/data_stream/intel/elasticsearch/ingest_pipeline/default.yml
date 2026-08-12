@@ -3,7 +3,7 @@ description: Pipeline for processing Intel logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - remove:
       field:
@@ -12,161 +12,161 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_3410a97a
       value: enrichment
   - append:
       field: event.category
-      tag: append_threat_into_event_category
+      tag: append_threat_into_event_category_8e392818
       value: threat
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_indicator_into_event_type
+      tag: append_indicator_into_event_type_d9f6d523
       value: indicator
       allow_duplicates: false
   - set:
       field: threat.indicator.provider
-      tag: set_threat_indicator_provider
+      tag: set_threat_indicator_provider_c76aab6c
       value: crowdstrike
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
-      tag: remove_message_2ee3a7d4
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_79db01bd
       if: ctx.event?.original != null
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_04014d20
+            tag: append_error_message_d5166ac5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json._marker
-      tag: rename__marker
+      tag: rename__marker_83c6abde
       target_field: ti_crowdstrike.intel._marker
       ignore_missing: true
   - rename:
       field: json.actors
-      tag: rename_actors
+      tag: rename_actors_0d4bbcc3
       target_field: ti_crowdstrike.intel.actors
       ignore_missing: true
   - convert:
       field: json.deleted
-      tag: convert_deleted_to_boolean
+      tag: convert_deleted_to_boolean_04f6d883
       target_field: ti_crowdstrike.intel.deleted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_06c9e7d8
+            tag: append_error_message_987e851c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.domain_types
-      tag: rename_domain_types
+      tag: rename_domain_types_5976df6c
       target_field: ti_crowdstrike.intel.domain_types
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_d5b10ac1
       target_field: ti_crowdstrike.intel.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_intel_id
+      tag: set_event_id_from_intel_id_dc9bb4fb
       copy_from: ti_crowdstrike.intel.id
       ignore_empty_value: true
   - rename:
       field: json.ip_address_types
-      tag: rename_ip_address_types
+      tag: rename_ip_address_types_4ffcab65
       target_field: ti_crowdstrike.intel.ip_address_types
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.ip_address_types
-      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_related_ip
+      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_related_ip_90c73898
       if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_ip_address_types_into_related_ip
+          tag: append_ip_address_types_into_related_ip_cf3cd938
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: related.ip
-      tag: foreach_related_ip
+      tag: foreach_related_ip_096d3aa3
       if: ctx.related?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_related_ip_to_ip
+          tag: convert_related_ip_to_ip_4ac4b428
           type: ip
           on_failure:
             - remove:
-                tag: remove_ingest_value
+                tag: remove_ingest_value_f8fba6a7
                 field: _ingest._value
   - rename:
       field: json.kill_chains
-      tag: rename_kill_chains
+      tag: rename_kill_chains_98addc78
       target_field: ti_crowdstrike.intel.kill_chains
       ignore_missing: true
   - rename:
       field: json.labels
-      tag: rename_labels
+      tag: rename_labels_3a677b0d
       target_field: ti_crowdstrike.intel.labels
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.labels
-      tag: foreach_intel_labels_date_created_on
+      tag: foreach_intel_labels_date_created_on_90ec6827
       if: ctx.ti_crowdstrike?.intel?.labels instanceof List
       processor:
         date:
           field: _ingest._value.created_on
-          tag: date_intel_labels_created_on
+          tag: date_intel_labels_created_on_f08ae153
           target_field: _ingest._value.created_on
           formats:
             - ISO8601
             - UNIX
           on_failure:
             - remove:
-                tag: remove_ingest_value_created_on
+                tag: remove_ingest_value_created_on_90a623e2
                 field: _ingest._value.created_on
                 ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.labels
-      tag: foreach_intel_labels_date_valid_on
+      tag: foreach_intel_labels_date_valid_on_a60b9d6c
       if: ctx.ti_crowdstrike?.intel?.labels instanceof List
       processor:
         date:
           field: _ingest._value.last_valid_on
-          tag: date_intel_labels_valid_on
+          tag: date_intel_labels_valid_on_f5f8450e
           target_field: _ingest._value.last_valid_on
           formats:
             - ISO8601
             - UNIX
           on_failure:
             - remove:
-                tag: remove_ingest_value_last_valid_on
+                tag: remove_ingest_value_last_valid_on_1553e26b
                 field: _ingest._value.last_valid_on
                 ignore_missing: true
   - script:
       lang: painless
-      tag: script-default-deleted_at
+      tag: script-default-deleted_at_de739684
       if: ctx.json?.deleted_at == null && ctx.json?.last_updated != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
       description: Add default deleted_at field.
       source: >
@@ -187,12 +187,12 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_456d75b1
+            tag: append_error_message_c325f3f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.deleted_at
-      tag: date_deleted_at
+      tag: date_deleted_at_e5a95f2f
       target_field: ti_crowdstrike.intel.deleted_at
       formats:
         - ISO8601
@@ -200,38 +200,38 @@ processors:
       if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
       on_failure:
         - append:
-            tag: append_error_message_0b255f15
+            tag: append_error_message_e57ba0c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _conf.ioc_expiration_duration
-      tag: rename_conf_ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration_85e4baec
       target_field: ti_crowdstrike.intel.expiration_duration
       ignore_missing: true
   - date:
       field: json.last_updated
-      tag: date_timestamp
+      tag: date_timestamp_3818aa3b
       formats:
         - ISO8601
         - UNIX
       if: ctx.json?.last_updated != null && ctx.json.last_updated != ''
       on_failure:
         - append:
-            tag: append_error_message_826662e9
+            tag: append_error_message_29006595
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: ti_crowdstrike.intel.last_updated
-      tag: set_@timestamp_from_intel_last_updated
+      tag: set_@timestamp_from_intel_last_updated_f97656b7
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
       field: json.malicious_confidence
-      tag: rename_malicious_confidence
+      tag: rename_malicious_confidence_984f613d
       target_field: ti_crowdstrike.intel.malicious_confidence
       ignore_missing: true
   - script:
-      tag: script_to_set_threat_indicator_confidence
+      tag: script_to_set_threat_indicator_confidence_a3782858
       lang: painless
       if: ctx.ti_crowdstrike?.intel?.malicious_confidence != null
       description: Set threat indicator confidence on the basis of malicious_confidence allowed values (high, medium, low, unverified).
@@ -245,17 +245,17 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_9de8893d
+            tag: append_error_message_54781f05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.malware_families
-      tag: rename_malware_families
+      tag: rename_malware_families_36d4adbc
       target_field: ti_crowdstrike.intel.malware_families
       ignore_missing: true
   - date:
       field: json.published_date
-      tag: date_published_date
+      tag: date_published_date_66baa175
       target_field: ti_crowdstrike.intel.published_date
       formats:
         - ISO8601
@@ -263,70 +263,70 @@ processors:
       if: ctx.json?.published_date != null && ctx.json.published_date != ''
       on_failure:
         - append:
-            tag: append_error_message_4c415385
+            tag: append_error_message_3721402f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.relations
-      tag: rename_relations
+      tag: rename_relations_20cc6449
       target_field: ti_crowdstrike.intel.relations
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.relations
-      tag: foreach_intel_relations
+      tag: foreach_intel_relations_51f5c1d8
       if: ctx.ti_crowdstrike?.intel?.relations instanceof List
       processor:
         date:
           field: _ingest._value.created_date
-          tag: date_intel_relations_created_date
+          tag: date_intel_relations_created_date_373ebe79
           target_field: _ingest._value.created_date
           formats:
             - ISO8601
             - UNIX
           on_failure:
             - remove:
-                tag: remove_ingest_value_created_date
+                tag: remove_ingest_value_created_date_81af9357
                 field: _ingest._value.created_date
                 ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.relations
-      tag: foreach_intel_relations_date_valid_date
+      tag: foreach_intel_relations_date_valid_date_14cf885f
       if: ctx.ti_crowdstrike?.intel?.relations instanceof List
       processor:
         date:
           field: _ingest._value.last_valid_date
-          tag: date_intel_relations_valid_date
+          tag: date_intel_relations_valid_date_4ddf7481
           target_field: _ingest._value.last_valid_date
           formats:
             - ISO8601
             - UNIX
           on_failure:
             - remove:
-                tag: remove_ingest_value_last_valid_date
+                tag: remove_ingest_value_last_valid_date_322f08c8
                 field: _ingest._value.last_valid_date
                 ignore_missing: true
   - rename:
       field: json.reports
-      tag: rename_reports
+      tag: rename_reports_8a0b00fc
       target_field: ti_crowdstrike.intel.reports
       ignore_missing: true
   - rename:
       field: json.targets
-      tag: rename_targets
+      tag: rename_targets_8a40ce76
       target_field: ti_crowdstrike.intel.targets
       ignore_missing: true
   - rename:
       field: json.threat_types
-      tag: rename_threat_types
+      tag: rename_threat_types_291a6b02
       target_field: ti_crowdstrike.intel.threat_types
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_fe935c85
       target_field: ti_crowdstrike.intel.type
       ignore_missing: true
   - script:
-      tag: script_9dcdf0dc
+      tag: script_fc47eb1c
       lang: painless
       if: ctx.ti_crowdstrike?.intel?.type != null
       description: >
@@ -358,99 +358,99 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_56593296
+            tag: append_error_message_7197271b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.indicator
-      tag: rename_indicator
+      tag: rename_indicator_0f6635ab
       target_field: ti_crowdstrike.intel.value
       ignore_missing: true
   - set:
       field: threat.indicator.file.hash.sha256
-      tag: set_threat_indicator_file_hash_sha256
+      tag: set_threat_indicator_file_hash_sha256_6ccb5cd2
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_sha256') && ctx.ti_crowdstrike?.intel?.value != null
   - set:
       field: threat.indicator.file.hash.sha1
-      tag: set_threat_indicator_file_hash_sha1
+      tag: set_threat_indicator_file_hash_sha1_203fb867
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.value != null && ctx.ti_crowdstrike.intel.type.contains('hash_sha1')
   - set:
       field: threat.indicator.file.hash.md5
-      tag: set_threat_indicator_file_hash_md5
+      tag: set_threat_indicator_file_hash_md5_e8b79796
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_md5') && ctx.ti_crowdstrike?.intel?.value != null
   - set:
       field: threat.indicator.url.full
-      tag: set_threat_indicator_url_full
+      tag: set_threat_indicator_url_full_cd93c767
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('url') && ctx.ti_crowdstrike?.intel?.value != null
   - uri_parts:
       field: threat.indicator.url.full
-      tag: uri_parts_threat_indicator_url_full
+      tag: uri_parts_threat_indicator_url_full_24830dbf
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_80fa0662
+            tag: append_error_message_2ecdd223
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type_to_ipv6_addr
+      tag: set_threat_indicator_type_to_ipv6_addr_8181f654
       value: ipv6-addr
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.value != null && ctx.ti_crowdstrike.intel.value.contains(":")
   - convert:
       field: ti_crowdstrike.intel.value
-      tag: convert_intel_value_to_ip_and_set_threat_indicator_ip
+      tag: convert_intel_value_to_ip_and_set_threat_indicator_ip_860ec0d8
       target_field: threat.indicator.ip
       type: ip
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.value != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_e348820f
+            tag: append_error_message_61bd748d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
-      tag: append_intel_value_into_related_hash
+      tag: append_intel_value_into_related_hash_0152c030
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ['hash_ion', 'hash_md5', 'hash_sha256', 'hash_sha1'].contains(ctx.ti_crowdstrike.intel.type)
       allow_duplicates: false
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name
+      tag: set_threat_indicator_name_72739fca
       copy_from: ti_crowdstrike.intel.value
       ignore_empty_value: true
   - rename:
       field: json.vulnerabilities
-      tag: rename_vulnerabilities
+      tag: rename_vulnerabilities_add34977
       target_field: ti_crowdstrike.intel.vulnerabilities
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.vulnerabilities
-      tag: foreach_intel_vulnerabilities
+      tag: foreach_intel_vulnerabilities_3fbd846c
       if: ctx.ti_crowdstrike?.intel?.vulnerabilities instanceof List
       processor:
         append:
           field: vulnerability.id
-          tag: append_vulnerabilities_into_vulnerability-category
+          tag: append_vulnerabilities_into_vulnerability-category_3d5a7a4c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
       field:
         - ti_crowdstrike.intel.id
         - ti_crowdstrike.intel.last_updated
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_cdb228cd
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_1f3b1d54
       lang: painless
       source: |-
         boolean drop(Object object) {
@@ -469,32 +469,32 @@ processors:
       description: Drops null/empty values recursively.
       on_failure:
         - append:
-            tag: append_error_message_0886867f
+            tag: append_error_message_c818c82e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
-      tag: append_event_kind_d2f25e35
+      tag: append_event_kind_acc297e3
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_4889055a
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -3,54 +3,54 @@ description: Pipeline for processing Diagnostic category logs.
 processors:
   - set:
       field: ses.category_name
-      tag: set_category_name
+      tag: set_category_name_7ceae67f
       value: Diagnostic
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_container" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.container != null
-      tag: pipeline_object_container
+      tag: pipeline_object_container_b83c0e23
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_cybox" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.cybox != null
-      tag: pipeline_object_cybox
+      tag: pipeline_object_cybox_35074506
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && (ctx.ses?.device_cloud_vm != null || ctx.ses?.device_location != null || ctx.ses?.device_networks != null)
-      tag: pipeline_object_device
+      tag: pipeline_object_device_0d414bf0
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_process" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.process != null
-      tag: pipeline_object_process
+      tag: pipeline_object_process_17ee38cb
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_session" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && (ctx.ses?.session != null || ctx.ses?.sessions != null)
-      tag: pipeline_object_session
+      tag: pipeline_object_session_f443c12c
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_source" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.source != null
-      tag: pipeline_object_source
+      tag: pipeline_object_source_573b86f8
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
       if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.user != null
-      tag: pipeline_object_user
+      tag: pipeline_object_user_96347160
       ignore_missing_pipeline: true
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

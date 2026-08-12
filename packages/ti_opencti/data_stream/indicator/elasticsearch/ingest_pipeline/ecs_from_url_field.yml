@@ -3,36 +3,36 @@ description: Build ECS fields from a url field
 processors:
 
   - rename:
-      tag: rename__ingest__value_to__tmp_url_original_4d8b49ad
+      tag: rename__ingest__value_to__tmp_url_original_ec2dbcd3
       field: _ingest._value
       target_field: _tmp_url.original
 
   - uri_parts:
-      tag: uri_parts__tmp_url_original_to__tmp_url_3f118dbd
+      tag: uri_parts__tmp_url_original_to__tmp_url_d9398e4c
       field: _tmp_url.original
       target_field: _tmp_url
       keep_original: true
       ignore_failure: true
 
   - remove:
-      tag: remove__tmp_url_user_info_563e99c8
+      tag: remove__tmp_url_user_info_51c0d45a
       field: _tmp_url.user_info
       ignore_missing: true
 
   - registered_domain:
-      tag: registered_domain__tmp_url_domain_to__tmp_url_2141d2a3
+      tag: registered_domain__tmp_url_domain_to__tmp_url_36c78ada
       field: _tmp_url.domain
       target_field: _tmp_url
       ignore_missing: true
 
   - set:
-      tag: set__tmp_url_full_b946e429
+      tag: set__tmp_url_full_9f0329b3
       field: _tmp_url.full
       copy_from: _tmp_url.original
 
   # append object
   - script:
-      tag: script_de8b81a4
+      tag: script_33e60f88
       description: Append to the destination
       lang: painless
       source: |
@@ -42,5 +42,5 @@ processors:
         ctx.threat.indicator.url.add(ctx._tmp_url);
 
   - remove:
-      tag: remove__tmp_url_049933dd
+      tag: remove__tmp_url_591f5f34
       field: _tmp_url

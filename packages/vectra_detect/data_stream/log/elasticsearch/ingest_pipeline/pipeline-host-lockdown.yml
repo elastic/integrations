@@ -2,144 +2,144 @@
 description: Pipeline for processing Vectra Detect Host Lockdown logs.
 processors:
   - set:
-      tag: set_event_kind_de80643c
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - set:
-      tag: set_event_category_ba9b1d84
+      tag: set_event_category_14959316
       field: event.category
       value: [host]
   - set:
-      tag: set_event_type_ec95f7f2
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - rename:
-      tag: rename_json_action_to_vectra_detect_log_action_a3a155e3
+      tag: rename_json_action_to_vectra_detect_log_action_de989a31
       field: json.action
       target_field: vectra_detect.log.action
       ignore_missing: true
   - set:
-      tag: set_event_action_39595d46
+      tag: set_event_action_dd8c3b94
       field: event.action
       copy_from: vectra_detect.log.action
       ignore_empty_value: true
   - convert:
       field: json.success
-      tag: 'convert_success_to_boolean'
+      tag: convert_success_to_boolean_94ca34c4
       target_field: vectra_detect.log.success
       type: boolean
       ignore_missing: true
       if: ctx.json?.success != ''
       on_failure:
         - append:
-            tag: append_error_message_cbaf1f40
+            tag: append_error_message_5e52521d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_outcome_13de38af
+      tag: set_event_outcome_cac3ea39
       field: event.outcome
       value: success
       if: ctx.vectra_detect?.log?.success == true
   - set:
-      tag: set_event_outcome_4c2263a3
+      tag: set_event_outcome_1fa9a391
       field: event.outcome
       value: failure
       if: ctx.vectra_detect?.log?.success == false
   - rename:
-      tag: rename_json_host_name_to_vectra_detect_log_host_name_8bf68b92
+      tag: rename_json_host_name_to_vectra_detect_log_host_name_09171707
       field: json.host_name
       target_field: vectra_detect.log.host.name
       ignore_missing: true
   - set:
-      tag: set_host_hostname_bf4a7eaa
+      tag: set_host_hostname_f2b1d379
       field: host.hostname
       copy_from: vectra_detect.log.host.name
       ignore_empty_value: true
   - rename:
-      tag: rename_json_user_to_vectra_detect_log_user_name_c118b136
+      tag: rename_json_user_to_vectra_detect_log_user_name_498f2b3b
       field: json.user
       target_field: vectra_detect.log.user.name
       ignore_missing: true
   - set:
-      tag: set_user_name_3ba7f22c
+      tag: set_user_name_6ae9abde
       field: user.name
       copy_from: vectra_detect.log.user.name
       ignore_empty_value: true
   - rename:
-      tag: rename_json_category_to_vectra_detect_log_category_ffa4bf2b
+      tag: rename_json_category_to_vectra_detect_log_category_d7208fbe
       field: json.category
       target_field: vectra_detect.log.category
       ignore_missing: true
   - convert:
       field: json.will_retry
-      tag: 'convert_will_retry_to_boolean'
+      tag: convert_will_retry_to_boolean_bcdb2c87
       target_field: vectra_detect.log.will_retry
       type: boolean
       ignore_missing: true
       if: ctx.json?.will_retry != ''
       on_failure:
         - append:
-            tag: append_error_message_52ee6f9e
+            tag: append_error_message_8ac2f418
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_href_to_vectra_detect_log_href_d5d12613
+      tag: rename_json_href_to_vectra_detect_log_href_c5f1b0a3
       field: json.href
       target_field: vectra_detect.log.href
       ignore_missing: true
   - set:
-      tag: set_event_reference_d36b06ee
+      tag: set_event_reference_1dd82971
       field: event.reference
       copy_from: vectra_detect.log.href
       ignore_empty_value: true
   - uri_parts:
       field: event.reference
-      tag: 'uri_parts_to_split_reference'
+      tag: uri_parts_to_split_reference_14a1e47a
       if: ctx.event?.reference != null
       on_failure:
         - append:
-            tag: append_error_message_526c25fa
+            tag: append_error_message_1da20a05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.host_id
-      tag: 'convert_host_id_to_string'
+      tag: convert_host_id_to_string_99f59525
       target_field: vectra_detect.log.host.id
       ignore_missing: true
       type: string
       if: ctx.json?.host_id != ''
       on_failure:
         - append:
-            tag: append_error_message_4f903c77
+            tag: append_error_message_118b044d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_host_id_04669828
+      tag: set_host_id_85c27938
       field: host.id
       copy_from: vectra_detect.log.host.id
       ignore_empty_value: true
   - rename:
-      tag: rename_json_edr_type_to_vectra_detect_log_edr_type_86cb5853
+      tag: rename_json_edr_type_to_vectra_detect_log_edr_type_79764f53
       field: json.edr_type
       target_field: vectra_detect.log.edr_type
       ignore_missing: true
   - append:
-      tag: append_related_hosts_ca923905
+      tag: append_related_hosts_6f8fa3bb
       field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       if: ctx.host?.hostname != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

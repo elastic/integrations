@@ -2,62 +2,62 @@
 description: Pipeline for processing action history logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - append:
-      tag: append_event_kind
+      tag: append_event_kind_26ec9663
       field: event.kind
       value: event
       allow_duplicates: false
   - set:
-      tag: set_event_category
+      tag: set_event_category_14959316
       field: event.category
       value: [host]
   - set:
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - rename:
-      tag: rename_message
+      tag: rename_message_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
-      tag: json_event_original
+      tag: json_event_original_6ef32e07
       field: event.original
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_9215cfc1
+            tag: append_error_message_1379d1ee
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_issuer
+      tag: rename_json_issuer_c0bf6555
       field: json.Issuer
       target_field: tanium.action_history.issuer
       ignore_missing: true
   - set:
-      tag: set_event_provider
+      tag: set_event_provider_47a1077b
       field: event.provider
       copy_from: tanium.action_history.issuer
       ignore_empty_value: true
   - convert:
-      tag: convert_json_sourceid
+      tag: convert_json_sourceid_ce143bdc
       field: json.SourceId
       target_field: tanium.action_history.source_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_9646f664
+            tag: append_error_message_e9fa8591
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
-      tag: date_json_expiration
+      tag: date_json_expiration_f70577ca
       field: json.Expiration
       target_field: tanium.action_history.expiration
       if: ctx.json?.Expiration!= null && ctx.json.Expiration!= ''
@@ -65,62 +65,62 @@ processors:
         - ISO8601
       on_failure:
         - append:
-            tag: append_error_message_99468734
+            tag: append_error_message_c06cf643
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_event_end
+      tag: set_event_end_48638bde
       field: event.end
       copy_from: tanium.action_history.expiration
       ignore_empty_value: true
   - rename:
-      tag: rename_json_actionname
+      tag: rename_json_actionname_a453a04b
       field: json.ActionName
       target_field: tanium.action_history.action.name
       ignore_missing: true
   - set:
-      tag: set_event_action
+      tag: set_event_action_a6ceece4
       field: event.action
       copy_from: tanium.action_history.action.name
       ignore_empty_value: true
   - rename:
-      tag: rename_json_command
+      tag: rename_json_command_930a0ad5
       field: json.Command
       target_field: tanium.action_history.command
       ignore_missing: true
   - set:
-      tag: set_process_command_line
+      tag: set_process_command_line_68fed50f
       field: process.command_line
       copy_from: tanium.action_history.command
       ignore_empty_value: true
   - rename:
-      tag: rename_json_approver
+      tag: rename_json_approver_1f653e72
       field: json.Approver
       target_field: tanium.action_history.approver
       ignore_missing: true
   - rename:
-      tag: rename_json_status
+      tag: rename_json_status_77090817
       field: json.Status
       target_field: tanium.action_history.status
       ignore_missing: true
   - rename:
-      tag: rename_json_distributeover
+      tag: rename_json_distributeover_ddd2dcc3
       field: json.DistributeOver
       target_field: tanium.action_history.distribute_over
       ignore_missing: true
   - rename:
-      tag: rename_json_packagename
+      tag: rename_json_packagename_9f09c05f
       field: json.PackageName
       target_field: tanium.action_history.package_name
       ignore_missing: true
   - rename:
-      tag: rename_json_comment
+      tag: rename_json_comment_97a4ec52
       field: json.Comment
       target_field: tanium.action_history.comment
       ignore_missing: true
   - date:
-      tag: date_json_starttime
+      tag: date_json_starttime_ae66d661
       field: json.StartTime
       target_field: tanium.action_history.start_time
       if: ctx.json?.StartTime!= null && ctx.json?.StartTime!= ''
@@ -128,17 +128,17 @@ processors:
         - ISO8601
       on_failure:
         - append:
-            tag: append_error_message_c08639fc
+            tag: append_error_message_b9960650
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_event_start
+      tag: set_event_start_72ace0c9
       field: event.start
       copy_from: tanium.action_history.start_time
       ignore_empty_value: true
   - date:
-      tag: date_json_inserttime
+      tag: date_json_inserttime_6309e739
       field: json.InsertTime
       target_field: tanium.action_history.insert_time
       if: ctx.json?.InsertTime!= null && ctx.json.InsertTime!= ''
@@ -146,34 +146,34 @@ processors:
         - ISO8601
       on_failure:
         - append:
-            tag: append_error_message_a5f21498
+            tag: append_error_message_6e326825
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_actionid
+      tag: convert_json_actionid_716004bb
       field: json.ActionId
       target_field: tanium.action_history.action.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_ac3dfd96
+            tag: append_error_message_705f6d76
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - append:
-      tag: append_event_kind_pipeline_error_if_error_message
+      tag: append_event_kind_pipeline_error_if_error_message_c23e36e0
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
-      tag: remove_json
+      tag: remove_json_94dc55cd
       field: json
       ignore_missing: true
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_47be2ce9
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tanium.action_history.expiration
@@ -183,7 +183,7 @@ processors:
         - tanium.action_history.command
       ignore_missing: true
   - script:
-      tag: script_drops_null_empty_values_recursively
+      tag: script_drops_null_empty_values_recursively_853d4e94
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -202,16 +202,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

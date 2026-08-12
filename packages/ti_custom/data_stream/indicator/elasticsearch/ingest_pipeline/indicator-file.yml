@@ -3,7 +3,7 @@ description: Pipeline for processing file STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_file_pattern
+      tag: grok_file_pattern_e9e79f22
       patterns:
         - "(?i:^\\[?file:hashes\\.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:_tmp.md5}'\\]?)"
         - "(?i:^\\[?file:hashes\\.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha1}'\\]?)"
@@ -13,46 +13,46 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_file_hash_md5_020e2187
+      tag: append_threat_indicator_file_hash_md5_9235df51
       field: threat.indicator.file.hash.md5
       value: '{{{ _tmp.md5 }}}'
       if: ctx._tmp?.md5 != null
   - append:
-      tag: append_threat_indicator_file_hash_sha1_82241ac6
+      tag: append_threat_indicator_file_hash_sha1_5eec4572
       field: threat.indicator.file.hash.sha1
       value: '{{{ _tmp.sha1 }}}'
       if: ctx._tmp?.sha1 != null
   - append:
-      tag: append_threat_indicator_file_hash_sha256_964f97bc
+      tag: append_threat_indicator_file_hash_sha256_9b99530c
       field: threat.indicator.file.hash.sha256
       value: '{{{ _tmp.sha256 }}}'
       if: ctx._tmp?.sha256 != null
   - append:
-      tag: append_threat_indicator_file_name_5697343e
+      tag: append_threat_indicator_file_name_a4741204
       field: threat.indicator.file.name
       value: '{{{ _tmp.filename }}}'
       if: ctx._tmp?.filename != null
 
   - append:
-      tag: append_related_hash_8b181b02
+      tag: append_related_hash_843c13f4
       field: related.hash
       value: '{{{ _tmp.md5 }}}'
       if: ctx._tmp?.md5 != null
       allow_duplicates: false
   - append:
-      tag: append_related_hash_31ba49e4
+      tag: append_related_hash_5899d859
       field: related.hash
       value: '{{{ _tmp.sha1 }}}'
       if: ctx._tmp?.sha1 != null
       allow_duplicates: false
   - append:
-      tag: append_related_hash_e260962c
+      tag: append_related_hash_982ccbc9
       field: related.hash
       value: '{{{ _tmp.sha256 }}}'
       if: ctx._tmp?.sha256 != null
       allow_duplicates: false
 
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true

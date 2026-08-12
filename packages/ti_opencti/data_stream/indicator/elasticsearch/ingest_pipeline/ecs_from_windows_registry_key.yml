@@ -3,7 +3,7 @@ description: Build ECS fields from an OpenCTI windows registry key observable
 processors:
 
   - grok:
-      tag: grok__ingest__value_attribute_key_af8a3014
+      tag: grok__ingest__value_attribute_key_dbc4d807
       field: _ingest._value.attribute_key
       patterns:
         - '^(%{HIVE_NAMES:_tmp_registry.hive}\\)?%{GREEDYDATA:_tmp_registry.key}$'
@@ -11,7 +11,7 @@ processors:
         HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
 
   - script:
-      tag: script_7b7767c2
+      tag: script_70c597db
       description: Normalize hive names (ECS uses abbreviated names)
       lang: painless
       params:
@@ -27,7 +27,7 @@ processors:
 
   # append object
   - script:
-      tag: script_caa36794
+      tag: script_0d277fd6
       description: Append to the destination
       lang: painless
       source: |
@@ -37,5 +37,5 @@ processors:
         ctx.threat.indicator.registry.add(ctx._tmp_registry);
 
   - remove:
-      tag: remove__tmp_registry_cc89fb9b
+      tag: remove__tmp_registry_c434c3af
       field: _tmp_registry

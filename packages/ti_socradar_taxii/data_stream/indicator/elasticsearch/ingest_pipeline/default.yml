@@ -3,67 +3,67 @@ description: Pipeline for processing STIX 2.1 IOCs from SOCRadar TAXII
 processors:
   # Fail if error during the CEL program evaluation
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
 
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: '8.17.0'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - append:
-      tag: append_event_category
+      tag: append_event_category_4039b90d
       field: event.category
       value: threat
   - append:
-      tag: append_event_type
+      tag: append_event_type_d4da06cc
       field: event.type
       value: indicator
 
   - set:
-      tag: set_feed_name
+      tag: set_feed_name_dcc20cff
       field: threat.feed.name
       value: SOCRadar TAXII
   - set:
-      tag: set_feed_reference
+      tag: set_feed_reference_50a1f985
       field: threat.feed.reference
       value: https://platform.socradar.com
   - rename:
-      tag: rename_message_to_original
+      tag: rename_message_to_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
-      tag: remove_message
+      tag: remove_message_bc5087de
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
 
   - json:
-      tag: parse_stix_json
+      tag: parse_stix_json_9c427eb0
       field: event.original
       target_field: ti_socradar_taxii.stix
   - drop:
-      tag: drop_non_indicator
+      tag: drop_non_indicator_3aa76d74
       if: >-
         ctx.ti_socradar_taxii.stix.type != 'indicator'
   - drop:
-      tag: drop_non_stix_21
+      tag: drop_non_stix_21_49c13285
       if: >-
         ctx.ti_socradar_taxii.stix.spec_version != null && ctx.ti_socradar_taxii.stix.spec_version != '2.1'
 
   - set:
-      tag: set_event_id
+      tag: set_event_id_e38197a0
       field: event.id
       copy_from: ti_socradar_taxii.stix.id
       ignore_empty_value: true
   - fingerprint:
-      tag: fingerprint_dedup
+      tag: fingerprint_dedup_fde972c6
       fields:
         - ti_socradar_taxii.stix.id
         - ti_socradar_taxii.stix.modified
@@ -71,60 +71,60 @@ processors:
       ignore_missing: true
 
   - date:
-      tag: date_modified_timestamp
+      tag: date_modified_timestamp_fd8461ca
       field: ti_socradar_taxii.stix.modified
       target_field: "@timestamp"
       formats:
         - "ISO8601"
       if: ctx.ti_socradar_taxii.stix.modified != null
   - date:
-      tag: date_created_fallback
+      tag: date_created_fallback_999f0578
       field: ti_socradar_taxii.stix.created
       target_field: "@timestamp"
       formats:
         - "ISO8601"
       if: ctx.ti_socradar_taxii.stix.modified == null && ctx.ti_socradar_taxii.stix.created != null
   - date:
-      tag: date_modified
+      tag: date_modified_183ed20e
       field: ti_socradar_taxii.stix.modified
       target_field: threat.indicator.last_seen
       formats:
         - ISO8601
       if: ctx.ti_socradar_taxii.stix.modified != null
   - set:
-      tag: set_modified_at
+      tag: set_modified_at_84bbc9df
       field: threat.indicator.modified_at
       copy_from: threat.indicator.last_seen
       if: ctx.threat?.indicator?.last_seen != null
   - date:
-      tag: date_valid_from
+      tag: date_valid_from_729f9198
       field: ti_socradar_taxii.stix.valid_from
       target_field: threat.indicator.first_seen
       formats:
         - "ISO8601"
       if: ctx.ti_socradar_taxii.stix.valid_from != null
   - rename:
-      tag: rename_name
+      tag: rename_name_80093fc6
       field: ti_socradar_taxii.stix.name
       target_field: threat.indicator.name
       ignore_missing: true
 
   # Set event.dataset for consistency
   - set:
-      tag: set_event_dataset
+      tag: set_event_dataset_b4b88bd5
       field: event.dataset
       value: ti_socradar_taxii.indicator
   - rename:
-      tag: rename_description
+      tag: rename_description_d4aef92d
       field: ti_socradar_taxii.stix.description
       target_field: threat.indicator.description
       ignore_missing: true
   - set:
-      tag: set_provider
+      tag: set_provider_5642c1ff
       field: threat.indicator.provider
       value: SOCRadar
   - script:
-      tag: script_normalize_confidence
+      tag: script_normalize_confidence_ae3daeed
       lang: painless
       description: Normalize confidence level, fallback to Low when absent.
       source: >
@@ -145,18 +145,18 @@ processors:
           }
         }
   - foreach:
-      tag: foreach_labels
+      tag: foreach_labels_90928f83
       field: ti_socradar_taxii.stix.labels
       if: ctx.ti_socradar_taxii.stix.labels != null
       processor:
         append:
           field: tags
           value: '{{{ _ingest._value }}}'
-          tag: append_tags
+          tag: append_tags_c2c2eac8
       ignore_missing: true
       ignore_failure: true
   - remove:
-      tag: remove_labels
+      tag: remove_labels_96ec95e9
       field: ti_socradar_taxii.stix.labels
       ignore_missing: true
 
@@ -164,7 +164,7 @@ processors:
   # TLP marking-definition IDs are defined by the OASIS STIX 2.1 specification.
   # See: https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_yd3ar14ekwrs
   - script:
-      tag: script_tlp_mapping
+      tag: script_tlp_mapping_f4e046df
       lang: painless
       if: ctx.ti_socradar_taxii.stix?.object_marking_refs != null
       description: Map STIX TLP marking-definition IDs to TLP levels.
@@ -187,14 +187,14 @@ processors:
 
   ## IOC expiration
   - date:
-      tag: date_ioc_expiration_valid_until
+      tag: date_ioc_expiration_valid_until_928a44a2
       field: ti_socradar_taxii.stix.valid_until
       target_field: ti_socradar_taxii.stix.ioc_expiration_date
       formats:
         - ISO8601
       if: ctx.ti_socradar_taxii.stix.valid_until != null
   - set:
-      tag: set_ioc_expiration_revoked
+      tag: set_ioc_expiration_revoked_a34c5071
       field: ti_socradar_taxii.stix.ioc_expiration_date
       copy_from: threat.indicator.modified_at
       ignore_empty_value: true
@@ -203,7 +203,7 @@ processors:
         ctx.ti_socradar_taxii.stix.revoked != null &&
         ctx.ti_socradar_taxii.stix.revoked == true
   - script:
-      tag: script_conf_ioc_expiration
+      tag: script_conf_ioc_expiration_a3af5a2d
       lang: painless
       description: Calculate the IOC expiration date from the configured duration when STIX valid_until is absent.
       if: >-
@@ -248,12 +248,12 @@ processors:
         ctx.ti_socradar_taxii.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
-            tag: append_error_message_d042a0a6
+            tag: append_error_message_b278ab48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
-      tag: script_set_ioc_expiration_reason
+      tag: script_set_ioc_expiration_reason_ff8f1564
       lang: painless
       description: Record which rule (valid_until, revoked, or configured duration) set the IOC expiration date.
       if: ctx.ti_socradar_taxii.stix.ioc_expiration_date != null
@@ -271,7 +271,7 @@ processors:
         }
 
   - date:
-      tag: date_ioc_expiration_date
+      tag: date_ioc_expiration_date_7fd13691
       field: ti_socradar_taxii.stix.ioc_expiration_date
       target_field: ti_socradar_taxii.stix.ioc_expiration_date
       formats:
@@ -279,173 +279,173 @@ processors:
         - UNIX
       on_failure:
         - append:
-            tag: append_error_message_79aadd8d
+            tag: append_error_message_a187a615
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - fail:
-            tag: fail_9faa048a
+            tag: fail_e94bf8dd
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
-      tag: rename_conf_ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration_9b594f5c
       field: _conf.ioc_expiration_duration
       target_field: ti_socradar_taxii.stix.ioc_expiration_duration
       ignore_missing: true
 
   ## IOC type detection from STIX pattern
   - set:
-      tag: set_type_domain
+      tag: set_type_domain_2337986e
       field: threat.indicator.type
       value: domain-name
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[domain-name') == true
   - set:
-      tag: set_type_email_addr
+      tag: set_type_email_addr_8df3ade9
       field: threat.indicator.type
       value: email-addr
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[email-addr') == true || ctx.ti_socradar_taxii.stix.pattern?.startsWith('[email-message') == true
   - set:
-      tag: set_type_file
+      tag: set_type_file_0282fb52
       field: threat.indicator.type
       value: file
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[file') == true
   - set:
-      tag: set_type_ipv4
+      tag: set_type_ipv4_34cff90c
       field: threat.indicator.type
       value: ipv4-addr
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
-      tag: set_type_ipv6
+      tag: set_type_ipv6_a9048e9b
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[ipv6-addr') == true
   - set:
-      tag: set_type_url
+      tag: set_type_url_eea8631d
       field: threat.indicator.type
       value: url
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[url') == true
   - set:
-      tag: set_type_asn
+      tag: set_type_asn_2b25cfbe
       field: threat.indicator.type
       value: autonomous-system
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[autonomous-system') == true
   - set:
-      tag: set_type_windows_registry
+      tag: set_type_windows_registry_7dcf1ae3
       field: threat.indicator.type
       value: windows-registry-key
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[windows-registry-key') == true
   - set:
-      tag: set_type_x509
+      tag: set_type_x509_c86dcb2e
       field: threat.indicator.type
       value: x509-certificate
       if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[x509') == true
 
   - split:
-      tag: split_pattern
+      tag: split_pattern_9a9e8094
       field: ti_socradar_taxii.stix.pattern
       target_field: ti_socradar_taxii.stix._patterns
       separator: '\s+AND\s+|\s+OR\s+'
       if: ctx.threat?.indicator?.type != null && ctx.ti_socradar_taxii.stix.pattern != null
 
   - foreach:
-      tag: foreach_domain
+      tag: foreach_domain_ce39da94
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline
+          tag: pipeline_8aaa6487
           name: '{{ IngestPipeline "indicator-domain-name" }}'
 
   - foreach:
-      tag: foreach_email
+      tag: foreach_email_9bbdb53f
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'email-addr'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_9bc71fde
+          tag: pipeline_721d57f3
           name: '{{ IngestPipeline "indicator-email" }}'
 
   - foreach:
-      tag: foreach_file
+      tag: foreach_file_d093c435
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'file'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_c2ff326c
+          tag: pipeline_501d4b2c
           name: '{{ IngestPipeline "indicator-file" }}'
 
   - foreach:
-      tag: foreach_ip
+      tag: foreach_ip_35f9ac7e
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_8bb6286e
+          tag: pipeline_9da90852
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
-      tag: foreach_url
+      tag: foreach_url_f93545ee
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_b352ba34
+          tag: pipeline_7c4d6d5a
           name: '{{ IngestPipeline "indicator-url" }}'
 
   - foreach:
-      tag: foreach_asn
+      tag: foreach_asn_d452cf5e
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'autonomous-system'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_0cf00012
+          tag: pipeline_34847370
           name: '{{ IngestPipeline "indicator-asn" }}'
   - foreach:
-      tag: foreach_asn_convert
+      tag: foreach_asn_convert_42d93117
       field: threat.indicator.as.number
       if: ctx.threat?.indicator?.type == 'autonomous-system'
       ignore_missing: true
       processor:
         convert:
-          tag: convert_ingest_value
+          tag: convert_ingest_value_734baf29
           field: _ingest._value
           type: long
           ignore_missing: true
 
   - foreach:
-      tag: foreach_windows_registry
+      tag: foreach_windows_registry_38e5599a
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'windows-registry-key'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_a094c64b
+          tag: pipeline_6f0dbb57
           name: '{{ IngestPipeline "indicator-windows-registry" }}'
 
   - foreach:
-      tag: foreach_x509
+      tag: foreach_x509_d1989f19
       field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'x509-certificate'
       ignore_missing: true
       processor:
         pipeline:
-          tag: pipeline_ca67a76d
+          tag: pipeline_e48db629
           name: '{{ IngestPipeline "indicator-x509" }}'
 
   - remove:
-      tag: remove_internal
+      tag: remove_internal_1ef0ca81
       field:
         - _conf
         - ti_socradar_taxii.stix._patterns
       ignore_missing: true
 
   - script:
-      tag: script_unescape_values
+      tag: script_unescape_values_6f0df781
       lang: painless
       description: Unescape backslash-escaped values across all string fields, preserving event.original.
       source: >
@@ -478,12 +478,12 @@ processors:
         if (ctx.event != null && saved_original != null) ctx.event['original'] = saved_original;
   - remove:
       field: event.original
-      tag: remove_event_original
+      tag: remove_event_original_0afd5d5d
       if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
       ignore_missing: true
 
   - script:
-      tag: drop_null_empty_values
+      tag: drop_null_empty_values_9d8aede1
       lang: painless
       description: Drops null/empty values recursively.
       source: >
@@ -502,27 +502,27 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
-      tag: set_event_kind_3f23fb5b
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_bc22adf9
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

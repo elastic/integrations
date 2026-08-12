@@ -3,7 +3,7 @@ description: Pipeline for processing domain-name STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_domain-name_pattern
+      tag: grok_domain-name_pattern_98cbd993
       patterns:
         - "^\\[?domain-name:value%{SPACE}=%{SPACE}'%{DATA:_tmp.url}'\\]?"
         - "^\\[?domain-name:resolves_to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?"
@@ -15,22 +15,22 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_url_original_725964b1
+      tag: append_threat_indicator_url_original_aa2a2861
       field: threat.indicator.url.original
       value: '{{{ _tmp.url }}}'
       if: ctx._tmp?.url != null
   - append:
-      tag: append_threat_indicator_ip_41710de8
+      tag: append_threat_indicator_ip_d0499135
       field: threat.indicator.ip
       value: '{{{ _tmp.ip }}}'
       if: ctx._tmp?.ip != null
   - append:
-      tag: append_related_ip_fb155127
+      tag: append_related_ip_ccb4aece
       field: related.ip
       value: '{{{ _tmp.ip }}}'
       if: ctx._tmp?.ip != null
       allow_duplicates: false
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true

@@ -2,130 +2,130 @@
 description: Pipeline to process tencent_cloud cos logs
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: 8.17.0
   - set:
-      tag: copy_original_message
+      tag: copy_original_message_3e662ec3
       field: originalMessage
       copy_from: message
   - rename:
       ignore_missing: true
       if: ctx.event?.original == null
-      tag: rename_message
+      tag: rename_message_adccacb8
       field: originalMessage
       target_field: event.original
   - remove:
       ignore_missing: true
       if: ctx.event?.original != null
-      tag: remove_copied_message
+      tag: remove_copied_message_a7a9fa3a
       field: originalMessage
   - remove:
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_4f718dc1
       field: message
   - json:
-      tag: json_original
+      tag: json_original_9d282452
       field: event.original
       target_field: tencent_cloud.cos
   - date:
       if: ctx.tencent_cloud?.cos?.__TIMESTAMP__ != null
-      tag: date_processor_tencent_cloud.cos.__TIMESTAMP__
+      tag: date_processor_tencent_cloud.cos.__TIMESTAMP___824f70f4
       field: tencent_cloud.cos.__TIMESTAMP__
       target_field: '@timestamp'
       formats:
         - UNIX_MS
   - convert:
-      tag: convert_tencent_cloud_cos_accountId_to_cloud_account_id_61f9a659
+      tag: convert_tencent_cloud_cos_accountId_to_cloud_account_id_fc1f7627
       ignore_missing: true
       field: tencent_cloud.cos.accountId
       target_field: cloud.account.id
       type: string
   - convert:
-      tag: convert_tencent_cloud_cos_eventVersion_c2d8cc4e
+      tag: convert_tencent_cloud_cos_eventVersion_1bc6da11
       ignore_missing: true
       field: tencent_cloud.cos.eventVersion
       type: string
   - rename:
-      tag: rename_tencent_cloud_cos_eventName_to_event_action_6e5d466f
+      tag: rename_tencent_cloud_cos_eventName_to_event_action_4769f513
       ignore_missing: true
       field: tencent_cloud.cos.eventName
       target_field: event.action
   - rename:
-      tag: rename_tencent_cloud_cos_eventSource_to_event_provider_3182d62c
+      tag: rename_tencent_cloud_cos_eventSource_to_event_provider_8709db0c
       ignore_missing: true
       field: tencent_cloud.cos.eventSource
       target_field: event.provider
   - date:
       if: ctx.tencent_cloud?.cos?.eventTime != null
-      tag: date_processor_tencent_cloud.cos.eventTime
+      tag: date_processor_tencent_cloud.cos.eventTime_acfb501d
       field: tencent_cloud.cos.eventTime
       target_field: event.start
       formats:
         - yyyy-MM-dd'T'HH:mm:ss'Z'
         - ISO8601
   - rename:
-      tag: rename_tencent_cloud_cos_referer_to_http_request_referrer_3cf9187b
+      tag: rename_tencent_cloud_cos_referer_to_http_request_referrer_500f091b
       ignore_missing: true
       field: tencent_cloud.cos.referer
       target_field: http.request.referrer
   - rename:
-      tag: rename_tencent_cloud_cos_remoteIp_to_source_ip_3dca48af
+      tag: rename_tencent_cloud_cos_remoteIp_to_source_ip_309d7a8e
       ignore_missing: true
       field: tencent_cloud.cos.remoteIp
       target_field: source.ip
   - rename:
-      tag: rename_tencent_cloud_cos_reqBytesSent_to_http_request_body_bytes_5b41ea2b
+      tag: rename_tencent_cloud_cos_reqBytesSent_to_http_request_body_bytes_66f7a339
       ignore_missing: true
       field: tencent_cloud.cos.reqBytesSent
       target_field: http.request.body.bytes
   - rename:
-      tag: rename_tencent_cloud_cos_reqMethod_to_http_request_method_5b191afd
+      tag: rename_tencent_cloud_cos_reqMethod_to_http_request_method_65b7b3b7
       ignore_missing: true
       field: tencent_cloud.cos.reqMethod
       target_field: http.request.method
   - rename:
-      tag: rename_tencent_cloud_cos_reqPath_to_url_path_cf16403d
+      tag: rename_tencent_cloud_cos_reqPath_to_url_path_6a8bc3ac
       ignore_missing: true
       field: tencent_cloud.cos.reqPath
       target_field: url.path
   - rename:
-      tag: rename_tencent_cloud_cos_requestId_to_event_id_1f90fbdf
+      tag: rename_tencent_cloud_cos_requestId_to_event_id_82a65651
       ignore_missing: true
       field: tencent_cloud.cos.requestId
       target_field: event.id
   - rename:
-      tag: rename_tencent_cloud_cos_requestUri_to_url_original_52c1368d
+      tag: rename_tencent_cloud_cos_requestUri_to_url_original_11df7d85
       ignore_missing: true
       field: tencent_cloud.cos.requestUri
       target_field: url.original
   - rename:
-      tag: rename_tencent_cloud_cos_requester_to_user_id_df921656
+      tag: rename_tencent_cloud_cos_requester_to_user_id_a3a143a4
       ignore_missing: true
       field: tencent_cloud.cos.requester
       target_field: user.id
   - rename:
-      tag: rename_tencent_cloud_cos_resBytesSent_to_http_response_body_bytes_97e10f21
+      tag: rename_tencent_cloud_cos_resBytesSent_to_http_response_body_bytes_db643f82
       ignore_missing: true
       field: tencent_cloud.cos.resBytesSent
       target_field: http.response.body.bytes
   - rename:
-      tag: rename_tencent_cloud_cos_resHttpCode_to_http_response_status_code_a5a5d50e
+      tag: rename_tencent_cloud_cos_resHttpCode_to_http_response_status_code_4e430e1f
       ignore_missing: true
       field: tencent_cloud.cos.resHttpCode
       target_field: http.response.status_code
   - rename:
-      tag: rename_tencent_cloud_cos_resTotalTime_to_event_duration_46b88f29
+      tag: rename_tencent_cloud_cos_resTotalTime_to_event_duration_419c291b
       ignore_missing: true
       field: tencent_cloud.cos.resTotalTime
       target_field: event.duration
   - rename:
-      tag: rename_tencent_cloud_cos_userAgent_to_user_agent_original_e42b3748
+      tag: rename_tencent_cloud_cos_userAgent_to_user_agent_original_20ae6d0c
       ignore_missing: true
       field: tencent_cloud.cos.userAgent
       target_field: user_agent.original
   - script:
-      tag: script_drop_null_empty_values
+      tag: script_drop_null_empty_values_c676f30e
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -144,12 +144,12 @@ processors:
         dropEmptyFields(ctx);
   - geoip:
       ignore_missing: true
-      tag: geoip_source_ip
+      tag: geoip_source_ip_7280ca8f
       field: source.ip
       target_field: source.geo
   - geoip:
       ignore_missing: true
-      tag: geoip_source_asn
+      tag: geoip_source_asn_6061e8ee
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -158,79 +158,79 @@ processors:
         - organization_name
   - rename:
       ignore_missing: true
-      tag: rename_source_as_asn
+      tag: rename_source_as_asn_89a6ccb5
       field: source.as.asn
       target_field: source.as.number
   - rename:
       ignore_missing: true
-      tag: rename_source_as_organization_name
+      tag: rename_source_as_organization_name_5f3d6ce0
       field: source.as.organization_name
       target_field: source.as.organization.name
   - append:
-      tag: append_event_category_54c53a04
+      tag: append_event_category_b188b787
       field: event.category
       value:
         - database
       allow_duplicates: false
   - append:
-      tag: append_event_type_ef273cf7
+      tag: append_event_type_d69984bd
       field: event.type
       value:
         - access
       allow_duplicates: false
   - append:
-      tag: append_event_category_2c5cae23
+      tag: append_event_category_4f4099c5
       field: event.category
       value:
         - network
       allow_duplicates: false
   - append:
-      tag: append_event_type_51c0ba95
+      tag: append_event_type_bd172629
       field: event.type
       value:
         - connection
       allow_duplicates: false
   - append:
-      tag: append_event_category_255276bf
+      tag: append_event_category_521b9f2f
       field: event.category
       value:
         - file
       allow_duplicates: false
   - append:
-      tag: append_event_type_6adea021
+      tag: append_event_type_634aadf3
       field: event.type
       value:
         - info
       allow_duplicates: false
   - append:
-      tag: append_event_category_822d8339
+      tag: append_event_category_9d2de494
       if: ctx.http?.request?.method == 'GET'
       field: event.category
       value:
         - web
       allow_duplicates: false
   - append:
-      tag: append_event_type_0cc57f6b
+      tag: append_event_type_ca7e64dc
       if: ctx.http?.request?.method == 'GET'
       field: event.type
       value:
         - info
       allow_duplicates: false
   - append:
-      tag: append_related_ip_8121c591
+      tag: append_related_ip_a2ab3b40
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
-      tag: append_related_user_7f407fef
+      tag: append_related_user_7cb6f1f8
       if: ctx.user?.id != null
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
   - remove:
       ignore_missing: true
-      tag: remove_fields
+      tag: remove_fields_e369a920
       field:
         - tencent_cloud.cos.accountId
         - tencent_cloud.cos.__TIMESTAMP__
@@ -238,11 +238,11 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
-      tag: remove_original_event
+      tag: remove_original_event_27875831
       field: event.original
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: >-
         Processor {{{_ingest.on_failure_processor_type}}} with tag
@@ -250,11 +250,11 @@ on_failure:
         {{{_ingest.on_failure_pipeline}}} failed with message:
         {{{_ingest.on_failure_message}}}
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

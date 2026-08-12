@@ -3,47 +3,47 @@ description: Pipeline for processing Incident logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_decoding
+      tag: json_decoding_c86bcc24
       target_field: ses.incident
       on_failure:
         - append:
-            tag: append_error_message_34336b83
+            tag: append_error_message_a102a49c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - ses.incident.incident_uid
         - ses.incident.time
-      tag: fingerprint_processor
+      tag: fingerprint_processor_0a926f29
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - append:
       field: event.category
-      tag: append_malware_into_event_category
+      tag: append_malware_into_event_category_a31008c7
       value: malware
       if: >-
         ctx.ses?.incident?.conclusion != null && [
@@ -57,7 +57,7 @@ processors:
         ].contains(ctx.ses.incident.conclusion.toLowerCase())
   - append:
       field: event.category
-      tag: append_threat_into_event_category
+      tag: append_threat_into_event_category_1410f910
       value: threat
       if: >-
         ctx.ses?.incident?.conclusion != null && [
@@ -67,17 +67,17 @@ processors:
         ].contains(ctx.ses.incident.conclusion.toLowerCase())
   - append:
       field: event.category
-      tag: append_intrusion_detection_into_event_category
+      tag: append_intrusion_detection_into_event_category_0244abb5
       value: intrusion_detection
       if: ctx.ses?.incident?.conclusion?.equalsIgnoreCase('breach') == true
   - append:
       field: event.category
-      tag: append_network_into_event_category
+      tag: append_network_into_event_category_5811656f
       value: network
       if: ctx.ses?.incident?.conclusion?.equalsIgnoreCase('network threat') == true
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_0fc3ba14
       value: info
       if: >-
         ctx.ses?.incident?.conclusion != null && [
@@ -93,7 +93,7 @@ processors:
         ].contains(ctx.ses.incident.conclusion.toLowerCase())
   - append:
       field: event.type
-      tag: append_indicator_into_event_type
+      tag: append_indicator_into_event_type_b871f623
       value: indicator
       if: >-
         ctx.ses?.incident?.conclusion != null && [
@@ -103,7 +103,7 @@ processors:
         ].contains(ctx.ses.incident.conclusion.toLowerCase())
   - date:
       field: ses.incident.device_time
-      tag: date_device_time
+      tag: date_device_time_d47a794c
       target_field: ses.incident.device_time
       formats:
         - UNIX_MS
@@ -111,32 +111,32 @@ processors:
       if: ctx.ses?.incident?.device_time != null && ctx.ses.incident.device_time != ''
       on_failure:
         - remove:
-            tag: remove_ses_incident_device_time_7417a447
+            tag: remove_ses_incident_device_time_1526c142
             field: ses.incident.device_time
             ignore_missing: true
         - append:
-            tag: append_error_message_5c9615c3
+            tag: append_error_message_54922d40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ses.incident.time
-      tag: date_timestamp_from_time
+      tag: date_timestamp_from_time_b4596170
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.ses?.incident?.time != null && ctx.ses.incident.time != ''
       on_failure:
         - remove:
-            tag: remove_ses_incident_time_a0107c80
+            tag: remove_ses_incident_time_4f57ff74
             field: ses.incident.time
             ignore_missing: true
         - append:
-            tag: append_error_message_d7a6dd51
+            tag: append_error_message_f75d2def
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ses.incident.time
-      tag: date_time
+      tag: date_time_5e0d2673
       target_field: ses.incident.time
       formats:
         - UNIX_MS
@@ -144,174 +144,174 @@ processors:
       if: ctx.ses?.incident?.time != null && ctx.ses.incident.time != ''
       on_failure:
         - remove:
-            tag: remove_ses_incident_time_84a8033e
+            tag: remove_ses_incident_time_0c9560a4
             field: ses.incident.time
             ignore_missing: true
         - append:
-            tag: append_error_message_ad0218eb
+            tag: append_error_message_fdbe23a7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ses.incident.log_time
-      tag: date_log_time
+      tag: date_log_time_aa837093
       target_field: ses.incident.log_time
       formats:
         - ISO8601
       if: ctx.ses?.incident?.log_time != null && ctx.ses.incident.log_time != ''
       on_failure:
         - remove:
-            tag: remove_ses_incident_log_time_629fc836
+            tag: remove_ses_incident_log_time_0e65c89a
             field: ses.incident.log_time
             ignore_missing: true
         - append:
-            tag: append_error_message_88e72176
+            tag: append_error_message_806db2c0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ses.incident.created
-      tag: date_created
+      tag: date_created_4c8e9383
       target_field: ses.incident.created
       formats:
         - ISO8601
       if: ctx.ses?.incident?.created != null && ctx.ses.incident.created != ''
       on_failure:
         - remove:
-            tag: remove_ses_incident_created_6a6c3a68
+            tag: remove_ses_incident_created_652a59ca
             field: ses.incident.created
             ignore_missing: true
         - append:
-            tag: append_error_message_525957aa
+            tag: append_error_message_187ef9ef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created
+      tag: set_event_created_bfa7f714
       copy_from: ses.incident.created
       ignore_empty_value: true
   - date:
       field: ses.incident.modified
-      tag: date_modified
+      tag: date_modified_aee3d5ea
       target_field: ses.incident.modified
       formats:
         - ISO8601
       if: ctx.ses?.incident?.modified != null && ctx.ses.incident.modified != ''
       on_failure:
         - remove:
-            tag: remove_ses_incident_modified_ab887c77
+            tag: remove_ses_incident_modified_1b614e79
             field: ses.incident.modified
             ignore_missing: true
         - append:
-            tag: append_error_message_cd651f28
+            tag: append_error_message_e1dc6318
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.incident.category_id
-      tag: convert_category_id_to_string
+      tag: convert_category_id_to_string_85a0e844
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.event_id
-      tag: convert_event_id_to_string
+      tag: convert_event_id_to_string_8e929942
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.ref_incident_uid
-      tag: convert_ref_incident_uid_to_string
+      tag: convert_ref_incident_uid_to_string_2d3d3960
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.id
-      tag: convert_id_to_string
+      tag: convert_id_to_string_ff075540
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.priority_id
-      tag: convert_priority_id_to_string
+      tag: convert_priority_id_to_string_9c7204e3
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.resolution_id
-      tag: convert_resolution_id_to_string
+      tag: convert_resolution_id_to_string_13738b03
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.state_id
-      tag: convert_state_id_to_string
+      tag: convert_state_id_to_string_74c23379
       type: string
       ignore_missing: true
   - convert:
       field: ses.incident.type_id
-      tag: convert_type_id_to_string
+      tag: convert_type_id_to_string_76b8720b
       type: string
       ignore_missing: true
   - lowercase:
       field: ses.incident.suspected_breach
-      tag: lowercase_suspected_breach
+      tag: lowercase_suspected_breach_4aa33eeb
       ignore_missing: true
   - set:
       field: ses.incident.suspected_breach
-      tag: set_suspected_breach_to_true
+      tag: set_suspected_breach_to_true_55e0b18c
       value: true
       if: ctx.ses?.incident?.suspected_breach == 'yes'
   - set:
       field: ses.incident.suspected_breach
-      tag: set_suspected_breach_to_false
+      tag: set_suspected_breach_to_false_5bc381c7
       value: false
       if: ctx.ses?.incident?.suspected_breach == 'no'
   - set:
       field: event.reason
-      tag: set_event_reason
+      tag: set_event_reason_c05874bc
       copy_from: ses.incident.conclusion
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_40e97915
       copy_from: ses.incident.incident_uid
       ignore_empty_value: true
   - set:
       field: event.url
-      tag: set_event_url
+      tag: set_event_url_4c85781d
       copy_from: ses.incident.incident_url
       ignore_empty_value: true
   - uri_parts:
       field: event.url
-      tag: uri_parts_event_url
+      tag: uri_parts_event_url_9f2ba4e2
       if: ctx.event?.url != null
       on_failure:
         - append:
-            tag: append_error_message_8a338876
+            tag: append_error_message_3e1f19a6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
-      tag: set_message
+      tag: set_message_113d1fcd
       copy_from: ses.incident.message
       ignore_empty_value: true
   - set:
       field: event.provider
-      tag: set_event_provider
+      tag: set_event_provider_9eba8a99
       copy_from: ses.incident.product_name
       ignore_empty_value: true
   - set:
       field: rule.name
-      tag: set_rule_name
+      tag: set_rule_name_4c61712f
       copy_from: ses.incident.rule_name
       ignore_empty_value: true
   - set:
       field: http.version
-      tag: set_http_version
+      tag: set_http_version_7f4828a3
       copy_from: ses.incident.version
       ignore_empty_value: true
   - convert:
       field: ses.incident.severity_id
-      tag: convert_severity_id_to_string
+      tag: convert_severity_id_to_string_d19f1d77
       type: string
       ignore_missing: true
   - script:
       lang: painless
       if: ctx.ses?.incident?.severity_id != null
       description: Set Severity.
-      tag: painless_set_severity
+      tag: painless_set_severity_46c725da
       params:
         "3": "Minor"
         "4": "Major"
@@ -320,47 +320,47 @@ processors:
         ctx.ses.incident.put("severity",params[ctx.ses.incident.severity_id])
       on_failure:
         - append:
-            tag: append_error_message_91ac3261
+            tag: append_error_message_0f0fc16f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.incident.severity_id
-      tag: convert_severity_id_to_long
+      tag: convert_severity_id_to_long_e3d6039c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_ses_incident_severity_id_e3acef35
+            tag: remove_ses_incident_severity_id_a52117eb
             field: ses.incident.severity_id
             ignore_missing: true
         - append:
-            tag: append_error_message_1d0d435c
+            tag: append_error_message_6a33502a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.severity
-      tag: set_event_severity
+      tag: set_event_severity_9a7c3bd1
       copy_from: ses.incident.severity_id
       ignore_empty_value: true
   - set:
       field: ses.incident.outcome
-      tag: set_outcome_to_unknown
+      tag: set_outcome_to_unknown_de0c0e65
       value: Unknown
       if: ctx.ses?.incident?.id == '0'
   - set:
       field: ses.incident.outcome
-      tag: set_outcome_to_logged
+      tag: set_outcome_to_logged_1e82d6ab
       value: Logged
       if: ctx.ses?.incident?.id == '4'
   - set:
       field: ses.incident.category
-      tag: set_category_to_security
+      tag: set_category_to_security_ecee9d2d
       value: Security
   - script:
       lang: painless
       if: ctx.ses?.incident?.state_id != null
       description: Set State Types.
-      tag: painless_set_state
+      tag: painless_set_state_961de404
       params:
         State:
           - Unknown
@@ -376,14 +376,14 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_d6ae633e
+            tag: append_error_message_817b5e8a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       if: ctx.ses?.incident?.priority_id != null
       description: Set Priority Types.
-      tag: painless_set_priority
+      tag: painless_set_priority_f6282d63
       params:
         Priority:
           - Unknown
@@ -398,14 +398,14 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_5194806d
+            tag: append_error_message_f52373ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       if: ctx.ses?.incident?.resolution_id != null
       description: Set Resolution Types.
-      tag: painless_set_resolution
+      tag: painless_set_resolution_56d9fe36
       params:
         Resolution:
           - Insufficient data
@@ -421,14 +421,14 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_31e843ec
+            tag: append_error_message_60fa0632
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       if: ctx.ses?.incident?.event_id != null
       description: Set event name.
-      tag: painless_set_event
+      tag: painless_set_event_bb7ac5f3
       params:
         "8075004": "Incident Creation: Logged"
         "8075000": "Incident Creation: Unknown"
@@ -440,7 +440,7 @@ processors:
         ctx.ses.incident.put("event",params[ctx.ses.incident.event_id])
       on_failure:
         - append:
-            tag: append_error_message_1ddcf0d4
+            tag: append_error_message_b1693a32
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -455,13 +455,13 @@ processors:
         - ses.incident.rule_name
         - ses.incident.severity_id
         - ses.incident.version
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_d31058ec
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -479,25 +479,25 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_22f21fd6
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

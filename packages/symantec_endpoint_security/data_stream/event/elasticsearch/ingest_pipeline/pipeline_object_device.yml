@@ -3,249 +3,249 @@ description: Pipeline for processing device object.
 processors:
   - set:
       field: host.geo.city_name
-      tag: set_host_geo_city_name_from_device_location_city
+      tag: set_host_geo_city_name_from_device_location_city_11e1409b
       copy_from: ses.device_location.city
       ignore_empty_value: true
   - set:
       field: host.geo.continent_name
-      tag: set_host_geo_continent_name_from_device_location_continent
+      tag: set_host_geo_continent_name_from_device_location_continent_3c69747a
       copy_from: ses.device_location.continent
       ignore_empty_value: true
   - foreach:
       field: ses.device_location.coordinates
       if: ctx.ses?.device_location?.coordinates instanceof List
-      tag: foreach_device_location_coordinates
+      tag: foreach_device_location_coordinates_a1d87110
       processor:
         convert:
           field: _ingest._value
-          tag: convert_device_location_coordinates_to_float
+          tag: convert_device_location_coordinates_to_float_31204587
           type: float
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value
+                tag: remove_ingest_value_176ceb4d
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_4f29fe01
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.geo.country_iso_code
-      tag: set_host_geo_country_iso_code_from_device_location_country
+      tag: set_host_geo_country_iso_code_from_device_location_country_bfdef129
       copy_from: ses.device_location.country
       ignore_empty_value: true
   - convert:
       field: ses.device_location.on_premises
-      tag: convert_device_location_on_premises_to_boolean
+      tag: convert_device_location_on_premises_to_boolean_2dd10ab8
       type: boolean
       if: ctx.ses?.device_location?.on_premises != ''
       ignore_missing: true
       on_failure:
         - append:
-            tag: append_error_message_689768cf
+            tag: append_error_message_8de2e760
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_ses_device_location_on_premises_c0a89b69
+            tag: remove_ses_device_location_on_premises_38f73d3f
             field: ses.device_location.on_premises
             ignore_missing: true
   - set:
       field: host.geo.region_name
-      tag: set_host_geo_region_name_from_device_location_region
+      tag: set_host_geo_region_name_from_device_location_region_70a3f5e9
       copy_from: ses.device_location.region
       ignore_empty_value: true
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_gateway
+      tag: foreach_device_networks_gateway_44750afd
       processor:
         convert:
           field: _ingest._value.gateway_ip
-          tag: convert_device_networks_gateway_ip_to_ip
+          tag: convert_device_networks_gateway_ip_to_ip_19d83532
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_gateway_ip
+                tag: remove_ingest_value_gateway_ip_d868f452
                 field: _ingest._value.gateway_ip
                 ignore_missing: true
             - append:
-                tag: append_error_message_164abdcf
+                tag: append_error_message_60f43aeb
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_gateway_2c7a3ac0
+      tag: foreach_device_networks_gateway_f0dac021
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_gateway_ip
+          tag: append_related_ip_from_gateway_ip_e246829b
           value: '{{{_ingest._value.gateway_ip}}}'
           allow_duplicates: false
           if: ctx.ses?.device_networks != null
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_ipv4
+      tag: foreach_device_networks_ipv4_efe88c35
       processor:
         convert:
           field: _ingest._value.ipv4
-          tag: convert_device_networks_ipv4_to_ip
+          tag: convert_device_networks_ipv4_to_ip_93c1081f
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ipv4
+                tag: remove_ingest_value_ipv4_9af4980e
                 field: _ingest._value.ipv4
                 ignore_missing: true
             - append:
-                tag: append_error_message_36749599
+                tag: append_error_message_ee7b736f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_ipv4_for_host_ip
+      tag: foreach_device_networks_ipv4_for_host_ip_80a98837
       processor:
         append:
           field: host.ip
-          tag: append_host_ip_from_ipv4
+          tag: append_host_ip_from_ipv4_eb9c03e8
           value: '{{{_ingest._value.ipv4}}}'
           allow_duplicates: false
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_ipv4_1f116e3d
+      tag: foreach_device_networks_ipv4_28029aff
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_ipv4
+          tag: append_related_ip_from_ipv4_1ccb2745
           value: '{{{_ingest._value.ipv4}}}'
           allow_duplicates: false
           if: ctx.ses?.device_networks != null
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_ipv6
+      tag: foreach_device_networks_ipv6_7e741473
       processor:
         convert:
           field: _ingest._value.ipv6
-          tag: convert_device_networks_ipv6_to_ip
+          tag: convert_device_networks_ipv6_to_ip_5eca9857
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ipv6
+                tag: remove_ingest_value_ipv6_2e9775cc
                 field: _ingest._value.ipv6
                 ignore_missing: true
             - append:
-                tag: append_error_message_b692a605
+                tag: append_error_message_f89034f2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_ipv6_140d82a3
+      tag: foreach_device_networks_ipv6_c443d8c0
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_ipv6
+          tag: append_related_ip_from_ipv6_6fa800c0
           value: '{{{_ingest._value.ipv6}}}'
           allow_duplicates: false
           if: ctx.ses?.device_networks != null
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_is_public
+      tag: foreach_device_networks_is_public_ea5fa275
       processor:
         convert:
           field: _ingest._value.is_public
-          tag: convert_device_networks_is_public_to_boolean
+          tag: convert_device_networks_is_public_to_boolean_72eaab5f
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_is_public
+                tag: remove_ingest_value_is_public_d35a071f
                 field: _ingest._value.is_public
                 ignore_missing: true
             - append:
-                tag: append_error_message_f0b1e5d3
+                tag: append_error_message_a8f27147
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_mac
+      tag: foreach_device_networks_mac_5c4b9f4a
       processor:
         append:
           field: _tmp_raw_host_macs
-          tag: append_tmp_raw_host_macs_from_mac
+          tag: append_tmp_raw_host_macs_from_mac_5320a974
           value: '{{{_ingest._value.mac}}}'
           allow_duplicates: false
   - foreach:
       field: _tmp_raw_host_macs
       if: ctx._tmp_raw_host_macs instanceof List
-      tag: foreach_tmp_raw_host_macs_for_gsub
+      tag: foreach_tmp_raw_host_macs_for_gsub_d47fdfd9
       processor:
         gsub:
           field: _ingest._value
-          tag: gsub_raw_mac
+          tag: gsub_raw_mac_a32bb39f
           pattern: '[-:.]'
           replacement: '-'
           ignore_missing: true
   - foreach:
       field: _tmp_raw_host_macs
       if: ctx._tmp_raw_host_macs instanceof List
-      tag: foreach_tmp_raw_host_macs_for_append
+      tag: foreach_tmp_raw_host_macs_for_append_e3f86b96
       processor:
         append:
           field: host.mac
-          tag: append_host_mac_from_tmp_raw_host_macs
+          tag: append_host_mac_from_tmp_raw_host_macs_1cdb02b3
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
       field:
         - _tmp_raw_host_macs
-      tag: remove_tmp_raw_host_macs
+      tag: remove_tmp_raw_host_macs_935809dd
       ignore_missing: true
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_rep_score_id
+      tag: foreach_device_networks_rep_score_id_28191430
       processor:
         convert:
           field: _ingest._value.rep_score_id
-          tag: convert_device_networks_rep_score_id_to_string
+          tag: convert_device_networks_rep_score_id_to_string_6171fd5d
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_rep_score_id
+                tag: remove_ingest_value_rep_score_id_19143eac
                 field: _ingest._value.rep_score_id
                 ignore_missing: true
             - append:
-                tag: append_error_message_b2a9d559
+                tag: append_error_message_c55284c5
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
-      tag: foreach_device_networks_type_id
+      tag: foreach_device_networks_type_id_0dc2a35e
       processor:
         convert:
           field: _ingest._value.type_id
-          tag: convert_device_networks_type_id_to_string
+          tag: convert_device_networks_type_id_to_string_5ef5c8e7
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_type_id
+                tag: remove_ingest_value_type_id_ee6537f5
                 field: _ingest._value.type_id
                 ignore_missing: true
             - append:
-                tag: append_error_message_0bb574ce
+                tag: append_error_message_604374dc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -254,20 +254,20 @@ processors:
         - ses.device_location.continent
         - ses.device_location.country
         - ses.device_location.region
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_ad637b45
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
   - append:
-      tag: append_error_message_3278b90b
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

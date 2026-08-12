@@ -3,7 +3,7 @@ description: Pipeline for processing Windows Registry Key STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_windows_registry_pattern
+      tag: grok_windows_registry_pattern_d2dfd763
       patterns:
         - "^\\[?windows-registry-key:key%{SPACE}=%{SPACE}'%{DATA:_tmp.reg_path}'\\]?"
         - "^\\[?windows-registry-key:key%{SPACE}LIKE%{SPACE}'%{DATA:_tmp.reg_path}'\\]?"
@@ -13,21 +13,21 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
-      tag: append_threat_indicator_registry_path_c251fc6b
+      tag: append_threat_indicator_registry_path_697f8121
       field: threat.indicator.registry.path
       value: '{{{ _tmp.reg_path }}}'
       if: ctx._tmp?.reg_path != null
   - append:
-      tag: append_threat_indicator_registry_key_e19de5eb
+      tag: append_threat_indicator_registry_key_50f35943
       field: threat.indicator.registry.key
       value: '{{{ _tmp.reg_key }}}'
       if: ctx._tmp?.reg_key != null
   - append:
-      tag: append_threat_indicator_registry_value_5b376a29
+      tag: append_threat_indicator_registry_value_952ca308
       field: threat.indicator.registry.value
       value: '{{{ _tmp.reg_value }}}'
       if: ctx._tmp?.reg_value != null
   - remove:
-      tag: remove__tmp_cc7d8d90
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true

@@ -3,7 +3,7 @@ description: Build ECS indicator fields from an STIX pattern
 processors:
 
   - grok:
-      tag: grok__ingest__value_826928eb
+      tag: grok__ingest__value_1f94af5b
       field: _ingest._value
       patterns:
         - "file:hashes.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.md5}'"
@@ -20,7 +20,7 @@ processors:
       ignore_failure: true
 
   - set:
-      tag: set_threat_indicator_file_type_25e26339
+      tag: set_threat_indicator_file_type_b60f1933
       if: ctx.threat?.indicator?.file?.name != null
       field: threat.indicator.file.type
       value: "file"
@@ -28,7 +28,7 @@ processors:
 
   - script:
       description: Get file extensions from file names
-      tag: get_file_extensions
+      tag: get_file_extensions_cfbe9793
       if: ctx.threat?.indicator?.file?.name != null
       lang: painless
       source: |
@@ -47,40 +47,40 @@ processors:
 
   # For ECS, remove any subnet mask from IP values arriving in CIDR notation
   - gsub:
-      tag: gsub_threat_indicator_ip_66a02181
+      tag: gsub_threat_indicator_ip_20915874
       field: threat.indicator.ip
       pattern: '/\d+$'
       replacement: ""
       ignore_missing: true
 
   - uri_parts:
-      tag: uri_parts_threat_indicator_url_original_to_threat_indicator_url_37de733d
+      tag: uri_parts_threat_indicator_url_original_to_threat_indicator_url_ff056164
       field: threat.indicator.url.original
       target_field: threat.indicator.url
       keep_original: true
       ignore_failure: true
 
   - registered_domain:
-      tag: registered_domain_threat_indicator_url_domain_to_threat_indicator_url_139f4153
+      tag: registered_domain_threat_indicator_url_domain_to_threat_indicator_url_567580b8
       field: threat.indicator.url.domain
       target_field: threat.indicator.url
       ignore_missing: true
 
   - set:
-      tag: set_threat_indicator_url_full_947438bd
+      tag: set_threat_indicator_url_full_c0a310e4
       field: threat.indicator.url.full
       copy_from: threat.indicator.url.original
       ignore_empty_value: true
 
   - gsub:
-      tag: gsub__tmp_registry_cc160753
+      tag: gsub__tmp_registry_5294dee0
       field: _tmp_registry
       pattern: '\\\\'
       replacement: '\\'
       ignore_missing: true
 
   - grok:
-      tag: grok_registry_key
+      tag: grok_registry_key_fff0bf69
       field: _tmp_registry
       ignore_missing: true
       patterns:
@@ -89,7 +89,7 @@ processors:
         HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
 
   - script:
-      tag: normalize_registry_hive
+      tag: normalize_registry_hive_3324025c
       description: Normalize hive names (ECS uses abbreviated names)
       lang: painless
       params:
@@ -104,19 +104,19 @@ processors:
       if: ctx.tmp_registry?.hive != null
 
   - rename:
-      tag: rename_tmp_registry_to_threat_indicator_registry_b7fb3695
+      tag: rename_tmp_registry_to_threat_indicator_registry_0104960e
       field: tmp_registry
       target_field: threat.indicator.registry
       ignore_missing: true
 
   - remove:
-      tag: remove__tmp_registry_e95582c0
+      tag: remove__tmp_registry_14264dc6
       field: _tmp_registry
       ignore_missing: true
 
   # Convert string fields to arrays for consistency with observable-based extraction
   - script:
-      tag: convert_strings_to_arrays
+      tag: convert_strings_to_arrays_0c54949b
       description: Convert string fields to single-element arrays
       lang: painless
       source: |
