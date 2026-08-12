@@ -32,7 +32,7 @@ processors:
       target_field: tines.tenant_url
       ignore_missing: true
   - fingerprint:
-      tag: fingerprint_cac1b059
+      tag: fingerprint_to_id_cac1b059
       description: "Generate a unique document ID using the unique Tines audit log ID and created/updated timestamps"
       fields:
         - tines.audit_log.id
@@ -196,7 +196,7 @@ processors:
             ignore_failure: true
   ### cleanup
   - script:
-      tag: script_853d4e94
+      tag: script_drops_null_empty_values_recursively_853d4e94
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -214,7 +214,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
-      tag: remove_4690272d
+      tag: remove_cleanup_temporary_other_garbage_fields_4690272d
       description: "Cleanup temporary and other garbage fields"
       field:
         - _tmp
@@ -222,7 +222,7 @@ processors:
         - json
       ignore_missing: true
   - remove:
-      tag: remove_59830dc6
+      tag: remove_ecs_mapped_field_original_duplicates_59830dc6
       description: "Remove ECS mapped field original duplicates unless tags indicate not to"
       field:
         - tines.audit_log.id

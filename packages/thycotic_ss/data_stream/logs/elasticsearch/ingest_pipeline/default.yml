@@ -31,7 +31,7 @@ processors:
       description: "Set default event category"
 
   - script:
-      tag: script_dd9f51a2
+      tag: script_used_to_set_event_category_dd9f51a2
       description: "Used to set event.category and event.type sanely based on cef.name provided by SS"
       if: ctx.cef?.name != null
       lang: painless
@@ -417,7 +417,7 @@ processors:
       if: ctx.thycotic_ss?.event?.user?.name != null && ctx.thycotic_ss?.event?.user?.name != ""
 
   - remove:
-      tag: remove_59c8bdb4
+      tag: remove_duplication_user_details_under_thycotic_59c8bdb4
       field:
         - thycotic_ss.event.user
       ignore_missing: true
@@ -491,7 +491,7 @@ processors:
   ## Cleanup Fields ##
   ####################
   - remove:
-      tag: remove_732f14d5
+      tag: remove_cef_unless_tags_indicate_732f14d5
       field:
         - cef
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_cef'))"
@@ -500,7 +500,7 @@ processors:
       description: "Remove cef.* unless tags indicate we shold not"
 
   - remove:
-      tag: remove_0136c1f1
+      tag: remove_log_fields_unless_tags_indicate_0136c1f1
       field:
         - log
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_log'))"
@@ -509,14 +509,14 @@ processors:
       description: "Remove log.* fields unless tags indicate we shold not"
 
   - remove:
-      tag: remove_79092ad6
+      tag: remove_temporary_fields_79092ad6
       field:
         - _tmp
       ignore_missing: true
       description: "Remove temporary fields"
 
   - script:
-      tag: script_94a974d1
+      tag: script_processor_iterates_over_whole_document_94a974d1
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values. This should be the last non-on_failure processor.
       source: |

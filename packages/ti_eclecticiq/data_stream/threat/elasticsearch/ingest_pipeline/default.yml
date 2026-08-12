@@ -43,7 +43,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - drop:
-      tag: drop_bc0836c2
+      tag: drop_extract_type_not_mapped_bc0836c2
       description: Drop if extract type is not mapped.
       if: "!['asn', 'domain', 'email', 'file', 'file-size', 'hash-md5', 'hash-md5', 'hash-sha1', 'hash-sha256', 'hash-sha384', 'hash-sha512', 'hash-ssdeep', 'ipv4', 'ipv4-cidr', 'ipv6', 'ipv6-cidr', 'mac-48', 'mutex', 'port', 'process', 'process-name', 'uri', 'winregistry', 'certificate-serial-number', 'malware', 'rule', 'user-agent', 'organization', 'email-subject', 'host', 'cve'].contains(ctx.json.type)"
 
@@ -415,7 +415,7 @@ processors:
 
   # custom fields used for transformation
   - fingerprint:
-      tag: fingerprint_49406a2d
+      tag: fingerprint_to_eclecticiq_threat_observable_id_49406a2d
       target_field: eclecticiq.threat.observable_id
       fields:
         - json.type
@@ -499,7 +499,7 @@ processors:
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "cve"'
   - fingerprint:
-      tag: fingerprint_99222855
+      tag: fingerprint_to_event_id_99222855
       target_field: event.id
       fields:
         - json.type

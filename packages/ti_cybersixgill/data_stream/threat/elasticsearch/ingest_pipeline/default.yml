@@ -87,7 +87,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
       if: "ctx.cybersixgill?.valid_from != null"
   - fingerprint:
-      tag: fingerprint_fb46da6d
+      tag: fingerprint_to_id_fb46da6d
       fields:
         - cybersixgill.id
         - cybersixgill.created
@@ -274,7 +274,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - fail:
-            tag: fail_458aaccd
+            tag: fail_date_processor_fails_leads_458aaccd
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
@@ -283,7 +283,7 @@ processors:
       target_field: cybersixgill.expiration_duration
       ignore_missing: true
   - script:
-      tag: script_1d3ad6a8
+      tag: script_adds_mitre_virustotal_fields_1d3ad6a8
       lang: painless
       if: ctx.cybersixgill?.external_references != null
       description: >
@@ -325,7 +325,7 @@ processors:
       ignore_failure: true
       if: ctx._temp_?.tags != null
   - script:
-      tag: script_6d304712
+      tag: script_normalize_confidence_level_6d304712
       lang: painless
       if: ctx.threat?.indicator?.confidence != null
       description: >

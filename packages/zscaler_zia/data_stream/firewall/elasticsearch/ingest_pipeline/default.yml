@@ -365,7 +365,7 @@ processors:
       field: zscaler_zia.firewall.device.hostname
       target_field: host.name
       ignore_missing: true
-      tag: set_host_name_from_firewall_device_hostname_50f4954f
+      tag: lowercase_host_name_from_firewall_device_hostname_50f4954f
       if: ctx.zscaler_zia?.firewall?.device?.hostname != ''
       on_failure:
         - append:
@@ -374,7 +374,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
-      tag: set_related_hosts_from_host_name_82ac1e98
+      tag: append_related_hosts_from_host_name_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
@@ -400,7 +400,7 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: set_related_hosts_from_host_hostname_6f8fa3bb
+      tag: append_related_hosts_from_host_hostname_6f8fa3bb
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       if: ctx.host?.hostname != null
@@ -461,7 +461,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.user
-      tag: set_related_user_from_device_owner_c274fd34
+      tag: append_related_user_from_device_owner_c274fd34
       value: '{{{zscaler_zia.firewall.device.owner}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.firewall?.device?.owner != null
@@ -1085,13 +1085,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: set_related_user_from_user_name_325195a6
+      tag: append_related_user_from_user_name_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: set_related_user_from_user_email_b9ac313b
+      tag: append_related_user_from_user_email_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null

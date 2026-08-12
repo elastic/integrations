@@ -45,7 +45,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
-      tag: fingerprint_0a25f247
+      tag: fingerprint_to_id_0a25f247
       fields:
         - json.summary
         - json.lastModified
@@ -851,12 +851,12 @@ processors:
       field: threat_connect.indicator.associated_groups.data
       processor:
         set:
-          tag: remove_associated_group_attributes_wrapper_object_5a5b858e
+          tag: set_associated_group_attributes_wrapper_object_5a5b858e
           field: _ingest._value.attributes
           copy_from: _ingest._value.attributes.data
           on_failure:
             - append:
-                tag: set_associated_group_attributes_empty_array_2f0c3bbc
+                tag: append_associated_group_attributes_empty_array_2f0c3bbc
                 field: _ingest._value.attributes
                 value: []
   - foreach:
@@ -1586,7 +1586,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_8ee7ba28
+      tag: script_normalize_confidence_level_8ee7ba28
       lang: painless
       if: ctx.json?.confidence != null
       description: Normalize confidence level.
@@ -1756,7 +1756,7 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: convert_hostname_address_to_related_host_8955e27f
+      tag: append_hostname_address_to_related_host_8955e27f
       value: '{{{threat_connect.indicator.host_name}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.host_name != null
@@ -1785,7 +1785,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: convert_ip_to_related_ip_1e29fa68
+      tag: append_ip_to_related_ip_1e29fa68
       value: '{{{threat_connect.indicator.ip}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.ip != null
@@ -1939,7 +1939,7 @@ processors:
       if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('Registry Key')
   - append:
       field: related.hash
-      tag: convert_md5_address_to_related_hash_9d3a5971
+      tag: append_md5_address_to_related_hash_9d3a5971
       value: '{{{threat_connect.indicator.md5}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.md5 != null
@@ -2066,7 +2066,7 @@ processors:
       if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('File')
   - append:
       field: related.hash
-      tag: convert_sha1_address_to_related_hash_2366779d
+      tag: append_sha1_address_to_related_hash_2366779d
       value: '{{{threat_connect.indicator.sha1}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.sha1 != null
@@ -2087,7 +2087,7 @@ processors:
       if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('File')
   - append:
       field: related.hash
-      tag: convert_sha256_address_to_related_hash_2798cf3e
+      tag: append_sha256_address_to_related_hash_2798cf3e
       value: '{{{threat_connect.indicator.sha256}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.md5 != null

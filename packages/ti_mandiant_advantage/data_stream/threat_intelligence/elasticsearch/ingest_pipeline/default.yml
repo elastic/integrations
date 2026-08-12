@@ -99,7 +99,7 @@ processors:
       value: url
       if: ctx.json?.type == 'url'
 - script:
-      tag: script_ff7fba20
+      tag: script_maps_ioc_type_field_ff7fba20
       lang: painless
       if: ctx.json?.type != null
       description: Maps IOC type field to Mandiant Threat Intelligence values (threat.indicator.type).
@@ -139,7 +139,7 @@ processors:
               value: >-
                   Unable to determine indicator type from "{{{json.type}}}": {{{_ingest.on_failure_message}}}
 - script:
-    tag: script_a6317692
+    tag: script_populates_sha1_sha256_hash_values_a6317692
     lang: painless
     if: "ctx.json?.type == 'md5' && ctx.json?.associated_hashes instanceof List && ctx.json?.associated_hashes.size() > 0"
     description: Populates SHA1 and SHA256 hash values for hash indicator types, if they exist
@@ -275,7 +275,7 @@ processors:
       ignore_failure: true
 
 - script:
-    tag: script_895d1a5e
+    tag: script_extract_providers_categories_tlp_895d1a5e
     if: "ctx.json?.sources != null && ctx.json?.sources instanceof List && ctx.json?.sources.size() > 0"
     lang: painless
     description: "Extract providers, categories and TLP from source"
@@ -316,7 +316,7 @@ processors:
         ctx.tlp_color = "RED";
       }
 - script:
-    tag: script_a8f3b558
+    tag: script_extract_threat_group_malware_information_a8f3b558
     if: "ctx.json?.attributed_associations != null && ctx.json?.attributed_associations instanceof List && ctx.json?.attributed_associations.size() > 0"
     lang: painless
     description: "Extract threat group and malware information from source"
@@ -360,7 +360,7 @@ processors:
         ctx.threat.software.name = software;
       }
 - script:
-    tag: script_f3b295ae
+    tag: script_restructure_misp_fields_f3b295ae
     lang: painless
     description: Restructure MISP fields
     if: ctx.json?.misp != null
@@ -406,7 +406,7 @@ processors:
     field: threat.indicator.marking.tlp_version
     value: "2.0"
 - script:
-      tag: script_d261a15c
+      tag: script_normalize_confidence_level_d261a15c
       lang: painless
       if: ctx.threat?.indicator?.confidence != null
       description: Normalize confidence level.
@@ -427,7 +427,7 @@ processors:
           }
       ignore_failure: true
 - script:
-      tag: script_99ba6cdb
+      tag: script_processor_iterates_over_whole_document_99ba6cdb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: >
@@ -446,7 +446,7 @@ processors:
           drop(ctx);
       ignore_failure: true
 - fingerprint:
-      tag: fingerprint_48a62b3b
+      tag: fingerprint_to_id_48a62b3b
       description: >
         Fingerprint the event.original value in attempt to prevent the same
         event from being indexed more than once under connection failures or
