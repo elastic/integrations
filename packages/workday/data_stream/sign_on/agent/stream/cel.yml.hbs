@@ -19,34 +19,52 @@ redact:
   fields:
     - auth.basic.user
     - auth.basic.password
+state:
+  initial_interval: {{initial_interval}}
 program: |-
   state.with(
-    get(state.url).as(resp,
-      (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
+    {
+      "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+      "end_time": now.format(time_layout.RFC3339),
+    }
+  ).as(state,
+    (
+      state.url + (state.url.contains("?") ? "&" : "?") + {
+        "From_Moment": [state.start_time],
+        "To_Moment": [state.end_time],
+      }.format_query()
+    ).as(request_url,
+      get(request_url).as(resp,
+        (resp.StatusCode == 200) ?
+          bytes(resp.Body).decode_json().as(body,
+            {
+              "events": (has(body.Report_Entry) && size(body.Report_Entry) > 0) ?
+                body.Report_Entry.map(e, {"message": e.encode_json()})
+              :
+                [],
+              "cursor": {
+                "last_timestamp": state.end_time,
+              },
+              "want_more": false,
+            }
+          )
+        :
           {
-            "events": (has(body.Report_Entry) && size(body.Report_Entry) > 0) ?
-              body.Report_Entry.map(e, {"message": e.encode_json()})
-            :
-              [],
-          }
-        )
-      :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": resp.Status,
-              "message": "GET " + state.url + ": " + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  resp.Status + " (" + string(resp.StatusCode) + ")"
-              ),
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + request_url + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
             },
-          },
-          "want_more": false,
-        }
+            "want_more": false,
+          }
+      )
     )
   )
 tags:
