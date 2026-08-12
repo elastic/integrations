@@ -40,23 +40,33 @@ processors:
       value:
         - network
       if: ctx.class_uid == 4001
+  # The enforcement decision (denied/allowed) is the action AegisBPF took.
   - set:
       field: event.action
-      copy_from: activity_name
-      if: ctx.activity_name != null
-  - lowercase:
-      field: event.action
-      ignore_missing: true
-  - set:
-      field: event.type
-      value:
-        - denied
+      value: denied
       if: ctx.action_id == 2
   - set:
+      field: event.action
+      value: allowed
+      if: ctx.action_id == 1
+  # event.type must be an ECS operation type valid for the event.category:
+  # file -> access, network -> connection ("denied" is not valid for file).
+  - set:
       field: event.type
       value:
-        - allowed
-      if: ctx.action_id == 1
+        - access
+      if: ctx.class_uid == 1001
+  - set:
+      field: event.type
+      value:
+        - connection
+      if: ctx.class_uid == 4001
+  # Preserve the original OCSF operation name (e.g. "Open") under aegisbpf.*.
+  - set:
+      field: aegisbpf.activity
+      copy_from: activity_name
+      if: ctx.activity_name != null
+      ignore_empty_value: true
   - set:
       field: event.outcome
       value: success
