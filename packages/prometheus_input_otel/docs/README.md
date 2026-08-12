@@ -37,6 +37,9 @@ For HTTPS endpoints, you can configure:
 
 Username and password can be configured for endpoints requiring basic authentication.
 
+### Bearer Token Authentication
+
+A Bearer token can be configured for endpoints that require `Authorization: Bearer <token>`.
 ## Configuration Reference
 
 For detailed configuration options and their descriptions, refer to the [Prometheus Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/prometheusreceiver/README.md) in the upstream OpenTelemetry Collector repository.
