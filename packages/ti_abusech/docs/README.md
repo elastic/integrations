@@ -35,10 +35,13 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 ### From abuse.ch
 
-Authentication depends on which API you use:
+Which credentials you need depends on which datasets you enable, not on the integration as a whole:
 
-- **Community API**: requires an `Auth Key` (API key). Any requests made without this key will be rejected by the abuse.ch community APIs.
-- **Commercial API**: requires Spamhaus username and password credentials. The integration uses these to obtain a short-lived JWT for API requests.
+- **ThreatFox threat indicators** (`threatfox`) and **MalwareBazaar payloads** (`malwarebazaar`) can use either API, selected with the shared **API Type** setting. The Community API requires an **Auth Key**. The Commercial API requires Spamhaus username and password credentials, which the integration exchanges for a short-lived JWT.
+- **Malware URLs** (`url`) and **Malware payloads** (`malware`) always query the URLhaus Community API and require an **Auth Key** regardless of **API Type**. Requests without the key are rejected.
+- **SSL Blacklisted Certificates** (`sslblacklist`) and **JA3 Fingerprints** (`ja3_fingerprints`) read the SSLBL feeds and use neither credential.
+
+Because **API Type** applies to the whole integration, selecting **Commercial API** does not remove the need for an **Auth Key** unless you also disable **Malware URLs** and **Malware payloads**.
 
 #### Obtain `Auth Key` (Community API)
 
@@ -85,8 +88,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect abuse.ch logs via API**, you'll need to:
 
-        - Configure **Auth Key** for Community API datasets.
-        - For Commercial API collection, set **API Type** to **Commercial API** and configure **Username** and **Password**.
+        - Configure **Auth Key (Community)**. The **Malware URLs** and **Malware payloads** datasets always need it, and **ThreatFox threat indicators** and **MalwareBazaar payloads** need it when **API Type** is **Community API**.
+        - To use the Commercial API for **ThreatFox threat indicators** and **MalwareBazaar payloads**, set **API Type** to **Commercial API** and configure **Username (Commercial)** and **Password (Commercial)**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
@@ -114,7 +117,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     2. Select the policy containing the abuse.ch integration.
     3. Edit the abuse.ch integration.
     4. Set **API Type** to **Commercial API**, then enter **Username (Commercial)** and **Password (Commercial)** at the integration level (not under the MalwareBazaar data stream).
-    5. Select **Save integration**.
+    5. Under the MalwareBazaar data stream, expand **Advanced options** and reset **URL** to `https://mb-api.abuse.ch/api/v1/` if you had changed it to `https://api.spamhaus.com` for the 4.2.0 Commercial API. The Commercial API base URL is now configured once at the integration level via **Commercial API URL**.
+    6. Select **Save integration**.
 
     Community API users who only use an Auth Key are unaffected. After this change, the same Spamhaus credentials apply to all commercial datasets (MalwareBazaar, ThreatFox, and future commercial data streams).
 - **Upgrading to v4.0.0**: Version 4.0.0 switches the URL data stream from the full export ZIP endpoint (`/downloads/json`) to the incremental JSON API (`/v1/urls/recent/`). When upgrading from a previous version, the URL setting in your integration policy retains the old value and must be updated manually:
