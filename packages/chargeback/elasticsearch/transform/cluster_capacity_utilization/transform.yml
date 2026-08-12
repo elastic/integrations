@@ -21,7 +21,25 @@ source:
               - data_frozen
               - data_content
               - data
+  # These read whichever of <field> / <field>.keyword the mapping actually makes
+  # aggregatable. Where the .monitoring-es-mb index template is not governing the
+  # .monitoring-es-8-mb data stream, dynamic mapping produces `text` plus a `.keyword`
+  # subfield, and a terms aggregation on the text field fails with "Fielddata is
+  # disabled ... Will automatically retry [1/-1]" - retrying forever without ever
+  # producing a row. Both branches below use doc values, so there is no _source penalty.
   runtime_mappings:
+    cb_cluster_name:
+      type: keyword
+      script:
+        source: |
+          String kw = 'elasticsearch.cluster.name.keyword';
+          if (doc.containsKey(kw)) {
+            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+            return;
+          }
+          if (doc.containsKey('elasticsearch.cluster.name') && !doc['elasticsearch.cluster.name'].empty) {
+            emit(doc['elasticsearch.cluster.name'].value.toString());
+          }
     node_disk_used_pct:
       type: double
       script:
@@ -33,7 +51,7 @@ source:
           }
 dest:
   index: cluster_capacity_utilization_lookup
-  pipeline: 0.4.3-capacity_utilization
+  pipeline: 0.5.0-capacity_utilization
 frequency: 60m
 sync:
   time:
@@ -47,7 +65,7 @@ pivot:
         calendar_interval: 1d
     cluster_name:
       terms:
-        field: elasticsearch.cluster.name
+        field: cb_cluster_name
   aggregations:
     heap_used_pct_p95:
       percentiles:
@@ -65,4 +83,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.4.3
+  fleet_transform_version: 0.5.0

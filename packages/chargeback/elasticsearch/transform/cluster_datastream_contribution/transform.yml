@@ -3,9 +3,58 @@ source:
   index:
     - "monitoring-indices*"
     - "*:monitoring-indices*"
+    # Elastic Cloud Console "Logs and metrics" (Cloud-managed Metricbeat) writes the
+    # .monitoring-es-8-mb data stream, whose "index" metricset carries the same field names as
+    # the Elasticsearch integration index_pivot output, so Chargeback can run without the
+    # Agent-based Elasticsearch integration. Serverless usage is also collected into an index
+    # matching monitoring-indices*, which the first pattern already covers.
+    - ".monitoring-es-*"
+  # These read whichever of <field> / <field>.keyword the mapping actually makes
+  # aggregatable. Where the .monitoring-es-mb index template is not governing the
+  # .monitoring-es-8-mb data stream, dynamic mapping produces `text` plus a `.keyword`
+  # subfield, and a terms aggregation on the text field fails with "Fielddata is
+  # disabled ... Will automatically retry [1/-1]" - retrying forever without ever
+  # producing a row. Both branches below use doc values, so there is no _source penalty.
+  runtime_mappings:
+    cb_cluster_name:
+      type: keyword
+      script:
+        source: |
+          String kw = 'elasticsearch.cluster.name.keyword';
+          if (doc.containsKey(kw)) {
+            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+            return;
+          }
+          if (doc.containsKey('elasticsearch.cluster.name') && !doc['elasticsearch.cluster.name'].empty) {
+            emit(doc['elasticsearch.cluster.name'].value.toString());
+          }
+    cb_index_name:
+      type: keyword
+      script:
+        source: |
+          String kw = 'elasticsearch.index.name.keyword';
+          if (doc.containsKey(kw)) {
+            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+            return;
+          }
+          if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+            emit(doc['elasticsearch.index.name'].value.toString());
+          }
+    cb_index_datastream:
+      type: keyword
+      script:
+        source: |
+          String kw = 'elasticsearch.index.datastream.keyword';
+          if (doc.containsKey(kw)) {
+            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+            return;
+          }
+          if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
+            emit(doc['elasticsearch.index.datastream'].value.toString());
+          }
 dest:
   index: cluster_datastream_contribution_lookup
-  pipeline: 0.4.3-usage
+  pipeline: 0.5.0-usage
 frequency: 60m
 sync:
   time:
@@ -19,18 +68,18 @@ pivot:
         calendar_interval: 1d
     cluster_name:
       terms:
-        field: elasticsearch.cluster.name
+        field: cb_cluster_name
     datastream:
       terms:
         script:
           lang: painless
           source: >
-            if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
-              return doc['elasticsearch.index.datastream'].value;
+            if (doc.containsKey('cb_index_datastream') && !doc['cb_index_datastream'].empty) {
+              return doc['cb_index_datastream'].value;
             }
 
-            def name = doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty
-              ? doc['elasticsearch.index.name'].value
+            def name = doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty
+              ? doc['cb_index_name'].value
               : null;
             if (name == null) return 'unknown';
 
@@ -61,4 +110,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.4.3
+  fleet_transform_version: 0.5.0

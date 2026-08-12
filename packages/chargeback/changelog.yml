@@ -1,4 +1,15 @@
 # later versions go on top
+- version: "0.5.0"
+  changes:
+    - description: "Elastic Cloud Serverless support: billing_realized_pool also matches Serverless capacity SKUs (deployment_type elasticsearch with elasticsearch.*-search-vcu_*, elasticsearch.*-ingest-vcu_*, elasticsearch.retained_*), so serverless projects get an allocatable capacity pool. Previously only ECH *.es.data*.* node SKUs matched, leaving every serverless cost row is_allocatable false and billing_realized_pool_lookup empty for serverless projects, so no serverless cost could be attributed to a tier or data stream. ML VCU is deliberately excluded to match ECH semantics, where ML is cost_category platform."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/pull/106
+    - description: "Usage transforms also source .monitoring-es-*, so Chargeback works with Elastic Cloud Console Logs and metrics (Cloud-managed Metricbeat) instead of requiring the Agent-based Elasticsearch integration. The index metricset carries the same field names the transforms already expect; the two it lacks (elasticsearch.index.datastream and elasticsearch.index.tier) are covered by the existing Painless fallbacks on index.name and index.tier_preference."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/pull/106
+    - description: "Fix Fielddata is disabled on [elasticsearch.cluster.name] causing the transforms to retry forever. Where the .monitoring-es-mb index template is not governing the .monitoring-es-8-mb data stream, dynamic mapping produces text plus a .keyword subfield and a terms aggregation on the text field throws. elasticsearch.cluster.name, index.name, index.datastream, index.tier and index.tier_preference are now read through keyword runtime fields that prefer the .keyword subfield when the mapping has one and fall back to the field itself; both branches use doc values. Also affects cluster_capacity_utilization, which has sourced .monitoring-es-* since 0.4.0."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/pull/106
 - version: 0.4.3
   changes:
     - description: "Fix LOOKUP JOIN on composite_key when lookup indices were dynamically mapped as text (JOIN with right field [composite_key] of type [TEXT]). Dashboard ES|QL now joins on composite_key.keyword after casting a left-side ck key, and composite_key mappings use a keyword multifield. Drop composite_key between chained joins to avoid ambiguous references."
