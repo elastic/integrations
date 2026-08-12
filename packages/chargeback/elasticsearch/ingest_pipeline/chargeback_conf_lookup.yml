@@ -11,6 +11,12 @@ processors:
             ctx.conf_chargeable_unit_rate_unit = keys[0];
           }
         }
+  # LOOKUP JOIN overwrites left-side @timestamp with the right-side field when present.
+  # Conf docs must not carry @timestamp (including null), or billing panels bucket into null / wrong dates.
+  - remove:
+      field: "@timestamp"
+      ignore_missing: true
+      tag: remove_conf_timestamp
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
