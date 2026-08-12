@@ -1,0 +1,69 @@
+{
+    "id": "5fe2f974-c954-415c-9aec-bb89c524e058",
+    "type": "security-rule",
+    "attributes": {
+        "name": "WhoisFreaks - Ingest Pipeline or API Error",
+        "description": "Detects pipeline or upstream API failures from the WhoisFreaks integration (for example invalid API key or download errors). Persistent errors indicate a broken collection pipeline.",
+        "author": [
+            "WhoisFreaks"
+        ],
+        "enabled": true,
+        "false_positives": [
+            "Legitimate bulk domain registrations by portfolio managers or registrars."
+        ],
+        "from": "now-24h",
+        "interval": "1h",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 100,
+        "query": "data_stream.dataset: \"whoisfreaks.whois\" and event.kind: \"pipeline_error\"",
+        "references": [
+            "https://whoisfreaks.com/"
+        ],
+        "risk_score": 21,
+        "rule_id": "5fe2f974-c954-415c-9aec-bb89c524e058",
+        "severity": "low",
+        "tags": [
+            "WhoisFreaks",
+            "Domain",
+            "Threat Intelligence",
+            "WHOIS",
+            "Collection Health"
+        ],
+        "to": "now",
+        "type": "query",
+        "version": 1,
+        "index": [
+            "logs-whoisfreaks.whois-*"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1596",
+                        "name": "Search Open Technical Databases",
+                        "reference": "https://attack.mitre.org/techniques/T1596/",
+                        "subtechnique": [
+                            {
+                                "id": "T1596.002",
+                                "name": "WHOIS",
+                                "reference": "https://attack.mitre.org/techniques/T1596/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "note": "Investigate the domain against brand lists, phishing reports, and internal asset inventories."
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-08-11T12:00:00.000Z",
+    "references": [],
+    "typeMigrationVersion": "8.16.0"
+}

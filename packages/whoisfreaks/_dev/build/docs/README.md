@@ -20,9 +20,8 @@ Subscription** and an API key from the WhoisFreaks billing dashboard.
 The `whois` data stream uses the Elastic Agent **CEL input** to:
 
 1. Issue an HTTPS GET request to the WhoisFreaks gTLD domainer download
-   endpoint, with `apiKey`, `whois=true`, and (optionally) `date` sent as
-   **query parameters** — WhoisFreaks authenticates via a query-string API
-   key, not an HTTP header.
+   endpoint, with `whois=true` and (optionally) `date` sent as **query
+   parameters**, and the API key sent as an `X-API-KEY` **request header**.
 2. Decompress the gzip response body and parse it as a headered CSV via
    `.mime("application/gzip").mime("text/csv; header=present")`.
 3. Map each CSV row to a `whoisfreaks.*` field group and emit it as an
@@ -116,3 +115,28 @@ The `whois` data stream provides WHOIS domain intelligence records.
 {{ ilm }}
 
 {{ transform }}
+
+
+## Dashboards
+
+The integration installs an **[WhoisFreaks] Overview** dashboard with:
+
+- Total and unique domain counts
+- Records over time
+- Top registrars and name servers
+- Top domains table
+- Guidance for newly registered and expiring-domain detection
+
+Open it from **Analytics → Dashboard** after install (filter by tag **WhoisFreaks**).
+
+## Detection rules
+
+The following **Elastic Security** detection rules are installed with the package (Security → Rules):
+
+| Rule | Severity | Purpose |
+|------|----------|---------|
+| WhoisFreaks - Newly Registered Domain Observed | Medium | Domains with `is_newly_registered: true` (same-day create/query) |
+| WhoisFreaks - Domain Expiring Within 30 Days | Low | Portfolio / takeover risk for domains near expiry |
+| WhoisFreaks - Ingest Pipeline or API Error | Low | Collection health (invalid API key, download failures) |
+
+Enable the rules that match your monitoring goals. Rules query `logs-whoisfreaks.whois-*`.

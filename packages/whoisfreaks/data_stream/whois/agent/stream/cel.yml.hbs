@@ -12,10 +12,13 @@ program: |
       "GET",
       state.url + "?" + {
           "whois": ["true"],
-          "apiKey": [state.secret.api_key],
           ?"date": state.date != "" ? optional.of([state.date]) : optional.none(),
       }.format_query()
-  ).do_request().as(resp,
+  ).with({
+      "Header": {
+          "X-API-KEY": [state.secret.api_key],
+      },
+  }).do_request().as(resp,
       resp.StatusCode != 200 ?
           {
               "events": [{
