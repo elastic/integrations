@@ -152,8 +152,26 @@ echo
 echo "=================================================================="
 echo " SWEEP SUMMARY"
 echo "=================================================================="
-printf ' %-10s %-11s %-10s %-10s %-6s %s\n' point raw_MB peak_MB ws_MB oom label
-awk -F, 'NR>1{printf " %-10s %-11.1f %-10.1f %-10.1f %-6s %s\n", $2,$10/1048576,$11/1048576,$12/1048576,$14,$3}' "$CSV"
+# Columns are looked up by name from the header row rather than by position: the schema
+# in lib.sh grows over time, and a positional index silently prints the wrong column
+# instead of failing - which is how an OOM'd run could be read as a clean one.
+printf ' %-10s %-11s %-10s %-10s %-10s %-6s %s\n' point raw_MB peak_MB ws_MB wsmax_MB oom label
+awk -F, '
+  # A column with no value is printed as a dash, not as 0.0: rows measured before a
+  # column existed would otherwise read as a measurement of zero.
+  function mb(v) { return v == "" ? "-" : sprintf("%.1f", v / 1048576) }
+  /^#/ { next }
+  $1 == "axis" { for (i = 1; i <= NF; i++) col[$i] = i; next }
+  !("oom" in col) {
+    print "  cannot summarise: no header row in " FILENAME > "/dev/stderr"
+    exit 1
+  }
+  {
+    printf " %-10s %-11s %-10s %-10s %-10s %-6s %s\n",
+      $col["point"], mb($col["total_raw_bytes"]), mb($col["peak_bytes"]),
+      mb($col["workingset_bytes"]), mb($col["workingset_peak_bytes"]),
+      ($col["oom"] == "" ? "-" : $col["oom"]), $col["label"]
+  }' "$CSV"
 
 # The fit and the published tables come from one implementation, so a number in a
 # document and a number on this terminal cannot disagree. That implementation ships
