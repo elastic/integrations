@@ -1,6 +1,6 @@
 # Chargeback
 
-_Technical preview: This integration is being developed by Elastic's Customer Engineering team. Please report any issues to the Elastician who shared this integration with you._
+_Technical preview: This integration is being developed by Elastic's Customer Engineering team. Report any issues to the Elastician who shared this integration with you._
 
 The Chargeback integration provides FinOps visibility into Elastic usage across tenants. By integrating data from the [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) and [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integrations, it enables the determination of value provided by each deployment, data stream, and tier across the organisation. This allows Centre of Excellence (CoE) teams to accurately allocate costs back to the appropriate tenant.
 
@@ -12,7 +12,7 @@ FinOps is an operational framework and cultural practice aimed at maximizing the
 
 The Chargeback integration assists organisations in addressing a crucial question:
 
-> **"How is my organisation consuming the Elastic solution, and to which tenants can I allocate these costs?"**
+> **"How is your organization consuming the Elastic solution, and to which tenants can you allocate these costs?"**
 
 The integration provides a breakdown of chargeable units (ECU/ERU) per deployment, data tier, data stream, and day.
 
@@ -78,7 +78,7 @@ POST chargeback_conf_lookup/_update/config
 
 ### Add a new configuration period
 
-Using `_doc` creates a new document with an auto-generated ID, allowing different rates or weights for different time periods (for example Q1 vs Q2 rates):
+Using `_doc` creates a new document with an auto-generated ID, allowing different rates or weights for different time periods (for example Q1 versus Q2 rates):
 
 ```
 POST chargeback_conf_lookup/_doc
@@ -167,9 +167,9 @@ These transforms produce lookup indices queried by the dashboards using ES|QL LO
 
 All Chargeback transforms start automatically when the integration is installed.
 
-The `cluster_capacity_utilization` transform reads from broad monitoring source indices covering all deployment types. To avoid a heavy historical backfill that could impact cluster performance on first run, it is configured to process only the last 26 hours of data — building utilization from the current day forward rather than historically. Utilization data from before installation is not backfilled; the 100% default applies until the transform has run for its first full day.
+The `cluster_capacity_utilization` transform reads from broad monitoring source indices covering all deployment types. To avoid a heavy historical backfill that could impact cluster performance on first run, it is configured to process only the last 26 hours of data — building utilization from the current day forward rather than historically. Utilization data from before installation is not backfilled. The 100% default applies until the transform has run for its first full day.
 
-You can verify the transforms are running by navigating to **Stack Management > Transforms** and filtering for `chargeback`.
+You can verify the transforms are running by navigating to **Stack Management → Transforms** and filtering for `chargeback`.
 
 ### Transform health monitoring
 
@@ -217,7 +217,7 @@ Reference dashboard showing all active configuration values: conversion rate, da
 
 ### Cost reconciliation
 
-Two distinct totals appear across the dashboards; both are valid and intentionally different:
+Two distinct totals appear across the dashboards. Both are valid and intentionally different:
 
 | Total | Source | Dashboard |
 |---|---|---|
@@ -244,7 +244,7 @@ chargeback_group:<group-name>
 
 For example: `chargeback_group:team-search` or `chargeback_group:project-analytics`.
 
-The `billing_cluster_cost` transform automatically extracts these tags from the `deployment_tags` field in ESS Billing data. Each deployment should have only one `chargeback_group` tag; multiple tags can produce unpredictable cost allocation.
+The `billing_cluster_cost` transform automatically extracts these tags from the `deployment_tags` field in ESS Billing data. Each deployment should have only one `chargeback_group` tag. Multiple tags can produce unpredictable cost allocation.
 
 ## Observability Alerting
 
@@ -259,6 +259,13 @@ Three alert rule templates are included and can be installed from the integratio
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.4.3
+
+1. Upgrade the Fleet package to **0.4.3**. Kibana requirement remains `^9.2.0`.
+2. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
+3. Delete Chargeback `*_lookup` destination indices, then reset and start the Chargeback transforms so `composite_key` is remapped with a keyword multifield. In-place upgrades that leave dynamically mapped `text` `composite_key` fields cause LOOKUP JOIN errors (`JOIN with right field [composite_key] of type [TEXT] is not supported`).
+4. If `chargeback_conf_lookup` documents still contain `@timestamp`, delete that index and reset the conf transform as well. LOOKUP JOIN would otherwise overwrite billing `@timestamp` and create null time buckets on Billing Components Overview.
 
 ### Upgrading to 0.4.2
 
@@ -278,7 +285,7 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 2. The two new transforms (`billing_realized_pool`, `cluster_capacity_utilization`) are created and auto-started.
 3. Reset the `billing_cluster_cost` transform to backfill `cost_type`, `cost_category`, and `is_allocatable` into existing lookup documents. Until backfill completes, the Component statistics panels will show no data.
 4. Ensure the Elasticsearch integration collects **`node_stats`** from data nodes. Without this, utilization defaults to 100%.
-5. The old `[Chargeback] Cost and Consumption breakdown` dashboard is replaced by three new dashboards. Delete the old dashboard from **Stack Management > Saved Objects** if it is not removed automatically.
+5. The old `[Chargeback] Cost and Consumption breakdown` dashboard is replaced by three new dashboards. Delete the old dashboard from **Stack Management → Saved Objects** if it is not removed automatically.
 
 ### Upgrading from 0.3.1 to 0.3.2
 
@@ -291,4 +298,4 @@ If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard
 
 ### Upgrading from 0.2.x to 0.3.0
 
-Field names changed from ECU to chargeable units: `total_ecu` to `total_chargeable_units`, `conf_ecu_rate` to `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` to `conf_chargeable_unit_rate_unit`. Dashboard ES|QL uses `COALESCE` across both names; both columns must exist in the lookup index mapping or panels fail at query time.
+Field names changed from ECU to chargeable units: `total_ecu` to `total_chargeable_units`, `conf_ecu_rate` to `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` to `conf_chargeable_unit_rate_unit`. Dashboard ES|QL uses the chargeable-unit field names (`total_chargeable_units`, `conf_chargeable_unit_rate`). ES|QL does not resolve mapping aliases, so panels must not reference the legacy names even inside `COALESCE`.
