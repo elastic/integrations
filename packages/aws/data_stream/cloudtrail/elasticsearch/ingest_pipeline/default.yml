@@ -1117,7 +1117,7 @@ processors:
         (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' ||
         ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser' ||
         ctx.aws?.cloudtrail?.user_identity?.type == 'IdentityCenterUser') &&
-        ctx.aws?.cloudtrail?.user_identity?.arn != null &&
+        ctx.aws.cloudtrail.user_identity.arn != null &&
         ctx.aws.cloudtrail.user_identity.arn.contains(':sts:') &&
         ctx.aws.cloudtrail.user_identity.arn.contains('/')
       tag: extract_session_name_from_arn
@@ -2122,23 +2122,17 @@ processors:
       field: json.previousDigestSignature
       target_field: aws.cloudtrail.digest.previous_signature
       ignore_missing: true
-  - set:
-      tag: set_aws_cloudtrail_digest_previous_hash_value_5c8b1f30
-      field: aws.cloudtrail.digest.previous_hash_value
-      copy_from: json.previousDigestHashValue
-      ignore_empty_value: true
   - rename:
-      tag: rename_json_previousDigestHashValue_to_file_hash_sha256_3a91c7d2
+      tag: rename_json_previousDigestHashValue_to_aws_cloudtrail_digest_previous_hash_value_5c8b1f30
       field: json.previousDigestHashValue
-      target_field: file.hash.sha256
+      target_field: aws.cloudtrail.digest.previous_hash_value
       ignore_missing: true
-      if: ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
   - append:
-      tag: append_related_hash_7574f0ee
+      tag: append_related_hash_previous_digest_7574f0ee
       field: related.hash
-      value: '{{{file.hash.sha256}}}'
+      value: '{{{aws.cloudtrail.digest.previous_hash_value}}}'
       allow_duplicates: false
-      if: ctx.file?.hash?.sha256 != null
+      if: ctx.aws?.cloudtrail?.digest?.previous_hash_value != null
   - rename:
       tag: rename_json_logFiles_to_aws_cloudtrail_digest_log_files_84d51ab1
       field: json.logFiles
@@ -2392,7 +2386,8 @@ processors:
       value: '{{{source.address}}}'
       if: >-
         ctx.source?.ip == null && ctx.source?.address != null &&
-        ctx.source.address.contains('.') && !ctx.source.address.contains(' ')
+        ctx.source.address.contains('.') && !ctx.source.address.contains(' ') &&
+        !ctx.source.address.endsWith('.amazonaws.com')
       allow_duplicates: false
   - append:
       tag: append_related_hosts_computer_name

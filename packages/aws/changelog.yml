@@ -8,7 +8,7 @@
       type: enhancement
       link: https://github.com/elastic/integrations/pull/20403
     - description: |
-        Fix `file.hash.sha256` mapping to use `previousDigestHashValue` instead of `previousDigestSignature`.
+        Stop populating `file.hash.sha256` on digest records. It was taken from `previousDigestHashValue`, which hashes the previous digest file, while `file.path` is `digestS3Object`, the current one, so the two described different files. A digest file carries no hash of itself, so there is no correct value. The hash remains available as `aws.cloudtrail.digest.previous_hash_value` and in `related.hash`.
         Fix `DeleteObject` setting `event.type` to `delete`, which is not a valid ECS value, so S3 object deletions are now matched by queries filtering on `event.type: deletion` like every other delete action.
         Fix `Publish`, `SendCommand` and `Converse` producing no `event.type` at all. They now use `info`, `start` and `info` respectively, alongside the `event.category` they already carried.
       type: bugfix
