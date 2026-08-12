@@ -1,0 +1,179 @@
+---
+description: Pipeline for parsing AegisBPF OCSF events.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.provider
+      value: aegisbpf
+  - set:
+      field: observer.vendor
+      value: AegisBPF
+  - set:
+      field: observer.product
+      value: AegisBPF
+  - date:
+      field: time
+      target_field: '@timestamp'
+      formats:
+        - UNIX_MS
+      if: ctx.time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to parse time: {{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.id
+      copy_from: metadata.uid
+      if: ctx.metadata?.uid != null
+  - set:
+      field: event.category
+      value:
+        - file
+      if: ctx.class_uid == 1001
+  - set:
+      field: event.category
+      value:
+        - network
+      if: ctx.class_uid == 4001
+  - set:
+      field: event.action
+      copy_from: activity_name
+      if: ctx.activity_name != null
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - set:
+      field: event.type
+      value:
+        - denied
+      if: ctx.action_id == 2
+  - set:
+      field: event.type
+      value:
+        - allowed
+      if: ctx.action_id == 1
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.status_id == 1
+  - set:
+      field: event.severity
+      copy_from: severity_id
+      if: ctx.severity_id != null
+  - set:
+      field: process.pid
+      copy_from: actor.process.pid
+      if: ctx.actor?.process?.pid != null
+  - set:
+      field: process.name
+      copy_from: actor.process.name
+      if: ctx.actor?.process?.name != null
+      ignore_empty_value: true
+  - set:
+      field: process.parent.pid
+      copy_from: actor.process.parent_process.pid
+      if: ctx.actor?.process?.parent_process?.pid != null
+  - set:
+      field: host.name
+      copy_from: device.hostname
+      if: ctx.device?.hostname != null
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      copy_from: file.path
+      if: ctx.file?.path != null
+      ignore_empty_value: true
+  - set:
+      field: file.name
+      copy_from: file.name
+      if: ctx.file?.name != null
+      ignore_empty_value: true
+  - set:
+      field: file.directory
+      copy_from: file.parent_folder
+      if: ctx.file?.parent_folder != null
+      ignore_empty_value: true
+  - set:
+      field: file.inode
+      value: '{{{unmapped.aegis_inode}}}'
+      if: ctx.unmapped?.aegis_inode != null
+  # Drop the OCSF-only file sub-fields (type_id/type/parent_folder) now that the
+  # ECS file.* fields (name/path/directory/inode) are populated.
+  - remove:
+      field:
+        - file.type_id
+        - file.type
+        - file.parent_folder
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: src_endpoint.ip
+      if: ctx.src_endpoint?.ip != null
+  - set:
+      field: destination.ip
+      copy_from: dst_endpoint.ip
+      if: ctx.dst_endpoint?.ip != null
+  - set:
+      field: aegisbpf.class_uid
+      copy_from: class_uid
+      if: ctx.class_uid != null
+  - set:
+      field: aegisbpf.class_name
+      copy_from: class_name
+      if: ctx.class_name != null
+  - set:
+      field: aegisbpf.disposition
+      copy_from: disposition
+      if: ctx.disposition != null
+  - set:
+      field: aegisbpf.device
+      copy_from: unmapped.aegis_device
+      if: ctx.unmapped?.aegis_device != null
+  - set:
+      field: aegisbpf.cgroup.id
+      copy_from: unmapped.aegis_cgroup_id
+      if: ctx.unmapped?.aegis_cgroup_id != null
+  - set:
+      field: aegisbpf.cgroup.path
+      copy_from: unmapped.aegis_cgroup_path
+      if: ctx.unmapped?.aegis_cgroup_path != null
+      ignore_empty_value: true
+  # Remove the raw OCSF envelope fields now that they are mapped to ECS.
+  - remove:
+      field:
+        - class_uid
+        - class_name
+        - category_uid
+        - category_name
+        - activity_id
+        - activity_name
+        - type_uid
+        - type_name
+        - action_id
+        - action
+        - disposition_id
+        - disposition
+        - status_id
+        - status
+        - severity_id
+        - severity
+        - time
+        - metadata
+        - actor
+        - device
+        - unmapped
+        - src_endpoint
+        - dst_endpoint
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
