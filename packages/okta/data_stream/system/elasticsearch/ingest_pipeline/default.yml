@@ -886,30 +886,6 @@ processors:
       tag: user_agent_original
       field: user_agent.original
       ignore_missing: true
-  - set:
-      tag: set_user_agent_os_platform
-      field: user_agent.os.platform
-      copy_from: okta.device.os_platform
-      ignore_empty_value: true
-      description: >-
-        The operating system family of the end user's device, reported by Okta in
-        uppercase.
-  - set:
-      tag: set_user_agent_os_version
-      field: user_agent.os.version
-      copy_from: okta.device.os_version
-      ignore_empty_value: true
-      if: ctx.user_agent?.os?.version == null
-      description: >-
-        The operating system version of the end user's device as Okta reports it,
-        applied where the user agent string carries no version of its own.
-  - remove:
-      tag: remove_device_os_platform
-      field: okta.device.os_platform
-      ignore_missing: true
-      description: >-
-        Removes the vendor field after the copy above, leaving okta.device.os_platform
-        as an alias to user_agent.os.platform.
   - geoip:
       tag: geoip_ip
       field: source.ip

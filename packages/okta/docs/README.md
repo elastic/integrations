@@ -347,8 +347,8 @@ An example event for `system` looks as following:
 | okta.device.id | Identifier assigned by Okta when the device was registered with the org. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `device.id` field. | alias |
 | okta.device.managed | Whether the device is enrolled in the organization's device management. Only present on events that carry device context, so it is absent from most events. | boolean |
 | okta.device.name | The device's self-reported name, which in practice is the hardware model identifier rather than a name a user chose. Deprecated. Use the ECS `device.model.identifier` field. | alias |
-| okta.device.os_platform | The operating system family of the end user's device, reported by Okta in uppercase. Only present on events that carry device context, so it is absent from most events. Deprecated. Use the ECS `user_agent.os.platform` field. | alias |
-| okta.device.os_version | The operating system version of the end user's device. The format is whatever the platform reports and is not normalized by Okta, so it is not reliably comparable across platforms. May differ from `user_agent.os.version`, which is parsed from the request instead. | keyword |
+| okta.device.os_platform | The operating system family of the end user's device, reported by Okta in uppercase. Only present on events that carry device context, so it is absent from most events. | keyword |
+| okta.device.os_version | The operating system version of the end user's device. The format is whatever the platform reports and is not normalized by Okta, so it is not reliably comparable across platforms. | keyword |
 | okta.device.registered | Whether the device is registered. | boolean |
 | okta.device.screen_lock_type | The mechanism for locking the device's screen. One of "NONE", "PASSCODE" or "BIOMETRIC". | keyword |
 | okta.device.secure_hardware_present | Whether there is secure hardware present on the device. This is a checks for chip presence: trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens on the secure hardware. | boolean |
@@ -380,5 +380,3 @@ An example event for `system` looks as following:
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | user.id | Unique identifier of the user. | keyword |
-| user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
