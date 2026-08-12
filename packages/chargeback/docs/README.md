@@ -260,6 +260,12 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 
 ## Upgrade Notes
 
+### Upgrading to 0.4.2
+
+1. Upgrade the Fleet package to **0.4.2**. Kibana requirement remains `^9.2.0`.
+2. This release updates managed dashboard ES|QL only. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
+3. No transform reset is required for these dashboard fixes.
+
 ### Upgrading to 0.4.1
 
 1. Upgrade the Fleet package to **0.4.1**. Kibana requirement remains `^9.2.0`.
