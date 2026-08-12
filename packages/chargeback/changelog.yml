@@ -1,6 +1,12 @@
 # later versions go on top
 - version: 0.4.3
   changes:
+    - description: "Fix LOOKUP JOIN on composite_key when lookup indices were dynamically mapped as text (JOIN with right field [composite_key] of type [TEXT]). Dashboard ES|QL now joins on composite_key.keyword after casting a left-side ck key, and composite_key mappings use a keyword multifield. Drop composite_key between chained joins to avoid ambiguous references."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/104
+    - description: "Fix Billing Components Overview time-series panels that showed null @timestamp buckets after LOOKUP JOIN chargeback_conf_lookup. Conf docs that include @timestamp (even null) overwrite the billing timestamp; STATS now groups by the preserved ts alias, and the conf ingest pipeline removes @timestamp."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/104
     - description: "Remove remaining legacy conf_ecu_rate and total_ecu references from Billing Components Overview and Usage and Cost Allocation dashboard ES|QL. ES|QL does not resolve mapping aliases, so COALESCE fallbacks to those columns failed verification and cascaded into Unknown column errors for derived fields such as storage, querying, and indexing."
       type: bugfix
       link: https://github.com/elastic/elasticsearch-chargeback/issues/104

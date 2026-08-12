@@ -263,8 +263,9 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 ### Upgrading to 0.4.3
 
 1. Upgrade the Fleet package to **0.4.3**. Kibana requirement remains `^9.2.0`.
-2. This release updates managed dashboard ES|QL only. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
-3. No transform reset is required for these dashboard fixes.
+2. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
+3. Delete Chargeback `*_lookup` destination indices, then reset and start the Chargeback transforms so `composite_key` is remapped with a keyword multifield. In-place upgrades that leave dynamically mapped `text` `composite_key` fields cause LOOKUP JOIN errors (`JOIN with right field [composite_key] of type [TEXT] is not supported`).
+4. If `chargeback_conf_lookup` documents still contain `@timestamp`, delete that index and reset the conf transform as well. LOOKUP JOIN would otherwise overwrite billing `@timestamp` and create null time buckets on Billing Components Overview.
 
 ### Upgrading to 0.4.2
 
