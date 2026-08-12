@@ -12,14 +12,14 @@
 
 * Intended for environments where TYCHON Quantum Command produces NDJSON or JSON output files on Windows, Linux, or macOS systems.
 * Requires a valid TYCHON Quantum Command license.
-* Requires Elastic Stack / Fleet compatible with package version `2.0.4` and the package manifest constraint `^8.11.0`.
+* Requires Elastic Stack / Fleet compatible with package version `0.1.0` and the package manifest constraint `>=8.11.0 <10.0.0`.
 
 ### How it works
 
 1. TYCHON Quantum Command writes scan results to local `.ndjson` or `.json` files.
 2. Elastic Agent collects those files through the `filestream` input in the `tychon_pqc` data stream.
 3. The ingest pipeline stores the raw events in the namespace-specific source data stream `logs-tychon_quantum_command.tychon_pqc-<namespace>`.
-4. Elasticsearch transforms filter the combined source stream by `tychon.index` and publish dataset-specific destination indices such as `tychon-pqc-inventory`, `tychon-pqc-certificates`, and `tychon-pqc-system-readiness`.
+4. Elasticsearch transforms filter the combined source stream by `tychon.index` and publish current-state upsert/entity destination indices such as `tychon-pqc-inventory`, `tychon-pqc-certificates`, and `tychon-pqc-system-readiness`.
 5. Kibana dashboards and saved objects query both the raw and transformed views for operational analysis.
 
 ## What data does this integration collect?
@@ -38,7 +38,7 @@ The integration collects file-based TYCHON Quantum Command output in NDJSON or J
 
 ### Analytical datasets produced by transforms
 
-The package currently publishes the following destination indices from the shared source stream:
+The package currently publishes the following current-state upsert/entity destination indices from the shared source stream. These indices are not raw event data streams; each transform uses `observer.id` and `tychon.record.id` as the latest transform identity so rescans update the same entity record.
 
 * `tychon-pqc-applications`
 * `tychon-pqc-archives`
@@ -113,6 +113,7 @@ Use the following checks after deployment:
 * Confirm transform output by verifying documents appear in indices such as `tychon-pqc-inventory`, `tychon-pqc-certificates`, and `tychon-pqc-system-readiness`.
 * Open the packaged dashboards and verify charts populate without missing data view errors.
 * Review a few representative documents to confirm timestamps, observer metadata, and TYCHON-specific fields were parsed as expected.
+* Confirm `event.ingested` is present on source events. Fleet's final pipeline usually sets this field after the package ingest pipeline, but the package also sets it from `_ingest.timestamp` so pipeline tests and transform sync always have a stable ingest-time field.
 
 
 ## Troubleshooting
@@ -196,6 +197,10 @@ This stream can contain multiple TYCHON record families in one place, including 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp |  | date |
+| archive.encryption.strength |  | keyword |
+| archive.encryption.type |  | keyword |
+| archive.format.version |  | keyword |
+| archive.type |  | keyword |
 | certificate.alias |  | keyword |
 | certificate.authority_key_id |  | keyword |
 | certificate.basic_constraints.is_ca |  | boolean |
@@ -310,8 +315,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | file.path |  | keyword |
 | file.permissions |  | keyword |
 | file.size |  | long |
-| hash.sha1_certificate |  | keyword |
-| hash.sha256_certificate |  | keyword |
+| hash.sha256 |  | keyword |
 | host.architecture |  | keyword |
 | host.cpu.cores |  | long |
 | host.domain |  | keyword |
@@ -326,9 +330,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | host.os.name |  | keyword |
 | host.os.platform |  | keyword |
 | host.os.version |  | keyword |
-| host.os_category |  | keyword |
-| host.os_pqc_tier |  | keyword |
-| id |  | keyword |
+| input.type |  | keyword |
 | ipsec_tunnel.active |  | boolean |
 | ipsec_tunnel.config_path |  | keyword |
 | ipsec_tunnel.detection_confidence |  | keyword |
@@ -368,47 +370,35 @@ This stream can contain multiple TYCHON record families in one place, including 
 | keystore.stats.pqc_vulnerable_certificates |  | long |
 | keystore.stats.vulnerable_certificates |  | long |
 | keystore.type |  | keyword |
+| log.file.device_id |  | keyword |
+| log.file.fingerprint |  | keyword |
+| log.file.inode |  | keyword |
+| log.file.path |  | keyword |
+| log.offset |  | long |
+| macsec.cipher_suite |  | keyword |
+| macsec.detection_confidence |  | keyword |
+| macsec.detection_method |  | keyword |
+| macsec.implementation |  | keyword |
+| macsec.interface_name |  | keyword |
+| macsec.key_agreement_method |  | keyword |
+| macsec.parent_interface |  | keyword |
+| macsec.risk_level |  | keyword |
+| macsec.sci |  | keyword |
+| macsec.status |  | keyword |
+| macsec.validation_mode |  | keyword |
 | network.protocol |  | keyword |
-| observer.bigfix_client_installed |  | boolean |
-| observer.bios_serial_number |  | keyword |
-| observer.cpu_cores |  | long |
-| observer.cpu_logical_cores |  | long |
-| observer.cpu_model_name |  | keyword |
-| observer.cpu_vendor_id |  | keyword |
-| observer.current_user |  | keyword |
-| observer.database_schema_version |  | keyword |
 | observer.domain |  | keyword |
-| observer.error |  | keyword |
-| observer.fips_mode_enabled |  | boolean |
 | observer.hostname |  | keyword |
 | observer.id |  | keyword |
-| observer.ip_addresses |  | keyword |
-| observer.is_vdi_environment |  | boolean |
-| observer.kernel_arch |  | keyword |
-| observer.kernel_version |  | keyword |
-| observer.machine_serial_number |  | keyword |
-| observer.organization |  | keyword |
 | observer.os.build |  | keyword |
 | observer.os.family |  | keyword |
 | observer.os.kernel |  | keyword |
 | observer.os.name |  | keyword |
 | observer.os.platform |  | keyword |
 | observer.os.version |  | keyword |
-| observer.output_schema_version |  | keyword |
-| observer.platform_version |  | keyword |
-| observer.ram_used_percent |  | float |
-| observer.software_version |  | keyword |
-| observer.system_uptime_seconds |  | long |
-| observer.total_ram_bytes |  | long |
-| observer.tychon_client_id |  | keyword |
 | observer.type |  | keyword |
-| observer.user_gid |  | keyword |
-| observer.user_home_dir |  | keyword |
-| observer.user_uid |  | keyword |
-| observer.vdi_identity_source |  | keyword |
 | observer.vendor |  | keyword |
 | observer.version |  | keyword |
-| observer.windows_server_role |  | keyword |
 | omb.additional_notes |  | wildcard |
 | omb.block_cipher_key_lengths |  | keyword |
 | omb.block_cipher_modes |  | keyword |
@@ -444,7 +434,6 @@ This stream can contain multiple TYCHON record families in one place, including 
 | omb.vendor |  | keyword |
 | omb.vulnerability_status |  | keyword |
 | package.description |  | keyword |
-| package.install_directory |  | keyword |
 | package.name |  | keyword |
 | package.path |  | keyword |
 | package.version |  | keyword |
@@ -463,32 +452,11 @@ This stream can contain multiple TYCHON record families in one place, including 
 | pqc.vulnerable |  | boolean |
 | process.command_line |  | wildcard |
 | process.executable |  | keyword |
-| process.executable_directory |  | keyword |
-| process.executable_file.attributes |  | keyword |
-| process.executable_file.company_name |  | keyword |
-| process.executable_file.extension |  | keyword |
-| process.executable_file.file_version |  | keyword |
-| process.executable_file.group |  | keyword |
-| process.executable_file.md5_hash |  | keyword |
-| process.executable_file.name |  | keyword |
-| process.executable_file.owner |  | keyword |
-| process.executable_file.path |  | keyword |
-| process.executable_file.product_name |  | keyword |
-| process.executable_file.product_version |  | keyword |
-| process.executable_file.sha1_hash |  | keyword |
-| process.executable_file.sha256_hash |  | keyword |
-| process.executable_file.size |  | long |
 | process.hash.sha256 |  | keyword |
 | process.name |  | keyword |
 | process.path |  | keyword |
 | process.pid |  | long |
-| process.service_info.description |  | keyword |
-| process.service_info.display_name |  | keyword |
-| process.service_info.name |  | keyword |
-| process.service_info.state |  | keyword |
 | process.start |  | date |
-| process.user_name |  | keyword |
-| process.username |  | keyword |
 | quantum_readiness.assessment_duration_ms |  | long |
 | quantum_readiness.assessment_id |  | keyword |
 | quantum_readiness.assessment_type |  | keyword |
@@ -597,14 +565,6 @@ This stream can contain multiple TYCHON record families in one place, including 
 | quantum_readiness.upgrade_pathway.estimated_time_weeks |  | long |
 | quantum_readiness.upgrade_pathway.order |  | long |
 | quantum_readiness.upgrade_pathway.priority |  | keyword |
-| quantum_ready |  | boolean |
-| quantum_ready_cert |  | boolean |
-| quantum_ready_cipher |  | boolean |
-| quantum_ready_kx |  | boolean |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| scan_type |  | keyword |
 | security.known_vulnerabilities |  | keyword |
 | security.perfect_forward_secrecy |  | boolean |
 | security.pqc_support |  | boolean |
@@ -659,6 +619,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | ssh.server.kex_algorithms |  | keyword |
 | ssh.server.mac_algorithms |  | keyword |
 | ssh.status |  | keyword |
+| tags |  | keyword |
 | target_host.address |  | keyword |
 | target_host.domain |  | keyword |
 | target_host.ip |  | ip |
@@ -746,6 +707,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.browser_extension.profile_path |  | keyword |
 | tychon.browser_extension.quantum_ready |  | boolean |
 | tychon.certificate_leaf_details.basic_constraints.is_ca |  | boolean |
+| tychon.certificate_leaf_details.basic_constraints.max_path_len |  | long |
 | tychon.certificate_leaf_details.basic_constraints.max_path_len_zero |  | boolean |
 | tychon.certificate_leaf_details.extended_key_usage |  | keyword |
 | tychon.certificate_leaf_details.is_csr |  | boolean |
@@ -817,6 +779,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.cipher_quick.preferred_cipher |  | keyword |
 | tychon.cipher_quick.preferred_key_exchange |  | keyword |
 | tychon.cipher_quick.preferred_protocol |  | keyword |
+| tychon.cipher_quick.requires_client_cert |  | boolean |
 | tychon.cipher_quick.supported_cipher_count |  | long |
 | tychon.cipher_quick.supported_cipher_suites |  | keyword |
 | tychon.cipher_quick.supported_key_exchange_count |  | long |
@@ -838,6 +801,8 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.crypto.protocol |  | keyword |
 | tychon.crypto.protocol_version |  | keyword |
 | tychon.crypto.quantum_risk |  | keyword |
+| tychon.host.os_category | TYCHON operating system category used for PQC readiness reporting. | keyword |
+| tychon.host.os_pqc_tier | TYCHON operating system PQC readiness tier. | keyword |
 | tychon.index |  | keyword |
 | tychon.installed_app.crypto_libraries |  | keyword |
 | tychon.installed_app.crypto_library_count |  | long |
@@ -863,10 +828,79 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.library.windows_cng_pqc_status |  | keyword |
 | tychon.library.windows_cng_version |  | keyword |
 | tychon.migration_priority |  | keyword |
+| tychon.observer.bigfix_client_installed |  | boolean |
+| tychon.observer.bios_serial_number |  | keyword |
+| tychon.observer.cpu_cores |  | long |
+| tychon.observer.cpu_logical_cores |  | long |
+| tychon.observer.cpu_model_name |  | keyword |
+| tychon.observer.cpu_vendor_id |  | keyword |
+| tychon.observer.current_user |  | keyword |
+| tychon.observer.database_schema_version |  | keyword |
+| tychon.observer.domain |  | keyword |
+| tychon.observer.error |  | keyword |
+| tychon.observer.fips_mode_enabled |  | boolean |
+| tychon.observer.hostname |  | keyword |
+| tychon.observer.id |  | keyword |
+| tychon.observer.ip_addresses |  | keyword |
+| tychon.observer.is_vdi_environment |  | boolean |
+| tychon.observer.kernel_arch |  | keyword |
+| tychon.observer.kernel_version |  | keyword |
+| tychon.observer.machine_serial_number |  | keyword |
+| tychon.observer.organization |  | keyword |
+| tychon.observer.os.build |  | keyword |
+| tychon.observer.os.family |  | keyword |
+| tychon.observer.os.kernel |  | keyword |
+| tychon.observer.os.name |  | keyword |
+| tychon.observer.os.platform |  | keyword |
+| tychon.observer.os.version |  | keyword |
+| tychon.observer.output_schema_version |  | keyword |
+| tychon.observer.platform_version |  | keyword |
+| tychon.observer.ram_used_percent |  | float |
+| tychon.observer.software_version |  | keyword |
+| tychon.observer.system_uptime_seconds |  | long |
+| tychon.observer.total_ram_bytes |  | long |
+| tychon.observer.tychon_client_id |  | keyword |
+| tychon.observer.type |  | keyword |
+| tychon.observer.user_gid |  | keyword |
+| tychon.observer.user_home_dir |  | keyword |
+| tychon.observer.user_uid |  | keyword |
+| tychon.observer.vdi_identity_source |  | keyword |
+| tychon.observer.vendor |  | keyword |
+| tychon.observer.version |  | keyword |
+| tychon.observer.windows_server_role |  | keyword |
+| tychon.package.install_directory | Package installation directory as emitted by TQC. | keyword |
 | tychon.pipeline.failed |  | boolean |
 | tychon.pipeline.processed |  | boolean |
 | tychon.pqc_readiness |  | keyword |
+| tychon.process.executable_directory | Directory containing the process executable reported by TQC. | keyword |
+| tychon.process.executable_file.attributes |  | keyword |
+| tychon.process.executable_file.company_name |  | keyword |
+| tychon.process.executable_file.extension |  | keyword |
+| tychon.process.executable_file.file_version |  | keyword |
+| tychon.process.executable_file.group |  | keyword |
+| tychon.process.executable_file.md5_hash |  | keyword |
+| tychon.process.executable_file.name |  | keyword |
+| tychon.process.executable_file.owner |  | keyword |
+| tychon.process.executable_file.path |  | keyword |
+| tychon.process.executable_file.product_name |  | keyword |
+| tychon.process.executable_file.product_version |  | keyword |
+| tychon.process.executable_file.sha1_hash |  | keyword |
+| tychon.process.executable_file.sha256_hash |  | keyword |
+| tychon.process.executable_file.size |  | long |
+| tychon.process.service_info.description |  | keyword |
+| tychon.process.service_info.display_name |  | keyword |
+| tychon.process.service_info.name |  | keyword |
+| tychon.process.service_info.state |  | keyword |
+| tychon.process.user_name | Process user name as emitted by TQC. | keyword |
+| tychon.process.username | Process username as emitted by TQC. | keyword |
+| tychon.quantum_ready.certificate |  | boolean |
+| tychon.quantum_ready.cipher |  | boolean |
+| tychon.quantum_ready.key_exchange |  | boolean |
+| tychon.quantum_ready.overall |  | boolean |
 | tychon.quantum_risk |  | keyword |
+| tychon.record.dataset | Original TYCHON record dataset emitted by the TQC binary before Fleet dataset normalization. | keyword |
+| tychon.record.family | TYCHON record family used to route records to transforms and dashboards. | keyword |
+| tychon.record.id | Stable TYCHON record identifier copied from the source id field. | keyword |
 | tychon.routing.original.host_architecture |  | keyword |
 | tychon.routing.original.host_hostname |  | keyword |
 | tychon.routing.original.host_id |  | keyword |
@@ -881,9 +915,30 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.routing.source.observer_id |  | keyword |
 | tychon.routing.target.address |  | keyword |
 | tychon.routing.target.ip |  | ip |
+| tychon.scan.target_input |  | keyword |
+| tychon.scan.timestamp |  | date |
+| tychon.scan.type |  | keyword |
+| tychon.scan.type_original |  | keyword |
 | tychon.scan_mode |  | keyword |
 | tychon.scanner_version |  | keyword |
 | tychon.type |  | keyword |
+| tychon.x509.fingerprint_sha1 |  | keyword |
+| tychon.x509.fingerprint_sha256 |  | keyword |
+| tychon.x509.is_ca |  | boolean |
+| tychon.x509.is_self_signed |  | boolean |
+| tychon.x509.is_weak_signature |  | boolean |
+| tychon.x509.issuer_cn |  | keyword |
+| tychon.x509.issuer_org |  | keyword |
+| tychon.x509.key_bits |  | long |
+| tychon.x509.key_type |  | keyword |
+| tychon.x509.key_usage |  | keyword |
+| tychon.x509.not_after |  | date |
+| tychon.x509.not_before |  | date |
+| tychon.x509.serial_number |  | keyword |
+| tychon.x509.sha256_fingerprint |  | keyword |
+| tychon.x509.sig_algorithm |  | keyword |
+| tychon.x509.subject_cn |  | keyword |
+| tychon.x509.subject_org |  | keyword |
 | vpn_client.active |  | boolean |
 | vpn_client.config_path |  | keyword |
 | vpn_client.detection_confidence |  | keyword |
@@ -909,33 +964,21 @@ This stream can contain multiple TYCHON record families in one place, including 
 | vulnerability.is_vulnerable |  | boolean |
 | vulnerability.risk_level |  | keyword |
 | vulnerability.risk_reason |  | wildcard |
-| x509.fingerprint_sha256 |  | keyword |
 | x509.is_ca |  | boolean |
-| x509.is_self_signed |  | boolean |
 | x509.is_valid |  | boolean |
-| x509.is_weak_signature |  | boolean |
 | x509.issuer.common_name |  | keyword |
 | x509.issuer.distinguished_name |  | keyword |
 | x509.issuer.organization |  | keyword |
-| x509.issuer_cn |  | keyword |
-| x509.issuer_org |  | keyword |
-| x509.key_bits |  | long |
-| x509.key_type |  | keyword |
-| x509.key_usage |  | keyword |
 | x509.not_after |  | date |
 | x509.not_before |  | date |
 | x509.public_key_algorithm |  | keyword |
 | x509.public_key_curve |  | keyword |
 | x509.public_key_size |  | long |
 | x509.serial_number |  | keyword |
-| x509.sha256_fingerprint |  | keyword |
-| x509.sig_algorithm |  | keyword |
 | x509.signature_algorithm |  | keyword |
 | x509.subject.common_name |  | keyword |
 | x509.subject.distinguished_name |  | keyword |
 | x509.subject.organization |  | keyword |
-| x509.subject_cn |  | keyword |
-| x509.subject_org |  | keyword |
 | x509.validity.not_after |  | date |
 | x509.validity.not_before |  | date |
 | x509.version_number |  | long |
@@ -947,42 +990,178 @@ An example event for `tychon_pqc` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-11T12:00:00Z",
-    "event": {
-        "kind": "event",
-        "category": [
-            "configuration"
-        ],
-        "dataset": "tychon_quantum_command.tychon_pqc"
+    "@timestamp": "2026-07-06T17:03:00.055Z",
+    "agent": {
+        "ephemeral_id": "d3f2d54e-0392-45cb-a744-b01bb3cd06fe",
+        "id": "c3fae20b-3f87-4ca9-81d1-696fb39fa2d7",
+        "name": "elastic-agent-23667",
+        "type": "filebeat",
+        "version": "9.4.2"
     },
     "data_stream": {
-        "type": "logs",
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "namespace": "default"
+        "namespace": "75130",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
-    "host": {
-        "hostname": "server01"
+    "elastic_agent": {
+        "id": "c3fae20b-3f87-4ca9-81d1-696fb39fa2d7",
+        "snapshot": false,
+        "version": "9.4.2"
     },
-    "tychon": {
-        "index": "applications",
-        "asset_type": "application",
-        "scan_mode": "quantum_command",
-        "pqc_readiness": "partial",
-        "quantum_risk": "medium",
-        "application": {
-            "name": "Example Service",
-            "port": 443,
-            "preferred_protocol": "TLSv1.3",
-            "preferred_cipher": "TLS_AES_256_GCM_SHA384",
-            "preferred_key_exchange": "ECDHE",
-            "port_quantum_grade": {
-                "grade": "B",
-                "score": 82.5
-            }
+    "event": {
+        "agent_id_status": "verified",
+        "category": "process",
+        "dataset": "tychon_quantum_command.tychon_pqc",
+        "ingested": "2026-07-31T18:49:53Z",
+        "kind": "event",
+        "timezone": "+00:00",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "domain": "rnd-lab",
+        "hostname": "elastic-agent-23667",
+        "id": "41c3d03f-3e7f-45b0-a65e-199cda6f50e5",
+        "ip": [
+            "172.19.0.2",
+            "172.18.0.6"
+        ],
+        "mac": [
+            "66-E8-B9-D2-18-9E",
+            "B6-77-F3-47-1D-A8"
+        ],
+        "name": "elastic-agent-23667",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-136-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
         }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "kerberos": {
+        "config_source": "os_default",
+        "has_aes128": true,
+        "has_aes256": true,
+        "has_des": false,
+        "has_rc4": true,
+        "is_explicitly_configured": false,
+        "is_quantum_safe": false,
+        "raw_bitmask": 28,
+        "supported_types": "RC4-HMAC, AES128-CTS-HMAC-SHA1-96, AES256-CTS-HMAC-SHA1-96"
+    },
+    "log": {
+        "file": {
+            "device_id": "64512",
+            "fingerprint": "4ee8746d04407cd93cebfc9496b55aeee0246c415d53d5ef1f5142d2062f5e42",
+            "inode": "470822432",
+            "path": "/tmp/service_logs/tqc.ndjson"
+        },
+        "offset": 0
+    },
+    "observer": {
+        "domain": "rnd-lab",
+        "hostname": "71-win1124h2",
+        "id": "41c3d03f-3e7f-45b0-a65e-199cda6f50e5",
+        "os": {
+            "build": "26100",
+            "family": "windows",
+            "kernel": "10.0",
+            "name": "windows",
+            "platform": "Microsoft Windows 11 Pro",
+            "version": "10.0.26100.8655"
+        }
+    },
+    "tags": [
+        "tychon",
+        "quantum"
+    ],
+    "tychon": {
+        "application": {
+            "app_root": "c:\\program files\\fortinet\\forticlient",
+            "connected_to_count": 0,
+            "crypto_library_count": 4,
+            "in_memory_cert_count": 0,
+            "keychain_identity_count": 0,
+            "keystore_count": 0,
+            "name": "scheduler.exe",
+            "path": "c:\\program files\\fortinet\\forticlient\\scheduler.exe",
+            "pid": 2892,
+            "port_count": 0,
+            "private_key_count": 0,
+            "service_display_name": "FortiClient VPN Service Scheduler",
+            "service_name": "FA_Scheduler",
+            "source": "process"
+        },
+        "index": "applications",
+        "library": {
+            "crypt32_pqc_status": "not_capable",
+            "crypt32_version": "10.0.26100.8521",
+            "uses_crypt32": true,
+            "uses_windows_cng": true,
+            "windows_cng_pqc_status": "not_capable",
+            "windows_cng_version": "10.0.26100.8328"
+        },
+        "observer": {
+            "bigfix_client_installed": false,
+            "bios_serial_number": "VMware, Inc. VMware20,1",
+            "cpu_cores": 2,
+            "cpu_logical_cores": 2,
+            "cpu_model_name": "Intel(R) Xeon(R) CPU E5-2683 v4 @ 2.10GHz",
+            "cpu_vendor_id": "GenuineIntel",
+            "current_user": "rnd-lab\\administrator",
+            "domain": "rnd-lab",
+            "fips_mode_enabled": false,
+            "hostname": "71-win1124h2",
+            "id": "41c3d03f-3e7f-45b0-a65e-199cda6f50e5",
+            "ip_addresses": "fe80::e8aa:5f5d:c0ba:d453, 169.254.182.0, 10.80.60.236, fe80::3c91:a230:8d87:fd50, 169.254.239.112",
+            "is_vdi_environment": false,
+            "kernel_arch": "x86_64",
+            "kernel_version": "26100.8655",
+            "machine_serial_number": "VMware-42 2a 65 03 0f cb 74 d4-a3 7c 0c ff 76 19 03 ed",
+            "organization": "rnd-lab",
+            "os": {
+                "build": "26100",
+                "family": "windows",
+                "kernel": "10.0",
+                "name": "windows",
+                "platform": "Microsoft Windows 11 Pro",
+                "version": "10.0.26100.8655"
+            },
+            "platform_version": "8655",
+            "ram_used_percent": 39,
+            "software_version": "2.0.4.10",
+            "system_uptime_seconds": 1725864,
+            "total_ram_bytes": 17178578944,
+            "tychon_client_id": "F304B69C-A420-4773-91EE-C5140D7302F7",
+            "user_gid": "S-1-5-21-2448716297-349153808-1407024372-513",
+            "user_home_dir": "C:\\Users\\administrator",
+            "user_uid": "S-1-5-21-2448716297-349153808-1407024372-500",
+            "vdi_identity_source": "gopsutil",
+            "windows_server_role": "workstation"
+        },
+        "pipeline": {
+            "processed": true
+        },
+        "record": {
+            "dataset": "tychon_quantum_command.tychon_pqc",
+            "family": "applications",
+            "id": "949ec6a093d6cec5"
+        },
+        "scan": {
+            "target_input": "localhost",
+            "timestamp": "2026-07-06T17:03:00.055Z",
+            "type": "local"
+        },
+        "type": "application"
     }
 }
 ```

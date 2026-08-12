@@ -1,21 +1,37 @@
 source:
   index: logs-tychon_quantum_command.tychon_pqc-*
   query:
-    term:
-      "tychon.index": "keystores"
+    bool:
+      filter:
+        - term:
+            "tychon.index": "keystores"
+      must_not:
+        - exists:
+            field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
 dest:
   index: tychon-pqc-keystores
 latest:
   unique_key:
     - observer.id
-    - id
+    - tychon.record.id
   sort: "@timestamp"
 sync:
   time:
-    field: "@timestamp"
+    field: event.ingested
     delay: "60s"
-frequency: "1m"
+frequency: "5m"
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: "365d"
+settings:
+  unattended: true
+  deduce_mappings: false
 _meta:
-  fleet_transform_version: 1.0.4
+  fleet_transform_version: 1.0.5
   run_as_kibana_system: false
   managed: true

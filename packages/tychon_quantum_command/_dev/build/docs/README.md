@@ -11,14 +11,14 @@
 
 * Intended for environments where TYCHON Quantum Command produces NDJSON or JSON output files on Windows, Linux, or macOS systems.
 * Requires a valid TYCHON Quantum Command license.
-* Requires Elastic Stack / Fleet compatible with package version `2.0.4` and the package manifest constraint `^8.11.0`.
+* Requires Elastic Stack / Fleet compatible with package version `0.1.0` and the package manifest constraint `>=8.11.0 <10.0.0`.
 
 ### How it works
 
 1. TYCHON Quantum Command writes scan results to local `.ndjson` or `.json` files.
 2. Elastic Agent collects those files through the `filestream` input in the `tychon_pqc` data stream.
 3. The ingest pipeline stores the raw events in the namespace-specific source data stream `logs-tychon_quantum_command.tychon_pqc-<namespace>`.
-4. Elasticsearch transforms filter the combined source stream by `tychon.index` and publish dataset-specific destination indices such as `tychon-pqc-inventory`, `tychon-pqc-certificates`, and `tychon-pqc-system-readiness`.
+4. Elasticsearch transforms filter the combined source stream by `tychon.index` and publish current-state upsert/entity destination indices such as `tychon-pqc-inventory`, `tychon-pqc-certificates`, and `tychon-pqc-system-readiness`.
 5. Kibana dashboards and saved objects query both the raw and transformed views for operational analysis.
 
 ## What data does this integration collect?
@@ -37,7 +37,7 @@ The integration collects file-based TYCHON Quantum Command output in NDJSON or J
 
 ### Analytical datasets produced by transforms
 
-The package currently publishes the following destination indices from the shared source stream:
+The package currently publishes the following current-state upsert/entity destination indices from the shared source stream. These indices are not raw event data streams; each transform uses `observer.id` and `tychon.record.id` as the latest transform identity so rescans update the same entity record.
 
 * `tychon-pqc-applications`
 * `tychon-pqc-archives`
@@ -112,6 +112,7 @@ Use the following checks after deployment:
 * Confirm transform output by verifying documents appear in indices such as `tychon-pqc-inventory`, `tychon-pqc-certificates`, and `tychon-pqc-system-readiness`.
 * Open the packaged dashboards and verify charts populate without missing data view errors.
 * Review a few representative documents to confirm timestamps, observer metadata, and TYCHON-specific fields were parsed as expected.
+* Confirm `event.ingested` is present on source events. Fleet's final pipeline usually sets this field after the package ingest pipeline, but the package also sets it from `_ingest.timestamp` so pipeline tests and transform sync always have a stable ingest-time field.
 
 
 ## Troubleshooting

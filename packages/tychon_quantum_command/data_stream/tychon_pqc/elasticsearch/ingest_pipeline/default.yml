@@ -2,41 +2,118 @@
 description: Main ingest pipeline for Tychon Quantum Command.
 processors:
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: 8.17.0
 
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      ignore_empty_value: true
+
   - json:
+      tag: json_message
       field: message
       add_to_root: true
       if: ctx.tychon == null && ctx.message != null
       ignore_failure: true
 
+  - script:
+      tag: script_lift_raw_tqc_ndjson_fields_parsed_under_tychon_raw_be
+      lang: painless
+      description: Lift raw TQC NDJSON fields parsed under tychon.raw before package event defaults are applied.
+      if: ctx?.tychon?.raw instanceof Map
+      source: >
+        Map raw = ctx.tychon.raw;
+        if (ctx.tychon.record == null || !(ctx.tychon.record instanceof Map)) {
+          ctx.tychon.record = [:];
+        }
+        if (raw.event instanceof Map && raw.event.dataset != null && ctx.tychon.record.dataset == null) {
+          ctx.tychon.record.dataset = raw.event.dataset;
+        } else if (raw.containsKey('event.dataset') && raw['event.dataset'] != null && ctx.tychon.record.dataset == null) {
+          ctx.tychon.record.dataset = raw['event.dataset'];
+        }
+        for (entry in raw.entrySet()) {
+          def key = entry.getKey();
+          def value = entry.getValue();
+          if (key == '@timestamp') {
+            ctx['@timestamp'] = value;
+          } else if (key == 'timestamp' && ctx['@timestamp'] == null) {
+            ctx['@timestamp'] = value;
+          } else if (key == 'tychon') {
+            if (value instanceof Map) {
+              for (tychonEntry in value.entrySet()) {
+                def tychonKey = tychonEntry.getKey();
+                if (tychonKey != 'raw' && tychonKey != 'record' && ctx.tychon[tychonKey] == null) {
+                  ctx.tychon[tychonKey] = tychonEntry.getValue();
+                }
+              }
+            }
+          } else if (key == 'event') {
+            if (ctx.event == null || !(ctx.event instanceof Map)) {
+              ctx.event = [:];
+            }
+            if (value instanceof Map) {
+              for (eventEntry in value.entrySet()) {
+                def eventKey = eventEntry.getKey();
+                if (eventKey != 'dataset' && ctx.event[eventKey] == null) {
+                  ctx.event[eventKey] = eventEntry.getValue();
+                }
+              }
+            }
+          } else if (ctx[key] == null) {
+            ctx[key] = value;
+          } else if (ctx[key] instanceof Map && value instanceof Map) {
+            Map target = ctx[key];
+            for (nestedEntry in value.entrySet()) {
+              if (target[nestedEntry.getKey()] == null) {
+                target[nestedEntry.getKey()] = nestedEntry.getValue();
+              }
+            }
+          }
+        }
+        ctx.tychon.remove('raw');
+
   - rename:
+      tag: rename_timestamp
       field: timestamp
       target_field: "@timestamp"
       ignore_missing: true
       ignore_failure: true
 
   - date:
+      tag: date_timestamp
       field: "@timestamp"
       formats:
         - ISO8601
       ignore_failure: true
 
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
 
   - script:
+      tag: script_preserve_flat_event_fields_before_package_event_defau
       lang: painless
-      description: Preserve flat event.* fields before event defaults are applied.
+      description: Preserve flat event.* fields before package event defaults are applied.
       source: >
+        if (ctx.tychon == null || !(ctx.tychon instanceof Map)) {
+          ctx.tychon = [:];
+        }
+        if (ctx.tychon.record == null || !(ctx.tychon.record instanceof Map)) {
+          ctx.tychon.record = [:];
+        }
         if (ctx.event == null || !(ctx.event instanceof Map)) {
           ctx.event = [:];
         }
-        if (ctx.event.dataset == null && ctx.containsKey('event.dataset')) {
-          ctx.event.dataset = ctx['event.dataset'];
+        if (ctx.containsKey('event.dataset')) {
+          if (ctx.tychon.record.dataset == null) {
+            ctx.tychon.record.dataset = ctx['event.dataset'];
+          }
+          if (ctx.event.dataset == null) {
+            ctx.event.dataset = ctx['event.dataset'];
+          }
           ctx.remove('event.dataset');
+        } else if (ctx.event.dataset != null && ctx.tychon.record.dataset == null && ctx.event.dataset != 'tychon_quantum_command.tychon_pqc') {
+          ctx.tychon.record.dataset = ctx.event.dataset;
         }
         if (ctx.event.kind == null && ctx.containsKey('event.kind')) {
           ctx.event.kind = ctx['event.kind'];
@@ -68,182 +145,354 @@ processors:
           }
           ctx.remove('event.category');
         }
+        if (ctx.containsKey('id') && ctx.id != null) {
+          ctx.tychon.record.id = ctx.id;
+        }
+        if (ctx.tychon.index != null) {
+          ctx.tychon.record.family = ctx.tychon.index;
+        }
 
   - set:
+      tag: set_event_kind
       field: event.kind
       value: event
       if: ctx.event == null || ctx.event.kind == null
 
   - set:
+      tag: set_event_category
       field: event.category
       value:
         - configuration
       if: ctx.event == null || ctx.event.category == null
 
-  - script:
-      lang: painless
-      source: >
-        if (ctx.event == null || !(ctx.event instanceof Map)) {
-          ctx.event = [:];
-        }
-        def tychonIndex = null;
-        if (ctx.containsKey('tychon') && ctx.tychon instanceof Map && ctx.tychon.containsKey('index') && ctx.tychon.index != null) {
-          tychonIndex = ctx.tychon.index.toString();
-        }
-        def eventAction = ctx.event.action != null ? ctx.event.action.toString() : null;
-        def genericDataset = tychonIndex != null ? 'tychon_quantum_command.' + tychonIndex : null;
-        def currentDataset = ctx.event.dataset;
-        def shouldDeriveDataset = (
-          currentDataset == null ||
-          currentDataset == 'tychon_quantum_command.tychon_pqc' ||
-          currentDataset == 'tychon_pqc' ||
-          (genericDataset != null && currentDataset == genericDataset) ||
-          (genericDataset != null && currentDataset instanceof List && currentDataset.contains(genericDataset))
-        );
-        if (shouldDeriveDataset) {
-          def dataset = 'tychon_quantum_command.tychon_pqc';
-          if (tychonIndex != null) {
-            if (tychonIndex == 'applications') {
-              dataset = 'tychon.application';
-            } else if (tychonIndex == 'installed-apps') {
-              dataset = 'tychon.installed_app';
-            } else if (tychonIndex == 'installed-browser-extensions') {
-              dataset = 'tychon.browser_extension';
-            } else if (tychonIndex == 'ciphers') {
-              dataset = 'tychon.cipher';
-            } else if (tychonIndex == 'system-readiness') {
-              if (eventAction == 'quantum_assessment_app_group') {
-                dataset = 'quantum_assessment.app_group';
-              } else {
-                dataset = 'quantum_assessment';
-              }
-            } else {
-              dataset = genericDataset;
-            }
-          }
-          ctx.event.dataset = dataset;
-        }
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: tychon_quantum_command.tychon_pqc
+      override: true
 
   - set:
-      field: data_stream.type
-      value: logs
-
-  - set:
-      field: data_stream.dataset
-      value: tychon_pqc
-
-  - set:
+      tag: set_tychon_pipeline_processed
       field: tychon.pipeline.processed
       value: true
 
   - remove:
+      tag: remove_host_ipv4
       field: host.ipv4
       ignore_missing: true
       if: ctx?.host?.ipv4 instanceof String && ctx.host.ipv4.trim().length() == 0
 
   - remove:
+      tag: remove_host_ipv6
       field: host.ipv6
       ignore_missing: true
       if: ctx?.host?.ipv6 instanceof String && ctx.host.ipv6.trim().length() == 0
 
   - dot_expander:
+      tag: dot_expander_all_fields
       field: "*"
       ignore_failure: true
 
+  - script:
+      tag: script_copy_tqc_specific_fields_out_of_ecs_namespaces_for_pa
+      lang: painless
+      description: Copy TQC-specific fields out of ECS namespaces for package-safe dashboard queries.
+      source: >
+        if (ctx.tychon == null || !(ctx.tychon instanceof Map)) {
+          ctx.tychon = [:];
+        }
+        if (ctx.tychon.record == null || !(ctx.tychon.record instanceof Map)) {
+          ctx.tychon.record = [:];
+        }
+        if (ctx.id != null && ctx.tychon.record.id == null) {
+          ctx.tychon.record.id = ctx.id;
+        }
+        if (ctx.tychon.index != null && ctx.tychon.record.family == null) {
+          ctx.tychon.record.family = ctx.tychon.index;
+        }
+        if (ctx.host != null && ctx.host instanceof Map) {
+          if (ctx.tychon.host == null || !(ctx.tychon.host instanceof Map)) {
+            ctx.tychon.host = [:];
+          }
+          if (ctx.host.os_category != null) { ctx.tychon.host.os_category = ctx.host.os_category; }
+          if (ctx.host.os_pqc_tier != null) { ctx.tychon.host.os_pqc_tier = ctx.host.os_pqc_tier; }
+        }
+        if (ctx.process != null && ctx.process instanceof Map) {
+          if (ctx.tychon.process == null || !(ctx.tychon.process instanceof Map)) {
+            ctx.tychon.process = [:];
+          }
+          if (ctx.process.executable_directory != null) { ctx.tychon.process.executable_directory = ctx.process.executable_directory; }
+          if (ctx.process.executable_file != null) { ctx.tychon.process.executable_file = ctx.process.executable_file; }
+          if (ctx.process.service_info != null) { ctx.tychon.process.service_info = ctx.process.service_info; }
+          if (ctx.process.user_name != null) { ctx.tychon.process.user_name = ctx.process.user_name; }
+          if (ctx.process.username != null) { ctx.tychon.process.username = ctx.process.username; }
+        }
+        if (ctx.observer != null && ctx.observer instanceof Map) {
+          if (ctx.tychon.observer == null || !(ctx.tychon.observer instanceof Map)) {
+            ctx.tychon.observer = [:];
+          }
+          for (entry in ctx.observer.entrySet()) {
+            ctx.tychon.observer[entry.getKey()] = entry.getValue();
+          }
+        }
+        if (ctx.scan != null) { ctx.tychon.scan = ctx.scan; }
+        if (ctx.scan_type != null) {
+          if (ctx.tychon.scan == null || !(ctx.tychon.scan instanceof Map)) { ctx.tychon.scan = [:]; }
+          ctx.tychon.scan.type_original = ctx.scan_type;
+        }
+        if (ctx.quantum_ready != null || ctx.quantum_ready_cert != null || ctx.quantum_ready_cipher != null || ctx.quantum_ready_kx != null) {
+          if (ctx.tychon.quantum_ready == null || !(ctx.tychon.quantum_ready instanceof Map)) {
+            ctx.tychon.quantum_ready = [:];
+          }
+          if (ctx.quantum_ready != null) { ctx.tychon.quantum_ready.overall = ctx.quantum_ready; }
+          if (ctx.quantum_ready_cert != null) { ctx.tychon.quantum_ready.certificate = ctx.quantum_ready_cert; }
+          if (ctx.quantum_ready_cipher != null) { ctx.tychon.quantum_ready.cipher = ctx.quantum_ready_cipher; }
+          if (ctx.quantum_ready_kx != null) { ctx.tychon.quantum_ready.key_exchange = ctx.quantum_ready_kx; }
+          if (ctx.quantum_ready != null) {
+            if (ctx.tychon.application == null || !(ctx.tychon.application instanceof Map)) { ctx.tychon.application = [:]; }
+            ctx.tychon.application.quantum_ready = ctx.quantum_ready;
+          }
+        }
+        if (ctx.tychon.applicaiton != null) {
+          if (ctx.tychon.application == null || !(ctx.tychon.application instanceof Map)) { ctx.tychon.application = [:]; }
+          if (ctx.tychon.applicaiton instanceof Map) {
+            for (entry in ctx.tychon.applicaiton.entrySet()) {
+              if (ctx.tychon.application[entry.getKey()] == null) {
+                ctx.tychon.application[entry.getKey()] = entry.getValue();
+              }
+            }
+          }
+          ctx.tychon.remove('applicaiton');
+        }
+        if (ctx.hash != null && ctx.hash instanceof Map) {
+          if (ctx.hash.sha1_certificate != null) {
+            if (ctx.x509 == null || !(ctx.x509 instanceof Map)) { ctx.x509 = [:]; }
+            if (ctx.x509.fingerprint_sha1 == null) { ctx.x509.fingerprint_sha1 = ctx.hash.sha1_certificate; }
+          }
+          if (ctx.hash.sha256_certificate != null) {
+            if (ctx.x509 == null || !(ctx.x509 instanceof Map)) { ctx.x509 = [:]; }
+            if (ctx.x509.fingerprint_sha256 == null) { ctx.x509.fingerprint_sha256 = ctx.hash.sha256_certificate; }
+          }
+        }
+        if (ctx.x509 != null && ctx.x509 instanceof Map) {
+          if (ctx.tychon.x509 == null || !(ctx.tychon.x509 instanceof Map)) { ctx.tychon.x509 = [:]; }
+          for (entry in ctx.x509.entrySet()) {
+            ctx.tychon.x509[entry.getKey()] = entry.getValue();
+          }
+          if (ctx.x509.issuer_cn != null) {
+            if (ctx.x509.issuer == null || !(ctx.x509.issuer instanceof Map)) { ctx.x509.issuer = [:]; }
+            if (ctx.x509.issuer.common_name == null) { ctx.x509.issuer.common_name = ctx.x509.issuer_cn; }
+          }
+          if (ctx.x509.issuer_org != null) {
+            if (ctx.x509.issuer == null || !(ctx.x509.issuer instanceof Map)) { ctx.x509.issuer = [:]; }
+            if (ctx.x509.issuer.organization == null) { ctx.x509.issuer.organization = ctx.x509.issuer_org; }
+          }
+          if (ctx.x509.subject_cn != null) {
+            if (ctx.x509.subject == null || !(ctx.x509.subject instanceof Map)) { ctx.x509.subject = [:]; }
+            if (ctx.x509.subject.common_name == null) { ctx.x509.subject.common_name = ctx.x509.subject_cn; }
+          }
+          if (ctx.x509.subject_org != null) {
+            if (ctx.x509.subject == null || !(ctx.x509.subject instanceof Map)) { ctx.x509.subject = [:]; }
+            if (ctx.x509.subject.organization == null) { ctx.x509.subject.organization = ctx.x509.subject_org; }
+          }
+          if (ctx.x509.sig_algorithm != null && ctx.x509.signature_algorithm == null) { ctx.x509.signature_algorithm = ctx.x509.sig_algorithm; }
+          if (ctx.x509.key_bits != null && ctx.x509.public_key_size == null) { ctx.x509.public_key_size = ctx.x509.key_bits; }
+          if (ctx.x509.key_type != null && ctx.x509.public_key_algorithm == null) { ctx.x509.public_key_algorithm = ctx.x509.key_type; }
+          if (ctx.x509.fingerprint_sha256 != null) {
+            if (ctx.hash == null || !(ctx.hash instanceof Map)) { ctx.hash = [:]; }
+            if (ctx.hash.sha256 == null) { ctx.hash.sha256 = ctx.x509.fingerprint_sha256; }
+          }
+          if (ctx.x509.sha256_fingerprint != null) {
+            if (ctx.hash == null || !(ctx.hash instanceof Map)) { ctx.hash = [:]; }
+            if (ctx.hash.sha256 == null) { ctx.hash.sha256 = ctx.x509.sha256_fingerprint; }
+          }
+          ctx.x509.remove('fingerprint_sha1');
+          ctx.x509.remove('fingerprint_sha256');
+          ctx.x509.remove('is_self_signed');
+          ctx.x509.remove('is_weak_signature');
+          ctx.x509.remove('issuer_cn');
+          ctx.x509.remove('issuer_org');
+          ctx.x509.remove('key_bits');
+          ctx.x509.remove('key_type');
+          ctx.x509.remove('key_usage');
+          ctx.x509.remove('sha256_fingerprint');
+          ctx.x509.remove('sig_algorithm');
+          ctx.x509.remove('subject_cn');
+          ctx.x509.remove('subject_org');
+        }
+        if (ctx.package != null && ctx.package instanceof Map && ctx.package.install_directory != null) {
+          if (ctx.tychon.package == null || !(ctx.tychon.package instanceof Map)) { ctx.tychon.package = [:]; }
+          ctx.tychon.package.install_directory = ctx.package.install_directory;
+        }
+        if (ctx.containsKey('id')) { ctx.remove('id'); }
+        if (ctx.containsKey('scan')) { ctx.remove('scan'); }
+        if (ctx.containsKey('scan_type')) { ctx.remove('scan_type'); }
+        if (ctx.containsKey('quantum_ready')) { ctx.remove('quantum_ready'); }
+        if (ctx.containsKey('quantum_ready_cert')) { ctx.remove('quantum_ready_cert'); }
+        if (ctx.containsKey('quantum_ready_cipher')) { ctx.remove('quantum_ready_cipher'); }
+        if (ctx.containsKey('quantum_ready_kx')) { ctx.remove('quantum_ready_kx'); }
+        if (ctx.host != null && ctx.host instanceof Map) {
+          ctx.host.remove('os_category');
+          ctx.host.remove('os_pqc_tier');
+        }
+        if (ctx.observer != null && ctx.observer instanceof Map) {
+          ctx.observer.remove('bigfix_client_installed');
+          ctx.observer.remove('bios_serial_number');
+          ctx.observer.remove('cpu_cores');
+          ctx.observer.remove('cpu_logical_cores');
+          ctx.observer.remove('cpu_model_name');
+          ctx.observer.remove('cpu_vendor_id');
+          ctx.observer.remove('current_user');
+          ctx.observer.remove('database_schema_version');
+          ctx.observer.remove('error');
+          ctx.observer.remove('fips_mode_enabled');
+          ctx.observer.remove('ip_addresses');
+          ctx.observer.remove('is_vdi_environment');
+          ctx.observer.remove('kernel_arch');
+          ctx.observer.remove('kernel_version');
+          ctx.observer.remove('machine_serial_number');
+          ctx.observer.remove('organization');
+          ctx.observer.remove('output_schema_version');
+          ctx.observer.remove('platform_version');
+          ctx.observer.remove('ram_used_percent');
+          ctx.observer.remove('software_version');
+          ctx.observer.remove('system_uptime_seconds');
+          ctx.observer.remove('total_ram_bytes');
+          ctx.observer.remove('tychon_client_id');
+          ctx.observer.remove('user_gid');
+          ctx.observer.remove('user_home_dir');
+          ctx.observer.remove('user_uid');
+          ctx.observer.remove('vdi_identity_source');
+          ctx.observer.remove('windows_server_role');
+        }
+        if (ctx.process != null && ctx.process instanceof Map) {
+          ctx.process.remove('executable_directory');
+          ctx.process.remove('executable_file');
+          ctx.process.remove('service_info');
+          ctx.process.remove('user_name');
+          ctx.process.remove('username');
+        }
+        if (ctx.package != null && ctx.package instanceof Map) {
+          ctx.package.remove('install_directory');
+        }
+        if (ctx.hash != null && ctx.hash instanceof Map) {
+          ctx.hash.remove('sha1_certificate');
+          ctx.hash.remove('sha256_certificate');
+        }
+
   - split:
+      tag: split_tls_supported_protocols
       field: tls.supported_protocols
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_supported_ciphers
       field: tls.supported_ciphers
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_supported_key_exchanges
       field: tls.supported_key_exchanges
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_previous_supported_protocols
       field: tls.previous_supported_protocols
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_previous_supported_ciphers
       field: tls.previous_supported_ciphers
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_previous_supported_key_exchanges
       field: tls.previous_supported_key_exchanges
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tychon_cipher_quick_supported_protocols
       field: tychon.cipher_quick.supported_protocols
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tychon_cipher_quick_supported_cipher_suites
       field: tychon.cipher_quick.supported_cipher_suites
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tychon_cipher_quick_supported_key_exchanges
       field: tychon.cipher_quick.supported_key_exchanges
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_insecure_ciphers
       field: tls.insecure_ciphers
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tls_weak_ciphers
       field: tls.weak_ciphers
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tychon_cipher_quick_insecure_ciphers
       field: tychon.cipher_quick.insecure_ciphers
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tychon_cipher_quick_weak_ciphers
       field: tychon.cipher_quick.weak_ciphers
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_host_ip
       field: host.ip
       separator: ",\\s*"
       ignore_missing: true
       if: ctx?.host?.ip instanceof String
 
   - split:
+      tag: split_tychon_routing_original_host_ip
       field: tychon.routing.original.host_ip
       separator: ",\\s*"
       ignore_missing: true
       if: ctx?.tychon?.routing?.original?.host_ip instanceof String
 
   - split:
+      tag: split_tychon_routing_target_ip
       field: tychon.routing.target.ip
       separator: ",\\s*"
       ignore_missing: true
       if: ctx?.tychon?.routing?.target?.ip instanceof String
 
   - split:
+      tag: split_tychon_tags
       field: tychon.tags
       separator: ",\\s*"
       ignore_missing: true
 
   - split:
+      tag: split_tychon_installed_app_crypto_libraries
       field: tychon.installed_app.crypto_libraries
       separator: ",\\s*"
       ignore_missing: true
 
   - script:
+      tag: script_normalize_host_ip_from_literal_dotted_field_or_comma_
       lang: painless
       description: Normalize host.ip from literal dotted field or comma-delimited string.
       source: >
@@ -282,6 +531,7 @@ processors:
         }
 
   - script:
+      tag: script_reconstruct_tychon_certificate_leaf_details_from_cert
       lang: painless
       description: Reconstruct tychon.certificate_leaf_details from certificate fields.
       if: ctx?.certificate != null && ctx?.tychon?.certificate_leaf_details == null
@@ -333,6 +583,7 @@ processors:
         ctx.tychon.certificate_leaf_details = leafDetails;
 
   - script:
+      tag: script_reconstruct_tychon_cipher_negotiation_from_cipher_fie
       lang: painless
       description: Reconstruct tychon.cipher_negotiation from cipher fields.
       if: ctx?.cipher != null
@@ -358,6 +609,7 @@ processors:
         ctx.tychon.cipher_negotiation = cipherNeg;
 
   - script:
+      tag: script_convert_cipher_vulnerability_strings_into_arrays
       lang: painless
       description: Convert cipher vulnerability strings into arrays.
       if: ctx?.tychon?.cipher_negotiation?.intel?.vulnerabilities != null
@@ -376,9 +628,10 @@ processors:
         }
 
   - script:
+      tag: script_default_app_group_instance_counts_without_leaking_app
       lang: painless
       description: Default app-group instance counts without leaking app-family fields into root assessments.
-      if: ctx?.quantum_readiness?.cost_analysis != null && ctx?.event?.dataset == 'quantum_assessment.app_group'
+      if: ctx?.quantum_readiness?.cost_analysis != null && ctx?.tychon?.record?.dataset == 'quantum_assessment.app_group'
       source: >
         if (ctx.quantum_readiness.cost_analysis instanceof Map) {
           Map costAnalysis = ctx.quantum_readiness.cost_analysis;
@@ -388,61 +641,73 @@ processors:
         }
 
   - set:
+      tag: set_x509_subject_common_name
       field: x509.subject.common_name
-      value: "{{certificate.subject_common_name}}"
+      value: "{{{certificate.subject_common_name}}}"
       if: ctx?.certificate?.subject_common_name != null
 
   - set:
+      tag: set_x509_issuer_common_name
       field: x509.issuer.common_name
-      value: "{{certificate.issuer_common_name}}"
+      value: "{{{certificate.issuer_common_name}}}"
       if: ctx?.certificate?.issuer_common_name != null
 
   - set:
+      tag: set_x509_issuer_organization
       field: x509.issuer.organization
-      value: "{{certificate.issuer_organization}}"
+      value: "{{{certificate.issuer_organization}}}"
       if: ctx?.certificate?.issuer_organization != null
 
   - set:
+      tag: set_x509_subject_organization
       field: x509.subject.organization
-      value: "{{certificate.subject_organization}}"
+      value: "{{{certificate.subject_organization}}}"
       if: ctx?.certificate?.subject_organization != null
 
   - set:
+      tag: set_x509_serial_number
       field: x509.serial_number
-      value: "{{certificate.serial_number}}"
+      value: "{{{certificate.serial_number}}}"
       if: ctx?.certificate?.serial_number != null
 
   - set:
+      tag: set_x509_signature_algorithm
       field: x509.signature_algorithm
-      value: "{{certificate.signature_algorithm}}"
+      value: "{{{certificate.signature_algorithm}}}"
       if: ctx?.certificate?.signature_algorithm != null
 
   - set:
+      tag: set_x509_not_before
       field: x509.not_before
-      value: "{{certificate.not_before}}"
+      value: "{{{certificate.not_before}}}"
       if: ctx?.certificate?.not_before != null
 
   - set:
+      tag: set_x509_not_after
       field: x509.not_after
-      value: "{{certificate.not_after}}"
+      value: "{{{certificate.not_after}}}"
       if: ctx?.certificate?.not_after != null
 
   - set:
+      tag: set_x509_public_key_algorithm
       field: x509.public_key_algorithm
-      value: "{{certificate.subject_public_key_info.algorithm}}"
+      value: "{{{certificate.subject_public_key_info.algorithm}}}"
       if: ctx?.certificate?.subject_public_key_info?.algorithm != null
 
   - set:
+      tag: set_x509_public_key_size
       field: x509.public_key_size
-      value: "{{certificate.subject_public_key_info.bit_size}}"
+      value: "{{{certificate.subject_public_key_info.bit_size}}}"
       if: ctx?.certificate?.subject_public_key_info?.bit_size != null
 
   - set:
+      tag: set_x509_public_key_curve
       field: x509.public_key_curve
-      value: "{{certificate.subject_public_key_info.curve}}"
+      value: "{{{certificate.subject_public_key_info.curve}}}"
       if: ctx?.certificate?.subject_public_key_info?.curve != null
 
   - date:
+      tag: date_certificate_not_before
       field: certificate.not_before
       target_field: certificate.not_before
       formats:
@@ -454,10 +719,12 @@ processors:
       if: ctx?.certificate?.not_before != null
       on_failure:
         - append:
+            tag: append_error_pipeline
             field: error.pipeline
-            value: "Failed to parse certificate.not_before: {{_ingest.on_failure_message}}"
+            value: "Failed to parse certificate.not_before: {{{_ingest.on_failure_message}}}"
 
   - date:
+      tag: date_certificate_not_after
       field: certificate.not_after
       target_field: certificate.not_after
       formats:
@@ -469,10 +736,12 @@ processors:
       if: ctx?.certificate?.not_after != null
       on_failure:
         - append:
+            tag: append_error_pipeline_2
             field: error.pipeline
-            value: "Failed to parse certificate.not_after: {{_ingest.on_failure_message}}"
+            value: "Failed to parse certificate.not_after: {{{_ingest.on_failure_message}}}"
 
   - date:
+      tag: date_cipher_last_seen
       field: cipher.last_seen
       target_field: cipher.last_seen
       formats:
@@ -482,146 +751,173 @@ processors:
       if: ctx?.cipher?.last_seen != null
       on_failure:
         - append:
+            tag: append_error_pipeline_3
             field: error.pipeline
-            value: "Failed to parse cipher.last_seen: {{_ingest.on_failure_message}}"
+            value: "Failed to parse cipher.last_seen: {{{_ingest.on_failure_message}}}"
 
   - set:
+      tag: set_host_hostname
       field: host.hostname
-      value: "{{tychon.routing.original.host_hostname}}"
+      value: "{{{tychon.routing.original.host_hostname}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_hostname != null && ctx.tychon.routing.original.host_hostname != ''
 
   - set:
+      tag: set_host_domain
       field: host.domain
-      value: "{{observer.domain}}"
+      value: "{{{observer.domain}}}"
       ignore_empty_value: true
       if: ctx?.host?.domain == null && ctx?.observer?.domain != null && ctx.observer.domain != ''
 
   - set:
+      tag: set_host_id
       field: host.id
-      value: "{{tychon.routing.original.host_id}}"
+      value: "{{{tychon.routing.original.host_id}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_id != null && ctx.tychon.routing.original.host_id != ''
 
   - set:
+      tag: set_host_ip
       field: host.ip
       copy_from: tychon.routing.original.host_ip
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_ip != null
 
   - set:
+      tag: set_host_ipv4
       field: host.ipv4
-      value: "{{tychon.routing.original.host_ipv4}}"
+      value: "{{{tychon.routing.original.host_ipv4}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_ipv4 != null && ctx.tychon.routing.original.host_ipv4 != ''
 
   - set:
+      tag: set_host_ipv6
       field: host.ipv6
-      value: "{{tychon.routing.original.host_ipv6}}"
+      value: "{{{tychon.routing.original.host_ipv6}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_ipv6 != null && ctx.tychon.routing.original.host_ipv6 != ''
 
   - set:
+      tag: set_host_architecture
       field: host.architecture
-      value: "{{tychon.routing.original.host_architecture}}"
+      value: "{{{tychon.routing.original.host_architecture}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_architecture != null && ctx.tychon.routing.original.host_architecture != ''
 
   - set:
+      tag: set_host_os_name
       field: host.os.name
-      value: "{{tychon.routing.original.host_os_name}}"
+      value: "{{{tychon.routing.original.host_os_name}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_os_name != null && ctx.tychon.routing.original.host_os_name != ''
 
   - set:
+      tag: set_host_os_platform
       field: host.os.platform
-      value: "{{tychon.routing.original.host_os_platform}}"
+      value: "{{{tychon.routing.original.host_os_platform}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_os_platform != null && ctx.tychon.routing.original.host_os_platform != ''
 
   - set:
+      tag: set_host_os_family
       field: host.os.family
-      value: "{{tychon.routing.original.host_os_family}}"
+      value: "{{{tychon.routing.original.host_os_family}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_os_family != null && ctx.tychon.routing.original.host_os_family != ''
 
   - set:
+      tag: set_host_os_version
       field: host.os.version
-      value: "{{tychon.routing.original.host_os_version}}"
+      value: "{{{tychon.routing.original.host_os_version}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.original?.host_os_version != null && ctx.tychon.routing.original.host_os_version != ''
 
   - set:
+      tag: set_source_user_id
       field: source.user.id
-      value: "{{tychon.routing.source.observer_id}}"
+      value: "{{{tychon.routing.source.observer_id}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.source?.observer_id != null && ctx.tychon.routing.source.observer_id != ''
 
   - set:
+      tag: set_source_domain
       field: source.domain
-      value: "{{tychon.routing.source.hostname}}"
+      value: "{{{tychon.routing.source.hostname}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.source?.hostname != null && ctx.tychon.routing.source.hostname != ''
 
   - set:
+      tag: set_destination_address
       field: destination.address
-      value: "{{tychon.routing.target.address}}"
+      value: "{{{tychon.routing.target.address}}}"
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.target?.address != null && ctx.tychon.routing.target.address != ''
 
   - set:
+      tag: set_destination_ip
       field: destination.ip
       copy_from: tychon.routing.target.ip
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.target?.ip != null
 
   - set:
+      tag: set_network_protocol
       field: network.protocol
-      value: "{{port.protocol_detected}}"
+      value: "{{{port.protocol_detected}}}"
       ignore_empty_value: true
       if: ctx?.network?.protocol == null && ctx?.port?.protocol_detected != null && ctx.port.protocol_detected != ''
 
   - set:
+      tag: set_network_protocol_2
       field: network.protocol
-      value: "{{tychon.application.protocol_detected}}"
+      value: "{{{tychon.application.protocol_detected}}}"
       ignore_empty_value: true
       if: ctx?.network?.protocol == null && ctx?.tychon?.application?.protocol_detected != null && ctx.tychon.application.protocol_detected != ''
 
   - convert:
+      tag: convert_tychon_application_port
       field: tychon.application.port
       type: long
       ignore_missing: true
       ignore_failure: true
 
   - convert:
+      tag: convert_tychon_application_port_quantum_grade_score
       field: tychon.application.port_quantum_grade.score
       type: float
       ignore_missing: true
       ignore_failure: true
 
   - remove:
+      tag: remove_message
       field: message
       ignore_missing: true
       if: (ctx.tychon != null || ctx.containsKey('tychon.index')) && (ctx.event == null || ctx.event.original == null)
 
   - remove:
+      tag: remove_message_2
       field: message
       ignore_missing: true
       if: ctx.event != null && ctx.event.original != null
 
 on_failure:
   - set:
+      tag: set_tychon_pipeline_failed
       field: tychon.pipeline.failed
       value: true
   - set:
+      tag: set_error_message
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_error_processor_type
       field: error.processor_type
       value: "{{{ _ingest.on_failure_processor_type }}}"
   - set:
+      tag: set_error_processor_tag
       field: error.processor_tag
       value: "{{{ _ingest.on_failure_processor_tag }}}"
   - set:
+      tag: set_error_pipeline
       field: error.pipeline
       value: "{{{ _ingest.on_failure_pipeline }}}"
