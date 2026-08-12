@@ -67,7 +67,14 @@ processors:
             return v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
           });
         }
+        // _conf holds the retain setting, not event data, and 'none' is one of its
+        // valid values. Walking it would delete the setting and leave the rest of the
+        // pipeline treating retain as unconfigured, which means 'all'.
+        def conf = ctx.remove('_conf');
         handleMap(ctx);
+        if (conf != null) {
+          ctx._conf = conf;
+        }
   # Before renames because some json fields are mutated on the process
   - script:
       description: Appends any relevant entity to `related.entity` for all events
@@ -1346,13 +1353,14 @@ processors:
   - script:
       description: >
         Resolve _conf.keep_flattened_duplicates from the retain setting, then set values in
-        aws.cloudtrail.request_parameters, aws.cloudtrail.response_elements, and
-        aws.cloudtrail.additional_eventdata. If _conf.keep_flattened_duplicates is true, also
-        copy into aws.cloudtrail.flattened. Since aws.cloudtrail.flattened is optionally present,
-        is MUST NEVER be used as an RHS in any processor.
+        aws.cloudtrail.request_parameters, aws.cloudtrail.response_elements,
+        aws.cloudtrail.additional_eventdata and aws.cloudtrail.service_event_details. If
+        _conf.keep_flattened_duplicates is true, also copy into aws.cloudtrail.flattened. Since
+        aws.cloudtrail.flattened is optionally present, it MUST NEVER be used as an RHS in any
+        processor.
         Assignments of json.requestParameters, json.responseElements, json.additionalEventData
         and json.serviceEventDetails to the corresponding flattened fields are shallow, so
-        sub-fields of these field MUST NEVER be renamed or otherwise mutated, that is, they
+        sub-fields of these fields MUST NEVER be renamed or otherwise mutated, that is, they
         MUST NEVER be an LHS in any processor.
       lang: painless
       tag: script_duplicate_rules_fields
@@ -2266,13 +2274,6 @@ processors:
       field: user.target.name
       copy_from: json.requestParameters.userName
       ignore_empty_value: true
-  - remove:
-      tag: remove_27608874
-      field:
-        - aws.cloudtrail.digest
-        - json.insightDetails
-      if: '!ctx._conf.keep_flattened_duplicates'
-      ignore_missing: true
   - rename:
       tag: rename_aws_cloudtrail_digest_to_aws_cloudtrail_flattened_digest_6c535acf
       field: aws.cloudtrail.digest
@@ -2491,6 +2492,11 @@ processors:
           - aws.cloudtrail.flattened.request_parameters.serialNumber
           - aws.cloudtrail.flattened.request_parameters.withDecryption
           - aws.cloudtrail.flattened.request_parameters.x-amz-server-side-encryption-customer-algorithm
+        # Content of digest and Insights records rather than API call payloads, so it
+        # is carried over whole instead of being reduced to the fields above.
+        preserved_flattened_fields:
+          - digest
+          - insight_details
       source: |-
         def set(Map root, String path, def v) {
           String[] elems = path.splitOnToken('.');
@@ -2509,6 +2515,12 @@ processors:
           }
           set(flattened, f.substring(prefix), v);
         }
+        for (String f: params.preserved_flattened_fields) {
+          def v = ctx.aws.cloudtrail.flattened[f];
+          if (v != null) {
+            flattened[f] = v;
+          }
+        }
         ctx.aws.cloudtrail.flattened = flattened;
   - remove:
       tag: remove_9365dd2c
@@ -2516,6 +2528,7 @@ processors:
         - aws.cloudtrail.response_elements
         - aws.cloudtrail.request_parameters
         - aws.cloudtrail.additional_eventdata
+        - aws.cloudtrail.service_event_details
       ignore_missing: true
       if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword' && ctx._conf.retain != 'minimal'
 
