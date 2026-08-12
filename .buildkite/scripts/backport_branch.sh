@@ -229,6 +229,11 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
 
+    echo "--- Copying .github/actions from $SOURCE_BRANCH..."
+    git rm -r --cached ".github/actions" 2>/dev/null || true
+    git checkout "$SOURCE_BRANCH" -- ".github/actions"
+    git add .github/actions
+
     # Copy tools.go so we have the dev scripts dependencies required
     echo "--- Copying tools.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "tools.go"
@@ -300,8 +305,8 @@ updateBackportBranchContents() {
 
   if [ "$DRY_RUN" == "true" ];then
     echo "--- DRY_RUN mode, nothing will be pushed."
-    # Show just the relevant files diff (go.mod, go.sum, .buildkite, cmd/backport, dev, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ cmd/backport/ dev/ go.sum go.mod tools.go .gitignore .github/CODEOWNERS "${PACKAGE_PATH}"
+    # Show just the relevant files diff (go.mod, go.sum, .buildkite, cmd/backport, dev, .github/CODEOWNERS, .github/actions, .github/workflows and package to be backported)
+    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ cmd/backport/ dev/ go.sum go.mod tools.go .gitignore .github/CODEOWNERS .github/actions/ .github/workflows/ "${PACKAGE_PATH}"
   else
     echo "--- Pushing..."
     git push origin "$BACKPORT_BRANCH_NAME"
