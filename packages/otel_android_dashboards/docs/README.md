@@ -96,6 +96,8 @@ Within the **[Android OTel] Application Overview** dashboard, scroll down to the
 
 ![View crash details](../img/drilldown-on-crash-details.png)
 
+### Deobfuscating stacktraces
+
 In the **[Android OTel] Exception Details** dashboard, scroll down to the "Stacktrace" panel. Click the menu for a stacktrace row, then select "Retrace stacktrace".
 
 ![Retrace stacktrace action](../img/retrace-stacktrace-action.png)
