@@ -33,6 +33,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 | [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
 | [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
+| [Gemini](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/gemini-in-workspace-apps) | The Gemini in Workspace Apps activity report returns information about generative AI feature usage across Workspace applications. |
 
 ## Requirements
 
@@ -66,7 +67,7 @@ This integration will use the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -4154,6 +4155,137 @@ An example event for `keep` looks as following:
 | google_workspace.keep.note_name | Note resource URI. | keyword |
 | google_workspace.keep.owner_email | Note owner email. | keyword |
 | google_workspace.keep.type |  | keyword |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Gemini
+
+This is the `gemini` dataset.
+
+An example event for `gemini` looks as following:
+
+```json
+{
+    "@timestamp": "2026-06-01T14:23:11.000Z",
+    "agent": {
+        "ephemeral_id": "c07ec152-0fef-4721-b886-d47c6065c217",
+        "id": "e23792cd-a0ff-43fc-a4f9-f9f6476bb42d",
+        "name": "elastic-agent-74096",
+        "type": "filebeat",
+        "version": "8.19.4"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.gemini",
+        "namespace": "44465",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "e23792cd-a0ff-43fc-a4f9-f9f6476bb42d",
+        "snapshot": false,
+        "version": "8.19.4"
+    },
+    "event": {
+        "action": "feature-utilization",
+        "agent_id_status": "verified",
+        "dataset": "google_workspace.gemini",
+        "id": "1",
+        "ingested": "2026-08-06T08:39:40Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@example.com\",\"profileId\":\"1\"},\"events\":{\"name\":\"feature_utilization\",\"parameters\":[{\"name\":\"app_name\",\"value\":\"docs\"},{\"name\":\"action\",\"value\":\"summarize\"},{\"name\":\"feature_source\",\"value\":\"side_panel\"},{\"name\":\"event_category\",\"value\":\"active_summarize\"}],\"type\":\"ai_usage_event\"},\"id\":{\"applicationName\":\"gemini_in_workspace_apps\",\"customerId\":\"1\",\"time\":\"2026-06-01T14:23:11.000Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"81.2.69.142\",\"kind\":\"admin#reports#activity\"}",
+        "provider": "gemini_in_workspace_apps"
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "gemini": {
+            "action": "summarize",
+            "app_name": "docs",
+            "event_category": "active_summarize",
+            "feature_source": "side_panel",
+            "name": "feature_utilization",
+            "type": "ai_usage_event"
+        },
+        "kind": "admin#reports#activity"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Gemini in Workspace Apps",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "ip": [
+            "81.2.69.142"
+        ],
+        "user": [
+            "foo@example.com"
+        ]
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142",
+        "user": {
+            "domain": "example.com",
+            "email": "foo@example.com",
+            "id": "1",
+            "name": "foo@example.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-gemini"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "foo@example.com",
+        "id": "1",
+        "name": "foo@example.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.gemini.action | Action performed by the user within a Workspace application, initiated or assisted by Gemini. | keyword |
+| google_workspace.gemini.app_name | Name of the Workspace application through which the action was performed. Possible values: `gemini_app`, `chat`, `classroom`, `docs`, `drive`, `gmail`, `keep`, `meet`, `sheets`, `slides`, `vids`. | keyword |
+| google_workspace.gemini.event_category | Indicates the type of the generative AI action. Possible values: `active_conversations`, `active_generate`, `active_summarize`, `active_unspecified`, `inactive`, `unknown`. | keyword |
+| google_workspace.gemini.feature_source | Identifies where a generative AI interaction originates within the user interface. | keyword |
+| google_workspace.gemini.name | The name of the event. For Gemini usage events this is `feature_utilization`. | keyword |
+| google_workspace.gemini.type | The type of the event. For Gemini usage events this is `ai_usage_event`. | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of filebeat input. | keyword |
