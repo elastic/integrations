@@ -1,0 +1,132 @@
+---
+processors:
+- drop:
+    tag: drop_missing_hash_events
+    if: ctx.ctl?.hash == null
+    description: Skip events without a certificate hash (our dedup key).
+- date:
+    tag: convert_not_before
+    field: ctl.not_before
+    target_field: threat.indicator.x509.not_before
+    formats: ["UNIX"]
+    if: ctx.ctl?.not_before != null
+- date:
+    tag: convert_not_after
+    field: ctl.not_after
+    target_field: threat.indicator.x509.not_after
+    formats: ["UNIX"]
+    if: ctx.ctl?.not_after != null
+- set:
+    tag: set_indicator_type
+    field: threat.indicator.type
+    value: x509-certificate
+- set:
+    tag: set_indicator_provider
+    field: threat.indicator.provider
+    value: shodan
+- set:
+    tag: set_indicator_last_seen
+    field: threat.indicator.last_seen
+    copy_from: '@timestamp'
+- append:
+    tag: append_x509_subject_common_name
+    field: threat.indicator.x509.subject.common_name
+    value: "{{{ctl.subject_cn}}}"
+    allow_duplicates: false
+    if: ctx.ctl?.subject_cn != null
+- append:
+    tag: append_x509_issuer_common_name
+    field: threat.indicator.x509.issuer.common_name
+    value: "{{{ctl.issuer_cn}}}"
+    allow_duplicates: false
+    if: ctx.ctl?.issuer_cn != null
+- set:
+    tag: set_x509_alternative_names
+    field: threat.indicator.x509.alternative_names
+    copy_from: ctl.san_dns_names
+    if: ctx.ctl?.san_dns_names != null && ctx.ctl.san_dns_names.size() > 0
+- set:
+    tag: set_indicator_reference
+    field: threat.indicator.reference
+    value: "https://crt.sh/?sha256={{{ctl.hash}}}"
+    if: ctx.ctl?.hash != null
+- set:
+    tag: set_feed_name
+    field: threat.feed.name
+    value: Shodan Certificate Transparency
+- set:
+    tag: set_feed_description
+    field: threat.feed.description
+    value: Certificate transparency log records observed for a domain via Shodan CTL
+- set:
+    tag: set_feed_reference
+    field: threat.feed.reference
+    value: "https://ctl.shodan.io/"
+- set:
+    tag: set_observer_vendor
+    field: observer.vendor
+    value: Shodan
+- set:
+    tag: set_observer_product
+    field: observer.product
+    value: Certificate Transparency
+- set:
+    tag: set_event_kind
+    field: event.kind
+    value: enrichment
+- set:
+    tag: set_event_category
+    field: event.category
+    value: [threat]
+- set:
+    tag: set_event_type
+    field: event.type
+    value: [indicator]
+- foreach:
+    tag: foreach_san_dns_names_to_related_hosts
+    field: ctl.san_dns_names
+    ignore_missing: true
+    processor:
+      append:
+        field: related.hosts
+        value: "{{{_ingest._value}}}"
+        allow_duplicates: false
+- script:
+    tag: set_indicator_description
+    lang: painless
+    description: >-
+      Conditional string concatenation isn't a single-processor job.
+    source: |
+      String desc = 'Certificate transparency record';
+      if (ctx.ctl.subject_cn != null) {
+        desc += ' for ' + ctx.ctl.subject_cn;
+      }
+      if (ctx.ctl.issuer_cn != null) {
+        desc += ', issued by ' + ctx.ctl.issuer_cn;
+      }
+      ctx.threat.indicator.description = desc;
+- fingerprint:
+    tag: fingerprint_certificate
+    fields:
+      - ctl.hash
+    target_field: _id
+    ignore_missing: true
+    description: Dedup by certificate SHA-256 hash.
+- remove:
+    tag: remove_raw_ctl_fields
+    field:
+      - message
+      - ctl
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- set:
+    field: event.kind
+    tag: set_pipeline_error_to_event_kind
+    value: pipeline_error

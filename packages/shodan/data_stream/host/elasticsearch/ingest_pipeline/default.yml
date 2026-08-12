@@ -1,0 +1,219 @@
+---
+processors:
+- drop:
+    tag: drop_empty_page_events
+    if: ctx.shodan?.ip_str == null
+    description: >-
+      The empty final page of a poll still emits one event since there's
+      nothing to split; drop it.
+- remove:
+    tag: remove_agent_host_metadata
+    field: host
+    ignore_missing: true
+    description: >-
+      Beats populates host.* with the Elastic Agent's own machine info by
+      default; clear it so host.os.full (set below) exclusively describes
+      the Shodan-discovered target, not a mix of agent and target data.
+- set:
+    tag: set_indicator_ip
+    field: threat.indicator.ip
+    copy_from: shodan.ip_str
+- set:
+    tag: set_indicator_type
+    field: threat.indicator.type
+    value: ipv4-addr
+- set:
+    tag: set_indicator_provider
+    field: threat.indicator.provider
+    value: shodan
+- set:
+    tag: set_indicator_marking_tlp
+    field: threat.indicator.marking.tlp
+    value: WHITE
+- set:
+    tag: set_indicator_first_seen
+    field: threat.indicator.first_seen
+    copy_from: shodan.timestamp
+    if: ctx.shodan?.timestamp != null
+- set:
+    tag: set_indicator_last_seen
+    field: threat.indicator.last_seen
+    copy_from: '@timestamp'
+- set:
+    tag: set_indicator_port
+    field: threat.indicator.port
+    copy_from: shodan.port
+    if: ctx.shodan?.port != null
+- set:
+    tag: set_indicator_geo_country_name
+    field: threat.indicator.geo.country_name
+    copy_from: shodan.location.country_name
+    if: ctx.shodan?.location?.country_name != null
+- set:
+    tag: set_indicator_geo_country_iso_code
+    field: threat.indicator.geo.country_iso_code
+    copy_from: shodan.location.country_code
+    if: ctx.shodan?.location?.country_code != null
+- set:
+    tag: set_indicator_geo_city_name
+    field: threat.indicator.geo.city_name
+    copy_from: shodan.location.city
+    if: ctx.shodan?.location?.city != null
+- set:
+    tag: set_indicator_geo_location_lat
+    field: threat.indicator.geo.location.lat
+    copy_from: shodan.location.latitude
+    if: ctx.shodan?.location?.latitude != null
+- set:
+    tag: set_indicator_geo_location_lon
+    field: threat.indicator.geo.location.lon
+    copy_from: shodan.location.longitude
+    if: ctx.shodan?.location?.longitude != null
+- set:
+    tag: set_indicator_software_name
+    field: threat.indicator.software.name
+    copy_from: shodan.product
+    if: ctx.shodan?.product != null
+- set:
+    tag: set_indicator_software_version
+    field: threat.indicator.software.version
+    copy_from: shodan.version
+    if: ctx.shodan?.version != null
+- set:
+    tag: set_indicator_as_organization_name
+    field: threat.indicator.as.organization.name
+    copy_from: shodan.org
+    if: ctx.shodan?.org != null
+- set:
+    tag: set_indicator_as_isp
+    field: threat.indicator.as.isp
+    copy_from: shodan.isp
+    if: ctx.shodan?.isp != null
+- set:
+    tag: set_indicator_tags
+    field: threat.indicator.tags
+    copy_from: shodan.tags
+    if: ctx.shodan?.tags != null && ctx.shodan.tags.size() > 0
+- set:
+    tag: set_feed_name
+    field: threat.feed.name
+    value: Shodan Host Search
+- set:
+    tag: set_feed_description
+    field: threat.feed.description
+    value: Threat feed from Shodan internet scan results
+- set:
+    tag: set_feed_reference
+    field: threat.feed.reference
+    value: "https://www.shodan.io/"
+- set:
+    tag: set_observer_vendor
+    field: observer.vendor
+    value: Shodan
+- set:
+    tag: set_observer_product
+    field: observer.product
+    value: Threat Intelligence
+- set:
+    tag: set_network_transport
+    field: network.transport
+    copy_from: shodan.transport
+    if: ctx.shodan?.transport != null
+- set:
+    tag: set_host_os_full
+    field: host.os.full
+    copy_from: shodan.os
+    if: ctx.shodan?.os != null
+- set:
+    tag: set_event_kind
+    field: event.kind
+    value: enrichment
+- set:
+    tag: set_event_category
+    field: event.category
+    value: [threat]
+- set:
+    tag: set_event_type
+    field: event.type
+    value: [indicator]
+- append:
+    tag: append_related_ip
+    field: related.ip
+    value: "{{{shodan.ip_str}}}"
+    allow_duplicates: false
+- foreach:
+    tag: foreach_hostnames_to_related_hosts
+    field: shodan.hostnames
+    ignore_missing: true
+    processor:
+      append:
+        field: related.hosts
+        value: "{{{_ingest._value}}}"
+        allow_duplicates: false
+- foreach:
+    tag: foreach_domains_to_related_hosts
+    field: shodan.domains
+    ignore_missing: true
+    processor:
+      append:
+        field: related.hosts
+        value: "{{{_ingest._value}}}"
+        allow_duplicates: false
+- script:
+    tag: map_shodan_host_fields
+    lang: painless
+    description: >-
+      Converting a vulns map's keys into a list, and validating/parsing the ASN string
+      into ECS's numeric as.number
+    source: |
+      String desc = 'Shodan scan result for ' + ctx.shodan.ip_str;
+      if (ctx.shodan.org != null) {
+        desc += ' (' + ctx.shodan.org + ')';
+      }
+      ctx.threat.indicator.description = desc;
+
+      if (ctx.shodan.vulns != null && ctx.shodan.vulns.size() > 0) {
+        ctx.threat.indicator.vulnerability = new HashMap();
+        ctx.threat.indicator.vulnerability.id = new ArrayList();
+        for (vuln in ctx.shodan.vulns.keySet()) {
+          ctx.threat.indicator.vulnerability.id.add(vuln);
+        }
+      }
+
+      if (ctx.shodan.asn != null) {
+        String asnDigits = ctx.shodan.asn.replace('AS', '').trim();
+        if (asnDigits =~ /^\d+$/) {
+          if (ctx.threat.indicator.as == null) {
+            ctx.threat.indicator.as = new HashMap();
+          }
+          ctx.threat.indicator.as.number = Long.parseLong(asnDigits);
+        }
+      }
+- fingerprint:
+    tag: fingerprint_indicator
+    fields:
+      - shodan.ip_str
+      - shodan.port
+    target_field: _id
+    ignore_missing: true
+    description: >-
+      Dedup by ip:port so re-polling the same indicator updates it instead of
+      appending a duplicate.
+- remove:
+    tag: remove_raw_shodan_fields
+    field:
+      - message
+      - shodan
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- set:
+    field: event.kind
+    tag: set_pipeline_error_to_event_kind
+    value: pipeline_error

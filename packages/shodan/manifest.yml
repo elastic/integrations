@@ -1,0 +1,53 @@
+format_version: "3.0.0"
+name: shodan
+title: "Shodan"
+version: "0.1.0"
+description: "Collect internet exposure and certificate transparency data from Shodan for enriching security events"
+type: integration
+categories:
+  - threat_intel
+  - security
+  - network
+  - monitoring
+conditions:
+  kibana:
+    version: "^9.0.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/shodan_logo.svg
+    title: Shodan Logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/shodan_host_dashboard.png
+    title: Host Search Overview Dashboard
+    size: 2470x1258
+    type: image/png
+  - src: /img/shodan_ctl_dashboard.png
+    title: Certificate Transparency Overview Dashboard
+    size: 2457x1203
+    type: image/png
+policy_templates_behavior: combined_policy
+policy_templates:
+  - name: host
+    title: Shodan Host Search
+    description: Collect internet-exposed host data from Shodan's Host Search API
+    data_streams:
+      - host
+    inputs:
+      - type: cel
+        title: Shodan Host Search API
+        description: Collect data via the Shodan Host Search REST API
+  - name: domain
+    title: Shodan Certificate Transparency
+    description: Collect certificate transparency log records for a domain via Shodan's free CTL service
+    data_streams:
+      - domain
+    inputs:
+      - type: cel
+        title: Shodan Certificate Transparency API
+        description: Collect data via Shodan's free CTL (Certificate Transparency Logs) service. No API key required.
+owner:
+  github: duong22
+  type: community

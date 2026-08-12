@@ -1,0 +1,197 @@
+rules:
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["has_vuln:true"]
+      minify: ["false"]
+      page: ["1"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [
+              {
+                "ip_str": "198.51.100.7",
+                "port": 443,
+                "org": "Example Hosting Inc",
+                "asn": "AS12345",
+                "isp": "Example ISP",
+                "product": "nginx",
+                "version": "1.14.0",
+                "timestamp": "2023-10-05T12:34:56.000000",
+                "vulns": {
+                  "CVE-2019-0211": {}
+                },
+                "location": {
+                  "country_name": "United States",
+                  "country_code": "US",
+                  "city": "Los Angeles",
+                  "latitude": 34.0522,
+                  "longitude": -118.2437
+                },
+                "tags": ["cloud"]
+              },
+              {
+                "ip_str": "203.0.113.5",
+                "port": 22,
+                "org": "Another Org",
+                "timestamp": "2023-11-01T08:00:00.000000"
+              }
+            ],
+            "total": 4
+          }
+          `}}
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["has_vuln:true"]
+      minify: ["false"]
+      page: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [
+              {
+                "ip_str": "192.0.2.15",
+                "port": 8080,
+                "org": "Third Page Org",
+                "timestamp": "2023-12-01T00:00:00.000000"
+              }
+            ],
+            "total": 4
+          }
+          `}}
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["has_vuln:true"]
+      minify: ["false"]
+      page: ["3"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [
+              {
+                "ip_str": "192.0.2.16",
+                "port": 9090,
+                "org": "Should Not Be Fetched",
+                "timestamp": "2023-12-02T00:00:00.000000"
+              }
+            ],
+            "total": 4
+          }
+          `}}
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["no_cap_test"]
+      minify: ["false"]
+      page: ["1"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [
+              {
+                "ip_str": "198.51.100.20",
+                "port": 22,
+                "org": "No Cap Page One",
+                "timestamp": "2023-12-03T00:00:00.000000"
+              }
+            ],
+            "total": 3
+          }
+          `}}
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["no_cap_test"]
+      minify: ["false"]
+      page: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [
+              {
+                "ip_str": "198.51.100.21",
+                "port": 22,
+                "org": "No Cap Page Two",
+                "timestamp": "2023-12-03T00:00:01.000000"
+              }
+            ],
+            "total": 3
+          }
+          `}}
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["no_cap_test"]
+      minify: ["false"]
+      page: ["3"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [
+              {
+                "ip_str": "198.51.100.22",
+                "port": 22,
+                "org": "No Cap Page Three",
+                "timestamp": "2023-12-03T00:00:02.000000"
+              }
+            ],
+            "total": 3
+          }
+          `}}
+  - path: /shodan/host/search
+    methods: ["GET"]
+    query_params:
+      key: ["test_api_key"]
+      query: ["no_cap_test"]
+      minify: ["false"]
+      page: ["4"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "matches": [],
+            "total": 3
+          }
+          `}}

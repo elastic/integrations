@@ -1,0 +1,55 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+state:
+  domain: {{domain}}
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v1/domain/" + state.domain
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (
+          size(body) > 0 ?
+            body.map(e, {
+              "message": e.encode_json(),
+            })
+          :
+            []
+        ),
+      })
+    :
+      {
+        // Must match the success branch's events shape ({"message": <string>})
+        // or CEL's ternary fails to compile (branch types must unify).
+        "events": [{
+          "message": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/api/v1/domain/" + state.domain + ": " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+            },
+          }.encode_json(),
+        }],
+      }
+    )
+  )
+
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: ctl
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
