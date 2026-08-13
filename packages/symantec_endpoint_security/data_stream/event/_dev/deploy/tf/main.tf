@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-symantec_endpoint_security-package"
+      team     = "security-service-integrations" # owner.github in manifest.yml
+      project  = "integrations-symantec_endpoint_security-package" # name in manifest.yml
     }
   }
 }
