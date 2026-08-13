@@ -150,6 +150,10 @@ processors:
             if (ctx._temp_.tz == 'Z') {
               return '+00:00';
             }
+            def builtinTz = ['SGT':'Asia/Singapore','ICT':'Asia/Bangkok','MYT':'Asia/Kuala_Lumpur','PHT':'Asia/Manila','TRT':'Europe/Istanbul','BRT':'America/Sao_Paulo','ART':'America/Argentina/Buenos_Aires','CLT':'America/Santiago','PET':'America/Lima'];
+            if (builtinTz.containsKey(ctx._temp_.tz)) {
+              return builtinTz.get(ctx._temp_.tz);
+            }
             if (ctx._temp_.tz.length() <= 4) {
               // all time zone abbreviations need to be uppercase
               return ctx._temp_.tz.toUpperCase();
@@ -170,10 +174,16 @@ processors:
         def event_timezone = get_timezone(ctx);
         if (!event_timezone.contains('+') && !event_timezone.contains('-') && !(event_timezone.length() > 4)) {
           // timezone abbreviation e.g. CEST need to be put inside the timestamp
-          SimpleDateFormat sdf = new SimpleDateFormat("z");
-          sdf.parse(event_timezone);
-          ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
-          ctx?._temp_.cisco_timestamp = ctx?._temp_.cisco_timestamp + " " + event_timezone;
+          try {
+            SimpleDateFormat sdf = new SimpleDateFormat("z");
+            sdf.parse(event_timezone);
+            ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+            ctx?._temp_.cisco_timestamp = ctx?._temp_.cisco_timestamp + " " + event_timezone;
+          } catch (Exception e) {
+            String fallback = (ctx._conf?.tz_offset != null) ? ctx._conf.tz_offset : 'UTC';
+            ctx._temp_.date_timezone = fallback;
+            ctx.event.timezone = fallback;
+          }
         } else {
           // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
           // e.g. Europe/Athens needs to be put as a ZoneId and *not* inside the timestamp
