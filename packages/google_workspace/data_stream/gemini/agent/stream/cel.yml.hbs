@@ -49,7 +49,7 @@ program: |-
       request(
         "GET",
         state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/" + state.application_name_for_url + "?" + {
-          "maxResults": [string(state.batch_size)],
+          "maxResults": [string(int(state.batch_size))],
           "endTime": [state.end_time],
           "startTime": [state.start_time],
           ?"pageToken": state.?next.page_token.optMap(v, [v]),
@@ -59,8 +59,8 @@ program: |-
           {
             "events": has(body.items) ?
               body.items.map(item,
-                item.events.map(event,
-                  item.drop("events").as(root,
+                item.drop("events").as(root,
+                  item.events.map(event,
                     {"message": root.with({"events": event}).encode_json()}
                   )
                 )
