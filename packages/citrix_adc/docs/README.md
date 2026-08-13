@@ -1307,7 +1307,7 @@ Check this [reference document](https://www.elastic.co/guide/en/ecs/current/ecs-
 | citrix_adc.log.html_url |  | keyword |
 | citrix_adc.log.http_resources_accessed |  | keyword |
 | citrix_adc.log.ica_rtt |  | keyword |
-| citrix_adc.log.ica_uuid | ICA session UUID extracted from the optional bracket prefix in ICASTART and ICAEND_CONNSTAT messages (e.g. [ICAUUID=…]). | keyword |
+| citrix_adc.log.ica_uuid | ICA session UUID extracted from the optional bracket prefix in ICASTART and ICAEND_CONNSTAT messages (for example, [ICAUUID=…]). | keyword |
 | citrix_adc.log.icap_server.ip |  | ip |
 | citrix_adc.log.icap_server.port |  | long |
 | citrix_adc.log.id |  | keyword |
