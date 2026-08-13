@@ -7,7 +7,7 @@ processors:
       value: 8.17.0
 
   - remove:
-      tag: remove_event_action_9b3969af
+      tag: remove_event_action
       field: event.action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
@@ -62,19 +62,22 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
+      tag: append_preserve_original_event
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: pipeline_error
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: pipeline_error_preserve_original_event
       field: tags
       value: preserve_original_event
       allow_duplicates: false

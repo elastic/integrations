@@ -36,10 +36,10 @@ processors:
       if: ctx.activedirectory?.group?.when_created != null && ctx.activedirectory.group.when_created != ''
       on_failure:
         - remove:
-            tag: remove_activedirectory_group_when_created_d642e105
+            tag: on_failure_remove_date_group_created
             field: activedirectory.group.when_created
         - append:
-            tag: append_error_message_18111ba5
+            tag: on_failure_append_date_group_created
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -51,30 +51,30 @@ processors:
       if: ctx.activedirectory?.group?.when_changed != null && ctx.activedirectory.group.when_changed != ''
       on_failure:
         - remove:
-            tag: remove_activedirectory_group_when_changed_805ab306
+            tag: on_failure_remove_date_group_changed
             field: activedirectory.group.when_changed
         - append:
-            tag: append_error_message_2016ea66
+            tag: on_failure_append_date_group_changed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
-      tag: set_asset_name_f6991931
+      tag: set_group_asset_name
       field: asset.name
       copy_from: activedirectory.group.sam_account_name
       ignore_empty_value: true
   - set:
-      tag: set_asset_id_8bb8aa24
+      tag: set_group_asset_id
       field: asset.id
       copy_from: activedirectory.group.object_sid
       ignore_empty_value: true
   - set:
-      tag: set_group_id_d90aa01f
+      tag: set_group_id
       field: group.id
       copy_from: activedirectory.group.object_sid
       ignore_empty_value: true
   - set:
-      tag: set_group_name_cd775cd2
+      tag: set_group_name
       field: group.name
       copy_from: activedirectory.group.sam_account_name
       ignore_empty_value: true
@@ -93,23 +93,26 @@ processors:
       if: ctx.group?.domain != null
 
   - rename:
-      tag: rename_activedirectory_id_to_activedirectory_group_object_dn_9e06fd81
+      tag: rename_activedirectory_id_to_group_object_dn
       field: activedirectory.id
       target_field: activedirectory.group.object_dn
 
   - rename:
-      tag: rename_activedirectory_to_entityanalytics_ad_4e28c9ef
+      tag: rename_activedirectory_to_entityanalytics_ad
       field: activedirectory
       target_field: entityanalytics_ad
 
 on_failure:
   - append:
+      tag: pipeline_error
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: pipeline_error_preserve_original_event
       field: tags
       value: preserve_original_event
       allow_duplicates: false

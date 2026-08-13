@@ -88,10 +88,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_entityanalytics_entra_id_user_account_enabled_ffbc508e
+            tag: on_failure_remove_convert_accountEnabled_to_boolean
             field: entityanalytics_entra_id.user.account_enabled
         - append:
-            tag: append_error_message_8f30e492
+            tag: on_failure_append_convert_accountEnabled_to_boolean
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -155,7 +155,7 @@ processors:
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.business_phones instanceof String
   - foreach:
-      tag: foreach_entityanalytics_entra_id_user_business_phones_dd772bfd
+      tag: foreach_append_business_phones_into_user_phone
       field: entityanalytics_entra_id.user.business_phones
       if: ctx.entityanalytics_entra_id?.user?.business_phones instanceof List
       processor:
@@ -209,11 +209,11 @@ processors:
       if: ctx.entityanalytics_entra_id?.user?.sign_in_activity?.last_sign_in_date_time != null && ctx.entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time != ''
       on_failure:
         - remove:
-            tag: remove_entityanalytics_entra_id_user_sign_in_activity_last_sign_in_date_time_853cf6e8
+            tag: on_failure_remove_date_sign_in_activity_last_sign_in_date_time
             field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
             ignore_missing: true
         - append:
-            tag: append_error_message_906d4fe2
+            tag: on_failure_append_date_sign_in_activity_last_sign_in_date_time
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -228,11 +228,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_entityanalytics_entra_id_user_mfa_is_mfa_registered_aeee841d
+            tag: on_failure_remove_convert_isMfaRegistered_to_boolean
             field: entityanalytics_entra_id.user.mfa.is_mfa_registered
             ignore_missing: true
         - append:
-            tag: append_error_message_bbd465c7
+            tag: on_failure_append_convert_isMfaRegistered_to_boolean
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -266,7 +266,7 @@ processors:
           ctx.user.entity.relationships.put("supervises", ["user": userObj]);
         }
   - foreach:
-      tag: foreach_entityanalytics_entra_id_user_app_role_assignments_80262c6b
+      tag: foreach_append_app_role_display_name_to_permissions
       field: entityanalytics_entra_id.user.app_role_assignments
       if: ctx.entityanalytics_entra_id?.user?.app_role_assignments instanceof List
       ignore_failure: true
@@ -279,12 +279,15 @@ processors:
           ignore_empty_values: true
 on_failure:
   - append:
+      tag: pipeline_error
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: pipeline_error_preserve_original_event
       field: tags
       value: preserve_original_event
       allow_duplicates: false
