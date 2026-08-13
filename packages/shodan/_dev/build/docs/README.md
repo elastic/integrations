@@ -9,7 +9,7 @@ The Shodan integration collects internet-exposure threat intelligence from [Shod
 
 ### How it works
 
-**Host Search** polls on an interval and pages through results up to **Max Pages Per Collection Interval** (default `10` pages, 100 results each; leave empty for no cap). Shodan bills API credits per page, so this cap protects against a broad query burning through your credit balance in a single interval — see [Performance and scaling](#performance-and-scaling) below. Re-polling the same host (same IP+port) updates its existing record instead of creating a duplicate.
+**Host Search** polls on an interval and pages through results up to **Max Pages Per Collection Interval** (default `10` pages, 100 results each; leave empty for no cap). Shodan bills API credits per page, so this cap protects against a broad query burning through your credit balance in a single interval — see [Performance and scaling](#performance-and-scaling) below. Each poll keeps every observation of a host as its own record; see [Latest host indicator state](#latest-host-indicator-state) below for the deduplicated current-state view.
 
 **Certificate Transparency** polls once per interval and returns every certificate for the domain in a single request — no pagination, no credit cost. Re-observing the same certificate (same hash) doesn't create a duplicate.
 

@@ -21,22 +21,25 @@ program: |
         "page": [string(has(state.?next.page) ? state.next.page : 1)],
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-      resp.Body.decode_json().as(body, {
-        "events": (
-          has(body.matches) && size(body.matches) > 0 ?
-            body.matches.map(e, {
-              "message": e.encode_json(),
-            })
-          :
-            []
-        ),
-        "want_more": has(body.matches) && size(body.matches) > 0 &&
+      resp.Body.decode_json().as(body,
+        (has(body.matches) && size(body.matches) > 0 &&
           (!has(state.max_pages) ||
-            (has(state.?next.page) ? int(state.next.page) : 1) < int(state.max_pages)),
-        "next": {
-          "page": (has(state.?next.page) ? int(state.next.page) : 1) + 1,
-        },
-      })
+            (has(state.?next.page) ? int(state.next.page) : 1) < int(state.max_pages))
+        ).as(wantMore, {
+          "events": (
+            has(body.matches) && size(body.matches) > 0 ?
+              body.matches.map(e, {
+                "message": e.encode_json(),
+              })
+            :
+              []
+          ),
+          "want_more": wantMore,
+          "next": wantMore ? {
+            "page": (has(state.?next.page) ? int(state.next.page) : 1) + 1,
+          } : {},
+        })
+      )
     :
       {
         "events": [{

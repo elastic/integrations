@@ -2,10 +2,15 @@
 processors:
 - drop:
     tag: drop_empty_page_events
-    if: ctx.shodan?.ip_str == null
+    if: ctx.error == null && ctx.shodan?.ip_str == null
     description: >-
       The empty final page of a poll still emits one event since there's
-      nothing to split; drop it.
+      nothing to split; drop it. Events carrying an API error are kept so
+      the failure is visible instead of silently discarded.
+- set:
+    tag: set_ecs_version
+    field: ecs.version
+    value: "9.3.0"
 - remove:
     tag: remove_agent_host_metadata
     field: host
@@ -18,18 +23,22 @@ processors:
     tag: set_indicator_ip
     field: threat.indicator.ip
     copy_from: shodan.ip_str
+    if: ctx.shodan?.ip_str != null
 - set:
     tag: set_indicator_type
     field: threat.indicator.type
     value: ipv4-addr
+    if: ctx.shodan?.ip_str != null
 - set:
     tag: set_indicator_provider
     field: threat.indicator.provider
     value: shodan
+    if: ctx.shodan?.ip_str != null
 - set:
     tag: set_indicator_marking_tlp
     field: threat.indicator.marking.tlp
     value: WHITE
+    if: ctx.shodan?.ip_str != null
 - set:
     tag: set_indicator_first_seen
     field: threat.indicator.first_seen
@@ -39,6 +48,7 @@ processors:
     tag: set_indicator_last_seen
     field: threat.indicator.last_seen
     copy_from: '@timestamp'
+    if: ctx.shodan?.ip_str != null
 - set:
     tag: set_indicator_port
     field: threat.indicator.port
@@ -141,6 +151,7 @@ processors:
     field: related.ip
     value: "{{{shodan.ip_str}}}"
     allow_duplicates: false
+    if: ctx.shodan?.ip_str != null
 - foreach:
     tag: foreach_hostnames_to_related_hosts
     field: shodan.hostnames
@@ -162,6 +173,7 @@ processors:
 - script:
     tag: map_shodan_host_fields
     lang: painless
+    if: ctx.shodan != null
     description: >-
       Converting a vulns map's keys into a list, and validating/parsing the ASN string
       into ECS's numeric as.number
@@ -194,11 +206,20 @@ processors:
     fields:
       - shodan.ip_str
       - shodan.port
+      - '@timestamp'
     target_field: _id
     ignore_missing: true
     description: >-
-      Dedup by ip:port so re-polling the same indicator updates it instead of
-      appending a duplicate.
+      Includes @timestamp so each poll's observation of an indicator is its
+      own document - data streams reject a duplicate _id outright rather
+      than updating it, so without this the latest-state transform would
+      never see anything past a host's first-ever observation.
+- rename:
+    tag: rename_message_to_event_original
+    field: message
+    target_field: event.original
+    ignore_missing: true
+    if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
 - remove:
     tag: remove_raw_shodan_fields
     field:

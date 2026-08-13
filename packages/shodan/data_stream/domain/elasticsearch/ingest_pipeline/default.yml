@@ -2,8 +2,24 @@
 processors:
 - drop:
     tag: drop_missing_hash_events
-    if: ctx.ctl?.hash == null
-    description: Skip events without a certificate hash (our dedup key).
+    if: ctx.ctl?.error == null && ctx.ctl?.hash == null
+    description: >-
+      Skip events without a certificate hash (our dedup key). Events
+      carrying an API error are kept so the failure is visible instead of
+      silently discarded.
+- set:
+    tag: set_ecs_version
+    field: ecs.version
+    value: "9.3.0"
+- rename:
+    tag: rename_ctl_error_to_error
+    field: ctl.error
+    target_field: error
+    ignore_missing: true
+    description: >-
+      Moves the API error to the standard top-level error.* location before
+      the raw ctl.* fields get removed further down, and matches how the
+      host stream surfaces errors.
 - date:
     tag: convert_not_before
     field: ctl.not_before
@@ -20,14 +36,17 @@ processors:
     tag: set_indicator_type
     field: threat.indicator.type
     value: x509-certificate
+    if: ctx.ctl?.hash != null
 - set:
     tag: set_indicator_provider
     field: threat.indicator.provider
     value: shodan
+    if: ctx.ctl?.hash != null
 - set:
     tag: set_indicator_last_seen
     field: threat.indicator.last_seen
     copy_from: '@timestamp'
+    if: ctx.ctl?.hash != null
 - append:
     tag: append_x509_subject_common_name
     field: threat.indicator.x509.subject.common_name
@@ -94,6 +113,7 @@ processors:
 - script:
     tag: set_indicator_description
     lang: painless
+    if: ctx.ctl?.hash != null
     description: >-
       Conditional string concatenation isn't a single-processor job.
     source: |
@@ -112,6 +132,12 @@ processors:
     target_field: _id
     ignore_missing: true
     description: Dedup by certificate SHA-256 hash.
+- rename:
+    tag: rename_message_to_event_original
+    field: message
+    target_field: event.original
+    ignore_missing: true
+    if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
 - remove:
     tag: remove_raw_ctl_fields
     field:
