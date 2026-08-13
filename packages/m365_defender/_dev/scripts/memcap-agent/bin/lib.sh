@@ -35,7 +35,7 @@ HARNESS_PKG="$(cd "$HARNESS_ROOT/../../.." && pwd)"
 # decode cost tracks). Only those statistics crossed into the repo; see "Record shapes"
 # in README.md.
 harness_gen_corpus() {
-  local stream="$1" work="$2" pkg="$3" records="$4" apc="$5"
+  local stream="$1" work="$2" pkg="$3" records="$4" alerts_per_incident="$5"
 
   mkdir -p "$work/corpus"
 
@@ -44,9 +44,9 @@ harness_gen_corpus() {
   # in the template would double up and leave blank lines between records).
   printf '%s' "$(cat "$pkg/template.ndjson")" > "$work/template.ndjson"
   if [ "$stream" = "incident" ]; then
-    sed -i.bak "s/__ALERTS_PER_INCIDENT__/$apc/g" "$work/template.ndjson"
+    sed -i.bak "s/__ALERTS_PER_INCIDENT__/$alerts_per_incident/g" "$work/template.ndjson"
     rm -f "$work/template.ndjson.bak"
-    echo ">> [$stream] $apc alerts per incident" >&2
+    echo ">> [$stream] $alerts_per_incident alerts per incident" >&2
   fi
   echo ">> [$stream] generating $records records ..." >&2
   CORPORA_LOCATION="$work/corpus" "$HARNESS_EICGT" generate-with-template \
@@ -78,20 +78,40 @@ harness_render_config() {
     local cel_hbs="$HARNESS_PKG/data_stream/vulnerability/agent/stream/cel.yml.hbs"
     [ -f "$cel_hbs" ] || { echo "missing $cel_hbs (needed to assemble the cel config)"; return 1; }
     echo ">> [$stream] assembling config (CEL program from $(basename "$cel_hbs")) ..." >&2
-    # cel.yml.hbs indents the program body 2 spaces; the tmpl stream wants 6, so
-    # re-indent by 4. The block runs from `program: |-` to the next top-level key.
+    # Extract the program body, which runs from `program: |-` to the next top-level key.
     awk '
       /^program: \|-$/ { f=1; next }
       f && /^[^[:space:]]/ { f=0 }
-      f { if ($0 ~ /^[[:space:]]*$/) print ""; else print "    " $0 }
-    ' "$cel_hbs" > "$work/program.indented"
-    [ -s "$work/program.indented" ] || { echo "failed to extract 'program:' block from $cel_hbs"; return 1; }
-    if grep -n '{{' "$work/program.indented" >/dev/null 2>&1; then
+      f { print }
+    ' "$cel_hbs" > "$work/program.cel"
+    [ -s "$work/program.cel" ] || { echo "failed to extract 'program:' block from $cel_hbs"; return 1; }
+    if grep -n '{{' "$work/program.cel" >/dev/null 2>&1; then
       echo "ERROR: Handlebars token(s) inside the CEL program spliced from $cel_hbs:"
-      grep -n '{{' "$work/program.indented"
+      grep -n '{{' "$work/program.cel"
       echo "The harness splices the program verbatim and cannot resolve Handlebars inside it."
       return 1
     fi
+    # Parse the extraction before using it. A non-empty block is not evidence of a
+    # complete one: if the `program:` terminator ever changes shape the awk above would
+    # stop early and yield a program that is still valid-looking text, and the run would
+    # measure the wrong thing. celfmt parses CEL, so a truncated or over-long extraction
+    # fails here with a line number instead of silently producing a wrong ORR number.
+    if command -v celfmt >/dev/null 2>&1; then
+      if ! celfmt -i "$work/program.cel" > "$work/program.celfmt" 2> "$work/program.celfmt.err"; then
+        echo "ERROR: the CEL program extracted from $cel_hbs does not parse:"
+        cat "$work/program.celfmt.err"
+        echo "The extraction is incomplete or the 'program:' block shape changed; fix the awk in harness_render_config."
+        return 1
+      fi
+    else
+      echo "WARN: celfmt not found, so the extracted CEL program was not parse-checked." >&2
+      echo "      Install it with: go install github.com/elastic/mito/cmd/celfmt@latest" >&2
+    fi
+    # cel.yml.hbs indents the program body 2 spaces; the tmpl stream wants 6, so
+    # re-indent by 4. Indent the verbatim extraction, not celfmt's output: the harness
+    # must run exactly what the package ships, and celfmt is only the validator.
+    awk '{ if ($0 ~ /^[[:space:]]*$/) print ""; else print "    " $0 }' \
+      "$work/program.cel" > "$work/program.indented"
     awk 'FNR==NR { prog[++n]=$0; next }
          /^[[:space:]]*#__CEL_PROGRAM__[[:space:]]*$/ { for (i=1;i<=n;i++) print prog[i]; next }
          { print }' "$work/program.indented" "$tmpl" > "$out"

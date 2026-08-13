@@ -96,7 +96,7 @@ echo " sweep axis     : $AXIS"
 if [ "$AXIS" = "knob" ]; then
   echo " ladder         :"
   printf '%s\n' "$KNOB_ROWS" | while IFS= read -r r; do [ -n "$r" ] && echo "                  ${r%%|*}"; done
-  echo " worst case     : alert=$BASE_ALERT incident=$BASE_INCIDENT vuln=$BASE_VULN apc=$ALERTS_PER_INCIDENT"
+  echo " worst case     : alert=$BASE_ALERT incident=$BASE_INCIDENT vuln=$BASE_VULN alerts_per_incident=$ALERTS_PER_INCIDENT"
 else
   echo " points         : $POINTS"
   if [ "$AXIS" = "scale" ]; then
@@ -137,14 +137,14 @@ if [ "$AXIS" = "knob" ]; then
 else
   for p in $POINTS; do
     if [ "$AXIS" = "alerts_per_incident" ]; then
-      a="$BASE_ALERT"; i="$BASE_INCIDENT"; v="$BASE_VULN"; apc="$p"
+      a="$BASE_ALERT"; i="$BASE_INCIDENT"; v="$BASE_VULN"; per_incident="$p"
     else
       a=$(awk -v b="$BASE_ALERT"    -v f="$p" 'BEGIN{printf "%d", b*f}' </dev/null)
       i=$(awk -v b="$BASE_INCIDENT" -v f="$p" 'BEGIN{printf "%d", b*f}' </dev/null)
       v=$(awk -v b="$BASE_VULN"     -v f="$p" 'BEGIN{printf "%d", b*f}' </dev/null)
-      apc="$ALERTS_PER_INCIDENT"
+      per_incident="$ALERTS_PER_INCIDENT"
     fi
-    sweep_run "$p" "" ALERT_EVENTS="$a" INCIDENT_EVENTS="$i" VULN_EVENTS="$v" ALERTS_PER_INCIDENT="$apc"
+    sweep_run "$p" "" ALERT_EVENTS="$a" INCIDENT_EVENTS="$i" VULN_EVENTS="$v" ALERTS_PER_INCIDENT="$per_incident"
   done
 fi
 

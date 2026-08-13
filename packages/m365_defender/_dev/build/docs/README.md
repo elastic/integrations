@@ -181,13 +181,13 @@ Most issues fall into one of the scenarios below. To confirm the integration is 
 
 ### Enabling request tracing
 
-When debugging a permissions issue or unexpected API responses on the Alerts, Incidents, or Vulnerabilities data streams, enable request tracing and inspect the request trace logs to see the interaction with the server. (The Events data stream is collected over Azure Event Hub and does not use request tracing.) OAuth2 token values can be decoded using [https://jwt.ms/](https://jwt.ms/) and should include a `roles` section listing the configured permissions.
+When debugging a permissions issue or unexpected API responses on the Alerts, Incidents, or Vulnerabilities data streams, enable request tracing and inspect the request trace logs to see the interaction with the server. (The Events data stream is collected over Azure Event Hub and does not offer request tracing.) OAuth2 token values can be decoded using [https://jwt.ms/](https://jwt.ms/) and should include a `roles` section listing the configured permissions.
 
 **Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
 
 ### Authentication failures
 
-The Alerts, Incidents, and Vulnerabilities data streams authenticate to Microsoft with OAuth2 client credentials. If the integration reports a degraded status in Fleet and logs OAuth2 token errors, confirm that the client secret has not expired, that the Tenant ID and Client ID are correct, and that admin consent is still granted for the application. Generate a new client secret and update the integration if needed. The degraded status clears on the next successful poll.
+The Alerts, Incidents, and Vulnerabilities data streams authenticate to Microsoft with OAuth2 client credentials. If the integration reports a degraded status in Fleet and logs OAuth2 token errors, confirm that the client secret has not expired, that the Tenant ID and Client ID are correct, and that admin consent is still granted for the application. Generate a new client secret and update the integration if needed. The degraded status will clear on the next successful poll.
 
 The Events data stream authenticates to Azure Event Hub with a connection string or Microsoft Entra client secret. For those errors, verify the connection string, the storage account, and the RBAC role assignments (Azure Event Hubs Data Receiver and Storage Blob Data Contributor).
 

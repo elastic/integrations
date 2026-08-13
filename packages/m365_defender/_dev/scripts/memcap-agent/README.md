@@ -10,8 +10,8 @@ harness is **concurrent by default**: one agent, one page per enabled stream. Me
 streams separately and adding the results is wrong in both directions — the per-process
 baseline is paid once rather than three times, but the decode peaks land on one heap with
 one GC cycle and one shared publisher queue. Only a combined run measures the real number,
-and only a *sustained* combined run reproduces the production peaks (see
-[Reproducing the production peak](#reproducing-the-production-peak)).
+and only a *sustained* combined run accounts for the production peaks (see
+[Explaining the production peak](#explaining-the-production-peak)).
 
 Single-stream runs still exist, as `STREAMS=incident bin/run.sh`, because the ORR asks for
 the memory driver **per stream** and because attributing a pod peak to the stream that
@@ -165,6 +165,12 @@ elastic/integrations#20234, fixed by elastic/integrations#20348).
   cd elastic-integration-corpus-generator-tool && go build -o eicgt .
   ```
   Point `TOOL=` at that repo if it is not at the default path.
+- Optional but recommended: `celfmt`, used to parse-check the CEL program spliced out of
+  `cel.yml.hbs` so an incomplete extraction fails loudly instead of quietly measuring the
+  wrong program. Without it the run continues and prints a warning.
+  ```
+  go install github.com/elastic/mito/cmd/celfmt@latest
+  ```
 
 ## Usage
 
@@ -357,7 +363,7 @@ working_set ≈ 280 MB + 1.22 MB × alerts_per_incident        (R² = 0.983, 5 p
 plus the nested split with `keep_parent` turns each embedded alert into an event that also
 carries its parent. Nothing in the package or the API bounds it.
 
-### Reproducing the production peak
+### Explaining the production peak
 
 A cold page does not explain the telemetry: even 400 alerts per incident only reaches
 780 MB, while production working set peaks at 1,377–1,507 MB and production cgroup usage
@@ -372,71 +378,96 @@ pages charged to the cgroup. The ORR telemetry says so directly: the hottest pod
 `DRAIN=1` plus a short `INTERVAL` reproduces it:
 
 <!-- AUTOFILL:SUSTAINED:START csv=sustained.csv view=table
-     columns=params.alerts_per_incident:alerts/incident|mb1(total_raw_bytes):raw pages|mb(peak_bytes):peak|mb(workingset_bytes):working set -->
-| alerts/incident | raw pages | peak | working set |
-| --- | --- | --- | --- |
-| 100 | 41.6 MB | 690 MB | 543 MB |
-| 400 | 123.8 MB | 1,516 MB | 1,132 MB |
+     columns=params.alerts_per_incident:alerts/incident|label:run|mb1(total_raw_bytes):raw pages|mb(peak_bytes):peak|mb(workingset_peak_bytes):working set peak -->
+| alerts/incident | run | raw pages | peak | working set peak |
+| --- | --- | --- | --- | --- |
+| 100 | run 1 | 41.6 MB | 719 MB | 714 MB |
+| 400 | run 1 | 123.8 MB | 1,836 MB | 1,664 MB |
+| 400 | run 2 | 123.8 MB | 1,915 MB | 1,675 MB |
+| 400 | run 3 | 123.8 MB | 1,835 MB | 1,603 MB |
 <!-- AUTOFILL:SUSTAINED:END -->
 
-Against the cold runs at the same page sizes (400 MB and 780 MB working set), sustained
-fetching costs **~1.35–1.45× the cold single-page working set**, and its `memory.peak` is
-~1.7–1.9× the cold peak.
+Against the cold runs at the same page sizes (370 MB and 781 MB `memory.peak`, 368 MB and
+780 MB working set), sustained fetching costs **~1.9× the cold single-page figure at 100
+alerts per incident and ~2.1–2.45× at 400**, on both metrics.
 
-The second row reaches the production peak, but the comparison has to be made metric for
-metric. `memory.peak` is cgroup usage including page cache, so its counterpart is
-production's cgroup usage peak (p95 ~1,515 MB, max ~1,578 MB) — 1,516 MB lands on the p95
-and 4% under the max. It is **not** the counterpart of the 1,507 MB `workingset.bytes`
-peak, and the two matching to within 0.6% is a coincidence of this dataset. The working-set
-column in the table above is the closing snapshot (1,132 MB), and these runs predate the
-`working set peak` column, so a like-for-like working-set comparison is not available from
-them; re-running the sweep produces one.
+The 400 point is recorded three times because the sizing decision rests on it, and it is the
+only honest way to publish a peak. Counting the knob ladder's baseline row, which is a fourth
+run of the same configuration, `memory.peak` spans **1,835–2,135 MB** and the working-set peak
+**1,603–1,932 MB** over identical inputs — a 16% spread, so quote the **maximum** and never a
+single run. The end-of-run working set across the same runs ranges 526–1,556 MB, which is why
+that column is no longer published as a peak anywhere: it measures which phase of the GC cycle
+the run happened to stop in.
 
-Either way the conclusion is the same: production peaks are explained by shipped page sizes
-+ a fat `alerts[]` array + back-to-back fetching, and no unaccounted mechanism is needed.
+Compare metric for metric. `memory.peak` is cgroup usage including page cache, so its
+counterpart is production's cgroup usage peak (p95 ~1,515 MB, max ~1,578 MB); the
+working-set peak's counterpart is the 1,507 MB `workingset.bytes` peak. On both pairings the
+harness sits **above** production — 2,135 MB against 1,578 MB, and 1,932 MB against
+1,507 MB — so this worst case *bounds* the observed telemetry rather than matching it, which
+is what a deliberately constructed worst case should do. Production peaks need no
+unaccounted mechanism to explain them: shipped page sizes, a fat `alerts[]` array and
+back-to-back fetching already overshoot them.
 
-Interpolating the two sustained points:
+An earlier 2026-08-04 run of this same point, transcribed from console output, read
+1,516 MB and appeared to land on the production p95. It is not reproducible: all four runs of
+that configuration are 21–41% above it at byte-identical page sizes. The two mitigation rows
+in the knob ladder, re-measured at the same time, land within 1% of their 2026-08-04 values,
+so it is that one baseline number that was wrong rather than anything systematic. Treat the
+numbers above as the measurement and that one as superseded.
+
+Fitting the four sustained runs:
 
 <!-- AUTOFILL:SUSTAINED-FIT:START csv=sustained.csv view=fit x=point y=peak_bytes
      label=sustained_peak xlabel=alerts_per_incident -->
 ```
-sustained_peak ≈ 415 MB + 2.75 MB × alerts_per_incident        (2 points - an interpolation, not a fit)
+sustained_peak ≈ 337 MB + 3.81 MB × alerts_per_incident        (R² = 0.996, 4 points)
 ```
 <!-- AUTOFILL:SUSTAINED-FIT:END -->
 
-which puts the OOM boundary at roughly **220 alerts/incident for 1Gi** and **590 for 2Gi**.
-Two points is a thin basis for a line — each sustained run costs ~8 minutes — so treat those
-boundaries as the right order of magnitude rather than precise thresholds, and note that the
-cold curve (`1.22 MB × alerts_per_incident`) is the better-conditioned fit if you need one.
+which puts the OOM boundary at roughly **180 alerts/incident for 1Gi** and **450 for 2Gi**.
+The repeats pin down the spread at 400, not the shape of the curve — the slope still rests on
+two distinct alerts-per-incident values, since each sustained run costs ~8 minutes — so treat
+those boundaries as the right order of magnitude rather than precise thresholds, and note
+that the cold curve (`1.22 MB × alerts_per_incident`) is the better-conditioned fit if you
+need one.
+
+At 400 alerts per incident the measured worst case is **2,135 MB**, which is *above* 2Gi
+(2,048 MB) — a pod at that request would OOM, so 2Gi is off the table for this worst case.
+3Gi leaves ~30% headroom and 4Gi ~48%. Getting under 2Gi with headroom to spare means
+changing the shape of a poll rather than the size of the pod — see the knob ladder below.
 
 ### What each knob is worth
 
 Every row is the same worst case tested above — shipped page sizes, 400 alerts per
-incident, sustained with a draining output — changing one thing:
+incident, sustained with a draining output — changing one thing. Rows 2 and 3 run at a 1Gi
+cap, because what they have to answer is whether the mitigation holds the worst case inside
+1Gi:
 
 <!-- AUTOFILL:KNOBS:START csv=knobs.csv view=table
-     columns=label:configuration|gi(mem_limit_bytes):cap|mb(peak_bytes):peak|mb(workingset_bytes):working set -->
-| configuration | cap | peak | working set |
+     columns=label:configuration|gi(mem_limit_bytes):cap|mb(peak_bytes):peak|mb(workingset_peak_bytes):working set peak -->
+| configuration | cap | peak | working set peak |
 | --- | --- | --- | --- |
-| baseline (nothing changed) | 3Gi | 1,516 MB | 1,132 MB |
-| GOMEMLIMIT=850MiB (nothing else) | 1Gi | 1,024 MB | 917 MB |
-| incident batch_size 50->10 + vulnerability pageSize 10000->1000 | 1Gi | 656 MB | 516 MB |
+| baseline (nothing changed) | 3Gi | 2,136 MB | 1,932 MB |
+| GOMEMLIMIT=850MiB (nothing else) | 1Gi | 1,024 MB | 950 MB |
+| incident batch_size 50->10 + vulnerability pageSize 10000->1000 | 1Gi | 651 MB | 640 MB |
 <!-- AUTOFILL:KNOBS:END -->
 
 - **`GOMEMLIMIT`** is the only lever that needs no package change, and it does work on this
   peak — the pod survived 5 minutes of back-to-back fetching at 400 alerts per incident
-  inside 1Gi, where the baseline needs 2Gi, and throughput was identical (both drained
-  1,280,000 docs in 300 s). It works because the peak is *garbage*: a soft ceiling makes Go
-  collect it sooner instead of letting the cgroup absorb it. But `memory.peak` pinned at
+  inside 1Gi, a cap the unmodified baseline exceeds twice over, and throughput was identical
+  (both drained 1,280,000 docs in 300 s). It works because the peak is *garbage*: a soft
+  ceiling makes Go collect it sooner instead of letting the cgroup absorb it. But
+  `memory.peak` pinned at
   exactly 1,024 MB, i.e. the run consumed the entire cgroup and stayed alive only because
   reclaim kept up. That is not a margin anyone should ship on. It is also no fix for a large
   *live* set: if one page's live data alone exceeded the ceiling, Go would GC continuously
   and the pod would degrade instead of recovering. Treat the mechanism as proven and the
   value as unset.
-- **Bounding the page sizes** is the durable fix: 2.3× off the peak with 36% headroom left,
-  and it removes the unbounded term rather than absorbing it. `incident.batch_size` is
-  already a package variable (default 50); `vulnerability`'s `pageSize=10000` is hard-coded
-  in the CEL program and would need a code change to expose.
+- **Bounding the page sizes** is the durable fix: it holds the same worst case in 651 MB,
+  i.e. inside 1Gi with 36% headroom, a 3.3× reduction, and it removes the unbounded term
+  rather than absorbing it. `incident.batch_size` is already a package variable (default 50);
+  `vulnerability`'s `pageSize=10000` is hard-coded in the CEL program and would need a code
+  change to expose.
 - **`include_alerts=false`** is not in the table because it removes the driver outright
   (incident pages become ~0.05 MB) rather than scaling it. The alerts it drops are largely
   the same documents the `alert` data stream already collects, so it is worth considering
