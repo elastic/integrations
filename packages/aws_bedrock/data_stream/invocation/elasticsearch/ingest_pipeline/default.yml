@@ -598,10 +598,6 @@ processors:
         }
 
         def nameAndDetailsOfPolicies = allBodies.stream()
-          .filter(body ->
-            body.amazon_bedrock_guardrail_action == 'INTERVENED' ||
-            body.stop_reason == 'guardrail_intervened'
-          )
           .flatMap(body -> [
             [body.trace?.guardrail?.inputAssessment],
             body.trace?.guardrail?.outputAssessments,
@@ -672,7 +668,10 @@ processors:
           .sorted()
           .collect(Collectors.toList());
 
-        if (ctx.gen_ai.compliance.violation_code.size() > 0) {
+        if (ctx.gen_ai.compliance.violation_code.size() > 0 && allBodies.stream().anyMatch(body ->
+          body.amazon_bedrock_guardrail_action == 'INTERVENED' ||
+          body.stop_reason == 'guardrail_intervened'
+        )) {
           ctx.gen_ai.compliance.violation_detected = true;
           ctx.event.outcome = 'failure';
         }
