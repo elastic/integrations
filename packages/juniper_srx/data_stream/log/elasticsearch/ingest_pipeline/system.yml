@@ -309,7 +309,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # RPD_IFD_NOTIFICATION
-# Extract interface address (e.g. "address #0 175.16.199.0") into host.ip and related.ip
+# Extract interface address (e.g. "address #0 175.16.199.0"). This is an address configured on the
+# SRX's own interface, so it goes to observer.ip, mirrored onto host.ip like observer.name is below.
 - grok:
     tag: grok_rpd_ifd_notification_address
     if: "ctx.juniper?.srx?.tag == 'RPD_IFD_NOTIFICATION' && ctx.juniper?.srx?.message != null"
@@ -317,6 +318,12 @@ processors:
     patterns:
     - 'address #%{NONNEGINT} %{IP:_temp_.rpd_ifd.address}'
     ignore_failure: true
+- append:
+    tag: append_rpd_ifd_address_to_observer_ip
+    if: "ctx._temp_?.rpd_ifd?.address != null"
+    field: observer.ip
+    value: '{{{_temp_.rpd_ifd.address}}}'
+    allow_duplicates: false
 - append:
     tag: append_rpd_ifd_address_to_host_ip
     if: "ctx._temp_?.rpd_ifd?.address != null"
