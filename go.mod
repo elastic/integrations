@@ -5,7 +5,6 @@ go 1.25.8
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cli/go-gh/v2 v2.13.0
 	github.com/elastic/elastic-package v0.122.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.9.1
@@ -61,7 +60,6 @@ require (
 	github.com/charmbracelet/x/ansi v0.11.6 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
-	github.com/cli/safeexec v1.0.0 // indirect
 	github.com/clipperhouse/displaywidth v0.10.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.6.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
