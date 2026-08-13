@@ -9,8 +9,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-crowdstrike-package"
+      team     = "security-service-integrations" # owner.github from manifest.yml
+      project  = "integrations-crowdstrike-package" # name from manifest.yml
     }
   }
 }

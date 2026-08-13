@@ -13,8 +13,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-aws_bedrock-package"
+      team     = "security-service-integrations" # owner.github from manifest.yml
+      project  = "integrations-aws_bedrock-package" # name from manifest.yml
     }
   }
 }

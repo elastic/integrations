@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-imperva_cloud_waf-package"
+      team     = "security-service-integrations" # owner.github from manifest.yml
+      project  = "integrations-imperva_cloud_waf-package" # name from manifest.yml
     }
   }
 }
