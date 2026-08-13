@@ -36,7 +36,7 @@ program: |
     :
       state.with({
         "start_time": state.?cursor.last_start_time.orValue(
-          string(now - duration(state.initial_interval)).substring(0, 19)
+          (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
         )
       })
   ).as(state,
@@ -46,7 +46,7 @@ program: |
         {
           "target": ["OrionAuditLog"],
           // (top N) keyset page ordered by StartTime ascending.
-          "select": ['(select (top ' + string(state.page_size) + ') ' + state.columns + ')'],
+          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
           // ge (inclusive) so same-second ties on the boundary are not skipped;
           "where": ['(where (ge OrionAuditLog.StartTime "' + state.start_time + '"))'],
           "order": ["(order (asc OrionAuditLog.StartTime))"]
@@ -54,11 +54,11 @@ program: |
       ).as(resp,
         resp.StatusCode == 200 ?
           string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
-            // Advance the start_time to the newest StartTime in this page (UTC, naive).
+            // Advance the cursor using the wall-clock the API itself returned.
             (size(rows) > 0 ?
-              string(timestamp(int(timestamp(
+              timestamp(
                 string(rows[size(rows) - 1]["OrionAuditLog.StartTime"])
-              )))).substring(0, 19)
+              ).format("2006-01-02T15:04:05")
             :
               state.start_time
             ).as(new_start_time, {
