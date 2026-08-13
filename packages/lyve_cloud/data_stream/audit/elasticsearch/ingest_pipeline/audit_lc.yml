@@ -154,7 +154,7 @@ processors:
       field: related.ip
       processor:
           trim:
-              tag: trim_ingest_value
+              tag: trim_ingest_value_7b229ccc
               field: "_ingest._value"
       ignore_missing: true
   - foreach:
@@ -163,12 +163,12 @@ processors:
       field: related.ip
       processor:
           convert:
-              tag: convert_ingest_value
+              tag: convert_ingest_value_28994d1d
               type: ip
               field: "_ingest._value"
               on_failure:
                 - append:
-                    tag: append_failed_ips
+                    tag: append_failed_ips_70ae9123
                     field: _failed_ips
                     value: "{{{_ingest._value}}}"
       ignore_missing: true
@@ -179,7 +179,7 @@ processors:
       if: ctx.related?.ip != null && ctx["_failed_ips"] != null;
 
   - script:
-      tag: script_bf705a2a
+      tag: script_setting_client_s_ip_last_bf705a2a
       description: "setting client's ip as the last element of the ' related.ip ' field ( the rest are proxies)"
       lang: painless
       source: >-
@@ -247,15 +247,15 @@ processors:
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

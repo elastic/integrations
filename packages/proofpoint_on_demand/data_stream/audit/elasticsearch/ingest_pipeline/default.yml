@@ -3,24 +3,24 @@ description: Pipeline for processing audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -31,16 +31,16 @@ processors:
       fields:
         - json.guid
         - json.ts
-      tag: fingerprint_audit
+      tag: fingerprint_audit_0e30e857
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - script:
       description: Set ECS categorization fields
-      tag: set_ecs_categorization_fields
+      tag: set_ecs_categorization_fields_c9aa551c
       lang: painless
       ignore_failure: true
       params:
@@ -99,54 +99,54 @@ processors:
         });
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_cfe16424
       value: Proofpoint
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_31cc2997
       value: Proofpoint On Demand
   - rename:
       field: json.audit.action
-      tag: rename_audit_action
+      tag: rename_audit_action_037cff62
       target_field: proofpoint_on_demand.audit.action
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_audit_action
+      tag: set_event_action_from_audit_action_b99154f9
       copy_from: proofpoint_on_demand.audit.action
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - rename:
       field: json.guid
-      tag: rename_guid
+      tag: rename_guid_def8d407
       target_field: proofpoint_on_demand.audit.guid
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_audit_guid
+      tag: set_event_id_from_audit_guid_219e9c26
       copy_from: proofpoint_on_demand.audit.guid
       ignore_empty_value: true
   - rename:
       field: json.audit.level
-      tag: rename_audit_level
+      tag: rename_audit_level_86c8c47a
       target_field: proofpoint_on_demand.audit.level
       ignore_missing: true
   - set:
       field: log.level
-      tag: set_log_level_from_audit_level
+      tag: set_log_level_from_audit_level_031a6571
       copy_from: proofpoint_on_demand.audit.level
       ignore_empty_value: true
   - rename:
       field: json.metadata.customerId
-      tag: rename_metadata_customerId
+      tag: rename_metadata_customerId_2a68d12d
       target_field: proofpoint_on_demand.audit.metadata.customer_id
       ignore_missing: true
   - convert:
       field: json.metadata.origin.data.agent
-      tag: convert_metadata_origin_data_agent_to_ip
+      tag: convert_metadata_origin_data_agent_to_ip_cfbdc86f
       target_field: proofpoint_on_demand.audit.metadata.origin.data.agent_ip
       type: ip
       ignore_missing: true
@@ -154,62 +154,62 @@ processors:
       on_failure:
         - rename:
             field: json.metadata.origin.data.agent
-            tag: rename_metadata_origin_data_agent
+            tag: rename_metadata_origin_data_agent_3b40f6b9
             target_field: proofpoint_on_demand.audit.metadata.origin.data.agent
             ignore_missing: true
   - set:
       field: observer.hostname
-      tag: set_observer_hostname_from_audit_metadata_origin_data_agent
+      tag: set_observer_hostname_from_audit_metadata_origin_data_agent_f2ccbf72
       copy_from: proofpoint_on_demand.audit.metadata.origin.data.agent
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_metadata_origin_data_agent_into_related_hosts
+      tag: append_metadata_origin_data_agent_into_related_hosts_3d697881
       value: '{{{proofpoint_on_demand.audit.metadata.origin.data.agent}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.metadata?.origin?.data?.agent != null
   - append:
       field: observer.ip
-      tag: append_audit_metadata_origin_data_agent_ip_into_observer_ip
+      tag: append_audit_metadata_origin_data_agent_ip_into_observer_ip_48ebc4c6
       value: '{{{proofpoint_on_demand.audit.metadata.origin.data.agent_ip}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.metadata?.origin?.data?.agent_ip != null
   - append:
       field: related.ip
-      tag: append_metadata_origin_data_agent_ip_into_related_ip
+      tag: append_metadata_origin_data_agent_ip_into_related_ip_da81793f
       value: '{{{proofpoint_on_demand.audit.metadata.origin.data.agent_ip}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.metadata?.origin?.data?.agent_ip != null
   - rename:
       field: json.metadata.origin.data.cid
-      tag: rename_metadata_origin_data_cid
+      tag: rename_metadata_origin_data_cid_dc20e894
       target_field: proofpoint_on_demand.audit.metadata.origin.data.cid
       ignore_missing: true
   - set:
       field: observer.name
-      tag: set_observer_name_from_audit_metadata_origin_data_cid
+      tag: set_observer_name_from_audit_metadata_origin_data_cid_ee858f99
       copy_from: proofpoint_on_demand.audit.metadata.origin.data.cid
       ignore_empty_value: true
   - convert:
       field: json.metadata.origin.data.version
-      tag: convert_metadata_origin_data_version_to_string
+      tag: convert_metadata_origin_data_version_to_string_e58e4ca4
       target_field: proofpoint_on_demand.audit.metadata.origin.data.version
       type: string
       ignore_missing: true
   - set:
       field: observer.version
-      tag: set_observer_version_from_audit_metadata_origin_data_version
+      tag: set_observer_version_from_audit_metadata_origin_data_version_da0644ed
       copy_from: proofpoint_on_demand.audit.metadata.origin.data.version
       ignore_empty_value: true
   - convert:
       field: json.metadata.origin.schemaVersion
-      tag: convert_metadata_origin_schemaVersion_to_string
+      tag: convert_metadata_origin_schemaVersion_to_string_22f92fbe
       target_field: proofpoint_on_demand.audit.metadata.origin.schema_version
       type: string
       ignore_missing: true
   - rename:
       field: json.metadata.origin.type
-      tag: rename_metadata_origin_type
+      tag: rename_metadata_origin_type_82ace564
       target_field: proofpoint_on_demand.audit.metadata.origin.type
       ignore_missing: true
   - foreach:
@@ -219,53 +219,53 @@ processors:
       processor:
         date:
           field: _ingest._value.ts
-          tag: date_metadata_trace_ts
+          tag: date_metadata_trace_ts_7189c70d
           target_field: _ingest._value.ts
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_ts
+                tag: remove_ingest_value_ts_aad36057
                 field: _ingest._value.ts
                 ignore_missing: true
   - rename:
       field: json.metadata.trace
-      tag: rename_metadata_trace
+      tag: rename_metadata_trace_43aab636
       target_field: proofpoint_on_demand.audit.metadata.trace
       ignore_missing: true
   - rename:
       field: json.audit.resourceName
-      tag: rename_audit_resourceName
+      tag: rename_audit_resourceName_18ada594
       target_field: proofpoint_on_demand.audit.resource_name
       ignore_missing: true
   - rename:
       field: json.audit.resourceType
-      tag: rename_audit_resourceType
+      tag: rename_audit_resourceType_f35b17c3
       target_field: proofpoint_on_demand.audit.resource_type
       ignore_missing: true
   - rename:
       field: json.audit.service.cid
-      tag: rename_audit_service_cid
+      tag: rename_audit_service_cid_7a35a05d
       target_field: proofpoint_on_demand.audit.service.cid
       ignore_missing: true
   - rename:
       field: json.audit.service.customerId
-      tag: rename_audit_service_customerId
+      tag: rename_audit_service_customerId_df338520
       target_field: proofpoint_on_demand.audit.service.customer_id
       ignore_missing: true
   - rename:
       field: json.audit.service.id
-      tag: rename_audit_service_id
+      tag: rename_audit_service_id_63628b27
       target_field: proofpoint_on_demand.audit.service.id
       ignore_missing: true
   - set:
       field: service.id
-      tag: set_service_id_from_audit_service_id
+      tag: set_service_id_from_audit_service_id_4803805e
       copy_from: proofpoint_on_demand.audit.service.id
       ignore_empty_value: true
   - convert:
       field: json.audit.service.ipAddress
-      tag: convert_audit_service_ipAddress_to_ip
+      tag: convert_audit_service_ipAddress_to_ip_ae98e3f8
       target_field: proofpoint_on_demand.audit.service.ip_address
       type: ip
       ignore_missing: true
@@ -277,7 +277,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_service_ip_address_into_related_ip
+      tag: append_service_ip_address_into_related_ip_3332e52d
       value: '{{{proofpoint_on_demand.audit.service.ip_address}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.service?.ip_address != null
@@ -288,22 +288,22 @@ processors:
       processor:
         convert:
           field: _ingest._value.value
-          tag: convert_audit_tags_value_to_string
+          tag: convert_audit_tags_value_to_string_165e3e8f
           type: string
           ignore_missing: true
   - rename:
       field: json.audit.tags
-      tag: rename_audit_tags
+      tag: rename_audit_tags_1a1af022
       target_field: proofpoint_on_demand.audit.tags
       ignore_missing: true
   - set:
       field: labels
-      tag: set_labels_from_audit_tags
+      tag: set_labels_from_audit_tags_d4c7ca35
       copy_from: proofpoint_on_demand.audit.tags
       ignore_empty_value: true
   - script:
       description: Define labels object.
-      tag: script_define_labels_object
+      tag: script_define_labels_object_e8c3ae62
       ignore_failure: true
       if: ctx.proofpoint_on_demand?.audit?.tags instanceof List
       lang: painless
@@ -314,7 +314,7 @@ processors:
         }
   - script:
       description: Dynamically map event.outcome from tags.
-      tag: script_dynamically_map_event_outcome
+      tag: script_dynamically_map_event_outcome_1a09ae2d
       ignore_failure: true
       if: ctx.proofpoint_on_demand?.audit?.tags instanceof List
       lang: painless
@@ -336,7 +336,7 @@ processors:
         ctx.action.put("outcome", outcome);
   - date:
       field: json.ts
-      tag: date_ts
+      tag: date_ts_381c3a3a
       target_field: proofpoint_on_demand.audit.ts
       formats:
         - ISO8601
@@ -348,44 +348,44 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_ts
+      tag: set_@timestamp_from_audit_ts_92e5856c
       copy_from: proofpoint_on_demand.audit.ts
       ignore_empty_value: true
   - rename:
       field: json.audit.user.email
-      tag: rename_audit_user_email
+      tag: rename_audit_user_email_e857515d
       target_field: proofpoint_on_demand.audit.user.email
       ignore_missing: true
   - set:
       field: source.user.email
-      tag: set_source_user_email_from_audit_user_email
+      tag: set_source_user_email_from_audit_user_email_1952d787
       copy_from: proofpoint_on_demand.audit.user.email
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_email_into_related_user
+      tag: append_user_email_into_related_user_fc64279d
       value: '{{{proofpoint_on_demand.audit.user.email}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.user?.email != null
   - rename:
       field: json.audit.user.id
-      tag: rename_audit_user_id
+      tag: rename_audit_user_id_6be3c7d2
       target_field: proofpoint_on_demand.audit.user.id
       ignore_missing: true
   - set:
       field: source.user.id
-      tag: set_source_user_id_from_audit_user_id
+      tag: set_source_user_id_from_audit_user_id_cb91cfb5
       copy_from: proofpoint_on_demand.audit.user.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_user_id_into_related_user_c6667c54
       value: '{{{proofpoint_on_demand.audit.user.id}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.user?.id != null
   - convert:
       field: json.audit.user.ipAddress
-      tag: convert_audit_user_ipAddress_to_ip
+      tag: convert_audit_user_ipAddress_to_ip_1d00b317
       target_field: proofpoint_on_demand.audit.user.ip_address
       type: ip
       ignore_missing: true
@@ -397,33 +397,33 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_audit_user_ip_address
+      tag: set_source_ip_from_audit_user_ip_address_4e00d468
       copy_from: proofpoint_on_demand.audit.user.ip_address
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_user_ip_address_into_related_ip
+      tag: append_user_ip_address_into_related_ip_c77ad606
       value: '{{{proofpoint_on_demand.audit.user.ip_address}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.user?.ip_address != null
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - rename:
       field: audit.user.roleAssigned
-      tag: rename_audit_user_roleAssigned
+      tag: rename_audit_user_roleAssigned_23183edc
       target_field: proofpoint_on_demand.audit.user.roles_assigned
       ignore_missing: true
   - rename:
       field: json.audit.user.rolesAssigned
-      tag: rename_audit_user_rolesAssigned
+      tag: rename_audit_user_rolesAssigned_be011148
       target_field: proofpoint_on_demand.audit.user.roles_assigned
       ignore_missing: true
   - append:
       field: source.user.roles
-      tag: append_proofpoint_on_demand_audit_user_roles_assigned_into_source_user_roles
+      tag: append_proofpoint_on_demand_audit_user_roles_assigned_into_source_user_roles_b28e2376
       value: '{{{proofpoint_on_demand.audit.user.roles_assigned}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.audit?.user?.roles_assigned != null
@@ -442,15 +442,15 @@ processors:
         - proofpoint_on_demand.audit.user.ip_address
         - proofpoint_on_demand.audit.user.roles_assigned
         - proofpoint_on_demand.audit.level
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_243e0373
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -469,7 +469,7 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -480,15 +480,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind_f7ca4e92
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

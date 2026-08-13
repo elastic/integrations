@@ -12,7 +12,7 @@ processors:
 
   ### NOTE LOG TYPE
   - script:
-      tag: script_30e15f01
+      tag: script_note_log_type_30e15f01
       lang: painless
       if: ctx.mimecast instanceof Map
       params:
@@ -181,7 +181,7 @@ processors:
         ctx.mimecast.log_type = score.keySet();
 
   - fingerprint:
-      tag: fingerprint_20418e65
+      tag: fingerprint_to_id_20418e65
       fields:
         - mimecast.MsgId
         - mimecast.aCode
@@ -537,7 +537,7 @@ processors:
 
   # Cleanup
   - remove:
-      tag: remove_5446d5af
+      tag: remove_cleanup_repeated_unwanted_temporary_fields_5446d5af
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast.eventTime
@@ -556,15 +556,15 @@ processors:
 # Error handling
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

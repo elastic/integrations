@@ -2,7 +2,7 @@
 description: Pipeline for Palo Alto Cortext XDR Alerts v1 API.
 processors:
   - fingerprint:
-      tag: fingerprint_9f0eb322
+      tag: fingerprint_to_id_9f0eb322
       fields:
         - panw_cortex.xdr.events.event_timestamp
         - panw_cortex.xdr.events.event_id
@@ -190,7 +190,7 @@ processors:
       ignore_missing: true
       override: true
   - script:
-      tag: script_ad7409b5
+      tag: script_extract_mitre_techniques_append_ad7409b5
       if: ctx.panw_cortex?.xdr?.mitre_technique_id_and_name != null
       lang: painless
       description: "Extract Mitre Techniques and append it to Threat ECS fields"
@@ -219,7 +219,7 @@ processors:
           addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
         }
   - script:
-      tag: script_45d60717
+      tag: script_extract_mitre_tactics_append_45d60717
       if: ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name != null
       lang: painless
       description: "Extract Mitre Tactics and append it to Threat ECS fields"
@@ -652,7 +652,7 @@ processors:
       if: ctx.panw_cortex?.xdr?.tags != null
       processor:
         append:
-          tag: append_tags
+          tag: append_tags_0a2b84a4
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -677,11 +677,11 @@ processors:
 # Error handling
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:

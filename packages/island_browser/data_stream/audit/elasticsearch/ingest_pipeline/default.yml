@@ -3,66 +3,66 @@ description: Pipeline for processing audit logs.
 processors:
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - fingerprint:
       fields:
         - json.id
         - json.timestamp
-      tag: fingerprint_island_browser_audit
+      tag: fingerprint_island_browser_audit_af408a4c
       target_field: _id
       ignore_missing: true
   - rename:
       field: json.clientEventId
-      tag: rename_clientEventId
+      tag: rename_clientEventId_cb4ddc0e
       target_field: island_browser.audit.client_event_id
       ignore_missing: true
   - rename:
       field: json.compatibilityMode
-      tag: rename_compatibilityMode
+      tag: rename_compatibilityMode_f2e204b5
       target_field: island_browser.audit.compatibility_mode
       ignore_missing: true
   - rename:
       field: json.country
-      tag: rename_country
+      tag: rename_country_99f5e8db
       target_field: island_browser.audit.country
       ignore_missing: true
   - rename:
       field: json.countryCode
-      tag: rename_countryCode
+      tag: rename_countryCode_8dcaff22
       target_field: island_browser.audit.country_code
       ignore_missing: true
   - date:
       field: json.createdDate
-      tag: date_createdDate
+      tag: date_createdDate_c95c25b2
       target_field: island_browser.audit.created_date
       formats:
         - ISO8601
@@ -74,12 +74,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_audit_created_date
+      tag: set_event_created_from_audit_created_date_3a91e037
       copy_from: island_browser.audit.created_date
       ignore_empty_value: true
   - json:
       field: json.details
-      tag: json_details
+      tag: json_details_9d4cac22
       if: ctx.json?.details instanceof String
       target_field: island_browser.audit.details
       on_failure:
@@ -89,75 +89,75 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.deviceId
-      tag: rename_deviceId
+      tag: rename_deviceId_11736c49
       target_field: island_browser.audit.device_id
       ignore_missing: true
   - set:
       field: device.id
-      tag: set_device_id_from_audit_device_id
+      tag: set_device_id_from_audit_device_id_22a73bb3
       copy_from: island_browser.audit.device_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_audit_device_id_into_related_hosts
+      tag: append_audit_device_id_into_related_hosts_b6fe77f2
       value: '{{{island_browser.audit.device_id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.device_id != null
   - rename:
       field: json.devicePostureMatchingDetails
-      tag: rename_devicePostureMatchingDetails
+      tag: rename_devicePostureMatchingDetails_55b0cd5a
       target_field: island_browser.audit.device_posture_matching_details
       ignore_missing: true
   - rename:
       field: json.domainOrTenant
-      tag: rename_domainOrTenant
+      tag: rename_domainOrTenant_5174c79d
       target_field: island_browser.audit.domain_or_tenant
       ignore_missing: true
   - rename:
       field: json.email
-      tag: rename_email
+      tag: rename_email_5eb2109b
       target_field: island_browser.audit.email
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_audit_email
+      tag: set_user_email_from_audit_email_a04d44f4
       copy_from: island_browser.audit.email
       ignore_empty_value: true
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
-      tag: dissect_user_email
+      tag: dissect_user_email_3ce141a5
       field: user.email
       pattern: '%{_temp}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_audit_email_into_related_user
+      tag: append_audit_email_into_related_user_64f844ce
       value: '{{{island_browser.audit.email}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.email != null
   - convert:
       field: json.frameId
-      tag: convert_frameId_to_string
+      tag: convert_frameId_to_string_81125445
       target_field: island_browser.audit.frame_id
       type: string
       ignore_missing: true
   - rename:
       field: json.frameUrl
-      tag: rename_frameUrl
+      tag: rename_frameUrl_1ef580df
       target_field: island_browser.audit.frame_url
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_525b8ef0
       target_field: island_browser.audit.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_audit_id
+      tag: set_event_id_from_audit_id_3ac514ed
       copy_from: island_browser.audit.id
       ignore_empty_value: true
   - convert:
       field: json.incognito
-      tag: convert_incognito_to_boolean
+      tag: convert_incognito_to_boolean_2f9d0aff
       target_field: island_browser.audit.incognito
       type: boolean
       ignore_missing: true
@@ -168,7 +168,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isIslandPrivateAccess
-      tag: convert_isIslandPrivateAccess_to_boolean
+      tag: convert_isIslandPrivateAccess_to_boolean_ce6488fd
       target_field: island_browser.audit.is_island_private_access
       type: boolean
       ignore_missing: true
@@ -179,80 +179,80 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.keystrokes
-      tag: rename_keystrokes
+      tag: rename_keystrokes_8c2a8e54
       target_field: island_browser.audit.keystrokes
       ignore_missing: true
   - rename:
       field: json.machineId
-      tag: rename_machineId
+      tag: rename_machineId_59dafabd
       target_field: island_browser.audit.machine_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_audit_machine_id
+      tag: set_host_id_from_audit_machine_id_f5f214b8
       copy_from: island_browser.audit.machine_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_audit_machine_id_into_related_hosts
+      tag: append_audit_machine_id_into_related_hosts_be05cefd
       value: '{{{island_browser.audit.machine_id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.machine_id != null
   - rename:
       field: json.machineName
-      tag: rename_machineName
+      tag: rename_machineName_26cb97a2
       target_field: island_browser.audit.machine_name
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_audit_machine_name
+      tag: set_host_name_from_audit_machine_name_f9e784f5
       copy_from: island_browser.audit.machine_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_audit_machine_name_into_related_hosts
+      tag: append_audit_machine_name_into_related_hosts_55aaad8e
       value: '{{{island_browser.audit.machine_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.machine_name != null
   - rename:
       field: json.matchedDevicePosture
-      tag: rename_matchedDevicePosture
+      tag: rename_matchedDevicePosture_1e38f646
       target_field: island_browser.audit.matched_device_posture
       ignore_missing: true
   - rename:
       field: json.matchedUserGroup
-      tag: rename_matchedUserGroup
+      tag: rename_matchedUserGroup_b2da60a8
       target_field: island_browser.audit.matched_user_group
       ignore_missing: true
   - rename:
       field: json.origin
-      tag: rename_origin
+      tag: rename_origin_97e7608d
       target_field: island_browser.audit.origin
       ignore_missing: true
   - rename:
       field: json.osPlatform
-      tag: rename_osPlatform
+      tag: rename_osPlatform_6aef9aba
       target_field: island_browser.audit.os_platform
       ignore_missing: true
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_from_audit_os_platform
+      tag: set_host_os_platform_from_audit_os_platform_b51f46cc
       copy_from: island_browser.audit.os_platform
       ignore_empty_value: true
   - rename:
       field: json.osUserName
-      tag: rename_osUserName
+      tag: rename_osUserName_18708368
       target_field: island_browser.audit.os_user_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_audit_os_user_name_into_related_user
+      tag: append_audit_os_user_name_into_related_user_a0377210
       value: '{{{island_browser.audit.os_user_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.os_user_name != null
   - date:
       field: json.processedDate
-      tag: date_processedDate
+      tag: date_processedDate_a70d5d84
       target_field: island_browser.audit.processed_date
       formats:
         - ISO8601
@@ -264,7 +264,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.publicIp
-      tag: convert_publicIp_to_ip
+      tag: convert_publicIp_to_ip_98ba4174
       target_field: island_browser.audit.public_ip
       type: ip
       ignore_missing: true
@@ -276,7 +276,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.nat.ip
-      tag: set_source_nat_ip_from_audit_public_ip
+      tag: set_source_nat_ip_from_audit_public_ip_a4c586e5
       copy_from: island_browser.audit.public_ip
       ignore_empty_value: true
   - geoip:
@@ -286,73 +286,73 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_audit_public_ip_into_related_ip
+      tag: append_audit_public_ip_into_related_ip_31f1d146
       value: '{{{island_browser.audit.public_ip}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.public_ip != null
   - rename:
       field: json.region
-      tag: rename_region
+      tag: rename_region_26fc7a33
       target_field: island_browser.audit.region
       ignore_missing: true
   - rename:
       field: json.ruleId
-      tag: rename_ruleId
+      tag: rename_ruleId_d860077f
       target_field: island_browser.audit.rule_id
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_audit_rule_id
+      tag: set_rule_id_from_audit_rule_id_662f7abb
       copy_from: island_browser.audit.rule_id
       ignore_empty_value: true
   - rename:
       field: json.ruleName
-      tag: rename_ruleName
+      tag: rename_ruleName_ac1b1fe8
       target_field: island_browser.audit.rule_name
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_audit_rule_name
+      tag: set_rule_name_from_audit_rule_name_0edb22d2
       copy_from: island_browser.audit.rule_name
       ignore_empty_value: true
   - rename:
       field: json.saasApplicationCategory
-      tag: rename_saasApplicationCategory
+      tag: rename_saasApplicationCategory_84f3ab24
       target_field: island_browser.audit.saas_application_category
       ignore_missing: true
   - rename:
       field: json.saasApplicationId
-      tag: rename_saasApplicationId
+      tag: rename_saasApplicationId_2e52ef88
       target_field: island_browser.audit.saas_application_id
       ignore_missing: true
   - rename:
       field: json.saasApplicationName
-      tag: rename_saasApplicationName
+      tag: rename_saasApplicationName_c51d2eaa
       target_field: island_browser.audit.saas_application_name
       ignore_missing: true
   - set:
       field: service.name
-      tag: set_service_name_from_audit_saas_application_name
+      tag: set_service_name_from_audit_saas_application_name_e174c009
       copy_from: island_browser.audit.saas_application_name
       ignore_empty_value: true
   - rename:
       field: json.screenshotFileName
-      tag: rename_screenshotFileName
+      tag: rename_screenshotFileName_8e34d1fe
       target_field: island_browser.audit.screenshot_file_name
       ignore_missing: true
   - set:
       field: file.name
-      tag: set_file_name_from_audit_screenshot_file_name
+      tag: set_file_name_from_audit_screenshot_file_name_87564bff
       copy_from: island_browser.audit.screenshot_file_name
       ignore_empty_value: true
   - rename:
       field: json.shortTopLevelUrl
-      tag: rename_shortTopLevelUrl
+      tag: rename_shortTopLevelUrl_0b1d2ced
       target_field: island_browser.audit.short_top_level_url
       ignore_missing: true
   - convert:
       field: json.sourceIp
-      tag: convert_sourceIp_to_ip
+      tag: convert_sourceIp_to_ip_9f645837
       target_field: island_browser.audit.source_ip
       type: ip
       ignore_missing: true
@@ -364,39 +364,39 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_audit_source_ip
+      tag: set_source_ip_from_audit_source_ip_90cdfeb2
       copy_from: island_browser.audit.source_ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_audit_source_ip_into_related_ip
+      tag: append_audit_source_ip_into_related_ip_9d96b7d6
       value: '{{{island_browser.audit.source_ip}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.source_ip != null
   - rename:
       field: json.submittedUrl
-      tag: rename_submittedUrl
+      tag: rename_submittedUrl_ce9ea239
       target_field: island_browser.audit.submitted_url
       ignore_missing: true
   - convert:
       field: json.tabId
-      tag: convert_tabId_to_string
+      tag: convert_tabId_to_string_1f55377b
       target_field: island_browser.audit.tab_id
       type: string
       ignore_missing: true
   - rename:
       field: json.tenantId
-      tag: rename_tenantId
+      tag: rename_tenantId_561ef874
       target_field: island_browser.audit.tenant_id
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id_from_audit_tenant_id
+      tag: set_organization_id_from_audit_tenant_id_7ab20b66
       copy_from: island_browser.audit.tenant_id
       ignore_empty_value: true
   - date:
       field: json.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_ba7a3096
       target_field: island_browser.audit.timestamp
       formats:
         - ISO8601
@@ -408,22 +408,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_timestamp
+      tag: set_@timestamp_from_audit_timestamp_cbb845eb
       copy_from: island_browser.audit.timestamp
       ignore_empty_value: true
   - rename:
       field: json.topLevelUrl
-      tag: rename_topLevelUrl
+      tag: rename_topLevelUrl_7c3a52a5
       target_field: island_browser.audit.top_level_url
       ignore_missing: true
   - set:
       field: url.original
-      tag: set_url_original_from_audit_top_level_url
+      tag: set_url_original_from_audit_top_level_url_38fb11fa
       copy_from: island_browser.audit.top_level_url
       ignore_empty_value: true
   - uri_parts:
       field: url.original
-      tag: uri_parts_url_original
+      tag: uri_parts_url_original_8be8c143
       ignore_missing: true
       on_failure:
         - append:
@@ -432,12 +432,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_d3ccc78f
       target_field: island_browser.audit.type
       ignore_missing: true
   - date:
       field: json.updatedDate
-      tag: date_updatedDate
+      tag: date_updatedDate_708c2c76
       target_field: island_browser.audit.updated_date
       formats:
         - ISO8601
@@ -449,12 +449,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.urlWebCategories
-      tag: rename_urlWebCategories
+      tag: rename_urlWebCategories_fb2a798b
       target_field: island_browser.audit.url_web_categories
       ignore_missing: true
   - convert:
       field: json.urlWebReputation
-      tag: convert_urlWebReputation_to_long
+      tag: convert_urlWebReputation_to_long_3e0e3a84
       target_field: island_browser.audit.url_web_reputation
       type: long
       ignore_missing: true
@@ -465,54 +465,54 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.userId
-      tag: rename_userId
+      tag: rename_userId_4ecb7cc4
       target_field: island_browser.audit.user_id
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_audit_user_id
+      tag: set_user_id_from_audit_user_id_bf9e15db
       copy_from: island_browser.audit.user_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_audit_user_id_into_related_user
+      tag: append_audit_user_id_into_related_user_1cfc9ecb
       value: '{{{island_browser.audit.user_id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.user_id != null
   - rename:
       field: json.userName
-      tag: rename_userName
+      tag: rename_userName_89cf1cc8
       target_field: island_browser.audit.user_name
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_audit_user_name
+      tag: set_user_name_from_audit_user_name_54222710
       copy_from: island_browser.audit.user_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_audit_user_name_into_related_user
+      tag: append_audit_user_name_into_related_user_7969396a
       value: '{{{island_browser.audit.user_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.audit?.user_name != null
   - rename:
       field: json.verdict
-      tag: rename_verdict
+      tag: rename_verdict_bf409e32
       target_field: island_browser.audit.verdict
       ignore_missing: true
   - rename:
       field: json.verdictReason
-      tag: rename_verdictReason
+      tag: rename_verdictReason_f71fd060
       target_field: island_browser.audit.verdict_reason
       ignore_missing: true
   - rename:
       field: json.websiteTopLevelUrl
-      tag: rename_websiteTopLevelUrl
+      tag: rename_websiteTopLevelUrl_8e8d6815
       target_field: island_browser.audit.website_top_level_url
       ignore_missing: true
   - convert:
       field: json.windowId
-      tag: convert_windowId_to_string
+      tag: convert_windowId_to_string_f925d2a7
       target_field: island_browser.audit.window_id
       type: string
       ignore_missing: true
@@ -536,17 +536,17 @@ processors:
         - island_browser.audit.top_level_url
         - island_browser.audit.user_id
         - island_browser.audit.user_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_a2057d40
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
         - _temp
-      tag: remove_json_and_temp
+      tag: remove_json_and_temp_c9df19f6
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -573,7 +573,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -584,7 +584,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -592,10 +592,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

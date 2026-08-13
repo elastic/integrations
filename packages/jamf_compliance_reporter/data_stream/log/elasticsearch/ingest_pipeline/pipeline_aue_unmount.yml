@@ -2,10 +2,10 @@
 description: Pipeline for Jamf Compliance Reporter aue_unmount audit logs.
 processors:
   - pipeline:
-      tag: pipeline_8cb224f5
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - pipeline:
-      tag: pipeline_75de012d
+      tag: pipeline_exec_chain_child_object_75de012d
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - rename:
       tag: rename_json_path_to_jamf_compliance_reporter_log_path_dcaf10e2
@@ -78,7 +78,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - script:
-      tag: script_fbc9f1e5
+      tag: script_convert_decimal_into_octal_fbc9f1e5
       description: Convert Decimal into Octal.
       lang: painless
       if: ctx.json?.file_access_mode != null
@@ -87,15 +87,15 @@ processors:
         ctx.jamf_compliance_reporter.log.attributes.file.access_mode = Integer.toOctalString(temp);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -8,7 +8,7 @@ processors:
   - json:
       field: message
       add_to_root: true
-      tag: json_message
+      tag: json_message_9e00ac02
       add_to_root_conflict_strategy: replace
       on_failure:
         - append:
@@ -1338,7 +1338,7 @@ processors:
   - script:
       if: ctx.user?.email != null
       description: transform user.email field into a list and parse it into user.name and related.user fields
-      tag: parse_user_email
+      tag: parse_user_email_6be48e24
       lang: painless
       ignore_failure: true
       source: >-
@@ -1372,7 +1372,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_c3eea815
+      tag: script_drops_null_empty_values_recursively_c3eea815
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -1391,15 +1391,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

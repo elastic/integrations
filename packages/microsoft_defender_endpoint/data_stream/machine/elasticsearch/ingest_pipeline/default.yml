@@ -3,10 +3,10 @@ description: Pipeline for processing machine logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,26 +16,26 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -44,89 +44,89 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_a374e2bd
       value: Microsoft
       ignore_empty_value: true
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_1afe6c19
       value: Defender for Endpoint
       ignore_empty_value: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_f2ff4422
       value: event
       ignore_empty_value: true
   - append:
       field: event.category
-      tag: append_host_into_event_category
+      tag: append_host_into_event_category_cbc3f167
       value: host
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_a75e9a8a
       value: info
       allow_duplicates: false
   - rename:
       field: json.aadDeviceId
-      tag: rename_aadDeviceId
+      tag: rename_aadDeviceId_8c131e10
       target_field: microsoft_defender_endpoint.machine.aad_device_id
       ignore_missing: true
   - set:
       field: device.id
-      tag: set_device_id
+      tag: set_device_id_64253eec
       copy_from: microsoft_defender_endpoint.machine.aad_device_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_microsoft_defender_endpoint_machine_aad_device_id_into_related_hosts
+      tag: append_microsoft_defender_endpoint_machine_aad_device_id_into_related_hosts_3c389210
       value: '{{{microsoft_defender_endpoint.machine.aad_device_id}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.aad_device_id != null
   - rename:
       field: json.agentVersion
-      tag: rename_agentVersion
+      tag: rename_agentVersion_f7edc9eb
       target_field: microsoft_defender_endpoint.machine.agent_version
       ignore_missing: true
   - rename:
       field: json.computerDnsName
-      tag: rename_computerDnsName
+      tag: rename_computerDnsName_524c0db0
       target_field: microsoft_defender_endpoint.machine.computer_dns_name
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_hostname_from_machine_computer_dns_name
+      tag: set_host_hostname_from_machine_computer_dns_name_72bb6b6c
       copy_from: microsoft_defender_endpoint.machine.computer_dns_name
       ignore_empty_value: true
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_machine_computer_dns_name_ab5e048e
+      tag: set_host_hostname_from_machine_computer_dns_name_67afb36b
       copy_from: microsoft_defender_endpoint.machine.computer_dns_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_microsoft_defender_endpoint_machine_computer_dns_name_into_related_hosts
+      tag: append_microsoft_defender_endpoint_machine_computer_dns_name_into_related_hosts_a05cb4a1
       value: '{{{microsoft_defender_endpoint.machine.computer_dns_name}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.computer_dns_name != null
   - rename:
       field: json.deviceValue
-      tag: rename_deviceValue
+      tag: rename_deviceValue_f426de37
       target_field: microsoft_defender_endpoint.machine.device_value
       ignore_missing: true
   - rename:
       field: json.exclusionReason
-      tag: rename_exclusionReason
+      tag: rename_exclusionReason_24e55d0a
       target_field: microsoft_defender_endpoint.machine.exclusion_reason
       ignore_missing: true
   - rename:
       field: json.exposureLevel
-      tag: rename_exposureLevel
+      tag: rename_exposureLevel_11340c22
       target_field: microsoft_defender_endpoint.machine.exposure_level
       ignore_missing: true
   - date:
       field: json.firstSeen
-      tag: date_firstSeen
+      tag: date_firstSeen_338aea46
       target_field: microsoft_defender_endpoint.machine.first_seen
       formats:
         - strict_date_optional_time_nanos
@@ -138,29 +138,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.healthStatus
-      tag: rename_healthStatus
+      tag: rename_healthStatus_6c0d81e4
       target_field: microsoft_defender_endpoint.machine.health_status
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_af170401
       target_field: microsoft_defender_endpoint.machine.id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_machine_id
+      tag: set_host_id_from_machine_id_28ddaf9f
       copy_from: microsoft_defender_endpoint.machine.id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_microsoft_defender_endpoint_machine_id_into_related_hosts
+      tag: append_microsoft_defender_endpoint_machine_id_into_related_hosts_2e6ff7d8
       value: '{{{microsoft_defender_endpoint.machine.id}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.id != null
   - script:
       lang: painless
       description: Drops empty string values recursively.
-      tag: painless_remove_empty_from_ip_addresses
+      tag: painless_remove_empty_from_ip_addresses_34326019
       if: ctx.json?.ipAddresses != null
       source: |-
         boolean drop(Object object) {
@@ -183,13 +183,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.ipAddress
-          tag: convert_ipAddresses_ipAddress_to_ip
+          tag: convert_ipAddresses_ipAddress_to_ip_a94dda78
           target_field: _ingest._value.ip_address
           type: ip
           ignore_missing: true
           on_failure:
             - append:
-                tag: append_error_message
+                tag: append_error_message_6d050ce2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -199,7 +199,7 @@ processors:
       processor:
         append:
           field: related.ip
-          tag: append_ipAddresses_ip_address_into_related_ip
+          tag: append_ipAddresses_ip_address_into_related_ip_2de772a2
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - foreach:
@@ -209,7 +209,7 @@ processors:
       processor:
         uppercase:
           field: _ingest._value.macAddress
-          tag: uppercase_ipAddresses_macAddress
+          tag: uppercase_ipAddresses_macAddress_61d8b29a
           target_field: _ingest._value.mac_address
           ignore_missing: true
   - foreach:
@@ -221,7 +221,7 @@ processors:
           field: _ingest._value.mac_address
           pattern: '(..)(?!$)'
           replacement: '$1-'
-          tag: gsub_ipAddresses_mac_address
+          tag: gsub_ipAddresses_mac_address_bd95652f
           ignore_missing: true
   - foreach:
       tag: foreach_json_ipAddresses_814a16e5
@@ -230,7 +230,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.operationalStatus
-          tag: rename_ipAddresses_operationalStatus
+          tag: rename_ipAddresses_operationalStatus_e82fc5de
           target_field: _ingest._value.operational_status
           ignore_missing: true
   - foreach:
@@ -242,16 +242,16 @@ processors:
           field:
             - _ingest._value.ipAddress
             - _ingest._value.macAddress
-          tag: remove_ipAddresses
+          tag: remove_ipAddresses_cfe7f809
           ignore_missing: true
   - rename:
       field: json.ipAddresses
-      tag: rename_ipAddresses
+      tag: rename_ipAddresses_17842bdc
       target_field: microsoft_defender_endpoint.machine.ip_addresses
       ignore_missing: true
   - convert:
       field: json.isAadJoined
-      tag: convert_isAadJoined_to_boolean
+      tag: convert_isAadJoined_to_boolean_da547baa
       target_field: microsoft_defender_endpoint.machine.is_aad_joined
       type: boolean
       ignore_missing: true
@@ -262,7 +262,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isExcluded
-      tag: convert_isExcluded_to_boolean
+      tag: convert_isExcluded_to_boolean_d3857712
       target_field: microsoft_defender_endpoint.machine.is_excluded
       type: boolean
       ignore_missing: true
@@ -273,7 +273,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isPotentialDuplication
-      tag: convert_isPotentialDuplication_to_boolean
+      tag: convert_isPotentialDuplication_to_boolean_b15567c9
       target_field: microsoft_defender_endpoint.machine.is_potential_duplication
       type: boolean
       ignore_missing: true
@@ -284,7 +284,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.lastExternalIpAddress
-      tag: convert_lastExternalIpAddress_to_ip
+      tag: convert_lastExternalIpAddress_to_ip_5b02a3d9
       target_field: microsoft_defender_endpoint.machine.last_external_ip_address
       type: ip
       ignore_missing: true
@@ -296,24 +296,24 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
-      tag: append_microsoft_defender_endpoint_machine_last_external_ip_address_into_host_ip
+      tag: append_microsoft_defender_endpoint_machine_last_external_ip_address_into_host_ip_3f787674
       value: '{{{microsoft_defender_endpoint.machine.last_external_ip_address}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.last_external_ip_address != null
   - append:
       field: related.ip
-      tag: append_microsoft_defender_endpoint_machine_last_external_ip_address_into_related_ip
+      tag: append_microsoft_defender_endpoint_machine_last_external_ip_address_into_related_ip_26e50135
       value: '{{{microsoft_defender_endpoint.machine.last_external_ip_address}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.last_external_ip_address != null
   - geoip:
       field: host.ip
       target_field: host.geo
-      tag: geoip_host_geo
+      tag: geoip_host_geo_b3cb3264
       ignore_missing: true
   - convert:
       field: json.lastIpAddress
-      tag: convert_lastIpAddress_to_ip
+      tag: convert_lastIpAddress_to_ip_a04c2f88
       target_field: microsoft_defender_endpoint.machine.last_ip_address
       type: ip
       ignore_missing: true
@@ -325,13 +325,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_microsoft_defender_endpoint_machine_last_ip_address_into_related_ip
+      tag: append_microsoft_defender_endpoint_machine_last_ip_address_into_related_ip_165c3f93
       value: '{{{microsoft_defender_endpoint.machine.last_ip_address}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.last_ip_address != null
   - date:
       field: json.lastSeen
-      tag: date_lastSeen
+      tag: date_lastSeen_8ed7592e
       target_field: microsoft_defender_endpoint.machine.last_seen
       formats:
         - strict_date_optional_time_nanos
@@ -343,38 +343,38 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.machineTags
-      tag: rename_machineTags
+      tag: rename_machineTags_ffee2db2
       target_field: microsoft_defender_endpoint.machine.machine_tags
       ignore_missing: true
   - rename:
       field: json.managedBy
-      tag: rename_managedBy
+      tag: rename_managedBy_54f4f262
       target_field: microsoft_defender_endpoint.machine.managed_by
       ignore_missing: true
   - rename:
       field: json.managedByStatus
-      tag: rename_managedByStatus
+      tag: rename_managedByStatus_62f1e054
       target_field: microsoft_defender_endpoint.machine.managed_by_status
       ignore_missing: true
   - convert:
       field: json.mergedIntoMachineId
-      tag: convert_mergedIntoMachineId_to_string
+      tag: convert_mergedIntoMachineId_to_string_74ba41d5
       target_field: microsoft_defender_endpoint.machine.merged_into_machine_id
       type: string
       ignore_missing: true
   - rename:
       field: json.onboardingStatus
-      tag: rename_onboardingStatus
+      tag: rename_onboardingStatus_c9364aff
       target_field: microsoft_defender_endpoint.machine.onboarding_status
       ignore_missing: true
   - rename:
       field: json.osArchitecture
-      tag: rename_osArchitecture
+      tag: rename_osArchitecture_7f3632df
       target_field: microsoft_defender_endpoint.machine.os_architecture
       ignore_missing: true
   - convert:
       field: json.osBuild
-      tag: convert_osBuild_to_long
+      tag: convert_osBuild_to_long_e13d14fc
       target_field: microsoft_defender_endpoint.machine.os_build
       type: long
       ignore_missing: true
@@ -385,17 +385,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.osPlatform
-      tag: rename_osPlatform
+      tag: rename_osPlatform_3ff19396
       target_field: microsoft_defender_endpoint.machine.os_platform
       ignore_missing: true
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_from_machine_os_platform
+      tag: set_host_os_platform_from_machine_os_platform_0c1700f6
       copy_from: microsoft_defender_endpoint.machine.os_platform
       ignore_empty_value: true
   - script:
       description: Dynamically set host.os.type values.
-      tag: script_map_host_os_type
+      tag: script_map_host_os_type_2dddfaf5
       lang: painless
       if: ctx.microsoft_defender_endpoint?.machine?.os_platform != null
       params:
@@ -419,23 +419,23 @@ processors:
         }
   - rename:
       field: json.osProcessor
-      tag: rename_osProcessor
+      tag: rename_osProcessor_4a45c760
       target_field: microsoft_defender_endpoint.machine.os_processor
       ignore_missing: true
   - set:
       field: host.architecture
-      tag: set_host_architecture_from_machine_os_processor
+      tag: set_host_architecture_from_machine_os_processor_eacc5464
       copy_from: microsoft_defender_endpoint.machine.os_processor
       ignore_empty_value: true
   - convert:
       field: json.osVersion
-      tag: convert_osVersion_to_string
+      tag: convert_osVersion_to_string_6a59c96a
       target_field: microsoft_defender_endpoint.machine.os_version
       type: string
       ignore_missing: true
   - convert:
       field: json.rbacGroupId
-      tag: convert_group_id_to_string
+      tag: convert_group_id_to_string_01b4ec04
       target_field: microsoft_defender_endpoint.machine.rbac_group_id
       type: string
       ignore_missing: true
@@ -446,37 +446,37 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: group.id
-      tag: set_group_id_from_machine_rbac_group_id
+      tag: set_group_id_from_machine_rbac_group_id_fbbf938e
       copy_from: microsoft_defender_endpoint.machine.rbac_group_id
       ignore_empty_value: true
   - rename:
       field: json.rbacGroupName
-      tag: rename_rbacGroupName
+      tag: rename_rbacGroupName_c219ab05
       target_field: microsoft_defender_endpoint.machine.rbac_group_name
       ignore_missing: true
   - set:
       field: group.name
-      tag: set_group_name_from_machine_rbac_group_name
+      tag: set_group_name_from_machine_rbac_group_name_cc9a3729
       copy_from: microsoft_defender_endpoint.machine.rbac_group_name
       ignore_empty_value: true
   - rename:
       field: json.riskScore
-      tag: rename_riskScore
+      tag: rename_riskScore_71693d1a
       target_field: microsoft_defender_endpoint.machine.risk_score
       ignore_missing: true
   - set:
       field: host.risk.calculated_level
-      tag: set_host_risk_calculated_level_from_machine_risk_score
+      tag: set_host_risk_calculated_level_from_machine_risk_score_1f5ede95
       copy_from: microsoft_defender_endpoint.machine.risk_score
       ignore_empty_value: true
   - rename:
       field: json.version
-      tag: rename_version
+      tag: rename_version_1894da78
       target_field: microsoft_defender_endpoint.machine.version
       ignore_missing: true
   - set:
       field: host.os.version
-      tag: set_host_os_version_from_machine_version
+      tag: set_host_os_version_from_machine_version_e77b9222
       copy_from: microsoft_defender_endpoint.machine.version
       ignore_empty_value: true
   - set:
@@ -487,22 +487,22 @@ processors:
       if: ctx.host?.os?.platform != null && ctx.host?.os?.version != null
   - rename:
       field: json.vm_metadata.cloudProvider
-      tag: rename_vm_metadata_cloudProvider
+      tag: rename_vm_metadata_cloudProvider_6ab6230e
       target_field: microsoft_defender_endpoint.machine.vm_metadata.cloud_provider
       ignore_missing: true
   - rename:
       field: json.vm_metadata.resourceId
-      tag: rename_vm_metadata_resourceId
+      tag: rename_vm_metadata_resourceId_4e10758c
       target_field: microsoft_defender_endpoint.machine.vm_metadata.resource_id
       ignore_missing: true
   - rename:
       field: json.vm_metadata.subscriptionId
-      tag: rename_vm_metadata_subscriptionId
+      tag: rename_vm_metadata_subscriptionId_55b88a9b
       target_field: microsoft_defender_endpoint.machine.vm_metadata.subscription_id
       ignore_missing: true
   - rename:
       field: json.vm_metadata.vmId
-      tag: rename_vm_metadata_vmId
+      tag: rename_vm_metadata_vmId_1136616e
       target_field: microsoft_defender_endpoint.machine.vm_metadata.vm_id
       ignore_missing: true
   - remove:
@@ -517,17 +517,17 @@ processors:
         - microsoft_defender_endpoint.machine.risk_score
         - microsoft_defender_endpoint.machine.version
         - microsoft_defender_endpoint.machine.os_processor
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_a02eebf3
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -553,7 +553,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -569,10 +569,10 @@ on_failure:
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

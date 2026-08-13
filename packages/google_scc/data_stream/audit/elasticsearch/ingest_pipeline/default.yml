@@ -8,18 +8,18 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
@@ -30,12 +30,12 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - json:
       field: event.original
       target_field: json
-      tag: json_event_original
+      tag: json_event_original_c3a1053e
       on_failure:
         - append:
             tag: append_error_message_a6e0e953
@@ -44,7 +44,7 @@ processors:
   - date:
       field: json.timestamp
       target_field: google_scc.audit.timestamp
-      tag: date_audit_timestamp
+      tag: date_audit_timestamp_b9b486c2
       formats:
         - ISO8601
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
@@ -55,7 +55,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_8fea8331
       formats:
         - ISO8601
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
@@ -67,17 +67,17 @@ processors:
   - rename:
       field: json.protoPayload.serviceName
       target_field: google_scc.audit.proto_payload.service_name
-      tag: rename_service_name
+      tag: rename_service_name_cc19522b
       ignore_missing: true
   - set:
       field: cloud.service.name
       copy_from: google_scc.audit.proto_payload.service_name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_a6d1359a
       ignore_empty_value: true
   - convert:
       field: json.protoPayload.requestMetadata.destinationAttributes.ip
       target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.ip
-      tag: convert_destination_attributes_ip
+      tag: convert_destination_attributes_ip_74240718
       type: ip
       ignore_missing: true
       if: ctx.json?.protoPayload?.requestMetadata?.destinationAttributes?.ip != ''
@@ -89,18 +89,18 @@ processors:
   - append:
       field: related.ip
       value: '{{{google_scc.audit.proto_payload.request_metadata.destination_attributes.ip}}}'
-      tag: append_destination_attributes_ip_into_related_ip
+      tag: append_destination_attributes_ip_into_related_ip_846ec80e
       allow_duplicates: false
       if: ctx.google_scc?.audit?.proto_payload?.request_metadata?.destination_attributes?.ip != null
   - set:
       field: destination.ip
       copy_from: google_scc.audit.proto_payload.request_metadata.destination_attributes.ip
-      tag: set_destination_ip
+      tag: set_destination_ip_5365ac69
       ignore_empty_value: true
   - convert:
       field: json.protoPayload.requestMetadata.destinationAttributes.port
       target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.port
-      tag: convert_destination_attributes_port
+      tag: convert_destination_attributes_port_216a1344
       type: long
       ignore_missing: true
       if: ctx.json?.protoPayload?.requestMetadata?.destinationAttributes?.port != ''
@@ -112,32 +112,32 @@ processors:
   - set:
       field: destination.port
       copy_from: google_scc.audit.proto_payload.request_metadata.destination_attributes.port
-      tag: set_destination_port
+      tag: set_destination_port_0aa3f273
       ignore_empty_value: true
   - rename:
       field: json.protoPayload.methodName
       target_field: google_scc.audit.proto_payload.method_name
-      tag: rename_method_name
+      tag: rename_method_name_d4673fc9
       ignore_missing: true
   - set:
       field: event.action
       copy_from: google_scc.audit.proto_payload.method_name
-      tag: set_event_action
+      tag: set_event_action_e3cefe95
       ignore_empty_value: true
   - rename:
       field: json.insertId
       target_field: google_scc.audit.insert_id
-      tag: rename_insert_id
+      tag: rename_insert_id_6188a48c
       ignore_missing: true
   - set:
       field: event.id
       copy_from: google_scc.audit.insert_id
-      tag: set_event_id
+      tag: set_event_id_0d7a234c
       ignore_empty_value: true
   - convert:
       field: json.protoPayload.requestMetadata.requestAttributes.size
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.size
-      tag: convert_request_attributes_size
+      tag: convert_request_attributes_size_0b600511
       type: long
       ignore_missing: true
       if: ctx.json?.protoPayload?.requestMetadata?.requestAttributes?.size != ''
@@ -149,52 +149,52 @@ processors:
   - set:
       field: http.request.bytes
       copy_from: google_scc.audit.proto_payload.request_metadata.request_attributes.size
-      tag: set_http_request_bytes
+      tag: set_http_request_bytes_0c1a3ad7
       ignore_empty_value: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.id
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.id
-      tag: rename_request_attributes_id
+      tag: rename_request_attributes_id_11027750
       ignore_missing: true
   - set:
       field: http.request.id
       copy_from: google_scc.audit.proto_payload.request_metadata.request_attributes.id
-      tag: set_http_request_id
+      tag: set_http_request_id_4c22ff4c
       ignore_empty_value: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.method
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.method
-      tag: rename_request_attributes_method
+      tag: rename_request_attributes_method_4f7c3a70
       ignore_missing: true
   - set:
       field: http.request.method
       copy_from: google_scc.audit.proto_payload.request_metadata.request_attributes.method
-      tag: set_http_request_method
+      tag: set_http_request_method_41bd0ed2
       ignore_empty_value: true
   - rename:
       field: json.labels
       target_field: google_scc.audit.labels
-      tag: rename_audit_labels
+      tag: rename_audit_labels_72bf9daf
       ignore_missing: true
   - set:
       field: labels
       copy_from: google_scc.audit.labels
-      tag: set_labels
+      tag: set_labels_b4621609
       ignore_empty_value: true
   - rename:
       field: json.severity
       target_field: google_scc.audit.severity.value
-      tag: rename_audit_severity
+      tag: rename_audit_severity_52dbd3b7
       ignore_missing: true
   - set:
       field: log.level
       copy_from: google_scc.audit.severity.value
-      tag: set_log_level
+      tag: set_log_level_ec92b11c
       ignore_empty_value: true
   - script:
       lang: painless
       description: Set Event Severity.
-      tag: painless_audit_severity_value
+      tag: painless_audit_severity_value_f883ad91
       if: ctx.google_scc?.audit?.severity?.value != null
       # Event Severity Numeric Values
       # https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
@@ -218,12 +218,12 @@ processors:
   - set:
       field: event.severity
       copy_from: google_scc.audit.severity.code
-      tag: set_event_severity
+      tag: set_event_severity_65e613f2
       ignore_empty_value: true
   - convert:
       field: json.sourceLocation.line
       target_field: google_scc.audit.source_location.line
-      tag: convert_source_location_line
+      tag: convert_source_location_line_a2bc65af
       type: long
       ignore_missing: true
       if: ctx.json?.sourceLocation?.line != ''
@@ -235,71 +235,71 @@ processors:
   - set:
       field: log.origin.file.line
       copy_from: google_scc.audit.source_location.line
-      tag: set_log_origin_file_line
+      tag: set_log_origin_file_line_f86b6a24
       ignore_empty_value: true
   - rename:
       field: json.sourceLocation.file
       target_field: google_scc.audit.source_location.file
-      tag: rename_source_location_file
+      tag: rename_source_location_file_f08c8bb7
       ignore_missing: true
   - set:
       field: log.origin.file.name
       copy_from: google_scc.audit.source_location.file
-      tag: set_log_origin_file_name
+      tag: set_log_origin_file_name_d3550741
       ignore_empty_value: true
   - rename:
       field: json.sourceLocation.function
       target_field: google_scc.audit.source_location.function
-      tag: rename_source_location_function
+      tag: rename_source_location_function_f40f7643
       ignore_missing: true
   - set:
       field: log.origin.function
       copy_from: google_scc.audit.source_location.function
-      tag: set_log_origin_function
+      tag: set_log_origin_function_0594ffe8
       ignore_empty_value: true
   - convert:
       field: json.protoPayload.requestMetadata.callerIp
       target_field: google_scc.audit.proto_payload.request_metadata.caller.ip
-      tag: convert_request_metadata_caller_ip
+      tag: convert_request_metadata_caller_ip_5d14fdb1
       type: ip
       ignore_missing: true
       if: ctx.json?.protoPayload?.requestMetadata?.callerIp != ''
       on_failure:
         - rename:
             field: json.protoPayload.requestMetadata.callerIp
-            tag: rename_protoPayload_requestMetadata_callerIp
+            tag: rename_protoPayload_requestMetadata_callerIp_8ffa59f9
             target_field: google_scc.audit.proto_payload.request_metadata.caller.ip_value
   - append:
       field: related.ip
       value: '{{{google_scc.audit.proto_payload.request_metadata.caller.ip}}}'
-      tag: append_request_metadata_caller_ip_into_related_ip
+      tag: append_request_metadata_caller_ip_into_related_ip_1d63752a
       allow_duplicates: false
       if: ctx.google_scc?.audit?.proto_payload?.request_metadata?.caller?.ip != null
   - set:
       field: source.ip
       copy_from: google_scc.audit.proto_payload.request_metadata.caller.ip
-      tag: set_source_ip
+      tag: set_source_ip_35f39fbc
       ignore_empty_value: true
   - rename:
       field: json.protoPayload.authenticationInfo.principalEmail
       target_field: google_scc.audit.proto_payload.authentication_info.principal_email
-      tag: rename_authentication_info_principal_email
+      tag: rename_authentication_info_principal_email_1e998aa9
       ignore_missing: true
   - set:
       field: source.user.email
       copy_from: google_scc.audit.proto_payload.authentication_info.principal_email
-      tag: set_source_user_email
+      tag: set_source_user_email_b8c993be
       ignore_empty_value: true
   - append:
       field: related.user
       value: '{{{google_scc.audit.proto_payload.authentication_info.principal_email}}}'
-      tag: append_authentication_info_principal_email_to_related_user
+      tag: append_authentication_info_principal_email_to_related_user_5cfbf333
       allow_duplicates: false
       if: ctx.google_scc?.audit?.proto_payload?.authentication_info?.principal_email != null
   - rename:
       field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
       target_field: google_scc.audit.proto_payload.request_metadata.caller.supplied_user_agent
-      tag: rename_request_metadata_caller_supplied_user_agent
+      tag: rename_request_metadata_caller_supplied_user_agent_cbba3da5
       ignore_missing: true
   - user_agent:
       tag: user_agent_google_scc_audit_proto_payload_request_metadata_caller_supplied_user_agent_a6dffcb2
@@ -308,7 +308,7 @@ processors:
   - convert:
       field: json.httpRequest.cacheFillBytes
       target_field: google_scc.audit.http_request.cache.fill_bytes
-      tag: convert_http_request_cache_fill_bytes
+      tag: convert_http_request_cache_fill_bytes_5121f8de
       type: long
       ignore_missing: true
       if: ctx.json?.httpRequest?.cacheFillBytes != ''
@@ -320,7 +320,7 @@ processors:
   - convert:
       field: json.httpRequest.cacheHit
       target_field: google_scc.audit.http_request.cache.hit
-      tag: convert_http_request_cache_hit
+      tag: convert_http_request_cache_hit_b0859756
       type: boolean
       ignore_missing: true
       if: ctx.json?.httpRequest?.cacheHit != ''
@@ -332,7 +332,7 @@ processors:
   - convert:
       field: json.httpRequest.cacheLookup
       target_field: google_scc.audit.http_request.cache.look_up
-      tag: convert_http_request_cache_look_up
+      tag: convert_http_request_cache_look_up_134d0311
       type: boolean
       ignore_missing: true
       if: ctx.json?.httpRequest?.cacheLookup != ''
@@ -344,7 +344,7 @@ processors:
   - convert:
       field: json.httpRequest.cacheValidatedWithOriginServer
       target_field: google_scc.audit.http_request.cache.validated_with_origin_server
-      tag: convert_http_request_cache_validated_with_origin_server
+      tag: convert_http_request_cache_validated_with_origin_server_fa11cb60
       type: boolean
       ignore_missing: true
       if: ctx.json?.httpRequest?.cacheValidatedWithOriginServer != ''
@@ -356,24 +356,24 @@ processors:
   - rename:
       field: json.httpRequest.latency
       target_field: google_scc.audit.http_request.latency
-      tag: rename_http_request_latency
+      tag: rename_http_request_latency_5620f047
       ignore_missing: true
   - rename:
       field: json.httpRequest.protocol
       target_field: google_scc.audit.http_request.protocol
-      tag: rename_http_request_protocol
+      tag: rename_http_request_protocol_aa028e0d
       ignore_missing: true
   - rename:
       field: json.httpRequest.referer
       target_field: google_scc.audit.http_request.referer
-      tag: rename_http_request_referer
+      tag: rename_http_request_referer_7859f1b0
       ignore_missing: true
   - grok:
       field: json.httpRequest.remoteIp
       patterns:
         - '^%{IP:google_scc.audit.http_request.remote.ip}:%{NUMBER:google_scc.audit.http_request.remote.port:long}$'
         - '^%{IP:google_scc.audit.http_request.remote.ip}$'
-      tag: grok_extract_remote_ip
+      tag: grok_extract_remote_ip_57642fb5
       ignore_missing: true
       on_failure:
         - append:
@@ -383,18 +383,18 @@ processors:
   - append:
       field: related.ip
       value: '{{{google_scc.audit.http_request.remote.ip}}}'
-      tag: append_http_request_remote_ip_into_related_ip
+      tag: append_http_request_remote_ip_into_related_ip_023fb5e1
       allow_duplicates: false
       if: ctx.google_scc?.audit?.http_request?.remote?.ip != null
   - rename:
       field: json.httpRequest.requestMethod
       target_field: google_scc.audit.http_request.request_method
-      tag: rename_http_request_method
+      tag: rename_http_request_method_ba8c257f
       ignore_missing: true
   - convert:
       field: json.httpRequest.requestSize
       target_field: google_scc.audit.http_request.request_size
-      tag: convert_http_request_size
+      tag: convert_http_request_size_fb59deb5
       type: long
       ignore_missing: true
       if: ctx.json?.httpRequest?.requestSize != ''
@@ -406,12 +406,12 @@ processors:
   - rename:
       field: json.httpRequest.requestUrl
       target_field: google_scc.audit.http_request.request_url
-      tag: rename_http_request_url
+      tag: rename_http_request_url_0cb263fe
       ignore_missing: true
   - convert:
       field: json.httpRequest.responseSize
       target_field: google_scc.audit.http_request.response_size
-      tag: convert_http_response_size
+      tag: convert_http_response_size_91746d32
       type: long
       ignore_missing: true
       if: ctx.json?.httpRequest?.responseSize != ''
@@ -425,7 +425,7 @@ processors:
       patterns:
         - '^%{IP:google_scc.audit.http_request.server.ip}:%{NUMBER:google_scc.audit.http_request.server.port:long}$'
         - '^%{IP:google_scc.audit.http_request.server.ip}$'
-      tag: grok_extract_server_ip
+      tag: grok_extract_server_ip_f87f0c89
       ignore_missing: true
       on_failure:
         - append:
@@ -435,13 +435,13 @@ processors:
   - append:
       field: related.ip
       value: '{{{google_scc.audit.http_request.server.ip}}}'
-      tag: append_http_request_server_ip_into_related_ip
+      tag: append_http_request_server_ip_into_related_ip_df351eab
       allow_duplicates: false
       if: ctx.google_scc?.audit?.http_request?.server?.ip != null
   - convert:
       field: json.httpRequest.status
       target_field: google_scc.audit.http_request.status
-      tag: convert_http_request_status
+      tag: convert_http_request_status_d557d59c
       type: long
       ignore_missing: true
       if: ctx.json?.httpRequest?.status != ''
@@ -453,17 +453,17 @@ processors:
   - rename:
       field: json.httpRequest.userAgent
       target_field: google_scc.audit.http_request.user_agent
-      tag: rename_http_request_user_agent
+      tag: rename_http_request_user_agent_9cf880e4
       ignore_missing: true
   - rename:
       field: json.logName
       target_field: google_scc.audit.log_name
-      tag: rename_audit_log_name
+      tag: rename_audit_log_name_57f93ac6
       ignore_missing: true
   - convert:
       field: json.operation.first
       target_field: google_scc.audit.operation.first
-      tag: convert_operation_first
+      tag: convert_operation_first_4d2e7191
       type: boolean
       ignore_missing: true
       if: ctx.json?.operation?.first != ''
@@ -475,12 +475,12 @@ processors:
   - rename:
       field: json.operation.id
       target_field: google_scc.audit.operation.id
-      tag: rename_operation_id
+      tag: rename_operation_id_2c12d744
       ignore_missing: true
   - convert:
       field: json.operation.last
       target_field: google_scc.audit.operation.last
-      tag: convert_operation_last
+      tag: convert_operation_last_4410ab22
       type: boolean
       ignore_missing: true
       if: ctx.json?.operation?.last != ''
@@ -492,17 +492,17 @@ processors:
   - rename:
       field: json.operation.producer
       target_field: google_scc.audit.operation.producer
-      tag: rename_operation_producer
+      tag: rename_operation_producer_81ab540f
       ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.authoritySelector
       target_field: google_scc.audit.proto_payload.authentication_info.authority_selector
-      tag: rename_authentication_info_authority_selector
+      tag: rename_authentication_info_authority_selector_a82993a9
       ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.principalSubject
       target_field: google_scc.audit.proto_payload.authentication_info.principal_subject
-      tag: rename_authentication_info_principal_subject
+      tag: rename_authentication_info_principal_subject_58924c50
       ignore_missing: true
   - foreach:
       tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_4f0760aa
@@ -513,7 +513,7 @@ processors:
         rename:
           field: _ingest._value.firstPartyPrincipal.principalEmail
           target_field: _ingest._value.first_party_principal.email
-          tag: rename_authentication_info_service_account_delegation_info_first_party_principal_email
+          tag: rename_authentication_info_service_account_delegation_info_first_party_principal_email_8dde07b3
           ignore_missing: true
   - foreach:
       tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_7071bd42
@@ -524,7 +524,7 @@ processors:
         rename:
           field: _ingest._value.firstPartyPrincipal.serviceMetadata
           target_field: _ingest._value.first_party_principal.service_metadata
-          tag: rename_authentication_info_service_account_delegation_info_first_party_principal_service_metadata
+          tag: rename_authentication_info_service_account_delegation_info_first_party_principal_service_metadata_6eb1698a
           ignore_missing: true
   - foreach:
       tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_de79d797
@@ -535,7 +535,7 @@ processors:
         rename:
           field: _ingest._value.principalSubject
           target_field: _ingest._value.principal_subject
-          tag: rename_authentication_info_service_account_delegation_info_principal_subject
+          tag: rename_authentication_info_service_account_delegation_info_principal_subject_12f14612
           ignore_missing: true
   - foreach:
       tag: foreach_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_be538c91
@@ -546,22 +546,22 @@ processors:
         rename:
           field: _ingest._value.thirdPartyPrincipal.thirdPartyClaims
           target_field: _ingest._value.third_party_principal.claims
-          tag: rename_authentication_info_service_account_delegation_info_third_party_principal_claims
+          tag: rename_authentication_info_service_account_delegation_info_third_party_principal_claims_6c14ccc9
           ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
       target_field: google_scc.audit.proto_payload.authentication_info.service_account_delegation_info
-      tag: rename_authentication_info_service_account_key_name
+      tag: rename_authentication_info_service_account_key_name_8424f1b9
       ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.serviceAccountKeyName
       target_field: google_scc.audit.proto_payload.authentication_info.service_account_key_name
-      tag: rename_authentication_info_service_account_key_name_c8b37f59
+      tag: rename_authentication_info_service_account_key_name_78dcb20f
       ignore_missing: true
   - rename:
       field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
       target_field: google_scc.audit.proto_payload.authentication_info.third_party_principal
-      tag: rename_authentication_info_third_party_principal
+      tag: rename_authentication_info_third_party_principal_402f3a41
       ignore_missing: true
   - foreach:
       tag: foreach_json_protoPayload_authorizationInfo_99757976
@@ -572,15 +572,15 @@ processors:
         convert:
           field: _ingest._value.granted
           type: boolean
-          tag: convert_authorization_info_granted
+          tag: convert_authorization_info_granted_01bb456d
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_granted
+                tag: remove_ingest_value_granted_c4ef2f5c
                 field: _ingest._value.granted
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_84a4840d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -592,12 +592,12 @@ processors:
         date:
           field: _ingest._value.resourceAttributes.createTime
           target_field: _ingest._value.resourceAttributes.create_time
-          tag: date_authorization_info_resource_attributes_create_time
+          tag: date_authorization_info_resource_attributes_create_time_608ef346
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_resourceAttributes_createTime
+                tag: remove_ingest_value_resourceAttributes_createTime_d2bbffe0
                 field: _ingest._value.resourceAttributes.createTime
                 ignore_missing: true
   - foreach:
@@ -609,12 +609,12 @@ processors:
         date:
           field: _ingest._value.resourceAttributes.deleteTime
           target_field: _ingest._value.resourceAttributes.delete_time
-          tag: date_authorization_info_resource_attributes_delete_time
+          tag: date_authorization_info_resource_attributes_delete_time_7c77a182
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_resourceAttributes_deleteTime
+                tag: remove_ingest_value_resourceAttributes_deleteTime_bec73df8
                 field: _ingest._value.resourceAttributes.deleteTime
                 ignore_missing: true
   - foreach:
@@ -626,12 +626,12 @@ processors:
         date:
           field: _ingest._value.resourceAttributes.updateTime
           target_field: _ingest._value.resourceAttributes.update_time
-          tag: date_authorization_info_resource_attributes_update_time
+          tag: date_authorization_info_resource_attributes_update_time_d08baf92
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_resourceAttributes_updateTime
+                tag: remove_ingest_value_resourceAttributes_updateTime_d8ce10b3
                 field: _ingest._value.resourceAttributes.updateTime
                 ignore_missing: true
   - foreach:
@@ -643,7 +643,7 @@ processors:
         rename:
           field: _ingest._value.resourceAttributes.displayName
           target_field: _ingest._value.resourceAttributes.display_name
-          tag: rename_authorization_info_resource_attributes_display_name
+          tag: rename_authorization_info_resource_attributes_display_name_2508a221
           ignore_missing: true
   - foreach:
       tag: foreach_json_protoPayload_authorizationInfo_e51aed96
@@ -657,7 +657,7 @@ processors:
             - _ingest._value.resourceAttributes.deleteTime
             - _ingest._value.resourceAttributes.createTime
           ignore_missing: true
-          tag: remove_authorization_info_resource_attributes_fields
+          tag: remove_authorization_info_resource_attributes_fields_0da6e07c
   - foreach:
       tag: foreach_json_protoPayload_authorizationInfo_b7c91650
       field: json.protoPayload.authorizationInfo
@@ -667,22 +667,22 @@ processors:
         rename:
           field: _ingest._value.resourceAttributes
           target_field: _ingest._value.resource_attributes
-          tag: rename_authorization_info_resource_attributes
+          tag: rename_authorization_info_resource_attributes_500c347f
           ignore_missing: true
   - rename:
       field: json.protoPayload.authorizationInfo
       target_field: google_scc.audit.proto_payload.authorization_info
-      tag: rename_authorization_info
+      tag: rename_authorization_info_ad9771f6
       ignore_missing: true
   - rename:
       field: json.protoPayload.metadata
       target_field: google_scc.audit.proto_payload.metadata
-      tag: rename_metadata
+      tag: rename_metadata_b964d207
       ignore_missing: true
   - convert:
       field: json.protoPayload.numResponseItems
       target_field: google_scc.audit.proto_payload.num_response_items
-      tag: convert_num_response_items
+      tag: convert_num_response_items_6ff2fe62
       type: long
       ignore_missing: true
       if: ctx.json?.protoPayload?.numResponseItems != ''
@@ -694,127 +694,127 @@ processors:
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.payload
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.payload
-      tag: rename_org_policy_violation_info_payload
+      tag: rename_org_policy_violation_info_payload_57fce197
       ignore_missing: true
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceTags
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.tags
-      tag: rename_org_policy_violation_info_resource_tags
+      tag: rename_org_policy_violation_info_resource_tags_b0fbe99f
       ignore_missing: true
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceType
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.type
-      tag: rename_org_policy_violation_info_resource_type
+      tag: rename_org_policy_violation_info_resource_type_39cb4c85
       ignore_missing: true
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.checkedValue
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.checked_value
-      tag: rename_org_policy_violation_info_checked_value
+      tag: rename_org_policy_violation_info_checked_value_69daee61
       ignore_missing: true
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.constraint
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.constraint
-      tag: rename_org_policy_violation_info_constraint
+      tag: rename_org_policy_violation_info_constraint_000c1059
       ignore_missing: true
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.errorMessage
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.error_message
-      tag: rename_org_policy_violation_info_error_message
+      tag: rename_org_policy_violation_info_error_message_51fda369
       ignore_missing: true
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.policyType
       target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.policy_type
-      tag: rename_org_policy_violation_info_policy_type
+      tag: rename_org_policy_violation_info_policy_type_3bea7daa
       ignore_missing: true
   - rename:
       field: json.protoPayload.request
       target_field: google_scc.audit.proto_payload.request
-      tag: rename_request
+      tag: rename_request_ed86397a
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.callerNetwork
       target_field: google_scc.audit.proto_payload.request_metadata.caller.network
-      tag: rename_request_metadata_caller_network
+      tag: rename_request_metadata_caller_network_f2a0fa7d
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.destinationAttributes.labels
       target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.labels
-      tag: rename_request_metadata_destination_attributes_labels
+      tag: rename_request_metadata_destination_attributes_labels_57908224
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.destinationAttributes.principal
       target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.principal
-      tag: rename_request_metadata_destination_attributes_principal
+      tag: rename_request_metadata_destination_attributes_principal_11db1398
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.destinationAttributes.regionCode
       target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.region_code
-      tag: rename_request_metadata_destination_attributes_region_code
+      tag: rename_request_metadata_destination_attributes_region_code_64865fa1
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.auth.accessLevels
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.access_levels
-      tag: rename_request_metadata_destination_attributes_auth_access_levels
+      tag: rename_request_metadata_destination_attributes_auth_access_levels_dbf99c29
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.auth.audiences
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.audiences
-      tag: rename_request_metadata_destination_attributes_auth_audiences
+      tag: rename_request_metadata_destination_attributes_auth_audiences_e23f910d
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.auth.claims
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.claims
-      tag: rename_request_metadata_destination_attributes_auth_claims
+      tag: rename_request_metadata_destination_attributes_auth_claims_b1756a77
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.auth.presenter
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.presenter
-      tag: rename_request_metadata_destination_attributes_auth_presenter
+      tag: rename_request_metadata_destination_attributes_auth_presenter_8ed60981
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.auth.principal
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.principal
-      tag: rename_request_metadata_destination_attributes_auth_principal
+      tag: rename_request_metadata_destination_attributes_auth_principal_663dce16
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.headers
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.headers
-      tag: rename_request_metadata_destination_attributes_headers
+      tag: rename_request_metadata_destination_attributes_headers_8282190b
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.host
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.host
-      tag: rename_request_metadata_destination_attributes_host
+      tag: rename_request_metadata_destination_attributes_host_bab466c0
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.path
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.path
-      tag: rename_request_metadata_destination_attributes_path
+      tag: rename_request_metadata_destination_attributes_path_cc25e571
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.protocol
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.protocol
-      tag: rename_request_metadata_destination_attributes_protocol
+      tag: rename_request_metadata_destination_attributes_protocol_fcf19049
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.query
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.query
-      tag: rename_request_metadata_destination_attributes_query
+      tag: rename_request_metadata_destination_attributes_query_425d5f1b
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.reason
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.reason
-      tag: rename_request_metadata_destination_attributes_reason
+      tag: rename_request_metadata_destination_attributes_reason_cd720198
       ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.requestAttributes.scheme
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.schema
-      tag: rename_request_metadata_destination_attributes_schema
+      tag: rename_request_metadata_destination_attributes_schema_32a1cdd5
       ignore_missing: true
   - date:
       field: json.protoPayload.requestMetadata.requestAttributes.time
       target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.time
-      tag: date_request_metadata_destination_attributes_time
+      tag: date_request_metadata_destination_attributes_time_99c5a3a7
       formats:
         - ISO8601
       if: ctx.json?.protoPayload?.requestMetadata?.requestAttributes?.time != null && ctx.json.protoPayload.requestMetadata.requestAttributes.time != ''
@@ -826,37 +826,37 @@ processors:
   - rename:
       field: json.protoPayload.resourceLocation.currentLocations
       target_field: google_scc.audit.proto_payload.resource_location.current_locations
-      tag: rename_resource_location_current_locations
+      tag: rename_resource_location_current_locations_aa2ab191
       ignore_missing: true
   - rename:
       field: json.protoPayload.resourceLocation.originalLocations
       target_field: google_scc.audit.proto_payload.resource_location.original_locations
-      tag: rename_resource_location_original_locations
+      tag: rename_resource_location_original_locations_e8199b85
       ignore_missing: true
   - rename:
       field: json.protoPayload.resourceName
       target_field: google_scc.audit.proto_payload.resource_name
-      tag: rename_resource_name
+      tag: rename_resource_name_4debc35b
       ignore_missing: true
   - rename:
       field: json.protoPayload.resourceOriginalState
       target_field: google_scc.audit.proto_payload.resource_original_state
-      tag: rename_resource_original_state
+      tag: rename_resource_original_state_79905446
       ignore_missing: true
   - rename:
       field: json.protoPayload.response
       target_field: google_scc.audit.proto_payload.response
-      tag: rename_response
+      tag: rename_response_b9d7a5a3
       ignore_missing: true
   - rename:
       field: json.protoPayload.serviceData
       target_field: google_scc.audit.proto_payload.service_data
-      tag: rename_service_data
+      tag: rename_service_data_269f1d07
       ignore_missing: true
   - convert:
       field: json.protoPayload.status.code
       target_field: google_scc.audit.proto_payload.status.code
-      tag: convert_status_code
+      tag: convert_status_code_fb6a1746
       type: long
       ignore_missing: true
       if: ctx.json?.protoPayload?.status?.code != ''
@@ -868,22 +868,22 @@ processors:
   - rename:
       field: json.protoPayload.status.details
       target_field: google_scc.audit.proto_payload.status.details
-      tag: rename_status_details
+      tag: rename_status_details_ada21807
       ignore_missing: true
   - rename:
       field: json.protoPayload.status.message
       target_field: google_scc.audit.proto_payload.status.message
-      tag: rename_status_message
+      tag: rename_status_message_14a190eb
       ignore_missing: true
   - rename:
       field: json.protoPayload.@type
       target_field: google_scc.audit.proto_payload.type
-      tag: rename_type
+      tag: rename_type_134c21a6
       ignore_missing: true
   - date:
       field: json.receiveTimestamp
       target_field: google_scc.audit.receive_timestamp
-      tag: date_receive_timestamp
+      tag: date_receive_timestamp_ff753ef4
       formats:
         - ISO8601
       if: ctx.json?.receiveTimestamp != null && ctx.json.receiveTimestamp != ''
@@ -895,22 +895,22 @@ processors:
   - rename:
       field: json.resource.labels
       target_field: google_scc.audit.resource.labels
-      tag: rename_resource_labels
+      tag: rename_resource_labels_35d266e3
       ignore_missing: true
   - rename:
       field: json.resource.type
       target_field: google_scc.audit.resource.type
-      tag: rename_resource_type
+      tag: rename_resource_type_7b4651c2
       ignore_missing: true
   - rename:
       field: json.spanId
       target_field: google_scc.audit.span_id
-      tag: rename_span_id
+      tag: rename_span_id_4d3a8278
       ignore_missing: true
   - convert:
       field: json.split.index
       target_field: google_scc.audit.split.index
-      tag: convert_split_index
+      tag: convert_split_index_1e71e74e
       type: long
       ignore_missing: true
       if: ctx.json?.split?.index != ''
@@ -922,7 +922,7 @@ processors:
   - convert:
       field: json.split.totalSplits
       target_field: google_scc.audit.split.total_splits
-      tag: convert_split_total
+      tag: convert_split_total_f2619be2
       type: long
       ignore_missing: true
       if: ctx.json?.split?.totalSplits != ''
@@ -934,17 +934,17 @@ processors:
   - rename:
       field: json.split.uid
       target_field: google_scc.audit.split.uid
-      tag: rename_split_uid
+      tag: rename_split_uid_6f6ef9eb
       ignore_missing: true
   - rename:
       field: json.trace
       target_field: google_scc.audit.trace
-      tag: rename_trace
+      tag: rename_trace_1b423986
       ignore_missing: true
   - convert:
       field: json.traceSampled
       target_field: google_scc.audit.trace_sampled
-      tag: convert_trace_sampled
+      tag: convert_trace_sampled_6fb7dc57
       type: boolean
       ignore_missing: true
       if: ctx.json?.traceSampled != ''
@@ -956,7 +956,7 @@ processors:
   - remove:
       field:
         - json
-      tag: remove_json
+      tag: remove_json_f3d169b2
       ignore_missing: true
   - remove:
       field:
@@ -978,13 +978,13 @@ processors:
         - google_scc.audit.proto_payload.request_metadata.caller.ip
         - google_scc.audit.proto_payload.authentication_info.principal_email
         - google_scc.audit.proto_payload.request_metadata.caller.supplied_user_agent
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_4d6275c8
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -1002,7 +1002,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -1020,7 +1020,7 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -8,25 +8,25 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind_1
+      tag: set_event_kind_1_d452ef2c
       value: event
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - rename:
       field: message
-      tag: rename_message
+      tag: rename_message_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
@@ -41,7 +41,7 @@ processors:
       if: ctx.event?.original != null && ctx.event.original.isEmpty()
   - json:
       field: event.original
-      tag: json_message
+      tag: json_message_c3a1053e
       target_field: json
       on_failure:
         - append:
@@ -49,7 +49,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
-      tag: fingerprint_cce993bd
+      tag: fingerprint_to_id_cce993bd
       fields:
         - json.action
         - json.timestamp
@@ -57,7 +57,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.ipAddress
-      tag: convert_ip_address_to_ip
+      tag: convert_ip_address_to_ip_a2481eb0
       target_field: prisma_cloud.audit.ip_address
       type: ip
       ignore_missing: true
@@ -69,30 +69,30 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
-      tag: append_ip_address_to_host_ip
+      tag: append_ip_address_to_host_ip_44e0a5ef
       value: '{{{prisma_cloud.audit.ip_address}}}'
       allow_duplicates: false
       if: ctx.prisma_cloud?.audit?.ip_address != null
   - append:
       field: related.ip
-      tag: convert_ip_address_to_related_ip
+      tag: append_ip_address_to_related_ip_caa68b53
       value: '{{{prisma_cloud.audit.ip_address}}}'
       allow_duplicates: false
       if: ctx.prisma_cloud?.audit?.ip_address != null
   - rename:
       field: json.user
-      tag: rename_prisma_cloud_audit_user
+      tag: rename_prisma_cloud_audit_user_86c7c657
       target_field: prisma_cloud.audit.user
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_prisma_cloud_audit_user
+      tag: set_prisma_cloud_audit_user_e3370b12
       copy_from: prisma_cloud.audit.user
       if: ctx.prisma_cloud?.audit?.user?.contains('@') == true
       ignore_empty_value: true
   - dissect:
       field: user.email
-      tag: create_user_name_and_user_domain
+      tag: create_user_name_and_user_domain_93b5cc79
       pattern: "%{user.name}@%{user.domain}"
       ignore_missing: true
       if: ctx.user?.email != null
@@ -103,29 +103,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_prisma_cloud_audit_user_to_related_user
+      tag: append_prisma_cloud_audit_user_to_related_user_55b1dc9f
       value: '{{{prisma_cloud.audit.user}}}'
       allow_duplicates: false
       if: ctx.prisma_cloud?.audit?.user != null
   - rename:
       field: json.action
-      tag: rename_prisma_cloud_audit_action
+      tag: rename_prisma_cloud_audit_action_6ec3ea1d
       target_field: prisma_cloud.audit.action.value
       ignore_missing: true
   - rename:
       field: json.actionType
-      tag: rename_prisma_cloud_audit_action_type
+      tag: rename_prisma_cloud_audit_action_type_4106aabe
       target_field: prisma_cloud.audit.action.type
       ignore_missing: true
   - lowercase:
       field: prisma_cloud.audit.action.type
-      tag: 'lowercase_action_type'
+      tag: lowercase_action_type_c0b90964
       ignore_missing: true
       target_field: event.action
       if: ctx.prisma_cloud?.audit?.action?.type != ''
@@ -136,7 +136,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
       field: event.action
-      tag: split_action_type
+      tag: split_action_type_45982d08
       separator: '\s+'
       if: ctx.event?.action != null && ctx.event?.action != ''
       on_failure:
@@ -146,7 +146,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_action_type
+      tag: join_action_type_45ca9d3c
       separator: "-"
       if: ctx.event?.action instanceof List
       on_failure:
@@ -156,28 +156,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_60016ca5
       value: authentication
       if: ctx.prisma_cloud?.audit?.action?.type != null && (ctx.prisma_cloud.audit.action.type.toLowerCase().contains('login') || ctx.prisma_cloud.audit.action.type.toLowerCase().contains('logout'))
       allow_duplicates: false
   - rename:
       field: json.resourceName
-      tag: rename_prisma_cloud_audit_resource_name
+      tag: rename_prisma_cloud_audit_resource_name_87878c96
       target_field: prisma_cloud.audit.resource.name
       ignore_missing: true
   - rename:
       field: json.resourceType
-      tag: rename_prisma_cloud_audit_resource_type
+      tag: rename_prisma_cloud_audit_resource_type_1fc925c0
       target_field: prisma_cloud.audit.resource.type
       ignore_missing: true
   - rename:
       field: json.result
-      tag: rename_json_result
+      tag: rename_json_result_339f670d
       target_field: prisma_cloud.audit.result
       ignore_missing: true
   - script:
       lang: painless
-      tag: script_to_set_result
+      tag: script_to_set_result_985d135c
       description: Script to set result for different ranges.
       if: ctx.prisma_cloud?.audit?.result != null
       source: >-
@@ -195,7 +195,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timestamp
-      tag: 'date_rename_timestamp_to_custom_name'
+      tag: date_rename_timestamp_to_custom_name_1bc0756d
       formats:
         - UNIX_MS
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
@@ -206,7 +206,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timestamp
-      tag: date_rename_timestamp_to_custom_name_289110dc
+      tag: date_rename_timestamp_to_custom_name_4b3c14a2
       target_field: prisma_cloud.audit.timestamp
       formats:
         - UNIX_MS
@@ -224,7 +224,7 @@ processors:
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_b676ca5e
       field:
         - prisma_cloud.audit.ip_address
         - prisma_cloud.audit.user
@@ -232,7 +232,7 @@ processors:
         - prisma_cloud.audit.result
         - prisma_cloud.audit.timestamp
   - script:
-      tag: script_06971239
+      tag: script_drops_null_empty_values_recursively_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -262,15 +262,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_1c0a2b12
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

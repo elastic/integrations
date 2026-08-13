@@ -3,114 +3,114 @@ description: Pipeline for processing device logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - append:
       field: event.category
-      tag: append_host_into_event_category
+      tag: append_host_into_event_category_5098f71a
       value: host
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - rename:
       field: json.antiMalwareProducts
-      tag: rename_antiMalwareProducts
+      tag: rename_antiMalwareProducts_935edcc1
       target_field: island_browser.device.anti_malware_products
       ignore_missing: true
   - rename:
       field: json.architecture
-      tag: rename_architecture
+      tag: rename_architecture_9f382da9
       target_field: island_browser.device.architecture
       ignore_missing: true
   - set:
       field: host.architecture
-      tag: set_host_architecture_from_device_architecture
+      tag: set_host_architecture_from_device_architecture_2cd16e3d
       copy_from: island_browser.device.architecture
       ignore_empty_value: true
   - rename:
       field: json.authMethod
-      tag: rename_authMethod
+      tag: rename_authMethod_2136dfbb
       target_field: island_browser.device.auth_method
       ignore_missing: true
   - rename:
       field: json.azureTenantId
-      tag: rename_azureTenantId
+      tag: rename_azureTenantId_d0793e14
       target_field: island_browser.device.azure_tenant_id
       ignore_missing: true
   - rename:
       field: json.browserName
-      tag: rename_browserName
+      tag: rename_browserName_1296b74e
       target_field: island_browser.device.browser_name
       ignore_missing: true
   - set:
       field: user_agent.name
-      tag: set_user_agent_name_from_device_browser_name
+      tag: set_user_agent_name_from_device_browser_name_02ad00b3
       copy_from: island_browser.device.browser_name
       ignore_empty_value: true
   - rename:
       field: json.browserUpdateStatus
-      tag: rename_browserUpdateStatus
+      tag: rename_browserUpdateStatus_59744d2f
       target_field: island_browser.device.browser_update_status
       ignore_missing: true
   - rename:
       field: json.browserVersion
-      tag: rename_browserVersion
+      tag: rename_browserVersion_521c05a0
       target_field: island_browser.device.browser_version
       ignore_missing: true
   - rename:
       field: json.chassisType
-      tag: rename_chassisType
+      tag: rename_chassisType_9e8f1091
       target_field: island_browser.device.chassis_type
       ignore_missing: true
   - rename:
       field: json.chromiumVersion
-      tag: rename_chromiumVersion
+      tag: rename_chromiumVersion_bcd13b22
       target_field: island_browser.device.chromium_version
       ignore_missing: true
   - rename:
       field: json.country
-      tag: rename_country
+      tag: rename_country_8655f637
       target_field: island_browser.device.country
       ignore_missing: true
   - rename:
       field: json.countryCode
-      tag: rename_countryCode
+      tag: rename_countryCode_0b15f72a
       target_field: island_browser.device.country_code
       ignore_missing: true
   - rename:
       field: json.cpuModel
-      tag: rename_cpuModel
+      tag: rename_cpuModel_6acc4f65
       target_field: island_browser.device.cpu_model
       ignore_missing: true
   - date:
       field: json.createdDate
-      tag: date_createdDate
+      tag: date_createdDate_fcf9a422
       target_field: island_browser.device.created_date
       formats:
         - ISO8601
@@ -122,22 +122,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_device_created_date
+      tag: set_event_created_from_device_created_date_79d48ef6
       copy_from: island_browser.device.created_date
       ignore_empty_value: true
   - rename:
       field: json.crowdstrikeAgentId
-      tag: rename_crowdstrikeAgentId
+      tag: rename_crowdstrikeAgentId_70b025a4
       target_field: island_browser.device.crowdstrike_agent_id
       ignore_missing: true
   - rename:
       field: json.crowdstrikeCid
-      tag: rename_crowdstrikeCid
+      tag: rename_crowdstrikeCid_5ea66b47
       target_field: island_browser.device.crowdstrike_cid
       ignore_missing: true
   - convert:
       field: json.crowdstrikeZtaScore
-      tag: convert_crowdstrikeZtaScore_to_long
+      tag: convert_crowdstrikeZtaScore_to_long_9151453a
       target_field: island_browser.device.crowdstrike_zta_score
       type: long
       ignore_missing: true
@@ -148,17 +148,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.deviceType
-      tag: rename_deviceType
+      tag: rename_deviceType_26a5ebd6
       target_field: island_browser.device.device_type
       ignore_missing: true
   - set:
       field: host.type
-      tag: set_host_type_from_device_device_type
+      tag: set_host_type_from_device_device_type_40f3ea20
       copy_from: island_browser.device.device_type
       ignore_empty_value: true
   - convert:
       field: json.diskEncrypted
-      tag: convert_diskEncrypted_to_boolean
+      tag: convert_diskEncrypted_to_boolean_51fdf974
       target_field: island_browser.device.disk_encrypted
       type: boolean
       ignore_missing: true
@@ -169,38 +169,38 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.email
-      tag: rename_email
+      tag: rename_email_16d54251
       target_field: island_browser.device.email
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_device_email
+      tag: set_user_email_from_device_email_d16a7124
       copy_from: island_browser.device.email
       ignore_empty_value: true
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
-      tag: dissect_user_email
+      tag: dissect_user_email_3ce141a5
       field: user.email
       pattern: '%{_temp}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_device_email_into_related_user
+      tag: append_device_email_into_related_user_54f58140
       value: '{{{island_browser.device.email}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.email != null
   - rename:
       field: json.extensionUtilityVersion
-      tag: rename_extensionUtilityVersion
+      tag: rename_extensionUtilityVersion_b2e73a17
       target_field: island_browser.device.extension_utility_version
       ignore_missing: true
   - rename:
       field: json.extensionVersion
-      tag: rename_extensionVersion
+      tag: rename_extensionVersion_a97dd8ef
       target_field: island_browser.device.extension_version
       ignore_missing: true
   - convert:
       field: json.externalIpAddress
-      tag: convert_externalIpAddress_to_ip
+      tag: convert_externalIpAddress_to_ip_9f2beddd
       target_field: island_browser.device.external_ip_address
       type: ip
       ignore_missing: true
@@ -217,45 +217,45 @@ processors:
       ignore_missing: true
   - append:
       field: host.ip
-      tag: append_island_browser_device_external_ip_address_into_host_ip
+      tag: append_island_browser_device_external_ip_address_into_host_ip_b4496c52
       value: '{{{island_browser.device.external_ip_address}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.external_ip_address != null
   - append:
       field: related.ip
-      tag: append_device_external_ip_address_into_related_ip
+      tag: append_device_external_ip_address_into_related_ip_0702e555
       value: '{{{island_browser.device.external_ip_address}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.external_ip_address != null
   - rename:
       field: json.gatekeeperVersion
-      tag: rename_gatekeeperVersion
+      tag: rename_gatekeeperVersion_2de44b3f
       target_field: island_browser.device.gatekeeper_version
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_93bf5ec3
       target_field: island_browser.device.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_device_id
+      tag: set_event_id_from_device_id_b9cab1e3
       copy_from: island_browser.device.id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_device_id_into_related_hosts
+      tag: append_device_id_into_related_hosts_afa926b3
       value: '{{{island_browser.device.id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.id != null
   - rename:
       field: json.installedExtensions
-      tag: rename_installedExtensions
+      tag: rename_installedExtensions_0333f304
       target_field: island_browser.device.installed_extensions
       ignore_missing: true
   - convert:
       field: json.internalIpAddress
-      tag: convert_internalIpAddress_to_ip
+      tag: convert_internalIpAddress_to_ip_207e3550
       target_field: island_browser.device.internal_ip_address
       type: ip
       ignore_missing: true
@@ -263,13 +263,13 @@ processors:
       on_failure:
         - rename:
             field: json.internalIpAddress
-            tag: rename_internalIpAddress
+            tag: rename_internalIpAddress_8fe9ce5f
             target_field: island_browser.device.internal_ip
             ignore_missing: true
   - gsub:
       field: island_browser.device.internal_ip
       target_field: _temp1
-      tag: gsub_strip_internal_ip_adapters
+      tag: gsub_strip_internal_ip_adapters_06a78c26
       pattern: '\s*\|\s*[^/]*'
       replacement: ''
       ignore_missing: true
@@ -280,13 +280,13 @@ processors:
   - split:
       field: _temp1
       target_field: island_browser.device.internal_ip_address
-      tag: split_internal_ip_address
+      tag: split_internal_ip_address_5d9e1991
       separator: '\s*/\s*'
       ignore_missing: true
       description: Split the cleaned "/"-separated list into individual IP addresses.
   - convert:
       field: island_browser.device.internal_ip_address
-      tag: convert_internal_ip_address_to_ip
+      tag: convert_internal_ip_address_to_ip_b7109d2d
       type: ip
       ignore_missing: true
       on_failure:
@@ -296,7 +296,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_flatten_single_internal_ip
+      tag: script_flatten_single_internal_ip_f38581df
       description: >-
         Represent a single internal IP as a scalar rather than a single-element
         list, so devices with one NIC match the shape used for devices that
@@ -306,23 +306,23 @@ processors:
         ctx.island_browser.device.internal_ip_address = ctx.island_browser.device.internal_ip_address.get(0);
   - foreach:
       field: island_browser.device.internal_ip_address
-      tag: foreach_append_internal_ips_to_related_ip
+      tag: foreach_append_internal_ips_to_related_ip_313757fe
       if: ctx.island_browser?.device?.internal_ip_address instanceof List
       processor:
         append:
-          tag: append_related_ip
+          tag: append_related_ip_3d72634d
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: related.ip
-      tag: append_device_internal_ip_address_into_related_ip
+      tag: append_device_internal_ip_address_into_related_ip_3d85693d
       value: '{{{island_browser.device.internal_ip_address}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.internal_ip_address != null && !(ctx.island_browser.device.internal_ip_address instanceof List)
   - convert:
       field: json.isArchived
-      tag: convert_isArchived_to_boolean
+      tag: convert_isArchived_to_boolean_9679542f
       target_field: island_browser.device.is_archived
       type: boolean
       ignore_missing: true
@@ -333,7 +333,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isContainer
-      tag: convert_isContainer_to_boolean
+      tag: convert_isContainer_to_boolean_ff0f257e
       target_field: island_browser.device.is_container
       type: boolean
       ignore_missing: true
@@ -344,7 +344,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isDefaultBrowser
-      tag: convert_isDefaultBrowser_to_boolean
+      tag: convert_isDefaultBrowser_to_boolean_391762bc
       target_field: island_browser.device.is_default_browser
       type: boolean
       ignore_missing: true
@@ -355,7 +355,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isDeviceAttested
-      tag: convert_isDeviceAttested_to_boolean
+      tag: convert_isDeviceAttested_to_boolean_ea8d85d4
       target_field: island_browser.device.is_device_attested
       type: boolean
       ignore_missing: true
@@ -366,7 +366,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isGatekeeperEnabled
-      tag: convert_isGatekeeperEnabled_to_boolean
+      tag: convert_isGatekeeperEnabled_to_boolean_73c40a7b
       target_field: island_browser.device.is_gatekeeper_enabled
       type: boolean
       ignore_missing: true
@@ -377,7 +377,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isJailbroken
-      tag: convert_isJailbroken_to_boolean
+      tag: convert_isJailbroken_to_boolean_06b52955
       target_field: island_browser.device.is_jailbroken
       type: boolean
       ignore_missing: true
@@ -388,7 +388,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isSystemLevelInstall
-      tag: convert_isSystemLevelInstall_to_boolean
+      tag: convert_isSystemLevelInstall_to_boolean_b04571bd
       target_field: island_browser.device.is_system_level_install
       type: boolean
       ignore_missing: true
@@ -399,7 +399,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isVirtualMachine
-      tag: convert_isVirtualMachine_to_boolean
+      tag: convert_isVirtualMachine_to_boolean_def8cb6b
       target_field: island_browser.device.is_virtual_machine
       type: boolean
       ignore_missing: true
@@ -410,27 +410,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.islandMdmCustomKey
-      tag: rename_islandMdmCustomKey
+      tag: rename_islandMdmCustomKey_7e511875
       target_field: island_browser.device.island_mdm_custom_key
       ignore_missing: true
   - rename:
       field: json.windowsLicenseStatus
-      tag: rename_windowsLicenseStatus
+      tag: rename_windowsLicenseStatus_95871d94
       target_field: island_browser.device.windows_license_status
       ignore_missing: true
   - rename:
       field: json.windowsActivationId
-      tag: rename_windowsActivationId
+      tag: rename_windowsActivationId_24f36a49
       target_field: island_browser.device.windows_activation_id
       ignore_missing: true
   - rename:
       field: json.islandPlatform
-      tag: rename_islandPlatform
+      tag: rename_islandPlatform_4555329b
       target_field: island_browser.device.island_platform
       ignore_missing: true
   - date:
       field: json.lastSeen
-      tag: date_lastSeen
+      tag: date_lastSeen_8b34b913
       target_field: island_browser.device.last_seen
       formats:
         - ISO8601
@@ -442,16 +442,16 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.latestSecurityUpdateId
-      tag: rename_latestSecurityUpdateId
+      tag: rename_latestSecurityUpdateId_b5ac4255
       target_field: island_browser.device.latest_security_update_id
       ignore_missing: true
   - rename:
       field: json.macAddresses
-      tag: rename_macAddresses
+      tag: rename_macAddresses_cd2a581d
       target_field: island_browser.device.mac_addresses
       ignore_missing: true
   - script:
-      tag: append_island_browser_device_mac_addresses_into_host_mac
+      tag: append_island_browser_device_mac_addresses_into_host_mac_f27655e8
       lang: painless
       if: ctx.island_browser?.device?.mac_addresses != null
       source: |
@@ -476,83 +476,83 @@ processors:
   - foreach:
       field: host.mac
       if: ctx.host?.mac instanceof List
-      tag: foreach_host_mac_gsub
+      tag: foreach_host_mac_gsub_1c7b79df
       processor:
         gsub:
           field: _ingest._value
-          tag: gsub_host_mac_for_each_mac
+          tag: gsub_host_mac_for_each_mac_32fe2460
           pattern: ':'
           replacement: '-'
           ignore_missing: true
           on_failure:
             - append:
-                tag: append_error_message
+                tag: append_error_message_acfe13af
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: host.mac
       if: ctx.host?.mac instanceof List
-      tag: foreach_host_mac_uppercase
+      tag: foreach_host_mac_uppercase_5145827e
       processor:
         uppercase:
           field: _ingest._value
-          tag: uppercase_host_mac_for_each_mac
+          tag: uppercase_host_mac_for_each_mac_cdbc3373
           ignore_missing: true
   - rename:
       field: json.machineId
-      tag: rename_machineId
+      tag: rename_machineId_d5d94516
       target_field: island_browser.device.machine_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_device_machine_id
+      tag: set_host_id_from_device_machine_id_298e28ca
       copy_from: island_browser.device.machine_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_device_machine_id_into_related_hosts
+      tag: append_device_machine_id_into_related_hosts_b3d4d8e8
       value: '{{{island_browser.device.machine_id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.machine_id != null
   - rename:
       field: json.machineModel
-      tag: rename_machineModel
+      tag: rename_machineModel_134fbdce
       target_field: island_browser.device.machine_model
       ignore_missing: true
   - set:
       field: device.model.name
-      tag: set_device_model_name_from_device_machine_model
+      tag: set_device_model_name_from_device_machine_model_f4b0440b
       copy_from: island_browser.device.machine_model
       ignore_empty_value: true
   - rename:
       field: json.machineName
-      tag: rename_machineName
+      tag: rename_machineName_6055f872
       target_field: island_browser.device.machine_name
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_device_machine_name
+      tag: set_host_name_from_device_machine_name_4faf718d
       copy_from: island_browser.device.machine_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_device_machine_name_into_related_hosts
+      tag: append_device_machine_name_into_related_hosts_d7a10714
       value: '{{{island_browser.device.machine_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.machine_name != null
   - rename:
       field: json.manufacturer
-      tag: rename_manufacturer
+      tag: rename_manufacturer_3ecbe6f5
       target_field: island_browser.device.manufacturer
       ignore_missing: true
   - set:
       field: device.manufacturer
-      tag: set_device_manufacturer_from_device_manufacturer
+      tag: set_device_manufacturer_from_device_manufacturer_1f932b98
       copy_from: island_browser.device.manufacturer
       ignore_empty_value: true
   - convert:
       field: json.mdmCompliant
-      tag: convert_mdmCompliant_to_boolean
+      tag: convert_mdmCompliant_to_boolean_eda191f1
       target_field: island_browser.device.mdm_compliant
       type: boolean
       ignore_missing: true
@@ -563,7 +563,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.mdmEnrolled
-      tag: convert_mdmEnrolled_to_boolean
+      tag: convert_mdmEnrolled_to_boolean_75beebb3
       target_field: island_browser.device.mdm_enrolled
       type: boolean
       ignore_missing: true
@@ -574,37 +574,37 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.mdmProvider
-      tag: rename_mdmProvider
+      tag: rename_mdmProvider_094ec890
       target_field: island_browser.device.mdm_provider
       ignore_missing: true
   - rename:
       field: json.mdmTenantName
-      tag: rename_mdmTenantName
+      tag: rename_mdmTenantName_18c6581b
       target_field: island_browser.device.mdm_tenant_name
       ignore_missing: true
   - rename:
       field: json.mdmTopic
-      tag: rename_mdmTopic
+      tag: rename_mdmTopic_7821f281
       target_field: island_browser.device.mdm_topic
       ignore_missing: true
   - rename:
       field: json.mobileEnrollmentType
-      tag: rename_mobileEnrollmentType
+      tag: rename_mobileEnrollmentType_82418aaa
       target_field: island_browser.device.mobile_enrollment_type
       ignore_missing: true
   - rename:
       field: json.osCodeName
-      tag: rename_osCodeName
+      tag: rename_osCodeName_7a58c5f6
       target_field: island_browser.device.os_code_name
       ignore_missing: true
   - rename:
       field: json.osDomain
-      tag: rename_osDomain
+      tag: rename_osDomain_54be7d4e
       target_field: island_browser.device.os_domain
       ignore_missing: true
   - convert:
       field: json.osFirewallEnabled
-      tag: convert_osFirewallEnabled_to_boolean
+      tag: convert_osFirewallEnabled_to_boolean_e44edb0c
       target_field: island_browser.device.os_firewall_enabled
       type: boolean
       ignore_missing: true
@@ -615,17 +615,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.osPlatform
-      tag: rename_osPlatform
+      tag: rename_osPlatform_e25dd069
       target_field: island_browser.device.os_platform
       ignore_missing: true
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_from_device_os_platform
+      tag: set_host_os_platform_from_device_os_platform_a5477273
       copy_from: island_browser.device.os_platform
       ignore_empty_value: true
   - script:
       description: Map host.os.type field.
-      tag: script_map_host_os_type
+      tag: script_map_host_os_type_228ee899
       lang: painless
       if: ctx.island_browser?.device?.os_platform != null
       params:
@@ -653,7 +653,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.osScreenLockEnabled
-      tag: convert_osScreenLockEnabled_to_boolean
+      tag: convert_osScreenLockEnabled_to_boolean_95e8fb19
       target_field: island_browser.device.os_screen_lock_enabled
       type: boolean
       ignore_missing: true
@@ -664,28 +664,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.osUserName
-      tag: rename_osUserName
+      tag: rename_osUserName_f7226cb7
       target_field: island_browser.device.os_user_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_device_os_user_name_into_related_user
+      tag: append_device_os_user_name_into_related_user_f4d5b208
       value: '{{{island_browser.device.os_user_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.os_user_name != null
   - rename:
       field: json.osVersion
-      tag: rename_osVersion
+      tag: rename_osVersion_6b7dddfc
       target_field: island_browser.device.os_version
       ignore_missing: true
   - set:
       field: host.os.version
-      tag: set_host_os_version_from_device_os_version
+      tag: set_host_os_version_from_device_os_version_a9d02192
       copy_from: island_browser.device.os_version
       ignore_empty_value: true
   - date:
       field: json.policyUpdateTime
-      tag: date_policyUpdateTime
+      tag: date_policyUpdateTime_c7a37e4a
       target_field: island_browser.device.policy_update_time
       formats:
         - ISO8601
@@ -697,7 +697,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ramSize
-      tag: convert_ramSize_to_long
+      tag: convert_ramSize_to_long_3839461b
       target_field: island_browser.device.ram_size
       type: long
       ignore_missing: true
@@ -708,7 +708,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.secureBoot
-      tag: convert_secureBoot_to_boolean
+      tag: convert_secureBoot_to_boolean_1f62809f
       target_field: island_browser.device.secure_boot
       type: boolean
       ignore_missing: true
@@ -719,17 +719,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.serialNumber
-      tag: rename_serialNumber
+      tag: rename_serialNumber_fec1420e
       target_field: island_browser.device.serial_number
       ignore_missing: true
   - set:
       field: device.serial_number
-      tag: set_device_serial_number_from_device_serial_number
+      tag: set_device_serial_number_from_device_serial_number_250aa90d
       copy_from: island_browser.device.serial_number
       ignore_empty_value: true
   - convert:
       field: json.spmProtected
-      tag: convert_spmProtected_to_boolean
+      tag: convert_spmProtected_to_boolean_2d57b8a2
       target_field: island_browser.device.spm_protected
       type: boolean
       ignore_missing: true
@@ -740,12 +740,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_965c4334
       target_field: island_browser.device.status
       ignore_missing: true
   - convert:
       field: json.storageCapacity
-      tag: convert_storageCapacity_to_long
+      tag: convert_storageCapacity_to_long_b0986b49
       target_field: island_browser.device.storage_capacity
       type: long
       ignore_missing: true
@@ -756,7 +756,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.syncEnabled
-      tag: convert_syncEnabled_to_boolean
+      tag: convert_syncEnabled_to_boolean_5659f13f
       target_field: island_browser.device.sync_enabled
       type: boolean
       ignore_missing: true
@@ -767,7 +767,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.systemIntegrityProtection
-      tag: convert_systemIntegrityProtection_to_boolean
+      tag: convert_systemIntegrityProtection_to_boolean_92935802
       target_field: island_browser.device.system_integrity_protection
       type: boolean
       ignore_missing: true
@@ -778,17 +778,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.tenantId
-      tag: rename_tenantId
+      tag: rename_tenantId_d2540b9e
       target_field: island_browser.device.tenant_id
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id_from_device_tenant_id
+      tag: set_organization_id_from_device_tenant_id_d8e18fb1
       copy_from: island_browser.device.tenant_id
       ignore_empty_value: true
   - date:
       field: json.updatedDate
-      tag: date_updatedDate
+      tag: date_updatedDate_87334b3e
       target_field: island_browser.device.updated_date
       formats:
         - ISO8601
@@ -800,38 +800,38 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.updaterVersion
-      tag: rename_updaterVersion
+      tag: rename_updaterVersion_5bf02a08
       target_field: island_browser.device.updater_version
       ignore_missing: true
   - rename:
       field: json.userId
-      tag: rename_userId
+      tag: rename_userId_c9b1ad02
       target_field: island_browser.device.user_id
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_device_user_id
+      tag: set_user_id_from_device_user_id_3c16d6a1
       copy_from: island_browser.device.user_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_device_user_id_into_related_user
+      tag: append_device_user_id_into_related_user_8509d73c
       value: '{{{island_browser.device.user_id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.user_id != null
   - rename:
       field: json.userName
-      tag: rename_userName
+      tag: rename_userName_2b4e9c64
       target_field: island_browser.device.user_name
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_device_user_name
+      tag: set_user_name_from_device_user_name_c30148ae
       copy_from: island_browser.device.user_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_device_user_name_into_related_user
+      tag: append_device_user_name_into_related_user_1ba56c23
       value: '{{{island_browser.device.user_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.device?.user_name != null
@@ -854,7 +854,7 @@ processors:
         - island_browser.device.tenant_id
         - island_browser.device.user_id
         - island_browser.device.user_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e7ebf0c0
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
@@ -862,10 +862,10 @@ processors:
         - json
         - _temp
         - _temp1
-      tag: remove_json_and_temp
+      tag: remove_json_and_temp_b1752a9b
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -892,7 +892,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -911,10 +911,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -3,10 +3,10 @@ description: Pipeline for processing machine action logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,26 +16,26 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -44,19 +44,19 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_04998558
       value: Microsoft
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_12aa1104
       value: Defender for Endpoint
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_13945896
       target_field: microsoft_defender_endpoint.machine_action.type
       ignore_missing: true
   - set:
@@ -66,7 +66,7 @@ processors:
       ignore_failure: true
   - script:
       description: Set ECS categorization fields
-      tag: set_ecs_categorization_fields
+      tag: set_ecs_categorization_fields_39a6046b
       lang: painless
       if: ctx.microsoft_defender_endpoint?.machine_action?.type != null
       params:
@@ -116,7 +116,7 @@ processors:
         });
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_7501dc1c
       target_field: microsoft_defender_endpoint.machine_action.status
       ignore_missing: true
   - set:
@@ -133,12 +133,12 @@ processors:
       ignore_failure: true
   - rename:
       field: json.cancellationComment
-      tag: rename_cancellationComment
+      tag: rename_cancellationComment_ee72951e
       target_field: microsoft_defender_endpoint.machine_action.cancellation_comment
       ignore_missing: true
   - date:
       field: json.cancellationDateTimeUtc
-      tag: date_cancellationDateTimeUtc
+      tag: date_cancellationDateTimeUtc_12c4e589
       target_field: microsoft_defender_endpoint.machine_action.cancellation_date_time_utc
       formats:
         - strict_date_optional_time_nanos
@@ -150,44 +150,44 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.cancellationRequestor
-      tag: rename_cancellationRequestor
+      tag: rename_cancellationRequestor_dce762a2
       target_field: microsoft_defender_endpoint.machine_action.cancellation_requestor
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_microsoft_defender_endpoint_machine_action_cancellation_requestor_into_related_user
+      tag: append_microsoft_defender_endpoint_machine_action_cancellation_requestor_into_related_user_87fb61a1
       value: '{{{microsoft_defender_endpoint.machine_action.cancellation_requestor}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine_action?.cancellation_requestor != null
   - rename:
       field: json.commands
-      tag: rename_commands
+      tag: rename_commands_fbcd3dfb
       target_field: microsoft_defender_endpoint.machine_action.commands
       ignore_missing: true
   - rename:
       field: json.computerDnsName
-      tag: rename_computerDnsName
+      tag: rename_computerDnsName_02e75843
       target_field: microsoft_defender_endpoint.machine_action.computer_dns_name
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_machine_action_computer_dns_name
+      tag: set_host_name_from_machine_action_computer_dns_name_fb530d8c
       copy_from: microsoft_defender_endpoint.machine_action.computer_dns_name
       ignore_empty_value: true
   - set:
       field: host.hostname
-      tag: set_host_name_from_machine_action_computer_dns_name_d388b1b4
+      tag: set_host_name_from_machine_action_computer_dns_name_8bcf3a58
       copy_from: microsoft_defender_endpoint.machine_action.computer_dns_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_microsoft_defender_endpoint_machine_action_computer_dns_name_into_related_hosts
+      tag: append_microsoft_defender_endpoint_machine_action_computer_dns_name_into_related_hosts_60015f2d
       value: '{{{microsoft_defender_endpoint.machine_action.computer_dns_name}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine_action?.computer_dns_name != null
   - date:
       field: json.creationDateTimeUtc
-      tag: date_creationDateTimeUtc
+      tag: date_creationDateTimeUtc_f16a42e7
       target_field: microsoft_defender_endpoint.machine_action.creation_date_time_utc
       formats:
         - strict_date_optional_time_nanos
@@ -199,17 +199,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_machine_action_creation_date_time_utc
+      tag: set_event_created_from_machine_action_creation_date_time_utc_5ad905f5
       copy_from: microsoft_defender_endpoint.machine_action.creation_date_time_utc
       ignore_empty_value: true
   - rename:
       field: json.errorHResult
-      tag: rename_errorHResult
+      tag: rename_errorHResult_5766333b
       target_field: microsoft_defender_endpoint.machine_action.error_h_result
       ignore_missing: true
   - convert:
       field: json.errorHResult
-      tag: convert_errorHResult_to_long
+      tag: convert_errorHResult_to_long_0746c680
       target_field: microsoft_defender_endpoint.machine.error_h_result
       type: long
       ignore_missing: true
@@ -220,28 +220,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.externalID
-      tag: rename_externalID
+      tag: rename_externalID_56a5439e
       target_field: microsoft_defender_endpoint.machine_action.external_id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_microsoft_defender_endpoint_machine_action_external_id_into_related_user
+      tag: append_microsoft_defender_endpoint_machine_action_external_id_into_related_user_0f0b14e1
       value: '{{{microsoft_defender_endpoint.machine_action.external_id}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine_action?.external_id != null
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_55fe59bd
       target_field: microsoft_defender_endpoint.machine_action.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_machine_action_id
+      tag: set_event_id_from_machine_action_id_6817f45a
       copy_from: microsoft_defender_endpoint.machine_action.id
       ignore_empty_value: true
   - date:
       field: json.lastUpdateDateTimeUtc
-      tag: date_lastUpdateDateTimeUtc
+      tag: date_lastUpdateDateTimeUtc_e361585f
       target_field: microsoft_defender_endpoint.machine_action.last_update_date_time_utc
       formats:
         - strict_date_optional_time_nanos
@@ -253,44 +253,44 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_machine_action_last_update_date_time_utc
+      tag: set_@timestamp_from_machine_action_last_update_date_time_utc_057edaab
       copy_from: microsoft_defender_endpoint.machine_action.last_update_date_time_utc
       ignore_empty_value: true
   - rename:
       field: json.machineId
-      tag: rename_machineId
+      tag: rename_machineId_971af83d
       target_field: microsoft_defender_endpoint.machine_action.machine_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_machine_action_machine_id
+      tag: set_host_id_from_machine_action_machine_id_aa2da737
       copy_from: microsoft_defender_endpoint.machine_action.machine_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_microsoft_defender_endpoint_machine_action_id_into_related_hosts
+      tag: append_microsoft_defender_endpoint_machine_action_id_into_related_hosts_d27c06b0
       value: '{{{microsoft_defender_endpoint.machine_action.machine_id}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine_action?.machine_id != null
   - rename:
       field: json.relatedFileInfo.fileIdentifier
-      tag: rename_relatedFileInfo_fileIdentifier
+      tag: rename_relatedFileInfo_fileIdentifier_ac86f866
       target_field: microsoft_defender_endpoint.machine_action.related_file_info.file_identifier
       ignore_missing: true
   - rename:
       field: json.relatedFileInfo.fileIdentifierType
-      tag: rename_relatedFileInfo_fileIdentifierType
+      tag: rename_relatedFileInfo_fileIdentifierType_1d3155d4
       target_field: microsoft_defender_endpoint.machine_action.related_file_info.file_identifier_type
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_microsoft_defender_endpoint_machine_action_related_file_info_file_identifier_into_related_hash
+      tag: append_microsoft_defender_endpoint_machine_action_related_file_info_file_identifier_into_related_hash_208311a9
       value: '{{{microsoft_defender_endpoint.machine_action.related_file_info.file_identifier}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine_action?.related_file_info?.file_identifier != null
   - script:
       description: Set file.hash.sha1, file.hash.md5, file.hash.sha256.
-      tag: script_set_file_hash_*
+      tag: script_set_file_hash_*_53586364
       lang: painless
       if: ctx.microsoft_defender_endpoint?.machine_action?.related_file_info?.file_identifier_type != null
       source: >
@@ -312,63 +312,63 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.requestSource
-      tag: rename_requestSource
+      tag: rename_requestSource_830eb895
       target_field: microsoft_defender_endpoint.machine_action.request_source
       ignore_missing: true
   - rename:
       field: json.requestor
-      tag: rename_requestor
+      tag: rename_requestor_a7efe17d
       target_field: microsoft_defender_endpoint.machine_action.requestor
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_machine_action_requestor
+      tag: set_user_email_from_machine_action_requestor_5bc472ce
       copy_from: microsoft_defender_endpoint.machine_action.requestor
       ignore_empty_value: true
       if: ctx.microsoft_defender_endpoint?.machine_action?.requestor != null && ctx.microsoft_defender_endpoint.machine_action.requestor.indexOf("@") > 0
   - set:
       field: user.name
-      tag: set_user_name_from_machine_action_requestor
+      tag: set_user_name_from_machine_action_requestor_b7ecd990
       copy_from: microsoft_defender_endpoint.machine_action.requestor
       ignore_empty_value: true
       if: ctx.user?.email == null
   - dissect:
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
+      tag: dissect_user_email_d5fb5c7e
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_user_email_into_related_user
+      tag: append_user_email_into_related_user_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - rename:
       field: json.requestorComment
-      tag: rename_requestorComment
+      tag: rename_requestorComment_f684a71c
       target_field: microsoft_defender_endpoint.machine_action.requestor_comment
       ignore_missing: true
   - rename:
       field: json.scope
-      tag: rename_scope
+      tag: rename_scope_5dd78015
       target_field: microsoft_defender_endpoint.machine_action.scope
       ignore_missing: true
   - rename:
       field: json.title
-      tag: rename_title
+      tag: rename_title_8d004e9a
       target_field: microsoft_defender_endpoint.machine_action.title
       ignore_missing: true
   - rename:
       field: json.troubleshootInfo
-      tag: rename_troubleshootInfo
+      tag: rename_troubleshootInfo_a2ac9a18
       target_field: microsoft_defender_endpoint.machine_action.troubleshoot_info
       ignore_missing: true
   - remove:
@@ -379,17 +379,17 @@ processors:
         - microsoft_defender_endpoint.machine_action.last_update_date_time_utc
         - microsoft_defender_endpoint.machine_action.machine_id
         - microsoft_defender_endpoint.machine_action.requestor
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_608fd0e2
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -415,7 +415,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -426,15 +426,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

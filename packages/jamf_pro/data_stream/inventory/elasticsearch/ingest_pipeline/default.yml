@@ -8,7 +8,7 @@ processors:
     target_field: jamf_pro.inventory
 
 - script:
-    tag: script_a3eb5add
+    tag: script_drops_null_empty_values_recursively_a3eb5add
     description: Drops null/empty values recursively.
     lang: painless
     source: |
@@ -28,7 +28,7 @@ processors:
 
 - script:
     description: Convert Additional Info keys to snake case.
-    tag: additional-info-keys-to-snake-case
+    tag: additional-info-keys-to-snake-case_6a54c293
     lang: painless
     source: |
       Map keysToSnakeCase(Map m) {
@@ -61,7 +61,7 @@ processors:
       }
 
 - fingerprint:
-    tag: fingerprint_a6dde3e1
+    tag: fingerprint_to_id_a6dde3e1
     fields:
       - jamf_pro.inventory.udid
       - jamf_pro.inventory.general.report_date
@@ -112,7 +112,7 @@ processors:
     field: host.mac
     pattern: '[:.]'
     replacement: '-'
-    tag: gsub_host_mac
+    tag: gsub_host_mac_be6ad39d
     ignore_missing: true
     on_failure:
       - remove:
@@ -125,7 +125,7 @@ processors:
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - uppercase:
     field: host.mac
-    tag: uppercase_host_mac
+    tag: uppercase_host_mac_78dbb3ab
     ignore_missing: true
     if: ctx.host?.mac != ''
     on_failure:
@@ -159,7 +159,7 @@ processors:
     copy_from: jamf_pro.inventory.operating_system.name
     ignore_empty_value: true
 - script:
-    tag: script_normalize_operating_system_version
+    tag: script_normalize_operating_system_version_797763a6
     lang: painless
     if: ctx.jamf_pro?.inventory?.operating_system?.version != null && ctx.jamf_pro.inventory.operating_system.version != ''
     source: |-
@@ -261,7 +261,7 @@ processors:
     if: ctx.jamf_pro.inventory?.group_memberships != null
     processor:
       append:
-        tag: append_user_group_name
+        tag: append_user_group_name_cf3c1e6e
         field: user.group.name
         value: '{{{_ingest._value.group_name}}}'
         allow_duplicates: false
@@ -273,7 +273,7 @@ processors:
     if: ctx.jamf_pro.inventory?.group_memberships != null
     processor:
       append:
-        tag: append_user_group_id
+        tag: append_user_group_id_98f08ef0
         field: user.group.id
         value: '{{{_ingest._value.group_id}}}'
         allow_duplicates: false
@@ -319,15 +319,15 @@ processors:
 
 on_failure:
 - set:
-    tag: set_event_kind
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
-    tag: append_tags
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
-    tag: append_error_message
+    tag: append_error_message_6906b116
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

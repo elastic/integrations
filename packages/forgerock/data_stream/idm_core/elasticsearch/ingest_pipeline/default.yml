@@ -18,7 +18,7 @@ processors:
 
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -51,7 +51,7 @@ processors:
       ignore_empty_value: true
   # cleaning up
   - remove:
-      tag: remove_1d2e828d
+      tag: remove_cleaning_up_1d2e828d
       field:
         - forgerock.timestamp
         - forgerock.type
@@ -75,7 +75,7 @@ processors:
       target_field: forgerock.idm_core
       ignore_missing: true
   - script:
-      tag: script_9d6fa8ba
+      tag: script_drops_null_empty_values_recursively_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -95,15 +95,15 @@ processors:
         drop(ctx);
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

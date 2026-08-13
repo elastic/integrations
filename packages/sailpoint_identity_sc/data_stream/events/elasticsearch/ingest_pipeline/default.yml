@@ -6,7 +6,7 @@ processors:
       field: ecs.version
       value: "8.11.0"
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
 
@@ -18,7 +18,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -30,7 +30,7 @@ processors:
   - fingerprint:
       fields:
         - sailpoint_identity_sc.events.id
-      tag: fingerprinting
+      tag: fingerprinting_1245e94c
       target_field: "_id"
       on_failure:
         - append:
@@ -39,7 +39,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   ##################### Scripts for processing input #####################
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -60,7 +60,7 @@ processors:
 
   - script:
       description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
+      tag: additional-info-keys-to-snake-case_0e30d0b5
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -177,39 +177,39 @@ processors:
   ################### Entity fields ###################
   - set:
       field: user.entity.id
-      tag: set_user_entity_id
+      tag: set_user_entity_id_0354383a
       copy_from: sailpoint_identity_sc.events.actor.id
       if: ctx.sailpoint_identity_sc?.events?.actor?.id != null
   - set:
       field: user.entity.name
-      tag: set_user_entity_name_from_display_name
+      tag: set_user_entity_name_from_display_name_52ee7171
       copy_from: sailpoint_identity_sc.events.actor.display_name
       if: ctx.sailpoint_identity_sc?.events?.actor?.display_name != null
   - set:
       field: user.entity.name
-      tag: set_user_entity_name_from_name
+      tag: set_user_entity_name_from_name_6567b58c
       copy_from: sailpoint_identity_sc.events.actor.name
       if: ctx.sailpoint_identity_sc?.events?.actor?.display_name == null && ctx.sailpoint_identity_sc?.events?.actor?.name != null
   - set:
       field: user.entity.name
-      tag: set_user_entity_name_from_actor_name_no_id
+      tag: set_user_entity_name_from_actor_name_no_id_b90f1b48
       copy_from: sailpoint_identity_sc.events.actor.name
       if: ctx.sailpoint_identity_sc?.events?.actor?.name != null
   - append:
       field: user.entity.type
-      tag: append_user_entity_type
+      tag: append_user_entity_type_014f3b34
       value: user
       allow_duplicates: false
       if: ctx.sailpoint_identity_sc?.events?.actor?.id != null || ctx.sailpoint_identity_sc?.events?.actor?.name != null
   - set:
       field: user.entity.lifecycle.last_activity
-      tag: set_user_entity_lifecycle_last_activity
+      tag: set_user_entity_lifecycle_last_activity_0a032484
       copy_from: '@timestamp'
       if: ctx.sailpoint_identity_sc?.events?.actor?.id != null || ctx.sailpoint_identity_sc?.events?.actor?.name != null
   ################### Error Log fields ###################
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -220,7 +220,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -228,10 +228,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

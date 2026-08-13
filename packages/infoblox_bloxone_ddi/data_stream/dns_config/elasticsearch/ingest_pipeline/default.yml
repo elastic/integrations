@@ -25,7 +25,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -37,7 +37,7 @@ processors:
       tag: drop_88d6232c
       if: ctx.json?.results instanceof List && ctx.json.results.length == 0
   - fingerprint:
-      tag: fingerprint_8b3026d5
+      tag: fingerprint_to_id_8b3026d5
       fields:
         - json.created_at
         - json.updated_at
@@ -84,17 +84,17 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         convert:
-          tag: convert_ingest_value_address
+          tag: convert_ingest_value_address_2118cae9
           if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_address
+                tag: remove_ingest_value_address_04ebb14f
                 field: _ingest._value.address
             - append:
-                tag: append_error_message
+                tag: append_error_message_ed92eacf
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
@@ -105,7 +105,7 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         append:
-          tag: append_related_ip
+          tag: append_related_ip_9e9287a2
           field: related.ip
           value: '{{{_ingest._value.address}}}'
           allow_duplicates: false
@@ -118,7 +118,7 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn
+          tag: rename_ingest_value_protocol_fqdn_to_ingest_value_protocol_fqdn_0d9fcd5d
           field: _ingest._value.protocol_fqdn
           target_field: _ingest._value.protocol.fqdn
           ignore_missing: true
@@ -183,13 +183,13 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         convert:
-          tag: convert_ingest_value_algorithm
+          tag: convert_ingest_value_algorithm_29adecd5
           field: _ingest._value.algorithm
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_algorithm
+                tag: remove_ingest_value_algorithm_ae9bc6d6
                 field: _ingest._value.algorithm
             - append:
                 tag: append_error_message_70adecb3
@@ -203,7 +203,7 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_protocol_zone_to_ingest_value_protocol_zone
+          tag: rename_ingest_value_protocol_zone_to_ingest_value_protocol_zone_087423df
           field: _ingest._value.protocol_zone
           target_field: _ingest._value.protocol.zone
           ignore_missing: true
@@ -215,7 +215,7 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_public_key_to_ingest_value_public
+          tag: rename_ingest_value_public_key_to_ingest_value_public_8ca09a3d
           field: _ingest._value.public_key
           target_field: _ingest._value.public
           ignore_missing: true
@@ -227,13 +227,13 @@ processors:
       if: ctx.json?.dnssec_root_keys instanceof List
       processor:
         convert:
-          tag: convert_ingest_value_sep
+          tag: convert_ingest_value_sep_53a34d82
           field: _ingest._value.sep
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_sep
+                tag: remove_ingest_value_sep_a906abaa
                 field: _ingest._value.sep
             - append:
                 tag: append_error_message_1ff33ec2
@@ -1146,7 +1146,7 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         append:
-          tag: append_related_hash
+          tag: append_related_hash_473514da
           field: related.hash
           value: '{{{_ingest._value.tsig_key.algorithm}}}'
           allow_duplicates: false
@@ -1159,7 +1159,7 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name
+          tag: rename_ingest_value_tsig_key_protocol_name_to_ingest_value_tsig_key_protocol_name_8282bafe
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
           ignore_missing: true
@@ -1762,7 +1762,7 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_acl_to_ingest_value_value
+          tag: rename_ingest_value_acl_to_ingest_value_value_4162b3d0
           field: _ingest._value.acl
           target_field: _ingest._value.value
           ignore_missing: true
@@ -2420,17 +2420,17 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-      tag: script_009c1e23
+      tag: script_drops_null_empty_values_recursively_009c1e23
       description: Drops null/empty values recursively.
       lang: painless
       source: boolean dropEmptyFields(Object object) { if (object == null || object == '') { return true; } else if (object instanceof Map) { ((Map) object).values().removeIf(value -> dropEmptyFields(value)); return (((Map) object).size() == 0); } else if (object instanceof List) { ((List) object).removeIf(value -> dropEmptyFields(value)); return (((List) object).length == 0); } return false; } dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

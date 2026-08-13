@@ -3,13 +3,13 @@ description: Pipeline for processing unified alert logs.
 processors:
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -19,27 +19,27 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   # parse the event JSON
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_1d854002
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - fingerprint:
       fields:
@@ -48,12 +48,12 @@ processors:
         - json.id
         - json.externalId
       target_field: _id
-      tag: fingerprint_unified_alert
+      tag: fingerprint_unified_alert_c8d04270
       ignore_missing: true
 
   # rename to snake case
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_b24d26be
       lang: painless
       description: Convert camelCase to snake_case
       if: ctx.json != null
@@ -107,33 +107,33 @@ processors:
   - set:
       field: sentinel_one.site.id
       copy_from: sentinel_one.unified_alert.real_time.scope.site.id
-      tag: set_sentinel_one_site_id
+      tag: set_sentinel_one_site_id_07f84c43
       ignore_empty_value: true
   - set:
       field: sentinel_one.site.name
       copy_from: sentinel_one.unified_alert.real_time.scope.site.name
-      tag: set_sentinel_one_site_name
+      tag: set_sentinel_one_site_name_210848a0
       ignore_empty_value: true
   - set:
       field: sentinel_one.account.name
       copy_from: sentinel_one.unified_alert.real_time.scope.account.name
-      tag: set_sentinel_one_account_name
+      tag: set_sentinel_one_account_name_53f3d82c
       ignore_empty_value: true
   - set:
       field: sentinel_one.account.id
       copy_from: sentinel_one.unified_alert.real_time.scope.account.id
-      tag: set_sentinel_one_account_id
+      tag: set_sentinel_one_account_id_d457bd93
       ignore_empty_value: true
   - set:
       field: sentinel_one.threat_classification.name
       copy_from: sentinel_one.unified_alert.classification
-      tag: set_sentinel_one_threat_classification_name
+      tag: set_sentinel_one_threat_classification_name_67113931
       ignore_empty_value: true
 
   # convert values
   - date:
       field: sentinel_one.unified_alert.created_at
-      tag: date_created_at
+      tag: date_created_at_198886fc
       target_field: sentinel_one.unified_alert.created_at
       formats:
         - ISO8601
@@ -149,36 +149,36 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.assets
-      tag: foreach_assets_accessible
+      tag: foreach_assets_accessible_487f84d6
       if: ctx.sentinel_one?.unified_alert?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.accessible
-          tag: convert_assets_accessible_to_boolean
+          tag: convert_assets_accessible_to_boolean_d89a8e83
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_accessible
+                tag: remove_ingest_value_accessible_9e84c586
                 field: _ingest._value.accessible
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_26fc6a01
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.assets
-      tag: foreach_assets_decommissioned
+      tag: foreach_assets_decommissioned_e35ee5d2
       if: ctx.sentinel_one?.unified_alert?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.decommissioned
-          tag: convert_assets_decommissioned_to_boolean
+          tag: convert_assets_decommissioned_to_boolean_ffd957bc
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_decommissioned
+                tag: remove_ingest_value_decommissioned_b61b12eb
                 field: _ingest._value.decommissioned
                 ignore_missing: true
             - append:
@@ -187,17 +187,17 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.assets
-      tag: foreach_assets_pending_reboot
+      tag: foreach_assets_pending_reboot_18599f13
       if: ctx.sentinel_one?.unified_alert?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.pending_reboot
-          tag: convert_assets_pending_reboot_to_boolean
+          tag: convert_assets_pending_reboot_to_boolean_8e51a42d
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_pending_reboot
+                tag: remove_ingest_value_pending_reboot_22c9f394
                 field: _ingest._value.pending_reboot
                 ignore_missing: true
             - append:
@@ -206,7 +206,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.detected_at
-      tag: date_detected_at
+      tag: date_detected_at_0b0bb158
       target_field: sentinel_one.unified_alert.detected_at
       formats:
         - ISO8601
@@ -222,12 +222,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.detection_time.assets
-      tag: foreach_detection_time_assets_accessible
+      tag: foreach_detection_time_assets_accessible_6777acfe
       if: ctx.sentinel_one?.unified_alert?.detection_time?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.accessible
-          tag: convert_detection_time_assets_accessible_to_boolean
+          tag: convert_detection_time_assets_accessible_to_boolean_11e76216
           type: boolean
           ignore_missing: true
           on_failure:
@@ -241,17 +241,17 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.detection_time.assets
-      tag: foreach_detection_time_assets_asset_console_ip_address
+      tag: foreach_detection_time_assets_asset_console_ip_address_cee361c7
       if: ctx.sentinel_one?.unified_alert?.detection_time?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.asset.console_ip_address
-          tag: convert_detection_time_assets_asset_console_ip_address_to_ip
+          tag: convert_detection_time_assets_asset_console_ip_address_to_ip_716e8e39
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_asset_console_ip_address
+                tag: remove_ingest_value_asset_console_ip_address_a86c6a68
                 field: _ingest._value.asset.console_ip_address
                 ignore_missing: true
             - append:
@@ -260,17 +260,17 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.detection_time.assets
-      tag: foreach_detection_time_assets_asset_ip_v4
+      tag: foreach_detection_time_assets_asset_ip_v4_0f30d762
       if: ctx.sentinel_one?.unified_alert?.detection_time?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.asset.ip_v4
-          tag: convert_detection_time_assets_asset_ip_v4_to_ip
+          tag: convert_detection_time_assets_asset_ip_v4_to_ip_bfc2f35e
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_asset_ip_v4
+                tag: remove_ingest_value_asset_ip_v4_c1b26373
                 field: _ingest._value.asset.ip_v4
                 ignore_missing: true
             - append:
@@ -279,17 +279,17 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.detection_time.assets
-      tag: foreach_detection_time_assets_asset_ip_v6
+      tag: foreach_detection_time_assets_asset_ip_v6_594702da
       if: ctx.sentinel_one?.unified_alert?.detection_time?.assets instanceof List
       processor:
         convert:
           field: _ingest._value.asset.ip_v6
-          tag: convert_detection_time_assets_asset_ip_v6_to_ip
+          tag: convert_detection_time_assets_asset_ip_v6_to_ip_9628d058
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_asset_ip_v6
+                tag: remove_ingest_value_asset_ip_v6_85c51d35
                 field: _ingest._value.asset.ip_v6
                 ignore_missing: true
             - append:
@@ -298,23 +298,23 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: sentinel_one.unified_alert.detection_time.assets
-      tag: foreach_detection_time_assets_asset_subscription_time
+      tag: foreach_detection_time_assets_asset_subscription_time_9a161fcb
       if: ctx.sentinel_one?.unified_alert?.detection_time?.assets instanceof List
       processor:
         date:
           field: _ingest._value.asset.subscription_time
-          tag: date_detection_time_assets_asset_subscription_time
+          tag: date_detection_time_assets_asset_subscription_time_f7ccd9d3
           target_field: _ingest._value.asset.subscription_time
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_asset_subscription_time
+                tag: remove_ingest_value_asset_subscription_time_c23502e4
                 field: _ingest._value.asset.subscription_time
                 ignore_missing: true
   - convert:
       field: sentinel_one.unified_alert.detection_time.attacker.ip
-      tag: convert_detection_time_attacker_ip_to_ip
+      tag: convert_detection_time_attacker_ip_to_ip_3d88858d
       type: ip
       ignore_missing: true
       if: ctx.sentinel_one?.unified_alert?.detection_time?.attacker?.ip != null && ctx.sentinel_one.unified_alert.detection_time.attacker.ip != ''
@@ -328,7 +328,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.first_seen_at
-      tag: date_first_seen_at
+      tag: date_first_seen_at_65b9246a
       target_field: sentinel_one.unified_alert.first_seen_at
       formats:
         - ISO8601
@@ -344,7 +344,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.last_seen_at
-      tag: date_last_seen_at
+      tag: date_last_seen_at_0f1aee2c
       target_field: sentinel_one.unified_alert.last_seen_at
       formats:
         - ISO8601
@@ -360,7 +360,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.note_exists
-      tag: convert_note_exists_to_boolean
+      tag: convert_note_exists_to_boolean_53fd8f35
       type: boolean
       ignore_missing: true
       on_failure:
@@ -373,7 +373,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.action_complete
-      tag: convert_slo_details_time_to_resolve_data_action_complete_to_boolean
+      tag: convert_slo_details_time_to_resolve_data_action_complete_to_boolean_4ad17b26
       type: boolean
       ignore_missing: true
       on_failure:
@@ -386,7 +386,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.action_due
-      tag: convert_slo_details_time_to_resolve_data_action_due_to_long
+      tag: convert_slo_details_time_to_resolve_data_action_due_to_long_187c1a66
       type: long
       ignore_missing: true
       on_failure:
@@ -399,7 +399,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.completion
-      tag: convert_slo_details_time_to_resolve_data_completion_to_long
+      tag: convert_slo_details_time_to_resolve_data_completion_to_long_f89feb6c
       type: long
       ignore_missing: true
       on_failure:
@@ -412,7 +412,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.completion_time
-      tag: date_slo_details_time_to_resolve_data_completion_time
+      tag: date_slo_details_time_to_resolve_data_completion_time_bf3e6077
       target_field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.completion_time
       formats:
         - ISO8601
@@ -428,7 +428,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.target
-      tag: convert_slo_details_time_to_resolve_data_target_to_long
+      tag: convert_slo_details_time_to_resolve_data_target_to_long_ea5348c6
       type: long
       ignore_missing: true
       on_failure:
@@ -441,7 +441,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.target_time
-      tag: date_slo_details_time_to_resolve_data_target_time
+      tag: date_slo_details_time_to_resolve_data_target_time_37ec24eb
       target_field: sentinel_one.unified_alert.slo_details.time_to_resolve_data.target_time
       formats:
         - ISO8601
@@ -457,7 +457,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_response_data.action_complete
-      tag: convert_slo_details_time_to_response_data_action_complete_to_boolean
+      tag: convert_slo_details_time_to_response_data_action_complete_to_boolean_01052d33
       type: boolean
       ignore_missing: true
       on_failure:
@@ -470,7 +470,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_response_data.action_due
-      tag: convert_slo_details_time_to_response_data_action_due_to_long
+      tag: convert_slo_details_time_to_response_data_action_due_to_long_ddfa18c3
       type: long
       ignore_missing: true
       on_failure:
@@ -483,7 +483,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_response_data.completion
-      tag: convert_slo_details_time_to_response_data_completion_to_long
+      tag: convert_slo_details_time_to_response_data_completion_to_long_6cf53fe9
       type: long
       ignore_missing: true
       on_failure:
@@ -496,7 +496,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.slo_details.time_to_response_data.completion_time
-      tag: date_slo_details_time_to_response_data_completion_time
+      tag: date_slo_details_time_to_response_data_completion_time_d8f45d5f
       target_field: sentinel_one.unified_alert.slo_details.time_to_response_data.completion_time
       formats:
         - ISO8601
@@ -512,7 +512,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: sentinel_one.unified_alert.slo_details.time_to_response_data.target
-      tag: convert_slo_details_time_to_response_data_target_to_long
+      tag: convert_slo_details_time_to_response_data_target_to_long_8afebe4d
       type: long
       ignore_missing: true
       on_failure:
@@ -525,7 +525,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.slo_details.time_to_response_data.target_time
-      tag: date_slo_details_time_to_response_data_target_time
+      tag: date_slo_details_time_to_response_data_target_time_43d85cfb
       target_field: sentinel_one.unified_alert.slo_details.time_to_response_data.target_time
       formats:
         - ISO8601
@@ -541,7 +541,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: sentinel_one.unified_alert.updated_at
-      tag: date_updated_at
+      tag: date_updated_at_b3cfbb47
       target_field: sentinel_one.unified_alert.updated_at
       formats:
         - ISO8601
@@ -559,73 +559,73 @@ processors:
   # populate ECS fields
   - set:
       field: message
-      tag: set_message_from_unified_alert_name
+      tag: set_message_from_unified_alert_name_5fffa058
       copy_from: sentinel_one.unified_alert.name
       ignore_empty_value: true
 
   # event.*
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_ab1166ce
       value: alert
   - append:
       field: event.category
-      tag: append_malware_into_event_category
+      tag: append_malware_into_event_category_072daf3a
       value: malware
       if: ctx.sentinel_one?.unified_alert?.classification != null && ['MALWARE','RANSOMWARE','TROJAN','DOWNLOADER','WORM','VIRUS','SPYWARE','KEYLOGGER','INFO_STEALER','ROOTKIT','BACKDOOR','DROPPER','COINMINER','CRYPTOMINER','MINER','PACKED','LINUX_MALWARE','MALICIOUS_OFFICE_DOC','MALICIOUS_PDF','GENERIC_HEURISTIC','PUA','ROGUE','TOOLBAR'].contains(ctx.sentinel_one.unified_alert.classification)
   - append:
       field: event.category
-      tag: append_intrusion_detection_into_event_category
+      tag: append_intrusion_detection_into_event_category_4376dd66
       value: intrusion_detection
       if: ctx.sentinel_one?.unified_alert?.classification != null && ['COMMAND_AND_CONTROL','EXPLOIT','HACKTOOL','ENUMERATION','INTERACTIVE_SHELL','REMOTE_SHELL','LATERAL_MOVEMENT','MANUAL'].contains(ctx.sentinel_one.unified_alert.classification)
   - append:
       field: event.category
-      tag: append_network_into_event_category
+      tag: append_network_into_event_category_8b00a701
       value: network
       if: ctx.sentinel_one?.unified_alert?.classification != null && ctx.sentinel_one.unified_alert.classification == 'NETWORK'
   - append:
       field: event.category
-      tag: append_email_into_event_category
+      tag: append_email_into_event_category_4e099ca9
       value: email
       if: ctx.sentinel_one?.unified_alert?.classification != null && ctx.sentinel_one.unified_alert.classification == 'PHISHING'
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - set:
       field: event.created
-      tag: set_event_created_from_unified_alert_created_at
+      tag: set_event_created_from_unified_alert_created_at_99c048e5
       copy_from: sentinel_one.unified_alert.created_at
       ignore_empty_value: true
   - set:
       field: event.start
-      tag: set_event_start_from_unified_alert_first_seen_at
+      tag: set_event_start_from_unified_alert_first_seen_at_e3d26dfd
       copy_from: sentinel_one.unified_alert.first_seen_at
       ignore_empty_value: true
   - set:
       field: event.end
-      tag: set_event_end_from_unified_alert_last_seen_at
+      tag: set_event_end_from_unified_alert_last_seen_at_09bce6f2
       copy_from: sentinel_one.unified_alert.last_seen_at
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_unified_alert_id
+      tag: set_event_id_from_unified_alert_id_82b63c92
       copy_from: sentinel_one.unified_alert.id
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success
+      tag: set_event_outcome_to_success_edad8a5d
       value: success
       if: ctx.sentinel_one?.unified_alert?.result != null && ctx.sentinel_one.unified_alert.result.equalsIgnoreCase("mitigated")
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure
+      tag: set_event_outcome_to_failure_170feecb
       value: failure
       if: ctx.sentinel_one?.unified_alert?.result != null && ctx.sentinel_one.unified_alert.result.equalsIgnoreCase("unmitigated")
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_5a1dc8f7
       if: ctx.sentinel_one?.unified_alert?.severity instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -646,7 +646,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_unified_alert_updated_at
+      tag: set_@timestamp_from_unified_alert_updated_at_21ba8195
       copy_from: sentinel_one.unified_alert.updated_at
       ignore_empty_value: true
 
@@ -654,47 +654,47 @@ processors:
   - set:
       field: group.name
       copy_from: sentinel_one.unified_alert.real_time.scope.group.name
-      tag: set_group_name
+      tag: set_group_name_5f3714f0
       ignore_empty_value: true
   - set:
       field: group.id
       copy_from: sentinel_one.unified_alert.real_time.scope.group.id
-      tag: set_group_id
+      tag: set_group_id_51db393c
       ignore_empty_value: true
 
   # source.*
   - set:
       field: source.domain
-      tag: set_source_domain_from_unified_alert_detection_time_attacker_host
+      tag: set_source_domain_from_unified_alert_detection_time_attacker_host_235751df
       copy_from: sentinel_one.unified_alert.detection_time.attacker.host
       ignore_empty_value: true
   - set:
       field: source.ip
-      tag: set_source_ip_from_unified_alert_detection_time_attacker_ip
+      tag: set_source_ip_from_unified_alert_detection_time_attacker_ip_ce128567
       copy_from: sentinel_one.unified_alert.detection_time.attacker.ip
       ignore_empty_value: true
 
   # user.*
   - set:
       field: user.domain
-      tag: set_user_domain_from_unified_alert_detection_time_target_user_domain
+      tag: set_user_domain_from_unified_alert_detection_time_target_user_domain_69b12cca
       copy_from: sentinel_one.unified_alert.detection_time.target_user.domain
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_unified_alert_detection_time_target_user_email_address
+      tag: set_user_email_from_unified_alert_detection_time_target_user_email_address_5a0a0710
       copy_from: sentinel_one.unified_alert.detection_time.target_user.email_address
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name_from_unified_alert_detection_time_target_user_name
+      tag: set_user_name_from_unified_alert_detection_time_target_user_name_19076b72
       copy_from: sentinel_one.unified_alert.detection_time.target_user.name
       ignore_empty_value: true
 
   # ECS mapping from assets[0] and detection_time.assets[0]
   - script:
       description: Extract ECS fields from assets[] and detection_time.assets[].
-      tag: script_extract_ecs_from_single_asset
+      tag: script_extract_ecs_from_single_asset_9ccfe4be
       lang: painless
       params:
         os_type:
@@ -812,106 +812,106 @@ processors:
   # process.*
   - set:
       field: process.command_line
-      tag: set_process_command_line_from_unified_alert_process_cmd_line
+      tag: set_process_command_line_from_unified_alert_process_cmd_line_e52ef817
       copy_from: sentinel_one.unified_alert.process.cmd_line
       ignore_empty_value: true
   - set:
       field: process.parent.name
-      tag: set_process_parent_name_from_unified_alert_process_parent_name
+      tag: set_process_parent_name_from_unified_alert_process_parent_name_b33aae57
       copy_from: sentinel_one.unified_alert.process.parent_name
       ignore_empty_value: true
 
   # file.*
   - set:
       field: file.hash.md5
-      tag: set_file_hash_md5_from_unified_alert_process_file_md5
+      tag: set_file_hash_md5_from_unified_alert_process_file_md5_4c195924
       copy_from: sentinel_one.unified_alert.process.file.md5
       ignore_empty_value: true
   - set:
       field: file.name
-      tag: set_file_name_from_unified_alert_process_file_name
+      tag: set_file_name_from_unified_alert_process_file_name_52e5ad2c
       copy_from: sentinel_one.unified_alert.process.file.name
       ignore_empty_value: true
   - set:
       field: file.path
-      tag: set_file_path_from_unified_alert_process_file_path
+      tag: set_file_path_from_unified_alert_process_file_path_9b048e74
       copy_from: sentinel_one.unified_alert.process.file.path
       ignore_empty_value: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1_from_unified_alert_process_file_sha1
+      tag: set_file_hash_sha1_from_unified_alert_process_file_sha1_3620f801
       copy_from: sentinel_one.unified_alert.process.file.sha1
       ignore_empty_value: true
   - set:
       field: file.hash.sha256
-      tag: set_file_hash_sha256_from_unified_alert_process_file_sha256
+      tag: set_file_hash_sha256_from_unified_alert_process_file_sha256_45c91ac9
       copy_from: sentinel_one.unified_alert.process.file.sha256
       ignore_empty_value: true
 
   # related.*
   - append:
       field: related.hosts
-      tag: append_unified_alert_detection_time_attacker_host_into_related_hosts
+      tag: append_unified_alert_detection_time_attacker_host_into_related_hosts_32f8f737
       value: '{{{sentinel_one.unified_alert.detection_time.attacker.host}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.detection_time?.attacker?.host != null
   - append:
       field: related.ip
-      tag: append_unified_alert_detection_time_attacker_ip_into_related_ip
+      tag: append_unified_alert_detection_time_attacker_ip_into_related_ip_db16773b
       value: '{{{sentinel_one.unified_alert.detection_time.attacker.ip}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.detection_time?.attacker?.ip != null
   - append:
       field: related.user
-      tag: append_unified_alert_detection_time_target_user_email_address_into_related_user
+      tag: append_unified_alert_detection_time_target_user_email_address_into_related_user_f63b59e6
       value: '{{{sentinel_one.unified_alert.detection_time.target_user.email_address}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.detection_time?.target_user?.email_address != null
   - append:
       field: related.user
-      tag: append_unified_alert_detection_time_target_user_name_into_related_user
+      tag: append_unified_alert_detection_time_target_user_name_into_related_user_6cd74e6f
       value: '{{{sentinel_one.unified_alert.detection_time.target_user.name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.detection_time?.target_user?.name != null
   - append:
       field: related.user
-      tag: append_unified_alert_assignee_email_into_related_user
+      tag: append_unified_alert_assignee_email_into_related_user_1d8f9247
       value: '{{{sentinel_one.unified_alert.assignee.email}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.assignee?.email != null
   - append:
       field: related.user
-      tag: append_unified_alert_assignee_full_name_into_related_user
+      tag: append_unified_alert_assignee_full_name_into_related_user_346e4c17
       value: '{{{sentinel_one.unified_alert.assignee.full_name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.assignee?.full_name != null
   - append:
       field: related.user
-      tag: append_unified_alert_assignee_user_id_into_related_user
+      tag: append_unified_alert_assignee_user_id_into_related_user_f158a658
       value: '{{{sentinel_one.unified_alert.assignee.user_id}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.assignee?.user_id != null
   - append:
       field: related.hash
-      tag: append_unified_alert_process_file_md5_into_related_hash
+      tag: append_unified_alert_process_file_md5_into_related_hash_96546a34
       value: '{{{sentinel_one.unified_alert.process.file.md5}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.process?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_unified_alert_process_file_sha1_into_related_hash
+      tag: append_unified_alert_process_file_sha1_into_related_hash_164015d3
       value: '{{{sentinel_one.unified_alert.process.file.sha1}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.process?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_unified_alert_process_file_sha256_into_related_hash
+      tag: append_unified_alert_process_file_sha256_into_related_hash_c5e7ab03
       value: '{{{sentinel_one.unified_alert.process.file.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.process?.file?.sha256 != null
   - append:
       field: related.hash
-      tag: append_unified_alert_exclusion_hash_into_related_hash
+      tag: append_unified_alert_exclusion_hash_into_related_hash_4686b31a
       value: '{{{sentinel_one.unified_alert.exclusion_hash}}}'
       allow_duplicates: false
       if: ctx.sentinel_one?.unified_alert?.exclusion_hash != null
@@ -919,7 +919,7 @@ processors:
   # remove custom duplicate fields (already mapped to ECS)
   - foreach:
       field: sentinel_one.unified_alert.assets
-      tag: foreach_sentinel_one_unified_alert_assets
+      tag: foreach_sentinel_one_unified_alert_assets_e81855a2
       if: ctx.sentinel_one?.unified_alert?.assets instanceof List
       processor:
         remove:
@@ -928,12 +928,12 @@ processors:
             - _ingest._value.agent_version
             - _ingest._value.name
             - _ingest._value.subcategory
-          tag: remove_custom_duplicate_fields_from_sentinel_one_unified_alert_assets
+          tag: remove_custom_duplicate_fields_from_sentinel_one_unified_alert_assets_f54bff48
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - foreach:
       field: sentinel_one.unified_alert.detection_time.assets
-      tag: foreach_sentinel_one_unified_alert_detection_time_assets
+      tag: foreach_sentinel_one_unified_alert_detection_time_assets_8db0d3a6
       if: ctx.sentinel_one?.unified_alert?.detection_time?.assets instanceof List
       processor:
         remove:
@@ -956,7 +956,7 @@ processors:
             - _ingest._value.kubernetes.namespace_name
             - _ingest._value.kubernetes.pod_labels
             - _ingest._value.kubernetes.pod_name
-          tag: remove_custom_duplicate_fields_from_sentinel_one_unified_alert_detection_time_assets
+          tag: remove_custom_duplicate_fields_from_sentinel_one_unified_alert_detection_time_assets_cf043d33
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
@@ -980,15 +980,15 @@ processors:
         - sentinel_one.unified_alert.real_time.scope.group.name
         - sentinel_one.unified_alert.real_time.scope.group.id
         - sentinel_one.unified_alert.updated_at
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_0c7a3ded
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -1015,7 +1015,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -1034,10 +1034,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

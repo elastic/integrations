@@ -7,14 +7,14 @@ processors:
       value: '8.11.0'
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -23,7 +23,7 @@ processors:
       field: event.original
       target_field: github.secret_scanning
   - fail:
-      tag: fail_79b9a090
+      tag: fail_missing_json_object_79b9a090
       if: "!(ctx.github.secret_scanning instanceof Map)"
       message: Missing JSON object
   - set:
@@ -41,7 +41,7 @@ processors:
       value: deletion
       if: ctx.github?.secret_scanning?.resolved_at != null
   - fingerprint:
-      tag: fingerprint_1a586380
+      tag: fingerprint_to_id_1a586380
       fields:
         - github.secret_scanning.number
         - github.secret_scanning.updated_at
@@ -290,7 +290,7 @@ processors:
       target_field: github.secret_scanning.push_protection_bypassed_by.site_admin
       ignore_missing: true
   - script:
-      tag: script_68516911
+      tag: script_mask_secret_hide_secret_true_68516911
       lang: painless
       description: Mask the secret if hide_secret is true
       if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github.secret_scanning.secret != null
@@ -303,7 +303,7 @@ processors:
         masked_secret = secret.substring(0,num_start) + masked_value + secret.substring(secret.length()-num_end);
         ctx.github.secret_scanning.secret = masked_secret;
   - script:
-      tag: script_5d972797
+      tag: script_calculate_time_taken_to_resolve_5d972797
       lang: painless
       description: Calculate time taken to resolve the secrets
       if: ctx.github.secret_scanning.resolved_at != null
@@ -321,12 +321,12 @@ processors:
       # Cleanup #
       ###########
   - remove:
-      tag: remove_1f8c5875
+      tag: remove_cleanup_1f8c5875
       field:
         - _temp
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -353,15 +353,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

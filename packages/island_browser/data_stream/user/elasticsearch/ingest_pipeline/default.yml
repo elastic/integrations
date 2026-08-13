@@ -3,59 +3,59 @@ description: Pipeline for processing user logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_iam_into_event_category
+      tag: append_iam_into_event_category_0eb47497
       value: iam
   - append:
       field: event.type
-      tag: append_user_into_event_type
+      tag: append_user_into_event_type_652dad8f
       value: user
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - rename:
       field: json.allowedTenantsIds
-      tag: rename_allowedTenantsIds
+      tag: rename_allowedTenantsIds_22c98373
       target_field: island_browser.user.allowed_tenants_ids
       ignore_missing: true
   - rename:
       field: json.claims
-      tag: rename_claims
+      tag: rename_claims_e71a014d
       target_field: island_browser.user.claims
       ignore_missing: true
   - rename:
       field: json.connectionName
-      tag: rename_connectionName
+      tag: rename_connectionName_6c84e8da
       target_field: island_browser.user.connection_name
       ignore_missing: true
   - date:
       field: json.createdDate
-      tag: date_createdDate
+      tag: date_createdDate_c8fa63e5
       target_field: island_browser.user.created_date
       formats:
         - ISO8601
@@ -67,33 +67,33 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_user_created_date
+      tag: set_event_created_from_user_created_date_eb03be8d
       copy_from: island_browser.user.created_date
       ignore_empty_value: true
   - rename:
       field: json.email
-      tag: rename_email
+      tag: rename_email_b66b392d
       target_field: island_browser.user.email
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_user_email
+      tag: set_user_email_from_user_email_efc61e0c
       copy_from: island_browser.user.email
       ignore_empty_value: true
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
-      tag: dissect_user_email
+      tag: dissect_user_email_3ce141a5
       field: user.email
       pattern: '%{_temp}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_user_email_into_related_user
+      tag: append_user_email_into_related_user_77a235c6
       value: '{{{island_browser.user.email}}}'
       allow_duplicates: false
       if: ctx.island_browser?.user?.email != null
   - convert:
       field: json.emailVerified
-      tag: convert_emailVerified_to_boolean
+      tag: convert_emailVerified_to_boolean_1c12d61a
       target_field: island_browser.user.email_verified
       type: boolean
       ignore_missing: true
@@ -104,7 +104,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.expirationDate
-      tag: date_expirationDate
+      tag: date_expirationDate_206d3e5e
       target_field: island_browser.user.expiration_date
       formats:
         - ISO8601
@@ -116,17 +116,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.firstName
-      tag: rename_firstName
+      tag: rename_firstName_653e0a66
       target_field: island_browser.user.first_name
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_user_first_name
+      tag: set_user_name_from_user_first_name_dc9969bb
       copy_from: island_browser.user.first_name
       ignore_empty_value: true
   - rename:
       field: json.lastName
-      tag: rename_lastName
+      tag: rename_lastName_02e26e9b
       target_field: island_browser.user.last_name
       ignore_missing: true
   - set:
@@ -136,33 +136,33 @@ processors:
       if: ctx.island_browser?.user?.first_name != null && ctx.island_browser?.user?.last_name != null
   - append:
       field: related.user
-      tag: append_user_first_name_into_related_user
+      tag: append_user_first_name_into_related_user_6a383c32
       value: '{{{island_browser.user.first_name}}}'
       allow_duplicates: false
       if: ctx.island_browser?.user?.first_name != null
   - rename:
       field: json.groups
-      tag: rename_groups
+      tag: rename_groups_a01eb507
       target_field: island_browser.user.groups
       ignore_missing: true
   - set:
       field: user.group.name
-      tag: set_user_group_name_from_user_groups
+      tag: set_user_group_name_from_user_groups_aa6b9b85
       copy_from: island_browser.user.groups
       ignore_empty_value: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_3df5d2b9
       target_field: island_browser.user.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_user_id
+      tag: set_event_id_from_user_id_422fc023
       copy_from: island_browser.user.id
       ignore_empty_value: true
   - date:
       field: json.invitationDate
-      tag: date_invitationDate
+      tag: date_invitationDate_a885df11
       target_field: island_browser.user.invitation_date
       formats:
         - ISO8601
@@ -174,7 +174,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.lastLogin
-      tag: date_lastLogin
+      tag: date_lastLogin_3258243d
       target_field: island_browser.user.last_login
       formats:
         - ISO8601
@@ -186,7 +186,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.lastSeen
-      tag: date_lastSeen
+      tag: date_lastSeen_c191d95d
       target_field: island_browser.user.last_seen
       formats:
         - ISO8601
@@ -198,22 +198,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.scimId
-      tag: rename_scimId
+      tag: rename_scimId_164731d2
       target_field: island_browser.user.scim_id
       ignore_missing: true
   - rename:
       field: json.tenantId
-      tag: rename_tenantId
+      tag: rename_tenantId_615ec9e6
       target_field: island_browser.user.tenant_id
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id_from_user_tenant_id
+      tag: set_organization_id_from_user_tenant_id_a8bc399e
       copy_from: island_browser.user.tenant_id
       ignore_empty_value: true
   - date:
       field: json.updatedDate
-      tag: date_updatedDate
+      tag: date_updatedDate_6901ca1b
       target_field: island_browser.user.updated_date
       formats:
         - ISO8601
@@ -225,33 +225,33 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.userId
-      tag: rename_userId
+      tag: rename_userId_6aa3885d
       target_field: island_browser.user.user_id
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_user_user_id
+      tag: set_user_id_from_user_user_id_0dd5cf58
       copy_from: island_browser.user.user_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_user_id_into_related_user
+      tag: append_user_user_id_into_related_user_5d8e62c0
       value: '{{{island_browser.user.user_id}}}'
       allow_duplicates: false
       if: ctx.island_browser?.user?.user_id != null
   - rename:
       field: json.userSource
-      tag: rename_userSource
+      tag: rename_userSource_388bb714
       target_field: island_browser.user.user_source
       ignore_missing: true
   - rename:
       field: json.userStatus
-      tag: rename_userStatus
+      tag: rename_userStatus_fbffff9c
       target_field: island_browser.user.user_status
       ignore_missing: true
   - rename:
       field: json.userType
-      tag: rename_userType
+      tag: rename_userType_95c03266
       target_field: island_browser.user.user_type
       ignore_missing: true
   - remove:
@@ -263,17 +263,17 @@ processors:
         - island_browser.user.id
         - island_browser.user.tenant_id
         - island_browser.user.user_id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_efdd7abd
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
         - _temp
-      tag: remove_json_and_temp
+      tag: remove_json_and_temp_c9df19f6
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -300,7 +300,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -311,7 +311,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -319,10 +319,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

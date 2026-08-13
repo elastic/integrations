@@ -26,7 +26,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - script:
-      tag: script_bf7d3e4d
+      tag: script_dynamically_map_socket_address_families_bf7d3e4d
       description: Dynamically map Socket Address Families.
       lang: painless
       if: ctx.json?.inet_family != null
@@ -62,19 +62,19 @@ processors:
         map.put('25', 'pseudo_AF_PIP');
         ctx.jamf_compliance_reporter.log.socket.unix.family = map.get(ctx.json.inet_family);
   - pipeline:
-      tag: pipeline_8cb224f5
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -12,21 +12,21 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_319421e7
       if: ctx.event?.original != null
   - drop:
-      tag: drop_3b0973c1
+      tag: drop_logline_contains_header_s_3b0973c1
       if: ctx.event.original.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c4dbe659
       target_field: gitlab.application
   - date:
       field: gitlab.application.time
@@ -34,7 +34,7 @@ processors:
         - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_977d315a
       on_failure:
         - append:
             tag: append_error_message_3d2919b3
@@ -49,32 +49,32 @@ processors:
       field: event.severity
       value: 0
       if: ctx.gitlab?.application?.severity == 'DEBUG'
-      tag: set_severity_0
+      tag: set_severity_0_9aa92075
   - set:
       field: event.severity
       value: 1
       if: ctx.gitlab?.application?.severity == 'INFO'
-      tag: set_severity_1
+      tag: set_severity_1_b044c14e
   - set:
       field: event.severity
       value: 2
       if: ctx.gitlab?.application?.severity == 'WARN'
-      tag: set_severity_2
+      tag: set_severity_2_cac632a0
   - set:
       field: event.severity
       value: 3
       if: ctx.gitlab?.application?.severity == 'ERROR'
-      tag: set_severity_3
+      tag: set_severity_3_cd480f58
   - set:
       field: event.severity
       value: 4
       if: ctx.gitlab?.application?.severity == 'FATAL'
-      tag: set_severity_4
+      tag: set_severity_4_2d43ea12
   - set:
       field: event.severity
       value: 5
       if: ctx.gitlab?.application?.severity == 'UNKNOWN'
-      tag: set_severity_5
+      tag: set_severity_5_26094aa0
   - remove:
       tag: remove_gitlab_application_severity_45806750
       field: gitlab.application.severity
@@ -90,7 +90,7 @@ processors:
       target_field: process.pid
       ignore_missing: true
   - script:
-      tag: "removes_values_from_key"
+      tag: removes_values_from_key_0f810047
       lang: painless
       source: >
         if (ctx.gitlab?.application != null) {
@@ -113,7 +113,7 @@ processors:
       field: "*"
       path: gitlab.application
   - script:
-      tag: kv_params
+      tag: kv_params_a20fcf12
       lang: painless
       if: ctx.gitlab?.application?.params != null
       source: |
@@ -127,7 +127,7 @@ processors:
         ctx.gitlab.application.params = keyValuePairs;
   - convert:
       field: gitlab.application.namespace_id
-      tag: convert_application_namespace_id_to_long
+      tag: convert_application_namespace_id_to_long_f4e3620c
       type: long
       ignore_missing: true
       on_failure:
@@ -151,7 +151,7 @@ processors:
       ignore_missing: true
   - convert:
       field: gitlab.application.user_id
-      tag: convert_application_user_id_to_long
+      tag: convert_application_user_id_to_long_2169c0dd
       type: long
       ignore_missing: true
       on_failure:
@@ -192,7 +192,7 @@ processors:
       ignore_missing: true
   - convert:
       field: gitlab.application.duration_s
-      tag: convert_duration_s_to_double
+      tag: convert_duration_s_to_double_2b828f48
       type: double
       ignore_missing: true
       on_failure:
@@ -206,28 +206,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.application.meta.gl_user_id
-      tag: convert_gl_user_id_to_keyword
+      tag: convert_gl_user_id_to_keyword_55832962
       type: string
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_application_meta_gl_user_id_into_related_user
+      tag: append_application_meta_gl_user_id_into_related_user_34a70299
       value: '{{{gitlab.application.meta.gl_user_id}}}'
       allow_duplicates: false
       if: ctx.gitlab?.application?.meta?.gl_user_id != null && ctx.gitlab.application.meta?.gl_user_id != ''
   - convert:
       field: gitlab.application.meta.organization_id
-      tag: convert_organization_id_to_keyword
+      tag: convert_organization_id_to_keyword_672d9604
       type: string
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id_from_application_meta_organization_id
+      tag: set_organization_id_from_application_meta_organization_id_f38b3423
       copy_from: gitlab.application.meta.organization_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_application_user_id_into_related_user
+      tag: append_application_user_id_into_related_user_050e9207
       value: '{{{gitlab.application.user_id}}}'
       allow_duplicates: false
       if: ctx.gitlab?.application?.user_id != null && ctx.gitlab.application.user_id != ''
@@ -243,13 +243,13 @@ processors:
         - '^User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}removed$'
         - '^Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}created$'
         - '^Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}removed$'
-      tag: grok_message
+      tag: grok_message_d8594d94
       if: ctx.gitlab.application.message != null
       ignore_missing: true
       ignore_failure: true
   - convert:
       field: gitlab.application.user_admin
-      tag: convert_user_admin_to_boolean
+      tag: convert_user_admin_to_boolean_4d09839c
       type: boolean
       ignore_missing: true
       on_failure:
@@ -278,26 +278,26 @@ processors:
       ignore_missing: true
   - geoip:
       field: client.ip
-      tag: geoip_client_address
+      tag: geoip_client_address_0dfab7ac
       target_field: client.geo
       ignore_missing: true
   - geoip:
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
-      tag: geoip_client_asn
+      tag: geoip_client_asn_0eb1e59f
       target_field: client.as
       properties:
       - asn
       - organization_name
   - rename:
       field: client.as.asn
-      tag: rename_client_as_asn
+      tag: rename_client_as_asn_f9002c6d
       target_field: client.as.number
       ignore_missing: true
   - rename:
       field: client.as.organization_name
-      tag: rename_client_as_organization_name
+      tag: rename_client_as_organization_name_2d607f74
       target_field: client.as.organization.name
       ignore_missing: true
   - set:
@@ -318,19 +318,19 @@ processors:
       allow_duplicates: false
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_c47af1f5
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: event.category
       value: authentication
-      tag: 'auth'
+      tag: auth_a6e20dd6
       if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("Failed Login:") || ctx.gitlab.application.message.contains("Successful Login:"))'
   - append:
       field: event.category
       value: iam
-      tag: 'append_iam_into_event_category'
+      tag: append_iam_into_event_category_9ea91f08
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains('Group')
   - set:
       tag: set_event_outcome_75402cb0
@@ -353,7 +353,7 @@ processors:
       value: deletion
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains(" was deleted")
   - append:
-      tag: event_type_append
+      tag: event_type_append_5eab37e6
       field: event.type
       value: info
   - append:
@@ -362,7 +362,7 @@ processors:
       value: configuration
       if: ' ctx.gitlab?.application?.message != null && !(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -392,16 +392,16 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

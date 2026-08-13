@@ -3,28 +3,28 @@ description: Pipeline for processing device task logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -33,25 +33,25 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - rename:
       field: json.action.name
-      tag: rename_action_name
+      tag: rename_action_name_e98e172e
       target_field: eset_protect.device_task.action.name
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_device_task_action_name
+      tag: set_event_action_from_device_task_action_name_bab59dbe
       copy_from: eset_protect.device_task.action.name
       ignore_empty_value: true
   - convert:
       field: json.action.params.actions.cancelAction
-      tag: convert_action_params_actions_cancelAction_to_boolean
+      tag: convert_action_params_actions_cancelAction_to_boolean_1e7ed04f
       target_field: json.action.params.actions.cancel_action
       type: boolean
       ignore_missing: true
@@ -62,7 +62,7 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
       field: json.action.params.cleaningEnabled
-      tag: convert_action_params_cleaningEnabled_to_boolean
+      tag: convert_action_params_cleaningEnabled_to_boolean_dc361c8e
       target_field: json.action.params.cleaning_enabled
       type: boolean
       ignore_missing: true
@@ -73,12 +73,12 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.action.params.customProfileName
-      tag: rename_action_params_customProfileName
+      tag: rename_action_params_customProfileName_35b7f016
       target_field: json.action.params.custom_profile_name
       ignore_missing: true
   - convert:
       field: json.action.params.restart
-      tag: convert_action_params_restart_to_boolean
+      tag: convert_action_params_restart_to_boolean_546dc4b1
       type: boolean
       ignore_missing: true
       on_failure:
@@ -92,38 +92,38 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.action.params.scanProfile
-      tag: rename_action_params_scanProfile
+      tag: rename_action_params_scanProfile_501afd47
       target_field: json.action.params.scan_profile
       ignore_missing: true
   - rename:
       field: json.action.params.scanTargets
-      tag: rename_action_params_scanTargets
+      tag: rename_action_params_scanTargets_0f4f99e3
       target_field: json.action.params.scan_targets
       ignore_missing: true
   - remove:
       field:
         - json.action.params.cleaningEnabled
         - json.action.params.actions.cancelAction
-      tag: remove_json_action_params
+      tag: remove_json_action_params_a0a1471f
       ignore_missing: true
   - rename:
       field: json.action.params
-      tag: rename_action_params
+      tag: rename_action_params_9a185d8a
       target_field: eset_protect.device_task.action.params
       ignore_missing: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_1911a516
       target_field: eset_protect.device_task.description
       ignore_missing: true
   - rename:
       field: json.displayName
-      tag: rename_displayName
+      tag: rename_displayName_3e8a2240
       target_field: eset_protect.device_task.display_name
       ignore_missing: true
   - rename:
       field: json.targets.deviceGroupsUuids
-      tag: rename_targets_deviceGroupsUuids
+      tag: rename_targets_deviceGroupsUuids_e477b800
       target_field: eset_protect.device_task.targets.device_groups_uuids
       ignore_missing: true
   - foreach:
@@ -133,12 +133,12 @@ processors:
       processor:
         append:
           field: host.id
-          tag: append_targets_devicesUuids_into_host_id
+          tag: append_targets_devicesUuids_into_host_id_dce8e5ca
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - rename:
       field: json.targets.devicesUuids
-      tag: rename_targets_devicesUuids
+      tag: rename_targets_devicesUuids_6020e4eb
       target_field: eset_protect.device_task.targets.devices_uuids
       ignore_missing: true
   - foreach:
@@ -148,7 +148,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          tag: append_targets_device_uuids_into_related_hosts
+          tag: append_targets_device_uuids_into_related_hosts_3764165b
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - foreach:
@@ -158,13 +158,13 @@ processors:
       processor:
         date:
           field: _ingest._value.manual.createTime
-          tag: date_triggers_manual_createTime
+          tag: date_triggers_manual_createTime_b8957e5d
           target_field: _ingest._value.manual.create_time
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_manual_createTime
+                tag: remove_ingest_value_manual_createTime_3035689d
                 field: _ingest._value.manual.createTime
                 ignore_missing: true
   - foreach:
@@ -174,13 +174,13 @@ processors:
       processor:
         date:
           field: _ingest._value.manual.expireTime
-          tag: date_triggers_manual_expireTime
+          tag: date_triggers_manual_expireTime_ac280b98
           target_field: _ingest._value.manual.expire_time
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_manual_expireTime
+                tag: remove_ingest_value_manual_expireTime_0f446db9
                 field: _ingest._value.manual.expireTime
                 ignore_missing: true
   - foreach:
@@ -192,21 +192,21 @@ processors:
           field:
             - _ingest._value.manual.expireTime
             - _ingest._value.manual.createTime
-          tag: remove_triggers
+          tag: remove_triggers_99ecd80c
           ignore_missing: true
   - rename:
       field: json.triggers
-      tag: rename_triggers
+      tag: rename_triggers_39013719
       target_field: eset_protect.device_task.triggers
       ignore_missing: true
   - rename:
       field: json.uuid
-      tag: rename_uuid
+      tag: rename_uuid_655a463f
       target_field: eset_protect.device_task.uuid
       ignore_missing: true
   - convert:
       field: json.versionId
-      tag: convert_versionId_to_string
+      tag: convert_versionId_to_string_465ea468
       type: string
       target_field: eset_protect.device_task.version_id
       ignore_missing: true
@@ -214,15 +214,15 @@ processors:
       field:
         - eset_protect.device_task.action.name
         - eset_protect.device_task.targets.devices_uuids
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_265a5b07
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -253,15 +253,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -12,7 +12,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -48,7 +48,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
-      tag: fingerprint_02243b84
+      tag: fingerprint_to_id_02243b84
       fields:
         - event.original
       target_field: _id
@@ -129,7 +129,7 @@ processors:
       field: json.messageParts
       processor:
         append:
-          tag: append_related_hash
+          tag: append_related_hash_e623cd05
           field: related.hash
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
@@ -214,7 +214,7 @@ processors:
       field: json.recipient
       processor:
         append:
-          tag: append_email_to_address
+          tag: append_email_to_address_c4234d48
           field: email.to.address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -241,7 +241,7 @@ processors:
       field: email.attachments
       processor:
         remove:
-          tag: remove_ingest_value_disposition
+          tag: remove_ingest_value_disposition_c5abfb08
           field:
             - _ingest._value.disposition
             - _ingest._value.oContentType
@@ -254,7 +254,7 @@ processors:
       field: email.attachments
       processor:
         rename:
-          tag: rename_ingest_value_contentType_to_ingest_value_file_mime_type
+          tag: rename_ingest_value_contentType_to_ingest_value_file_mime_type_b0cff2eb
           field: _ingest._value.contentType
           target_field: _ingest._value.file.mime_type
           ignore_missing: true
@@ -265,7 +265,7 @@ processors:
       field: email.attachments
       processor:
         rename:
-          tag: rename_ingest_value_md5_to_ingest_value_file_hash_md5
+          tag: rename_ingest_value_md5_to_ingest_value_file_hash_md5_2a11333b
           field: _ingest._value.md5
           target_field: _ingest._value.file.hash.md5
           ignore_missing: true
@@ -276,7 +276,7 @@ processors:
       field: email.attachments
       processor:
         rename:
-          tag: rename_ingest_value_sha256_to_ingest_value_file_hash_sha256
+          tag: rename_ingest_value_sha256_to_ingest_value_file_hash_sha256_7aaf4fa5
           field: _ingest._value.sha256
           target_field: _ingest._value.file.hash.sha256
           ignore_missing: true
@@ -287,14 +287,14 @@ processors:
       field: email.attachments
       processor:
         rename:
-          tag: rename_ingest_value_filename_to_ingest_value_file_name
+          tag: rename_ingest_value_filename_to_ingest_value_file_name_44791ddb
           field: _ingest._value.filename
           target_field: _ingest._value.file.name
           ignore_missing: true
       ignore_failure: true
       if: ctx.email?.attachments instanceof List
   - script:
-      tag: script_458cf990
+      tag: script_adding_hash_related_hash_458cf990
       description: Adding hash in related.hash from artifact field.
       lang: painless
       ignore_failure: true
@@ -398,7 +398,7 @@ processors:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
         remove:
-          tag: remove_ingest_value_contentType
+          tag: remove_ingest_value_contentType_58fb9926
           field:
             - _ingest._value.contentType
             - _ingest._value.filename
@@ -412,7 +412,7 @@ processors:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
         rename:
-          tag: rename_ingest_value_oContentType_to_ingest_value_o_content_type
+          tag: rename_ingest_value_oContentType_to_ingest_value_o_content_type_7e8ecb65
           field: _ingest._value.oContentType
           target_field: _ingest._value.o_content_type
           ignore_missing: true
@@ -423,7 +423,7 @@ processors:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
         rename:
-          tag: rename_ingest_value_sandboxStatus_to_ingest_value_sandbox_status
+          tag: rename_ingest_value_sandboxStatus_to_ingest_value_sandbox_status_124d73be
           field: _ingest._value.sandboxStatus
           target_field: _ingest._value.sandbox_status
           ignore_missing: true
@@ -506,7 +506,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
-          tag: rename_ingest_value_campaignId_to_ingest_value_campaign_id
+          tag: rename_ingest_value_campaignId_to_ingest_value_campaign_id_95ca8a4d
           field: _ingest._value.campaignId
           target_field: _ingest._value.campaign_id
           ignore_missing: true
@@ -517,7 +517,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
-          tag: rename_ingest_value_threat_to_ingest_value_threat_artifact
+          tag: rename_ingest_value_threat_to_ingest_value_threat_artifact_7e5c04f1
           field: _ingest._value.threat
           target_field: _ingest._value.threat.artifact
           ignore_missing: true
@@ -528,7 +528,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
-          tag: rename_ingest_value_threatID_to_ingest_value_threat_id
+          tag: rename_ingest_value_threatID_to_ingest_value_threat_id_69153dd9
           field: _ingest._value.threatID
           target_field: _ingest._value.threat.id
           ignore_missing: true
@@ -539,7 +539,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
-          tag: rename_ingest_value_threatStatus_to_ingest_value_threat_status
+          tag: rename_ingest_value_threatStatus_to_ingest_value_threat_status_36de824f
           field: _ingest._value.threatStatus
           target_field: _ingest._value.threat.status
           ignore_missing: true
@@ -550,7 +550,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         date:
-          tag: date_ingest_value_threatTime_to_ingest_value_threat_time
+          tag: date_ingest_value_threatTime_to_ingest_value_threat_time_fd288e14
           field: _ingest._value.threatTime
           target_field: _ingest._value.threat.time
           ignore_failure: true
@@ -563,7 +563,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         remove:
-          tag: remove_ingest_value_threatTime
+          tag: remove_ingest_value_threatTime_f7a2dbd1
           field: _ingest._value.threatTime
           ignore_missing: true
       ignore_failure: true
@@ -573,7 +573,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
-          tag: rename_ingest_value_threatType_to_ingest_value_threat_type
+          tag: rename_ingest_value_threatType_to_ingest_value_threat_type_72a9bceb
           field: _ingest._value.threatType
           target_field: _ingest._value.threat.type
           ignore_missing: true
@@ -584,7 +584,7 @@ processors:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
         rename:
-          tag: rename_ingest_value_threatUrl_to_ingest_value_threat_url
+          tag: rename_ingest_value_threatUrl_to_ingest_value_threat_url_69edb81c
           field: _ingest._value.threatUrl
           target_field: _ingest._value.threat.url
           ignore_missing: true
@@ -593,7 +593,7 @@ processors:
   - script:
       lang: painless
       description: Set the @timestamp to the maximum of messageTime and threatTime.
-      tag: timestamp-is-maximum
+      tag: timestamp-is-maximum_005efb31
       if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
       ignore_failure: true
       source: |
@@ -609,7 +609,7 @@ processors:
         - json
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -628,15 +628,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

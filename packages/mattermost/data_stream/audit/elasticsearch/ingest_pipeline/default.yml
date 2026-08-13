@@ -16,7 +16,7 @@ processors:
       field: event.original
       target_field: json
   - fail:
-      tag: fail_74459f8f
+      tag: fail_missing_json_object_74459f8f
       if: "!(ctx.json instanceof Map)"
       message: Missing JSON object
   - date:
@@ -229,7 +229,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      tag: add_ecs_categorization
+      tag: add_ecs_categorization_ff17d65b
       params:
         login:
           category:
@@ -360,7 +360,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
-      tag: script_b86d15c2
+      tag: script_add_ecs_user_fields_b86d15c2
       lang: painless
       description: Add ECS User fields
       if: ctx.event.category.contains('iam')
@@ -428,7 +428,7 @@ processors:
       field: user.target.id
       processor:
         append:
-          tag: append_related_user
+          tag: append_related_user_61bda750
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -464,7 +464,7 @@ processors:
         - json
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -491,15 +491,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

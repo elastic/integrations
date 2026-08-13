@@ -8,30 +8,30 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_14959316
       value: [host]
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       value: [info]
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
@@ -42,7 +42,7 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
@@ -51,22 +51,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
       if: ctx.json?.assets != null && ctx.json.assets.isEmpty()
-      tag: drop_assets
+      tag: drop_assets_633e9fbc
   - rename:
       field: json
       target_field: json.asset
-      tag: rename_json
+      tag: rename_json_e5224351
       if: ctx.json?.asset == null
       ignore_missing: true
   - rename:
       field: json.priorAssetState
       target_field: google_scc.asset.prior_asset_state
-      tag: rename_priorAssetState
+      tag: rename_priorAssetState_b6b1b53b
       ignore_missing: true
   - date:
       field: json.window.startTime
       target_field: google_scc.asset.window.start_time
-      tag: date_window_startTime
+      tag: date_window_startTime_b122f721
       formats:
         - ISO8601
       if: ctx.json?.window?.startTime != null && ctx.json.window.startTime != ''
@@ -77,76 +77,76 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_asset" }}'
-      tag: pipeline_to_asset
+      tag: pipeline_to_asset_58c61b06
   - pipeline:
       name: '{{ IngestPipeline "pipeline_prior_asset" }}'
-      tag: pipeline_to_prior_asset
+      tag: pipeline_to_prior_asset_dd0dd3e5
   - set:
       field: host.architecture
-      tag: set_host_architecture
+      tag: set_host_architecture_6a38741e
       copy_from: google_scc.asset.os_inventory.os_info.architecture
       ignore_empty_value: true
   - set:
       field: host.hostname
-      tag: set_host_hostname
+      tag: set_host_hostname_c7b9cbab
       copy_from: google_scc.asset.os_inventory.os_info.hostname
       ignore_empty_value: true
   - set:
       field: host.name
-      tag: set_host_name
+      tag: set_host_name_79b01142
       copy_from: google_scc.asset.name
       ignore_empty_value: true
   - set:
       field: host.os.family
-      tag: set_host_os_family
+      tag: set_host_os_family_6e3cda18
       copy_from: google_scc.asset.os_inventory.os_info.short_name
       ignore_empty_value: true
   - set:
       field: host.os.full
-      tag: set_host_os_full
+      tag: set_host_os_full_722c1904
       copy_from: google_scc.asset.os_inventory.os_info.long_name
       ignore_empty_value: true
   - set:
       field: host.os.kernel
-      tag: set_host_os_kernal
+      tag: set_host_os_kernal_de56099e
       copy_from: google_scc.asset.os_inventory.os_info.kernel.version
       ignore_empty_value: true
   - set:
       field: host.os.version
-      tag: set_host_os_version
+      tag: set_host_os_version_c2569987
       copy_from: google_scc.asset.os_inventory.os_info.version
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message
+      tag: set_message_07446631
       copy_from: google_scc.asset.access_level.description
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_7c33cbce
+      tag: set_message_2734c96f
       copy_from: google_scc.asset.service_perimeter.description
       ignore_empty_value: true
   - set:
       field: host.type
-      tag: set_host_type
+      tag: set_host_type_6168c6d3
       copy_from: google_scc.asset.type
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_host_hostname_into_related_hosts
+      tag: append_host_hostname_into_related_hosts_6f8fa3bb
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       if: ctx.host?.hostname != null
   - append:
       field: related.hosts
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - remove:
       field:
         - json
-      tag: remove_json
+      tag: remove_json_f3d169b2
       ignore_missing: true
   - remove:
       field:
@@ -160,13 +160,13 @@ processors:
         - google_scc.asset.type
         - google_scc.asset.access_level.description
         - google_scc.asset.service_perimeter.description
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_b988220a
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -184,7 +184,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -194,7 +194,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -202,7 +202,7 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

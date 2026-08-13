@@ -2,7 +2,7 @@
 description: Pipeline for Greenhouse Audit Logs
 processors:
   - terminate:
-      tag: terminate_agent_error
+      tag: terminate_agent_error_d5c66e22
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - set:
       tag: set_ecs_version_0f7334bb
@@ -23,13 +23,13 @@ processors:
   - json:
       field: event.original
       target_field: json
-      tag: parse_json
+      tag: parse_json_74d23cc2
   - fail:
-      tag: fail_970014bf
+      tag: fail_missing_json_object_input_document_970014bf
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: Missing JSON object in input document
   - fingerprint:
-      tag: fingerprint_8645335e
+      tag: fingerprint_to_id_8645335e
       fields:
         - json.organization_id
         - json.request.id
@@ -51,7 +51,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
         - ISO8601
-      tag: parse_timestamp
+      tag: parse_timestamp_f4775e34
       on_failure:
         - append:
             tag: append_error_message_a30c2847
@@ -154,7 +154,7 @@ processors:
       type: ip
       target_field: source.ip
       ignore_missing: true
-      tag: convert_ip_address
+      tag: convert_ip_address_62c100f2
       on_failure:
         - append:
             tag: append_error_message_ebffbae2
@@ -167,7 +167,7 @@ processors:
       target_field: source.geo
       if: ctx.source?.ip != null
       ignore_missing: true
-      tag: geoip_source_geo
+      tag: geoip_source_geo_4f232eee
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -177,7 +177,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-      tag: geoip_source_asn
+      tag: geoip_source_asn_82b99b2e
   - rename:
       tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
@@ -195,7 +195,7 @@ processors:
       type: string
       target_field: organization.id
       ignore_missing: true
-      tag: convert_organization_id
+      tag: convert_organization_id_34f0adea
       on_failure:
         - append:
             tag: append_error_message_6172a02a
@@ -207,7 +207,7 @@ processors:
       field: greenhouse.audit.event.target_id
       type: string
       ignore_missing: true
-      tag: convert_target_id
+      tag: convert_target_id_ee5cd28b
       on_failure:
         - append:
             tag: append_error_message_d3bb095c
@@ -236,7 +236,7 @@ processors:
 
   # Cleanup null/empty values
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -264,7 +264,7 @@ processors:
 
   # Remove temporary fields
   - remove:
-      tag: remove_122ff8dd
+      tag: remove_temporary_fields_122ff8dd
       field:
         - greenhouse.audit.event_time
         - greenhouse.audit.performer.id
@@ -277,15 +277,15 @@ processors:
 
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_93d7c91a
       field: error.message
       value: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} failed: {{{ _ingest.on_failure_message }}}'

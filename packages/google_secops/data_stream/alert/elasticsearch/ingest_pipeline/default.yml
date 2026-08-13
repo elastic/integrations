@@ -3,10 +3,10 @@ description: Pipeline for processing alert logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,26 +16,26 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -44,16 +44,16 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_ab1166ce
       value: alert
   - rename:
       field: json
-      tag: rename_json
+      tag: rename_json_81fddf25
       target_field: google_secops.alert
       ignore_missing: true
   - date:
       field: google_secops.alert.createdTime
-      tag: date_createdTime
+      tag: date_createdTime_1c8a5d12
       target_field: google_secops.alert.createdTime
       formats:
         - ISO8601
@@ -69,17 +69,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_alert_createdTime
+      tag: set_event_created_from_alert_createdTime_deffd6cd
       copy_from: google_secops.alert.createdTime
       ignore_empty_value: true
   - set:
       field: rule.description
-      tag: set_rule_description_from_alert_detection_description
+      tag: set_rule_description_from_alert_detection_description_a7340748
       copy_from: google_secops.alert.detection.description
       ignore_empty_value: true
   - convert:
       field: google_secops.alert.detection.riskScore
-      tag: convert_detection_riskScore_to_long
+      tag: convert_detection_riskScore_to_long_9a0fa787
       type: long
       ignore_missing: true
       on_failure:
@@ -93,12 +93,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.risk_score
-      tag: set_event_risk_score_from_alert_detection_riskScore
+      tag: set_event_risk_score_from_alert_detection_riskScore_f19e8fd9
       copy_from: google_secops.alert.detection.riskScore
       ignore_empty_value: true
   - convert:
       field: google_secops.alert.detection.variables.risk_score.int64Val
-      tag: convert_detection_variables_risk_score_int64Val_to_long
+      tag: convert_detection_variables_risk_score_int64Val_to_long_3587bd57
       type: long
       ignore_missing: true
       if: ctx.google_secops?.alert?.detection?.variables?.risk_score?.int64Val != ''
@@ -113,7 +113,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_secops.alert.detection.variables.risk_score.value
-      tag: convert_detection_variables_risk_score_value_to_long
+      tag: convert_detection_variables_risk_score_value_to_long_1ef22a01
       type: long
       ignore_missing: true
       if: ctx.google_secops?.alert?.detection?.variables?.risk_score?.value != ''
@@ -128,27 +128,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: rule.id
-      tag: set_rule_id_from_alert_detection_ruleId
+      tag: set_rule_id_from_alert_detection_ruleId_42c03f4f
       copy_from: google_secops.alert.detection.ruleId
       ignore_empty_value: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_alert_detection_ruleName
+      tag: set_rule_name_from_alert_detection_ruleName_3fa2a221
       copy_from: google_secops.alert.detection.ruleName
       ignore_empty_value: true
   - set:
       field: google_secops.alert.friendly_name
-      tag: set_rule_name_from_alert_detection_ruleName_e7bfafb7
+      tag: set_rule_name_from_alert_detection_ruleName_64101cee
       copy_from: google_secops.alert.detection.ruleName
       ignore_empty_value: true
   - set:
       field: rule.version
-      tag: set_rule_version_from_alert_detection_ruleVersion
+      tag: set_rule_version_from_alert_detection_ruleVersion_18e1bf47
       copy_from: google_secops.alert.detection.ruleVersion
       ignore_empty_value: true
   - date:
       field: google_secops.alert.detectionTime
-      tag: date_detectionTime
+      tag: date_detectionTime_1f619e9d
       target_field: google_secops.alert.detectionTime
       formats:
         - ISO8601
@@ -164,12 +164,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_alert_detectionTime
+      tag: set_@timestamp_from_alert_detectionTime_4d4520a6
       copy_from: google_secops.alert.detectionTime
       ignore_empty_value: true
   - convert:
       field: google_secops.alert.event.metadata.baseLabels.allowScopedAccess
-      tag: convert_event_metadata_baseLabels_allowScopedAccess_to_boolean
+      tag: convert_event_metadata_baseLabels_allowScopedAccess_to_boolean_6e618567
       type: boolean
       ignore_missing: true
       on_failure:
@@ -183,12 +183,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
-      tag: set_message_from_alert_event_metadata_description
+      tag: set_message_from_alert_event_metadata_description_93e30034
       copy_from: google_secops.alert.event.metadata.description
       ignore_empty_value: true
   - convert:
       field: google_secops.alert.event.metadata.enrichmentLabels.allowScopedAccess
-      tag: convert_event_metadata_enrichmentLabels_allowScopedAccess_to_boolean
+      tag: convert_event_metadata_enrichmentLabels_allowScopedAccess_to_boolean_81a76651
       type: boolean
       ignore_missing: true
       on_failure:
@@ -202,7 +202,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_secops.alert.event.metadata.eventTimestamp
-      tag: date_event_metadata_eventTimestamp
+      tag: date_event_metadata_eventTimestamp_961306e8
       target_field: google_secops.alert.event.metadata.eventTimestamp
       formats:
         - ISO8601
@@ -218,7 +218,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_secops.alert.event.metadata.ingestedTimestamp
-      tag: date_event_metadata_ingestedTimestamp
+      tag: date_event_metadata_ingestedTimestamp_ad0f3505
       target_field: google_secops.alert.event.metadata.ingestedTimestamp
       formats:
         - ISO8601
@@ -234,133 +234,133 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.product
-      tag: set_observer_product_from_alert_event_metadata_productName
+      tag: set_observer_product_from_alert_event_metadata_productName_852e4ec4
       copy_from: google_secops.alert.event.metadata.productName
       ignore_empty_value: true
   - set:
       field: observer.vendor
-      tag: set_observer_vendor_from_alert_event_metadata_vendorName
+      tag: set_observer_vendor_from_alert_event_metadata_vendorName_e7e85587
       copy_from: google_secops.alert.event.metadata.vendorName
       ignore_empty_value: true
   - foreach:
       field: google_secops.alert.event.network.dns.answers
-      tag: foreach_event_network_dns_answers_data
+      tag: foreach_event_network_dns_answers_data_f6675576
       if: ctx.google_secops?.alert?.event?.network?.dns?.answers instanceof List
       processor:
         append:
           field: dns.answers.data
-          tag: append_event_network_dns_answers_data_into_dns_answers_data
+          tag: append_event_network_dns_answers_data_into_dns_answers_data_c2d423c6
           value: '{{{_ingest._value.data}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.dns.answers
-      tag: foreach_event_network_dns_answers_name
+      tag: foreach_event_network_dns_answers_name_a41e690c
       if: ctx.google_secops?.alert?.event?.network?.dns?.answers instanceof List
       processor:
         append:
           field: dns.answers.name
-          tag: append_event_network_dns_answers_name_into_dns_answers_name
+          tag: append_event_network_dns_answers_name_into_dns_answers_name_a42f345b
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.dns.answers
-      tag: foreach_google_secops_alert_event_network_dns_answers_type
+      tag: foreach_google_secops_alert_event_network_dns_answers_type_2d40e678
       if: ctx.google_secops?.alert?.event?.network?.dns?.answers instanceof List
       processor:
         append:
           field: dns.answers.type
-          tag: append_event_network_dns_answers_type_into_dns_answers_type
+          tag: append_event_network_dns_answers_type_into_dns_answers_type_e4aa3d59
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.dns.questions
       if: ctx.google_secops?.alert?.event?.network?.dns?.questions instanceof List
-      tag: foreach_google_secops_alert_event_network_dns_questions_name
+      tag: foreach_google_secops_alert_event_network_dns_questions_name_80e0e28f
       processor:
         append:
           field: dns.question.name
-          tag: append_event_network_dns_questions_name_into_dns_question_name
+          tag: append_event_network_dns_questions_name_into_dns_question_name_cb1ac8ef
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.dns.questions
-      tag: foreach_google_secops_alert_event_network_dns_questions_type
+      tag: foreach_google_secops_alert_event_network_dns_questions_type_13b3ba67
       if: ctx.google_secops?.alert?.event?.network?.dns?.questions instanceof List
       processor:
         append:
           field: dns.question.type
-          tag: append_event_network_dns_questions_type_into_dns_question_type
+          tag: append_event_network_dns_questions_type_into_dns_question_type_9f7e27f2
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.bcc
-      tag: foreach_google_secops_alert_event_network_email_bcc
+      tag: foreach_google_secops_alert_event_network_email_bcc_fa6e4513
       if: ctx.google_secops?.alert?.event?.network?.email?.bcc instanceof List
       processor:
         append:
           field: email.bcc.address
-          tag: append_event_network_email_bcc_into_email_bcc_address
+          tag: append_event_network_email_bcc_into_email_bcc_address_5f89c647
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.cc
-      tag: foreach_google_secops_alert_event_network_email_cc
+      tag: foreach_google_secops_alert_event_network_email_cc_e791174f
       if: ctx.google_secops?.alert?.event?.network?.email?.cc instanceof List
       processor:
         append:
           field: email.cc.address
-          tag: append_event_network_email_cc_into_email_cc_address
+          tag: append_event_network_email_cc_into_email_cc_address_0fc9cd0c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - append:
       field: email.from.address
-      tag: append_google_secops_alert_event_network_email_from_into_email_from_address
+      tag: append_google_secops_alert_event_network_email_from_into_email_from_address_dc3c7e68
       value: '{{{google_secops.alert.event.network.email.from}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.network?.email?.from != null
   - append:
       field: email.reply_to.address
-      tag: append_google_secops_alert_event_network_email_replyTo_into_email_reply_to_address
+      tag: append_google_secops_alert_event_network_email_replyTo_into_email_reply_to_address_f81a2cfd
       value: '{{{google_secops.alert.event.network.email.replyTo}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.network?.email?.replyTo != null
   - foreach:
       field: google_secops.alert.event.network.email.subject
-      tag: foreach_google_secops_alert_event_network_email_subject
+      tag: foreach_google_secops_alert_event_network_email_subject_3a064057
       if: ctx.google_secops?.alert?.event?.network?.email?.subject instanceof List
       processor:
         append:
           field: email.subject
-          tag: append_event_network_email_subject_into_email_subject
+          tag: append_event_network_email_subject_into_email_subject_cd3ee3af
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.to
-      tag: foreach_google_secops_alert_event_network_email_to
+      tag: foreach_google_secops_alert_event_network_email_to_58e7bb03
       if: ctx.google_secops?.alert?.event?.network?.email?.to instanceof List
       processor:
         append:
           field: email.to.address
-          tag: append_event_network_email_to_into_email_to_address
+          tag: append_event_network_email_to_into_email_to_address_fa090f04
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - set:
       field: http.request.method
-      tag: set_http_request_method_from_alert_event_network_http_method
+      tag: set_http_request_method_from_alert_event_network_http_method_f9e61711
       copy_from: google_secops.alert.event.network.http.method
       ignore_empty_value: true
   - convert:
       field: google_secops.alert.event.network.http.responseCode
-      tag: convert_event_network_http_responseCode_to_long
+      tag: convert_event_network_http_responseCode_to_long_bd8f092f
       type: long
       ignore_missing: true
       on_failure:
@@ -374,17 +374,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
-      tag: set_http_response_status_code_from_alert_event_network_http_responseCode
+      tag: set_http_response_status_code_from_alert_event_network_http_responseCode_e6b6c79e
       copy_from: google_secops.alert.event.network.http.responseCode
       ignore_empty_value: true
   - set:
       field: user_agent.original
-      tag: set_user_agent_original_from_alert_event_network_http_userAgent
+      tag: set_user_agent_original_from_alert_event_network_http_userAgent_3f1fd6dd
       copy_from: google_secops.alert.event.network.http.userAgent
       ignore_empty_value: true
   - user_agent:
       field: user_agent.original
-      tag: user_agent_original
+      tag: user_agent_original_2cd14a41
       if: ctx.user_agent?.original != null
       ignore_missing: true
       on_failure:
@@ -394,156 +394,156 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.transport
-      tag: set_network_transport_from_alert_event_network_ipProtocol
+      tag: set_network_transport_from_alert_event_network_ipProtocol_1bf89f44
       copy_from: google_secops.alert.event.network.ipProtocol
       ignore_empty_value: true
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.asset.ip
       if: ctx.google_secops?.alert?.event?.principal?.asset?.ip instanceof List
-      tag: foreach_google_secops_alert_event_principal_Asset_ip
+      tag: foreach_google_secops_alert_event_principal_Asset_ip_c24d2ecb
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_principal_asset_ip_to_ip
+          tag: convert_event_principal_asset_ip_to_ip_fe746878
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value
+                tag: remove_ingest_value_02ebcb7c
                 field: _ingest._value
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_07a79e75
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.asset.ip
-      tag: foreach_google_secops_alert_event_principal_Asset_ip_related
+      tag: foreach_google_secops_alert_event_principal_Asset_ip_related_6c551d96
       if: ctx.google_secops?.alert?.event?.principal?.asset?.ip instanceof List
       processor:
         append:
           field: related.ip
           value: '{{{_ingest._value}}}'
-          tag: append_event_principal_asset_ip_to_related_ip
+          tag: append_event_principal_asset_ip_to_related_ip_296a9e0e
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.about
-      tag: foreach_google_secops_alert_event_about_userDisplayName
+      tag: foreach_google_secops_alert_event_about_userDisplayName_aa9ef889
       if: ctx.google_secops?.alert?.event?.about instanceof List
       processor:
         append:
           field: related.user
           value: '{{{_ingest._value.user.userDisplayName}}}'
-          tag: append_event_userDisplayName_to_related_user
+          tag: append_event_userDisplayName_to_related_user_49295158
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.about
-      tag: foreach_google_secops_alert_event_about_userId
+      tag: foreach_google_secops_alert_event_about_userId_9b9bc491
       if: ctx.google_secops?.alert?.event?.about instanceof List
       processor:
         append:
           field: related.user
           value: '{{{_ingest._value.user.userid}}}'
-          tag: append_event_userid_to_related_user
+          tag: append_event_userid_to_related_user_942a475b
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.intermediary
-      tag: foreach_google_secops_alert_event_intermediary
+      tag: foreach_google_secops_alert_event_intermediary_b30f2284
       if: ctx.google_secops?.alert?.event?.intermediary instanceof List
       processor:
         append:
           field: related.hosts
           value: '{{{_ingest._value.hostname}}}'
-          tag: append_event_intermediary_hostname_to_related_hosts
+          tag: append_event_intermediary_hostname_to_related_hosts_a0e93c46
           allow_duplicates: false
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_asset_hostname_into_related_hosts
+      tag: append_asset_hostname_into_related_hosts_7cf0a8b2
       value: '{{{google_secops.alert.event.principal.asset.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.asset?.hostname != null
   - append:
       field: related.hosts
-      tag: append_src_asset_hostname_into_related_hosts
+      tag: append_src_asset_hostname_into_related_hosts_78c2d9a6
       value: '{{{google_secops.alert.event.src.asset.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.src?.asset?.hostname != null
   - set:
       field: file.path
-      tag: set_file_path_from_alert_event_principal_file_fullPath
+      tag: set_file_path_from_alert_event_principal_file_fullPath_009c3d0f
       copy_from: google_secops.alert.event.principal.file.fullPath
       ignore_empty_value: true
   - set:
       field: file.hash.md5
-      tag: set_file_hash_md5_from_alert_event_principal_file_md5
+      tag: set_file_hash_md5_from_alert_event_principal_file_md5_78d5be31
       copy_from: google_secops.alert.event.principal.file.md5
       ignore_empty_value: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1_from_alert_event_principal_file_sha1
+      tag: set_file_hash_sha1_from_alert_event_principal_file_sha1_e0a2379e
       copy_from: google_secops.alert.event.principal.file.sha1
       ignore_empty_value: true
   - set:
       field: file.hash.sha256
-      tag: set_file_hash_sha256_from_alert_event_principal_file_sha256
+      tag: set_file_hash_sha256_from_alert_event_principal_file_sha256_368a6f50
       copy_from: google_secops.alert.event.principal.file.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_md5_into_related_hash
+      tag: append_md5_into_related_hash_13c716b9
       value: '{{{google_secops.alert.event.principal.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_sha1_into_related_hash
+      tag: append_sha1_into_related_hash_8986e30c
       value: '{{{google_secops.alert.event.principal.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_sha256_into_related_hash
+      tag: append_sha256_into_related_hash_4fc0f2a3
       value: '{{{google_secops.alert.event.principal.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.file?.sha256 != null
   - set:
       field: user.group.name
-      tag: set_user_group_name_from_alert_event_principal_group_groupDisplayName
+      tag: set_user_group_name_from_alert_event_principal_group_groupDisplayName_ba4433ca
       copy_from: google_secops.alert.event.principal.group.groupDisplayName
       ignore_empty_value: true
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_alert_event_principal_hostname
+      tag: set_host_hostname_from_alert_event_principal_hostname_a711aa6d
       copy_from: google_secops.alert.event.principal.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_host_hostname_into_related_hosts
+      tag: append_host_hostname_into_related_hosts_eb51ff0b
       value: '{{{google_secops.alert.event.principal.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.hostname != null
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_event_principal_ipGeoArtifact_ip_to_ip
+      tag: foreach_event_principal_ipGeoArtifact_ip_to_ip_3e19b51d
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         convert:
           field: _ingest._value.ip
-          tag: convert_event_principal_ipGeoArtifact_ip_to_ip
+          tag: convert_event_principal_ipGeoArtifact_ip_to_ip_482da5a3
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ip
+                tag: remove_ingest_value_ip_eaeca28b
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
@@ -553,51 +553,51 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_event_principal_ipGeoArtifact_ip_into_host_ip
+      tag: foreach_event_principal_ipGeoArtifact_ip_into_host_ip_a0e4e4a4
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         append:
           field: host.ip
-          tag: append_event_principal_ipGeoArtifact_ip_into_host_ip
+          tag: append_event_principal_ipGeoArtifact_ip_into_host_ip_30148925
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_event_principal_ipGeoArtifact_ip_into_related_ip
+      tag: foreach_event_principal_ipGeoArtifact_ip_into_related_ip_f9b41543
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_event_principal_ipGeoArtifact_ip_into_related_ip
+          tag: append_event_principal_ipGeoArtifact_ip_into_related_ip_187aafbe
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_event_principal_ipGeoArtifact_location_countryOrRegion_into_host_geo_country_name
+      tag: foreach_event_principal_ipGeoArtifact_location_countryOrRegion_into_host_geo_country_name_2548d1de
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         append:
           field: host.geo.country_name
-          tag: append_event_principal_ipGeoArtifact_location_countryOrRegion_into_host_geo_country_name
+          tag: append_event_principal_ipGeoArtifact_location_countryOrRegion_into_host_geo_country_name_f3fbd0b0
           value: '{{{_ingest._value.location.countryOrRegion}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_event_principal_ipGeoArtifact_location_regionCoordinates_latitude_to_double
+      tag: foreach_event_principal_ipGeoArtifact_location_regionCoordinates_latitude_to_double_d44ea730
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         convert:
           field: _ingest._value.location.regionCoordinates.latitude
-          tag: convert_event_principal_ipGeoArtifact_location_regionCoordinates_latitude_to_double
+          tag: convert_event_principal_ipGeoArtifact_location_regionCoordinates_latitude_to_double_3a93564f
           type: double
           target_field: _ingest._value.location.regionCoordinates.lat
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_location_regionCoordinates_lat
+                tag: remove_ingest_value_location_regionCoordinates_lat_2003c1c5
                 field: _ingest._value.location.regionCoordinates.lat
                 ignore_missing: true
             - append:
@@ -607,18 +607,18 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_event_principal_ipGeoArtifact_location_regionCoordinates_longitude_to_double
+      tag: foreach_event_principal_ipGeoArtifact_location_regionCoordinates_longitude_to_double_b4fa7c16
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         convert:
           field: _ingest._value.location.regionCoordinates.longitude
-          tag: convert_event_principal_ipGeoArtifact_location_regionCoordinates_longitude_to_double
+          tag: convert_event_principal_ipGeoArtifact_location_regionCoordinates_longitude_to_double_af170904
           type: double
           target_field: _ingest._value.location.regionCoordinates.lon
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_location_regionCoordinates_lon
+                tag: remove_ingest_value_location_regionCoordinates_lon_bc19eed0
                 field: _ingest._value.location.regionCoordinates.lon
                 ignore_missing: true
             - append:
@@ -628,30 +628,30 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_append_event_principal_ipGeoArtifact_location_state_into_host_geo_region_name
+      tag: foreach_append_event_principal_ipGeoArtifact_location_state_into_host_geo_region_name_6ece5a0d
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         append:
           field: host.geo.region_name
-          tag: append_event_principal_ipGeoArtifact_location_state_into_host_geo_region_name
+          tag: append_event_principal_ipGeoArtifact_location_state_into_host_geo_region_name_ebebbf96
           value: '{{{_ingest._value.location.state}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_remove_event_principal_ipGeoArtifact
+      tag: foreach_remove_event_principal_ipGeoArtifact_dcf91637
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         remove:
           field:
             - _ingest._value.location.regionCoordinates.latitude
             - _ingest._value.location.regionCoordinates.longitude
-          tag: remove_event_principal_ipGeoArtifact
+          tag: remove_event_principal_ipGeoArtifact_3b1a6681
           ignore_missing: true
       ignore_missing: true
   - script:
       description: Map host.geo.location field.
-      tag: map_host_geo_location
+      tag: map_host_geo_location_c41784fc
       lang: painless
       source: |-
         def locationList = new ArrayList();
@@ -676,12 +676,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.event.principal.ip
-      tag: foreach_event_principal_ip_to_ip
+      tag: foreach_event_principal_ip_to_ip_5f945013
       if: ctx.google_secops?.alert?.event?.principal?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_principal_ip_to_ip
+          tag: convert_event_principal_ip_to_ip_de1af783
           type: ip
           ignore_missing: true
           on_failure:
@@ -696,40 +696,40 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ip
-      tag: foreach_append_event_principal_ip_into_host_ip
+      tag: foreach_append_event_principal_ip_into_host_ip_0a3928a3
       if: ctx.google_secops?.alert?.event?.principal?.ip instanceof List
       processor:
         append:
           field: host.ip
-          tag: append_event_principal_ip_into_host_ip
+          tag: append_event_principal_ip_into_host_ip_d96f0651
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ip
-      tag: foreach_append_event_principal_ip_into_related_ip
+      tag: foreach_append_event_principal_ip_into_related_ip_c6f89f5b
       if: ctx.google_secops?.alert?.event?.principal?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_event_principal_ip_into_related_ip
+          tag: append_event_principal_ip_into_related_ip_bdb6ceaa
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.mac
-      tag: foreach_append_event_principal_mac_into_host_mac
+      tag: foreach_append_event_principal_mac_into_host_mac_245cc7d3
       if: ctx.google_secops?.alert?.event?.principal?.mac instanceof List
       processor:
         append:
           field: host.mac
-          tag: append_event_principal_mac_into_host_mac
+          tag: append_event_principal_mac_into_host_mac_de13e5b0
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - gsub:
       field: host.mac
-      tag: gsub_host_mac
+      tag: gsub_host_mac_2712428d
       target_field: host.mac
       pattern: '[-:.]'
       replacement: '-'
@@ -741,7 +741,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: host.mac
-      tag: uppercase_host_mac
+      tag: uppercase_host_mac_c3a0758f
       ignore_missing: true
       on_failure:
         - append:
@@ -750,7 +750,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_secops.alert.event.principal.port
-      tag: convert_event_principal_port_to_long
+      tag: convert_event_principal_port_to_long_d41e6316
       type: long
       ignore_missing: true
       on_failure:
@@ -764,93 +764,93 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.command_line
-      tag: set_process_command_line_from_alert_event_principal_process_commandLine
+      tag: set_process_command_line_from_alert_event_principal_process_commandLine_9e958ddc
       copy_from: google_secops.alert.event.principal.process.commandLine
       ignore_empty_value: true
   - set:
       field: process.executable
-      tag: set_process_executable_from_alert_event_principal_process_file_fullPath
+      tag: set_process_executable_from_alert_event_principal_process_file_fullPath_6981aa52
       copy_from: google_secops.alert.event.principal.process.file.fullPath
       ignore_empty_value: true
   - set:
       field: process.hash.md5
-      tag: set_process_hash_md5_from_alert_event_principal_process_file_md5
+      tag: set_process_hash_md5_from_alert_event_principal_process_file_md5_1884802a
       copy_from: google_secops.alert.event.principal.process.file.md5
       ignore_empty_value: true
   - set:
       field: process.hash.sha1
-      tag: set_process_hash_sha1_from_alert_event_principal_process_file_sha1
+      tag: set_process_hash_sha1_from_alert_event_principal_process_file_sha1_0d566260
       copy_from: google_secops.alert.event.principal.process.file.sha1
       ignore_empty_value: true
   - set:
       field: process.hash.sha256
-      tag: set_process_hash_sha256_from_alert_event_principal_process_file_sha256
+      tag: set_process_hash_sha256_from_alert_event_principal_process_file_sha256_5f625805
       copy_from: google_secops.alert.event.principal.process.file.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_process_md5_into_related_hash
+      tag: append_process_md5_into_related_hash_1dab9f66
       value: '{{{google_secops.alert.event.principal.process.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_process_sha1_into_related_hash
+      tag: append_process_sha1_into_related_hash_be7e1cf5
       value: '{{{google_secops.alert.event.principal.process.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_process_sha256_into_related_hash
+      tag: append_process_sha256_into_related_hash_c04aefeb
       value: '{{{google_secops.alert.event.principal.process.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.file?.sha256 != null
   - set:
       field: process.parent.command_line
-      tag: set_process_parent_command_line_from_alert_event_principal_process_parentProcess_commandLine
+      tag: set_process_parent_command_line_from_alert_event_principal_process_parentProcess_commandLine_2bdb9cac
       copy_from: google_secops.alert.event.principal.process.parentProcess.commandLine
       ignore_empty_value: true
   - set:
       field: process.parent.executable
-      tag: set_process_parent_executable_from_alert_event_principal_process_parentProcess_file_fullPath
+      tag: set_process_parent_executable_from_alert_event_principal_process_parentProcess_file_fullPath_21b4ed26
       copy_from: google_secops.alert.event.principal.process.parentProcess.file.fullPath
       ignore_empty_value: true
   - set:
       field: process.parent.hash.md5
-      tag: set_process_parent_hash_md5_from_alert_event_principal_process_parentProcess_file_md5
+      tag: set_process_parent_hash_md5_from_alert_event_principal_process_parentProcess_file_md5_3321ac2a
       copy_from: google_secops.alert.event.principal.process.parentProcess.file.md5
       ignore_empty_value: true
   - set:
       field: process.parent.hash.sha1
-      tag: set_process_parent_hash_sha1_from_alert_event_principal_process_parentProcess_file_sha1
+      tag: set_process_parent_hash_sha1_from_alert_event_principal_process_parentProcess_file_sha1_55d3edbe
       copy_from: google_secops.alert.event.principal.process.parentProcess.file.sha1
       ignore_empty_value: true
   - set:
       field: process.parent.hash.sha256
-      tag: set_process_parent_hash_sha256_from_alert_event_principal_process_parentProcess_file_sha256
+      tag: set_process_parent_hash_sha256_from_alert_event_principal_process_parentProcess_file_sha256_4f983506
       copy_from: google_secops.alert.event.principal.process.parentProcess.file.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_parentprocess_md5_into_related_hash
+      tag: append_parentprocess_md5_into_related_hash_81f4f71e
       value: '{{{google_secops.alert.event.principal.process.parentProcess.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_parentprocess_sha1_into_related_hash
+      tag: append_parentprocess_sha1_into_related_hash_634b07f7
       value: '{{{google_secops.alert.event.principal.process.parentProcess.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_parentprocess_sha256_into_related_hash
+      tag: append_parentprocess_sha256_into_related_hash_55752c20
       value: '{{{google_secops.alert.event.principal.process.parentProcess.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.file?.sha256 != null
   - convert:
       field: google_secops.alert.event.principal.process.parentProcess.pid
-      tag: convert_event_principal_process_parentProcess_pid_to_long
+      tag: convert_event_principal_process_parentProcess_pid_to_long_1fe0fa9b
       type: long
       ignore_missing: true
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.pid != ''
@@ -865,66 +865,66 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.parent.pid
-      tag: set_process_parent_pid_from_alert_event_principal_process_parentProcess_pid
+      tag: set_process_parent_pid_from_alert_event_principal_process_parentProcess_pid_066b8aeb
       copy_from: google_secops.alert.event.principal.process.parentProcess.pid
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_parent_parent_process_file_md5_into_related_hash
+      tag: append_parent_parent_process_file_md5_into_related_hash_abe73077
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_process_file_sha1_into_related_hash
+      tag: append_parent_parent_process_file_sha1_into_related_hash_52562cf2
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_process_file_sha256_into_related_hash
+      tag: append_parent_parent_process_file_sha256_into_related_hash_61decdc8
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.file?.sha256 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_parent_process_file_md5_into_related_hash
+      tag: append_parent_parent_parent_process_file_md5_into_related_hash_7c38aaed
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.parentProcess.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.parentProcess?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_parent_process_file_sha1_into_related_hash
+      tag: append_parent_parent_parent_process_file_sha1_into_related_hash_e0e1f00e
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.parentProcess.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.parentProcess?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_parent_process_file_sha256_into_related_hash
+      tag: append_parent_parent_parent_process_file_sha256_into_related_hash_a33f31e8
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.parentProcess.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.parentProcess?.file?.sha256 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_parent_parent_process_file_md5_into_related_hash
+      tag: append_parent_parent_parent_parent_process_file_md5_into_related_hash_a7abebc8
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.parentProcess.parentProcess.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.parentProcess?.parentProcess?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_parent_parent_process_file_sha1_into_related_hash
+      tag: append_parent_parent_parent_parent_process_file_sha1_into_related_hash_fafc317f
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.parentProcess.parentProcess.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.parentProcess?.parentProcess?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_parent_parent_parent_parent_process_file_sha256_into_related_hash
+      tag: append_parent_parent_parent_parent_process_file_sha256_into_related_hash_7486da85
       value: '{{{google_secops.alert.event.principal.process.parentProcess.parentProcess.parentProcess.parentProcess.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.process?.parentProcess?.parentProcess?.parentProcess?.parentProcess?.file?.sha256 != null
   - convert:
       field: google_secops.alert.event.principal.process.pid
-      tag: convert_event_principal_process_pid_to_long
+      tag: convert_event_principal_process_pid_to_long_6f5db4f7
       type: long
       ignore_missing: true
       if: ctx.google_secops?.alert?.event?.principal?.process?.pid != ''
@@ -939,116 +939,116 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.pid
-      tag: set_process_pid_from_alert_event_principal_process_pid
+      tag: set_process_pid_from_alert_event_principal_process_pid_2d74c1a2
       copy_from: google_secops.alert.event.principal.process.pid
       ignore_empty_value: true
   - foreach:
       field: google_secops.alert.event.principal.user.attribute.roles
-      tag: foreach_append_event_principal_user_attribute_roles_name_into_user_roles
+      tag: foreach_append_event_principal_user_attribute_roles_name_into_user_roles_fa74a99f
       if: ctx.google_secops?.alert?.event?.principal?.user?.attribute?.roles instanceof List
       processor:
         append:
           field: user.roles
-          tag: append_event_principal_user_attribute_roles_name_into_user_roles
+          tag: append_event_principal_user_attribute_roles_name_into_user_roles_6b765c26
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.user.emailAddresses
-      tag: foreach_append_event_principal_user_emailAddresses_into_user_email
+      tag: foreach_append_event_principal_user_emailAddresses_into_user_email_8e78c2f8
       if: ctx.google_secops?.alert?.event?.principal?.user?.emailAddresses instanceof List
       processor:
         append:
           field: user.email
-          tag: append_event_principal_user_emailAddresses_into_user_email
+          tag: append_event_principal_user_emailAddresses_into_user_email_f7b80c53
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.user.emailAddresses
-      tag: foreach_append_event_principal_user_emailAddresses_into_related_user
+      tag: foreach_append_event_principal_user_emailAddresses_into_related_user_06f35546
       if: ctx.google_secops?.alert?.event?.principal?.user?.emailAddresses instanceof List
       processor:
         append:
           field: related.user
-          tag: append_event_principal_user_emailAddresses_into_related_user
+          tag: append_event_principal_user_emailAddresses_into_related_user_69081e9d
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.user.groupIdentifiers
-      tag: foreach_append_event_principal_user_groupIdentifiers_into_user_group_id
+      tag: foreach_append_event_principal_user_groupIdentifiers_into_user_group_id_08c7a83a
       if: ctx.google_secops?.alert?.event?.principal?.user?.groupIdentifiers instanceof List
       processor:
         append:
           field: user.group.id
-          tag: append_event_principal_user_groupIdentifiers_into_user_group_id
+          tag: append_event_principal_user_groupIdentifiers_into_user_group_id_c8f5f18e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_alert_event_principal_user_userDisplayName
+      tag: set_user_name_from_alert_event_principal_user_userDisplayName_f23762f9
       copy_from: google_secops.alert.event.principal.user.userDisplayName
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_9b9e1c90
       value: '{{{google_secops.alert.event.principal.user.userDisplayName}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.user?.userDisplayName != null
   - set:
       field: user.id
-      tag: set_user_id_from_alert_event_principal_user_userid
+      tag: set_user_id_from_alert_event_principal_user_userid_a944c4c1
       copy_from: google_secops.alert.event.principal.user.userid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_user_id_into_related_user_668a1bb2
       value: '{{{google_secops.alert.event.principal.user.userid}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.principal?.user?.userid != null
   - foreach:
       field: google_secops.alert.event.securityResult
-      tag: foreach_append_event_securityResult_action_into_event_action
+      tag: foreach_append_event_securityResult_action_into_event_action_181d7017
       if: ctx.google_secops?.alert?.event?.securityResult instanceof List
       processor:
         foreach:
           field: _ingest._value.action
-          tag: foreach_foreach_append_event_securityResult_action_into_event_action
+          tag: foreach_foreach_append_event_securityResult_action_into_event_action_a9c8e9e6
           processor:
             append:
               field: event.action
-              tag: append_event_securityResult_action_into_event_action
+              tag: append_event_securityResult_action_into_event_action_587ba28e
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
           ignore_missing: true
       ignore_missing: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_Action
+      tag: lowercase_event_Action_945f0fcf
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.securityResult
-      tag: foreach_date_event_securityResult_firstDiscoveredTime
+      tag: foreach_date_event_securityResult_firstDiscoveredTime_de83df42
       if: ctx.google_secops?.alert?.event?.securityResult instanceof List
       processor:
         date:
           field: _ingest._value.firstDiscoveredTime
-          tag: date_event_securityResult_firstDiscoveredTime
+          tag: date_event_securityResult_firstDiscoveredTime_8329c15e
           target_field: _ingest._value.firstDiscoveredTime
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_firstDiscoveredTime
+                tag: remove_ingest_value_firstDiscoveredTime_f99fb537
                 field: _ingest._value.firstDiscoveredTime
                 ignore_missing: true
       ignore_missing: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_db2c59ba
       source: |-
         if (ctx.google_secops?.alert?.event?.securityResult instanceof List) {
           for (list in ctx.google_secops?.alert?.event.securityResult) {
@@ -1080,12 +1080,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.event.src.asset.ip
-      tag: foreach_convert_event_src_asset_ip_to_ip
+      tag: foreach_convert_event_src_asset_ip_to_ip_1be93374
       if: ctx.google_secops?.alert?.event?.src?.asset?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_src_asset_ip_to_ip
+          tag: convert_event_src_asset_ip_to_ip_7e3f3163
           type: ip
           ignore_missing: true
           on_failure:
@@ -1100,58 +1100,58 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.asset.ip
-      tag: foreach_append_event_src_asset_ip_to_related_ip
+      tag: foreach_append_event_src_asset_ip_to_related_ip_5571a6bd
       if: ctx.google_secops?.alert?.event?.src?.asset?.ip instanceof List
       processor:
         append:
           field: related.ip
           value: '{{{_ingest._value}}}'
-          tag: append_event_src_asset_ip_to_related_ip
+          tag: append_event_src_asset_ip_to_related_ip_4ea1df62
           allow_duplicates: false
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_src_file_md5_into_related_hash
+      tag: append_src_file_md5_into_related_hash_2422edeb
       value: '{{{google_secops.alert.event.src.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.src?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_src_file_sha1_into_related_hash
+      tag: append_src_file_sha1_into_related_hash_94b496ea
       value: '{{{google_secops.alert.event.src.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.src?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_src_file_sha256_into_related_hash
+      tag: append_src_file_sha256_into_related_hash_b9312e39
       value: '{{{google_secops.alert.event.src.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.src?.file?.sha256 != null
   - append:
       field: related.hosts
-      tag: append_target_asset_hostname_into_related_hosts
+      tag: append_target_asset_hostname_into_related_hosts_7bf6957e
       value: '{{{google_secops.alert.event.target.asset.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.asset?.hostname != null
   - set:
       field: source.domain
-      tag: set_source_domain_from_alert_event_src_hostname
+      tag: set_source_domain_from_alert_event_src_hostname_256cf432
       copy_from: google_secops.alert.event.src.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_source_domain_into_related_hosts
+      tag: append_source_domain_into_related_hosts_4a1e16ef
       value: '{{{google_secops.alert.event.src.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.src?.hostname != null
   - foreach:
       field: google_secops.alert.event.src.ip
-      tag: foreach_convert_event_src_ip_to_ip
+      tag: foreach_convert_event_src_ip_to_ip_8125ed8b
       if: ctx.google_secops?.alert?.event?.src?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_src_ip_to_ip
+          tag: convert_event_src_ip_to_ip_8a4b56b4
           type: ip
           ignore_missing: true
           on_failure:
@@ -1166,40 +1166,40 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.ip
-      tag: foreach_append_event_src_ip_into_source_ip
+      tag: foreach_append_event_src_ip_into_source_ip_193b16ee
       if: ctx.google_secops?.alert?.event?.src?.ip instanceof List
       processor:
         append:
           field: source.ip
-          tag: append_event_src_ip_into_source_ip
+          tag: append_event_src_ip_into_source_ip_a2faee00
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.ip
-      tag: foreach_append_event_src_ip_into_related_ip
+      tag: foreach_append_event_src_ip_into_related_ip_284c7fa6
       if: ctx.google_secops?.alert?.event?.src?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_event_src_ip_into_related_ip
+          tag: append_event_src_ip_into_related_ip_2faabdc6
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.mac
-      tag: foreach_append_event_src_mac_into_source_mac
+      tag: foreach_append_event_src_mac_into_source_mac_b0357143
       if: ctx.google_secops?.alert?.event?.src?.mac instanceof List
       processor:
         append:
           field: source.mac
-          tag: append_event_src_mac_into_source_mac
+          tag: append_event_src_mac_into_source_mac_a997faaf
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - gsub:
       field: source.mac
-      tag: gsub_source_mac
+      tag: gsub_source_mac_fd97e82c
       target_field: source.mac
       pattern: '[-:.]'
       replacement: '-'
@@ -1211,7 +1211,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: source.mac
-      tag: uppercase_source_mac
+      tag: uppercase_source_mac_560987b8
       ignore_missing: true
       on_failure:
         - append:
@@ -1220,45 +1220,45 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.event.src.user.emailAddresses
-      tag: foreach_append_event_src_user_emailAddresses_into_source_user_email
+      tag: foreach_append_event_src_user_emailAddresses_into_source_user_email_9d82221d
       if: ctx.google_secops?.alert?.event?.src?.user?.emailAddresses instanceof List
       processor:
         append:
           field: source.user.email
-          tag: append_event_src_user_emailAddresses_into_source_user_email
+          tag: append_event_src_user_emailAddresses_into_source_user_email_dbfd77f4
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.user.emailAddresses
-      tag: foreach_append_event_src_user_emailAddresses_into_related_user
+      tag: foreach_append_event_src_user_emailAddresses_into_related_user_05373b47
       if: ctx.google_secops?.alert?.event?.src?.user?.emailAddresses instanceof List
       processor:
         append:
           field: related.user
-          tag: append_event_src_user_emailAddresses_into_related_user
+          tag: append_event_src_user_emailAddresses_into_related_user_289342a2
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - set:
       field: source.user.id
-      tag: set_source_user_id_from_alert_event_src_user_userid
+      tag: set_source_user_id_from_alert_event_src_user_userid_5879c4e1
       copy_from: google_secops.alert.event.src.user.userid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_source_user_id_into_related_user
+      tag: append_source_user_id_into_related_user_84a3b900
       value: '{{{google_secops.alert.event.src.user.userid}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.src?.user?.userid != null
   - foreach:
       field: google_secops.alert.event.target.asset.ip
-      tag: foreach_convert_event_target_asset_ip_to_ip
+      tag: foreach_convert_event_target_asset_ip_to_ip_4291556e
       if: ctx.google_secops?.alert?.event?.target?.asset?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_target_asset_ip_to_ip
+          tag: convert_event_target_asset_ip_to_ip_921128e9
           type: ip
           ignore_missing: true
           on_failure:
@@ -1273,23 +1273,23 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.asset.ip
-      tag: foreach_append_event_target_asset_ip_to_related_ip
+      tag: foreach_append_event_target_asset_ip_to_related_ip_d34599a9
       if: ctx.google_secops?.alert?.event?.target?.asset?.ip instanceof List
       processor:
         append:
           field: related.ip
           value: '{{{_ingest._value}}}'
-          tag: append_event_target_asset_ip_to_related_ip
+          tag: append_event_target_asset_ip_to_related_ip_8f0a1996
           allow_duplicates: false
       ignore_missing: true
   - set:
       field: cloud.target.project.name
-      tag: set_cloud_target_project_name_from_alert_event_target_cloud_project_name
+      tag: set_cloud_target_project_name_from_alert_event_target_cloud_project_name_67544138
       copy_from: google_secops.alert.event.target.cloud.project.name
       ignore_empty_value: true
   - date:
       field: google_secops.alert.event.target.file.lastModificationTime
-      tag: date_event_target_file_lastModificationTime
+      tag: date_event_target_file_lastModificationTime_62657ae8
       target_field: google_secops.alert.event.target.file.lastModificationTime
       formats:
         - ISO8601
@@ -1305,41 +1305,41 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
-      tag: append_event_target_file_md5_into_related_hash
+      tag: append_event_target_file_md5_into_related_hash_55e96ce5
       value: '{{{google_secops.alert.event.target.file.md5}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.file?.md5 != null
   - append:
       field: related.hash
-      tag: append_event_target_file_sha1_into_related_hash
+      tag: append_event_target_file_sha1_into_related_hash_4d836c44
       value: '{{{google_secops.alert.event.target.file.sha1}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.file?.sha1 != null
   - append:
       field: related.hash
-      tag: append_event_target_file_sha256_into_related_hash
+      tag: append_event_target_file_sha256_into_related_hash_dcdc253e
       value: '{{{google_secops.alert.event.target.file.sha256}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.file?.sha256 != null
   - set:
       field: destination.domain
-      tag: set_destination_domain_from_alert_event_target_hostname
+      tag: set_destination_domain_from_alert_event_target_hostname_b723ba86
       copy_from: google_secops.alert.event.target.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_hostname_into_related_hosts
+      tag: append_hostname_into_related_hosts_a18eed62
       value: '{{{google_secops.alert.event.target.hostname}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.hostname != null
   - foreach:
       field: google_secops.alert.event.target.ip
-      tag: foreach_convert_event_target_ip_to_ip
+      tag: foreach_convert_event_target_ip_to_ip_70a91ec8
       if: ctx.google_secops?.alert?.event?.target?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_target_ip_to_ip
+          tag: convert_event_target_ip_to_ip_9558c0d4
           type: ip
           ignore_missing: true
           on_failure:
@@ -1354,40 +1354,40 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.ip
-      tag: foreach_append_event_target_ip_into_destination_ip
+      tag: foreach_append_event_target_ip_into_destination_ip_3f38577d
       if: ctx.google_secops?.alert?.event?.target?.ip instanceof List
       processor:
         append:
           field: destination.ip
-          tag: append_event_target_ip_into_destination_ip
+          tag: append_event_target_ip_into_destination_ip_e6bf048d
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.ip
-      tag: foreach_append_event_target_ip_into_related_ip
+      tag: foreach_append_event_target_ip_into_related_ip_f31178be
       if: ctx.google_secops?.alert?.event?.target?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_event_target_ip_into_related_ip
+          tag: append_event_target_ip_into_related_ip_a690fabf
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.mac
-      tag: foreach_append_event_target_mac_into_destination_mac
+      tag: foreach_append_event_target_mac_into_destination_mac_548d9cad
       if: ctx.google_secops?.alert?.event?.target?.mac instanceof List
       processor:
         append:
           field: destination.mac
-          tag: append_event_target_mac_into_destination_mac
+          tag: append_event_target_mac_into_destination_mac_22381b0c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - gsub:
       field: destination.mac
-      tag: gsub_destination_mac
+      tag: gsub_destination_mac_4f1bb50f
       target_field: destination.mac
       pattern: '[-:.]'
       replacement: '-'
@@ -1399,7 +1399,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: destination.mac
-      tag: uppercase_destination_mac
+      tag: uppercase_destination_mac_298d4fd8
       ignore_missing: true
       on_failure:
         - append:
@@ -1408,7 +1408,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_secops.alert.event.target.port
-      tag: convert_event_target_port_to_long
+      tag: convert_event_target_port_to_long_a25fcc96
       type: long
       ignore_missing: true
       on_failure:
@@ -1422,12 +1422,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port_from_alert_event_target_port
+      tag: set_destination_port_from_alert_event_target_port_b8c56934
       copy_from: google_secops.alert.event.target.port
       ignore_empty_value: true
   - date:
       field: google_secops.alert.event.target.process.file.firstSeenTime
-      tag: date_event_target_process_file_firstSeenTime
+      tag: date_event_target_process_file_firstSeenTime_671de622
       target_field: google_secops.alert.event.target.process.file.firstSeenTime
       formats:
         - ISO8601
@@ -1443,7 +1443,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_secops.alert.event.target.process.file.lastModificationTime
-      tag: date_event_target_process_file_lastModificationTime
+      tag: date_event_target_process_file_lastModificationTime_f88dab3c
       target_field: google_secops.alert.event.target.process.file.lastModificationTime
       formats:
         - ISO8601
@@ -1459,100 +1459,100 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.event.target.user.emailAddresses
-      tag: foreach_append_event_target_user_emailAddresses_into_destination_user_email
+      tag: foreach_append_event_target_user_emailAddresses_into_destination_user_email_69c94a8e
       if: ctx.google_secops?.alert?.event?.target?.user?.emailAddresses instanceof List
       processor:
         append:
           field: destination.user.email
-          tag: append_event_target_user_emailAddresses_into_destination_user_email
+          tag: append_event_target_user_emailAddresses_into_destination_user_email_9250d8e5
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.user.emailAddresses
-      tag: foreach_append_event_target_user_emailAddresses_into_related_user
+      tag: foreach_append_event_target_user_emailAddresses_into_related_user_b8d1e223
       if: ctx.google_secops?.alert?.event?.target?.user?.emailAddresses instanceof List
       processor:
         append:
           field: related.user
-          tag: append_event_target_user_emailAddresses_into_related_user
+          tag: append_event_target_user_emailAddresses_into_related_user_efea8fe9
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.processAncestors
-      tag: foreach_append_event_event_principal_processAncestors_file_md5_into_related_hash
+      tag: foreach_append_event_event_principal_processAncestors_file_md5_into_related_hash_f458d377
       if: ctx.google_secops?.alert?.event?.principal?.processAncestors instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_event_event_principal_processAncestors_file_md5_into_related_hash
+          tag: append_event_event_principal_processAncestors_file_md5_into_related_hash_0e80ea3a
           value: '{{{_ingest._value.parentProcess.file.md5}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.processAncestors
-      tag: foreach_append_event_event_principal_processAncestors_file_sha1_into_related_hash
+      tag: foreach_append_event_event_principal_processAncestors_file_sha1_into_related_hash_dc7b8d5b
       if: ctx.google_secops?.alert?.event?.principal?.processAncestors instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_event_event_principal_processAncestors_file_sha1_into_related_hash
+          tag: append_event_event_principal_processAncestors_file_sha1_into_related_hash_d166d03a
           value: '{{{_ingest._value.parentProcess.file.sha1}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.processAncestors
-      tag: foreach_append_event_event_principal_processAncestors_file_sha256_into_related_hash
+      tag: foreach_append_event_event_principal_processAncestors_file_sha256_into_related_hash_ee2fb6d4
       if: ctx.google_secops?.alert?.event?.principal?.processAncestors instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_event_event_principal_processAncestors_file_sha256_into_related_hash
+          tag: append_event_event_principal_processAncestors_file_sha256_into_related_hash_2921aa7c
           value: '{{{_ingest._value.parentProcess.file.sha256}}}'
           allow_duplicates: false
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.user.groupIdentifiers
-      tag: foreach_append_event_target_user_groupIdentifiers_into_destination_user_group_id
+      tag: foreach_append_event_target_user_groupIdentifiers_into_destination_user_group_id_ee9aadee
       if: ctx.google_secops?.alert?.event?.target?.user?.groupIdentifiers instanceof List
       processor:
         append:
           field: destination.user.group.id
-          tag: append_event_target_user_groupIdentifiers_into_destination_user_group_id
+          tag: append_event_target_user_groupIdentifiers_into_destination_user_group_id_6f523929
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - set:
       field: destination.user.name
-      tag: set_destination_user_name_from_alert_event_target_user_userDisplayName
+      tag: set_destination_user_name_from_alert_event_target_user_userDisplayName_7fdeb2ac
       copy_from: google_secops.alert.event.target.user.userDisplayName
       ignore_empty_value: true
   - set:
       field: destination.user.id
-      tag: set_destination_user_id_from_alert_event_target_user_userid
+      tag: set_destination_user_id_from_alert_event_target_user_userid_105f8a2d
       copy_from: google_secops.alert.event.target.user.userid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_userDisplayName_into_related_user
+      tag: append_userDisplayName_into_related_user_af35be64
       value: '{{{google_secops.alert.event.target.user.userDisplayName}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.user?.userDisplayName != null
   - append:
       field: related.user
-      tag: append_userid_into_related_user
+      tag: append_userid_into_related_user_dc76312e
       value: '{{{google_secops.alert.event.target.user.userid}}}'
       allow_duplicates: false
       if: ctx.google_secops?.alert?.event?.target?.user?.userid != null
   - set:
       field: event.id
-      tag: set_event_id_from_alert_id
+      tag: set_event_id_from_alert_id_4c13861b
       copy_from: google_secops.alert.id
       ignore_empty_value: true
   - date:
       field: google_secops.alert.timeWindow.endTime
-      tag: date_timeWindow_endTime
+      tag: date_timeWindow_endTime_1ff08e19
       target_field: google_secops.alert.timeWindow.endTime
       formats:
         - ISO8601
@@ -1568,12 +1568,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_alert_timeWindow_endTime
+      tag: set_event_end_from_alert_timeWindow_endTime_ef784a88
       copy_from: google_secops.alert.timeWindow.endTime
       ignore_empty_value: true
   - date:
       field: google_secops.alert.timeWindow.startTime
-      tag: date_timeWindow_startTime
+      tag: date_timeWindow_startTime_f33a734d
       target_field: google_secops.alert.timeWindow.startTime
       formats:
         - ISO8601
@@ -1589,16 +1589,16 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_alert_timeWindow_startTime
+      tag: set_event_start_from_alert_timeWindow_startTime_e650d1d9
       copy_from: google_secops.alert.timeWindow.startTime
       ignore_empty_value: true
   - foreach:
       field: google_secops.alert.event.target.ip
-      tag: foreach_remove_event_target_ip
+      tag: foreach_remove_event_target_ip_a44662cb
       if: ctx.google_secops?.alert?.event?.target?.ip instanceof List
       processor:
         remove:
-          tag: remove_event_target_ip
+          tag: remove_event_target_ip_3d9284b0
           field:
             - _ingest._value
           ignore_missing: true
@@ -1606,11 +1606,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.user.emailAddresses
-      tag: foreach_remove_event_target_user_emailAddresses
+      tag: foreach_remove_event_target_user_emailAddresses_f4db8aa6
       if: ctx.google_secops?.alert?.event?.target?.user?.emailAddresses instanceof List
       processor:
         remove:
-          tag: remove_event_target_user_emailAddresses
+          tag: remove_event_target_user_emailAddresses_41b7c0a0
           field:
             - _ingest._value
           ignore_missing: true
@@ -1618,11 +1618,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.target.user.groupIdentifiers
-      tag: foreach_remove_event_target_user_groupIdentifiers
+      tag: foreach_remove_event_target_user_groupIdentifiers_0a8500bc
       if: ctx.google_secops?.alert?.event?.target?.user?.groupIdentifiers instanceof List
       processor:
         remove:
-          tag: remove_event_target_user_groupIdentifiers
+          tag: remove_event_target_user_groupIdentifiers_c6db2288
           field:
             - _ingest._value
           ignore_missing: true
@@ -1630,11 +1630,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.bcc
-      tag: foreach_remove_event_network_email_bcc
+      tag: foreach_remove_event_network_email_bcc_d6a80a57
       if: ctx.google_secops?.alert?.event?.network?.email?.bcc instanceof List
       processor:
         remove:
-          tag: remove_event_network_email_bcc
+          tag: remove_event_network_email_bcc_3f59e62d
           field:
             - _ingest._value
           ignore_missing: true
@@ -1642,11 +1642,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.cc
-      tag: foreach_remove_event_network_email_cc
+      tag: foreach_remove_event_network_email_cc_b196ba73
       if: ctx.google_secops?.alert?.event?.network?.email?.cc instanceof List
       processor:
         remove:
-          tag: remove_event_network_email_cc
+          tag: remove_event_network_email_cc_4fe7f59d
           field:
             - _ingest._value
           ignore_missing: true
@@ -1654,11 +1654,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.subject
-      tag: foreach_remove_event_network_email_subject
+      tag: foreach_remove_event_network_email_subject_ca5f6dd6
       if: ctx.google_secops?.alert?.event?.network?.email?.subject instanceof List
       processor:
         remove:
-          tag: remove_event_network_email_subject
+          tag: remove_event_network_email_subject_71fbac79
           field:
             - _ingest._value
           ignore_missing: true
@@ -1666,11 +1666,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.email.to
-      tag: foreach_remove_event_network_email_to
+      tag: foreach_remove_event_network_email_to_fa34f2a9
       if: ctx.google_secops?.alert?.event?.network?.email?.to instanceof List
       processor:
         remove:
-          tag: remove_event_network_email_to
+          tag: remove_event_network_email_to_d241cbec
           field:
             - _ingest._value
           ignore_missing: true
@@ -1678,11 +1678,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.user.groupIdentifiers
-      tag: foreach_remove_event_principal_user_groupIdentifiers
+      tag: foreach_remove_event_principal_user_groupIdentifiers_beb7d21a
       if: ctx.google_secops?.alert?.event?.principal?.user?.groupIdentifiers instanceof List
       processor:
         remove:
-          tag: remove_event_principal_user_groupIdentifiers
+          tag: remove_event_principal_user_groupIdentifiers_50381172
           field:
             - _ingest._value
           ignore_missing: true
@@ -1690,11 +1690,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.user.emailAddresses
-      tag: foreach_remove_event_principal_user_emailAddresses
+      tag: foreach_remove_event_principal_user_emailAddresses_47575972
       if: ctx.google_secops?.alert?.event?.principal?.user?.emailAddresses instanceof List
       processor:
         remove:
-          tag: remove_event_principal_user_emailAddresses
+          tag: remove_event_principal_user_emailAddresses_e23a9bc9
           field:
             - _ingest._value
           ignore_missing: true
@@ -1702,11 +1702,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.user.emailAddresses
-      tag: foreach_remove_event_src_user_emailAddresses
+      tag: foreach_remove_event_src_user_emailAddresses_75d42436
       if: ctx.google_secops?.alert?.event?.src?.user?.emailAddresses instanceof List
       processor:
         remove:
-          tag: remove_event_src_user_emailAddresses
+          tag: remove_event_src_user_emailAddresses_220b87b7
           field:
             - _ingest._value
           ignore_missing: true
@@ -1714,11 +1714,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.src.ip
-      tag: foreach_remove_event_src_ip
+      tag: foreach_remove_event_src_ip_430a5b13
       if: ctx.google_secops?.alert?.event?.src?.ip instanceof List
       processor:
         remove:
-          tag: remove_event_src_ip
+          tag: remove_event_src_ip_91aa0664
           field:
             - _ingest._value
           ignore_missing: true
@@ -1726,11 +1726,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ip
-      tag: foreach_remove_event_principal_ip
+      tag: foreach_remove_event_principal_ip_b506581b
       if: ctx.google_secops?.alert?.event?.principal?.ip instanceof List
       processor:
         remove:
-          tag: remove_event_principal_ip
+          tag: remove_event_principal_ip_28516d4b
           field:
             - _ingest._value
           ignore_missing: true
@@ -1738,7 +1738,7 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.dns.answers
-      tag: foreach_remove_dns_answers
+      tag: foreach_remove_dns_answers_f539bbc7
       if: ctx.google_secops?.alert?.event?.network?.dns?.answers instanceof List
       processor:
         remove:
@@ -1746,26 +1746,26 @@ processors:
             - _ingest._value.data
             - _ingest._value.name
             - _ingest._value.type
-          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_network_dns_answers
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_network_dns_answers_9fcfb777
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.network.dns.questions
-      tag: foreach_remove_dns_questions
+      tag: foreach_remove_dns_questions_64d551f4
       if: ctx.google_secops?.alert?.event?.network?.dns?.questions instanceof List
       processor:
         remove:
           field:
             - _ingest._value.name
             - _ingest._value.type
-          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_network_dns_questions
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_network_dns_questions_789a93d2
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.ipGeoArtifact
-      tag: foreach_remove_ipGeoArtifact
+      tag: foreach_remove_ipGeoArtifact_a4fc7172
       if: ctx.google_secops?.alert?.event?.principal?.ipGeoArtifact instanceof List
       processor:
         remove:
@@ -1773,18 +1773,18 @@ processors:
             - _ingest._value.location.countryOrRegion
             - _ingest._value.location.state
             - _ingest._value.ip
-          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_principal_ipGeoArtifact
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_principal_ipGeoArtifact_5157ee5d
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_missing: true
   - foreach:
       field: google_secops.alert.event.principal.user.attribute.roles
-      tag: foreach_remove_user_attribute_roles
+      tag: foreach_remove_user_attribute_roles_e4124fd5
       if: ctx.google_secops?.alert?.event?.principal?.user?.attribute?.roles instanceof List
       processor:
         remove:
           field: _ingest._value.name
-          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_principal_user_attribute_roles
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_principal_user_attribute_roles_c4e9acc3
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_missing: true
@@ -1836,11 +1836,11 @@ processors:
         - google_secops.alert.id
         - google_secops.alert.timeWindow.endTime
         - google_secops.alert.timeWindow.startTime
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e2c78229
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -1859,7 +1859,7 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
@@ -1872,10 +1872,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

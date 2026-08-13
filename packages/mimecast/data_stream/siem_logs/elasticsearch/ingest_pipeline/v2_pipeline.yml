@@ -17,7 +17,7 @@ processors:
 
   ### NOTE LOG TYPE
   - script:
-      tag: script_2d3bdcf4
+      tag: script_note_log_type_2d3bdcf4
       lang: painless
       params:
         'av': 'avlog'
@@ -38,12 +38,12 @@ processors:
   - set:
       field: original
       copy_from: mimecast
-      tag: preserve_custom_duplicate_fields
+      tag: preserve_custom_duplicate_fields_f2d88bc6
       ignore_empty_value: true
       if: ctx.tags?.contains('preserve_duplicate_custom_fields') == true
 
   - fingerprint:
-      tag: fingerprint_5cae5d9e
+      tag: fingerprint_to_id_5cae5d9e
       fields:
         - mimecast.messageId
         - mimecast.processingId
@@ -63,7 +63,7 @@ processors:
       field: mimecast.recipients
       processor:
         append:
-          tag: append_email_to_address
+          tag: append_email_to_address_046afafe
           field: email.to.address
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
@@ -225,7 +225,7 @@ processors:
       ignore_missing: true
   - convert:
       field: mimecast.senderDomainInternal
-      tag: convert_sender_domain_internal_to_boolean
+      tag: convert_sender_domain_internal_to_boolean_4755fb87
       type: boolean
       ignore_missing: true
       on_failure:
@@ -289,7 +289,7 @@ processors:
       ignore_missing: true
   - convert:
       field: mimecast.taggedExternal
-      tag: convert_tagged_external_to_boolean
+      tag: convert_tagged_external_to_boolean_61775098
       type: boolean
       ignore_missing: true
       on_failure:
@@ -302,7 +302,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: mimecast.taggedMalicious
-      tag: convert_tagged_malicious_to_boolean
+      tag: convert_tagged_malicious_to_boolean_a06f6969
       type: boolean
       ignore_missing: true
       on_failure:
@@ -417,17 +417,17 @@ processors:
 
   # Handle users.
   - foreach:
-      tag: collect_related_users_from
+      tag: collect_related_users_from_80534865
       if: ctx.email?.from?.address instanceof List
       field: email.from.address
       processor:
         append:
-          tag: append_related_user
+          tag: append_related_user_78d2c6d3
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
-      tag: collect_related_users_to
+      tag: collect_related_users_to_f782589c
       if: ctx.email?.to?.address instanceof List
       field: email.to.address
       processor:
@@ -439,7 +439,7 @@ processors:
 
   # Handle hosts.
   - append:
-      tag: collect_related_hosts
+      tag: collect_related_hosts_1013c273
       if: ctx.mimecast?.Hostname != null
       field: related.hosts
       value: '{{{mimecast.Hostname}}}'
@@ -447,17 +447,17 @@ processors:
 
   # Handle attachment details.
   - foreach:
-      tag: collect_attachment_file_hashes
+      tag: collect_attachment_file_hashes_6da8fdb3
       if: ctx.email?.attachments?.file?.hash instanceof Map
       field: email.attachments.file.hash
       processor:
         append:
-          tag: append_related_hash
+          tag: append_related_hash_e5d8e808
           field: related.hash
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - script:
-      tag: promote_email_attachments_to_array
+      tag: promote_email_attachments_to_array_c5ef3b2b
       if: ctx.email?.attachments != null
       lang: painless
       source: |
@@ -466,7 +466,7 @@ processors:
         ctx.email.attachments = attachments;
 
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_ecb18176
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - mimecast.recipients
@@ -481,7 +481,7 @@ processors:
       override: true
       ignore_missing: true
   - remove:
-      tag: remove_0a5321eb
+      tag: remove_cleanup_repeated_unwanted_temporary_fields_0a5321eb
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast._offset
@@ -492,15 +492,15 @@ processors:
 # Error handling
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -3,28 +3,28 @@ description: Pipeline for processing detection logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -35,114 +35,114 @@ processors:
       fields:
         - json.uuid
         - json.occurTime
-      tag: fingerprint_detection
+      tag: fingerprint_detection_13141623
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - append:
       field: event.category
-      tag: append_intrusion_detection_into_event_category
+      tag: append_intrusion_detection_into_event_category_4467385b
       value: intrusion_detection
       if: ctx.json?.category != null && ['DETECTION_CATEGORY_CORRELATION_RULE','DETECTION_CATEGORY_FIREWALL_RULE','DETECTION_CATEGORY_HIPS','DETECTION_CATEGORY_NETWORK_INTRUSION','DETECTION_CATEGORY_HIPS_RULE'].contains(ctx.json.category)
   - append:
       field: event.category
-      tag: append_malware_into_event_category
+      tag: append_malware_into_event_category_9db7431f
       value: malware
       if: ctx.json?.category != null && ['DETECTION_CATEGORY_ANTIVIRUS'].contains(ctx.json.category)
   - append:
       field: event.category
-      tag: append_web_into_event_category
+      tag: append_web_into_event_category_521ce039
       value: web
       if: ctx.json?.category != null && ['DETECTION_CATEGORY_WEB_ACCESS'].contains(ctx.json.category)
   - append:
       field: event.category
-      tag: append_vulnerability_into_event_category
+      tag: append_vulnerability_into_event_category_82123adb
       value: vulnerability
       if: ctx.json?.category != null && ['DETECTION_CATEGORY_VULNERABILITY'].contains(ctx.json.category)
   - append:
       field: event.category
-      tag: append_package_into_event_category
+      tag: append_package_into_event_category_d1fcb2f4
       value: package
       if: ctx.json?.category != null && ['DETECTION_CATEGORY_APPLICATION_PATCH'].contains(ctx.json.category)
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - set:
       field: event.id
-      tag: set_event_id_from_detection_uuid
+      tag: set_event_id_from_detection_uuid_d9ef29b3
       copy_from: json.uuid
       ignore_empty_value: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_detection_context_circumstances
+      tag: set_event_reason_from_detection_context_circumstances_86f6d138
       copy_from: json.context.circumstances
       ignore_empty_value: true
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_bb862c18
       value: ESET
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_f19fa160
       value: ESET PROTECT
   - set:
       field: observer.type
-      tag: set_observer_type
+      tag: set_observer_type_51e6b2af
       value: ids
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_a4e14430
       target_field: eset_protect.detection.category
       ignore_missing: true
   - set:
       field: rule.category
-      tag: set_rule_category_from_category
+      tag: set_rule_category_from_category_1d0fcaac
       copy_from: eset_protect.detection.category
       ignore_empty_value: true
   - rename:
       field: json.context.circumstances
-      tag: rename_context_circumstances
+      tag: rename_context_circumstances_b9504dd1
       target_field: eset_protect.detection.context.circumstances
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_detection_context_circumstances
+      tag: set_message_from_detection_context_circumstances_0ae4fa15
       copy_from: eset_protect.detection.context.circumstances
       ignore_empty_value: true
   - rename:
       field: json.context.deviceUuid
-      tag: rename_context_deviceUuid
+      tag: rename_context_deviceUuid_2c0b9f6a
       target_field: eset_protect.detection.context.device_uuid
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_detection_context_device_uuid
+      tag: set_host_id_from_detection_context_device_uuid_f7c055b7
       copy_from: eset_protect.detection.context.device_uuid
       ignore_empty_value: true
   - set:
       field: host.name
-      tag: set_host_name_from_device_display_name
+      tag: set_host_name_from_device_display_name_bc124470
       copy_from: json.deviceDisplayName
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - append:
       field: related.hosts
-      tag: append_context_device_uuid_into_related_hosts
+      tag: append_context_device_uuid_into_related_hosts_b6297f36
       value: "{{{eset_protect.detection.context.device_uuid}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.context?.device_uuid != null
   - convert:
       field: json.deviceInfo.primaryIp
-      tag: convert_device_primary_ip
+      tag: convert_device_primary_ip_0324dece
       target_field: json.deviceInfo.primaryIp
       type: ip
       ignore_missing: true
@@ -153,19 +153,19 @@ processors:
             ignore_missing: true
   - append:
       field: host.ip
-      tag: append_device_primary_ip_into_host_ip
+      tag: append_device_primary_ip_into_host_ip_704f0a76
       value: "{{{json.deviceInfo.primaryIp}}}"
       allow_duplicates: false
       if: ctx.json?.deviceInfo?.primaryIp != null
   - append:
       field: related.ip
-      tag: append_device_primary_ip_into_related_ip
+      tag: append_device_primary_ip_into_related_ip_5e8cd868
       value: "{{{json.deviceInfo.primaryIp}}}"
       allow_duplicates: false
       if: ctx.json?.deviceInfo?.primaryIp != null
   - convert:
       field: json.deviceInfo.publicIp
-      tag: convert_device_public_ip
+      tag: convert_device_public_ip_27235508
       target_field: json.deviceInfo.publicIp
       type: ip
       ignore_missing: true
@@ -176,89 +176,89 @@ processors:
             ignore_missing: true
   - append:
       field: host.ip
-      tag: append_device_public_ip_into_host_ip
+      tag: append_device_public_ip_into_host_ip_fdd20886
       value: "{{{json.deviceInfo.publicIp}}}"
       allow_duplicates: false
       if: ctx.json?.deviceInfo?.publicIp != null
   - append:
       field: related.ip
-      tag: append_device_public_ip_into_related_ip
+      tag: append_device_public_ip_into_related_ip_9aa9f452
       value: "{{{json.deviceInfo.publicIp}}}"
       allow_duplicates: false
       if: ctx.json?.deviceInfo?.publicIp != null
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_device_info
+      tag: set_host_os_full_from_device_info_ea78aac4
       copy_from: json.deviceInfo.osFull
       ignore_empty_value: true
   - set:
       field: host.os.version
-      tag: set_host_os_version_from_device_info
+      tag: set_host_os_version_from_device_info_cd960b37
       copy_from: json.deviceInfo.osVersion
       ignore_empty_value: true
   - set:
       field: host.os.type
-      tag: set_host_os_type_windows
+      tag: set_host_os_type_windows_81fc5ec0
       value: windows
       if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('windows')
   - set:
       field: host.os.type
-      tag: set_host_os_type_linux
+      tag: set_host_os_type_linux_dccde04a
       value: linux
       if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('linux')
   - set:
       field: host.os.type
-      tag: set_host_os_type_macos
+      tag: set_host_os_type_macos_6e63f832
       value: macos
       if: ctx.host?.os?.full != null && (ctx.host.os.full.toLowerCase().contains('mac os') || ctx.host.os.full.toLowerCase().contains('macos'))
   - set:
       field: host.os.name
-      tag: set_host_os_name_from_os_full
+      tag: set_host_os_name_from_os_full_9b9ae1c3
       copy_from: host.os.full
       ignore_empty_value: true
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_windows
+      tag: set_host_os_platform_windows_12903b69
       value: windows
       if: ctx.host?.os?.type == 'windows'
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_linux
+      tag: set_host_os_platform_linux_10a1db1b
       value: linux
       if: ctx.host?.os?.type == 'linux'
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_macos
+      tag: set_host_os_platform_macos_b65ebdf7
       value: darwin
       if: ctx.host?.os?.type == 'macos'
   - set:
       field: host.os.family
-      tag: set_host_os_family_windows
+      tag: set_host_os_family_windows_a1650161
       value: windows
       if: ctx.host?.os?.type == 'windows'
   - set:
       field: host.os.family
-      tag: set_host_os_family_linux
+      tag: set_host_os_family_linux_3557f7c2
       value: linux
       if: ctx.host?.os?.type == 'linux'
   - set:
       field: host.os.family
-      tag: set_host_os_family_macos
+      tag: set_host_os_family_macos_ec5f3d4f
       value: darwin
       if: ctx.host?.os?.type == 'macos'
   - rename:
       field: json.context.process.path
-      tag: rename_context_process_path
+      tag: rename_context_process_path_8af69512
       target_field: eset_protect.detection.context.process.path
       ignore_missing: true
   - set:
       field: process.executable
-      tag: set_process_executable_from_detection_context_process_path
+      tag: set_process_executable_from_detection_context_process_path_ded7f4af
       copy_from: eset_protect.detection.context.process.path
       ignore_empty_value: true
   - grok:
       field: eset_protect.detection.context.process.path
-      tag: grok_context_process_path
+      tag: grok_context_process_path_1fc4caee
       ignore_missing: true
       patterns:
         - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
@@ -272,12 +272,12 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.context.userName
-      tag: rename_context_userName
+      tag: rename_context_userName_e5b05ff0
       target_field: eset_protect.detection.context.user_name
       ignore_missing: true
   - grok:
       field: eset_protect.detection.context.user_name
-      tag: grok_user_name
+      tag: grok_user_name_46e68dd4
       ignore_missing: true
       patterns:
         - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
@@ -292,33 +292,33 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - rename:
       field: json.displayName
-      tag: rename_displayName
+      tag: rename_displayName_33ea93f4
       target_field: eset_protect.detection.display_name
       ignore_missing: true
   - rename:
       field: json.networkCommunication.direction
-      tag: rename_networkCommunication_direction
+      tag: rename_networkCommunication_direction_99e574cd
       target_field: eset_protect.detection.network_communication.direction
       ignore_missing: true
   - set:
       field: network.direction
-      tag: set_network_direction_to_inbound
+      tag: set_network_direction_to_inbound_d23afd9d
       value: inbound
       if: ctx.eset_protect?.detection?.network_communication?.direction == 'NETWORK_COMMUNICATION_DIRECTION_INBOUND'
   - set:
       field: network.direction
-      tag: set_network_direction_to_outbound
+      tag: set_network_direction_to_outbound_11163076
       value: outbound
       if: ctx.eset_protect?.detection?.network_communication?.direction == 'NETWORK_COMMUNICATION_DIRECTION_OUTBOUND'
   - convert:
       field: json.networkCommunication.localIpAddress
-      tag: convert_networkCommunication_localIpAddress_to_ip
+      tag: convert_networkCommunication_localIpAddress_to_ip_4223eb18
       target_field: eset_protect.detection.network_communication.local.ip_address
       type: ip
       ignore_missing: true
@@ -330,17 +330,17 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: source.ip
-      tag: set_source_ip_from_detection_network_communication_local_ip_address
+      tag: set_source_ip_from_detection_network_communication_local_ip_address_d432483b
       copy_from: eset_protect.detection.network_communication.local.ip_address
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip_to_source_geo
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      tag: geoip_source_ip_to_source_as
+      tag: geoip_source_ip_to_source_as_58199963
       field: source.ip
       target_field: source.as
       properties:
@@ -349,23 +349,23 @@ processors:
       ignore_missing: true
   - rename:
       field: source.as.asn
-      tag: rename_source_as_asn
+      tag: rename_source_as_asn_168bbbaf
       target_field: source.as.number
       ignore_missing: true
   - rename:
       field: source.as.organization_name
-      tag: rename_source_as_organization_name
+      tag: rename_source_as_organization_name_aa06a00b
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_network_communication_local_ip_address_into_related_ip
+      tag: append_network_communication_local_ip_address_into_related_ip_c285bb1d
       value: "{{{eset_protect.detection.network_communication.local.ip_address}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.network_communication?.local?.ip_address != null
   - convert:
       field: json.networkCommunication.localPort
-      tag: convert_networkCommunication_localPort_to_long
+      tag: convert_networkCommunication_localPort_to_long_7c9a391d
       target_field: eset_protect.detection.network_communication.local.port
       type: long
       ignore_missing: true
@@ -376,27 +376,27 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: source.port
-      tag: set_source_port_from_detection_network_communication_local_port
+      tag: set_source_port_from_detection_network_communication_local_port_ed07fe1b
       copy_from: eset_protect.detection.network_communication.local.port
       ignore_empty_value: true
   - rename:
       field: json.networkCommunication.protocolName
-      tag: rename_networkCommunication_protocolName
+      tag: rename_networkCommunication_protocolName_6f1347cc
       target_field: eset_protect.detection.network_communication.protocol_name
       ignore_missing: true
   - set:
       field: network.transport
-      tag: set_network_transport_from_detection_network_communication_protocol_name
+      tag: set_network_transport_from_detection_network_communication_protocol_name_51f7b7a5
       copy_from: eset_protect.detection.network_communication.protocol_name
       ignore_empty_value: true
       if: ctx.eset_protect?.detection?.network_communication?.protocol_name != "0"
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
   - convert:
       field: json.networkCommunication.remoteIpAddress
-      tag: convert_networkCommunication_remoteIpAddress_to_ip
+      tag: convert_networkCommunication_remoteIpAddress_to_ip_e80daf19
       target_field: eset_protect.detection.network_communication.remote.ip_address
       type: ip
       ignore_missing: true
@@ -408,17 +408,17 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_detection_network_communication_remote_ip_address
+      tag: set_destination_ip_from_detection_network_communication_remote_ip_address_7206e685
       copy_from: eset_protect.detection.network_communication.remote.ip_address
       ignore_empty_value: true
   - geoip:
       field: destination.ip
-      tag: geoip_destination_ip_to_destination_geo
+      tag: geoip_destination_ip_to_destination_geo_71881fab
       target_field: destination.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      tag: geoip_destination_ip_to_destination_as
+      tag: geoip_destination_ip_to_destination_as_4e3ec16d
       field: destination.ip
       target_field: destination.as
       properties:
@@ -427,23 +427,23 @@ processors:
       ignore_missing: true
   - rename:
       field: destination.as.asn
-      tag: rename_destination_as_asn
+      tag: rename_destination_as_asn_4968f9c8
       target_field: destination.as.number
       ignore_missing: true
   - rename:
       field: destination.as.organization_name
-      tag: rename_destination_as_organization_name
+      tag: rename_destination_as_organization_name_fb88b41e
       target_field: destination.as.organization.name
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_network_communication_remote_ip_address_into_related_ip
+      tag: append_network_communication_remote_ip_address_into_related_ip_649512f6
       value: "{{{eset_protect.detection.network_communication.remote.ip_address}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.network_communication?.remote?.ip_address != null
   - convert:
       field: json.networkCommunication.remotePort
-      tag: convert_networkCommunication_remotePort_to_long
+      tag: convert_networkCommunication_remotePort_to_long_0a2b51bf
       target_field: eset_protect.detection.network_communication.remote.port
       type: long
       ignore_missing: true
@@ -454,58 +454,58 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: destination.port
-      tag: set_destination_port_from_detection_network_communication_remote_port
+      tag: set_destination_port_from_detection_network_communication_remote_port_b8ebc374
       copy_from: eset_protect.detection.network_communication.remote.port
       ignore_empty_value: true
   - rename:
       field: json.objectTypeName
-      tag: rename_objectTypeName
+      tag: rename_objectTypeName_05eae60f
       target_field: eset_protect.detection.object_type_name
       ignore_missing: true
   - rename:
       field: json.objectHashSha1
-      tag: rename_objectHashSha1
+      tag: rename_objectHashSha1_c58d3bee
       target_field: eset_protect.detection.object_hash_sha1
       ignore_missing: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1_from_detection_object_hash_sha1
+      tag: set_file_hash_sha1_from_detection_object_hash_sha1_43f9317f
       copy_from: eset_protect.detection.object_hash_sha1
       ignore_empty_value: true
       if: ctx.eset_protect?.detection?.object_type_name == "File"
   - lowercase:
       field: file.hash.sha1
-      tag: lowercase_file_hash_sha1
+      tag: lowercase_file_hash_sha1_60cf757f
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_object_hash_sha1_into_related_hash
+      tag: append_object_hash_sha1_into_related_hash_85daa8ab
       value: "{{{eset_protect.detection.object_hash_sha1}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.object_hash_sha1 != null
   - lowercase:
       field: related.hash
-      tag: lowercase_related_hash
+      tag: lowercase_related_hash_d0aa97ba
       ignore_missing: true
   - rename:
       field: json.objectName
-      tag: rename_objectName
+      tag: rename_objectName_d5a52e51
       target_field: eset_protect.detection.object_name
       ignore_missing: true
   - set:
       field: file.name
-      tag: set_file_name_from_detection_object_name
+      tag: set_file_name_from_detection_object_name_77509d40
       copy_from: eset_protect.detection.object_name
       ignore_empty_value: true
       if: ctx.eset_protect?.detection?.object_type_name == "File"
   - rename:
       field: json.objectUrl
-      tag: rename_objectUrl
+      tag: rename_objectUrl_ae83c813
       target_field: eset_protect.detection.object_url
       ignore_missing: true
   - date:
       field: json.occurTime
-      tag: date_occurTime
+      tag: date_occurTime_997380f0
       target_field: eset_protect.detection.occur_time
       formats:
         - ISO8601
@@ -517,7 +517,7 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: "@timestamp"
-      tag: set_@timestamp_from_detection_occur_time
+      tag: set_@timestamp_from_detection_occur_time_d8aa4722
       copy_from: eset_protect.detection.occur_time
       ignore_empty_value: true
   - foreach:
@@ -527,17 +527,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.deviceRestartRequired
-          tag: convert_responses_deviceRestartRequired_to_boolean
+          tag: convert_responses_deviceRestartRequired_to_boolean_a6a3ddb6
           target_field: _ingest._value.device_restart_required
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_deviceRestartRequired
+                tag: remove_ingest_value_deviceRestartRequired_ec5b2154
                 field: _ingest._value.deviceRestartRequired
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_da836ee4
                 field: error.message
                 value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - foreach:
@@ -547,7 +547,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.displayName
-          tag: rename_responses_displayName
+          tag: rename_responses_displayName_b52e22c6
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
@@ -557,7 +557,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.protectionName
-          tag: rename_responses_protectionName
+          tag: rename_responses_protectionName_b66f137f
           target_field: _ingest._value.protection_name
           ignore_missing: true
   - foreach:
@@ -567,32 +567,32 @@ processors:
       processor:
         remove:
           field: _ingest._value.deviceRestartRequired
-          tag: remove_responses_deviceRestartRequired
+          tag: remove_responses_deviceRestartRequired_4d94eb99
           ignore_missing: true
   - rename:
       field: json.responses
-      tag: rename_responses
+      tag: rename_responses_321bbe19
       target_field: eset_protect.detection.responses
       ignore_missing: true
   - rename:
       field: json.severityLevel
-      tag: rename_severityLevel
+      tag: rename_severityLevel_850714b8
       target_field: eset_protect.detection.severity_level
       ignore_missing: true
   - rename:
       field: json.typeName
-      tag: rename_typeName
+      tag: rename_typeName_9863b259
       target_field: eset_protect.detection.type_name
       ignore_missing: true
   - append:
       field: threat.technique.name
-      tag: append_eset_protect_detection_type_name_into_threat_technique_name
+      tag: append_eset_protect_detection_type_name_into_threat_technique_name_67c8a148
       value: "{{{eset_protect.detection.type_name}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.type_name != null
   - rename:
       field: json.uuid
-      tag: rename_uuid
+      tag: rename_uuid_a74d00dd
       target_field: eset_protect.detection.uuid
       ignore_missing: true
   - remove:
@@ -607,15 +607,15 @@ processors:
         - eset_protect.detection.network_communication.remote.port
         - eset_protect.detection.occur_time
         - eset_protect.detection.type_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_a9bb1b6c
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -651,10 +651,10 @@ on_failure:
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

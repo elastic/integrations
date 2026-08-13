@@ -3,44 +3,44 @@ description: Pipeline for processing compromised_credential logs.
 processors:
   - drop:
       if: ctx.message == 'retry'
-      tag: drop_retry_events
+      tag: drop_retry_events_1f05010a
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - rename:
       field: json.breachSource
-      tag: rename_breachSource
+      tag: rename_breachSource_02a6f128
       target_field: island_browser.compromised_credential.breach_source
       ignore_missing: true
   - date:
       field: json.compromisedDate
-      tag: date_compromisedDate
+      tag: date_compromisedDate_855021a4
       target_field: island_browser.compromised_credential.compromised_date
       formats:
         - ISO8601
@@ -52,7 +52,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.createdDate
-      tag: date_createdDate
+      tag: date_createdDate_7affe968
       target_field: island_browser.compromised_credential.created_date
       formats:
         - ISO8601
@@ -64,68 +64,68 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_compromised_credential_created_date
+      tag: set_event_created_from_compromised_credential_created_date_2dc2145e
       copy_from: island_browser.compromised_credential.created_date
       ignore_empty_value: true
   - rename:
       field: json.email
-      tag: rename_email
+      tag: rename_email_b6ac4b7b
       target_field: island_browser.compromised_credential.email
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_compromised_credential_email
+      tag: set_user_email_from_compromised_credential_email_2cc0b3d8
       copy_from: island_browser.compromised_credential.email
       ignore_empty_value: true
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
-      tag: dissect_user_email
+      tag: dissect_user_email_3ce141a5
       field: user.email
       pattern: '%{_temp}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_compromised_credential_email_into_related_user
+      tag: append_compromised_credential_email_into_related_user_876706fe
       value: '{{{island_browser.compromised_credential.email}}}'
       allow_duplicates: false
       if: ctx.island_browser?.compromised_credential?.email != null
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_445e047f
       target_field: island_browser.compromised_credential.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_compromised_credential_id
+      tag: set_event_id_from_compromised_credential_id_d15546d7
       copy_from: island_browser.compromised_credential.id
       ignore_empty_value: true
   - rename:
       field: json.impactedDomain
-      tag: rename_impactedDomain
+      tag: rename_impactedDomain_2eb63167
       target_field: island_browser.compromised_credential.impacted_domain
       ignore_missing: true
   - set:
       field: source.registered_domain
-      tag: set_source_registered_domain_from_compromised_credential_impacted_domain
+      tag: set_source_registered_domain_from_compromised_credential_impacted_domain_c5726a02
       copy_from: island_browser.compromised_credential.impacted_domain
       ignore_empty_value: true
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_31ba1994
       target_field: island_browser.compromised_credential.status
       ignore_missing: true
   - rename:
       field: json.tenantId
-      tag: rename_tenantId
+      tag: rename_tenantId_c3c1d05b
       target_field: island_browser.compromised_credential.tenant_id
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id_from_compromised_credential_tenant_id
+      tag: set_organization_id_from_compromised_credential_tenant_id_11adccc4
       copy_from: island_browser.compromised_credential.tenant_id
       ignore_empty_value: true
   - date:
       field: json.updatedDate
-      tag: date_updatedDate
+      tag: date_updatedDate_5c4962a6
       target_field: island_browser.compromised_credential.updated_date
       formats:
         - ISO8601
@@ -137,17 +137,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.username
-      tag: rename_username
+      tag: rename_username_16703f4d
       target_field: island_browser.compromised_credential.username
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_compromised_credential_username
+      tag: set_user_name_from_compromised_credential_username_cbb74348
       copy_from: island_browser.compromised_credential.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_compromised_credential_username_into_related_user
+      tag: append_compromised_credential_username_into_related_user_840d5e9b
       value: '{{{island_browser.compromised_credential.username}}}'
       allow_duplicates: false
       if: ctx.island_browser?.compromised_credential?.username != null
@@ -159,17 +159,17 @@ processors:
         - island_browser.compromised_credential.impacted_domain
         - island_browser.compromised_credential.tenant_id
         - island_browser.compromised_credential.username
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_c0fa42be
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
         - _temp
-      tag: remove_json_and_temp
+      tag: remove_json_and_temp_c9df19f6
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -196,7 +196,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -207,7 +207,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -215,10 +215,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

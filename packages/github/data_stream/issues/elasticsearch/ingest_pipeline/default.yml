@@ -7,14 +7,14 @@ processors:
       value: '8.11.0'
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -23,7 +23,7 @@ processors:
       field: event.original
       target_field: github.issues
   - fail:
-      tag: fail_2df5ab84
+      tag: fail_missing_json_object_2df5ab84
       if: "!(ctx.github.issues instanceof Map)"
       message: Missing JSON object
   - set:
@@ -53,22 +53,22 @@ processors:
   - set:
       field: event.action
       value: reopened
-      tag: set_event_action_reopened
+      tag: set_event_action_reopened_fba32d46
       if: ctx.github?.issues?.state == 'open' && ctx.github.issues.state_reason == 'reopened'
   - set:
       field: event.action
       value: opened
-      tag: set_event_action_opened
+      tag: set_event_action_opened_ba3d87d9
       if: ctx.github?.issues?.state == 'open' && ctx.github.issues.state_reason != 'reopened'
   - set:
       field: event.action
       value: closed
-      tag: set_event_action_closed
+      tag: set_event_action_closed_a1434ad3
       if: ctx.github?.issues?.state == 'closed'
   - set:
       field: event.reason
       copy_from: github.issues.state_reason
-      tag: set_event_reason_from_state_reason
+      tag: set_event_reason_from_state_reason_6739bff4
       ignore_empty_value: true
   - date:
       tag: date_github_issues_updated_at_to_github_issues_updated_at_093ebffd
@@ -136,10 +136,10 @@ processors:
       ignore_missing: true
       processor:
         remove:
-          tag: remove_ingest_value_node_id
+          tag: remove_ingest_value_node_id_c6d8b287
           field: ["_ingest._value.node_id", "_ingest._value.avatar_url", "_ingest._value.gravatar_id", "_ingest._value.followers_url", "_ingest._value.following_url", "_ingest._value.gists_url", "_ingest._value.starred_url", "_ingest._value.subscriptions_url", "_ingest._value.organizations_url", "_ingest._value.repos_url", "_ingest._value.events_url", "_ingest._value.received_events_url"]
   - fingerprint:
-      tag: fingerprint_aba2b3a0
+      tag: fingerprint_to_id_aba2b3a0
       fields:
         - github.repository.owner.login
         - github.repository.name
@@ -197,7 +197,7 @@ processors:
       field: github.issues.labels
       ignore_missing: true
   - script:
-      tag: script_261fc403
+      tag: script_remove_unwanted_fields_from_labels_261fc403
       lang: painless
       description: Remove unwanted fields from labels
       if: ctx._temp_?.labels != null
@@ -214,7 +214,7 @@ processors:
         }
         ctx.github.issues.labels = labels;
   - script:
-      tag: script_bfa45937
+      tag: script_calculate_time_taken_to_close_bfa45937
       lang: painless
       description: Calculate time taken to close an issue
       if: ctx.github.issues.closed_at != null
@@ -263,7 +263,7 @@ processors:
       if: ctx.github.issues.assignees != null
       processor:
         append:
-          tag: append_related_user
+          tag: append_related_user_d03bf79f
           field: related.user
           value: "{{{_ingest._value.login}}}"
           allow_duplicates: false
@@ -271,13 +271,13 @@ processors:
           # Cleanup #
           ###########
   - remove:
-      tag: remove_96fa0639
+      tag: remove_cleanup_96fa0639
       field:
         - _temp_
         - github.issues.repository
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -304,15 +304,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

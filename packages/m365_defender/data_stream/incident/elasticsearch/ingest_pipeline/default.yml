@@ -8,7 +8,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -181,7 +181,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_22102a68
       if: ctx.m365_defender?.incident?.severity instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -235,7 +235,7 @@ processors:
   - set:
       field: source.user.email
       copy_from: m365_defender.incident.assigned_to
-      tag: copy_source_user_email
+      tag: copy_source_user_email_ad4bb765
       if: ctx.m365_defender?.incident?.assigned_to != null && ctx.m365_defender.incident.assigned_to.indexOf("@") > 0
   - append:
       tag: append_related_user_fb2b187b
@@ -313,7 +313,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_related_user
+          tag: append_related_user_cd6782ec
           field: related.user
           value: '{{{_ingest._value.createdByDisplayName}}}'
           allow_duplicates: false
@@ -362,7 +362,7 @@ processors:
   - script:
       lang: painless
       description: Drops empty string values recursively.
-      tag: painless_remove_empty_from_evidence
+      tag: painless_remove_empty_from_evidence_6059cfd5
       if: ctx.json?.alerts?.evidence != null
       source: |-
         boolean drop(Object object) {
@@ -385,7 +385,7 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_createdDateTime_to_ingest_value_created_datetime
+          tag: date_ingest_value_createdDateTime_to_ingest_value_created_datetime_d66a1357
           field: _ingest._value.createdDateTime
           target_field: _ingest._value.created_datetime
           formats:
@@ -398,7 +398,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_remediationStatus_to_ingest_value_remediation_status
+          tag: rename_ingest_value_remediationStatus_to_ingest_value_remediation_status_d5288401
           field: _ingest._value.remediationStatus
           target_field: _ingest._value.remediation_status
           ignore_missing: true
@@ -409,7 +409,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_remediationStatusDetails_to_ingest_value_remediation_status_details
+          tag: rename_ingest_value_remediationStatusDetails_to_ingest_value_remediation_status_details_d6a321da
           field: _ingest._value.remediationStatusDetails
           target_field: _ingest._value.remediation_status_details
           ignore_missing: true
@@ -596,7 +596,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         dot_expander:
-          tag: dot_expander_odata_type
+          tag: dot_expander_odata_type_1fc7789c
           field: '@odata.type'
           path: _ingest._value
           ignore_failure: true
@@ -607,7 +607,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_odata_type_to_ingest_value_odata_type
+          tag: rename_ingest_value_odata_type_to_ingest_value_odata_type_054c16e5
           field: _ingest._value.@odata.type
           target_field: _ingest._value.odata_type
           ignore_missing: true
@@ -618,7 +618,7 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_receivedDateTime_to_ingest_value_received_datetime
+          tag: date_ingest_value_receivedDateTime_to_ingest_value_received_datetime_7789a0a5
           field: _ingest._value.receivedDateTime
           target_field: _ingest._value.received_datetime
           formats:
@@ -631,7 +631,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_email_delivery_timestamp
+          tag: append_email_delivery_timestamp_eb381c42
           field: email.delivery_timestamp
           value: '{{{_ingest._value.received_datetime}}}'
           allow_duplicates: false
@@ -643,7 +643,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_antiSpamDirection_to_ingest_value_antispam_direction
+          tag: rename_ingest_value_antiSpamDirection_to_ingest_value_antispam_direction_047d1aa4
           field: _ingest._value.antiSpamDirection
           target_field: _ingest._value.antispam_direction
           ignore_missing: true
@@ -654,7 +654,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_email_direction
+          tag: append_email_direction_acf51a79
           field: email.direction
           value: '{{{_ingest._value.antispam_direction}}}'
           allow_duplicates: false
@@ -666,7 +666,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_email_subject
+          tag: append_email_subject_56dc8e7e
           field: email.subject
           value: '{{{_ingest._value.subject}}}'
           allow_duplicates: false
@@ -678,7 +678,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_recipientEmailAddress_to_ingest_value_recipient_email_address
+          tag: rename_ingest_value_recipientEmailAddress_to_ingest_value_recipient_email_address_f49c0cf5
           field: _ingest._value.recipientEmailAddress
           target_field: _ingest._value.recipient_email_address
           ignore_missing: true
@@ -701,7 +701,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_email_to_address
+          tag: append_email_to_address_a80bb99f
           field: email.to.address
           value: '{{{_ingest._value.recipient_email_address}}}'
           allow_duplicates: false
@@ -713,17 +713,17 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_attachmentsCount_to_ingest_value_attachments_count
+          tag: convert_ingest_value_attachmentsCount_to_ingest_value_attachments_count_8a824b3f
           field: _ingest._value.attachmentsCount
           target_field: _ingest._value.attachments_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_attachmentsCount
+                tag: remove_ingest_value_attachmentsCount_2ba2d0f0
                 field: _ingest._value.attachmentsCount
             - append:
-                tag: append_error_message
+                tag: append_error_message_7b267a76
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -733,7 +733,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_deliveryAction_to_ingest_value_delivery_action
+          tag: rename_ingest_value_deliveryAction_to_ingest_value_delivery_action_02823aab
           field: _ingest._value.deliveryAction
           target_field: _ingest._value.delivery_action
           ignore_missing: true
@@ -744,7 +744,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_deliveryLocation_to_ingest_value_delivery_location
+          tag: rename_ingest_value_deliveryLocation_to_ingest_value_delivery_location_80a669af
           field: _ingest._value.deliveryLocation
           target_field: _ingest._value.delivery_location
           ignore_missing: true
@@ -755,7 +755,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_internetMessageId_to_ingest_value_internet_message_id
+          tag: rename_ingest_value_internetMessageId_to_ingest_value_internet_message_id_09240ad7
           field: _ingest._value.internetMessageId
           target_field: _ingest._value.internet_message_id
           ignore_missing: true
@@ -766,7 +766,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_networkMessageId_to_ingest_value_network_message_id
+          tag: rename_ingest_value_networkMessageId_to_ingest_value_network_message_id_9545eed2
           field: _ingest._value.networkMessageId
           target_field: _ingest._value.network_message_id
           ignore_missing: true
@@ -787,7 +787,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_p1Sender_odata_type_to_ingest_value_p1_sender_odata_type
+          tag: rename_ingest_value_p1Sender_odata_type_to_ingest_value_p1_sender_odata_type_e0d80560
           field: _ingest._value.p1Sender.@odata.type
           target_field: _ingest._value.p1_sender.odata_type
           ignore_missing: true
@@ -808,7 +808,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_p2Sender_odata_type_to_ingest_value_p2_sender_odata_type
+          tag: rename_ingest_value_p2Sender_odata_type_to_ingest_value_p2_sender_odata_type_09a7172b
           field: _ingest._value.p2Sender.@odata.type
           target_field: _ingest._value.p2_sender.odata_type
           ignore_missing: true
@@ -819,7 +819,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_p1Sender_displayName_to_ingest_value_p1_sender_display_name
+          tag: rename_ingest_value_p1Sender_displayName_to_ingest_value_p1_sender_display_name_ce88c5c0
           field: _ingest._value.p1Sender.displayName
           target_field: _ingest._value.p1_sender.display_name
           ignore_missing: true
@@ -842,7 +842,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_p1Sender_domainName_to_ingest_value_p1_sender_domain_name
+          tag: rename_ingest_value_p1Sender_domainName_to_ingest_value_p1_sender_domain_name_fdc4b938
           field: _ingest._value.p1Sender.domainName
           target_field: _ingest._value.p1_sender.domain_name
           ignore_missing: true
@@ -853,7 +853,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_related_hosts
+          tag: append_related_hosts_eb318d3e
           field: related.hosts
           value: '{{{_ingest._value.p1_sender.domain_name}}}'
           allow_duplicates: false
@@ -865,7 +865,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_p1Sender_emailAddress_to_ingest_value_p1_sender_email_address
+          tag: rename_ingest_value_p1Sender_emailAddress_to_ingest_value_p1_sender_email_address_81080bcf
           field: _ingest._value.p1Sender.emailAddress
           target_field: _ingest._value.p1_sender.email_address
           ignore_missing: true
@@ -876,7 +876,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_email_from_address
+          tag: append_email_from_address_912ee121
           field: email.from.address
           value: '{{{_ingest._value.p1_sender.email_address}}}'
           allow_duplicates: false
@@ -900,7 +900,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_p2Sender_displayName_to_ingest_value_p2_sender_display_name
+          tag: rename_ingest_value_p2Sender_displayName_to_ingest_value_p2_sender_display_name_63ececaf
           field: _ingest._value.p2Sender.displayName
           target_field: _ingest._value.p2_sender.display_name
           ignore_missing: true
@@ -923,7 +923,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_p2Sender_domainName_to_ingest_value_p2_sender_domain_name
+          tag: rename_ingest_value_p2Sender_domainName_to_ingest_value_p2_sender_domain_name_45b268fe
           field: _ingest._value.p2Sender.domainName
           target_field: _ingest._value.p2_sender.domain_name
           ignore_missing: true
@@ -946,7 +946,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_p2Sender_emailAddress_to_ingest_value_p2_sender_email_address
+          tag: rename_ingest_value_p2Sender_emailAddress_to_ingest_value_p2_sender_email_address_e624a76c
           field: _ingest._value.p2Sender.emailAddress
           target_field: _ingest._value.p2_sender.email_address
           ignore_missing: true
@@ -981,14 +981,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_senderIp_to_ingest_value_sender_ip
+          tag: convert_ingest_value_senderIp_to_ingest_value_sender_ip_d5c4651b
           field: _ingest._value.senderIp
           target_field: _ingest._value.sender_ip
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_senderIp
+                tag: remove_ingest_value_senderIp_ed67ee82
                 field: _ingest._value.senderIp
             - append:
                 tag: append_error_message_b1dd0cc7
@@ -1001,7 +1001,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_related_ip
+          tag: append_related_ip_a975b06c
           field: related.ip
           value: '{{{_ingest._value.sender_ip}}}'
           allow_duplicates: false
@@ -1013,7 +1013,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_threatDetectionMethods_to_ingest_value_threat_detection_methods
+          tag: rename_ingest_value_threatDetectionMethods_to_ingest_value_threat_detection_methods_fb69c998
           field: _ingest._value.threatDetectionMethods
           target_field: _ingest._value.threat_detection_methods
           ignore_missing: true
@@ -1024,14 +1024,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_urlCount_to_ingest_value_url_count
+          tag: convert_ingest_value_urlCount_to_ingest_value_url_count_3a4a998d
           field: _ingest._value.urlCount
           target_field: _ingest._value.url_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_urlCount
+                tag: remove_ingest_value_urlCount_7ba66c40
                 field: _ingest._value.urlCount
             - append:
                 tag: append_error_message_577ae506
@@ -1044,14 +1044,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_instanceId_to_ingest_value_instance_id
+          tag: convert_ingest_value_instanceId_to_ingest_value_instance_id_fc617cd1
           field: _ingest._value.instanceId
           target_field: _ingest._value.instance_id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_instanceId
+                tag: remove_ingest_value_instanceId_1cb276fb
                 field: _ingest._value.instanceId
             - append:
                 tag: append_error_message_4c3c460c
@@ -1064,7 +1064,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_cloud_instance_id
+          tag: append_cloud_instance_id_6e4f9312
           field: cloud.instance.id
           value: '{{{_ingest._value.instance_id}}}'
           allow_duplicates: false
@@ -1076,7 +1076,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_instanceName_to_ingest_value_instance_name
+          tag: rename_ingest_value_instanceName_to_ingest_value_instance_name_cfe482ca
           field: _ingest._value.instanceName
           target_field: _ingest._value.instance_name
           ignore_missing: true
@@ -1087,7 +1087,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_cloud_instance_name
+          tag: append_cloud_instance_name_e2426fb4
           field: cloud.instance.name
           value: '{{{_ingest._value.instance_name}}}'
           allow_duplicates: false
@@ -1099,14 +1099,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_appId_to_ingest_value_app_id
+          tag: convert_ingest_value_appId_to_ingest_value_app_id_bd4905bb
           field: _ingest._value.appId
           target_field: _ingest._value.app_id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_appId
+                tag: remove_ingest_value_appId_81097bbd
                 field: _ingest._value.appId
             - append:
                 tag: append_error_message_93f9c4ff
@@ -1119,7 +1119,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_displayName_to_ingest_value_display_name
+          tag: rename_ingest_value_displayName_to_ingest_value_display_name_e920a0a5
           field: _ingest._value.displayName
           target_field: _ingest._value.display_name
           ignore_missing: true
@@ -1130,14 +1130,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_saasAppId_to_ingest_value_saas_app_id
+          tag: convert_ingest_value_saasAppId_to_ingest_value_saas_app_id_6d7feb68
           field: _ingest._value.saasAppId
           target_field: _ingest._value.saas_app_id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_saasAppId
+                tag: remove_ingest_value_saasAppId_c0b5d26e
                 field: _ingest._value.saasAppId
             - append:
                 tag: append_error_message_51b19880
@@ -1150,7 +1150,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_vmMetadata_cloudProvider_to_ingest_value_vm_metadata_cloud_provider
+          tag: rename_ingest_value_vmMetadata_cloudProvider_to_ingest_value_vm_metadata_cloud_provider_b49bed43
           field: _ingest._value.vmMetadata.cloudProvider
           target_field: _ingest._value.vm_metadata.cloud_provider
           ignore_missing: true
@@ -1161,7 +1161,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_mdeDeviceId_to_ingest_value_mde_device_id
+          tag: rename_ingest_value_mdeDeviceId_to_ingest_value_mde_device_id_09512efe
           field: _ingest._value.mdeDeviceId
           target_field: _ingest._value.mde_device_id
           ignore_missing: true
@@ -1172,7 +1172,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_osPlatform_to_ingest_value_os_platform
+          tag: rename_ingest_value_osPlatform_to_ingest_value_os_platform_955da027
           field: _ingest._value.osPlatform
           target_field: _ingest._value.os_platform
           ignore_missing: true
@@ -1183,7 +1183,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_host_os_name
+          tag: append_host_os_name_e4ea53f8
           field: host.os.name
           value: '{{{_ingest._value.os_platform}}}'
           allow_duplicates: false
@@ -1195,7 +1195,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_host_os_version
+          tag: append_host_os_version_30f00c88
           field: host.os.version
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
@@ -1208,7 +1208,7 @@ processors:
       processor:
         append:
           field: device.id
-          tag: append_azureAdDeviceId_into_device_id
+          tag: append_azureAdDeviceId_into_device_id_5c4134dd
           value: '{{{_ingest._value.azureAdDeviceId}}}'
           allow_duplicates: false
   - foreach:
@@ -1218,7 +1218,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_azureAdDeviceId_to_ingest_value_azure_ad_device_id
+          tag: rename_ingest_value_azureAdDeviceId_to_ingest_value_azure_ad_device_id_71236f6a
           field: _ingest._value.azureAdDeviceId
           target_field: _ingest._value.azure_ad_device_id
           ignore_missing: true
@@ -1229,7 +1229,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_defenderAvStatus_to_ingest_value_defender_av_status
+          tag: rename_ingest_value_defenderAvStatus_to_ingest_value_defender_av_status_196300bf
           field: _ingest._value.defenderAvStatus
           target_field: _ingest._value.defender_av_status
           ignore_missing: true
@@ -1240,7 +1240,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_deviceDnsName_to_ingest_value_device_dns_name
+          tag: rename_ingest_value_deviceDnsName_to_ingest_value_device_dns_name_faf25ea5
           field: _ingest._value.deviceDnsName
           target_field: _ingest._value.device_dns_name
           ignore_missing: true
@@ -1263,20 +1263,20 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_host_name
+          tag: append_host_name_34b049eb
           field: host.name
           value: '{{{_ingest._value.device_dns_name}}}'
           allow_duplicates: false
           ignore_failure: true
   - foreach:
       field: json.alerts.evidence
-      tag: foreach_evidence_append_device_dns_name_to_host_hostname
+      tag: foreach_evidence_append_device_dns_name_to_host_hostname_cec4d330
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
         append:
           field: host.hostname
-          tag: append_foreach_evidence_device_dns_name_to_host_hostname
+          tag: append_foreach_evidence_device_dns_name_to_host_hostname_1f2d5279
           value: '{{{_ingest._value.device_dns_name}}}'
           allow_duplicates: false
   - foreach:
@@ -1286,7 +1286,7 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_firstSeenDateTime_to_ingest_value_first_seen_datetime
+          tag: date_ingest_value_firstSeenDateTime_to_ingest_value_first_seen_datetime_feef0958
           field: _ingest._value.firstSeenDateTime
           target_field: _ingest._value.first_seen_datetime
           formats:
@@ -1299,7 +1299,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_healthStatus_to_ingest_value_health_status
+          tag: rename_ingest_value_healthStatus_to_ingest_value_health_status_8254ff5f
           field: _ingest._value.healthStatus
           target_field: _ingest._value.health_status
           ignore_missing: true
@@ -1310,13 +1310,13 @@ processors:
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_loggedOnUsers
+          tag: foreach_ingest_value_loggedOnUsers_5409a785
           field: _ingest._value.loggedOnUsers
           ignore_failure: true
           ignore_missing: true
           processor:
             rename:
-              tag: rename_ingest_value_accountName_to_ingest_value_account_name
+              tag: rename_ingest_value_accountName_to_ingest_value_account_name_981f33e9
               field: _ingest._value.accountName
               target_field: _ingest._value.account_name
               ignore_missing: true
@@ -1333,7 +1333,7 @@ processors:
           ignore_missing: true
           processor:
             append:
-              tag: append_user_name
+              tag: append_user_name_b7056e4c
               field: user.name
               value: '{{{_ingest._value.account_name}}}'
               allow_duplicates: false
@@ -1369,7 +1369,7 @@ processors:
           ignore_missing: true
           processor:
             rename:
-              tag: rename_ingest_value_domainName_to_ingest_value_domain_name
+              tag: rename_ingest_value_domainName_to_ingest_value_domain_name_bc3f2229
               field: _ingest._value.domainName
               target_field: _ingest._value.domain_name
               ignore_missing: true
@@ -1433,7 +1433,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_loggedOnUsers_to_ingest_value_logged_on_users
+          tag: rename_ingest_value_loggedOnUsers_to_ingest_value_logged_on_users_12ea2db0
           field: _ingest._value.loggedOnUsers
           target_field: _ingest._value.logged_on_users
           ignore_missing: true
@@ -1444,7 +1444,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_onboardingStatus_to_ingest_value_onboarding_status
+          tag: rename_ingest_value_onboardingStatus_to_ingest_value_onboarding_status_39ad9645
           field: _ingest._value.onboardingStatus
           target_field: _ingest._value.onboarding_status
           ignore_missing: true
@@ -1455,14 +1455,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_osBuild_to_ingest_value_os_build
+          tag: convert_ingest_value_osBuild_to_ingest_value_os_build_dbc262cb
           field: _ingest._value.osBuild
           target_field: _ingest._value.os_build
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_osBuild
+                tag: remove_ingest_value_osBuild_ea7901d2
                 field: _ingest._value.osBuild
             - append:
                 tag: append_error_message_d4d46d1e
@@ -1475,14 +1475,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_rbacGroupId_to_ingest_value_rbac_group_id
+          tag: convert_ingest_value_rbacGroupId_to_ingest_value_rbac_group_id_1862a4ff
           field: _ingest._value.rbacGroupId
           target_field: _ingest._value.rbac_group.id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_rbacGroupId
+                tag: remove_ingest_value_rbacGroupId_f2423cd1
                 field: _ingest._value.rbacGroupId
             - append:
                 tag: append_error_message_097971b9
@@ -1495,7 +1495,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_rbacGroupName_to_ingest_value_rbac_group_name
+          tag: rename_ingest_value_rbacGroupName_to_ingest_value_rbac_group_name_6f498ef9
           field: _ingest._value.rbacGroupName
           target_field: _ingest._value.rbac_group.name
           ignore_missing: true
@@ -1506,7 +1506,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_riskScore_to_ingest_value_risk_score
+          tag: rename_ingest_value_riskScore_to_ingest_value_risk_score_d2b87712
           field: _ingest._value.riskScore
           target_field: _ingest._value.risk_score
           ignore_missing: true
@@ -1527,7 +1527,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_vmMetadata_odata_type_to_ingest_value_vm_metadata_odata_type
+          tag: rename_ingest_value_vmMetadata_odata_type_to_ingest_value_vm_metadata_odata_type_1422c98b
           field: _ingest._value.vmMetadata.@odata.type
           target_field: _ingest._value.vm_metadata.odata_type
           ignore_missing: true
@@ -1538,7 +1538,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_vmMetadata_resourceId_to_ingest_value_vm_metadata_resource_id
+          tag: rename_ingest_value_vmMetadata_resourceId_to_ingest_value_vm_metadata_resource_id_8a4af418
           field: _ingest._value.vmMetadata.resourceId
           target_field: _ingest._value.vm_metadata.resource_id
           ignore_missing: true
@@ -1549,7 +1549,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_vmMetadata_subscriptionId_to_ingest_value_vm_metadata_subscription_id
+          tag: rename_ingest_value_vmMetadata_subscriptionId_to_ingest_value_vm_metadata_subscription_id_31bb3dc6
           field: _ingest._value.vmMetadata.subscriptionId
           target_field: _ingest._value.vm_metadata.subscription_id
           ignore_missing: true
@@ -1560,7 +1560,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_vmMetadata_vmId_to_ingest_value_vm_metadata_vm_id
+          tag: rename_ingest_value_vmMetadata_vmId_to_ingest_value_vm_metadata_vm_id_2d6dcf06
           field: _ingest._value.vmMetadata.vmId
           target_field: _ingest._value.vm_metadata.vm_id
           ignore_missing: true
@@ -1571,7 +1571,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_detectionStatus_to_ingest_value_detection_status
+          tag: rename_ingest_value_detectionStatus_to_ingest_value_detection_status_42218638
           field: _ingest._value.detectionStatus
           target_field: _ingest._value.detection_status
           ignore_missing: true
@@ -1582,7 +1582,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_event_action
+          tag: append_event_action_22c7e978
           field: event.action
           value: '{{{_ingest._value.detection_status}}}'
           allow_duplicates: false
@@ -1604,7 +1604,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_odata_type_to_ingest_value_file_details_odata_type
+          tag: rename_ingest_value_fileDetails_odata_type_to_ingest_value_file_details_odata_type_a206d7b7
           field: _ingest._value.fileDetails.@odata.type
           target_field: _ingest._value.file_details.odata_type
           ignore_missing: true
@@ -1615,7 +1615,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_sha1_to_ingest_value_file_details_sha1
+          tag: rename_ingest_value_fileDetails_sha1_to_ingest_value_file_details_sha1_c2901814
           field: _ingest._value.fileDetails.sha1
           target_field: _ingest._value.file_details.sha1
           ignore_missing: true
@@ -1626,7 +1626,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_file_hash_sha1
+          tag: append_file_hash_sha1_3c564230
           field: file.hash.sha1
           value: '{{{_ingest._value.file_details.sha1}}}'
           allow_duplicates: false
@@ -1638,7 +1638,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_related_hash
+          tag: append_related_hash_7d858e92
           field: related.hash
           value: '{{{_ingest._value.file_details.sha1}}}'
           allow_duplicates: false
@@ -1650,7 +1650,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_sha256_to_ingest_value_file_details_sha256
+          tag: rename_ingest_value_fileDetails_sha256_to_ingest_value_file_details_sha256_f2e4d3d5
           field: _ingest._value.fileDetails.sha256
           target_field: _ingest._value.file_details.sha256
           ignore_missing: true
@@ -1661,7 +1661,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_file_hash_sha256
+          tag: append_file_hash_sha256_615d22d0
           field: file.hash.sha256
           value: '{{{_ingest._value.file_details.sha256}}}'
           allow_duplicates: false
@@ -1685,7 +1685,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_fileName_to_ingest_value_file_details_name
+          tag: rename_ingest_value_fileDetails_fileName_to_ingest_value_file_details_name_fcae373f
           field: _ingest._value.fileDetails.fileName
           target_field: _ingest._value.file_details.name
           ignore_missing: true
@@ -1696,7 +1696,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_file_name
+          tag: append_file_name_f4cd953f
           field: file.name
           value: '{{{_ingest._value.file_details.name}}}'
           allow_duplicates: false
@@ -1708,7 +1708,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_filePath_to_ingest_value_file_details_path
+          tag: rename_ingest_value_fileDetails_filePath_to_ingest_value_file_details_path_a33c8692
           field: _ingest._value.fileDetails.filePath
           target_field: _ingest._value.file_details.path
           ignore_missing: true
@@ -1719,13 +1719,13 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_file_path
+          tag: append_file_path_de8d56ea
           field: file.path
           value: '{{{_ingest._value.file_details.path}}}\{{{_ingest._value.file_details.name}}}'
           allow_duplicates: false
           ignore_failure: true
   - script:
-      tag: script_remove_backslash
+      tag: script_remove_backslash_cba3c6bb
       if: ctx.file?.path instanceof List
       source: |-
         ctx.file.path.removeIf(v -> v == '\\');
@@ -1736,14 +1736,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_fileDetails_fileSize_to_ingest_value_file_details_size
+          tag: convert_ingest_value_fileDetails_fileSize_to_ingest_value_file_details_size_59373124
           field: _ingest._value.fileDetails.fileSize
           target_field: _ingest._value.file_details.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_fileDetails_fileSize
+                tag: remove_ingest_value_fileDetails_fileSize_a17c18b1
                 field: _ingest._value.fileDetails.fileSize
             - append:
                 tag: append_error_message_e3ab5618
@@ -1756,7 +1756,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_filePublisher_to_ingest_value_file_details_publisher
+          tag: rename_ingest_value_fileDetails_filePublisher_to_ingest_value_file_details_publisher_6af59f46
           field: _ingest._value.fileDetails.filePublisher
           target_field: _ingest._value.file_details.publisher
           ignore_missing: true
@@ -1767,7 +1767,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_issuer_to_ingest_value_file_details_issuer
+          tag: rename_ingest_value_fileDetails_issuer_to_ingest_value_file_details_issuer_5f7613b5
           field: _ingest._value.fileDetails.issuer
           target_field: _ingest._value.file_details.issuer
           ignore_missing: true
@@ -1778,7 +1778,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_fileDetails_signer_to_ingest_value_file_details_signer
+          tag: rename_ingest_value_fileDetails_signer_to_ingest_value_file_details_signer_b9fbc97b
           field: _ingest._value.fileDetails.signer
           target_field: _ingest._value.file_details.signer
           ignore_missing: true
@@ -1789,14 +1789,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_ipAddress_to_ingest_value_ip_address
+          tag: convert_ingest_value_ipAddress_to_ingest_value_ip_address_c684d118
           field: _ingest._value.ipAddress
           target_field: _ingest._value.ip_address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ipAddress
+                tag: remove_ingest_value_ipAddress_31fecdcd
                 field: _ingest._value.ipAddress
             - append:
                 tag: append_error_message_cd642822
@@ -1809,7 +1809,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_source_ip
+          tag: append_source_ip_7ff6ce30
           field: source.ip
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
@@ -1843,7 +1843,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_odata_type_to_ingest_value_user_account_odata_type
+          tag: rename_ingest_value_userAccount_odata_type_to_ingest_value_user_account_odata_type_45239661
           field: _ingest._value.userAccount.@odata.type
           target_field: _ingest._value.user_account.odata_type
           ignore_missing: true
@@ -1854,7 +1854,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_domainName_to_ingest_value_user_account_domain_name
+          tag: rename_ingest_value_userAccount_domainName_to_ingest_value_user_account_domain_name_a2282fac
           field: _ingest._value.userAccount.domainName
           target_field: _ingest._value.user_account.domain_name
           ignore_missing: true
@@ -1877,7 +1877,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_azureAdUserId_to_ingest_value_user_account_azure_ad_user_id
+          tag: rename_ingest_value_userAccount_azureAdUserId_to_ingest_value_user_account_azure_ad_user_id_2f5105a4
           field: _ingest._value.userAccount.azureAdUserId
           target_field: _ingest._value.user_account.azure_ad_user_id
           ignore_missing: true
@@ -1900,7 +1900,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_userPrincipalName_to_ingest_value_user_account_user_principal_name
+          tag: rename_ingest_value_userAccount_userPrincipalName_to_ingest_value_user_account_user_principal_name_9bb1f381
           field: _ingest._value.userAccount.userPrincipalName
           target_field: _ingest._value.user_account.user_principal_name
           ignore_missing: true
@@ -1923,30 +1923,30 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_primaryAddress_to_ingest_value_primary_address
+          tag: rename_ingest_value_primaryAddress_to_ingest_value_primary_address_cef5d66f
           field: _ingest._value.primaryAddress
           target_field: _ingest._value.primary_address
           ignore_missing: true
   - foreach:
       field: json.alerts.evidence
-      tag: foreach_evidence_append_primary_address_to_user_email
+      tag: foreach_evidence_append_primary_address_to_user_email_982b1408
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
         append:
           field: user.email
-          tag: append_foreach_evidence_primary_address_to_user_email
+          tag: append_foreach_evidence_primary_address_to_user_email_b870780a
           value: '{{{_ingest._value.primary_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.alerts.evidence
-      tag: foreach_evidence_append_primary_address_to_related_user
+      tag: foreach_evidence_append_primary_address_to_related_user_7f3b3eb2
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_primary_address_to_related_user
+          tag: append_foreach_evidence_primary_address_to_related_user_1730da93
           value: '{{{_ingest._value.primary_address}}}'
           allow_duplicates: false
   - foreach:
@@ -1956,7 +1956,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_accountName_to_ingest_value_user_account_account_name
+          tag: rename_ingest_value_userAccount_accountName_to_ingest_value_user_account_account_name_e3b9be45
           field: _ingest._value.userAccount.accountName
           target_field: _ingest._value.user_account.account_name
           ignore_missing: true
@@ -1967,7 +1967,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_displayName_to_ingest_value_user_account_display_name
+          tag: rename_ingest_value_userAccount_displayName_to_ingest_value_user_account_display_name_4aed697a
           field: _ingest._value.userAccount.displayName
           target_field: _ingest._value.user_account.display_name
           ignore_missing: true
@@ -2001,7 +2001,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_userAccount_userSid_to_ingest_value_user_account_user_sid
+          tag: rename_ingest_value_userAccount_userSid_to_ingest_value_user_account_user_sid_646b7042
           field: _ingest._value.userAccount.userSid
           target_field: _ingest._value.user_account.user_sid
           ignore_missing: true
@@ -2024,7 +2024,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_clusterBy_to_ingest_value_cluster_by
+          tag: rename_ingest_value_clusterBy_to_ingest_value_cluster_by_b12e24d7
           field: _ingest._value.clusterBy
           target_field: _ingest._value.cluster_by
           ignore_missing: true
@@ -2035,7 +2035,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_clusterByValue_to_ingest_value_cluster_by_value
+          tag: rename_ingest_value_clusterByValue_to_ingest_value_cluster_by_value_da6adfb1
           field: _ingest._value.clusterByValue
           target_field: _ingest._value.cluster_by_value
           ignore_missing: true
@@ -2046,14 +2046,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_emailCount_to_ingest_value_email_count
+          tag: convert_ingest_value_emailCount_to_ingest_value_email_count_dff68cf3
           field: _ingest._value.emailCount
           target_field: _ingest._value.email_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_emailCount
+                tag: remove_ingest_value_emailCount_3b4fbcc8
                 field: _ingest._value.emailCount
             - append:
                 tag: append_error_message_8c2a772e
@@ -2066,7 +2066,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_networkMessageIds_to_ingest_value_network_message_ids
+          tag: rename_ingest_value_networkMessageIds_to_ingest_value_network_message_ids_ce54cf76
           field: _ingest._value.networkMessageIds
           target_field: _ingest._value.network_message_ids
           ignore_missing: true
@@ -2077,7 +2077,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_objectId_to_ingest_value_object_id
+          tag: rename_ingest_value_objectId_to_ingest_value_object_id_be40da17
           field: _ingest._value.objectId
           target_field: _ingest._value.object_id
           ignore_missing: true
@@ -2088,7 +2088,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_processCommandLine_to_ingest_value_process_command_line
+          tag: rename_ingest_value_processCommandLine_to_ingest_value_process_command_line_55294bfc
           field: _ingest._value.processCommandLine
           target_field: _ingest._value.process.command_line
           ignore_missing: true
@@ -2099,14 +2099,14 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_command_line
+          tag: append_process_command_line_4490edcd
           field: process.command_line
           value: '{{{_ingest._value.process.command_line}}}'
           allow_duplicates: false
           ignore_failure: true
   - script:
       lang: painless
-      tag: set_process_name_from_command_line
+      tag: set_process_name_from_command_line_481b95a0
       description: Set process.name from process.command_line.
       source: |
         ctx.process = ctx.process ?: [:];
@@ -2178,7 +2178,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_odata_type_to_ingest_value_image_file_odata_type
+          tag: rename_ingest_value_imageFile_odata_type_to_ingest_value_image_file_odata_type_ac672995
           field: _ingest._value.imageFile.@odata.type
           target_field: _ingest._value.image_file.odata_type
           ignore_missing: true
@@ -2189,7 +2189,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_sha1_to_ingest_value_image_file_sha1
+          tag: rename_ingest_value_imageFile_sha1_to_ingest_value_image_file_sha1_0438b0fe
           field: _ingest._value.imageFile.sha1
           target_field: _ingest._value.image_file.sha1
           ignore_missing: true
@@ -2200,7 +2200,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_hash_sha1
+          tag: append_process_hash_sha1_00f3ecd4
           field: process.hash.sha1
           value: '{{{_ingest._value.image_file.sha1}}}'
           allow_duplicates: false
@@ -2224,7 +2224,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_sha256_to_ingest_value_image_file_sha256
+          tag: rename_ingest_value_imageFile_sha256_to_ingest_value_image_file_sha256_200b7212
           field: _ingest._value.imageFile.sha256
           target_field: _ingest._value.image_file.sha256
           ignore_missing: true
@@ -2235,7 +2235,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_hash_sha256
+          tag: append_process_hash_sha256_32e6a808
           field: process.hash.sha256
           value: '{{{_ingest._value.image_file.sha256}}}'
           allow_duplicates: false
@@ -2269,7 +2269,7 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_odata_type_to_ingest_value_parent_process_image_file_odat
+          tag: rename_ingest_value_parentProcessImageFile_odata_type_to_ingest_value_parent_process_image_file_odat_a272a30d
           field: _ingest._value.parentProcessImageFile.@odata.type
           target_field: _ingest._value.parent_process.image_file.odata_type
           ignore_missing: true
@@ -2280,7 +2280,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_sha1_to_ingest_value_parent_process_image_file_sha1
+          tag: rename_ingest_value_parentProcessImageFile_sha1_to_ingest_value_parent_process_image_file_sha1_3e711cad
           field: _ingest._value.parentProcessImageFile.sha1
           target_field: _ingest._value.parent_process.image_file.sha1
           ignore_missing: true
@@ -2291,7 +2291,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_parent_hash_sha1
+          tag: append_process_parent_hash_sha1_fbf245dc
           field: process.parent.hash.sha1
           value: '{{{_ingest._value.parent_process.image_file.sha1}}}'
           allow_duplicates: false
@@ -2315,7 +2315,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_sha256_to_ingest_value_parent_process_image_file_sha256
+          tag: rename_ingest_value_parentProcessImageFile_sha256_to_ingest_value_parent_process_image_file_sha256_a2d19511
           field: _ingest._value.parentProcessImageFile.sha256
           target_field: _ingest._value.parent_process.image_file.sha256
           ignore_missing: true
@@ -2326,7 +2326,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_parent_hash_sha256
+          tag: append_process_parent_hash_sha256_4184f9a7
           field: process.parent.hash.sha256
           value: '{{{_ingest._value.parent_process.image_file.sha256}}}'
           allow_duplicates: false
@@ -2350,14 +2350,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_parentProcessId_to_ingest_value_parent_process_id
+          tag: convert_ingest_value_parentProcessId_to_ingest_value_parent_process_id_361c14c0
           field: _ingest._value.parentProcessId
           target_field: _ingest._value.parent_process.id
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_parentProcessId
+                tag: remove_ingest_value_parentProcessId_49cc61ff
                 field: _ingest._value.parentProcessId
             - append:
                 tag: append_error_message_18fef60d
@@ -2370,7 +2370,7 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_parentProcessCreationDateTime_to_ingest_value_parent_process_creation_datetime
+          tag: date_ingest_value_parentProcessCreationDateTime_to_ingest_value_parent_process_creation_datetime_482a405e
           field: _ingest._value.parentProcessCreationDateTime
           target_field: _ingest._value.parent_process.creation_datetime
           formats:
@@ -2383,7 +2383,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_parent_start
+          tag: append_process_parent_start_8cabc2b0
           field: process.parent.start
           value: '{{{_ingest._value.parent_process.creation_datetime}}}'
           allow_duplicates: false
@@ -2395,14 +2395,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_processId_to_ingest_value_process_id
+          tag: convert_ingest_value_processId_to_ingest_value_process_id_9d03dc4a
           field: _ingest._value.processId
           target_field: _ingest._value.process.id
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_processId
+                tag: remove_ingest_value_processId_0d568ac9
                 field: _ingest._value.processId
             - append:
                 tag: append_error_message_5c0c799e
@@ -2415,7 +2415,7 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_processCreationDateTime_to_ingest_value_process_creation_datetime
+          tag: date_ingest_value_processCreationDateTime_to_ingest_value_process_creation_datetime_e55f79b9
           field: _ingest._value.processCreationDateTime
           target_field: _ingest._value.process.creation_datetime
           formats:
@@ -2428,7 +2428,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_process_start
+          tag: append_process_start_849abbc3
           field: process.start
           value: '{{{_ingest._value.process.creation_datetime}}}'
           allow_duplicates: false
@@ -2440,7 +2440,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_fileName_to_ingest_value_image_file_name
+          tag: rename_ingest_value_imageFile_fileName_to_ingest_value_image_file_name_8b60419b
           field: _ingest._value.imageFile.fileName
           target_field: _ingest._value.image_file.name
           ignore_missing: true
@@ -2451,7 +2451,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_filePath_to_ingest_value_image_file_path
+          tag: rename_ingest_value_imageFile_filePath_to_ingest_value_image_file_path_4c709d80
           field: _ingest._value.imageFile.filePath
           target_field: _ingest._value.image_file.path
           ignore_missing: true
@@ -2462,7 +2462,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_filePublisher_to_ingest_value_image_file_publisher
+          tag: rename_ingest_value_imageFile_filePublisher_to_ingest_value_image_file_publisher_17bb7972
           field: _ingest._value.imageFile.filePublisher
           target_field: _ingest._value.image_file.publisher
           ignore_missing: true
@@ -2473,14 +2473,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_imageFile_fileSize_to_ingest_value_image_file_size
+          tag: convert_ingest_value_imageFile_fileSize_to_ingest_value_image_file_size_44484e7f
           field: _ingest._value.imageFile.fileSize
           target_field: _ingest._value.image_file.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_imageFile_fileSize
+                tag: remove_ingest_value_imageFile_fileSize_e2a05807
                 field: _ingest._value.imageFile.fileSize
             - append:
                 tag: append_error_message_56a83dda
@@ -2493,7 +2493,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_issuer_to_ingest_value_image_file_issuer
+          tag: rename_ingest_value_imageFile_issuer_to_ingest_value_image_file_issuer_e87e8070
           field: _ingest._value.imageFile.issuer
           target_field: _ingest._value.image_file.issuer
           ignore_missing: true
@@ -2504,7 +2504,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_imageFile_signer_to_ingest_value_image_file_signer
+          tag: rename_ingest_value_imageFile_signer_to_ingest_value_image_file_signer_c9572f24
           field: _ingest._value.imageFile.signer
           target_field: _ingest._value.image_file.signer
           ignore_missing: true
@@ -2515,7 +2515,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_fileName_to_ingest_value_parent_process_image_file_name
+          tag: rename_ingest_value_parentProcessImageFile_fileName_to_ingest_value_parent_process_image_file_name_5fab6ef8
           field: _ingest._value.parentProcessImageFile.fileName
           target_field: _ingest._value.parent_process.image_file.name
           ignore_missing: true
@@ -2526,7 +2526,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_filePath_to_ingest_value_parent_process_image_file_path
+          tag: rename_ingest_value_parentProcessImageFile_filePath_to_ingest_value_parent_process_image_file_path_c4174e0a
           field: _ingest._value.parentProcessImageFile.filePath
           target_field: _ingest._value.parent_process.image_file.path
           ignore_missing: true
@@ -2537,7 +2537,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_filePublisher_to_ingest_value_parent_process_image_file_p
+          tag: rename_ingest_value_parentProcessImageFile_filePublisher_to_ingest_value_parent_process_image_file_p_341687c3
           field: _ingest._value.parentProcessImageFile.filePublisher
           target_field: _ingest._value.parent_process.image_file.publisher
           ignore_missing: true
@@ -2548,14 +2548,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
-          tag: convert_ingest_value_parentProcessImageFile_fileSize_to_ingest_value_parent_process_image_file_size
+          tag: convert_ingest_value_parentProcessImageFile_fileSize_to_ingest_value_parent_process_image_file_size_3e804208
           field: _ingest._value.parentProcessImageFile.fileSize
           target_field: _ingest._value.parent_process.image_file.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_parentProcessImageFile_fileSize
+                tag: remove_ingest_value_parentProcessImageFile_fileSize_400d0b42
                 field: _ingest._value.parentProcessImageFile.fileSize
             - append:
                 tag: append_error_message_883fe7ff
@@ -2568,7 +2568,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_issuer_to_ingest_value_parent_process_image_file_issuer
+          tag: rename_ingest_value_parentProcessImageFile_issuer_to_ingest_value_parent_process_image_file_issuer_64bcb725
           field: _ingest._value.parentProcessImageFile.issuer
           target_field: _ingest._value.parent_process.image_file.issuer
           ignore_missing: true
@@ -2579,13 +2579,13 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_parentProcessImageFile_signer_to_ingest_value_parent_process_image_file_signer
+          tag: rename_ingest_value_parentProcessImageFile_signer_to_ingest_value_parent_process_image_file_signer_ffdfc712
           field: _ingest._value.parentProcessImageFile.signer
           target_field: _ingest._value.parent_process.image_file.signer
           ignore_missing: true
   - script:
       description: Set process and file ECS fields from evidence (executables, pids, file size).
-      tag: script_set_process_fields_from_evidence
+      tag: script_set_process_fields_from_evidence_35282f42
       lang: painless
       if: ctx.json?.alerts?.evidence instanceof List
       source: |
@@ -2699,7 +2699,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_registryHive_to_ingest_value_registry_hive
+          tag: rename_ingest_value_registryHive_to_ingest_value_registry_hive_9a592857
           field: _ingest._value.registryHive
           target_field: _ingest._value.registry_hive
           ignore_missing: true
@@ -2710,7 +2710,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_registry_hive
+          tag: append_registry_hive_17e7f034
           field: registry.hive
           value: '{{{_ingest._value.registry_hive}}}'
           allow_duplicates: false
@@ -2722,7 +2722,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_registryKey_to_ingest_value_registry_key
+          tag: rename_ingest_value_registryKey_to_ingest_value_registry_key_38378044
           field: _ingest._value.registryKey
           target_field: _ingest._value.registry_key
           ignore_missing: true
@@ -2733,7 +2733,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_registry_key
+          tag: append_registry_key_6ec6a275
           field: registry.key
           value: '{{{_ingest._value.registry_key}}}'
           allow_duplicates: false
@@ -2745,7 +2745,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_registryValueType_to_ingest_value_registry_value_type
+          tag: rename_ingest_value_registryValueType_to_ingest_value_registry_value_type_ef5aaf16
           field: _ingest._value.registryValueType
           target_field: _ingest._value.registry_value_type
           ignore_missing: true
@@ -2756,7 +2756,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_registry_data_type
+          tag: append_registry_data_type_85b4c968
           field: registry.data.type
           value: '{{{_ingest._value.registry_value_type}}}'
           allow_duplicates: false
@@ -2768,7 +2768,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_registryValue_to_ingest_value_registry_value
+          tag: rename_ingest_value_registryValue_to_ingest_value_registry_value_ed88da25
           field: _ingest._value.registryValue
           target_field: _ingest._value.registry_value
           ignore_missing: true
@@ -2779,7 +2779,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_registry_value
+          tag: append_registry_value_41eef601
           field: registry.value
           value: '{{{_ingest._value.registry_value}}}'
           allow_duplicates: false
@@ -2791,7 +2791,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_registryValueName_to_ingest_value_registry_value_name
+          tag: rename_ingest_value_registryValueName_to_ingest_value_registry_value_name_12ca3fff
           field: _ingest._value.registryValueName
           target_field: _ingest._value.registry_value_name
           ignore_missing: true
@@ -2802,7 +2802,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_securityGroupId_to_ingest_value_security_group_id
+          tag: rename_ingest_value_securityGroupId_to_ingest_value_security_group_id_fa4c4e92
           field: _ingest._value.securityGroupId
           target_field: _ingest._value.security_group_id
           ignore_missing: true
@@ -2813,7 +2813,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          tag: append_group_id
+          tag: append_group_id_9fda234b
           field: group.id
           value: '{{{_ingest._value.security_group_id}}}'
           allow_duplicates: false
@@ -2918,24 +2918,24 @@ processors:
         }
   - foreach:
       field: process.parent.entity_id
-      tag: foreach_fingerprint_parent_process_entity_id
+      tag: foreach_fingerprint_parent_process_entity_id_fde451f9
       if: ctx.process?.parent?.entity_id instanceof List
       processor:
         fingerprint:
           fields:
             - _ingest._value
-          tag: fingerprint_parent_process_entity_id
+          tag: fingerprint_parent_process_entity_id_229fc6c8
           target_field: _ingest._value
           ignore_missing: true
   - foreach:
       field: process.entity_id
-      tag: foreach_fingerprint_process_entity_id
+      tag: foreach_fingerprint_process_entity_id_57fcc7b0
       if: ctx.process?.entity_id instanceof List
       processor:
         fingerprint:
           fields:
             - _ingest._value
-          tag: fingerprint_process_entity_id
+          tag: fingerprint_process_entity_id_be527362
           target_field: _ingest._value
           ignore_missing: true
   - foreach:
@@ -2945,7 +2945,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_ingest_value_createdDateTime
+          tag: remove_ingest_value_createdDateTime_69d82a9e
           field:
             - _ingest._value.createdDateTime
             - _ingest._value.receivedDateTime
@@ -3002,12 +3002,12 @@ processors:
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_logged_on_users
+          tag: foreach_ingest_value_logged_on_users_03a8cb54
           field: _ingest._value.logged_on_users
           ignore_failure: true
           processor:
             remove:
-              tag: remove_ingest_value_account_name
+              tag: remove_ingest_value_account_name_f72bf4a2
               field:
                 - _ingest._value.account_name
               ignore_missing: true
@@ -3018,7 +3018,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_ingest_value_ip_address
+          tag: remove_ingest_value_ip_address_44354242
           field:
             - _ingest._value.ip_address
             - _ingest._value.detection_status
@@ -3071,11 +3071,11 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

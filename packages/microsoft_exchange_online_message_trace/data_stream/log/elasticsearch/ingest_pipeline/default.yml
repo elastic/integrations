@@ -10,7 +10,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -76,7 +76,7 @@ processors:
       ignore_missing: true
   # Drop "null" event
   - drop:
-      tag: drop_e6f11cc5
+      tag: drop_null_event_e6f11cc5
       if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0
   - drop:
       tag: drop_ec724f95
@@ -243,14 +243,14 @@ processors:
       ignore_missing: true
   # Extraction of domain
   - grok:
-      tag: grok_from_source_domain
+      tag: grok_from_source_domain_adfbfe6c
       field: _temp_.email.from.address
       patterns:
         - "^%{DATA}@%{DATA:source.domain}$"
       ignore_failure: false
       ignore_missing: true
   - grok:
-      tag: grok_to_destination_domain
+      tag: grok_to_destination_domain_a7e9264c
       field: _temp_.email.to.address
       patterns:
         - "^%{DATA}@%{DATA:destination.domain}$"
@@ -266,7 +266,7 @@ processors:
       target_field: "source"
   # Calculation of mail Direction
   - script:
-      tag: script_34585be1
+      tag: script_to_extract_direction_mailflow_34585be1
       lang: painless
       description: Script to extract the direction of a mailflow
       if: ctx._conf?.local_domains != null
@@ -359,7 +359,7 @@ processors:
       allow_duplicates: false
       if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - script:
-      tag: script_331f6684
+      tag: script_reduce_user_to_keyword_single_331f6684
       lang: painless
       description: Reduce user.* to keyword if a single element.
       source: |
@@ -394,7 +394,7 @@ processors:
       if: ctx._temp_?.from_user_domain != null && ctx._temp_.from_user_domain != ""
   # Add unique fingerprint for deduplication
   - fingerprint:
-      tag: fingerprint_e1052810
+      tag: fingerprint_to_id_e1052810
       fields:
         - email.from.address
         - email.to.address
@@ -417,7 +417,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -436,16 +436,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

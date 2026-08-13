@@ -34,7 +34,7 @@ processors:
   # protoPayload @type must be type.googleapis.com/google.cloud.audit.AuditLog
   ##
   - drop:
-      tag: drop_10e9b810
+      tag: drop_document_not_auditlog_type_10e9b810
       description: Drop the document if it is not of AuditLog type
       if: ctx.gcp?.audit?.type != null && ctx.gcp?.audit?.type != 'type.googleapis.com/google.cloud.audit.AuditLog'
   # .insertId
@@ -139,7 +139,7 @@ processors:
         RESOURCE_TYPE: ([a-z]+((\.[a-z0-9]+)+)?)
       ignore_missing: true
   - script:
-      tag: script_13bc28fc
+      tag: script_appends_relevant_entity_to_related_13bc28fc
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
       on_failure:
@@ -258,7 +258,7 @@ processors:
   # Classify actor and target entities by type for enhanced graph visualization
   ##
   - script:
-      tag: script_0b5ddf1c
+      tag: script_classify_actor_target_entities_0b5ddf1c
       description: Classify actor and target entities into type-specific fields
       lang: painless
       on_failure:
@@ -447,7 +447,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
-          tag: rename_ingest_value_resourceAttributes_to_ingest_value_resource_attributes
+          tag: rename_ingest_value_resourceAttributes_to_ingest_value_resource_attributes_bbc0899f
           field: _ingest._value.resourceAttributes
           target_field: _ingest._value.resource_attributes
       if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List
@@ -463,7 +463,7 @@ processors:
       if: ctx.json?.labels != null
   - json:
       field: labels.payload
-      tag: json_labels_payload
+      tag: json_labels_payload_b1520995
       if: ctx.labels?.payload != null
       on_failure:
         - append:
@@ -472,34 +472,34 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.project.id
-      tag: set_cloud_project_id_from_labels_project_id
+      tag: set_cloud_project_id_from_labels_project_id_a4bfff4c
       copy_from: labels.project_id
       override: false
       ignore_empty_value: true
       if: ctx.cloud?.project?.id == null && ctx.labels?.project_id != null
   - set:
       field: orchestrator.type
-      tag: set_orchestrator_type
+      tag: set_orchestrator_type_cadb6677
       value: kubernetes
       override: false
       if: ctx.orchestrator?.type == null && ctx.labels?.cluster_name != null
   - set:
       field: orchestrator.cluster.name
-      tag: set_orchestrator_cluster_name_from_labels_cluster_name
+      tag: set_orchestrator_cluster_name_from_labels_cluster_name_c2a18138
       copy_from: labels.cluster_name
       ignore_empty_value: true
       override: false
       if: ctx.orchestrator?.cluster?.name == null && ctx.labels?.cluster_name != null
   - set:
       field: orchestrator.resource.type
-      tag: set_orchestrator_resource_type_from_labels_payload_resourceType
+      tag: set_orchestrator_resource_type_from_labels_payload_resourceType_da704339
       copy_from: labels.payload.resourceType
       ignore_empty_value: true
       override: false
       if: ctx.orchestrator?.resource?.type == null && ctx.labels?.payload?.resourceType != null
   - set:
       field: orchestrator.resource.name
-      tag: set_orchestrator_resource_name_from_labels_payload_resource
+      tag: set_orchestrator_resource_name_from_labels_payload_resource_4da70f86
       copy_from: labels.payload.resource
       ignore_empty_value: true
       override: false
@@ -574,7 +574,7 @@ processors:
   - script:
       lang: painless
       description: set event.category and type for long running operation
-      tag: set-event-type-for-long-operations
+      tag: set-event-type-for-long-operations_9e495b64
       if: ctx.json?.operation != null
       source: |
         def first = (ctx.json.operation.first == null) ? false : ctx.json.operation.first;
@@ -790,7 +790,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
-          tag: rename_ingest_value_insertId_to_ingest_value_insert_id
+          tag: rename_ingest_value_insertId_to_ingest_value_insert_id_7d2df7a7
           field: _ingest._value.insertId
           target_field: _ingest._value.insert_id
           ignore_missing: true
@@ -801,7 +801,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
-          tag: rename_ingest_value_queryUri_to_ingest_value_query_uri
+          tag: rename_ingest_value_queryUri_to_ingest_value_query_uri_e60f58d4
           field: _ingest._value.queryUri
           target_field: _ingest._value.query_uri
           ignore_missing: true
@@ -812,7 +812,7 @@ processors:
       ignore_missing: true
       processor:
         rename:
-          tag: rename_ingest_value_resourceContainer_to_ingest_value_resource_container
+          tag: rename_ingest_value_resourceContainer_to_ingest_value_resource_container_7e5e2726
           field: _ingest._value.resourceContainer
           target_field: _ingest._value.resource_container
           ignore_missing: true
@@ -823,14 +823,14 @@ processors:
       ignore_missing: true
       processor:
         date:
-          tag: date_ingest_value_logTime_to_ingest_value_log_time
+          tag: date_ingest_value_logTime_to_ingest_value_log_time_3dec6fc5
           field: _ingest._value.logTime
           target_field: _ingest._value.log_time
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_logTime
+                tag: remove_ingest_value_logTime_d8041736
                 field: _ingest._value.logTime
                 ignore_missing: true
   - foreach:
@@ -983,7 +983,7 @@ processors:
         - json
       ignore_missing: true
   - script:
-      tag: script_0d92a93d
+      tag: script_drops_null_empty_values_dotted_0d92a93d
       description: Drops null and empty values and dotted keys recursively
       lang: painless
       source: |
@@ -1013,15 +1013,15 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -22,7 +22,7 @@ processors:
       field: event.original
       target_field: json
   - fingerprint:
-      tag: fingerprint_b44d2872
+      tag: fingerprint_to_id_b44d2872
       fields:
         - json.IP_Address
         - json.Username
@@ -319,7 +319,7 @@ processors:
       target_field: lastpass.event_report.data.user_email
       ignore_failure: true
   - script:
-        tag: script_c42b5c04
+        tag: script_separate_shared_folder_name_user_c42b5c04
         description: Separate Shared Folder Name and User Email with comma(',') in Limit Shared Folder Event Type.
         lang: painless
         source: |
@@ -497,7 +497,7 @@ processors:
       field: lastpass.event_report.data.user_email
       processor:
         append:
-          tag: append_user_email
+          tag: append_user_email_7455447d
           field: user.email
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -529,7 +529,7 @@ processors:
       field: user.email
       processor:
         append:
-          tag: append_related_user
+          tag: append_related_user_77327c83
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -562,7 +562,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-        tag: script_a3eb5add
+        tag: script_drops_null_empty_values_recursively_a3eb5add
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -581,15 +581,15 @@ processors:
           dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

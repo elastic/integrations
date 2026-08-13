@@ -7,22 +7,22 @@ processors:
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_7f1de011
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
   - remove:
       field: message
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_319421e7
       if: ctx.event?.original != null
   - drop:
-      tag: drop_a8ea228b
+      tag: drop_logline_contains_header_s_a8ea228b
       if: ctx.event?.original?.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_59bad716
       target_field: gitlab.sidekiq
   - append:
       tag: append_event_category_4595ee28
@@ -42,7 +42,7 @@ processors:
         - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_c8f9822f
       on_failure:
         - append:
             tag: append_error_message_f20e6e62
@@ -61,42 +61,42 @@ processors:
       field: event.severity
       value: 0
       if: ctx.gitlab?.sidekiq?.severity == 'emergency'
-      tag: set_severity_0
+      tag: set_severity_0_de545bbb
   - set:
       field: event.severity
       value: 1
       if: ctx.gitlab?.sidekiq?.severity == 'alert'
-      tag: set_severity_1
+      tag: set_severity_1_6143178f
   - set:
       field: event.severity
       value: 2
       if: ctx.gitlab?.sidekiq?.severity == 'critical'
-      tag: set_severity_2
+      tag: set_severity_2_1ef84362
   - set:
       field: event.severity
       value: 3
       if: ctx.gitlab?.sidekiq?.severity == 'error'
-      tag: set_severity_3
+      tag: set_severity_3_ea37fa2c
   - set:
       field: event.severity
       value: 4
       if: ctx.gitlab?.sidekiq?.severity == 'warn'
-      tag: set_severity_4
+      tag: set_severity_4_22898e25
   - set:
       field: event.severity
       value: 5
       if: ctx.gitlab?.sidekiq?.severity == 'notice'
-      tag: set_severity_5
+      tag: set_severity_5_5685823b
   - set:
       field: event.severity
       value: 6
       if: ctx.gitlab?.sidekiq?.severity == 'info'
-      tag: set_severity_6
+      tag: set_severity_6_145f2c34
   - set:
       field: event.severity
       value: 7
       if: ctx.gitlab?.sidekiq?.severity == 'debug'
-      tag: set_severity_7
+      tag: set_severity_7_44cae580
   - remove:
       tag: remove_gitlab_sidekiq_severity_0d8bfc04
       field: gitlab.sidekiq.severity
@@ -107,7 +107,7 @@ processors:
         - "ISO8601"
       target_field: event.start
       timezone: "UTC"
-      tag: start_date_event_created_time_epoch
+      tag: start_date_event_created_time_epoch_635d1acd
       if: ctx.gitlab?.sidekiq?.created_at != null && ctx.gitlab.sidekiq.created_at != ''
       on_failure:
         - append:
@@ -124,7 +124,7 @@ processors:
         - "ISO8601"
       target_field: gitlab.sidekiq.enqueued_at
       timezone: "UTC"
-      tag: enqueued_date_event_created_time_epoch
+      tag: enqueued_date_event_created_time_epoch_9635ce2c
       if: ctx.gitlab?.sidekiq?.enqueued_at != null && ctx.gitlab.sidekiq.enqueued_at != ''
       on_failure:
         - append:
@@ -143,7 +143,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gitlab.sidekiq.trace_propagation_headers.sentry-trace
-      tag: rename_trace_propagation_headers_sentry_trace_to_trace_propagation_headers_sentry_trace
+      tag: rename_trace_propagation_headers_sentry_trace_to_trace_propagation_headers_sentry_trace_b70ad630
       target_field: gitlab.sidekiq.trace_propagation_headers.sentry_trace
       ignore_missing: true
   - remove:
@@ -156,7 +156,7 @@ processors:
       target_field: event.duration
       ignore_missing: true
   - script:
-      tag: convert_duration_to_nanoseconds
+      tag: convert_duration_to_nanoseconds_60782378
       if: ctx.event?.duration instanceof double
       source: |-
         ctx.event.duration = (long) (ctx.event.duration*1e9)
@@ -166,7 +166,7 @@ processors:
         - "ISO8601"
       target_field: event.end
       timezone: "UTC"
-      tag: end_date_event_created_time_epoch
+      tag: end_date_event_created_time_epoch_72ead387
       if: ctx.gitlab?.sidekiq?.completed_at != null && ctx.gitlab.sidekiq.completed_at != ''
       on_failure:
         - append:
@@ -199,7 +199,7 @@ processors:
       ignore_missing: true
   - convert:
       field: gitlab.sidekiq.cpu_s
-      tag: convert_cpu_s_to_double
+      tag: convert_cpu_s_to_double_36474bf2
       type: double
       ignore_missing: true
       on_failure:
@@ -213,7 +213,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_duration_s
-      tag: convert_redis_cache_duration_s_to_double
+      tag: convert_redis_cache_duration_s_to_double_1022bafe
       type: double
       ignore_missing: true
       on_failure:
@@ -227,7 +227,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_cached_count
-      tag: convert_db_cached_count_to_long
+      tag: convert_db_cached_count_to_long_89d3c268
       type: long
       ignore_missing: true
       on_failure:
@@ -241,7 +241,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_cached_count
-      tag: convert_db_ci_cached_count_to_long
+      tag: convert_db_ci_cached_count_to_long_badd7cbb
       type: long
       ignore_missing: true
       on_failure:
@@ -255,7 +255,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_count
-      tag: convert_db_ci_count_to_long
+      tag: convert_db_ci_count_to_long_829322be
       type: long
       ignore_missing: true
       on_failure:
@@ -269,7 +269,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_duration_s
-      tag: convert_db_ci_duration_s_to_double
+      tag: convert_db_ci_duration_s_to_double_d8e84eec
       type: double
       ignore_missing: true
       on_failure:
@@ -283,7 +283,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_cached_count
-      tag: convert_db_ci_replica_cached_count_to_long
+      tag: convert_db_ci_replica_cached_count_to_long_ab2d88da
       type: long
       ignore_missing: true
       on_failure:
@@ -297,7 +297,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_count
-      tag: convert_db_ci_replica_count_to_long
+      tag: convert_db_ci_replica_count_to_long_116f554b
       type: long
       ignore_missing: true
       on_failure:
@@ -311,7 +311,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_duration_s
-      tag: convert_db_ci_replica_duration_s_to_double
+      tag: convert_db_ci_replica_duration_s_to_double_7006f19e
       type: double
       ignore_missing: true
       on_failure:
@@ -325,7 +325,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_txn_count
-      tag: convert_db_ci_replica_txn_count_to_long
+      tag: convert_db_ci_replica_txn_count_to_long_b97d72e4
       type: long
       ignore_missing: true
       on_failure:
@@ -339,7 +339,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_txn_duration_s
-      tag: convert_db_ci_replica_txn_duration_s_to_double
+      tag: convert_db_ci_replica_txn_duration_s_to_double_c28738d8
       type: double
       ignore_missing: true
       on_failure:
@@ -353,7 +353,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_txn_max_duration_s
-      tag: convert_db_ci_replica_txn_max_duration_s_to_double
+      tag: convert_db_ci_replica_txn_max_duration_s_to_double_b5b60f8a
       type: double
       ignore_missing: true
       on_failure:
@@ -367,7 +367,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_wal_cached_count
-      tag: convert_db_ci_replica_wal_cached_count_to_long
+      tag: convert_db_ci_replica_wal_cached_count_to_long_f6e2ccf8
       type: long
       ignore_missing: true
       on_failure:
@@ -381,7 +381,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_wal_count
-      tag: convert_db_ci_replica_wal_count_to_long
+      tag: convert_db_ci_replica_wal_count_to_long_b90a6650
       type: long
       ignore_missing: true
       on_failure:
@@ -395,7 +395,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_write_count
-      tag: convert_db_ci_replica_write_count_to_long
+      tag: convert_db_ci_replica_write_count_to_long_37d86085
       type: long
       ignore_missing: true
       on_failure:
@@ -409,7 +409,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_txn_count
-      tag: convert_db_ci_txn_count_to_long
+      tag: convert_db_ci_txn_count_to_long_2ec7e47b
       type: long
       ignore_missing: true
       on_failure:
@@ -423,7 +423,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_txn_duration_s
-      tag: convert_db_ci_txn_duration_s_to_double
+      tag: convert_db_ci_txn_duration_s_to_double_0abf3164
       type: double
       ignore_missing: true
       on_failure:
@@ -437,7 +437,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_txn_max_duration_s
-      tag: convert_db_ci_txn_max_duration_s_to_double
+      tag: convert_db_ci_txn_max_duration_s_to_double_e35a804b
       type: double
       ignore_missing: true
       on_failure:
@@ -451,7 +451,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_wal_cached_count
-      tag: convert_db_ci_wal_cached_count_to_long
+      tag: convert_db_ci_wal_cached_count_to_long_a9de63f6
       type: long
       ignore_missing: true
       on_failure:
@@ -465,7 +465,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_wal_count
-      tag: convert_db_ci_wal_count_to_long
+      tag: convert_db_ci_wal_count_to_long_b540b515
       type: long
       ignore_missing: true
       on_failure:
@@ -479,7 +479,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_write_count
-      tag: convert_db_ci_write_count_to_long
+      tag: convert_db_ci_write_count_to_long_c06b8b41
       type: long
       ignore_missing: true
       on_failure:
@@ -493,7 +493,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_count
-      tag: convert_db_count_to_long
+      tag: convert_db_count_to_long_2fc77ebd
       type: long
       ignore_missing: true
       on_failure:
@@ -507,7 +507,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_cached_count
-      tag: convert_db_main_cached_count_to_long
+      tag: convert_db_main_cached_count_to_long_4d8c40af
       type: long
       ignore_missing: true
       on_failure:
@@ -521,7 +521,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_count
-      tag: convert_db_main_count_to_long
+      tag: convert_db_main_count_to_long_75cf4c20
       type: long
       ignore_missing: true
       on_failure:
@@ -535,7 +535,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_duration_s
-      tag: convert_db_main_duration_s_to_double
+      tag: convert_db_main_duration_s_to_double_edd6ed3a
       type: double
       ignore_missing: true
       on_failure:
@@ -549,7 +549,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_cached_count
-      tag: convert_db_main_replica_cached_count_to_long
+      tag: convert_db_main_replica_cached_count_to_long_1a323d15
       type: long
       ignore_missing: true
       on_failure:
@@ -563,7 +563,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_count
-      tag: convert_db_main_replica_count_to_long
+      tag: convert_db_main_replica_count_to_long_195f1607
       type: long
       ignore_missing: true
       on_failure:
@@ -577,7 +577,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_duration_s
-      tag: convert_db_main_replica_duration_s_to_double
+      tag: convert_db_main_replica_duration_s_to_double_83872b16
       type: double
       ignore_missing: true
       on_failure:
@@ -591,7 +591,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_txn_count
-      tag: convert_db_main_replica_txn_count_to_long
+      tag: convert_db_main_replica_txn_count_to_long_3fa46bfb
       type: long
       ignore_missing: true
       on_failure:
@@ -605,7 +605,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_txn_duration_s
-      tag: convert_db_main_replica_txn_duration_s_to_double
+      tag: convert_db_main_replica_txn_duration_s_to_double_ea2e1c93
       type: double
       ignore_missing: true
       on_failure:
@@ -619,7 +619,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_txn_max_duration_s
-      tag: convert_db_main_replica_txn_max_duration_s_to_double
+      tag: convert_db_main_replica_txn_max_duration_s_to_double_c8a66b75
       type: double
       ignore_missing: true
       on_failure:
@@ -633,7 +633,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_wal_cached_count
-      tag: convert_db_main_replica_wal_cached_count_to_long
+      tag: convert_db_main_replica_wal_cached_count_to_long_cbcad5d0
       type: long
       ignore_missing: true
       on_failure:
@@ -647,7 +647,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_wal_count
-      tag: convert_db_main_replica_wal_count_to_long
+      tag: convert_db_main_replica_wal_count_to_long_d36748c7
       type: long
       ignore_missing: true
       on_failure:
@@ -661,7 +661,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_write_count
-      tag: convert_db_main_replica_write_count_to_long
+      tag: convert_db_main_replica_write_count_to_long_e75e5dfb
       type: long
       ignore_missing: true
       on_failure:
@@ -675,7 +675,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_txn_count
-      tag: convert_db_main_txn_count_to_long
+      tag: convert_db_main_txn_count_to_long_84eaa52a
       type: long
       ignore_missing: true
       on_failure:
@@ -689,7 +689,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_txn_duration_s
-      tag: convert_db_main_txn_duration_s_to_double
+      tag: convert_db_main_txn_duration_s_to_double_d99203d3
       type: double
       ignore_missing: true
       on_failure:
@@ -703,7 +703,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_txn_max_duration_s
-      tag: convert_db_main_txn_max_duration_s_to_double
+      tag: convert_db_main_txn_max_duration_s_to_double_b40141c2
       type: double
       ignore_missing: true
       on_failure:
@@ -717,7 +717,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_wal_cached_count
-      tag: convert_db_main_wal_cached_count_to_long
+      tag: convert_db_main_wal_cached_count_to_long_f79794ee
       type: long
       ignore_missing: true
       on_failure:
@@ -731,7 +731,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_wal_count
-      tag: convert_db_main_wal_count_to_long
+      tag: convert_db_main_wal_count_to_long_0a97ffcd
       type: long
       ignore_missing: true
       on_failure:
@@ -745,7 +745,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_write_count
-      tag: convert_db_main_write_count_to_long
+      tag: convert_db_main_write_count_to_long_9f9eb767
       type: long
       ignore_missing: true
       on_failure:
@@ -759,7 +759,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_cached_count
-      tag: convert_db_primary_cached_count_to_long
+      tag: convert_db_primary_cached_count_to_long_8b281d6d
       type: long
       ignore_missing: true
       on_failure:
@@ -773,7 +773,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_count
-      tag: convert_db_primary_count_to_long
+      tag: convert_db_primary_count_to_long_aa125132
       type: long
       ignore_missing: true
       on_failure:
@@ -787,7 +787,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_duration_s
-      tag: convert_db_primary_duration_s_to_double
+      tag: convert_db_primary_duration_s_to_double_8719bf98
       type: double
       ignore_missing: true
       on_failure:
@@ -801,7 +801,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_txn_count
-      tag: convert_db_primary_txn_count_to_long
+      tag: convert_db_primary_txn_count_to_long_32792c64
       type: long
       ignore_missing: true
       on_failure:
@@ -815,7 +815,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_txn_duration_s
-      tag: convert_db_primary_txn_duration_s_to_double
+      tag: convert_db_primary_txn_duration_s_to_double_2e9bbeb2
       type: double
       ignore_missing: true
       on_failure:
@@ -829,7 +829,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_txn_max_duration_s
-      tag: convert_db_primary_txn_max_duration_s_to_double
+      tag: convert_db_primary_txn_max_duration_s_to_double_728350e3
       type: double
       ignore_missing: true
       on_failure:
@@ -843,7 +843,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_wal_cached_count
-      tag: convert_db_primary_wal_cached_count_to_long
+      tag: convert_db_primary_wal_cached_count_to_long_aa988c5d
       type: long
       ignore_missing: true
       on_failure:
@@ -857,7 +857,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_wal_count
-      tag: convert_db_primary_wal_count_to_long
+      tag: convert_db_primary_wal_count_to_long_5fc769d2
       type: long
       ignore_missing: true
       on_failure:
@@ -871,7 +871,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_write_count
-      tag: convert_db_primary_write_count_to_long
+      tag: convert_db_primary_write_count_to_long_b6ca2ae8
       type: long
       ignore_missing: true
       on_failure:
@@ -885,7 +885,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_cached_count
-      tag: convert_db_replica_cached_count_to_long
+      tag: convert_db_replica_cached_count_to_long_151fe794
       type: long
       ignore_missing: true
       on_failure:
@@ -899,7 +899,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_count
-      tag: convert_db_replica_count_to_long
+      tag: convert_db_replica_count_to_long_14c101c9
       type: long
       ignore_missing: true
       on_failure:
@@ -913,7 +913,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_duration_s
-      tag: convert_db_replica_duration_s_to_double
+      tag: convert_db_replica_duration_s_to_double_26576138
       type: double
       ignore_missing: true
       on_failure:
@@ -927,7 +927,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_txn_count
-      tag: convert_db_replica_txn_count_to_long
+      tag: convert_db_replica_txn_count_to_long_c5226d40
       type: long
       ignore_missing: true
       on_failure:
@@ -941,7 +941,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_txn_duration_s
-      tag: convert_db_replica_txn_duration_s_to_double
+      tag: convert_db_replica_txn_duration_s_to_double_d273ba13
       type: double
       ignore_missing: true
       on_failure:
@@ -955,7 +955,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_txn_max_duration_s
-      tag: convert_db_replica_txn_max_duration_s_to_double
+      tag: convert_db_replica_txn_max_duration_s_to_double_fcef21c8
       type: double
       ignore_missing: true
       on_failure:
@@ -969,7 +969,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_wal_cached_count
-      tag: convert_db_replica_wal_cached_count_to_long
+      tag: convert_db_replica_wal_cached_count_to_long_0834f03a
       type: long
       ignore_missing: true
       on_failure:
@@ -983,7 +983,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_wal_count
-      tag: convert_db_replica_wal_count_to_long
+      tag: convert_db_replica_wal_count_to_long_e3faa0b2
       type: long
       ignore_missing: true
       on_failure:
@@ -997,7 +997,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_write_count
-      tag: convert_db_replica_write_count_to_long
+      tag: convert_db_replica_write_count_to_long_d0895fd1
       type: long
       ignore_missing: true
       on_failure:
@@ -1011,7 +1011,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_txn_count
-      tag: convert_db_txn_count_to_long
+      tag: convert_db_txn_count_to_long_4a86a663
       type: long
       ignore_missing: true
       on_failure:
@@ -1025,7 +1025,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_write_count
-      tag: convert_db_write_count_to_long
+      tag: convert_db_write_count_to_long_24df1c0d
       type: long
       ignore_missing: true
       on_failure:
@@ -1039,7 +1039,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.dead
-      tag: convert_dead_to_boolean
+      tag: convert_dead_to_boolean_866ce075
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1053,7 +1053,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.duration_s
-      tag: convert_duration_s_to_double
+      tag: convert_duration_s_to_double_32e1c627
       type: double
       ignore_missing: true
       on_failure:
@@ -1067,7 +1067,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.enqueue_latency_s
-      tag: convert_enqueue_latency_s_to_double
+      tag: convert_enqueue_latency_s_to_double_a00f14cf
       type: double
       ignore_missing: true
       on_failure:
@@ -1081,7 +1081,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_hold_duration_s
-      tag: convert_exclusive_lock_hold_duration_s_to_double
+      tag: convert_exclusive_lock_hold_duration_s_to_double_6582f163
       type: double
       ignore_missing: true
       on_failure:
@@ -1095,7 +1095,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_requested_count
-      tag: convert_exclusive_lock_requested_count_to_long
+      tag: convert_exclusive_lock_requested_count_to_long_dc273baf
       type: long
       ignore_missing: true
       on_failure:
@@ -1109,7 +1109,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_wait_duration_s
-      tag: convert_exclusive_lock_wait_duration_s_to_double
+      tag: convert_exclusive_lock_wait_duration_s_to_double_c8486c72
       type: double
       ignore_missing: true
       on_failure:
@@ -1123,7 +1123,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.batched_git_ref_updates_cleanup_scheduler_worker.stats.total_projects
-      tag: convert_extra_batched_git_ref_updates_cleanup_scheduler_worker_stats_total_projects_to_long
+      tag: convert_extra_batched_git_ref_updates_cleanup_scheduler_worker_stats_total_projects_to_long_2db9d6eb
       type: long
       ignore_missing: true
       on_failure:
@@ -1137,7 +1137,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.cells_stale_requests_cleanup_cron_worker.removed_count
-      tag: convert_extra_cells_stale_requests_cleanup_cron_worker_removed_count_to_long
+      tag: convert_extra_cells_stale_requests_cleanup_cron_worker_removed_count_to_long_f231d492
       type: long
       ignore_missing: true
       on_failure:
@@ -1151,7 +1151,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.consumable_events
-      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_consumable_events_to_long
+      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_consumable_events_to_long_501e54bd
       type: long
       ignore_missing: true
       on_failure:
@@ -1165,7 +1165,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.estimated_total_events
-      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_estimated_total_events_to_long
+      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_estimated_total_events_to_long_aa27df41
       type: long
       ignore_missing: true
       on_failure:
@@ -1179,7 +1179,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_pipeline_artifacts_expire_artifacts_worker.destroyed_pipeline_artifacts_count
-      tag: convert_extra_ci_pipeline_artifacts_expire_artifacts_worker_destroyed_pipeline_artifacts_count_to_long
+      tag: convert_extra_ci_pipeline_artifacts_expire_artifacts_worker_destroyed_pipeline_artifacts_count_to_long_87185c7b
       type: long
       ignore_missing: true
       on_failure:
@@ -1193,7 +1193,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_unlock_pipelines_in_queue_worker.remaining_pending
-      tag: convert_extra_ci_unlock_pipelines_in_queue_worker_remaining_pending_to_long
+      tag: convert_extra_ci_unlock_pipelines_in_queue_worker_remaining_pending_to_long_f4dd7752
       type: long
       ignore_missing: true
       on_failure:
@@ -1207,7 +1207,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_update_locked_unknown_artifacts_worker.locked_count
-      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_locked_count_to_long
+      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_locked_count_to_long_efc320e6
       type: long
       ignore_missing: true
       on_failure:
@@ -1221,7 +1221,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_update_locked_unknown_artifacts_worker.removed_count
-      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_removed_count_to_long
+      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_removed_count_to_long_26289597
       type: long
       ignore_missing: true
       on_failure:
@@ -1235,7 +1235,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_required_count
-      tag: convert_extra_container_expiration_policy_worker_cleanup_required_count_to_long
+      tag: convert_extra_container_expiration_policy_worker_cleanup_required_count_to_long_313f9285
       type: long
       ignore_missing: true
       on_failure:
@@ -1249,7 +1249,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_total_count
-      tag: convert_extra_container_expiration_policy_worker_cleanup_total_count_to_long
+      tag: convert_extra_container_expiration_policy_worker_cleanup_total_count_to_long_6bf50f1b
       type: long
       ignore_missing: true
       on_failure:
@@ -1263,7 +1263,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_unfinished_count
-      tag: convert_extra_container_expiration_policy_worker_cleanup_unfinished_count_to_long
+      tag: convert_extra_container_expiration_policy_worker_cleanup_unfinished_count_to_long_d3c76b19
       type: long
       ignore_missing: true
       on_failure:
@@ -1277,7 +1277,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.expire_build_artifacts_worker.destroyed_job_artifacts_count
-      tag: convert_extra_expire_build_artifacts_worker_destroyed_job_artifacts_count_to_long
+      tag: convert_extra_expire_build_artifacts_worker_destroyed_job_artifacts_count_to_long_c2f64842
       type: long
       ignore_missing: true
       on_failure:
@@ -1291,7 +1291,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.delete_count
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_delete_count_to_long
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_delete_count_to_long_6e73924b
       type: long
       ignore_missing: true
       on_failure:
@@ -1305,7 +1305,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.over_limit
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_over_limit_to_boolean
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_over_limit_to_boolean_f847a997
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1319,7 +1319,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.turbo_mode
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_turbo_mode_to_boolean
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_turbo_mode_to_boolean_0fbc0d8b
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1333,7 +1333,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.update_count
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_update_count_to_long
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_update_count_to_long_409f32df
       type: long
       ignore_missing: true
       on_failure:
@@ -1347,7 +1347,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.delete_count
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_delete_count_to_long
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_delete_count_to_long_e4f1ec2a
       type: long
       ignore_missing: true
       on_failure:
@@ -1361,7 +1361,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.over_limit
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_over_limit_to_boolean
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_over_limit_to_boolean_6a99974e
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1375,7 +1375,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.turbo_mode
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_turbo_mode_to_boolean
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_turbo_mode_to_boolean_e8d37428
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1389,7 +1389,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.update_count
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_update_count_to_long
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_update_count_to_long_e84e98d2
       type: long
       ignore_missing: true
       on_failure:
@@ -1403,7 +1403,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.delete_count
-      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_delete_count_to_long
+      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_delete_count_to_long_78165442
       type: long
       ignore_missing: true
       on_failure:
@@ -1417,7 +1417,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.over_limit
-      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_over_limit_to_boolean
+      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_over_limit_to_boolean_85e00b11
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1431,7 +1431,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.update_count
-      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_update_count_to_long
+      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_update_count_to_long_42f541b0
       type: long
       ignore_missing: true
       on_failure:
@@ -1445,7 +1445,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.consumable_events
-      tag: convert_extra_namespaces_process_sync_events_worker_consumable_events_to_long
+      tag: convert_extra_namespaces_process_sync_events_worker_consumable_events_to_long_1984a9c4
       type: long
       ignore_missing: true
       on_failure:
@@ -1459,7 +1459,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.estimated_total_events
-      tag: convert_extra_namespaces_process_sync_events_worker_estimated_total_events_to_long
+      tag: convert_extra_namespaces_process_sync_events_worker_estimated_total_events_to_long_069ee47d
       type: long
       ignore_missing: true
       on_failure:
@@ -1473,7 +1473,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.processed_events
-      tag: convert_extra_namespaces_process_sync_events_worker_processed_events_to_long
+      tag: convert_extra_namespaces_process_sync_events_worker_processed_events_to_long_8f3e32ab
       type: long
       ignore_missing: true
       on_failure:
@@ -1487,7 +1487,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.execution_timeout
-      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_execution_timeout_to_boolean
+      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_execution_timeout_to_boolean_c0ddd591
       type: boolean
       ignore_missing: true
       on_failure:
@@ -1501,7 +1501,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.total_deleted_stale_entries
-      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_deleted_stale_entries_to_long
+      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_deleted_stale_entries_to_long_198d5aa6
       type: long
       ignore_missing: true
       on_failure:
@@ -1515,7 +1515,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.total_pending_entries
-      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_pending_entries_to_long
+      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_pending_entries_to_long_5288395d
       type: long
       ignore_missing: true
       on_failure:
@@ -1529,7 +1529,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.packages_cleanup_delete_orphaned_dependencies_worker.deleted_rows_count
-      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_deleted_rows_count_to_long
+      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_deleted_rows_count_to_long_617eee35
       type: long
       ignore_missing: true
       on_failure:
@@ -1543,7 +1543,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.packages_cleanup_delete_orphaned_dependencies_worker.last_processed_packages_dependency_id
-      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_last_processed_packages_dependency_id_to_long
+      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_last_processed_packages_dependency_id_to_long_f57df378
       type: long
       ignore_missing: true
       on_failure:
@@ -1557,7 +1557,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.pages_deactivate_expired_deployments_cron_worker.deactivate_expired_pages_deployments.deactivated_deployments
-      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_deactivated_deployments_to_long
+      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_deactivated_deployments_to_long_08ce82c8
       type: long
       ignore_missing: true
       on_failure:
@@ -1571,7 +1571,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.pages_deactivate_expired_deployments_cron_worker.deactivate_expired_pages_deployments.duration
-      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_duration_to_double
+      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_duration_to_double_208abfd7
       type: double
       ignore_missing: true
       on_failure:
@@ -1585,7 +1585,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.projects_process_sync_events_worker.consumable_events
-      tag: convert_extra_projects_process_sync_events_worker_consumable_events_to_long
+      tag: convert_extra_projects_process_sync_events_worker_consumable_events_to_long_7c7f8da2
       type: long
       ignore_missing: true
       on_failure:
@@ -1599,7 +1599,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.projects_process_sync_events_worker.estimated_total_events
-      tag: convert_extra_projects_process_sync_events_worker_estimated_total_events_to_long
+      tag: convert_extra_projects_process_sync_events_worker_estimated_total_events_to_long_486a664a
       type: long
       ignore_missing: true
       on_failure:
@@ -1613,7 +1613,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.projects_process_sync_events_worker.processed_events
-      tag: convert_extra_projects_process_sync_events_worker_processed_events_to_long
+      tag: convert_extra_projects_process_sync_events_worker_processed_events_to_long_6bc915b2
       type: long
       ignore_missing: true
       on_failure:
@@ -1627,7 +1627,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.job_size_bytes
-      tag: convert_job_size_bytes_to_long
+      tag: convert_job_size_bytes_to_long_8596b682
       type: long
       ignore_missing: true
       on_failure:
@@ -1641,7 +1641,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_bytes
-      tag: convert_mem_bytes_to_long
+      tag: convert_mem_bytes_to_long_4c7ab505
       type: long
       ignore_missing: true
       on_failure:
@@ -1655,7 +1655,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_mallocs
-      tag: convert_mem_mallocs_to_long
+      tag: convert_mem_mallocs_to_long_c215a9d2
       type: long
       ignore_missing: true
       on_failure:
@@ -1669,7 +1669,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_objects
-      tag: convert_mem_objects_to_long
+      tag: convert_mem_objects_to_long_00809f26
       type: long
       ignore_missing: true
       on_failure:
@@ -1683,7 +1683,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_total_bytes
-      tag: convert_mem_total_bytes_to_long
+      tag: convert_mem_total_bytes_to_long_224e8e23
       type: long
       ignore_missing: true
       on_failure:
@@ -1697,7 +1697,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.meta.remote_ip
-      tag: convert_meta_remote_ip_to_ip
+      tag: convert_meta_remote_ip_to_ip_e570d1c8
       type: ip
       ignore_missing: true
       if: ctx.gitlab?.sidekiq?.meta?.remote_ip != ''
@@ -1712,7 +1712,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.queue_duration_s
-      tag: convert_queue_duration_s_to_double
+      tag: convert_queue_duration_s_to_double_a2e45d78
       type: double
       ignore_missing: true
       on_failure:
@@ -1726,7 +1726,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_calls
-      tag: convert_redis_cache_calls_to_long
+      tag: convert_redis_cache_calls_to_long_3fd8fcd7
       type: long
       ignore_missing: true
       on_failure:
@@ -1740,7 +1740,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_read_bytes
-      tag: convert_redis_cache_read_bytes_to_long
+      tag: convert_redis_cache_read_bytes_to_long_b33d77b8
       type: long
       ignore_missing: true
       on_failure:
@@ -1754,7 +1754,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_write_bytes
-      tag: convert_redis_cache_write_bytes_to_long
+      tag: convert_redis_cache_write_bytes_to_long_7408db0d
       type: long
       ignore_missing: true
       on_failure:
@@ -1768,7 +1768,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_calls
-      tag: convert_redis_calls_to_long
+      tag: convert_redis_calls_to_long_8bb25dc3
       type: long
       ignore_missing: true
       on_failure:
@@ -1782,7 +1782,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_duration_s
-      tag: convert_redis_duration_s_to_double
+      tag: convert_redis_duration_s_to_double_cd3f531c
       type: double
       ignore_missing: true
       on_failure:
@@ -1796,7 +1796,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_calls
-      tag: convert_redis_feature_flag_calls_to_long
+      tag: convert_redis_feature_flag_calls_to_long_013838da
       type: long
       ignore_missing: true
       on_failure:
@@ -1810,7 +1810,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_duration_s
-      tag: convert_redis_feature_flag_duration_s_to_double
+      tag: convert_redis_feature_flag_duration_s_to_double_26486ad7
       type: double
       ignore_missing: true
       on_failure:
@@ -1824,7 +1824,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_read_bytes
-      tag: convert_redis_feature_flag_read_bytes_to_long
+      tag: convert_redis_feature_flag_read_bytes_to_long_a255a274
       type: long
       ignore_missing: true
       on_failure:
@@ -1838,7 +1838,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_write_bytes
-      tag: convert_redis_feature_flag_write_bytes_to_long
+      tag: convert_redis_feature_flag_write_bytes_to_long_14f68d93
       type: long
       ignore_missing: true
       on_failure:
@@ -1852,7 +1852,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_calls
-      tag: convert_redis_queues_calls_to_long
+      tag: convert_redis_queues_calls_to_long_cd8405c7
       type: long
       ignore_missing: true
       on_failure:
@@ -1866,7 +1866,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_duration_s
-      tag: convert_redis_queues_duration_s_to_double
+      tag: convert_redis_queues_duration_s_to_double_9fb00f4f
       type: double
       ignore_missing: true
       on_failure:
@@ -1880,7 +1880,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_calls
-      tag: convert_redis_queues_metadata_calls_to_long
+      tag: convert_redis_queues_metadata_calls_to_long_c9d03031
       type: long
       ignore_missing: true
       on_failure:
@@ -1894,7 +1894,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_duration_s
-      tag: convert_redis_queues_metadata_duration_s_to_double
+      tag: convert_redis_queues_metadata_duration_s_to_double_448a0e06
       type: double
       ignore_missing: true
       on_failure:
@@ -1908,7 +1908,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_read_bytes
-      tag: convert_redis_queues_metadata_read_bytes_to_long
+      tag: convert_redis_queues_metadata_read_bytes_to_long_a623f4ae
       type: long
       ignore_missing: true
       on_failure:
@@ -1922,7 +1922,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_write_bytes
-      tag: convert_redis_queues_metadata_write_bytes_to_long
+      tag: convert_redis_queues_metadata_write_bytes_to_long_85eed4af
       type: long
       ignore_missing: true
       on_failure:
@@ -1936,7 +1936,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_read_bytes
-      tag: convert_redis_queues_read_bytes_to_long
+      tag: convert_redis_queues_read_bytes_to_long_ceb22a6e
       type: long
       ignore_missing: true
       on_failure:
@@ -1950,7 +1950,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_write_bytes
-      tag: convert_redis_queues_write_bytes_to_long
+      tag: convert_redis_queues_write_bytes_to_long_b22b997e
       type: long
       ignore_missing: true
       on_failure:
@@ -1964,7 +1964,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_rate_limiting_calls
-      tag: convert_redis_rate_limiting_calls_to_long
+      tag: convert_redis_rate_limiting_calls_to_long_1d94be65
       type: long
       ignore_missing: true
       on_failure:
@@ -1978,7 +1978,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_rate_limiting_duration_s
-      tag: convert_redis_rate_limiting_duration_s_to_double
+      tag: convert_redis_rate_limiting_duration_s_to_double_117aa796
       type: double
       ignore_missing: true
       on_failure:
@@ -1992,7 +1992,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_rate_limiting_write_bytes
-      tag: convert_redis_rate_limiting_write_bytes_to_long
+      tag: convert_redis_rate_limiting_write_bytes_to_long_87ec45d1
       type: long
       ignore_missing: true
       on_failure:
@@ -2006,7 +2006,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_read_bytes
-      tag: convert_redis_read_bytes_to_long
+      tag: convert_redis_read_bytes_to_long_a211faf6
       type: long
       ignore_missing: true
       on_failure:
@@ -2020,7 +2020,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_calls
-      tag: convert_redis_shared_state_calls_to_long
+      tag: convert_redis_shared_state_calls_to_long_6829a2bb
       type: long
       ignore_missing: true
       on_failure:
@@ -2034,7 +2034,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_duration_s
-      tag: convert_redis_shared_state_duration_s_to_double
+      tag: convert_redis_shared_state_duration_s_to_double_f1267afe
       type: double
       ignore_missing: true
       on_failure:
@@ -2048,7 +2048,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_read_bytes
-      tag: convert_redis_shared_state_read_bytes_to_long
+      tag: convert_redis_shared_state_read_bytes_to_long_bd20c578
       type: long
       ignore_missing: true
       on_failure:
@@ -2062,7 +2062,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_write_bytes
-      tag: convert_redis_shared_state_write_bytes_to_long
+      tag: convert_redis_shared_state_write_bytes_to_long_cce6649b
       type: long
       ignore_missing: true
       on_failure:
@@ -2076,7 +2076,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_write_bytes
-      tag: convert_redis_write_bytes_to_long
+      tag: convert_redis_write_bytes_to_long_332dd311
       type: long
       ignore_missing: true
       on_failure:
@@ -2090,7 +2090,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: gitlab.sidekiq.retried_at
-      tag: date_retried_at
+      tag: date_retried_at_39279ed9
       target_field: gitlab.sidekiq.retried_at
       formats:
         - ISO8601
@@ -2106,7 +2106,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.retry
-      tag: convert_retry_to_long
+      tag: convert_retry_to_long_b09dd290
       target_field: gitlab.sidekiq.retry_long
       type: long
       ignore_missing: true
@@ -2114,12 +2114,12 @@ processors:
       ignore_failure: true
   - remove:
       field: gitlab.sidekiq.retry
-      tag: remove_sidekiq_retry
+      tag: remove_sidekiq_retry_6773098b
       if: ctx.gitlab?.sidekiq?.retry_long != null
       ignore_missing: true
   - convert:
       field: gitlab.sidekiq.retry
-      tag: convert_retry_to_boolean
+      tag: convert_retry_to_boolean_63a2d09d
       type: boolean
       ignore_missing: true
       if: ctx.gitlab?.sidekiq?.retry != null && ctx.gitlab.sidekiq.retry != ''
@@ -2134,7 +2134,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.retry_count
-      tag: convert_retry_count_to_long
+      tag: convert_retry_count_to_long_c0a94cf2
       type: long
       ignore_missing: true
       on_failure:
@@ -2148,7 +2148,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: gitlab.sidekiq.scheduled_at
-      tag: date_scheduled_at
+      tag: date_scheduled_at_a7f3ddf6
       target_field: gitlab.sidekiq.scheduled_at
       formats:
         - ISO8601
@@ -2164,7 +2164,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.scheduling_latency_s
-      tag: convert_scheduling_latency_s_to_double
+      tag: convert_scheduling_latency_s_to_double_85337f8f
       type: double
       ignore_missing: true
       on_failure:
@@ -2178,7 +2178,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.status_expiration
-      tag: convert_status_expiration_to_long
+      tag: convert_status_expiration_to_long_874e084b
       type: long
       ignore_missing: true
       on_failure:
@@ -2192,7 +2192,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.target_duration_s
-      tag: convert_target_duration_s_to_long
+      tag: convert_target_duration_s_to_long_eb52c23a
       type: long
       ignore_missing: true
       on_failure:
@@ -2206,7 +2206,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.target_scheduling_latency_s
-      tag: convert_target_scheduling_latency_s_to_long
+      tag: convert_target_scheduling_latency_s_to_long_b845b8c3
       type: long
       ignore_missing: true
       on_failure:
@@ -2220,7 +2220,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.version
-      tag: convert_version_to_long
+      tag: convert_version_to_long_c5d70b44
       type: long
       ignore_missing: true
       on_failure:
@@ -2233,7 +2233,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -2264,15 +2264,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

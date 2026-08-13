@@ -3,7 +3,7 @@ description: Pipeline for processing assessments.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - remove:
       field:
@@ -12,52 +12,52 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
 
   # parse the event JSON
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
 
   # rename to snake case
   - rename:
       field: json.name
-      tag: json_rename_name
+      tag: json_rename_name_192ba1ca
       target_field: json.properties.name
       ignore_missing: true
   - rename:
       field: json.type
-      tag: json_rename_type
+      tag: json_rename_type_805fd8f0
       target_field: json.properties.type
       ignore_missing: true
   - rename:
       field: json.id
-      tag: json_rename_id
+      tag: json_rename_id_3b191cf3
       target_field: json.properties.id
       ignore_missing: true
   - json:
       field: json.properties.additionalData.CVEs
-      tag: json_properties_additionalData_CVEs
+      tag: json_properties_additionalData_CVEs_6067a0b7
       target_field: json.properties.additionalData.CVEs
       on_failure:
         - remove:
@@ -65,7 +65,7 @@ processors:
             field: json.properties.additionalData.CVEs
             ignore_missing: true
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_75643bef
       lang: painless
       description: Convert camelCase to snake_case
       if: ctx.json?.properties != null
@@ -122,34 +122,34 @@ processors:
   # convert values
   - rename:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.name
-      tag: rename_additional_data_sub_assessment_name
+      tag: rename_additional_data_sub_assessment_name_ca774625
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.properties.name
       ignore_missing: true
   - rename:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.type
-      tag: rename_additional_data_sub_assessment_type
+      tag: rename_additional_data_sub_assessment_type_3c91cab8
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.properties.type
       ignore_missing: true
   - rename:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.properties.id
-      tag: rename_additional_data_sub_assessment_properties_id
+      tag: rename_additional_data_sub_assessment_properties_id_77edfaa0
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.properties.event_id
       ignore_missing: true
   - rename:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.id
-      tag: rename_additional_data_sub_assessment_id
+      tag: rename_additional_data_sub_assessment_id_3af53dd6
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.properties.id
       ignore_missing: true
   - rename:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.properties
-      tag: rename_additional_data_sub_assessment_properties
+      tag: rename_additional_data_sub_assessment_properties_68bcb723
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment
       ignore_missing: true
       override: true
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.can onboard to _byol
       target_field: microsoft_defender_cloud.assessment.additional_data.can_onboard_to_byol
-      tag: convert_additional_data_can_onboard_to_byol_to_boolean
+      tag: convert_additional_data_can_onboard_to_byol_to_boolean_cbb490e5
       type: boolean
       ignore_missing: true
       on_failure:
@@ -159,7 +159,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.cves.base_score
-      tag: convert_additional_data_cves_base_score_to_float
+      tag: convert_additional_data_cves_base_score_to_float_4bc91aa3
       type: float
       ignore_missing: true
       on_failure:
@@ -173,7 +173,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.cves_count
-      tag: convert_additional_data_cves_count_to_long
+      tag: convert_additional_data_cves_count_to_long_7b10c626
       type: long
       ignore_missing: true
       on_failure:
@@ -187,7 +187,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.max_cvss30_score
-      tag: convert_additional_data_max_cvss30_score_to_float
+      tag: convert_additional_data_max_cvss30_score_to_float_6fe96694
       type: float
       ignore_missing: true
       on_failure:
@@ -202,7 +202,7 @@ processors:
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.nsg open ports
       target_field: microsoft_defender_cloud.assessment.additional_data.nsg_open_ports
-      tag: convert_additional_data_nsg_open_ports_to_long
+      tag: convert_additional_data_nsg_open_ports_to_long_cd64e0e7
       type: long
       ignore_missing: true
       on_failure:
@@ -212,31 +212,31 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve
-      tag: rename_additional_data_sub_assessment_additional_data_cve
+      tag: rename_additional_data_sub_assessment_additional_data_cve_56c9b496
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
       ignore_missing: true
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve instanceof List
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_ffd7c648
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         convert:
           field: _ingest._value.cvss_score
-          tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_score_to_float
+          tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_score_to_float_dd8b39dd
           type: float
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_cvss_score
+                tag: remove_ingest_value_cvss_score_f6c89a14
                 field: _ingest._value.cvss_score
             - append:
-                tag: append_error_message
+                tag: append_error_message_25018c3f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.cvss_score
-      tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_score_to_float_23173cc3
+      tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_score_to_float_eccdf627
       type: float
       ignore_missing: true
       on_failure:
@@ -250,7 +250,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.cvss_version
-      tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_version_to_float
+      tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_version_to_float_19b066e1
       type: float
       ignore_missing: true
       on_failure:
@@ -264,32 +264,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_c68ceb39
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_9cd2e6b3
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         convert:
           field: _ingest._value.cvss_version
-          tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_version_to_string
+          tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_version_to_string_16adafe8
           type: string
           ignore_missing: true
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.cvss_version
-      tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_version_to_string_ab132413
+      tag: convert_additional_data_sub_assessment_additional_data_cve_cvss_version_to_string_6d2e3d59
       type: string
       ignore_missing: true
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_a3fbd685
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_dee197bc
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         convert:
           field: _ingest._value.has_public_exploit
-          tag: convert_additional_data_sub_assessment_additional_data_cve_has_public_exploit_to_boolean
+          tag: convert_additional_data_sub_assessment_additional_data_cve_has_public_exploit_to_boolean_370cfa69
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_has_public_exploit
+                tag: remove_ingest_value_has_public_exploit_ac100dad
                 field: _ingest._value.has_public_exploit
             - append:
                 tag: append_error_message_d7701875
@@ -297,7 +297,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.has_public_exploit
-      tag: convert_additional_data_sub_assessment_additional_data_cve_has_public_exploit_to_boolean_b47a642d
+      tag: convert_additional_data_sub_assessment_additional_data_cve_has_public_exploit_to_boolean_74d5f0fb
       type: boolean
       ignore_missing: true
       on_failure:
@@ -311,17 +311,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_6a6fe894
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_20511ea4
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         convert:
           field: _ingest._value.is_exploit_in_kit
-          tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_in_kit_to_boolean
+          tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_in_kit_to_boolean_a0c74865
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_is_exploit_in_kit
+                tag: remove_ingest_value_is_exploit_in_kit_aee29d2e
                 field: _ingest._value.is_exploit_in_kit
             - append:
                 tag: append_error_message_434faeee
@@ -329,7 +329,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.is_exploit_in_kit
-      tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_in_kit_to_boolean_79041810
+      tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_in_kit_to_boolean_4b2834d8
       type: boolean
       ignore_missing: true
       on_failure:
@@ -343,17 +343,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_5d28c0e4
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_39f935a6
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         convert:
           field: _ingest._value.is_exploit_verified
-          tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_verified_to_boolean
+          tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_verified_to_boolean_b2418a97
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_is_exploit_verified
+                tag: remove_ingest_value_is_exploit_verified_3985d0f5
                 field: _ingest._value.is_exploit_verified
             - append:
                 tag: append_error_message_b4357956
@@ -361,7 +361,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.is_exploit_verified
-      tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_verified_to_boolean_3e1a3a00
+      tag: convert_additional_data_sub_assessment_additional_data_cve_is_exploit_verified_to_boolean_e3e9d41d
       type: boolean
       ignore_missing: true
       on_failure:
@@ -375,17 +375,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_a2e24665
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_ab43f613
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         convert:
           field: _ingest._value.is_zero_day
-          tag: convert_additional_data_sub_assessment_additional_data_cve_is_zero_day_to_boolean
+          tag: convert_additional_data_sub_assessment_additional_data_cve_is_zero_day_to_boolean_009bdc92
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_is_zero_day
+                tag: remove_ingest_value_is_zero_day_0dbc7971
                 field: _ingest._value.is_zero_day
             - append:
                 tag: append_error_message_9055b6dd
@@ -393,7 +393,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.is_zero_day
-      tag: convert_additional_data_sub_assessment_additional_data_cve_is_zero_day_to_boolean_b8bb0dd3
+      tag: convert_additional_data_sub_assessment_additional_data_cve_is_zero_day_to_boolean_e1e06ffb
       type: boolean
       ignore_missing: true
       on_failure:
@@ -407,24 +407,24 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_b077acd4
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_6ea11f27
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         date:
           field: _ingest._value.last_modified_date
           target_field: _ingest._value.last_modified_date
-          tag: date_additional_data_sub_assessment_additional_data_cve_last_modified_date
+          tag: date_additional_data_sub_assessment_additional_data_cve_last_modified_date_edc2a5f6
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_last_modified_date
+                tag: remove_ingest_value_last_modified_date_16689b55
                 field: _ingest._value.last_modified_date
                 ignore_missing: true
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.last_modified_date
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.last_modified_date
-      tag: date_additional_data_sub_assessment_additional_data_cve_last_modified_date_f05a2eae
+      tag: date_additional_data_sub_assessment_additional_data_cve_last_modified_date_27033e3d
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve?.last_modified_date != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.last_modified_date != ''
@@ -439,24 +439,24 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list
-      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_c95d3354
+      tag: foreach_additional_data_sub_assessment_additional_data_cve_list_3942e68f
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List
       processor:
         date:
           field: _ingest._value.published_date
           target_field: _ingest._value.published_date
-          tag: date_additional_data_sub_assessment_additional_data_cve_published_date
+          tag: date_additional_data_sub_assessment_additional_data_cve_published_date_d9ee33a1
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_published_date
+                tag: remove_ingest_value_published_date_446d2bd8
                 field: _ingest._value.published_date
                 ignore_missing: true
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.published_date
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.published_date
-      tag: date_additional_data_sub_assessment_additional_data_cve_published_date_98840919
+      tag: date_additional_data_sub_assessment_additional_data_cve_published_date_d454c5de
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve?.published_date != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.published_date != ''
@@ -471,7 +471,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cvss_v30_score
-      tag: convert_additional_data_sub_assessment_additional_data_cvss_v30_score_to_float
+      tag: convert_additional_data_sub_assessment_additional_data_cvss_v30_score_to_float_496759eb
       type: float
       ignore_missing: true
       on_failure:
@@ -485,7 +485,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.data.resources
-      tag: json_assessment_additional_data_sub_assessment_additional_data_data_resources
+      tag: json_assessment_additional_data_sub_assessment_additional_data_data_resources_2f201e97
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.data.resources_object
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.data?.resources != null
       ignore_failure: true
@@ -493,12 +493,12 @@ processors:
       field:
         - microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.data.resources
       ignore_missing: true
-      tag: remove_additional_data_sub_assessment_additional_data_data_resources
+      tag: remove_additional_data_sub_assessment_additional_data_data_resources_ea2db2d3
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.data?.resources_object != null
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.data.signature_update_date
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.data.signature_update_date
-      tag: date_additional_data_sub_assessment_additional_data_data_signature_update_date
+      tag: date_additional_data_sub_assessment_additional_data_data_signature_update_date_d7ec59d1
       formats:
         - 'M/d/yyyy h:mm:ss a'
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.data?.signature_update_date != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.data.signature_update_date != ''
@@ -514,7 +514,7 @@ processors:
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.fix_reference.release_date
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.fix_reference.release_date
-      tag: date_additional_data_sub_assessment_additional_data_software_details_fix_reference_release_date
+      tag: date_additional_data_sub_assessment_additional_data_software_details_fix_reference_release_date_c01e943f
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.software_details?.fix_reference?.release_date != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.fix_reference.release_date != ''
@@ -529,7 +529,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.patchable
-      tag: convert_additional_data_sub_assessment_additional_data_software_details_patchable_to_boolean
+      tag: convert_additional_data_sub_assessment_additional_data_software_details_patchable_to_boolean_18821d5b
       type: boolean
       ignore_missing: true
       on_failure:
@@ -543,7 +543,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Parse vulnerability_details.cvss object.
-      tag: script_to_parse_vulnerability_details_cvss
+      tag: script_to_parse_vulnerability_details_cvss_0ff20594
       lang: painless
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.vulnerability_details?.cvss != null
       source: >-
@@ -564,7 +564,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v2.base
-      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v2_base_to_float
+      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v2_base_to_float_b58879f6
       type: float
       ignore_missing: true
       on_failure:
@@ -578,7 +578,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v3.base
-      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v3_base_to_float
+      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v3_base_to_float_3fb45d21
       type: float
       ignore_missing: true
       on_failure:
@@ -592,7 +592,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v4.base
-      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v4_base_to_float
+      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v4_base_to_float_c220c189
       type: float
       ignore_missing: true
       on_failure:
@@ -606,7 +606,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.exploitability_assessment.is_in_exploit_kit
-      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_exploitability_assessment_is_in_exploit_kit_to_boolean
+      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_exploitability_assessment_is_in_exploit_kit_to_boolean_68b82f55
       type: boolean
       ignore_missing: true
       on_failure:
@@ -620,7 +620,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.exploitability_assessment.is_publicly_disclosed
-      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_exploitability_assessment_is_publicly_disclosed_to_boolean
+      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_exploitability_assessment_is_publicly_disclosed_to_boolean_30d3f1be
       type: boolean
       ignore_missing: true
       on_failure:
@@ -634,7 +634,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.exploitability_assessment.is_verified
-      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_exploitability_assessment_is_verified_to_boolean
+      tag: convert_additional_data_sub_assessment_additional_data_vulnerability_details_exploitability_assessment_is_verified_to_boolean_f95ccfac
       type: boolean
       ignore_missing: true
       on_failure:
@@ -649,7 +649,7 @@ processors:
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.last_modified_date
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.last_modified_date
-      tag: date_additional_data_sub_assessment_additional_data_vulnerability_details_last_modified_date
+      tag: date_additional_data_sub_assessment_additional_data_vulnerability_details_last_modified_date_74012405
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.vulnerability_details?.last_modified_date != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.last_modified_date != ''
@@ -665,7 +665,7 @@ processors:
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.published_date
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.published_date
-      tag: date_additional_data_sub_assessment_additional_data_vulnerability_details_published_date
+      tag: date_additional_data_sub_assessment_additional_data_vulnerability_details_published_date_72120f63
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.vulnerability_details?.published_date != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.published_date != ''
@@ -681,7 +681,7 @@ processors:
   - date:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.time_generated
       target_field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.time_generated
-      tag: date_additional_data_sub_assessment_time_generated
+      tag: date_additional_data_sub_assessment_time_generated_9c575a31
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.time_generated != null && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.time_generated != ''
@@ -697,7 +697,7 @@ processors:
   - date:
       field: microsoft_defender_cloud.assessment.status.first_evaluation_date
       target_field: microsoft_defender_cloud.assessment.status.first_evaluation_date
-      tag: date_status_first_evaluation_date
+      tag: date_status_first_evaluation_date_077bb8ae
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.status?.first_evaluation_date != null && ctx.microsoft_defender_cloud.assessment.status.first_evaluation_date != ''
@@ -713,7 +713,7 @@ processors:
   - date:
       field: microsoft_defender_cloud.assessment.status.status_change_date
       target_field: microsoft_defender_cloud.assessment.status.status_change_date
-      tag: date_status_status_change_date
+      tag: date_status_status_change_date_40738af4
       formats:
         - ISO8601
       if: ctx.microsoft_defender_cloud?.assessment?.status?.status_change_date != null && ctx.microsoft_defender_cloud.assessment.status.status_change_date != ''
@@ -728,7 +728,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: microsoft_defender_cloud.assessment.class
-      tag: set_microsoft_defender_cloud_assessment_class_to_vulnerability
+      tag: set_microsoft_defender_cloud_assessment_class_to_vulnerability_c3a8ad7c
       value: vulnerability
       if: >
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.metadata?.scanner == 'MicrosoftDefenderVulnerabilityManagement' ||
@@ -736,7 +736,7 @@ processors:
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.cves_count != null
   - set:
       field: microsoft_defender_cloud.assessment.class
-      tag: set_microsoft_defender_cloud_assessment_class_to_misconfiguration
+      tag: set_microsoft_defender_cloud_assessment_class_to_misconfiguration_2ef81ebf
       value: misconfiguration
       if: >
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.metadata?.scanner != 'MicrosoftDefenderVulnerabilityManagement' &&
@@ -746,12 +746,12 @@ processors:
   # populate ECS fields
   - set:
       field: message
-      tag: set_message_from_additional_data_sub_assessment_display_name
+      tag: set_message_from_additional_data_sub_assessment_display_name_8b4bc416
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.display_name
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_from_display_name
+      tag: set_message_from_display_name_a59c76f7
       copy_from: microsoft_defender_cloud.assessment.display_name
       ignore_empty_value: true
       if: ctx.message == null
@@ -759,42 +759,42 @@ processors:
   # event.*
   - set:
       field: event.kind
-      tag: set_event_kind_to_state
+      tag: set_event_kind_to_state_885fc738
       value: state
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_bbdb2453
       value: event
       if: ctx.event?.kind == null
   - append:
       field: event.category
-      tag: append_vulnerability_into_event_category
+      tag: append_vulnerability_into_event_category_b6f48319
       value: vulnerability
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - append:
       field: event.category
-      tag: append_configuration_into_event_category
+      tag: append_configuration_into_event_category_d95ec8d8
       value: configuration
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - set:
       field: event.id
-      tag: set_event_id_from_additional_data_sub_assessment_id
+      tag: set_event_id_from_additional_data_sub_assessment_id_4eda727d
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.id
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_id
+      tag: set_event_id_from_id_61888e43
       copy_from: microsoft_defender_cloud.assessment.id
       ignore_empty_value: true
       if: ctx.event?.id == null
   - script:
       description: Parse event.created.
-      tag: script_to_parse_event_created
+      tag: script_to_parse_event_created_cdbf6e99
       lang: painless
       source: >-
         def status_change_date = ctx.microsoft_defender_cloud?.assessment?.status?.status_change_date;
@@ -820,49 +820,49 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success
+      tag: set_event_outcome_to_success_08f87445
       value: success
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.status?.code == 'Healthy'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure
+      tag: set_event_outcome_to_failure_c84c8351
       value: failure
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.status?.code == 'Unhealthy'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_unknown
+      tag: set_event_outcome_to_unknown_a8c560f4
       value: unknown
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.status?.code == 'NotApplicable'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success_from_status_code
+      tag: set_event_outcome_to_success_from_status_code_ca9c5fb4
       value: success
       if: ctx.event?.outcome == null && ctx.microsoft_defender_cloud?.assessment?.status?.code == 'Healthy'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure_from_status_code
+      tag: set_event_outcome_to_failure_from_status_code_33e45e53
       value: failure
       if: ctx.event?.outcome == null && ctx.microsoft_defender_cloud?.assessment?.status?.code == 'Unhealthy'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_unknown_from_status_code
+      tag: set_event_outcome_to_unknown_from_status_code_2d0b5868
       value: unknown
       if: ctx.event?.outcome == null && ctx.microsoft_defender_cloud?.assessment?.status?.code == 'NotApplicable'
   - set:
       field: event.reason
-      tag: set_event_reason_from_additional_data_sub_assessment_status_description
+      tag: set_event_reason_from_additional_data_sub_assessment_status_description_afaac118
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.status.description
       ignore_empty_value: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_status_description
+      tag: set_event_reason_from_status_description_ed3c575d
       copy_from: microsoft_defender_cloud.assessment.status.description
       ignore_empty_value: true
       if: ctx.event?.reason == null
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: script_to_set_event_severity
+      tag: script_to_set_event_severity_e72660e5
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.status?.severity != null
       source: |-
         def severity = ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.status.severity;
@@ -882,13 +882,13 @@ processors:
   # observer.*
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_907b114e
       value: Microsoft Defender for Cloud
 
   # cloud.*
   - grok:
       field: microsoft_defender_cloud.assessment.resource_details.native_resource_id
-      tag: grok_to_extract_cloud_account_id
+      tag: grok_to_extract_cloud_account_id_a53596c5
       patterns:
         - '^/subscriptions/%{DATA:cloud.account.id}/%{GREEDYDATA}$'
         - '^%{GREEDYDATA}$'
@@ -900,7 +900,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
       field: microsoft_defender_cloud.assessment.resource_details.id
-      tag: grok_to_extract_cloud_account_id_3e4012db
+      tag: grok_to_extract_cloud_account_id_c08d62f3
       patterns:
         - '^/subscriptions/%{DATA:cloud.account.id}/%{GREEDYDATA}$'
         - '^%{GREEDYDATA}$'
@@ -913,63 +913,63 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_resource_details_native_resource_id
+      tag: set_cloud_instance_id_from_resource_details_native_resource_id_ae80362c
       copy_from: microsoft_defender_cloud.assessment.resource_details.native_resource_id
       ignore_empty_value: true
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_resource_details_id
+      tag: set_cloud_instance_id_from_resource_details_id_30e74bf2
       copy_from: microsoft_defender_cloud.assessment.resource_details.id
       ignore_empty_value: true
       if: ctx.cloud?.instance?.id == null
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name_from_resource_details_resource_name
+      tag: set_cloud_instance_name_from_resource_details_resource_name_1a3e182a
       copy_from: microsoft_defender_cloud.assessment.resource_details.resource_name
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name_from_additional_data_sub_assessment_resource_details_resource_provider
+      tag: set_cloud_service_name_from_additional_data_sub_assessment_resource_details_resource_provider_817a7e35
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.resource_provider
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name_from_resource_details_resource_provider
+      tag: set_cloud_service_name_from_resource_details_resource_provider_3027b075
       copy_from: microsoft_defender_cloud.assessment.resource_details.resource_provider
       ignore_empty_value: true
       if: ctx.cloud?.service?.name == null
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_to_azure
+      tag: set_cloud_provider_to_azure_ce973e4e
       value: azure
       if: ctx.microsoft_defender_cloud?.assessment?.resource_details?.source == 'Azure'
 
   # container.*
   - set:
       field: container.name
-      tag: set_container_name_from_additional_data_sub_assessment_additional_data_kubernetes_details_container_name
+      tag: set_container_name_from_additional_data_sub_assessment_additional_data_kubernetes_details_container_name_6a469012
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.kubernetes_details.container_name
       ignore_empty_value: true
   - set:
       field: container.image.name
-      tag: set_container_image_name_from_additional_data_sub_assessment_additional_data_artifact_details_repository_name
+      tag: set_container_image_name_from_additional_data_sub_assessment_additional_data_artifact_details_repository_name_38033b9d
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.artifact_details.repository_name
       ignore_empty_value: true
   - set:
       field: container.image.name
-      tag: set_container_image_name_from_additional_data_repo
+      tag: set_container_image_name_from_additional_data_repo_0aec7ebe
       copy_from: microsoft_defender_cloud.assessment.additional_data.repo
       ignore_empty_value: true
       if: ctx.container?.image?.name == null
   - append:
       field: container.image.hash.all
-      tag: append_additional_data_sub_assessment_additional_data_artifact_details_digest_to_container_image_hash_all
+      tag: append_additional_data_sub_assessment_additional_data_artifact_details_digest_to_container_image_hash_all_a7fbdaca
       value: '{{{microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.artifact_details.digest}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.artifact_details?.digest != null
   - append:
       field: container.image.hash.all
-      tag: append_additional_data_digest_to_container_image_hash_all
+      tag: append_additional_data_digest_to_container_image_hash_all_0f48fa5e
       value: '{{{microsoft_defender_cloud.assessment.additional_data.digest}}}'
       allow_duplicates: false
       if: ctx.container?.image?.hash?.all == null && ctx.microsoft_defender_cloud?.assessment?.additional_data?.digest != null
@@ -977,51 +977,51 @@ processors:
   # host.*
   - set:
       field: host.name
-      tag: set_host_name_from_additional_data_sub_assessment_resource_details_resource_name
+      tag: set_host_name_from_additional_data_sub_assessment_resource_details_resource_name_e4ccde2e
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.resource_name
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.resource_details?.resource_type?.toLowerCase() == 'virtualmachines'
   - set:
       field: host.name
-      tag: set_host_name_from_resource_details_resource_name
+      tag: set_host_name_from_resource_details_resource_name_015860f4
       copy_from: microsoft_defender_cloud.assessment.resource_details.resource_name
       ignore_empty_value: true
       if: ctx.host?.name == null && ctx.microsoft_defender_cloud?.assessment?.resource_details?.resource_type?.toLowerCase() == 'virtualmachines'
   - set:
       field: host.os.family
-      tag: set_host_os_family_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_family
+      tag: set_host_os_family_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_family_cfd99c08
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.os_details.os_version
       ignore_empty_value: true
   - set:
       field: host.os.family
-      tag: set_host_os_family_from_additional_data_os_distribution
+      tag: set_host_os_family_from_additional_data_os_distribution_aaeb68b9
       copy_from: microsoft_defender_cloud.assessment.additional_data.os_distribution
       ignore_empty_value: true
       if: ctx.host?.os?.family == null
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_linux_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_platform
+      tag: set_host_os_platform_linux_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_platform_aecd1571
       value: linux
       if: >
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.software_details?.os_details?.os_platform != null &&
         ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.os_details.os_platform.toLowerCase().contains('linux')
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_windows_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_platform
+      tag: set_host_os_platform_windows_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_platform_4eeceb06
       value: windows
       if: >
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.software_details?.os_details?.os_platform != null &&
         ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.os_details.os_platform.toLowerCase().contains('windows')
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_darwin_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_platform
+      tag: set_host_os_platform_darwin_from_additional_data_sub_assessment_additional_data_software_details_os_details_os_platform_17fb10f2
       value: darwin
       if: >
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.software_details?.os_details?.os_platform != null &&
         ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.os_details.os_platform.toLowerCase().contains('mac')
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_linux_from_additional_data_os_type
+      tag: set_host_os_platform_linux_from_additional_data_os_type_d8258e54
       value: linux
       if: >
         ctx.host?.os?.platform == null &&
@@ -1029,7 +1029,7 @@ processors:
         ctx.microsoft_defender_cloud.assessment.additional_data.os_type.toLowerCase().contains('linux')
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_windows_from_additional_data_os_type
+      tag: set_host_os_platform_windows_from_additional_data_os_type_1e26af47
       value: windows
       if: >
         ctx.host?.os?.platform == null &&
@@ -1037,7 +1037,7 @@ processors:
         ctx.microsoft_defender_cloud.assessment.additional_data.os_type.toLowerCase().contains('windows')
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_darwin_from_additional_data_os_type
+      tag: set_host_os_platform_darwin_from_additional_data_os_type_20f76f35
       value: darwin
       if: >
         ctx.host?.os?.platform == null &&
@@ -1045,7 +1045,7 @@ processors:
         ctx.microsoft_defender_cloud.assessment.additional_data.os_type.toLowerCase().contains('mac')
   - script:
       description: Dynamically set host.os.type values.
-      tag: script_map_host_os_type
+      tag: script_map_host_os_type_2ce19a99
       lang: painless
       params:
         os_type:
@@ -1083,74 +1083,74 @@ processors:
   # orchestrator.*
   - set:
       field: orchestrator.resource.parent.type
-      tag: set_orchestrator_resource_parent_type_from_additional_data_sub_assessment_additional_data_kubernetes_details_controller_kind
+      tag: set_orchestrator_resource_parent_type_from_additional_data_sub_assessment_additional_data_kubernetes_details_controller_kind_bd5b6468
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.kubernetes_details.controller_kind
       ignore_empty_value: true
   - set:
       field: orchestrator.resource.parent.type
-      tag: set_orchestrator_resource_parent_type_from_additional_data_controller_type
+      tag: set_orchestrator_resource_parent_type_from_additional_data_controller_type_5e2b7174
       copy_from: microsoft_defender_cloud.assessment.additional_data.controller_type
       ignore_empty_value: true
       if: ctx.orchestrator?.resource?.parent?.type == null
   - set:
       field: orchestrator.resource.name
-      tag: set_orchestrator_resource_name_from_additional_data_sub_assessment_additional_data_kubernetes_details_pod_name
+      tag: set_orchestrator_resource_name_from_additional_data_sub_assessment_additional_data_kubernetes_details_pod_name_cbe7a0f6
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.kubernetes_details.pod_name
       ignore_empty_value: true
   - set:
       field: orchestrator.resource.name
-      tag: set_orchestrator_resource_name_from_additional_data_pod_name
+      tag: set_orchestrator_resource_name_from_additional_data_pod_name_a77cdec9
       copy_from: microsoft_defender_cloud.assessment.additional_data.pod_name
       ignore_empty_value: true
       if: ctx.orchestrator?.resource?.name == null
   - set:
       field: orchestrator.namespace
-      tag: set_orchestrator_namespace_from_additional_data_sub_assessment_additional_data_kubernetes_details_namespace
+      tag: set_orchestrator_namespace_from_additional_data_sub_assessment_additional_data_kubernetes_details_namespace_b25204c2
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.kubernetes_details.namespace
       ignore_empty_value: true
   - set:
       field: orchestrator.namespace
-      tag: set_orchestrator_namespace_from_additional_data_namespace
+      tag: set_orchestrator_namespace_from_additional_data_namespace_ada32e8c
       copy_from: microsoft_defender_cloud.assessment.additional_data.namespace
       ignore_empty_value: true
       if: ctx.orchestrator?.namespace == null
   - set:
       field: orchestrator.cluster.id
-      tag: set_orchestrator_cluster_id_from_additional_data_sub_assessment_additional_data_kubernetes_details_cluster_resource_id
+      tag: set_orchestrator_cluster_id_from_additional_data_sub_assessment_additional_data_kubernetes_details_cluster_resource_id_feb4ecfc
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.kubernetes_details.cluster_resource_id
       ignore_empty_value: true
   - set:
       field: orchestrator.cluster.id
-      tag: set_orchestrator_cluster_id_from_additional_data_sub_assessment_additional_data_cluster_details_cluster_resource_id
+      tag: set_orchestrator_cluster_id_from_additional_data_sub_assessment_additional_data_cluster_details_cluster_resource_id_39962bed
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cluster_details.cluster_resource_id
       ignore_empty_value: true
       if: ctx.orchestrator?.cluster?.id == null
   - set:
       field: orchestrator.cluster.id
-      tag: set_orchestrator_cluster_id_from_additional_data_k8s_cluster_id
+      tag: set_orchestrator_cluster_id_from_additional_data_k8s_cluster_id_866dc870
       copy_from: microsoft_defender_cloud.assessment.additional_data.k8s_cluster_id
       ignore_empty_value: true
       if: ctx.orchestrator?.cluster?.id == null
   - set:
       field: orchestrator.cluster.name
-      tag: set_orchestrator_cluster_name_from_additional_data_sub_assessment_additional_data_kubernetes_details_cluster_name
+      tag: set_orchestrator_cluster_name_from_additional_data_sub_assessment_additional_data_kubernetes_details_cluster_name_972e5eec
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.kubernetes_details.cluster_name
       ignore_empty_value: true
   - set:
       field: orchestrator.cluster.name
-      tag: set_orchestrator_cluster_name_from_additional_data_sub_assessment_additional_data_cluster_details_cluster_name
+      tag: set_orchestrator_cluster_name_from_additional_data_sub_assessment_additional_data_cluster_details_cluster_name_894be3ad
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cluster_details.cluster_name
       ignore_empty_value: true
       if: ctx.orchestrator?.cluster?.name == null
   - set:
       field: orchestrator.cluster.name
-      tag: set_orchestrator_cluster_name_from_additional_data_k8s_cluster_name
+      tag: set_orchestrator_cluster_name_from_additional_data_k8s_cluster_name_2d34f399
       copy_from: microsoft_defender_cloud.assessment.additional_data.k8s_cluster_name
       ignore_empty_value: true
       if: ctx.orchestrator?.cluster?.name == null
   - set:
       field: orchestrator.type
-      tag: set_orchestrator_type_to_kubernetes
+      tag: set_orchestrator_type_to_kubernetes_db9fcfb8
       value: kubernetes
       if: >
         ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.kubernetes_details != null ||
@@ -1159,37 +1159,37 @@ processors:
   # package.*
   - set:
       field: package.name
-      tag: set_package_name_from_additional_data_sub_assessment_additional_data_software_details_package_name
+      tag: set_package_name_from_additional_data_sub_assessment_additional_data_software_details_package_name_8ece4626
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.package_name
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: package.version
-      tag: set_package_version_from_additional_data_sub_assessment_additional_data_software_details_version
+      tag: set_package_version_from_additional_data_sub_assessment_additional_data_software_details_version_927ca0ea
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.version
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: package.fixed_version
-      tag: set_package_fixed_version_from_additional_data_sub_assessment_additional_data_software_details_fixed_version
+      tag: set_package_fixed_version_from_additional_data_sub_assessment_additional_data_software_details_fixed_version_0df8bbd8
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_details.fixed_version
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: package.name
-      tag: set_package_name_from_additional_data_sub_assessment_additional_data_software_name
+      tag: set_package_name_from_additional_data_sub_assessment_additional_data_software_name_6acd3f83
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_name
       ignore_empty_value: true
       if: ctx.package?.name == null && ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: package.version
-      tag: set_package_version_from_additional_data_sub_assessment_additional_data_software_version
+      tag: set_package_version_from_additional_data_sub_assessment_additional_data_software_version_b8b26056
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.software_version
       ignore_empty_value: true
       if: ctx.package?.version == null && ctx.package?.name != null
   - set:
       field: package.fixed_version
-      tag: set_package_fixed_version_from_additional_data_sub_assessment_additional_data_recommended_version
+      tag: set_package_fixed_version_from_additional_data_sub_assessment_additional_data_recommended_version_44f31a61
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.recommended_version
       ignore_empty_value: true
       if: ctx.package?.fixed_version == null && ctx.package?.name != null
@@ -1197,57 +1197,57 @@ processors:
   # resource.*
   - set:
       field: resource.id
-      tag: set_resource_id_from_additional_data_sub_assessment_resource_details_native_resource_id
+      tag: set_resource_id_from_additional_data_sub_assessment_resource_details_native_resource_id_2aec2419
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.native_resource_id
       ignore_empty_value: true
   - set:
       field: resource.id
-      tag: set_resource_id_from_additional_data_sub_assessment_resource_details_id
+      tag: set_resource_id_from_additional_data_sub_assessment_resource_details_id_cddcbf5e
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.id
       ignore_empty_value: true
       if: ctx.resource?.id == null
   - set:
       field: resource.id
-      tag: set_resource_id_from_resource_details_native_resource_id
+      tag: set_resource_id_from_resource_details_native_resource_id_7c3ada0d
       copy_from: microsoft_defender_cloud.assessment.resource_details.native_resource_id
       ignore_empty_value: true
       if: ctx.resource?.id == null
   - set:
       field: resource.id
-      tag: set_resource_id_from_resource_details_id
+      tag: set_resource_id_from_resource_details_id_acc5d3c6
       copy_from: microsoft_defender_cloud.assessment.resource_details.id
       ignore_empty_value: true
       if: ctx.resource?.id == null
   - set:
       field: resource.name
-      tag: set_resource_name_from_additional_data_sub_assessment_resource_details_resource_name
+      tag: set_resource_name_from_additional_data_sub_assessment_resource_details_resource_name_6a4245bb
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.resource_name
       ignore_empty_value: true
   - set:
       field: resource.name
-      tag: set_resource_name_from_resource_details_resource_name
+      tag: set_resource_name_from_resource_details_resource_name_ab17ac6f
       copy_from: microsoft_defender_cloud.assessment.resource_details.resource_name
       ignore_empty_value: true
       if: ctx.resource?.name == null
   - set:
       field: resource.type
-      tag: set_resource_type_from_additional_data_sub_assessment_resource_details_resource_provider
+      tag: set_resource_type_from_additional_data_sub_assessment_resource_details_resource_provider_6e47485b
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.resource_provider
       ignore_empty_value: true
   - set:
       field: resource.type
-      tag: set_resource_type_from_resource_details_resource_provider
+      tag: set_resource_type_from_resource_details_resource_provider_d9db7f20
       copy_from: microsoft_defender_cloud.assessment.resource_details.resource_provider
       ignore_empty_value: true
       if: ctx.resource?.type == null
   - set:
       field: resource.sub_type
-      tag: set_resource_sub_type_from_additional_data_sub_assessment_resource_details_resource_type
+      tag: set_resource_sub_type_from_additional_data_sub_assessment_resource_details_resource_type_c913d7a5
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.resource_details.resource_type
       ignore_empty_value: true
   - set:
       field: resource.sub_type
-      tag: set_resource_sub_type_from_resource_details_resource_type
+      tag: set_resource_sub_type_from_resource_details_resource_type_ef2d48cc
       copy_from: microsoft_defender_cloud.assessment.resource_details.resource_type
       ignore_empty_value: true
       if: ctx.resource?.sub_type == null
@@ -1255,61 +1255,61 @@ processors:
   # result.*
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_to_passed
+      tag: set_result_evaluation_to_passed_cfc763d6
       value: passed
       if: ctx.event?.outcome == 'success' && ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_to_failed
+      tag: set_result_evaluation_to_failed_f146126c
       value: failed
       if: ctx.event?.outcome == 'failure' && ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_to_unknown
+      tag: set_result_evaluation_to_unknown_b5d29b02
       value: unknown
       if: ctx.event?.outcome == 'unknown' && ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
 
   # rule.*
   - set:
       field: rule.name
-      tag: set_rule_name_from_additional_data_sub_assessment_display_name
+      tag: set_rule_name_from_additional_data_sub_assessment_display_name_5a4dcdaa
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.display_name
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: rule.name
-      tag: set_rule_name_from_display_name
+      tag: set_rule_name_from_display_name_4a373aa5
       copy_from: microsoft_defender_cloud.assessment.display_name
       ignore_empty_value: true
       if: ctx.rule?.name == null && ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - fingerprint:
       fields:
         - rule.name
-      tag: fingerprint_rule_uuid
+      tag: fingerprint_rule_uuid_20f18e11
       target_field: rule.uuid
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
       ignore_missing: true
   - set:
       field: rule.description
-      tag: set_rule_description_from_additional_data_sub_assessment_description
+      tag: set_rule_description_from_additional_data_sub_assessment_description_b4e04dac
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.description
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: rule.impact
-      tag: set_rule_impact_from_additional_data_sub_assessment_impact
+      tag: set_rule_impact_from_additional_data_sub_assessment_impact_156eb578
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.impact
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: rule.remediation
-      tag: set_rule_remediation_from_additional_data_sub_assessment_remediation
+      tag: set_rule_remediation_from_additional_data_sub_assessment_remediation_e70d1152
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.remediation
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
   - set:
       field: rule.category
-      tag: set_rule_category_from_additional_data_sub_assessment_category
+      tag: set_rule_category_from_additional_data_sub_assessment_category_290309a4
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.category
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'misconfiguration'
@@ -1317,51 +1317,51 @@ processors:
   # vulnerability.*
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v4_base
+      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v4_base_c0e38ad1
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v4.base
       ignore_empty_value: true
   - set:
       field: vulnerability.score.version
-      tag: set_vulnerability_score_version_to_v4.0
+      tag: set_vulnerability_score_version_to_v4.0_bad3b1bf
       value: '4.0'
       if: ctx.vulnerability?.score?.version == null && ctx.vulnerability?.score?.base != null
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v3_base
+      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v3_base_91f6b6ee
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v3.base
       ignore_empty_value: true
       if: ctx.vulnerability?.score?.base == null
   - set:
       field: vulnerability.score.version
-      tag: set_vulnerability_score_version_to_v3.0
+      tag: set_vulnerability_score_version_to_v3.0_cc1d577f
       value: '3.0'
       if: ctx.vulnerability?.score?.version == null && ctx.vulnerability?.score?.base != null
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v2_base
+      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_vulnerability_details_cvss_v2_base_b5133889
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v2.base
       ignore_empty_value: true
       if: ctx.vulnerability?.score?.base == null
   - set:
       field: vulnerability.score.version
-      tag: set_vulnerability_score_version_to_v2.0
+      tag: set_vulnerability_score_version_to_v2.0_c37f4888
       value: '2.0'
       if: ctx.vulnerability?.score?.version == null && ctx.vulnerability?.score?.base != null
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_cve_cvss_score
+      tag: set_vulnerability_score_base_from_additional_data_sub_assessment_additional_data_cve_cvss_score_a86832ea
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.cvss_score
       ignore_empty_value: true
       if: ctx.vulnerability?.score?.base == null
   - set:
       field: vulnerability.score.version
-      tag: set_vulnerability_score_version_from_additional_data_sub_assessment_additional_data_cve_cvss_version
+      tag: set_vulnerability_score_version_from_additional_data_sub_assessment_additional_data_cve_cvss_version_92bb6201
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.cvss_version
       ignore_empty_value: true
       if: ctx.vulnerability?.score?.version == null && ctx.vulnerability?.score?.base != null
   - script:
       description: Map maximum score value in vulnerability.score.base and vulnerability.severity for additional_data.sub_assessment.additional_data.cve_list.
-      tag: script_map_vulnerability_score_base_vulnerability_score_version_vulnerability_severity
+      tag: script_map_vulnerability_score_base_vulnerability_score_version_vulnerability_severity_cc6381e6
       lang: painless
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve_list instanceof List && ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve_list.size() > 0
       source: |
@@ -1388,7 +1388,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Map maximum score value in vulnerability.score.base and vulnerability.severity for additional_data.cves.
-      tag: script_map_vulnerability_score_base_vulnerability_severity
+      tag: script_map_vulnerability_score_base_vulnerability_severity_e1b99d60
       lang: painless
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.cves instanceof List && ctx.microsoft_defender_cloud.assessment.additional_data.cves.size() > 0
       source: |
@@ -1413,40 +1413,40 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.severity
-      tag: set_vulnerability_severity_from_additional_data_sub_assessment_additional_data_cve_severity
+      tag: set_vulnerability_severity_from_additional_data_sub_assessment_additional_data_cve_severity_9cf01df5
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.severity
       ignore_empty_value: true
       if: ctx.vulnerability?.severity == null
   - set:
       field: vulnerability.severity
-      tag: set_vulnerability_severity_from_additional_data_sub_assessment_additional_data_vulnerability_details_severity
+      tag: set_vulnerability_severity_from_additional_data_sub_assessment_additional_data_vulnerability_details_severity_642dc2f7
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.severity
       ignore_empty_value: true
       if: ctx.vulnerability?.severity == null
   - set:
       field: vulnerability.severity
-      tag: set_vulnerability_severity_to_unknown
+      tag: set_vulnerability_severity_to_unknown_e6a9a5b5
       value: Unknown
       if: ctx.vulnerability?.severity == null && ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: vulnerability.classification
-      tag: set_vulnerability_classification
+      tag: set_vulnerability_classification_a0de9474
       value: CVSS
       if: ctx.vulnerability?.score?.base != null
   - set:
       field: vulnerability.description
-      tag: set_vulnerability_description_from_additional_data_sub_assessment_additional_data_cve_description
+      tag: set_vulnerability_description_from_additional_data_sub_assessment_additional_data_cve_description_9511850d
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.description
       ignore_empty_value: true
   - set:
       field: vulnerability.description
-      tag: set_vulnerability_description_from_additional_data_sub_assessment_description
+      tag: set_vulnerability_description_from_additional_data_sub_assessment_description_bcee5bd9
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.description
       ignore_empty_value: true
       if: ctx.vulnerability?.description == null && ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id_from_additional_data_sub_assessment_event_id
+      tag: set_vulnerability_id_from_additional_data_sub_assessment_event_id_989fff15
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.event_id
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
@@ -1457,17 +1457,17 @@ processors:
       processor:
         append:
           field: vulnerability.id
-          tag: append_additional_data_cves_cve_to_vulnerability_id
+          tag: append_additional_data_cves_cve_to_vulnerability_id_bb66f717
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - set:
       field: vulnerability.published_date
-      tag: set_vulnerability_published_date_from_additional_data_sub_assessment_additional_data_vulnerability_details_published_date
+      tag: set_vulnerability_published_date_from_additional_data_sub_assessment_additional_data_vulnerability_details_published_date_7e657996
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.published_date
       ignore_empty_value: true
   - set:
       field: vulnerability.published_date
-      tag: set_vulnerability_published_date_from_additional_data_sub_assessment_additional_data_cve_published_date
+      tag: set_vulnerability_published_date_from_additional_data_sub_assessment_additional_data_cve_published_date_e904df43
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.published_date
       ignore_empty_value: true
       if: ctx.vulnerability?.published_date == null
@@ -1478,23 +1478,23 @@ processors:
       processor:
         append:
           field: vulnerability.reference
-          tag: append_additional_data_sub_assessment_additional_data_vulnerability_details_references_link_to_vulnerability_reference
+          tag: append_additional_data_sub_assessment_additional_data_vulnerability_details_references_link_to_vulnerability_reference_409ba338
           value: '{{{_ingest._value.link}}}'
           allow_duplicates: false
   - set:
       field: vulnerability.scanner.vendor
-      tag: set_vulnerability_scanner_vendor
+      tag: set_vulnerability_scanner_vendor_d71017ea
       value: Microsoft Defender Vulnerability Management
       if: ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: vulnerability.cve
-      tag: set_vulnerability_cve_from_additional_data_sub_assessment_additional_data_vulnerability_details_cve_id
+      tag: set_vulnerability_cve_from_additional_data_sub_assessment_additional_data_vulnerability_details_cve_id_b563b3c7
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cve_id
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.vulnerability_details?.cve_id?.startsWith('CVE') == true
   - set:
       field: vulnerability.cve
-      tag: set_vulnerability_cve_from_additional_data_sub_assessment_additional_data_cve_title
+      tag: set_vulnerability_cve_from_additional_data_sub_assessment_additional_data_cve_title_feec2aab
       copy_from: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.title
       ignore_empty_value: true
       if: ctx.vulnerability?.cve == null && ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.cve?.title?.startsWith('CVE') == true
@@ -1505,7 +1505,7 @@ processors:
       processor:
         append:
           field: vulnerability.cve
-          tag: append_additional_data_sub_assessment_additional_data_cve_list_title_to_vulnerability_cve
+          tag: append_additional_data_sub_assessment_additional_data_cve_list_title_to_vulnerability_cve_83d8ac53
           value: '{{{_ingest._value.title}}}'
           allow_duplicates: false
   - foreach:
@@ -1515,50 +1515,50 @@ processors:
       processor:
         append:
           field: vulnerability.cve
-          tag: append_additional_data_cves_cve_to_vulnerability_cve
+          tag: append_additional_data_cves_cve_to_vulnerability_cve_c87fd213
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - set:
       field: vulnerability.enumeration
       value: CVE
-      tag: set_vulnerability_enumeration_to_CVE
+      tag: set_vulnerability_enumeration_to_CVE_23ceb90f
       if: ctx.vulnerability?.cve != null
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_package_name_package_version_vulnerability_cve
+      tag: set_vulnerability_title_from_package_name_package_version_vulnerability_cve_7b2eab7f
       value: 'Vulnerability found in {{{package.name}}} {{{package.version}}} - {{{vulnerability.cve}}}'
       if: ctx.package?.name != null && ctx.package?.version != null && ctx.vulnerability?.cve instanceof String && ctx.vulnerability?.title == null
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_package_name_vulnerability_cve
+      tag: set_vulnerability_title_from_package_name_vulnerability_cve_0061fe70
       value: 'Vulnerability found in {{{package.name}}} - {{{vulnerability.cve}}}'
       if: ctx.package?.name != null && ctx.vulnerability?.cve instanceof String && ctx.vulnerability?.title == null
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_package_name_package_version
+      tag: set_vulnerability_title_from_package_name_package_version_fc98e8ca
       value: 'Vulnerability found in {{{package.name}}} {{{package.version}}}'
       if: ctx.package?.name != null && ctx.package?.version != null && ctx.vulnerability?.title == null && ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_vulnerability_cve
+      tag: set_vulnerability_title_from_vulnerability_cve_13366c09
       value: 'Vulnerability found - {{{vulnerability.cve}}}'
       if: ctx.vulnerability?.cve instanceof String && ctx.vulnerability?.title == null
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_package_name
+      tag: set_vulnerability_title_from_package_name_4f1eb395
       value: 'Vulnerability found in {{{package.name}}}'
       if: ctx.package?.name != null && ctx.vulnerability?.title == null && ctx.microsoft_defender_cloud?.assessment?.class == 'vulnerability'
 
   # user.*
   - set:
       field: user.name
-      tag: set_user_name_from_additional_data_resource_name
+      tag: set_user_name_from_additional_data_resource_name_8df935bd
       copy_from: microsoft_defender_cloud.assessment.additional_data.resource_name
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.resource_type == 'User'
   - set:
       field: user.id
-      tag: set_user_id_from_additional_data_resource_name
+      tag: set_user_id_from_additional_data_resource_name_5a07c4e6
       copy_from: microsoft_defender_cloud.assessment.additional_data.resource_name
       ignore_empty_value: true
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.resource_type == 'User'
@@ -1569,7 +1569,7 @@ processors:
       field: microsoft_defender_cloud.assessment.additional_data.digest
       pattern: 'sha256:%{_temp.digest}'
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.digest != ''
-      tag: dissect_to_extract_digest_hash
+      tag: dissect_to_extract_digest_hash_6fa5063e
       ignore_missing: true
       on_failure:
         - append:
@@ -1578,7 +1578,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
-      tag: append_digest_hash_to_related_hash
+      tag: append_digest_hash_to_related_hash_e47ce68a
       value: '{{{_temp.digest}}}'
       allow_duplicates: false
       if: ctx._temp?.digest != null
@@ -1587,7 +1587,7 @@ processors:
       field: microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.artifact_details.digest
       pattern: 'sha256:%{_temp.artifact_digest}'
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.additional_data?.artifact_details?.digest != ''
-      tag: dissect_to_extract_artifact_digest_hash
+      tag: dissect_to_extract_artifact_digest_hash_19a86f11
       ignore_missing: true
       on_failure:
         - append:
@@ -1596,19 +1596,19 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
-      tag: append_artifact_digest_hash_to_related_hash
+      tag: append_artifact_digest_hash_to_related_hash_bbe0cfc2
       value: '{{{_temp.artifact_digest}}}'
       allow_duplicates: false
       if: ctx._temp?.artifact_digest != null
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.hosts
-      tag: append_host_name_to_related_hosts
+      tag: append_host_name_to_related_hosts_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
@@ -1620,7 +1620,7 @@ processors:
         - microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss
         - microsoft_defender_cloud.assessment.additional_data.nsg open ports
         - microsoft_defender_cloud.assessment.additional_data.can onboard to _byol
-      tag: remove_unwanted_fields
+      tag: remove_unwanted_fields_9b36f80d
       ignore_missing: true
   - remove:
       field:
@@ -1647,13 +1647,13 @@ processors:
         - microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.cvss_v4.base
         - microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.vulnerability_details.published_date
         - microsoft_defender_cloud.assessment.additional_data.sub_assessment.additional_data.cve.description
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_5131cadd
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 
   # Cleanup
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -1680,7 +1680,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -1699,10 +1699,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

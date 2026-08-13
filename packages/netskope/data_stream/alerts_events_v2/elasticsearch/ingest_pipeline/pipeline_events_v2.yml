@@ -3,21 +3,21 @@ description: Pipeline for processing events v2 logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - rename:
       field: netskope.alerts_events_v2
-      tag: rename_netskope_to_netskope_event_v2
+      tag: rename_netskope_to_netskope_event_v2_fcf095b0
       target_field: netskope.events_v2
       ignore_missing: true
   - fingerprint:
       fields:
         - netskope.events_v2._id
-      tag: fingerprint_id
+      tag: fingerprint_id_67aaaccf
       target_field: _id
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_e591d676
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -44,31 +44,31 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - set:
       field: event.id
-      tag: set_event_id_from_events_v2__id
+      tag: set_event_id_from_events_v2__id_1fc4fb63
       copy_from: netskope.events_v2._id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_events_v2_acting_user_into_related_user
+      tag: append_events_v2_acting_user_into_related_user_52c2f06e
       value: '{{{netskope.events_v2.acting_user}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.acting_user != null
   - set:
       field: event.action
-      tag: set_event_action_from_events_v2_action
+      tag: set_event_action_from_events_v2_action_0d020a11
       copy_from: netskope.events_v2.action
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_6b098dab
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != null && ctx.event?.action != ''
@@ -79,7 +79,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_3a883264
       separator: '-'
       if: ctx.event?.action != null && ctx.event?.action != ''
       on_failure:
@@ -89,51 +89,51 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
-      tag: append_network_to_event_category
+      tag: append_network_to_event_category_b4bbad38
       value: network
       if: ctx.netskope?.events_v2?.record_type == "network"
   - append:
       field: event.type
-      tag: append_allowed_to_event_type
+      tag: append_allowed_to_event_type_38d190d6
       value: allowed
       if: ctx.netskope?.events_v2?.record_type == "network" && ctx.event?.action == 'allow'
   - append:
       field: event.type
-      tag: append_denied_to_event_type
+      tag: append_denied_to_event_type_bf812c40
       value: denied
       if: ctx.netskope?.events_v2?.record_type == "network" && ctx.event?.action == 'block'
   - append:
       field: event.type
-      tag: append_allow_to_event_type
+      tag: append_allow_to_event_type_80bf1595
       value: info
       if: ctx.event?.type == null
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success
+      tag: set_event_outcome_to_success_730f43e4
       value: success
       if: ctx.netskope?.events_v2?.activity != null && ['success', 'pass'].contains(ctx.netskope.events_v2.activity.toLowerCase())
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure
+      tag: set_event_outcome_to_failure_733dbc65
       value: failure
       if: ctx.netskope?.events_v2?.activity != null && ctx.netskope.events_v2.activity.toLowerCase().contains('fail')
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure_9f52d8f7
+      tag: set_event_outcome_to_failure_4ab8830e
       value: unknown
       if: ctx.event?.outcome == null
   - set:
       field: network.application
-      tag: set_network_application_from_events_v2_app
+      tag: set_network_application_from_events_v2_app_91fc53e3
       copy_from: netskope.events_v2.app
       ignore_empty_value: true
   - lowercase:
       field: network.application
-      tag: lowercase_network_application
+      tag: lowercase_network_application_66507228
       ignore_missing: true
   - convert:
       field: netskope.events_v2.app_session_id
-      tag: convert_app_session_id_to_long
+      tag: convert_app_session_id_to_long_4930f284
       type: long
       ignore_missing: true
       on_failure:
@@ -146,7 +146,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.browser_session_id
-      tag: convert_browser_session_id_to_long
+      tag: convert_browser_session_id_to_long_1b0692b5
       type: long
       ignore_missing: true
       on_failure:
@@ -159,7 +159,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.cci
-      tag: convert_cci_to_long
+      tag: convert_cci_to_long_9730698a
       type: long
       ignore_missing: true
       on_failure:
@@ -172,7 +172,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.client_bytes
-      tag: convert_client_bytes_to_long
+      tag: convert_client_bytes_to_long_e26b91a0
       type: long
       ignore_missing: true
       on_failure:
@@ -185,17 +185,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.bytes
-      tag: set_client_bytes_from_events_v2_client_bytes
+      tag: set_client_bytes_from_events_v2_client_bytes_6f734e2e
       copy_from: netskope.events_v2.client_bytes
       ignore_empty_value: true
   - set:
       field: source.bytes
-      tag: copy_client_bytes_to_source_bytes
+      tag: copy_client_bytes_to_source_bytes_0603e36d
       copy_from: client.bytes
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.client_packets
-      tag: convert_client_packets_to_long
+      tag: convert_client_packets_to_long_2466ffeb
       type: long
       ignore_missing: true
       on_failure:
@@ -208,17 +208,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.packets
-      tag: set_client_packets_from_events_v2_client_packets
+      tag: set_client_packets_from_events_v2_client_packets_291de420
       copy_from: netskope.events_v2.client_packets
       ignore_empty_value: true
   - set:
       field: source.packets
-      tag: copy_client_packets_to_source_packets
+      tag: copy_client_packets_to_source_packets_fbd87bd5
       copy_from: client.packets
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.conn_duration
-      tag: convert_conn_duration_to_long
+      tag: convert_conn_duration_to_long_f9e636fb
       type: long
       ignore_missing: true
       on_failure:
@@ -231,7 +231,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: netskope.events_v2.conn_endtime
-      tag: date_conn_endtime
+      tag: date_conn_endtime_f5e7e835
       target_field: netskope.events_v2.conn_endtime
       formats:
         - epoch_second
@@ -246,7 +246,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: netskope.events_v2.conn_starttime
-      tag: date_conn_starttime
+      tag: date_conn_starttime_711e6ff0
       target_field: netskope.events_v2.conn_starttime
       formats:
         - epoch_second
@@ -261,7 +261,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.connection_id
-      tag: convert_connection_id_to_long
+      tag: convert_connection_id_to_long_59f0840e
       type: long
       ignore_missing: true
       on_failure:
@@ -274,7 +274,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.dlp_incident_id
-      tag: convert_dlp_incident_id_to_long
+      tag: convert_dlp_incident_id_to_long_7f1a7004
       type: long
       ignore_missing: true
       on_failure:
@@ -287,7 +287,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.dlp_parent_id
-      tag: convert_dlp_parent_id_to_long
+      tag: convert_dlp_parent_id_to_long_6864ca4e
       type: long
       ignore_missing: true
       on_failure:
@@ -300,7 +300,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.dlp_rule_count
-      tag: convert_dlp_rule_count_to_long
+      tag: convert_dlp_rule_count_to_long_a4661f48
       type: long
       ignore_missing: true
       on_failure:
@@ -313,7 +313,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.dlp_is_unique_count
-      tag: convert_dlp_is_unique_count_to_boolean
+      tag: convert_dlp_is_unique_count_to_boolean_a80a617d
       type: boolean
       ignore_missing: true
       on_failure:
@@ -326,7 +326,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.dlp_unique_count
-      tag: convert_dlp_unique_count_to_long
+      tag: convert_dlp_unique_count_to_long_fddb419d
       type: long
       ignore_missing: true
       on_failure:
@@ -339,7 +339,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.domain_ip
-      tag: convert_domain_ip_to_ip
+      tag: convert_domain_ip_to_ip_86d89a81
       target_field: netskope.events_v2.domain_ip
       type: ip
       ignore_missing: true
@@ -354,18 +354,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_events_v2_domain_ip_into_related_ip
+      tag: append_events_v2_domain_ip_into_related_ip_8bf0b385
       value: '{{{netskope.events_v2.domain_ip}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.domain_ip != null
   - set:
       field: destination.geo.country_iso_code
-      tag: set_destination_geo_country_iso_code_from_events_v2_dst_country
+      tag: set_destination_geo_country_iso_code_from_events_v2_dst_country_eeebe7f5
       copy_from: netskope.events_v2.dst_country
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.dst_geoip_src
-      tag: convert_dst_geoip_src_to_long
+      tag: convert_dst_geoip_src_to_long_16867c7c
       type: long
       ignore_missing: true
       on_failure:
@@ -378,32 +378,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.dst_latitude
-      tag: convert_dst_latitude_to_double
+      tag: convert_dst_latitude_to_double_94b7ade1
       type: double
       ignore_missing: true
       on_failure:
         - rename:
             field: netskope.events_v2.dst_latitude
-            tag: rename_dst_latitude_to_dst_latitude_keyword
+            tag: rename_dst_latitude_to_dst_latitude_keyword_b17ee104
             target_field: netskope.events_v2.dst_latitude_keyword
   - convert:
       field: netskope.events_v2.dst_longitude
-      tag: convert_dst_longitude_to_double
+      tag: convert_dst_longitude_to_double_228cde09
       type: double
       ignore_missing: true
       on_failure:
         - rename:
             field: netskope.events_v2.dst_longitude
-            tag: rename_dst_longitude_to_dst_longitude_keyword
+            tag: rename_dst_longitude_to_dst_longitude_keyword_42427ec3
             target_field: netskope.events_v2.dst_longitude_keyword
   - set:
       field: destination.geo.location.lat
-      tag: set_destination_geo_location_from_dst_latitude
+      tag: set_destination_geo_location_from_dst_latitude_37675043
       copy_from: netskope.events_v2.dst_latitude
       ignore_empty_value: true
   - set:
       field: destination.geo.location.lon
-      tag: set_destination_geo_location_from_dst_longitude
+      tag: set_destination_geo_location_from_dst_longitude_f4365b05
       copy_from: netskope.events_v2.dst_longitude
       ignore_empty_value: true
   - remove:
@@ -419,38 +419,38 @@ processors:
       ignore_failure: true
   - set:
       field: destination.geo.city_name
-      tag: set_destination_geo_city_name_from_events_v2_dst_location
+      tag: set_destination_geo_city_name_from_events_v2_dst_location_a5a94687
       copy_from: netskope.events_v2.dst_location
       ignore_empty_value: true
   - set:
       field: destination.geo.region_name
-      tag: set_destination_geo_region_name_from_events_v2_dst_region
+      tag: set_destination_geo_region_name_from_events_v2_dst_region_f2d3043a
       copy_from: netskope.events_v2.dst_region
       ignore_empty_value: true
   - set:
       field: destination.geo.timezone
-      tag: set_destination_geo_timezone_from_events_v2_dst_timezone
+      tag: set_destination_geo_timezone_from_events_v2_dst_timezone_e589da8d
       copy_from: netskope.events_v2.dst_timezone
       ignore_empty_value: true
   - set:
       field: destination.geo.postal_code
-      tag: set_destination_geo_postal_code_from_events_v2_dst_zipcode
+      tag: set_destination_geo_postal_code_from_events_v2_dst_zipcode_6fe59b30
       copy_from: netskope.events_v2.dst_zipcode
       ignore_empty_value: true
   - set:
       field: destination.domain
-      tag: set_destination_domain_from_events_v2_dsthost
+      tag: set_destination_domain_from_events_v2_dsthost_f4ce4aac
       copy_from: netskope.events_v2.dsthost
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_events_v2_dsthost_into_related_hosts
+      tag: append_events_v2_dsthost_into_related_hosts_4866ac51
       value: '{{{netskope.events_v2.dsthost}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.dsthost != null
   - convert:
       field: netskope.events_v2.dstip
-      tag: convert_dstip_to_ip
+      tag: convert_dstip_to_ip_5f7cdfaa
       type: ip
       ignore_missing: true
       if: ctx.netskope?.events_v2?.dstip != ''
@@ -464,18 +464,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_events_v2_dstip
+      tag: set_destination_ip_from_events_v2_dstip_687c7c11
       copy_from: netskope.events_v2.dstip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_events_v2_dstip_into_related_ip
+      tag: append_events_v2_dstip_into_related_ip_111d5bb5
       value: '{{{netskope.events_v2.dstip}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.dstip != null
   - convert:
       field: netskope.events_v2.dstport
-      tag: convert_dstport_to_long
+      tag: convert_dstport_to_long_ff5f04e7
       type: long
       ignore_missing: true
       on_failure:
@@ -488,12 +488,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port_from_events_v2_dstport
+      tag: set_destination_port_from_events_v2_dstport_0f6786bd
       copy_from: netskope.events_v2.dstport
       ignore_empty_value: true
   - date:
       field: netskope.events_v2.end_time
-      tag: date_end_time
+      tag: date_end_time_a87eb6fa
       target_field: netskope.events_v2.end_time
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
@@ -509,17 +509,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_events_v2_end_time
+      tag: set_event_end_from_events_v2_end_time_47643478
       copy_from: netskope.events_v2.end_time
       ignore_empty_value: true
   - set:
       field: file.path
-      tag: set_file_path_from_events_v2_file_path
+      tag: set_file_path_from_events_v2_file_path_e74a05b5
       copy_from: netskope.events_v2.file_path
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.file_size
-      tag: convert_file_size_to_long
+      tag: convert_file_size_to_long_a281f047
       type: long
       ignore_missing: true
       on_failure:
@@ -532,29 +532,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.size
-      tag: set_file_size_from_events_v2_file_size
+      tag: set_file_size_from_events_v2_file_size_b90e0cf4
       copy_from: netskope.events_v2.file_size
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_events_v2_from_user_into_related_user
+      tag: append_events_v2_from_user_into_related_user_de4430c8
       value: '{{{netskope.events_v2.from_user}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.from_user != null
   - set:
       field: host.name
-      tag: set_host_name_from_events_v2_hostname
+      tag: set_host_name_from_events_v2_hostname_dae45697
       copy_from: netskope.events_v2.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_events_v2_hostname_into_related_hosts
+      tag: append_events_v2_hostname_into_related_hosts_5ad73ba9
       value: '{{{netskope.events_v2.hostname}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.hostname != null
   - convert:
       field: netskope.events_v2.incident_id
-      tag: convert_incident_id_to_long
+      tag: convert_incident_id_to_long_e80be78b
       type: long
       ignore_missing: true
       on_failure:
@@ -567,16 +567,16 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.transport
-      tag: set_network_transport_from_events_v2_ip_protocol
+      tag: set_network_transport_from_events_v2_ip_protocol_f033a03c
       copy_from: netskope.events_v2.ip_protocol
       ignore_empty_value: true
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
   - convert:
       field: netskope.events_v2.latest_incident_id
-      tag: convert_latest_incident_id_to_long
+      tag: convert_latest_incident_id_to_long_77688767
       type: long
       ignore_missing: true
       on_failure:
@@ -589,18 +589,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.hash.md5
-      tag: set_file_hash_md5_from_events_v2_md5
+      tag: set_file_hash_md5_from_events_v2_md5_9ab98de6
       copy_from: netskope.events_v2.md5
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_events_v2_md5_into_related_hash
+      tag: append_events_v2_md5_into_related_hash_8abcc012
       value: '{{{netskope.events_v2.md5}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.md5 != null
   - convert:
       field: netskope.events_v2.numbytes
-      tag: convert_numbytes_to_long
+      tag: convert_numbytes_to_long_fdb59c3a
       type: long
       ignore_missing: true
       on_failure:
@@ -613,39 +613,39 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.bytes
-      tag: set_network_bytes_from_events_v2_numbytes
+      tag: set_network_bytes_from_events_v2_numbytes_236ea8a0
       copy_from: netskope.events_v2.numbytes
       ignore_empty_value: true
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_events_v2_os
+      tag: set_host_os_full_from_events_v2_os_a95c23ac
       copy_from: netskope.events_v2.os
       ignore_empty_value: true
   - set:
       field: host.os.family
-      tag: set_host_os_family_from_events_v2_os_family
+      tag: set_host_os_family_from_events_v2_os_family_4b4135a5
       copy_from: netskope.events_v2.os_family
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_events_v2_os_user_name_into_related_user
+      tag: append_events_v2_os_user_name_into_related_user_f54f3a1f
       value: '{{{netskope.events_v2.os_user_name}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.os_user_name != null
   - dissect:
       field: netskope.events_v2.os_version
-      tag: dissect_os_version
+      tag: dissect_os_version_1412cb70
       pattern: '%{} %{host.os.version}'
       ignore_failure: true
   - append:
       field: related.user
-      tag: append_events_v2_owner_into_related_user
+      tag: append_events_v2_owner_into_related_user_75863daf
       value: '{{{netskope.events_v2.owner}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.owner != null
   - convert:
       field: netskope.events_v2.pid
-      tag: convert_pid_to_long
+      tag: convert_pid_to_long_f0d60756
       type: long
       ignore_missing: true
       on_failure:
@@ -658,27 +658,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.pid
-      tag: set_process_pid_from_events_v2_pid
+      tag: set_process_pid_from_events_v2_pid_41e4af09
       copy_from: netskope.events_v2.pid
       ignore_empty_value: true
   - set:
       field: file.x509.subject.distinguished_name
-      tag: set_file_x509_subject_distinguished_name_from_events_v2_process_cert_subject
+      tag: set_file_x509_subject_distinguished_name_from_events_v2_process_cert_subject_97623f6b
       copy_from: netskope.events_v2.process_cert_subject
       ignore_empty_value: true
   - set:
       field: process.name
-      tag: set_process_name_from_events_v2_process_name
+      tag: set_process_name_from_events_v2_process_name_658e28e9
       copy_from: netskope.events_v2.process_name
       ignore_empty_value: true
   - set:
       field: http.request.referrer
-      tag: set_http_request_referrer_from_events_v2_referer
+      tag: set_http_request_referrer_from_events_v2_referer_a16b4207
       copy_from: netskope.events_v2.referer
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.req_cnt
-      tag: convert_req_cnt_to_long
+      tag: convert_req_cnt_to_long_a64fbe2e
       type: long
       ignore_missing: true
       on_failure:
@@ -691,7 +691,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.request_id
-      tag: convert_request_id_to_long
+      tag: convert_request_id_to_long_d687a537
       type: long
       ignore_missing: true
       on_failure:
@@ -704,7 +704,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.resp_cnt
-      tag: convert_resp_cnt_to_long
+      tag: convert_resp_cnt_to_long_59c448ee
       type: long
       ignore_missing: true
       on_failure:
@@ -717,7 +717,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.response_time
-      tag: convert_response_time_to_long
+      tag: convert_response_time_to_long_a3d309a9
       type: long
       ignore_missing: true
       on_failure:
@@ -730,7 +730,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.server_bytes
-      tag: convert_server_bytes_to_long
+      tag: convert_server_bytes_to_long_a2efdc1c
       type: long
       ignore_missing: true
       on_failure:
@@ -743,17 +743,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: server.bytes
-      tag: set_server_bytes_from_events_v2_server_bytes
+      tag: set_server_bytes_from_events_v2_server_bytes_3f39d605
       copy_from: netskope.events_v2.server_bytes
       ignore_empty_value: true
   - set:
       field: destination.bytes
-      tag: copy_server_bytes_to_destination_bytes
+      tag: copy_server_bytes_to_destination_bytes_0fd94acf
       copy_from: server.bytes
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.server_packets
-      tag: convert_server_packets_to_long
+      tag: convert_server_packets_to_long_40f30ef9
       type: long
       ignore_missing: true
       on_failure:
@@ -766,17 +766,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: server.packets
-      tag: set_server_packets_from_events_v2_server_packets
+      tag: set_server_packets_from_events_v2_server_packets_bcc0ce32
       copy_from: netskope.events_v2.server_packets
       ignore_empty_value: true
   - set:
       field: destination.packets
-      tag: copy_server_packets_to_destination_packets
+      tag: copy_server_packets_to_destination_packets_9bd02e58
       copy_from: server.packets
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.session_duration
-      tag: convert_session_duration_to_long
+      tag: convert_session_duration_to_long_c43b70c3
       type: long
       ignore_missing: true
       on_failure:
@@ -788,7 +788,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_f54f584a
+      tag: script_set_event_severity_based_severity_f54f584a
       description: Set event severity based on severity.
       if: ctx.netskope?.events_v2?.severity != null
       lang: painless
@@ -807,12 +807,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.hash.sha256
-      tag: set_file_hash_sha256_from_events_v2_sha256
+      tag: set_file_hash_sha256_from_events_v2_sha256_50eaf611
       copy_from: netskope.events_v2.sha256
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.src_geoip_src
-      tag: convert_src_geoip_src_to_long
+      tag: convert_src_geoip_src_to_long_a567a713
       type: long
       ignore_missing: true
       on_failure:
@@ -825,32 +825,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.src_latitude
-      tag: convert_src_latitude_to_double
+      tag: convert_src_latitude_to_double_6c6a1383
       type: double
       ignore_missing: true
       on_failure:
         - rename:
             field: netskope.events_v2.src_latitude
-            tag: rename_src_latitude_to_src_latitude_keyword
+            tag: rename_src_latitude_to_src_latitude_keyword_eaad593e
             target_field: netskope.events_v2.src_latitude_keyword
   - convert:
       field: netskope.events_v2.src_longitude
-      tag: convert_src_longitude_to_double
+      tag: convert_src_longitude_to_double_65c4d2c3
       type: double
       ignore_missing: true
       on_failure:
         - rename:
             field: netskope.events_v2.src_longitude
-            tag: rename_src_longitude_to_src_longitude_keyword
+            tag: rename_src_longitude_to_src_longitude_keyword_4ae4cf39
             target_field: netskope.events_v2.src_longitude_keyword
   - set:
       field: source.geo.location.lat
-      tag: set_source_geo_location_from_src_latitude
+      tag: set_source_geo_location_from_src_latitude_4ae13e6d
       copy_from: netskope.events_v2.src_latitude
       ignore_empty_value: true
   - set:
       field: source.geo.location.lon
-      tag: set_source_geo_location_from_src_longitude
+      tag: set_source_geo_location_from_src_longitude_8b82ec20
       copy_from: netskope.events_v2.src_longitude
       ignore_empty_value: true
   - remove:
@@ -866,7 +866,7 @@ processors:
       ignore_failure: true
   - convert:
       field: netskope.events_v2.srcport
-      tag: convert_srcport_to_long
+      tag: convert_srcport_to_long_b51b93b4
       type: long
       ignore_missing: true
       on_failure:
@@ -879,17 +879,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.geo.region_name
-      tag: set_source_geo_region_name_from_src_region
+      tag: set_source_geo_region_name_from_src_region_bd287600
       copy_from: netskope.events_v2.src_region
       ignore_empty_value: true
   - set:
       field: source.geo.postal_code
-      tag: set_source_geo_postal_code_from_src_zipcode
+      tag: set_source_geo_postal_code_from_src_zipcode_3911f42e
       copy_from: netskope.events_v2.src_zipcode
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.srcip
-      tag: convert_srcip_to_ip
+      tag: convert_srcip_to_ip_c6027415
       type: ip
       ignore_missing: true
       if: ctx.netskope?.events_v2?.srcip != ''
@@ -903,22 +903,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_srcip
+      tag: set_source_ip_from_srcip_462e2237
       copy_from: netskope.events_v2.srcip
       ignore_empty_value: true
   - set:
       field: source.port
-      tag: set_source_port_from_srcport
+      tag: set_source_port_from_srcport_9b6dc917
       copy_from: netskope.events_v2.srcport
       ignore_empty_value: true
   - set:
       field: source.geo.country_iso_code
-      tag: set_source_geo_country_iso_code_from_src_country
+      tag: set_source_geo_country_iso_code_from_src_country_45b66b76
       copy_from: netskope.events_v2.src_country
       ignore_empty_value: true
   - date:
       field: netskope.events_v2.start_time
-      tag: date_start_time
+      tag: date_start_time_8dd67ef3
       target_field: netskope.events_v2.start_time
       formats:
         - ISO8601
@@ -933,12 +933,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_events_v2_start_time
+      tag: set_event_start_from_events_v2_start_time_f13f54c5
       copy_from: netskope.events_v2.start_time
       ignore_empty_value: true
   - date:
       field: netskope.events_v2.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_4c627ffa
       target_field: netskope.events_v2.timestamp
       formats:
         - epoch_second
@@ -953,23 +953,23 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_events_v2_timestamp
+      tag: set_@timestamp_from_events_v2_timestamp_89317411
       copy_from: netskope.events_v2.timestamp
       ignore_empty_value: true
   - set:
       field: user.target.email
-      tag: set_user_target_email_from_events_v2_to_user
+      tag: set_user_target_email_from_events_v2_to_user_8eadf0df
       copy_from: netskope.events_v2.to_user
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_events_v2_to_user_into_related_user
+      tag: append_events_v2_to_user_into_related_user_250e4007
       value: '{{{netskope.events_v2.to_user}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.to_user != null
   - convert:
       field: netskope.events_v2.total_packets
-      tag: convert_total_packets_to_long
+      tag: convert_total_packets_to_long_00ca4e99
       type: long
       ignore_missing: true
       on_failure:
@@ -982,12 +982,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.packets
-      tag: set_network_packets_from_events_v2_total_packets
+      tag: set_network_packets_from_events_v2_total_packets_941c8def
       copy_from: netskope.events_v2.total_packets
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.transaction_id
-      tag: convert_transaction_id_to_long
+      tag: convert_transaction_id_to_long_78247a32
       type: long
       ignore_missing: true
       on_failure:
@@ -1000,23 +1000,23 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: url.original
-      tag: set_url_original_from_events_v2_url
+      tag: set_url_original_from_events_v2_url_a1165c7d
       copy_from: netskope.events_v2.url
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_events_v2_url_into_related_hosts
+      tag: append_events_v2_url_into_related_hosts_88fe716f
       value: '{{{netskope.events_v2.url}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.url != null
   - set:
       field: user.email
-      tag: set_user_email_from_events_v2_user
+      tag: set_user_email_from_events_v2_user_16c0feee
       copy_from: netskope.events_v2.user
       ignore_empty_value: true
   - dissect:
       field: user.email
-      tag: create_user_name_and_user_domain
+      tag: create_user_name_and_user_domain_93b5cc79
       pattern: "%{user.name}@%{user.domain}"
       ignore_missing: true
       if: ctx.user?.email != null
@@ -1027,26 +1027,26 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_events_v2_user_into_related_user
+      tag: append_events_v2_user_into_related_user_9dc9268b
       value: '{{{netskope.events_v2.user}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.user != null
   - append:
       field: related.user
-      tag: append_events_v2_user_id_into_related_user
+      tag: append_events_v2_user_id_into_related_user_5509297e
       value: '{{{netskope.events_v2.user_id}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.user_id != null
   - user_agent:
       field: netskope.events_v2.useragent
       if: ctx.netskope?.events_v2?.useragent != null && ctx.netskope.events_v2.useragent != ''
-      tag: 'user_agent_processor'
+      tag: user_agent_processor_83cf5d4e
       on_failure:
         - append:
             tag: append_error_message_9a5cea21
@@ -1054,7 +1054,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.userip
-      tag: convert_userip_to_ip
+      tag: convert_userip_to_ip_405543c8
       type: ip
       ignore_missing: true
       if: ctx.netskope?.events_v2?.userip != ''
@@ -1068,67 +1068,67 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_events_v2_userip_into_related_ip
+      tag: append_events_v2_userip_into_related_ip_d151a56d
       value: '{{{netskope.events_v2.userip}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.userip != null
   - convert:
       field: netskope.events_v2.app_session_id
-      tag: convert_app_session_id
+      tag: convert_app_session_id_043f3131
       target_field: netskope.events_v2.app_session_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.dlp_incident_id
-      tag: convert_dlp_incident_id
+      tag: convert_dlp_incident_id_d46a18df
       target_field: netskope.events_v2.dlp_incident_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.connection_id
-      tag: convert_connection_id
+      tag: convert_connection_id_23c21bd4
       target_field: netskope.events_v2.connection_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.latest_incident_id
-      tag: convert_latest_incident_id
+      tag: convert_latest_incident_id_27fc39b0
       target_field: netskope.events_v2.latest_incident_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.browser_session_id
-      tag: convert_browser_session_id
+      tag: convert_browser_session_id_29326d4d
       target_field: netskope.events_v2.browser_session_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.request_id
-      tag: convert_request_id
+      tag: convert_request_id_94c776e6
       target_field: netskope.events_v2.request_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.transaction_id
-      tag: convert_transaction_id
+      tag: convert_transaction_id_4d5c2e9e
       target_field: netskope.events_v2.transaction_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.incident_id
-      tag: convert_incident_id
+      tag: convert_incident_id_a9878751
       target_field: netskope.events_v2.incident_id
       type: string
       ignore_missing: true
   - convert:
       field: netskope.events_v2.dlp_parent_id
-      tag: convert_dlp_parent_id
+      tag: convert_dlp_parent_id_53ecfc68
       target_field: netskope.events_v2.dlp_parent_id
       type: string
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_events_v2_assignee_into_related_user
+      tag: append_events_v2_assignee_into_related_user_e521a3c1
       value: '{{{netskope.events_v2.assignee}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.assignee != null
@@ -1170,13 +1170,13 @@ processors:
         - netskope.events_v2.total_packets
         - netskope.events_v2.url
         - netskope.events_v2.user
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_0dabf38e
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values_dbd65e1a
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -1202,7 +1202,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -1213,7 +1213,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -1221,10 +1221,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

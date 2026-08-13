@@ -16,19 +16,19 @@ processors:
       target_field: json
       ignore_failure: true
   - pipeline:
-      tag: pipeline_7e82d0ee
+      tag: pipeline_system_performance_metrics_7e82d0ee
       name: '{{ IngestPipeline "pipeline_system_performance_metrics" }}'
       if: ctx.json?.header?.event_name == 'SYSTEM_PERFORMANCE_METRICS'
   - pipeline:
-      tag: pipeline_49135f14
+      tag: pipeline_audit_49135f14
       name: '{{ IngestPipeline "pipeline_audit" }}'
       if: ctx.json?.header?.event_name != null && ctx.json?.header?.event_name.startsWith('AUE_')
   - pipeline:
-      tag: pipeline_4ed89c5e
+      tag: pipeline_bios_firmware_versions_4ed89c5e
       name: '{{ IngestPipeline "pipeline_bios_firmware_versions" }}'
       if: ctx.json?.header?.event_name == 'BIOS_FIRMWARE_VERSIONS'
   - pipeline:
-      tag: pipeline_b277b479
+      tag: pipeline_event_b277b479
       name: '{{ IngestPipeline "pipeline_event" }}'
       if: "['FILE_COLLECTION_EVENT','PLAINTEXT_LOG_COLLECTION'].contains(ctx.json?.header?.event_name)"
   - remove:
@@ -36,7 +36,7 @@ processors:
       field: json
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -54,16 +54,16 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-  - set:
-      tag: set_error_message
+  - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

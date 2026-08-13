@@ -17,15 +17,15 @@ processors:
       target_field: json
       ignore_failure: true
   - pipeline:
-      tag: pipeline_ae75b026
+      tag: pipeline_app_metrics_ae75b026
       name: '{{ IngestPipeline "pipeline_app_metrics" }}'
       if: ctx.json?.header?.event_name == 'APP_METRICS'
   - pipeline:
-      tag: pipeline_0affc98c
+      tag: pipeline_audit_0affc98c
       name: '{{ IngestPipeline "pipeline_audit" }}'
       if: ctx.json?.header?.event_name?.startsWith('AUE_') == true
   - pipeline:
-      tag: pipeline_e6a6abf5
+      tag: pipeline_event_e6a6abf5
       name: '{{ IngestPipeline "pipeline_event" }}'
       if: "['AUDIO_VIDEO_DEVICE_EVENT','AUDIT_CLASS_VERIFICATION_EVENT','COMPLIANCE_REPORTER_TAMPER_EVENT','FILE_EVENT','GATEKEEPER_INFO_EVENT','GATEKEEPER_MANUAL_OVERRIDES','GATEKEEPER_QUARANTINE_LOG','HARDWARE_EVENT','LICENSE_INFO_EVENT','PREFERENCE_LIST_EVENT','PRINT_EVENT_INFORMATION','PROHIBITED_APP_BLOCKED','SIGNAL_EVENT','UNIFIED_LOG_EVENT','XPROTECT_DEFINITIONS_VERSION_INFO','XPROTECT_EVENT_LOG'].contains(ctx.json?.header?.event_name)"
   - remove:
@@ -33,7 +33,7 @@ processors:
       field: json
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -52,15 +52,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

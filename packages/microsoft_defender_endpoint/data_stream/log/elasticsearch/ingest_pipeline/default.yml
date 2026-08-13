@@ -8,7 +8,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -49,7 +49,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      tag: set_process_name_from_command_line
+      tag: set_process_name_from_command_line_481b95a0
       description: Set process.name from process.command_line.
       source: |
         ctx.process = ctx.process ?: [:];
@@ -109,7 +109,7 @@ processors:
   ## ECS General Mapping ##
   #########################
   - script:
-      tag: script_689b9659
+      tag: script_ecs_general_mapping_689b9659
       lang: painless
       if: ctx.json != null
       params:
@@ -248,7 +248,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_be186cd4
       if: ctx.json?.severity instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -344,12 +344,12 @@ processors:
       ignore_missing: true
   - set:
       field: process.entity_id
-      tag: set_process_entity_id
+      tag: set_process_entity_id_93685fa5
       value: '{{{process.pid}}}'
       ignore_empty_value: true
   - set:
       field: process.parent.entity_id
-      tag: set_process_parent_entity_id
+      tag: set_process_parent_entity_id_30fca21a
       value: '{{{process.parent.pid}}}'
       ignore_empty_value: true
   ##########################
@@ -457,7 +457,7 @@ processors:
   ## Cleanup ##
   #############
   - remove:
-      tag: remove_2189f235
+      tag: remove_cleanup_2189f235
       field:
         - json.alertCreationTime
         - json.severity
@@ -481,15 +481,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

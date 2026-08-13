@@ -22,7 +22,7 @@ processors:
         target_field: jamf_protect.alerts
         if: ctx.event?.original != null && ctx.jamf_protect?.alerts == null
     - script:
-        tag: script_e808a1cd
+        tag: script_retain_json_event_original_came_e808a1cd
         # This should almost never be needed and will not allow preservation of events in the case
         # of ingest pipeline errors unless preserve_original_event was already set, in which case
         # it would already have been retained.
@@ -100,7 +100,7 @@ processors:
           }
           ctx.rule.description = ctx.jamf_protect.alerts.input.match.facts[0].human
     - script:
-        tag: script_c801a44a
+        tag: script_populates_event_action_name_event_c801a44a
         description: Populates event.action with the name of the event
         lang: painless
         if: >-
@@ -111,7 +111,7 @@ processors:
             ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
         ignore_failure: true
     - script:
-        tag: script_54f25306
+        tag: script_populates_event_reason_name_event_54f25306
         description: Populates event.reason with the name of the event
         lang: painless
         if: >-
@@ -122,7 +122,7 @@ processors:
           ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
         ignore_failure: true
     - script:
-        tag: script_e319e75b
+        tag: script_populates_event_tags_tags_e319e75b
         description: Populates event.tags with tags from the event
         lang: painless
         if: >-
@@ -205,7 +205,7 @@ processors:
     ## ECS Source Mapping ##
     ########################
     - script:
-        tag: script_91332bee
+        tag: script_processor_to_capture_user_names_91332bee
         description: Script processor to capture user names from related.users array
         lang: painless
         source: |
@@ -253,7 +253,7 @@ processors:
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 7
 
     - script:
-        tag: script_15c65249
+        tag: script_one_scripting_processor_to_capture_15c65249
         description: One scripting processor to capture all the related file information for the related file.
         lang: painless
         if: ctx.jamf_protect?.alerts?.input?.related?.files != null && ctx.jamf_protect?.alerts?.input?.related?.files.size() > 0
@@ -295,7 +295,7 @@ processors:
         value: end
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 2
     - script:
-        tag: script_85a08675
+        tag: script_one_scripting_processor_to_capture_85a08675
         description: One scripting processor to capture all the related process information for the current process.
         lang: painless
         if: ctx.jamf_protect?.alerts?.input?.related?.processes != null && ctx.jamf_protect?.alerts?.input?.related?.processes.size() > 0
@@ -434,7 +434,7 @@ processors:
     ## ECS Group Mapping ##
     ######################
     - script:
-        tag: script_7a636f11
+        tag: script_one_scripting_processor_to_capture_7a636f11
         description: One scripting processor to capture all the related group information for the event.
         lang: painless
         source: >
@@ -487,7 +487,7 @@ processors:
         if: ctx.host?.ip instanceof List
         processor:
             append:
-                tag: append_related_ip
+                tag: append_related_ip_cc4d8a3d
                 field: related.ip
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
@@ -520,11 +520,11 @@ processors:
     ## ECS pipelines ##
     #######################
     - pipeline:
-        tag: pipeline_49b9aa36
+        tag: pipeline_gpusbevent_49b9aa36
         name: '{{ IngestPipeline "gpusbevent" }}'
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent"
     - pipeline:
-        tag: pipeline_7380978e
+        tag: pipeline_gpunifiedlogevent_7380978e
         name: '{{ IngestPipeline "gpunifiedlogevent" }}'
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent"
 
@@ -532,7 +532,7 @@ processors:
     ## Cleanup ##
     #############
     - remove:
-        tag: remove_21ac4b10
+        tag: remove_cleanup_21ac4b10
         field:
         - jamf_protect.alerts
         - jamf_protect
@@ -540,7 +540,7 @@ processors:
         - json
         ignore_missing: true
     - script:
-        tag: script_258616c7
+        tag: script_drops_null_empty_values_recursively_258616c7
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -559,15 +559,15 @@ processors:
             dropEmptyFields(ctx);
 on_failure:
     - set:
-        tag: set_event_kind
+        tag: set_event_kind_72b1902f
         field: event.kind
         value: pipeline_error
     - append:
-        tag: append_tags
+        tag: append_tags_279d5a5c
         field: tags
         value: preserve_original_event
         allow_duplicates: false
     - append:
-        tag: append_error_message
+        tag: append_error_message_206bb8ac
         field: error.message
         value: '{{{ _ingest.on_failure_message }}}'

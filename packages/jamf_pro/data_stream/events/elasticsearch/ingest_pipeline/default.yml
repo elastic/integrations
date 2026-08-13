@@ -28,7 +28,7 @@ processors:
 
 - script:
     description: Convert Additional Info keys to snake case.
-    tag: additional-info-keys-to-snake-case
+    tag: additional-info-keys-to-snake-case_ff922fd6
     lang: painless
     source: |
       Map keysToSnakeCase(Map m) {
@@ -205,7 +205,7 @@ processors:
 
 # event.category and event.type — keyed on event.action via a lookup table.
 - script:
-    tag: script_set_event_category_and_type
+    tag: script_set_event_category_and_type_30a46659
     lang: painless
     description: Set event.category and event.type from a table keyed on the Jamf webhook event (event.action).
     params:
@@ -252,14 +252,14 @@ processors:
 
 - set:
     field: event.outcome
-    tag: set_event_outcome_success
+    tag: set_event_outcome_success_c05809e2
     value: success
     if: >-
       ctx.jamf_pro?.events?.event?.successful == true ||
       ctx.jamf_pro?.events?.event?.operation_successful == true
 - set:
     field: event.outcome
-    tag: set_event_outcome_failure
+    tag: set_event_outcome_failure_cbca4e9e
     value: failure
     if: >-
       ctx.jamf_pro?.events?.event?.successful == false ||
@@ -279,15 +279,15 @@ processors:
 
 on_failure:
 - set:
-    tag: set_event_kind
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
-    tag: append_tags
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
-    tag: append_error_message
+    tag: append_error_message_6906b116
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

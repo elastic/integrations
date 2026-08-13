@@ -2,13 +2,13 @@
 description: Pipeline for parsing GCP CloudSQL PostgreSQL metrics.
 processors:
   - fingerprint:
-      tag: fingerprint_5c1d1252
+      tag: fingerprint_to_gcp_labels_fingerprint_5c1d1252
       fields:
         - gcp.labels
       target_field: gcp.labels_fingerprint
       ignore_missing: true
   - drop:
-      tag: drop_da6d698c
+      tag: drop_database_not_postgresql_da6d698c
       description: Drop if database is not PostgreSQL.
       if: "ctx?.gcp?.labels?.cloudsql?.name != 'postgres'"
   - rename:
@@ -247,16 +247,16 @@ processors:
         - gcp.metrics
       ignore_missing: true
 on_failure:
-  - set:
-      tag: set_error_message
+  - append:
+      tag: append_error_message_69c7587f
       field: error.message
       value: '{{ _ingest.on_failure_message }}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

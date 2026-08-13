@@ -14,17 +14,17 @@ processors:
       if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         convert:
-          tag: convert_ingest_value_imageOffset_to_ingest_value_image_offset
+          tag: convert_ingest_value_imageOffset_to_ingest_value_image_offset_b149a82c
           field: _ingest._value.imageOffset
           target_field: _ingest._value.image_offset
           type: long
           on_failure:
             - remove:
-                tag: remove_ingest_value_imageOffset
+                tag: remove_ingest_value_imageOffset_45e923c1
                 field: _ingest._value.imageOffset
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_732f427e
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -42,7 +42,7 @@ processors:
       if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         rename:
-          tag: rename_ingest_value_imageUUID_to_ingest_value_image_uuid
+          tag: rename_ingest_value_imageUUID_to_ingest_value_image_uuid_a85dfc96
           field: _ingest._value.imageUUID
           target_field: _ingest._value.image_uuid
           ignore_failure: true
@@ -177,7 +177,7 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
@@ -185,7 +185,7 @@ on_failure:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

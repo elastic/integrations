@@ -8,7 +8,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -35,7 +35,7 @@ processors:
   - drop:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
-      tag: drop_empty_events
+      tag: drop_empty_events_ac9e0c9d
   - date:
       tag: date_json_id_time_9350ecd5
       field: json.id.time
@@ -58,7 +58,7 @@ processors:
       copy_from: '@timestamp'
       ignore_empty_value: true
   - fingerprint:
-      tag: fingerprint_567b61c4
+      tag: fingerprint_to_id_567b61c4
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
         - json.id
@@ -201,7 +201,7 @@ processors:
       copy_from: source.user.id
       if: ctx.source?.user?.id != null
   - script:
-      tag: script_a3a2cdbf
+      tag: script_extract_user_name_user_domain_a3a2cdbf
       lang: painless
       description: Extract User name and User domain from Email.
       if: ctx.source?.user?.email != null && ctx.source.user.email.contains("@")
@@ -246,7 +246,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - script:
-      tag: script_1a7fee67
+      tag: script_map_event_parameters_into_key_1a7fee67
       lang: painless
       description: Map Event parameters into key value pair.
       if: ctx.json?.events?.parameters != null && ctx.json.events.parameters instanceof List
@@ -415,7 +415,7 @@ processors:
       target_field: google_workspace.rules.resource.recipients
       ignore_missing: true
   - script:
-      tag: script_be0ba7ad
+      tag: script_add_recipients_domains_to_related_be0ba7ad
       lang: painless
       description: Add recipients domains to related.hosts.
       if: ctx.google_workspace?.rules?.resource?.recipients != null
@@ -583,31 +583,31 @@ processors:
       ignore_failure: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_intrusion_detection_into_event_category_for_rule_events
+      tag: append_intrusion_detection_into_event_category_for_rule_events_6a0fc77f
       value: intrusion_detection
       if: ctx.event?.action != null && ["rule_match","rule_trigger","action_complete"].contains(ctx.event.action)
   - append:
       field: event.type
-      tag: append_info_into_event_type_for_rule_events
+      tag: append_info_into_event_type_for_rule_events_1c4cc97f
       value: info
       if: ctx.event?.action != null && ["rule_match","rule_trigger","action_complete"].contains(ctx.event.action)
   - append:
       field: event.type
-      tag: append_change_into_event_type_for_label_events
+      tag: append_change_into_event_type_for_label_events_2234c147
       value: change
       if: ctx.event?.action != null && ["label_applied","label_field_value_changed"].contains(ctx.event.action)
   - append:
       field: event.type
-      tag: append_deletion_into_event_type_for_label_removed
+      tag: append_deletion_into_event_type_for_label_removed_0c5a9466
       value: deletion
       if: ctx.event?.action == 'label_removed'
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_465671f8
       value: alert
       if: ctx.google_workspace?.rules?.has_alert == true
   - remove:
@@ -635,7 +635,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -658,12 +658,12 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

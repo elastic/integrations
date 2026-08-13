@@ -8,29 +8,29 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_5098f71a
       value: host
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - rename:
       field: message
-      tag: rename_message
+      tag: rename_message_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
@@ -45,7 +45,7 @@ processors:
       if: ctx.event?.original != null && ctx.event.original.isEmpty()
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_c3a1053e
       target_field: json
       on_failure:
         - append:
@@ -54,17 +54,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json._id
-      tag: rename_id
+      tag: rename_id_50b802ac
       target_field: prisma_cloud.host._id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_id_to_event_id
+      tag: set_id_to_event_id_e2880f0e
       copy_from: prisma_cloud.host._id
       ignore_empty_value: true
   - convert:
       field: json.agentless
-      tag: convert_agentless
+      tag: convert_agentless_17718251
       target_field: prisma_cloud.host.agentless
       type: boolean
       ignore_missing: true
@@ -76,12 +76,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.allCompliance
-      tag: rename_allCompliance
+      tag: rename_allCompliance_8cd38057
       target_field: prisma_cloud.host.all_compliance
       ignore_missing: true
   - rename:
       field: prisma_cloud.host.all_compliance.compliance
-      tag: rename_compliance_to_data
+      tag: rename_compliance_to_data_8303a20d
       target_field: prisma_cloud.host.all_compliance.data
       ignore_missing: true
   - foreach:
@@ -92,7 +92,7 @@ processors:
       processor:
         append:
           field: vulnerability.id
-          tag: append_prisma_cloud_host_all_compliance_data_cve
+          tag: append_prisma_cloud_host_all_compliance_data_cve_216b9f12
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - foreach:
@@ -103,12 +103,12 @@ processors:
       processor:
         append:
           field: vulnerability.severity
-          tag: append_prisma_cloud_host_all_compliance_data_severity
+          tag: append_prisma_cloud_host_all_compliance_data_severity_9b055f2c
           value: '{{{_ingest._value.severity}}}'
           allow_duplicates: false
   - script:
       lang: painless
-      tag: remove_prisma_cloud_host_all_compliance_data_except_cve
+      tag: remove_prisma_cloud_host_all_compliance_data_except_cve_5b5e37c0
       description: Remove generic vulnerability information
       if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List
       source: |-
@@ -122,7 +122,7 @@ processors:
         }
   - convert:
       field: prisma_cloud.host.all_compliance.enabled
-      tag: convert_prisma_cloud_host_all_compliance_enabled
+      tag: convert_prisma_cloud_host_all_compliance_enabled_2532f742
       type: boolean
       ignore_missing: true
       if: ctx.prisma_cloud?.host?.all_compliance?.enabled != ''
@@ -137,7 +137,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.appEmbedded
-      tag: convert_appEmbedded
+      tag: convert_appEmbedded_3f47df43
       target_field: prisma_cloud.host.app_embedded
       type: boolean
       ignore_missing: true
@@ -149,7 +149,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.applications
-      tag: rename_applications
+      tag: rename_applications_c8951555
       target_field: prisma_cloud.host.applications
       ignore_missing: true
   - foreach:
@@ -160,17 +160,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.installedFromPackage
-          tag: convert_prisma_cloud_host_applications_installedFromPackage
+          tag: convert_prisma_cloud_host_applications_installedFromPackage_4818864a
           target_field: _ingest._value.installed_from_package
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_installedFromPackage
+                tag: remove_ingest_value_installedFromPackage_0e21bd0a
                 field: _ingest._value.installedFromPackage
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_d9371b45
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -181,13 +181,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.knownVulnerabilities
-          tag: convert_prisma_cloud_host_applications_knownVulnerabilities
+          tag: convert_prisma_cloud_host_applications_knownVulnerabilities_a824400b
           target_field: _ingest._value.known_vulnerabilities
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_knownVulnerabilities
+                tag: remove_ingest_value_knownVulnerabilities_a1aa5018
                 field: _ingest._value.knownVulnerabilities
                 ignore_missing: true
             - append:
@@ -201,14 +201,14 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_layerTime_to_ingest_value_layer_time
+          tag: date_ingest_value_layerTime_to_ingest_value_layer_time_908c80e1
           field: _ingest._value.layerTime
           target_field: _ingest._value.layer_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
-                tag: remove_ingest_value_layerTime
+                tag: remove_ingest_value_layerTime_480e288c
                 field: _ingest._value.layerTime
                 ignore_missing: true
   - foreach:
@@ -219,12 +219,12 @@ processors:
       processor:
         convert:
           field: _ingest._value.service
-          tag: convert_prisma_cloud_host_applications_service
+          tag: convert_prisma_cloud_host_applications_service_493e5143
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_service
+                tag: remove_ingest_value_service_3c872f82
                 field: _ingest._value.service
                 ignore_missing: true
             - append:
@@ -242,16 +242,16 @@ processors:
             - _ingest._value.installedFromPackage
             - _ingest._value.knownVulnerabilities
             - _ingest._value.layerTime
-          tag: foreach_remove_prisma_cloud_host_applications_fields
+          tag: foreach_remove_prisma_cloud_host_applications_fields_cf341f99
           ignore_missing: true
   - rename:
       field: json.baseImage
-      tag: rename_baseImage
+      tag: rename_baseImage_160f76be
       target_field: prisma_cloud.host.base_image
       ignore_missing: true
   - rename:
       field: json.binaries
-      tag: rename_binaries
+      tag: rename_binaries_3bd7dc7e
       target_field: prisma_cloud.host.binaries
       ignore_missing: true
   - foreach:
@@ -262,12 +262,12 @@ processors:
       processor:
         convert:
           field: _ingest._value.altered
-          tag: convert_binaries_altered
+          tag: convert_binaries_altered_333df2c7
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_altered
+                tag: remove_ingest_value_altered_bb9b7acb
                 field: _ingest._value.altered
                 ignore_missing: true
             - append:
@@ -282,13 +282,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.cveCount
-          tag: convert_prisma_cloud_host_binaries_cveCount
+          tag: convert_prisma_cloud_host_binaries_cveCount_d5ee2121
           target_field: _ingest._value.cve_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_cveCount
+                tag: remove_ingest_value_cveCount_469a7789
                 field: _ingest._value.cveCount
                 ignore_missing: true
             - append:
@@ -303,13 +303,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.fileMode
-          tag: convert_prisma_cloud_host_binaries_fileMode
+          tag: convert_prisma_cloud_host_binaries_fileMode_d51cb7fa
           target_field: _ingest._value.file_mode
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_fileMode
+                tag: remove_ingest_value_fileMode_eafcb2c6
                 field: _ingest._value.fileMode
                 ignore_missing: true
             - append:
@@ -324,7 +324,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.functionLayer
-          tag: rename_prisma_cloud_host_binaries_functionLayer
+          tag: rename_prisma_cloud_host_binaries_functionLayer_df6f8184
           target_field: _ingest._value.function_layer
           ignore_missing: true
   - foreach:
@@ -335,13 +335,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.missingPkg
-          tag: convert_prisma_cloud_host_binaries_missingPkg
+          tag: convert_prisma_cloud_host_binaries_missingPkg_0ba38bfe
           target_field: _ingest._value.missing_pkg
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_missingPkg
+                tag: remove_ingest_value_missingPkg_56c9efbb
                 field: _ingest._value.missingPkg
                 ignore_missing: true
             - append:
@@ -356,7 +356,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.pkgRootDir
-          tag: rename_prisma_cloud_host_binaries_pkgRootDir
+          tag: rename_prisma_cloud_host_binaries_pkgRootDir_39abd136
           target_field: _ingest._value.pkg_root_dir
           ignore_missing: true
   - foreach:
@@ -370,31 +370,31 @@ processors:
             - _ingest._value.cveCount
             - _ingest._value.fileMode
             - _ingest._value.missingPkg
-          tag: foreach_remove_prisma_cloud_host_binaries_fields
+          tag: foreach_remove_prisma_cloud_host_binaries_fields_cec61be3
           ignore_missing: true
   - rename:
       field: json.cloudMetadata
-      tag: rename_cloudMetadata
+      tag: rename_cloudMetadata_f0af8f19
       target_field: prisma_cloud.host.cloud_metadata
       ignore_missing: true
   - rename:
       field: prisma_cloud.host.cloud_metadata.accountID
-      tag: rename_accountID
+      tag: rename_accountID_1b90c941
       target_field: prisma_cloud.host.cloud_metadata.account_id
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_account_id
+      tag: set_account_id_a7dfb685
       copy_from: prisma_cloud.host.cloud_metadata.account_id
       ignore_empty_value: true
   - rename:
       field: prisma_cloud.host.cloud_metadata.awsExecutionEnv
-      tag: rename_awsExecutionEnv
+      tag: rename_awsExecutionEnv_e47ebd88
       target_field: prisma_cloud.host.cloud_metadata.aws_execution_env
       ignore_missing: true
   - rename:
       field: json.cloudMetadata.labels
-      tag: rename_cloudMetadata_labels
+      tag: rename_cloudMetadata_labels_065766e9
       target_field: prisma_cloud.host.cloud_metadata.labels
       ignore_missing: true
   - foreach:
@@ -405,7 +405,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.sourceName
-          tag: rename_cloud_metadata_labels_sourceName
+          tag: rename_cloud_metadata_labels_sourceName_8a863a45
           target_field: _ingest._value.source.name
           ignore_missing: true
   - foreach:
@@ -416,7 +416,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.sourceType
-          tag: foreach_cloud_metadata_labels_sourceType
+          tag: foreach_cloud_metadata_labels_sourceType_ee3551b8
           target_field: _ingest._value.source.type
           ignore_missing: true
   - foreach:
@@ -426,79 +426,79 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_timestamp_to_ingest_value_timestamp
+          tag: date_ingest_value_timestamp_to_ingest_value_timestamp_8d95654c
           field: _ingest._value.timestamp
           target_field: _ingest._value.timestamp
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_timestamp
+                tag: remove_ingest_value_timestamp_0f919384
                 field: _ingest._value.timestamp
                 ignore_missing: true
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name
+      tag: set_cloud_instance_name_d84a6dcb
       copy_from: prisma_cloud.host.cloud_metadata.name
       ignore_empty_value: true
   - set:
       field: cloud.provider
-      tag: set_cloud_provider
+      tag: set_cloud_provider_4ba1e644
       copy_from: prisma_cloud.host.cloud_metadata.provider
       ignore_empty_value: true
   - set:
       field: cloud.region
-      tag: set_cloud_region
+      tag: set_cloud_region_44da6ec1
       copy_from: prisma_cloud.host.cloud_metadata.region
       ignore_empty_value: true
   - rename:
       field: prisma_cloud.host.cloud_metadata.resourceID
-      tag: rename_cloud_metadata_resourceID
+      tag: rename_cloud_metadata_resourceID_683473d8
       target_field: prisma_cloud.host.cloud_metadata.resource.id
       ignore_missing: true
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id
+      tag: set_cloud_instance_id_1f13cca8
       copy_from: prisma_cloud.host.cloud_metadata.resource.id
       ignore_empty_value: true
   - rename:
       field: prisma_cloud.host.cloud_metadata.resourceURL
-      tag: rename_cloud_metadata_resourceURL
+      tag: rename_cloud_metadata_resourceURL_5b1e87ec
       target_field: prisma_cloud.host.cloud_metadata.resource.url
       ignore_missing: true
   - set:
       field: cloud.machine.type
-      tag: set_cloud_machine_type
+      tag: set_cloud_machine_type_6f9f9afd
       copy_from: prisma_cloud.host.cloud_metadata.type
       ignore_empty_value: true
   - rename:
       field: prisma_cloud.host.cloud_metadata.vmID
-      tag: rename_cloud_metadata_vmID
+      tag: rename_cloud_metadata_vmID_ba5112bd
       target_field: prisma_cloud.host.cloud_metadata.vm.id
       ignore_missing: true
   - rename:
       field: prisma_cloud.host.cloud_metadata.vmImageID
-      tag: rename_cloud_metadata_vmImageID
+      tag: rename_cloud_metadata_vmImageID_6915a997
       target_field: prisma_cloud.host.cloud_metadata.vm.image_id
       ignore_missing: true
   - rename:
       field: json.clusters
-      tag: rename_clusters
+      tag: rename_clusters_e4c288e2
       target_field: prisma_cloud.host.clusters
       ignore_missing: true
   - rename:
       field: json.clusterType
-      tag: rename_clusterType
+      tag: rename_clusterType_8deacb3c
       target_field: prisma_cloud.host.cluster_type
       ignore_missing: true
   - rename:
       field: json.collections
-      tag: rename_collections
+      tag: rename_collections_c5b76ac6
       target_field: prisma_cloud.host.collections
       ignore_missing: true
   - convert:
       field: json.complianceDistribution.critical
-      tag: convert_critical
+      tag: convert_critical_07727c9d
       target_field: prisma_cloud.host.compliance_distribution.critical
       type: long
       ignore_missing: true
@@ -510,7 +510,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.complianceDistribution.high
-      tag: convert_high
+      tag: convert_high_cec9d72f
       target_field: prisma_cloud.host.compliance_distribution.high
       type: long
       ignore_missing: true
@@ -522,7 +522,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.complianceDistribution.low
-      tag: convert_low
+      tag: convert_low_af5e7c6b
       target_field: prisma_cloud.host.compliance_distribution.low
       type: long
       ignore_missing: true
@@ -534,7 +534,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.complianceDistribution.medium
-      tag: convert_medium
+      tag: convert_medium_a493a870
       target_field: prisma_cloud.host.compliance_distribution.medium
       type: long
       ignore_missing: true
@@ -546,7 +546,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.complianceDistribution.total
-      tag: convert_total
+      tag: convert_total_c8d08309
       target_field: prisma_cloud.host.compliance_distribution.total
       type: long
       ignore_missing: true
@@ -558,7 +558,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.complianceIssues
-      tag: rename_complianceIssues
+      tag: rename_complianceIssues_621cf88e
       target_field: prisma_cloud.host.compliance_issues.data
       ignore_missing: true
   - foreach:
@@ -569,7 +569,7 @@ processors:
       processor:
         append:
           field: vulnerability.id
-          tag: append_prisma_cloud_host_compliance_issues_data_cve_to_vulnerability_id
+          tag: append_prisma_cloud_host_compliance_issues_data_cve_to_vulnerability_id_246f1b72
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - foreach:
@@ -581,11 +581,11 @@ processors:
         append:
           field: vulnerability.severity
           value: '{{{_ingest._value.severity}}}'
-          tag: append_compliance_issues_serevity
+          tag: append_compliance_issues_serevity_3aebc79f
           allow_duplicates: false
   - convert:
       field: json.complianceIssuesCount
-      tag: convert_complianceIssueCount
+      tag: convert_complianceIssueCount_163e74bf
       target_field: prisma_cloud.host.compliance_issues.count
       type: long
       ignore_missing: true
@@ -597,7 +597,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: remove_compliance_issues_data_except_cve
+      tag: remove_compliance_issues_data_except_cve_5f0b72ce
       description: Remove generic vulnerability information
       if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List
       source: |-
@@ -611,7 +611,7 @@ processors:
         }
   - convert:
       field: json.complianceRiskScore
-      tag: convert_complianceRiskScore
+      tag: convert_complianceRiskScore_99724b9d
       target_field: prisma_cloud.host.compliance_risk_score
       type: float
       ignore_missing: true
@@ -623,7 +623,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.creationTime
-      tag: date_creationTime
+      tag: date_creationTime_79c5fcee
       target_field: prisma_cloud.host.creation_time
       formats:
         - ISO8601
@@ -635,27 +635,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_creation_time
+      tag: set_creation_time_c0ccc238
       copy_from: prisma_cloud.host.creation_time
       ignore_empty_value: true
   - rename:
       field: json.distro
-      tag: rename_distro
+      tag: rename_distro_e885b354
       target_field: prisma_cloud.host.distro
       ignore_missing: true
   - rename:
       field: json.ecsClusterName
-      tag: rename_ecsClusterName
+      tag: rename_ecsClusterName_a8b7bf61
       target_field: prisma_cloud.host.ecs_cluster_name
       ignore_missing: true
   - rename:
       field: json.err
-      tag: rename_err
+      tag: rename_err_9089cc8c
       target_field: prisma_cloud.host.err
       ignore_missing: true
   - rename:
       field: json.externalLabels
-      tag: rename_externalLabels
+      tag: rename_externalLabels_a9d84af6
       target_field: prisma_cloud.host.external_labels
       ignore_missing: true
   - foreach:
@@ -666,7 +666,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.sourceName
-          tag: rename_externalLabels_sourceName
+          tag: rename_externalLabels_sourceName_44e57954
           target_field: _ingest._value.source.name
           ignore_missing: true
   - foreach:
@@ -677,7 +677,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.sourceType
-          tag: rename_sourceType_externalLabels
+          tag: rename_sourceType_externalLabels_4d5e76d5
           target_field: _ingest._value.source.type
           ignore_missing: true
   - foreach:
@@ -699,7 +699,7 @@ processors:
                 ignore_missing: true
   - rename:
       field: json.files
-      tag: rename_files
+      tag: rename_files_f086a9c3
       target_field: prisma_cloud.host.files
       ignore_missing: true
   - foreach:
@@ -710,7 +710,7 @@ processors:
       processor:
         append:
           field: file.hash.md5
-          tag: append_file_md5
+          tag: append_file_md5_f78eb2b3
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
@@ -721,7 +721,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_related_hash_md5
+          tag: append_related_hash_md5_f386f4a9
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
@@ -732,7 +732,7 @@ processors:
       processor:
         append:
           field: file.path
-          tag: append_file_path
+          tag: append_file_path_c79dce5c
           value: '{{{_ingest._value.path}}}'
           allow_duplicates: false
   - foreach:
@@ -743,7 +743,7 @@ processors:
       processor:
         append:
           field: file.hash.sha1
-          tag: append_file_hash_sha1
+          tag: append_file_hash_sha1_21628891
           value: '{{{_ingest._value.sha1}}}'
           allow_duplicates: false
   - foreach:
@@ -754,7 +754,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_related_hash_sha1
+          tag: append_related_hash_sha1_79d12b63
           value: '{{{_ingest._value.sha1}}}'
           allow_duplicates: false
   - foreach:
@@ -765,7 +765,7 @@ processors:
       processor:
         append:
           field: file.hash.sha256
-          tag: append_file_sha256
+          tag: append_file_sha256_f9e6ed2f
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - foreach:
@@ -776,7 +776,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_related_hash_sha256
+          tag: append_related_hash_sha256_8a9d547c
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - foreach:
@@ -792,15 +792,15 @@ processors:
             - _ingest._value.sha1
             - _ingest._value.sha256
           ignore_missing: true
-          tag: remove_file_hash_fields_ecs_duplicate
+          tag: remove_file_hash_fields_ecs_duplicate_d40606e5
   - rename:
       field: json.firewallProtection
-      tag: rename_firewallProtection
+      tag: rename_firewallProtection_6fbbd56c
       target_field: prisma_cloud.host.firewall_protection
       ignore_missing: true
   - convert:
       field: prisma_cloud.host.firewall_protection.enabled
-      tag: convert_enabled
+      tag: convert_enabled_2ef297fb
       type: boolean
       ignore_missing: true
       if: ctx.prisma_cloud?.host?.firewall_protection?.enabled != ''
@@ -815,12 +815,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: prisma_cloud.host.firewall_protection.outOfBandMode
-      tag: rename_out_of_band_mode
+      tag: rename_out_of_band_mode_3c05d96f
       target_field: prisma_cloud.host.firewall_protection.out_of_band_mode
       ignore_missing: true
   - convert:
       field: prisma_cloud.host.firewall_protection.ports
-      tag: convert_ports
+      tag: convert_ports_b55232fd
       type: long
       ignore_missing: true
       if: ctx.prisma_cloud?.host?.firewall_protection?.ports != ''
@@ -835,7 +835,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: prisma_cloud.host.firewall_protection.supported
-      tag: convert_supported
+      tag: convert_supported_0f21bf75
       type: boolean
       ignore_missing: true
       if: ctx.prisma_cloud?.host?.firewall_protection?.supported != ''
@@ -850,7 +850,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: prisma_cloud.host.firewall_protection.tlsPorts
-      tag: convert_tlsPorts
+      tag: convert_tlsPorts_6d4a9cae
       target_field: prisma_cloud.host.firewall_protection.tls_ports
       type: long
       ignore_missing: true
@@ -866,7 +866,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: prisma_cloud.host.firewall_protection.unprotectedProcesses
-      tag: rename_unprotectedProcesses
+      tag: rename_unprotectedProcesses_a0906031
       target_field: prisma_cloud.host.firewall_protection.unprotected_processes
       ignore_missing: true
   - foreach:
@@ -877,12 +877,12 @@ processors:
       processor:
         convert:
           field: _ingest._value.port
-          tag: convert_port_firewall_protection_unprotected_processes
+          tag: convert_port_firewall_protection_unprotected_processes_e0502726
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_port
+                tag: remove_ingest_value_port_a24b0425
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
@@ -897,12 +897,12 @@ processors:
       processor:
         convert:
           field: _ingest._value.tls
-          tag: convert_tls_firewall_protection.unprotected_processes
+          tag: convert_tls_firewall_protection.unprotected_processes_9e880caf
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_tls
+                tag: remove_ingest_value_tls_3cdf8f41
                 field: _ingest._value.tls
                 ignore_missing: true
             - append:
@@ -911,7 +911,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.firstScanTime
-      tag: date_firstScanTime
+      tag: date_firstScanTime_354d0735
       target_field: prisma_cloud.host.first_scan_time
       formats:
         - ISO8601
@@ -923,7 +923,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.history
-      tag: rename_history
+      tag: rename_history_cc83ae74
       target_field: prisma_cloud.host.history
       ignore_missing: true
   - foreach:
@@ -934,13 +934,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.baseLayer
-          tag: convert_baseLayer_history
+          tag: convert_baseLayer_history_287841e7
           target_field: _ingest._value.base_layer
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_baseLayer
+                tag: remove_ingest_value_baseLayer_91bf81a6
                 field: _ingest._value.baseLayer
                 ignore_missing: true
             - append:
@@ -955,13 +955,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.emptyLayer
-          tag: convert_emptyLayer_history
+          tag: convert_emptyLayer_history_b386a1e1
           target_field: _ingest._value.empty_layer
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_emptyLayer
+                tag: remove_ingest_value_emptyLayer_0906843d
                 field: _ingest._value.emptyLayer
                 ignore_missing: true
             - append:
@@ -975,14 +975,14 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_created_to_ingest_value_created
+          tag: date_ingest_value_created_to_ingest_value_created_baee4a52
           field: _ingest._value.created
           target_field: _ingest._value.created
           formats:
             - UNIX_MS
           on_failure:
             - remove:
-                tag: remove_ingest_value_created
+                tag: remove_ingest_value_created_2c260a23
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
@@ -993,13 +993,13 @@ processors:
       processor:
         convert:
           field: _ingest._value.sizeBytes
-          tag: convert_sizeBytes_history
+          tag: convert_sizeBytes_history_e0d479dd
           target_field: _ingest._value.size_bytes
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_sizeBytes
+                tag: remove_ingest_value_sizeBytes_292d6e99
                 field: _ingest._value.sizeBytes
                 ignore_missing: true
             - append:
@@ -1017,7 +1017,7 @@ processors:
             - _ingest._value.baseLayer
             - _ingest._value.emptyLayer
             - _ingest._value.sizeBytes
-          tag: remove_history_fields_duplicate
+          tag: remove_history_fields_duplicate_285969d1
           ignore_missing: true
   - foreach:
       tag: foreach_prisma_cloud_host_history_612a91b7
@@ -1026,13 +1026,13 @@ processors:
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_vulnerabilities
+          tag: foreach_ingest_value_vulnerabilities_55981b50
           field: _ingest._value.vulnerabilities
           ignore_failure: true
           processor:
             append:
               field: vulnerability.id
-              tag: append_history_vulnerabilities_cve
+              tag: append_history_vulnerabilities_cve_0e5a2c6c
               value: '{{{_ingest._value.cve}}}'
               allow_duplicates: false
   - foreach:
@@ -1049,11 +1049,11 @@ processors:
             append:
               field: vulnerability.severity
               value: '{{{_ingest._value.severity}}}'
-              tag: nested_append_history_vulnerabilities
+              tag: nested_append_history_vulnerabilities_7023bb4b
               allow_duplicates: false
   - script:
       lang: painless
-      tag: remove_host_history_vulnerabilities_except_cve
+      tag: remove_host_history_vulnerabilities_except_cve_dc9ea0d3
       description: Remove generic vulnerability information
       if: ctx.prisma_cloud?.host?.history instanceof List
       source: |-
@@ -1069,7 +1069,7 @@ processors:
         }
   - rename:
       field: json.hostDevices
-      tag: rename_hostDevices
+      tag: rename_hostDevices_43e01967
       target_field: prisma_cloud.host.devices
       ignore_missing: true
   - foreach:
@@ -1080,12 +1080,12 @@ processors:
       processor:
         convert:
           field: _ingest._value.ip
-          tag: convert__devices_ip
+          tag: convert__devices_ip_c91be5ca
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_ip
+                tag: remove_ingest_value_ip_4fd79660
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
@@ -1100,7 +1100,7 @@ processors:
       processor:
         append:
           field: related.ip
-          tag: append_devices_ip_to_related_ip
+          tag: append_devices_ip_to_related_ip_a16d85b7
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
@@ -1111,7 +1111,7 @@ processors:
       processor:
         append:
           field: host.ip
-          tag: append_devices_ip_to_host_ip
+          tag: append_devices_ip_to_host_ip_7eabd146
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
@@ -1122,7 +1122,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          tag: append_devices_name_to_related_hosts
+          tag: append_devices_name_to_related_hosts_d95fed1c
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
@@ -1136,26 +1136,26 @@ processors:
             - _ingest._value.ip
             - _ingest._value.name
           ignore_missing: true
-          tag: foreach_remove_ecs_duplicate_devices_fields
+          tag: foreach_remove_ecs_duplicate_devices_fields_7361da95
   - rename:
       field: json.hostname
-      tag: rename_hostname
+      tag: rename_hostname_9831b76b
       target_field: prisma_cloud.host.hostname
       ignore_missing: true
   - set:
       field: host.hostname
-      tag: set_hostname
+      tag: set_hostname_d626597b
       copy_from: prisma_cloud.host.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
       value: '{{{prisma_cloud.host.hostname}}}'
-      tag: append_hostname_into_hosts
+      tag: append_hostname_into_hosts_ef55e8c5
       allow_duplicates: false
       if: ctx.prisma_cloud?.host?.hostname != null
   - convert:
       field: json.hostRuntimeEnabled
-      tag: convert_hostRuntimeEnabled
+      tag: convert_hostRuntimeEnabled_58c46d9a
       target_field: prisma_cloud.host.runtime_enabled
       type: boolean
       ignore_missing: true
@@ -1167,17 +1167,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.hosts
-      tag: rename_hosts
+      tag: rename_hosts_28e72fa4
       target_field: prisma_cloud.host.hosts
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id_076caa5a
+      tag: rename_id_29403923
       target_field: prisma_cloud.host.id
       ignore_missing: true
   - date:
       field: json.image.created
-      tag: date_created
+      tag: date_created_bbe8ab98
       target_field: prisma_cloud.host.image.created
       formats:
         - ISO8601
@@ -1189,17 +1189,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.image.entrypoint
-      tag: rename_entrypoint
+      tag: rename_entrypoint_a1e0c6b7
       target_field: prisma_cloud.host.image.entrypoint
       ignore_missing: true
   - rename:
       field: json.image.env
-      tag: rename_env
+      tag: rename_env_ad517e66
       target_field: prisma_cloud.host.image.env
       ignore_missing: true
   - convert:
       field: json.image.healthcheck
-      tag: convert_healthcheck
+      tag: convert_healthcheck_78c18989
       target_field: prisma_cloud.host.image.healthcheck
       type: boolean
       ignore_missing: true
@@ -1211,7 +1211,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.image.history
-      tag: rename_image_history
+      tag: rename_image_history_c28ed5d8
       target_field: prisma_cloud.host.image.history
       ignore_missing: true
   - foreach:
@@ -1222,7 +1222,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.baseLayer
-          tag: convert_image_history_baseLayer
+          tag: convert_image_history_baseLayer_1a343920
           target_field: _ingest._value.base_layer
           type: boolean
           ignore_missing: true
@@ -1243,7 +1243,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.emptyLayer
-          tag: convert_image_history_emptylayer
+          tag: convert_image_history_emptylayer_d36c5dbe
           target_field: _ingest._value.empty_layer
           type: boolean
           ignore_missing: true
@@ -1281,7 +1281,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.sizeBytes
-          tag: convert_image_history_sizeBytes
+          tag: convert_image_history_sizeBytes_ba63fca8
           target_field: _ingest._value.size_bytes
           type: long
           ignore_missing: true
@@ -1305,7 +1305,7 @@ processors:
             - _ingest._value.baseLayer
             - _ingest._value.emptyLayer
             - _ingest._value.sizeBytes
-          tag: foreach_remove_image_history_duplicate_fields
+          tag: foreach_remove_image_history_duplicate_fields_d33b8e6d
           ignore_missing: true
   - foreach:
       tag: foreach_prisma_cloud_host_image_history_626eb359
@@ -1320,7 +1320,7 @@ processors:
           processor:
             append:
               field: vulnerability.id
-              tag: append_image_history_vulnerabilities_cve_to_vulnerability_id
+              tag: append_image_history_vulnerabilities_cve_to_vulnerability_id_b1bdb541
               value: '{{{_ingest._value.cve}}}'
               allow_duplicates: false
   - foreach:
@@ -1336,12 +1336,12 @@ processors:
           processor:
             append:
               field: vulnerability.severity
-              tag: append_image_history_vulnerabilities_severity
+              tag: append_image_history_vulnerabilities_severity_c4393537
               value: '{{{_ingest._value.severity}}}'
               allow_duplicates: false
   - script:
       lang: painless
-      tag: remove_image_history_vulnerabilites_except_cve
+      tag: remove_image_history_vulnerabilites_except_cve_bd7205a3
       description: Remove generic vulnerability information
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       source: |-
@@ -1357,47 +1357,47 @@ processors:
         }
   - rename:
       field: json.image.id
-      tag: rename_image_id
+      tag: rename_image_id_ad2df1c1
       target_field: prisma_cloud.host.image.id
       ignore_missing: true
   - rename:
       field: json.image.labels
-      tag: rename_image_labels
+      tag: rename_image_labels_334f5188
       target_field: prisma_cloud.host.image.labels
       ignore_missing: true
   - rename:
       field: json.image.layers
-      tag: rename_image_layers
+      tag: rename_image_layers_e19daab7
       target_field: prisma_cloud.host.image.layers
       ignore_missing: true
   - rename:
       field: json.image.os
-      tag: rename_image_os
+      tag: rename_image_os_b1a98d04
       target_field: prisma_cloud.host.image.os
       ignore_missing: true
   - rename:
       field: json.image.repoDigest
-      tag: rename_repoDigest
+      tag: rename_repoDigest_04a739ac
       target_field: prisma_cloud.host.image.repo.digest
       ignore_missing: true
   - rename:
       field: json.image.repoTags
-      tag: rename_repoTags
+      tag: rename_repoTags_29fae13c
       target_field: prisma_cloud.host.image.repo.tags
       ignore_missing: true
   - rename:
       field: json.image.user
-      tag: rename_image_user
+      tag: rename_image_user_ce1b0f79
       target_field: prisma_cloud.host.image.user
       ignore_missing: true
   - rename:
       field: json.image.workingDir
-      tag: rename_image_workingDir
+      tag: rename_image_workingDir_f3d300e0
       target_field: prisma_cloud.host.image.working_dir
       ignore_missing: true
   - convert:
       field: json.installedProducts.agentless
-      tag: convert_prisma_cloud_host_installed_products_agentless
+      tag: convert_prisma_cloud_host_installed_products_agentless_a5fa3655
       target_field: prisma_cloud.host.installed_products.agentless
       type: boolean
       ignore_missing: true
@@ -1409,22 +1409,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.installedProducts.apache
-      tag: rename_installedProducts_apache
+      tag: rename_installedProducts_apache_42a3d952
       target_field: prisma_cloud.host.installed_products.apache
       ignore_missing: true
   - rename:
       field: json.installedProducts.docker
-      tag: rename_installedProducts_docker
+      tag: rename_installedProducts_docker_85cedb1a
       target_field: prisma_cloud.host.installed_products.docker
       ignore_missing: true
   - rename:
       field: json.installedProducts.kubernetes
-      tag: rename_installedProducts_kubernetes
+      tag: rename_installedProducts_kubernetes_be9a74c5
       target_field: prisma_cloud.host.installed_products.kubernetes
       ignore_missing: true
   - convert:
       field: json.installedProducts.awsCloud
-      tag: convert_awsClous
+      tag: convert_awsClous_534d7ee9
       target_field: prisma_cloud.host.installed_products.aws_cloud
       type: boolean
       ignore_missing: true
@@ -1436,12 +1436,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.installedProducts.clusterType
-      tag: rename_clusterType_b683e043
+      tag: rename_clusterType_a5311ae6
       target_field: prisma_cloud.host.installed_products.cluster_type
       ignore_missing: true
   - convert:
       field: json.installedProducts.crio
-      tag: convert_crio
+      tag: convert_crio_e11cb0ba
       target_field: prisma_cloud.host.installed_products.crio
       type: boolean
       ignore_missing: true
@@ -1453,7 +1453,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.dockerEnterprise
-      tag: convert_dockerEnterprise
+      tag: convert_dockerEnterprise_7bd9deb0
       target_field: prisma_cloud.host.installed_products.docker_enterprise
       type: boolean
       ignore_missing: true
@@ -1465,7 +1465,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.hasPackageManager
-      tag: convert_hasPackageManager
+      tag: convert_hasPackageManager_a685c00d
       target_field: prisma_cloud.host.installed_products.has_package_manager
       type: boolean
       ignore_missing: true
@@ -1477,7 +1477,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sApiServer
-      tag: convert_k8sApiserver
+      tag: convert_k8sApiserver_d905a62b
       target_field: prisma_cloud.host.installed_products.k8s_api_server
       type: boolean
       ignore_missing: true
@@ -1489,7 +1489,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sControllerManager
-      tag: convert_k8sControllerManager
+      tag: convert_k8sControllerManager_da38f961
       target_field: prisma_cloud.host.installed_products.k8s_controller_manager
       type: boolean
       ignore_missing: true
@@ -1501,7 +1501,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sEtcd
-      tag: convert_k8sEtcd
+      tag: convert_k8sEtcd_6a549bfc
       target_field: prisma_cloud.host.installed_products.k8s_etcd
       type: boolean
       ignore_missing: true
@@ -1513,7 +1513,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sFederationApiServer
-      tag: convert_k8sFederationApiServer
+      tag: convert_k8sFederationApiServer_ed91bef4
       target_field: prisma_cloud.host.installed_products.k8s_federation_api_server
       type: boolean
       ignore_missing: true
@@ -1525,7 +1525,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sFederationControllerManager
-      tag: convert_k8sFederationControllerManager
+      tag: convert_k8sFederationControllerManager_f118a83c
       target_field: prisma_cloud.host.installed_products.k8s_federation_controller_manager
       type: boolean
       ignore_missing: true
@@ -1537,7 +1537,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sKubelet
-      tag: convert_k8sKubelet
+      tag: convert_k8sKubelet_167304a1
       target_field: prisma_cloud.host.installed_products.k8s_kubelet
       type: boolean
       ignore_missing: true
@@ -1549,7 +1549,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sProxy
-      tag: convert_k8sProxy
+      tag: convert_k8sProxy_43f73e5b
       target_field: prisma_cloud.host.installed_products.k8s_proxy
       type: boolean
       ignore_missing: true
@@ -1561,7 +1561,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.k8sScheduler
-      tag: convert_k8sScheduler
+      tag: convert_k8sScheduler_63b6b258
       target_field: prisma_cloud.host.installed_products.k8s_scheduler
       type: boolean
       ignore_missing: true
@@ -1573,12 +1573,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.installedProducts.managedClusterVersion
-      tag: rename_managedClusterVersion
+      tag: rename_managedClusterVersion_b3e1565f
       target_field: prisma_cloud.host.installed_products.managed_cluster_version
       ignore_missing: true
   - convert:
       field: json.installedProducts.openshift
-      tag: convert_openshift
+      tag: convert_openshift_a7292cac
       target_field: prisma_cloud.host.installed_products.openshift
       type: boolean
       ignore_missing: true
@@ -1590,17 +1590,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.installedProducts.openshiftVersion
-      tag: rename_openshiftVersion
+      tag: rename_openshiftVersion_025262d4
       target_field: prisma_cloud.host.installed_products.openshift_version
       ignore_missing: true
   - rename:
       field: json.installedProducts.osDistro
-      tag: rename_osDistro
+      tag: rename_osDistro_e2818bf5
       target_field: prisma_cloud.host.installed_products.os_distro
       ignore_missing: true
   - convert:
       field: json.installedProducts.serverless
-      tag: convert_serverless
+      tag: convert_serverless_022f2733
       target_field: prisma_cloud.host.installed_products.serverless
       type: boolean
       ignore_missing: true
@@ -1612,7 +1612,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.swarmManager
-      tag: convert_swarmManager
+      tag: convert_swarmManager_cfe644ff
       target_field: prisma_cloud.host.installed_products.swarm.manager
       type: boolean
       ignore_missing: true
@@ -1624,7 +1624,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.installedProducts.swarmNode
-      tag: convert_swarmNode
+      tag: convert_swarmNode_0cfc7db5
       target_field: prisma_cloud.host.installed_products.swarm.node
       type: boolean
       ignore_missing: true
@@ -1636,7 +1636,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.instances
-      tag: rename_instances
+      tag: rename_instances_de5da0d0
       target_field: prisma_cloud.host.instances
       ignore_missing: true
   - foreach:
@@ -1646,20 +1646,20 @@ processors:
       ignore_failure: true
       processor:
         date:
-          tag: date_ingest_value_modified_to_ingest_value_modified
+          tag: date_ingest_value_modified_to_ingest_value_modified_321d98c8
           field: _ingest._value.modified
           target_field: _ingest._value.modified
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_modified
+                tag: remove_ingest_value_modified_25d40523
                 field: _ingest._value.modified
                 ignore_missing: true
   - convert:
       field: json.isARM64
       target_field: prisma_cloud.host.is_arm64
-      tag: convert_isARM64
+      tag: convert_isARM64_5a63fc4f
       type: boolean
       ignore_missing: true
       if: ctx.json?.isARM64 != ''
@@ -1670,17 +1670,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.k8sClusterAddr
-      tag: rename_k8sClusterAddr
+      tag: rename_k8sClusterAddr_2b495e45
       target_field: prisma_cloud.host.k8s_cluster_addr
       ignore_missing: true
   - rename:
       field: json.labels
-      tag: rename_labels
+      tag: rename_labels_1c380b62
       target_field: prisma_cloud.host.labels
       ignore_missing: true
   - date:
       field: json.malwareAnalyzedTime
-      tag: date_malwareAnalyzedTime
+      tag: date_malwareAnalyzedTime_1eb2cf43
       target_field: prisma_cloud.host.malware_analyzed_time
       formats:
         - ISO8601
@@ -1692,7 +1692,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.missingDistroVulnCoverage
-      tag: convert_missingDistroVulnCoverage
+      tag: convert_missingDistroVulnCoverage_b4ff2973
       target_field: prisma_cloud.host.missing_distro_vuln_coverage
       type: boolean
       ignore_missing: true
@@ -1704,42 +1704,42 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.namespaces
-      tag: rename_namespaces
+      tag: rename_namespaces_ddaccb39
       target_field: prisma_cloud.host.namespaces
       ignore_missing: true
   - rename:
       field: json.osDistro
-      tag: rename_osDistro_a5b45a0e
+      tag: rename_osDistro_09f8b017
       target_field: prisma_cloud.host.os_distro.value
       ignore_missing: true
   - set:
       field: os.family
-      tag: set_os_distro_value_to_os_family
+      tag: set_os_distro_value_to_os_family_92d0c99b
       copy_from: prisma_cloud.host.os_distro.value
       ignore_empty_value: true
   - rename:
       field: json.osDistroRelease
-      tag: rename_osDistroRelease
+      tag: rename_osDistroRelease_8938aed9
       target_field: prisma_cloud.host.os_distro.release
       ignore_missing: true
   - set:
       field: os.name
-      tag: set_os_distro_release_to_os_name
+      tag: set_os_distro_release_to_os_name_9b539c45
       copy_from: prisma_cloud.host.os_distro.release
       ignore_empty_value: true
   - rename:
       field: json.osDistroVersion
-      tag: rename_osDistroVersion
+      tag: rename_osDistroVersion_35cc3a9f
       target_field: prisma_cloud.host.os_distro.version
       ignore_missing: true
   - set:
       field: os.version
-      tag: set_os_distro_version_to_os_version
+      tag: set_os_distro_version_to_os_version_cbeedf5d
       copy_from: prisma_cloud.host.os_distro.version
       ignore_empty_value: true
   - convert:
       field: json.packageCorrelationDone
-      tag: convert_packageCorrelationDone
+      tag: convert_packageCorrelationDone_c7f5256c
       target_field: prisma_cloud.host.package.correlation_done
       type: boolean
       ignore_missing: true
@@ -1751,7 +1751,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.packageManager
-      tag: convert_packageManager
+      tag: convert_packageManager_0817f4a6
       target_field: prisma_cloud.host.package.manager
       type: boolean
       ignore_missing: true
@@ -1763,7 +1763,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.packages
-      tag: rename_packages
+      tag: rename_packages_7f41e2d5
       target_field: prisma_cloud.host.packages
       ignore_missing: true
   - foreach:
@@ -1774,7 +1774,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.pkgsType
-          tag: rename_packages_pkgsType
+          tag: rename_packages_pkgsType_c060bd94
           target_field: _ingest._value.pkgs_type
           ignore_missing: true
   - foreach:
@@ -1785,7 +1785,7 @@ processors:
       processor:
         append:
           field: package.type
-          tag: append_packages_pkgs_type_to_package_type
+          tag: append_packages_pkgs_type_to_package_type_90c24d24
           value: '{{{_ingest._value.pkgs_type}}}'
           allow_duplicates: false
   - foreach:
@@ -1798,7 +1798,7 @@ processors:
           field:
             - _ingest._value.pkgs_type
           ignore_missing: true
-          tag: foreach_remove_packages_ecs_duplicate_fields
+          tag: foreach_remove_packages_ecs_duplicate_fields_aef6daf0
   - foreach:
       tag: foreach_prisma_cloud_host_packages_bbe11bb5
       field: prisma_cloud.host.packages
@@ -1806,19 +1806,19 @@ processors:
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_pkgs
+          tag: foreach_ingest_value_pkgs_a48d7010
           field: _ingest._value.pkgs
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.binaryIdx
-              tag: convert_packages_binaryIdx
+              tag: convert_packages_binaryIdx_ccaa75bb
               target_field: _ingest._value.binary_idx
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_binaryIdx
+                    tag: remove_ingest_value_binaryIdx_b3c6c06f
                     field: _ingest._value.binaryIdx
                     ignore_missing: true
                 - append:
@@ -1838,7 +1838,7 @@ processors:
           processor:
             rename:
               field: _ingest._value.binaryPkgs
-              tag: rename_packages_pkgs_binaryPkgs
+              tag: rename_packages_pkgs_binaryPkgs_229e0f4c
               target_field: _ingest._value.binary_pkgs
               ignore_missing: true
   - foreach:
@@ -1854,7 +1854,7 @@ processors:
           processor:
             convert:
               field: _ingest._value.cveCount
-              tag: convert_packages_pkgs_cveCount
+              tag: convert_packages_pkgs_cveCount_bf240062
               target_field: _ingest._value.cve_count
               type: long
               ignore_missing: true
@@ -1880,13 +1880,13 @@ processors:
           processor:
             convert:
               field: _ingest._value.defaultGem
-              tag: convert_packages_pkgs_defaultGem
+              tag: convert_packages_pkgs_defaultGem_28ab9202
               target_field: _ingest._value.default_gem
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_defaultGem
+                    tag: remove_ingest_value_defaultGem_8b47a053
                     field: _ingest._value.defaultGem
                     ignore_missing: true
                 - append:
@@ -1906,7 +1906,7 @@ processors:
           processor:
             rename:
               field: _ingest._value.functionLayer
-              tag: rename_packages_pkgs_functionLayer
+              tag: rename_packages_pkgs_functionLayer_9efefb01
               target_field: _ingest._value.function_layer
               ignore_missing: true
   - foreach:
@@ -1922,13 +1922,13 @@ processors:
           processor:
             convert:
               field: _ingest._value.goPkg
-              tag: convert_packages_pkgs_goPkg
+              tag: convert_packages_pkgs_goPkg_22d87eda
               target_field: _ingest._value.go_pkg
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_goPkg
+                    tag: remove_ingest_value_goPkg_867dcb36
                     field: _ingest._value.goPkg
                     ignore_missing: true
                 - append:
@@ -1948,7 +1948,7 @@ processors:
           processor:
             rename:
               field: _ingest._value.jarIdentifier
-              tag: rename_packages_pkgs_jarIdentifier
+              tag: rename_packages_pkgs_jarIdentifier_88546786
               target_field: _ingest._value.jar_identifier
               ignore_missing: true
   - foreach:
@@ -1986,7 +1986,7 @@ processors:
           processor:
             append:
               field: package.license
-              tag: append_packages_pkgs_license
+              tag: append_packages_pkgs_license_07a5a410
               value: '{{{_ingest._value.license}}}'
               allow_duplicates: false
   - foreach:
@@ -2002,7 +2002,7 @@ processors:
           processor:
             append:
               field: package.name
-              tag: append_packages_pkgs_name_to_package_name
+              tag: append_packages_pkgs_name_to_package_name_35524140
               value: '{{{_ingest._value.name}}}'
               allow_duplicates: false
   - foreach:
@@ -2018,7 +2018,7 @@ processors:
           processor:
             append:
               field: package.path
-              tag: append_packages_pkgs_path
+              tag: append_packages_pkgs_path_eb1dc6d4
               value: '{{{_ingest._value.path}}}'
               allow_duplicates: false
   - foreach:
@@ -2034,7 +2034,7 @@ processors:
           processor:
             append:
               field: package.version
-              tag: append_packages_pkgs_version_to_package_version
+              tag: append_packages_pkgs_version_to_package_version_6de60c37
               value: '{{{_ingest._value.version}}}'
               allow_duplicates: false
   - foreach:
@@ -2055,7 +2055,7 @@ processors:
                 - _ingest._value.path
                 - _ingest._value.version
               ignore_missing: true
-              tag: remove_packages_ecs_duplicate_fields_custom
+              tag: remove_packages_ecs_duplicate_fields_custom_7ef9c19d
   - foreach:
       tag: foreach_prisma_cloud_host_packages_47635b1d
       field: prisma_cloud.host.packages
@@ -2069,13 +2069,13 @@ processors:
           processor:
             convert:
               field: _ingest._value.osPackage
-              tag: convert_packages_pkgs_osPackage
+              tag: convert_packages_pkgs_osPackage_9a19cbf7
               target_field: _ingest._value.os_package
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_osPackage
+                    tag: remove_ingest_value_osPackage_e2153e49
                     field: _ingest._value.osPackage
                     ignore_missing: true
                 - append:
@@ -2102,10 +2102,10 @@ processors:
                 - _ingest._value.layerTime
                 - _ingest._value.osPackage
               ignore_missing: true
-              tag: remove_pacages_custom_duplicate
+              tag: remove_pacages_custom_duplicate_f247913d
   - convert:
       field: json.pullDuration
-      tag: convert_pullDuration
+      tag: convert_pullDuration_9ff93482
       target_field: prisma_cloud.host.pull_duration
       type: long
       ignore_missing: true
@@ -2117,7 +2117,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.pushTime
-      tag: date_pushTime
+      tag: date_pushTime_af63f44e
       target_field: prisma_cloud.host.push_time
       formats:
         - ISO8601
@@ -2129,7 +2129,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.redHatNonRPMImage
-      tag: convert_redHatNonRPMImage
+      tag: convert_redHatNonRPMImage_2d584d57
       target_field: prisma_cloud.host.red_hat_non_rpm_image
       type: boolean
       ignore_missing: true
@@ -2141,62 +2141,62 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.registryNamespace
-      tag: rename_registryNamespace
+      tag: rename_registryNamespace_0270829e
       target_field: prisma_cloud.host.registry.namespace
       ignore_missing: true
   - rename:
       field: json.registryTags
-      tag: rename_registryTags
+      tag: rename_registryTags_0f93abd3
       target_field: prisma_cloud.host.registry.tags
       ignore_missing: true
   - rename:
       field: json.registryType
-      tag: rename_registryType
+      tag: rename_registryType_ba8483d1
       target_field: prisma_cloud.host.registry.type
       ignore_missing: true
   - rename:
       field: json.repoDigests
-      tag: rename_repoDigests
+      tag: rename_repoDigests_d912dc7f
       target_field: prisma_cloud.host.repo_digests
       ignore_missing: true
   - rename:
       field: json.repoTag.digest
-      tag: rename_repoTag_digest
+      tag: rename_repoTag_digest_51658dc4
       target_field: prisma_cloud.host.repo_tag.digest
       ignore_missing: true
   - rename:
       field: json.repoTag.id
-      tag: rename_repoTag_id
+      tag: rename_repoTag_id_111318b3
       target_field: prisma_cloud.host.repo_tag.id
       ignore_missing: true
   - rename:
       field: json.repoTag.registry
-      tag: rename_repoTag_registry
+      tag: rename_repoTag_registry_0ffaddff
       target_field: prisma_cloud.host.repo_tag.registry
       ignore_missing: true
   - rename:
       field: json.repoTag.repo
-      tag: rename_repoTag_repo
+      tag: rename_repoTag_repo_4f40711b
       target_field: prisma_cloud.host.repo_tag.repo
       ignore_missing: true
   - rename:
       field: json.repoTag.tag
-      tag: rename_repoTag_tag
+      tag: rename_repoTag_tag_6ba5bf4c
       target_field: prisma_cloud.host.repo_tag.value
       ignore_missing: true
   - rename:
       field: json.riskFactors
-      tag: rename_riskFactors
+      tag: rename_riskFactors_4930cb2a
       target_field: prisma_cloud.host.risk_factors
       ignore_missing: true
   - rename:
       field: json.rhelRepos
-      tag: rename_rhelRepos
+      tag: rename_rhelRepos_ed00d397
       target_field: prisma_cloud.host.rhel_repos
       ignore_missing: true
   - date:
       field: json.scanBuildDate
-      tag: date_scanBuildDate
+      tag: date_scanBuildDate_b4dd291e
       target_field: prisma_cloud.host.scan.build_date
       formats:
         - ISO8601
@@ -2209,7 +2209,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.scanDuration
-      tag: convert_scanDuration
+      tag: convert_scanDuration_fee75746
       target_field: prisma_cloud.host.scan.duration
       type: long
       ignore_missing: true
@@ -2221,12 +2221,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.scanId
-      tag: rename_scanId
+      tag: rename_scanId_cd363c7e
       target_field: prisma_cloud.host.scan.id
       ignore_missing: true
   - date:
       field: json.scanTime
-      tag: date_scanTime
+      tag: date_scanTime_f38f9a3a
       target_field: prisma_cloud.host.scan.time
       formats:
         - ISO8601
@@ -2238,28 +2238,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.scanVersion
-      tag: rename_scanVersion
+      tag: rename_scanVersion_db58d322
       target_field: prisma_cloud.host.scan.version
       ignore_missing: true
   - rename:
       field: json.Secrets
-      tag: rename_Secrets
+      tag: rename_Secrets_8b7ef261
       target_field: prisma_cloud.host.secrets
       ignore_missing: true
   - rename:
       field: json.startupBinaries
-      tag: rename_startupBinaries
+      tag: rename_startupBinaries_4aa20931
       target_field: prisma_cloud.host.startup_binaries
       ignore_missing: true
   - foreach:
       field: prisma_cloud.host.startup_binaries
-      tag: foreach_convert_startup_binaries_altered
+      tag: foreach_convert_startup_binaries_altered_baacb8a8
       if: ctx.prisma_cloud?.host?.startup_binaries instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.altered
-          tag: convert_startup_binaries_altered
+          tag: convert_startup_binaries_altered_03630d9b
           type: boolean
           ignore_missing: true
           on_failure:
@@ -2279,7 +2279,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.cveCount
-          tag: convert_startup_binaries_cveCount
+          tag: convert_startup_binaries_cveCount_47c8d78f
           target_field: _ingest._value.cve_count
           type: long
           ignore_missing: true
@@ -2300,7 +2300,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.fileMode
-          tag: convert_startup_binaries_fileMode
+          tag: convert_startup_binaries_fileMode_6bb9a01a
           target_field: _ingest._value.file_mode
           type: long
           ignore_missing: true
@@ -2320,7 +2320,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.functionLayer
-          tag: rename_startup_binaries_functionLayer
+          tag: rename_startup_binaries_functionLayer_78f163ed
           target_field: _ingest._value.function_layer
           ignore_missing: true
   - foreach:
@@ -2331,7 +2331,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.missingPkg
-          tag: convert_startup_binaries_missingPkg
+          tag: convert_startup_binaries_missingPkg_132c230e
           target_field: _ingest._value.missing_pkg
           type: boolean
           ignore_missing: true
@@ -2351,7 +2351,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.pkgRootDir
-          tag: rename_startup_binaries_pkgRootDir
+          tag: rename_startup_binaries_pkgRootDir_7a0df755
           target_field: _ingest._value.pkg_root_dir
           ignore_missing: true
   - foreach:
@@ -2366,10 +2366,10 @@ processors:
             - _ingest._value.fileMode
             - _ingest._value.missingPkg
           ignore_missing: true
-          tag: foreach_remove_startupBinaries_custom_duplicate_fields
+          tag: foreach_remove_startupBinaries_custom_duplicate_fields_9c207c51
   - convert:
       field: json.stopped
-      tag: convert_stopped
+      tag: convert_stopped_16b52a1a
       target_field: prisma_cloud.host.stopped
       type: boolean
       ignore_missing: true
@@ -2381,22 +2381,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.tags
-      tag: rename_tags
+      tag: rename_tags_eb47f061
       target_field: prisma_cloud.host.tags
       ignore_missing: true
   - rename:
       field: json.topLayer
-      tag: rename_topLayer
+      tag: rename_topLayer_9f1be132
       target_field: prisma_cloud.host.top_layer
       ignore_missing: true
   - rename:
       field: json.trustResult.hostsStatuses
-      tag: rename_hostsStatuses
+      tag: rename_hostsStatuses_178a1a31
       target_field: prisma_cloud.host.trust_result.hosts_statuses
       ignore_missing: true
   - rename:
       field: json.trustResult.groups
-      tag: rename_groups
+      tag: rename_groups_b270409f
       target_field: prisma_cloud.host.trust_result.groups
       ignore_missing: true
   - foreach:
@@ -2407,7 +2407,7 @@ processors:
       processor:
         append:
           field: group.name
-          tag: append_trust_result_groups_id_to_group_name
+          tag: append_trust_result_groups_id_to_group_name_ed64d173
           value: '{{{_ingest._value._id}}}'
           allow_duplicates: false
   - foreach:
@@ -2418,12 +2418,12 @@ processors:
       processor:
         convert:
           field: _ingest._value.disabled
-          tag: convert_trust_result_groups_disabled
+          tag: convert_trust_result_groups_disabled_3a095ba8
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_disabled
+                tag: remove_ingest_value_disabled_ca0444ae
                 field: _ingest._value.disabled
                 ignore_missing: true
             - append:
@@ -2455,7 +2455,7 @@ processors:
       processor:
         append:
           field: rule.name
-          tag: append_trust_result_groups_name_to_rule_name
+          tag: append_trust_result_groups_name_to_rule_name_3d235484
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
@@ -2466,7 +2466,7 @@ processors:
       processor:
         append:
           field: rule.author
-          tag: append_trust_result_groups_owner_to_rule_author
+          tag: append_trust_result_groups_owner_to_rule_author_5f89dd26
           value: '{{{_ingest._value.owner}}}'
           allow_duplicates: false
   - foreach:
@@ -2481,7 +2481,7 @@ processors:
             - _ingest._value.name
             - _ingest._value.owner
           ignore_missing: true
-          tag: foreach_remove_ecs_mapped_trustResult_fields
+          tag: foreach_remove_ecs_mapped_trustResult_fields_b4f89e4b
   - foreach:
       tag: foreach_prisma_cloud_host_trust_result_groups_4af10e88
       field: prisma_cloud.host.trust_result.groups
@@ -2490,17 +2490,17 @@ processors:
       processor:
         rename:
           field: _ingest._value.previousName
-          tag: rename_trust_result_groups_previousName
+          tag: rename_trust_result_groups_previousName_3d55c4c8
           target_field: _ingest._value.previous_name
           ignore_missing: true
   - rename:
       field: json.trustStatus
-      tag: rename_trustStatus
+      tag: rename_trustStatus_96d38409
       target_field: prisma_cloud.host.trust_status
       ignore_missing: true
   - convert:
       field: json.twistlockImage
-      tag: convert_twistlockImage
+      tag: convert_twistlockImage_015ac80d
       target_field: prisma_cloud.host.twistlock_image
       type: boolean
       ignore_missing: true
@@ -2512,17 +2512,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_7c046619
       target_field: prisma_cloud.host.type
       ignore_missing: true
   - set:
       field: host.type
-      tag: set_type_to_host_type
+      tag: set_type_to_host_type_9cd07c14
       copy_from: prisma_cloud.host.type
       ignore_empty_value: true
   - rename:
       field: json.vulnerabilities
-      tag: rename_vulnerabilities
+      tag: rename_vulnerabilities_f5feaa06
       target_field: prisma_cloud.host.vulnerabilities.data
       ignore_missing: true
   - foreach:
@@ -2533,7 +2533,7 @@ processors:
       processor:
         append:
           field: vulnerability.id
-          tag: append_vulnerabilities_data_cve_to_vulnerability_id
+          tag: append_vulnerabilities_data_cve_to_vulnerability_id_f3434471
           value: '{{{_ingest._value.cve}}}'
           allow_duplicates: false
   - foreach:
@@ -2544,12 +2544,12 @@ processors:
       processor:
         append:
           field: vulnerability.severity
-          tag: append__vulnerabilities_data_severity
+          tag: append__vulnerabilities_data_severity_9996261f
           value: '{{{_ingest._value.severity}}}'
           allow_duplicates: false
   - convert:
       field: json.vulnerabilitiesCount
-      tag: convert_vulnerabilitiesCount
+      tag: convert_vulnerabilitiesCount_9904f96f
       target_field: prisma_cloud.host.vulnerabilities.count
       type: long
       ignore_missing: true
@@ -2561,7 +2561,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: remove_host_vulnerabilities_data_except_cve
+      tag: remove_host_vulnerabilities_data_except_cve_1e158ec3
       description: Remove generic vulnerability information
       if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List
       source: |-
@@ -2575,7 +2575,7 @@ processors:
         }
   - convert:
       field: json.vulnerabilityDistribution.critical
-      tag: convert_vulnerabilityDistribution_critical
+      tag: convert_vulnerabilityDistribution_critical_e20daac8
       target_field: prisma_cloud.host.vulnerability.distribution.critical
       type: long
       ignore_missing: true
@@ -2587,7 +2587,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.vulnerabilityDistribution.high
-      tag: convert_vulnerabilityDistribution_high
+      tag: convert_vulnerabilityDistribution_high_2204daf8
       target_field: prisma_cloud.host.vulnerability.distribution.high
       type: long
       ignore_missing: true
@@ -2599,7 +2599,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.vulnerabilityDistribution.low
-      tag: convert_vulnerabilityDistribution_low
+      tag: convert_vulnerabilityDistribution_low_32aacf41
       target_field: prisma_cloud.host.vulnerability.distribution.low
       type: long
       ignore_missing: true
@@ -2611,7 +2611,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.vulnerabilityDistribution.medium
-      tag: convert_vulnerabilityDistribution_medium
+      tag: convert_vulnerabilityDistribution_medium_a44956d8
       target_field: prisma_cloud.host.vulnerability.distribution.medium
       type: long
       ignore_missing: true
@@ -2623,7 +2623,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.vulnerabilityDistribution.total
-      tag: convert_vulnerabilityDistribution_total
+      tag: convert_vulnerabilityDistribution_total_407f4c41
       target_field: prisma_cloud.host.vulnerability.distribution.total
       type: long
       ignore_missing: true
@@ -2635,7 +2635,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.vulnerabilityRiskScore
-      tag: convert_vulnerabilityRiskScore
+      tag: convert_vulnerabilityRiskScore_d9cd020c
       target_field: prisma_cloud.host.vulnerability.risk_score
       type: long
       ignore_missing: true
@@ -2647,7 +2647,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.wildFireUsage.bytes
-      tag: convert_wildFireUsage_bytes
+      tag: convert_wildFireUsage_bytes_6217b160
       target_field: prisma_cloud.host.wild_fire_usage.bytes
       type: long
       ignore_missing: true
@@ -2659,7 +2659,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.wildFireUsage.queries
-      tag: convert_wildFireUsage_queries
+      tag: convert_wildFireUsage_queries_0302a5ab
       target_field: prisma_cloud.host.wild_fire_usage.queries
       type: long
       ignore_missing: true
@@ -2671,7 +2671,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.wildFireUsage.uploads
-      tag: convert_wildFireUsage_uploads
+      tag: convert_wildFireUsage_uploads_d984a5c9
       target_field: prisma_cloud.host.wild_fire_usage.uploads
       type: long
       ignore_missing: true
@@ -2700,7 +2700,7 @@ processors:
         - prisma_cloud.host.installed_products.swarmManager
         - prisma_cloud.host.installed_products.swarmNode
       ignore_missing: true
-      tag: remove_json
+      tag: remove_json_e3db8ea3
   - remove:
       field:
         - prisma_cloud.host._id
@@ -2718,7 +2718,7 @@ processors:
         - prisma_cloud.host.type
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_b59863e9
   - script:
       lang: painless
       source: |-
@@ -2736,7 +2736,7 @@ processors:
         }
         drop(ctx);
       description: Drops null/empty values recursively.
-      tag: script_drop_null_values
+      tag: script_drop_null_values_dcaa3da9
       on_failure:
         - append:
             tag: append_error_message_d707d903
@@ -2744,7 +2744,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_in_event_kind
+      tag: set_pipeline_error_in_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -2763,7 +2763,7 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

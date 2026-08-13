@@ -4,41 +4,41 @@ processors:
   - set:
       field: ecs.version
       value: 8.17.0
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
   - rename:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
-      tag: rename_azure
+      tag: rename_azure_aac23e8a
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - set:
       field: event.category
       value: [intrusion_detection]
-      tag: set_event_category
+      tag: set_event_category_b3816f55
   - set:
       field: event.type
       value: [info]
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
-      tag: json_to_split_message
+      tag: json_to_split_message_a68ecd77
       on_failure:
         - append:
             tag: append_error_message_9eb640d9
@@ -48,7 +48,7 @@ processors:
       lang: painless
       description: This script convert the json object key into lowercase.
       if: ctx.json != null
-      tag: script_to_convert_json_object_key_into_lowercase
+      tag: script_to_convert_json_object_key_into_lowercase_775641cb
       source: |
         void handleMap(Map map) {
          for (def x: map.values()) {
@@ -80,7 +80,7 @@ processors:
   - set:
       field: event.type
       value: [indicator]
-      tag: set_event_type_ff44567c
+      tag: set_event_type_2337268d
       if: |
         ctx.json?.alerttype != null && [
           'arm_anomalousserviceoperation.credentialaccess',
@@ -115,7 +115,7 @@ processors:
   - set:
       field: event.category
       value: [api]
-      tag: set_event_category_6b727ed8
+      tag: set_event_category_76dddfb7
       if: |
         ctx.json?.alerttype != null && [
           'api_populationspikeinapitraffic',
@@ -134,7 +134,7 @@ processors:
   - set:
       field: event.category
       value: [authentication]
-      tag: set_event_category_df2ba165
+      tag: set_event_category_e412cb58
       if: |
         ctx.json?.alerttype != null && [
           'vm_loginbruteforcesuccess',
@@ -206,7 +206,7 @@ processors:
   - set:
       field: event.category
       value: [configuration]
-      tag: set_event_category_8fdf0a9d
+      tag: set_event_category_17333c63
       if: |
         ctx.json?.alerttype != null && [
           'k8s_exposedpostgrestrustauth',
@@ -216,7 +216,7 @@ processors:
   - set:
       field: event.category
       value: [malware]
-      tag: set_event_category_8a7abe38
+      tag: set_event_category_182c4dca
       if: |
         ctx.json?.alerttype != null && [
           'vm_ammalwarecampaignrelatedexclusion',
@@ -292,7 +292,7 @@ processors:
   - set:
       field: event.category
       value: [network]
-      tag: set_event_category_61003cbe
+      tag: set_event_category_dd5c8313
       if: |
         ctx.json?.alerttype != null && [
           'vm_filelessattackbehavior.windows',
@@ -332,7 +332,7 @@ processors:
   - set:
       field: event.category
       value: [threat]
-      tag: set_event_category_66127364
+      tag: set_event_category_6456482a
       if: |
         ctx.json?.alerttype != null && [
           'arm_anomalousserviceoperation.credentialaccess',
@@ -366,48 +366,48 @@ processors:
   - rename:
       field: json.$type
       target_field: microsoft_defender_cloud.event.event_type
-      tag: rename_type
+      tag: rename_type_4f5e76c6
       ignore_missing: true
   - rename:
       field: json.agentid
       target_field: microsoft_defender_cloud.event.agent_id
-      tag: rename_agent_id
+      tag: rename_agent_id_cb79a626
       ignore_missing: true
   - rename:
       field: json.alertdisplayname
       target_field: microsoft_defender_cloud.event.display_name
-      tag: rename_alert_display_name
+      tag: rename_alert_display_name_ccddc4c5
       ignore_missing: true
   - rename:
       field: json.alerttype
       target_field: microsoft_defender_cloud.event.alert_type
-      tag: rename_alert_type
+      tag: rename_alert_type_d96ced3b
       ignore_missing: true
   - rename:
       field: json.alerturi
       target_field: microsoft_defender_cloud.event.uri
-      tag: rename_alert_uri
+      tag: rename_alert_uri_a2d119fc
       ignore_missing: true
   - set:
       field: event.reference
       copy_from: microsoft_defender_cloud.event.uri
-      tag: set_event_reference
+      tag: set_event_reference_ffc6581f
       ignore_empty_value: true
   - rename:
       field: json.assessmenteventdataenrichment.action
       target_field: microsoft_defender_cloud.event.assessment_event_data_enrichment.action
-      tag: rename_assessment_event_data_enrichment_action
+      tag: rename_assessment_event_data_enrichment_action_ecfeff4a
       ignore_missing: true
   - rename:
       field: json.assessmenteventdataenrichment.apiversion
       target_field: microsoft_defender_cloud.event.assessment_event_data_enrichment.api_version
-      tag: rename_assessment_event_data_enrichment_api_version
+      tag: rename_assessment_event_data_enrichment_api_version_d0440401
       ignore_missing: true
   - convert:
       field: json.assessmenteventdataenrichment.issnapshot
       target_field: microsoft_defender_cloud.event.assessment_event_data_enrichment.is_snapshot
       type: boolean
-      tag: convert_assessment_event_data_enrichment_is_snapshot_to_boolean
+      tag: convert_assessment_event_data_enrichment_is_snapshot_to_boolean_4814e87d
       ignore_missing: true
       if: ctx.json?.assessmenteventdataenrichment?.issnapshot != ''
       on_failure:
@@ -418,42 +418,42 @@ processors:
   - rename:
       field: json.azureresourceid
       target_field: microsoft_defender_cloud.event.azure_resource_id
-      tag: rename_azure_resource_id
+      tag: rename_azure_resource_id_1b5c0203
       ignore_missing: true
   - rename:
       field: json.compromisedentity
       target_field: microsoft_defender_cloud.event.compromised_entity
-      tag: rename_compromised_entity
+      tag: rename_compromised_entity_e8d341f1
       ignore_missing: true
   - rename:
       field: json.confidencelevel
       target_field: microsoft_defender_cloud.event.confidence.level
-      tag: rename_confidence_level
+      tag: rename_confidence_level_be7ea645
       ignore_missing: true
   - rename:
       field: json.confidencereasons
       target_field: microsoft_defender_cloud.event.confidence.reasons
-      tag: rename_confidence_reasons
+      tag: rename_confidence_reasons_83e0b23d
       ignore_missing: true
   - rename:
       field: json.confidencescore
       target_field: microsoft_defender_cloud.event.confidence.score
-      tag: rename_confidence_score
+      tag: rename_confidence_score_b10e934d
       ignore_missing: true
   - rename:
       field: json.correlationkey
       target_field: microsoft_defender_cloud.event.correlation_key
-      tag: rename_correlation_key
+      tag: rename_correlation_key_75ed6609
       ignore_missing: true
   - rename:
       field: json.description
       target_field: microsoft_defender_cloud.event.description
-      tag: rename_description
+      tag: rename_description_e37b5262
       ignore_missing: true
   - date:
       field: json.endtimeutc
       target_field: microsoft_defender_cloud.event.end_time_utc
-      tag: date_end_time_utc
+      tag: date_end_time_utc_0f18d880
       formats:
         - ISO8601
       if: ctx.json?.endtimeutc != null && ctx.json.endtimeutc != ''
@@ -465,7 +465,7 @@ processors:
   - set:
       field: event.end
       copy_from: microsoft_defender_cloud.event.end_time_utc
-      tag: set_event_end
+      tag: set_event_end_57de7c4f
       ignore_empty_value: true
   - script:
       lang: painless
@@ -527,7 +527,7 @@ processors:
         "locationtype": "location_type"
         "threattype": "type"
         "upnsuffix": "upn_suffix"
-      tag: painless_to_rename_fields_under_entities_object
+      tag: painless_to_rename_fields_under_entities_object_c4e0daf4
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -576,7 +576,7 @@ processors:
   - rename:
       field: entities_obj
       target_field: microsoft_defender_cloud.event.entities
-      tag: rename_entities_obj
+      tag: rename_entities_obj_4f226a58
       ignore_missing: true
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_c4b5cd86
@@ -587,7 +587,7 @@ processors:
         append:
           field: cloud.provider
           value: '{{{_ingest._value.location.cloud_provider}}}'
-          tag: append_location_cloud_provider_into_cloud_provider
+          tag: append_location_cloud_provider_into_cloud_provider_3ac17920
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_9b2e0b0b
@@ -598,12 +598,12 @@ processors:
         date:
           field: _ingest._value.creation_time_utc
           target_field: _ingest._value.creation_time_utc
-          tag: date_entities_creation_time_utc
+          tag: date_entities_creation_time_utc_64aba1e6
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_creation_time_utc
+                tag: remove_ingest_value_creation_time_utc_c83d545f
                 field: _ingest._value.creation_time_utc
                 ignore_missing: true
   - foreach:
@@ -615,12 +615,12 @@ processors:
         date:
           field: _ingest._value.end_time_utc
           target_field: _ingest._value.end_time_utc
-          tag: date_entities_end_time_utc
+          tag: date_entities_end_time_utc_19e0b9a1
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_end_time_utc
+                tag: remove_ingest_value_end_time_utc_2aff49fe
                 field: _ingest._value.end_time_utc
                 ignore_missing: true
   - foreach:
@@ -632,12 +632,12 @@ processors:
         date:
           field: _ingest._value.start_time_utc
           target_field: _ingest._value.start_time_utc
-          tag: date_entities_start_time_utc
+          tag: date_entities_start_time_utc_4e516cf2
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_start_time_utc
+                tag: remove_ingest_value_start_time_utc_96ec0b90
                 field: _ingest._value.start_time_utc
                 ignore_missing: true
   - foreach:
@@ -649,7 +649,7 @@ processors:
         append:
           field: container.id
           value: '{{{_ingest._value.container_id}}}'
-          tag: append_container_id_into_container_id
+          tag: append_container_id_into_container_id_113588af
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_2cbc34bb
@@ -660,7 +660,7 @@ processors:
         append:
           field: host.domain
           value: '{{{_ingest._value.domain_name}}}'
-          tag: append_domain_name_into_host_domain
+          tag: append_domain_name_into_host_domain_f8ef8d16
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_b1195879
@@ -671,7 +671,7 @@ processors:
         append:
           field: related.hosts
           value: '{{{_ingest._value.domain_name}}}'
-          tag: append_domain_name_into_related_hosts
+          tag: append_domain_name_into_related_hosts_69ecfdc0
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_d4bdf701
@@ -682,7 +682,7 @@ processors:
         append:
           field: host.geo.city_name
           value: '{{{_ingest._value.location.city}}}'
-          tag: append_location_city_into_host_geo_city_name
+          tag: append_location_city_into_host_geo_city_name_08dd6133
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_6a3ae623
@@ -693,7 +693,7 @@ processors:
         append:
           field: host.geo.country_iso_code
           value: '{{{_ingest._value.location.country_code}}}'
-          tag: append_location_country_code_into_host_geo_country_iso_code
+          tag: append_location_country_code_into_host_geo_country_iso_code_99713233
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_c030255b
@@ -704,7 +704,7 @@ processors:
         append:
           field: host.geo.country_name
           value: '{{{_ingest._value.location.country_name}}}'
-          tag: append_location_country_name_into_host_geo_country_name
+          tag: append_location_country_name_into_host_geo_country_name_6dd31e04
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_00203e48
@@ -715,15 +715,15 @@ processors:
         convert:
           field: _ingest._value.location.latitude
           type: double
-          tag: convert_location_latitude_to_double
+          tag: convert_location_latitude_to_double_9ee8be66
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_location_latitude
+                tag: remove_ingest_value_location_latitude_09bb796b
                 field: _ingest._value.location.latitude
                 ignore_missing: true
             - append:
-                tag: append_error_message
+                tag: append_error_message_5d21d211
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -735,11 +735,11 @@ processors:
         convert:
           field: _ingest._value.location.longitude
           type: double
-          tag: convert_location_longitude_to_double
+          tag: convert_location_longitude_to_double_c10a3cbf
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_location_longitude
+                tag: remove_ingest_value_location_longitude_5b2c01cf
                 field: _ingest._value.location.longitude
                 ignore_missing: true
             - append:
@@ -755,7 +755,7 @@ processors:
         append:
           field: host.hostname
           value: '{{{_ingest._value.host_name}}}'
-          tag: append_host_name_into_host_hostname
+          tag: append_host_name_into_host_hostname_55401744
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_4fc982c1
@@ -766,7 +766,7 @@ processors:
         append:
           field: related.hosts
           value: '{{{_ingest._value.host_name}}}'
-          tag: append_host_name_into_related_hosts
+          tag: append_host_name_into_related_hosts_c50a8868
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_0b278598
@@ -777,7 +777,7 @@ processors:
         append:
           field: host.os.family
           value: '{{{_ingest._value.os_family}}}'
-          tag: append_os_family_into_host_os_family
+          tag: append_os_family_into_host_os_family_cc73c7fb
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_a01a9551
@@ -787,7 +787,7 @@ processors:
       processor:
         lowercase:
           field: _ingest._value.protocol
-          tag: lowercase_protocol
+          tag: lowercase_protocol_18ab6e0f
           ignore_missing: true
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_964de64b
@@ -798,7 +798,7 @@ processors:
         append:
           field: network.transport
           value: '{{{_ingest._value.protocol}}}'
-          tag: append_protocol_into_network_transport
+          tag: append_protocol_into_network_transport_9c12f9b2
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_718a7ffd
@@ -809,7 +809,7 @@ processors:
         append:
           field: process.entity_id
           value: '{{{_ingest._value.process_id}}}'
-          tag: append_process_id_into_process_entity_id
+          tag: append_process_id_into_process_entity_id_ee6cc252
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_6a03db08
@@ -820,11 +820,11 @@ processors:
         convert:
           field: _ingest._value.address
           type: ip
-          tag: convert_address_to_ip
+          tag: convert_address_to_ip_9d713610
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_address
+                tag: remove_ingest_value_address_5355e700
                 field: _ingest._value.address
                 ignore_missing: true
             - append:
@@ -840,7 +840,7 @@ processors:
         append:
           field: related.ip
           value: '{{{_ingest._value.address}}}'
-          tag: append_address_into_related_ip
+          tag: append_address_into_related_ip_e03f22c5
           allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_dacdf1e0
@@ -849,7 +849,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_ip_addresses
+          tag: foreach_ingest_value_ip_addresses_9f5f7012
           field: _ingest._value.ip_addresses
           ignore_missing: true
           ignore_failure: true
@@ -857,7 +857,7 @@ processors:
             convert:
               field: _ingest._value.address
               type: ip
-              tag: convert_ip_addresses_address_to_ip
+              tag: convert_ip_addresses_address_to_ip_01e0a9e8
               ignore_missing: true
               on_failure:
                 - remove:
@@ -883,7 +883,7 @@ processors:
             append:
               field: related.ip
               value: '{{{_ingest._value.address}}}'
-              tag: append_address_into_related_ip_2bb93a04
+              tag: append_address_into_related_ip_daab77d1
               allow_duplicates: false
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_991075d0
@@ -894,11 +894,11 @@ processors:
         convert:
           field: _ingest._value.asset
           type: boolean
-          tag: convert_asset_to_boolean
+          tag: convert_asset_to_boolean_af1b47fd
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_asset
+                tag: remove_ingest_value_asset_805d5ceb
                 field: _ingest._value.asset
                 ignore_missing: true
             - append:
@@ -920,7 +920,7 @@ processors:
             convert:
               field: _ingest._value.asset
               type: boolean
-              tag: convert_ip_addresses_asset_to_boolean
+              tag: convert_ip_addresses_asset_to_boolean_0d5613d7
               ignore_missing: true
               on_failure:
                 - remove:
@@ -946,11 +946,11 @@ processors:
             convert:
               field: _ingest._value.location.asn
               type: long
-              tag: convert_ip_addresses_location_asn_to_long
+              tag: convert_ip_addresses_location_asn_to_long_5318b5ca
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_location_asn
+                    tag: remove_ingest_value_location_asn_b3049c71
                     field: _ingest._value.location.asn
                     ignore_missing: true
                 - append:
@@ -966,11 +966,11 @@ processors:
         convert:
           field: _ingest._value.is_domain_joined
           type: boolean
-          tag: convert_is_domain_joined_to_boolean
+          tag: convert_is_domain_joined_to_boolean_607d96aa
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_is_domain_joined
+                tag: remove_ingest_value_is_domain_joined_1e6a7fb2
                 field: _ingest._value.is_domain_joined
                 ignore_missing: true
             - append:
@@ -986,11 +986,11 @@ processors:
         convert:
           field: _ingest._value.is_valid
           type: boolean
-          tag: convert_is_valid_to_boolean
+          tag: convert_is_valid_to_boolean_671a929a
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_ingest_value_is_valid
+                tag: remove_ingest_value_is_valid_57f4d552
                 field: _ingest._value.is_valid
                 ignore_missing: true
             - append:
@@ -1006,7 +1006,7 @@ processors:
         convert:
           field: _ingest._value.location.asn
           type: long
-          tag: convert_location_asn_to_long
+          tag: convert_location_asn_to_long_1eb4eb15
           ignore_missing: true
           on_failure:
             - remove:
@@ -1025,7 +1025,7 @@ processors:
       processor:
         uri_parts:
           field: _ingest._value.url
-          tag: uri_parts_url
+          tag: uri_parts_url_1ddaa335
           ignore_failure: true
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_9cf140e6
@@ -1034,7 +1034,7 @@ processors:
       ignore_failure: true
       processor:
         foreach:
-          tag: foreach_ingest_value_threat_intelligence
+          tag: foreach_ingest_value_threat_intelligence_23b2611c
           field: _ingest._value.threat_intelligence
           ignore_missing: true
           ignore_failure: true
@@ -1042,11 +1042,11 @@ processors:
             convert:
               field: _ingest._value.confidence
               type: double
-              tag: convert_threat_intelligence_confidence_to_double
+              tag: convert_threat_intelligence_confidence_to_double_1555f8f1
               ignore_missing: true
               on_failure:
                 - remove:
-                    tag: remove_ingest_value_confidence
+                    tag: remove_ingest_value_confidence_de62912d
                     field: _ingest._value.confidence
                     ignore_missing: true
                 - append:
@@ -1066,7 +1066,7 @@ processors:
         "workspaceid": "workspace_id"
         "workspaceresourcegroup": "workspace_resource_group"
         "workspacesubscriptionid": "workspace_subscription_id"
-      tag: script_to_rename_fields_under_resource_identifiers_object
+      tag: script_to_rename_fields_under_resource_identifiers_object_49aed76d
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -1111,33 +1111,33 @@ processors:
   - rename:
       field: resource_identifier_obj
       target_field: microsoft_defender_cloud.event.resource_identifiers
-      tag: rename_resource_identifier_obj
+      tag: rename_resource_identifier_obj_b5216571
       ignore_missing: true
   - rename:
       field: json.extendedlinks
       target_field: microsoft_defender_cloud.event.extended_links
-      tag: rename_extended_links
+      tag: rename_extended_links_d49fcb59
       ignore_missing: true
   - rename:
       field: json.extendedproperties
       target_field: microsoft_defender_cloud.event.extended_properties
-      tag: rename_extended_properties
+      tag: rename_extended_properties_e117733e
       ignore_missing: true
   - rename:
       field: json.id
       target_field: microsoft_defender_cloud.event.id
-      tag: rename_id
+      tag: rename_id_10d25bea
       ignore_missing: true
   - rename:
       field: json.intent
       target_field: microsoft_defender_cloud.event.intent
-      tag: rename_intent
+      tag: rename_intent_ebd8af82
       ignore_missing: true
   - convert:
       field: json.isincident
       target_field: microsoft_defender_cloud.event.is_incident
       type: boolean
-      tag: convert_is_incident_to_boolean
+      tag: convert_is_incident_to_boolean_9447265e
       ignore_missing: true
       if: ctx.json?.isincident != ''
       on_failure:
@@ -1148,22 +1148,22 @@ processors:
   - rename:
       field: json.kind
       target_field: microsoft_defender_cloud.event.kind
-      tag: rename_kind
+      tag: rename_kind_75f359c7
       ignore_missing: true
   - rename:
       field: json.location
       target_field: microsoft_defender_cloud.event.location
-      tag: rename_location
+      tag: rename_location_0d5dba31
       ignore_missing: true
   - rename:
       field: json.name
       target_field: microsoft_defender_cloud.event.name
-      tag: rename_name
+      tag: rename_name_e0f17772
       ignore_missing: true
   - date:
       field: json.processingendtime
       target_field: microsoft_defender_cloud.event.processing_end_time
-      tag: date_processing_end_time
+      tag: date_processing_end_time_892a742d
       formats:
         - ISO8601
       if: ctx.json?.processingendtime != null && ctx.json.processingendtime != ''
@@ -1175,48 +1175,48 @@ processors:
   - rename:
       field: json.productname
       target_field: microsoft_defender_cloud.event.product.name
-      tag: rename_product_name
+      tag: rename_product_name_a0d0ed1b
       ignore_missing: true
   - set:
       field: event.provider
       copy_from: microsoft_defender_cloud.event.product.name
-      tag: set_event_provider
+      tag: set_event_provider_d9b1a74d
       ignore_empty_value: true
   - rename:
       field: json.properties.$type
       target_field: microsoft_defender_cloud.event.properties.type
-      tag: rename_properties_type
+      tag: rename_properties_type_a4e1790c
       ignore_missing: true
   - rename:
       field: json.properties.assessmentdetailslink
       target_field: microsoft_defender_cloud.event.properties.assessment.details_link
-      tag: rename_properties_assessment_details_link
+      tag: rename_properties_assessment_details_link_eed53016
       ignore_missing: true
   - rename:
       field: json.properties.assessmenttype
       target_field: microsoft_defender_cloud.event.properties.assessment.type
-      tag: rename_properties.assessment_type
+      tag: rename_properties.assessment_type_d7142c64
       ignore_missing: true
   - rename:
       field: json.properties.category
       target_field: microsoft_defender_cloud.event.properties.category
-      tag: rename_properties_category
+      tag: rename_properties_category_ecf80162
       ignore_missing: true
   - rename:
       field: json.properties.definition.id
       target_field: microsoft_defender_cloud.event.properties.definition.id
-      tag: rename_properties_definition_id
+      tag: rename_properties_definition_id_600e44cb
       ignore_missing: true
   - rename:
       field: json.properties.definition.name
       target_field: microsoft_defender_cloud.event.properties.definition.name
-      tag: rename_properties_definition_name
+      tag: rename_properties_definition_name_d49b3e6f
       ignore_missing: true
   - convert:
       field: json.properties.definition.properties.assessmentdefinitions
       target_field: microsoft_defender_cloud.event.properties.assessment.definitions
       type: string
-      tag: convert_properties_definition_properties_assessment_definitions_to_string
+      tag: convert_properties_definition_properties_assessment_definitions_to_string_4e024549
       ignore_missing: true
       if: ctx.json?.properties?.definition?.properties?.assessmentdefinitions != ''
       on_failure:
@@ -1227,13 +1227,13 @@ processors:
   - rename:
       field: json.properties.definition.properties.displayname
       target_field: microsoft_defender_cloud.event.properties.definition.display_name
-      tag: rename_properties_definition_properties_display_name
+      tag: rename_properties_definition_properties_display_name_c6558cd5
       ignore_missing: true
   - convert:
       field: json.properties.definition.properties.maxscore
       target_field: microsoft_defender_cloud.event.properties.definition.max_score
       type: long
-      tag: convert_properties_definition_properties_max_score_to_long
+      tag: convert_properties_definition_properties_max_score_to_long_34f9bb1b
       ignore_missing: true
       if: ctx.json?.properties?.definition?.properties?.maxscore != ''
       on_failure:
@@ -1244,33 +1244,33 @@ processors:
   - rename:
       field: json.properties.definition.properties.source.sourcetype
       target_field: microsoft_defender_cloud.event.properties.definition.source_type
-      tag: rename_properties_definition_properties_source_source_type
+      tag: rename_properties_definition_properties_source_source_type_0e51f137
       ignore_missing: true
   - rename:
       field: json.properties.definition.type
       target_field: microsoft_defender_cloud.event.properties.definition.type
-      tag: rename_properties_definition_type
+      tag: rename_properties_definition_type_eff87e1b
       ignore_missing: true
   - rename:
       field: json.properties.description
       target_field: microsoft_defender_cloud.event.properties.description
-      tag: rename_properties_description
+      tag: rename_properties_description_cebd30dd
       ignore_missing: true
   - rename:
       field: json.properties.displayname
       target_field: microsoft_defender_cloud.event.properties.display_name
-      tag: rename_properties_display_name
+      tag: rename_properties_display_name_118cf794
       ignore_missing: true
   - rename:
       field: json.properties.environment
       target_field: microsoft_defender_cloud.event.properties.environment
-      tag: rename_properties_environment
+      tag: rename_properties_environment_01eb6ff3
       ignore_missing: true
   - convert:
       field: json.properties.failedresources
       target_field: microsoft_defender_cloud.event.properties.failed_resources
       type: long
-      tag: convert_properties_failed_resources_to_long
+      tag: convert_properties_failed_resources_to_long_b99010a1
       ignore_missing: true
       if: ctx.json?.properties?.failedresources != ''
       on_failure:
@@ -1282,7 +1282,7 @@ processors:
       field: json.properties.healthyresourcecount
       target_field: microsoft_defender_cloud.event.properties.healthy_resource_count
       type: long
-      tag: convert_properties_healthy_resource_count_to_long
+      tag: convert_properties_healthy_resource_count_to_long_e84ff254
       ignore_missing: true
       if: ctx.json?.properties?.healthyresourcecount != ''
       on_failure:
@@ -1293,53 +1293,53 @@ processors:
   - rename:
       field: json.properties.id
       target_field: microsoft_defender_cloud.event.properties.id
-      tag: rename_properties_id
+      tag: rename_properties_id_e34d9b36
       ignore_missing: true
   - rename:
       field: json.properties.impact
       target_field: microsoft_defender_cloud.event.properties.impact
-      tag: rename_properties_impact
+      tag: rename_properties_impact_ed435e36
       ignore_missing: true
   - rename:
       field: json.properties.links.azureportal
       target_field: microsoft_defender_cloud.event.properties.links.azure_portal
-      tag: rename_properties_links_azure_portal
+      tag: rename_properties_links_azure_portal_b248add3
       ignore_missing: true
   - rename:
       field: json.properties.metadata.assessmenttype
       target_field: microsoft_defender_cloud.event.properties.metadata.assessment_type
-      tag: rename_properties_metadata_assessment_type
+      tag: rename_properties_metadata_assessment_type_479be27a
       ignore_missing: true
   - rename:
       field: json.properties.metadata.categories
       target_field: microsoft_defender_cloud.event.properties.metadata.categories
-      tag: rename_properties_metadata_categories
+      tag: rename_properties_metadata_categories_c353a1cb
       ignore_missing: true
   - rename:
       field: json.properties.metadata.description
       target_field: microsoft_defender_cloud.event.properties.metadata.description
-      tag: rename_properties_metadata_description
+      tag: rename_properties_metadata_description_02853fd4
       ignore_missing: true
   - rename:
       field: json.properties.metadata.displayname
       target_field: microsoft_defender_cloud.event.properties.metadata.display_name
-      tag: rename_properties_metadata_display_name
+      tag: rename_properties_metadata_display_name_4739df0c
       ignore_missing: true
   - rename:
       field: json.properties.metadata.implementationeffort
       target_field: microsoft_defender_cloud.event.properties.metadata.implementation_effort
-      tag: rename_properties_metadata_implementation_effort
+      tag: rename_properties_metadata_implementation_effort_c6e597ee
       ignore_missing: true
   - rename:
       field: json.properties.metadata.policydefinitionid
       target_field: microsoft_defender_cloud.event.properties.metadata.policy_definition_id
-      tag: rename_properties_metadata_policy_definition_id
+      tag: rename_properties_metadata_policy_definition_id_2e3bd4be
       ignore_missing: true
   - convert:
       field: json.properties.metadata.preview
       target_field: microsoft_defender_cloud.event.properties.metadata.preview
       type: boolean
-      tag: convert_properties_metadata_preview_to_boolean
+      tag: convert_properties_metadata_preview_to_boolean_b9a59bdf
       ignore_missing: true
       if: ctx.json?.properties?.metadata?.preview != ''
       on_failure:
@@ -1350,28 +1350,28 @@ processors:
   - rename:
       field: json.properties.metadata.remediationdescription
       target_field: microsoft_defender_cloud.event.properties.metadata.remediation_description
-      tag: rename_properties_metadata_remediation_description
+      tag: rename_properties_metadata_remediation_description_f520ccaf
       ignore_missing: true
   - rename:
       field: json.properties.metadata.severity
       target_field: microsoft_defender_cloud.event.properties.metadata.severity
-      tag: rename_properties_metadata_severity
+      tag: rename_properties_metadata_severity_d14044a9
       ignore_missing: true
   - rename:
       field: json.properties.metadata.threats
       target_field: microsoft_defender_cloud.event.properties.metadata.threats
-      tag: rename_properties_metadata_threats
+      tag: rename_properties_metadata_threats_1e18330c
       ignore_missing: true
   - rename:
       field: json.properties.metadata.userimpact
       target_field: microsoft_defender_cloud.event.properties.metadata.user_impact
-      tag: rename_properties_metadata_user_impact
+      tag: rename_properties_metadata_user_impact_7a3ce4d2
       ignore_missing: true
   - convert:
       field: json.properties.notapplicableresourcecount
       target_field: microsoft_defender_cloud.event.properties.not_applicable_resource_count
       type: long
-      tag: convert_properties_not_applicable_resource_count_to_long
+      tag: convert_properties_not_applicable_resource_count_to_long_44dcb88b
       ignore_missing: true
       if: ctx.json?.properties?.notapplicableresourcecount != ''
       on_failure:
@@ -1383,7 +1383,7 @@ processors:
       field: json.properties.passedresources
       target_field: microsoft_defender_cloud.event.properties.passed_resources
       type: long
-      tag: convert_properties_passed_resources_to_long
+      tag: convert_properties_passed_resources_to_long_29aa167a
       ignore_missing: true
       if: ctx.json?.properties?.passedresources != ''
       on_failure:
@@ -1394,48 +1394,48 @@ processors:
   - rename:
       field: json.properties.remediation
       target_field: microsoft_defender_cloud.event.properties.remediation
-      tag: rename_properties_remediation
+      tag: rename_properties_remediation_59cb7555
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.$type
       target_field: microsoft_defender_cloud.event.properties.resource_details.type
-      tag: rename_properties_resourcedetails_type
+      tag: rename_properties_resourcedetails_type_5a8b05dd
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.id
       target_field: microsoft_defender_cloud.event.properties.resource_details.id
-      tag: rename_properties_resource_details_id
+      tag: rename_properties_resource_details_id_eea3e881
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.machinename
       target_field: microsoft_defender_cloud.event.properties.resource_details.machine_name
-      tag: rename_properties_resource_details_machine_name
+      tag: rename_properties_resource_details_machine_name_659e5392
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.source
       target_field: microsoft_defender_cloud.event.properties.resource_details.source
-      tag: rename_properties_resource_details_source
+      tag: rename_properties_resource_details_source_7bdfb24f
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.sourcecomputerid
       target_field: microsoft_defender_cloud.event.properties.resource_details.source_computer_id
-      tag: rename_properties_resource_details_source_computer_id
+      tag: rename_properties_resource_details_source_computer_id_2a61002e
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.vmuuid
       target_field: microsoft_defender_cloud.event.properties.resource_details.vm_uuid
-      tag: rename_properties_resource_details_vm_uuid
+      tag: rename_properties_resource_details_vm_uuid_34c4c48e
       ignore_missing: true
   - rename:
       field: json.properties.resourcedetails.workspaceid
       target_field: microsoft_defender_cloud.event.properties.resource_details.workspace_id
-      tag: rename_properties_resource_details_workspace_id
+      tag: rename_properties_resource_details_workspace_id_6b183b79
       ignore_missing: true
   - convert:
       field: json.properties.score.current
       target_field: microsoft_defender_cloud.event.properties.score.current
       type: double
-      tag: convert_properties_score_current_to_double
+      tag: convert_properties_score_current_to_double_887eef0c
       ignore_missing: true
       if: ctx.json?.properties?.score?.current != ''
       on_failure:
@@ -1447,7 +1447,7 @@ processors:
       field: json.properties.score.max
       target_field: microsoft_defender_cloud.event.properties.score.max
       type: long
-      tag: convert_properties_score_max_to_long
+      tag: convert_properties_score_max_to_long_ab053f15
       ignore_missing: true
       if: ctx.json?.properties?.score?.max != ''
       on_failure:
@@ -1459,7 +1459,7 @@ processors:
       field: json.properties.score.percentage
       target_field: microsoft_defender_cloud.event.properties.score.percentage
       type: double
-      tag: convert_properties_score_percentage_to_double
+      tag: convert_properties_score_percentage_to_double_178f95db
       ignore_missing: true
       if: ctx.json?.properties?.score?.percentage != ''
       on_failure:
@@ -1471,7 +1471,7 @@ processors:
       field: json.properties.skippedresources
       target_field: microsoft_defender_cloud.event.properties.skipped_resources
       type: long
-      tag: convert_properties_skipped_resources_to_long
+      tag: convert_properties_skipped_resources_to_long_39643bec
       ignore_missing: true
       if: ctx.json?.properties?.skippedresources != ''
       on_failure:
@@ -1482,37 +1482,37 @@ processors:
   - rename:
       field: json.properties.state
       target_field: microsoft_defender_cloud.event.properties.state
-      tag: rename_properties_state
+      tag: rename_properties_state_078e2e22
       ignore_missing: true
   - rename:
       field: json.properties.status.$type
       target_field: microsoft_defender_cloud.event.properties.status.type
-      tag: rename_properties_status_type
+      tag: rename_properties_status_type_2ab33688
       ignore_missing: true
   - rename:
       field: json.properties.additionaldata
       target_field: microsoft_defender_cloud.event.properties.additional_data
-      tag: rename_properties_additional_data
+      tag: rename_properties_additional_data_95838941
       ignore_missing: true
   - rename:
       field: json.properties.status.cause
       target_field: microsoft_defender_cloud.event.properties.status.cause
-      tag: rename_properties_status_cause
+      tag: rename_properties_status_cause_6a948d5e
       ignore_missing: true
   - rename:
       field: json.properties.status.code
       target_field: microsoft_defender_cloud.event.properties.status.code
-      tag: rename_properties_status_code
+      tag: rename_properties_status_code_e322aba2
       ignore_missing: true
   - rename:
       field: json.properties.status.description
       target_field: microsoft_defender_cloud.event.properties.status.description
-      tag: rename_properties_status_description
+      tag: rename_properties_status_description_dcd3c19b
       ignore_missing: true
   - date:
       field: json.properties.status.firstevaluationdate
       target_field: microsoft_defender_cloud.event.properties.status.first_evaluation_date
-      tag: date_properties_status_first_evaluation_date
+      tag: date_properties_status_first_evaluation_date_a0c5c1ab
       formats:
         - ISO8601
       if: ctx.json?.properties?.status?.firstevaluationdate != null && ctx.json.properties.status.firstevaluationdate != ''
@@ -1524,12 +1524,12 @@ processors:
   - rename:
       field: json.properties.status.severity
       target_field: microsoft_defender_cloud.event.properties.status.severity
-      tag: rename_properties_status_severity
+      tag: rename_properties_status_severity_74a13d78
       ignore_missing: true
   - date:
       field: json.properties.status.statuschangedate
       target_field: microsoft_defender_cloud.event.properties.status.status_change_date
-      tag: date_properties_status_status_change_date
+      tag: date_properties_status_status_change_date_28edc661
       formats:
         - ISO8601
       if: ctx.json?.properties?.status?.statuschangedate != null && ctx.json.properties.status.statuschangedate != ''
@@ -1541,7 +1541,7 @@ processors:
   - date:
       field: json.properties.timegenerated
       target_field: microsoft_defender_cloud.event.properties.time_generated
-      tag: date_properties_time_generated
+      tag: date_properties_time_generated_415a3301
       formats:
         - ISO8601
       if: ctx.json?.properties?.timegenerated != null && ctx.json.properties.timegenerated != ''
@@ -1554,7 +1554,7 @@ processors:
       field: json.properties.unhealthyresourcecount
       target_field: microsoft_defender_cloud.event.properties.unhealthy_resource_count
       type: long
-      tag: convert_properties_unhealthy_resource_count_to_long
+      tag: convert_properties_unhealthy_resource_count_to_long_77bf7c28
       ignore_missing: true
       if: ctx.json?.properties?.unhealthyresourcecount != ''
       on_failure:
@@ -1566,7 +1566,7 @@ processors:
       field: json.properties.weight
       target_field: microsoft_defender_cloud.event.properties.weight
       type: long
-      tag: convert_properties_weight_to_long
+      tag: convert_properties_weight_to_long_db3b119a
       ignore_missing: true
       if: ctx.json?.properties?.weight != ''
       on_failure:
@@ -1577,38 +1577,38 @@ processors:
   - rename:
       field: json.provideralertstatus
       target_field: microsoft_defender_cloud.event.provider_alert_status
-      tag: rename_provider_alert_status
+      tag: rename_provider_alert_status_ab748368
       ignore_missing: true
   - rename:
       field: json.remediationsteps
       target_field: microsoft_defender_cloud.event.remediation_steps
-      tag: rename_remediation_steps
+      tag: rename_remediation_steps_743acb96
       ignore_missing: true
   - rename:
       field: json.securityeventdataenrichment.$type
       target_field: microsoft_defender_cloud.event.security_event_data_enrichment.type
-      tag: rename_security_event_data_enrichment_type
+      tag: rename_security_event_data_enrichment_type_64992e91
       ignore_missing: true
   - rename:
       field: json.securityeventdataenrichment.action
       target_field: microsoft_defender_cloud.event.security_event_data_enrichment.action
-      tag: rename_security_event_data_enrichment_action
+      tag: rename_security_event_data_enrichment_action_87ac9c2b
       ignore_missing: true
   - rename:
       field: json.securityeventdataenrichment.apiversion
       target_field: microsoft_defender_cloud.event.security_event_data_enrichment.api_version
-      tag: rename_security_event_data_enrichment_api_version
+      tag: rename_security_event_data_enrichment_api_version_2e3a47cd
       ignore_missing: true
   - rename:
       field: json.securityeventdataenrichment.interval
       target_field: microsoft_defender_cloud.event.security_event_data_enrichment.interval
-      tag: rename_security_event_data_enrichment_interval
+      tag: rename_security_event_data_enrichment_interval_15c06f37
       ignore_missing: true
   - convert:
       field: json.securityeventdataenrichment.issnapshot
       target_field: microsoft_defender_cloud.event.security_event_data_enrichment.is_snapshot
       type: boolean
-      tag: convert_security_event_data_enrichment_is_snapshot_to_boolean
+      tag: convert_security_event_data_enrichment_is_snapshot_to_boolean_466bac9f
       ignore_missing: true
       if: ctx.json?.securityeventdataenrichment?.issnapshot != ''
       on_failure:
@@ -1619,12 +1619,12 @@ processors:
   - rename:
       field: json.severity
       target_field: microsoft_defender_cloud.event.severity
-      tag: rename_severity
+      tag: rename_severity_d6165a6d
       ignore_missing: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_46a7f47a
       if: ctx.microsoft_defender_cloud?.event?.severity instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -1646,7 +1646,7 @@ processors:
   - date:
       field: json.starttimeutc
       target_field: microsoft_defender_cloud.event.start_time_utc
-      tag: date_start_time_utc'
+      tag: date_start_time_utc'_706a3ff1
       formats:
         - ISO8601
       if: ctx.json?.starttimeutc != null && ctx.json.starttimeutc != ''
@@ -1658,33 +1658,33 @@ processors:
   - set:
       field: event.start
       copy_from: microsoft_defender_cloud.event.start_time_utc
-      tag: set_event_start
+      tag: set_event_start_43a2b121
       ignore_empty_value: true
   - rename:
       field: json.status
       target_field: microsoft_defender_cloud.event.status
-      tag: rename_status
+      tag: rename_status_5fb3e770
       ignore_missing: true
   - rename:
       field: json.subassessmenteventdataenrichment.$type
       target_field: microsoft_defender_cloud.event.sub_assessment_event.data_enrichment.type
-      tag: rename_sub_assessment_event_data_enrichment_type
+      tag: rename_sub_assessment_event_data_enrichment_type_9c340174
       ignore_missing: true
   - rename:
       field: json.subassessmenteventdataenrichment.action
       target_field: microsoft_defender_cloud.event.sub_assessment_event.data_enrichment.action
-      tag: rename_sub_assessment_event_data_enrichment_action
+      tag: rename_sub_assessment_event_data_enrichment_action_66220c00
       ignore_missing: true
   - rename:
       field: json.subassessmenteventdataenrichment.apiversion
       target_field: microsoft_defender_cloud.event.sub_assessment_event.data_enrichment.api_version
-      tag: rename_sub_assessment_event_data_enrichment_api_version
+      tag: rename_sub_assessment_event_data_enrichment_api_version_922790fa
       ignore_missing: true
   - convert:
       field: json.subassessmenteventdataenrichment.issnapshot
       target_field: microsoft_defender_cloud.event.sub_assessment_event.data_enrichment.is_snapshot
       type: boolean
-      tag: convert_sub_assessment_event_data_enrichmen_is_snapshot_to_boolean
+      tag: convert_sub_assessment_event_data_enrichmen_is_snapshot_to_boolean_01bd68dc
       ignore_missing: true
       if: ctx.json?.subassessmenteventdataenrichment?.issnapshot != ''
       on_failure:
@@ -1695,22 +1695,22 @@ processors:
   - rename:
       field: json.systemalertid
       target_field: microsoft_defender_cloud.event.system.alert_id
-      tag: rename_system_alert_id
+      tag: rename_system_alert_id_746b2067
       ignore_missing: true
   - rename:
       field: json.tags
       target_field: microsoft_defender_cloud.event.tags
-      tag: rename_tags
+      tag: rename_tags_57376062
       ignore_missing: true
   - rename:
       field: json.tenantid
       target_field: microsoft_defender_cloud.event.tenant_id
-      tag: rename_tenant_id
+      tag: rename_tenant_id_29dbcaa0
       ignore_missing: true
   - date:
       field: json.timegenerated
       target_field: microsoft_defender_cloud.event.time_generated
-      tag: date_time_generated_custom
+      tag: date_time_generated_custom_58320391
       formats:
         - ISO8601
       if: ctx.json?.timegenerated != null && ctx.json.timegenerated != ''
@@ -1721,7 +1721,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timegenerated
-      tag: date_time_generated
+      tag: date_time_generated_484b6845
       formats:
         - ISO8601
       if: ctx.json?.timegenerated != null && ctx.json.timegenerated != ''
@@ -1733,32 +1733,32 @@ processors:
   - rename:
       field: json.type
       target_field: microsoft_defender_cloud.event.type
-      tag: rename_type_1a6e2383
+      tag: rename_type_68e382e4
       ignore_missing: true
   - rename:
       field: json.vendorname
       target_field: microsoft_defender_cloud.event.vendor_name
-      tag: rename_vendor_name
+      tag: rename_vendor_name_05df60fd
       ignore_missing: true
   - set:
       field: observer.vendor
       copy_from: microsoft_defender_cloud.event.vendor_name
-      tag: set_observer_vendor
+      tag: set_observer_vendor_d98624c8
       ignore_empty_value: true
   - rename:
       field: json.workspaceid
       target_field: microsoft_defender_cloud.event.workspace.id
-      tag: rename_workspace_id
+      tag: rename_workspace_id_818f5b49
       ignore_missing: true
   - rename:
       field: json.workspaceresourcegroup
       target_field: microsoft_defender_cloud.event.workspace.resource_group
-      tag: rename_workspace_resource_group
+      tag: rename_workspace_resource_group_532de719
       ignore_missing: true
   - rename:
       field: json.workspacesubscriptionid
       target_field: microsoft_defender_cloud.event.workspace.subscription_id
-      tag: rename_workspace_subscription_id
+      tag: rename_workspace_subscription_id_d8ffe377
       ignore_missing: true
   - foreach:
       tag: foreach_microsoft_defender_cloud_event_entities_c0b82890
@@ -1767,7 +1767,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_ingest_value_location_cloud_provider
+          tag: remove_ingest_value_location_cloud_provider_2b3c2d8b
           field:
             - _ingest._value.location.cloud_provider
             - _ingest._value.container_id
@@ -1782,7 +1782,7 @@ processors:
           ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - remove:
       field:
@@ -1792,13 +1792,13 @@ processors:
         - microsoft_defender_cloud.event.start_time_utc
         - microsoft_defender_cloud.event.time_generated
         - microsoft_defender_cloud.event.vendor_name
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_25042d57
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -1816,7 +1816,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -1834,7 +1834,7 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

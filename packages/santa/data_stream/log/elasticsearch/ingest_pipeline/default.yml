@@ -22,13 +22,13 @@ processors:
   - kv:
       field: _tmp.message
       target_field: santa
-      tag: kv_santa_fields
+      tag: kv_santa_fields_9375c831
       field_split: '\|'
       value_split: "="
       ignore_missing: true
       on_failure:
         - fail:
-            tag: fail_52c71a6a
+            tag: fail_processor_ingest_failure_processor_type_52c71a6a
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - remove:
       tag: remove__tmp_message_4276d2ef
@@ -239,7 +239,7 @@ processors:
       field: santa.args
       processor:
         append:
-          tag: append_process_args
+          tag: append_process_args_51a72ff2
           field: process.args
           value: "{{{_ingest._value}}}"
       ignore_missing: true
@@ -302,7 +302,7 @@ processors:
       if: ctx.santa?.certificate?.common_name != null
 
   - script:
-      tag: script_9d6fa8ba
+      tag: script_drops_null_empty_values_recursively_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -322,15 +322,15 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

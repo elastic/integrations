@@ -8,7 +8,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -39,7 +39,7 @@ processors:
   - drop:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
-      tag: drop_empty_events
+      tag: drop_empty_events_ac9e0c9d
   - set:
       tag: set_event_kind_de80643c
       field: event.kind
@@ -62,7 +62,7 @@ processors:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - fingerprint:
-      tag: fingerprint_567b61c4
+      tag: fingerprint_to_id_567b61c4
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
         - json.id
@@ -207,7 +207,7 @@ processors:
         }
   - script:
       lang: painless
-      tag: script_setting_metadata
+      tag: script_setting_metadata_4d421e39
       description: Script to flatten the setting metadata parameters.
       if: ctx.google_workspace?.admin?.SETTING_METADATA?.parameter instanceof List
       source: >
@@ -224,22 +224,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_workspace.admin.SETTING_METADATA.DESCRIPTION
-      tag: rename_SETTING_METADATA_DESCRIPTION
+      tag: rename_SETTING_METADATA_DESCRIPTION_aece52e6
       target_field: google_workspace.admin.setting.metadata.description
       ignore_missing: true
   - rename:
       field: google_workspace.admin.SETTING_METADATA.rule_key
-      tag: rename_SETTING_METADATA_rule_key
+      tag: rename_SETTING_METADATA_rule_key_f26d5af2
       target_field: google_workspace.admin.setting.metadata.rule.key
       ignore_missing: true
   - rename:
       field: google_workspace.admin.SETTING_METADATA.rule_type
-      tag: rename_SETTING_METADATA_rule_type
+      tag: rename_SETTING_METADATA_rule_type_fedc9b15
       target_field: google_workspace.admin.setting.metadata.rule.type
       ignore_missing: true
   - rename:
       field: google_workspace.admin.SETTING_METADATA.USER_DEFINED_NAME
-      tag: SETTING_METADATA_USER_DEFINED_NAME
+      tag: SETTING_METADATA_USER_DEFINED_NAME_f5f5ab45
       target_field: google_workspace.admin.setting.metadata.user_defined.name
       ignore_missing: true
   - remove:
@@ -616,11 +616,11 @@ processors:
       ignore_missing: true
   - rename:
       field: google_workspace.admin.ALERT_ID
-      tag: rename_alert_id
+      tag: rename_alert_id_21e49acd
       target_field: google_workspace.admin.alert.id
       ignore_missing: true
   - split:
-      tag: split_related_alert_id
+      tag: split_related_alert_id_e3db27c4
       field: google_workspace.admin.RELATED_ALERT_ID
       target_field: google_workspace.admin.alert.related_id
       separator: ','
@@ -633,42 +633,42 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_workspace.admin.CHART_FILTERS
-      tag: rename_chart_filters
+      tag: rename_chart_filters_eae1925a
       target_field: google_workspace.admin.chart.filters
       ignore_missing: true
   - rename:
       field: google_workspace.admin.CHART_NAME
-      tag: rename_chart_name
+      tag: rename_chart_name_6ce81276
       target_field: google_workspace.admin.chart.name
       ignore_missing: true
   - rename:
       field: google_workspace.admin.INVESTIGATION_ACTION
-      tag: rename_investigation_action
+      tag: rename_investigation_action_86252f78
       target_field: google_workspace.admin.investigation.action
       ignore_missing: true
   - rename:
       field: google_workspace.admin.INVESTIGATION_DATA_SOURCE
-      tag: rename_investigation_data_source
+      tag: rename_investigation_data_source_087a6eef
       target_field: google_workspace.admin.investigation.data_source
       ignore_missing: true
   - rename:
       field: google_workspace.admin.INVESTIGATION_ENTITY_IDS
-      tag: rename_investigation_entity_ids
+      tag: rename_investigation_entity_ids_fbc34744
       target_field: google_workspace.admin.investigation.entity_ids
       ignore_missing: true
   - rename:
       field: google_workspace.admin.INVESTIGATION_OBJECT_IDENTIFIER
-      tag: rename_investigation_object_identifier
+      tag: rename_investigation_object_identifier_ae80e3e0
       target_field: google_workspace.admin.investigation.object_identifier
       ignore_missing: true
   - rename:
       field: google_workspace.admin.INVESTIGATION_QUERY
-      tag: rename_investigation_query
+      tag: rename_investigation_query_d4306bc0
       target_field: google_workspace.admin.investigation.query
       ignore_missing: true
   - rename:
       field: google_workspace.admin.INVESTIGATION_URL_DISPLAY_TEXT
-      tag: rename_investigation_url_display_text
+      tag: rename_investigation_url_display_text_b157afa9
       target_field: google_workspace.admin.investigation.url_display_text
       ignore_missing: true
   - rename:
@@ -1085,7 +1085,7 @@ processors:
         - google_workspace.admin.SETTING_METADATA
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -1104,16 +1104,16 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

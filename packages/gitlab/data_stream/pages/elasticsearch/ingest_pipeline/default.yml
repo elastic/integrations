@@ -3,21 +3,21 @@ description: Pipeline for processing pages logs
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_319421e7
       if: ctx.event?.original != null
   - drop:
-      tag: drop_a8ea228b
+      tag: drop_logline_contains_header_s_a8ea228b
       if: ctx.event?.original?.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - append:
@@ -34,7 +34,7 @@ processors:
       value: event
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_a821cbc6
       target_field: gitlab.pages
   - date:
       field: gitlab.pages.time
@@ -42,7 +42,7 @@ processors:
         - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_1337cac0
       on_failure:
         - append:
             tag: append_error_message_e1792017
@@ -61,42 +61,42 @@ processors:
       field: event.level
       value: 0
       if: ctx.gitlab?.pages?.level == 'emergency'
-      tag: set_level_0
+      tag: set_level_0_657815a8
   - set:
       field: event.level
       value: 1
       if: ctx.gitlab?.pages?.level == 'alert'
-      tag: set_level_1
+      tag: set_level_1_0bdbf45b
   - set:
       field: event.level
       value: 2
       if: ctx.gitlab?.pages?.level == 'critical'
-      tag: set_level_2
+      tag: set_level_2_d2bd182d
   - set:
       field: event.level
       value: 3
       if: ctx.gitlab?.pages?.level == 'error'
-      tag: set_level_3
+      tag: set_level_3_3981d0b9
   - set:
       field: event.level
       value: 4
       if: ctx.gitlab?.pages?.level == 'warn'
-      tag: set_level_4
+      tag: set_level_4_80f87cab
   - set:
       field: event.level
       value: 5
       if: ctx.gitlab?.pages?.level == 'notice'
-      tag: set_level_5
+      tag: set_level_5_bc58ce84
   - set:
       field: event.level
       value: 6
       if: ctx.gitlab?.pages?.level == 'info'
-      tag: set_level_6
+      tag: set_level_6_c883c9ab
   - set:
       field: event.level
       value: 7
       if: ctx.gitlab?.pages?.level == 'debug'
-      tag: set_level_7
+      tag: set_level_7_8b382d60
   - remove:
       tag: remove_gitlab_pages_level_10eff751
       field: gitlab.pages.level
@@ -133,12 +133,12 @@ processors:
       ignore_missing: true
   - set:
       field: http.request.mime_type
-      tag: set_http_request_mime_type_from_pages_content_type
+      tag: set_http_request_mime_type_from_pages_content_type_50654460
       copy_from: gitlab.pages.content_type
       ignore_empty_value: true
   - convert:
       field: gitlab.pages.duration_ms
-      tag: convert_duration_ms_to_long
+      tag: convert_duration_ms_to_long_c3718b18
       type: long
       ignore_missing: true
       on_failure:
@@ -152,17 +152,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.name
-      tag: set_host_name_from_pages_host
+      tag: set_host_name_from_pages_host_26d6ca77
       copy_from: gitlab.pages.host
       ignore_empty_value: true
   - rename:
       field: gitlab.pages.in-place
-      tag: rename_in_place
+      tag: rename_in_place_3cb0f993
       target_field: gitlab.pages.in_place
       ignore_missing: true
   - convert:
       field: gitlab.pages.in-place
-      tag: convert_in-place_to_boolean
+      tag: convert_in-place_to_boolean_5d808984
       type: boolean
       ignore_missing: true
       on_failure:
@@ -176,12 +176,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: gitlab.pages.listen_addr.IP
-      tag: rename_listen_addr_IP
+      tag: rename_listen_addr_IP_d444ce9d
       target_field: gitlab.pages.listen_addr.ip
       ignore_missing: true
   - convert:
       field: gitlab.pages.listen_addr.ip
-      tag: convert_listen_addr_ip_to_ip
+      tag: convert_listen_addr_ip_to_ip_47b6fb35
       type: ip
       ignore_missing: true
       if: ctx.gitlab?.pages?.listen_addr?.ip != ''
@@ -196,17 +196,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: server.ip
-      tag: set_server_ip_from_pages_listen_addr_ip
+      tag: set_server_ip_from_pages_listen_addr_ip_07fd5796
       copy_from: gitlab.pages.listen_addr.ip
       ignore_empty_value: true
   - rename:
       field: gitlab.pages.listen_addr.Port
-      tag: rename_listen_addr_Port
+      tag: rename_listen_addr_Port_149ae945
       target_field: gitlab.pages.listen_addr.port
       ignore_missing: true
   - convert:
       field: gitlab.pages.listen_addr.port
-      tag: convert_listen_addr_port_to_long
+      tag: convert_listen_addr_port_to_long_a88c1221
       type: long
       ignore_missing: true
       on_failure:
@@ -220,17 +220,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: server.port
-      tag: set_server_port_from_pages_listen_addr_port
+      tag: set_server_port_from_pages_listen_addr_port_641ca6d1
       copy_from: gitlab.pages.listen_addr.port
       ignore_empty_value: true
   - set:
       field: http.request.method
-      tag: set_http_request_method_from_pages_msg
+      tag: set_http_request_method_from_pages_msg_53180516
       copy_from: gitlab.pages.method
       ignore_empty_value: true
   - convert:
       field: gitlab.pages.pages_https
-      tag: convert_pages_https_to_boolean
+      tag: convert_pages_https_to_boolean_9fdcf2fc
       type: boolean
       ignore_missing: true
       on_failure:
@@ -244,7 +244,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dissect:
       field: gitlab.pages.proto
-      tag: dissect_pages_proto
+      tag: dissect_pages_proto_315e83fc
       pattern: "%{}/%{http.version}"
       ignore_missing: true
       on_failure:
@@ -254,7 +254,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.pages.read_bytes
-      tag: convert_read_bytes_to_long
+      tag: convert_read_bytes_to_long_eb4c6fad
       type: long
       ignore_missing: true
       on_failure:
@@ -268,17 +268,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: server.bytes
-      tag: set_server_bytes_from_pages_read_bytes
+      tag: set_server_bytes_from_pages_read_bytes_7d844481
       copy_from: gitlab.pages.read_bytes
       ignore_empty_value: true
   - set:
       field: http.request.referrer
-      tag: set_http_request_referrer_from_pages_referrer
+      tag: set_http_request_referrer_from_pages_referrer_ce7d61cd
       copy_from: gitlab.pages.referrer
       ignore_empty_value: true
   - dissect:
       field: remote_addr
-      tag: dissect_remote_addr
+      tag: dissect_remote_addr_7794c57c
       pattern: '%{}:%{POSTINT:source.port}'
       ignore_missing: true
       on_failure:
@@ -288,12 +288,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.address
-      tag: set_source_address_from_pages_remote_addr
+      tag: set_source_address_from_pages_remote_addr_a4b07cff
       copy_from: gitlab.pages.remote_addr
       ignore_empty_value: true
   - convert:
       field: gitlab.pages.remote_ip
-      tag: convert_remote_ip_to_ip
+      tag: convert_remote_ip_to_ip_a7cd03ab
       type: ip
       ignore_missing: true
       if: ctx.gitlab?.pages?.remote_ip != ''
@@ -308,12 +308,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_pages_remote_ip
+      tag: set_source_ip_from_pages_remote_ip_7b6ef91e
       copy_from: gitlab.pages.remote_ip
       ignore_empty_value: true
   - convert:
       field: gitlab.pages.status
-      tag: convert_status_to_long
+      tag: convert_status_to_long_40ace0c0
       type: long
       ignore_missing: true
       on_failure:
@@ -327,12 +327,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
-      tag: set_http_response_status_code_from_pages_status
+      tag: set_http_response_status_code_from_pages_status_20621a88
       copy_from: gitlab.pages.status
       ignore_empty_value: true
   - convert:
       field: gitlab.pages.ttfb_ms
-      tag: convert_ttfb_ms_to_long
+      tag: convert_ttfb_ms_to_long_3cc9f14e
       type: long
       ignore_missing: true
       on_failure:
@@ -346,7 +346,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.pages.written_bytes
-      tag: convert_written_bytes_to_long
+      tag: convert_written_bytes_to_long_afae28fa
       type: long
       ignore_missing: true
       on_failure:
@@ -360,7 +360,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.bytes
-      tag: set_client_bytes_from_pages_written_bytes
+      tag: set_client_bytes_from_pages_written_bytes_31d1c695
       copy_from: gitlab.pages.written_bytes
       ignore_empty_value: true
   - rename:
@@ -375,7 +375,7 @@ processors:
       if: ctx.user?.id != null
       allow_duplicates: false
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -406,15 +406,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

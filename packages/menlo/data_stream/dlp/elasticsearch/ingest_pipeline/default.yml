@@ -7,13 +7,13 @@ processors:
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_7f1de011
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -23,7 +23,7 @@ processors:
       value: alert
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_74d23cc2
       target_field: json
   - rename:
       tag: rename_json_event_event_id_to_event_id_f7428aad
@@ -36,7 +36,7 @@ processors:
         - "ISO8601"
       target_field: "event.created"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_5dcaaf5c
       on_failure:
         - append:
             tag: append_error_message_21aa8fb4
@@ -147,7 +147,7 @@ processors:
   - set:
       field: user.email
       copy_from: user.id
-      tag: copy_user_email
+      tag: copy_user_email_59b9674a
       if: ctx.user?.id != null && ctx.user.id.indexOf("@") > 0
   - append:
       tag: append_related_user_837e080f
@@ -221,10 +221,10 @@ processors:
       target_field: menlo.dlp.stream_name
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -255,15 +255,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

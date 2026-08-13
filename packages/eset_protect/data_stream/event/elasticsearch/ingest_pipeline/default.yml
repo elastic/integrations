@@ -3,36 +3,36 @@ description: Pipeline for processing event logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - gsub:
       field: message
       pattern: "^(\\xEF\\xBB\\xBF|\\xFF\\xFE\\x00\\x00|\\x00\\x00\\xFE\\xFF|\\xFF\\xFE|\\xFE\\xFF)"
       replacement: ""
       ignore_failure: true
-      tag: bom_removed
+      tag: bom_removed_e6607478
   - drop:
-      tag: drop_heartbeat_events
+      tag: drop_heartbeat_events_d0a39112
       if: ctx.message == 'HEARTBEAT' && ctx.tags != null && ctx.tags.contains('drop_heartbeat_message') == true
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - terminate:
-      tag: terminate_processing_for_heartbeat_messages
+      tag: terminate_processing_for_heartbeat_messages_edfb8344
       if: ctx.event?.original == 'HEARTBEAT'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_f22e7698
       target_field: json
       if: "ctx.event?.original.startsWith(\"{\\\"\")"
       on_failure:
@@ -42,7 +42,7 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - grok:
       field: event.original
-      tag: grok_event_original
+      tag: grok_event_original_3b27766f
       patterns:
       - 'Detection type: %{DATA:json.threat_name} Detection name: %{DATA:json.threat_name} Computer name: %{HOSTNAME:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user} Time of occurrence: %{ESET_TIMESTAMP:json.occurred_plaintext} Scanner: %{DATA:json.scanner_id} Action performed: %{DATA:json.action_taken}$'
       - '^%{DATA:message}\s+%{HOSTNAME:json.hostname} %{ESET_TIMESTAMP:json.occurred_plaintext} %{DATA:eset_protect.event.threat_type} %{NOTSPACE:threat.indicator.name} %{ESET_THREAT_INDICATOR_TYPE:json.object_type} %{GREEDYDATA:json.object_uri}$'
@@ -63,99 +63,99 @@ processors:
       if: "! ctx.event?.original.startsWith(\"{\\\"\") && ctx.json?.hostname != null"
   - set:
       field: event.kind
-      tag: set_event_kind_alert
+      tag: set_event_kind_alert_dc3c4dc4
       value: alert
       if: ctx.json?.event_type != "Audit_Event"
   - set:
       field: event.kind
-      tag: set_event_kind_event
+      tag: set_event_kind_event_05927cc0
       value: event
       if: ctx.json?.event_type == "Audit_Event"
   - append:
       field: event.category
-      tag: append_intrusion_detection_into_event_category
+      tag: append_intrusion_detection_into_event_category_2c0889a6
       value: intrusion_detection
       if: ctx.json?.event_type != null && ['HipsAggregated_Event','FirewallAggregated_Event'].contains(ctx.json.event_type)
   - append:
       field: event.category
-      tag: append_threat_into_event_category
+      tag: append_threat_into_event_category_5960a6aa
       value: threat
       if: ctx.json?.event_type != null && ['Threat_Event'].contains(ctx.json.event_type)
   - append:
       field: event.category
-      tag: append_web_into_event_category
+      tag: append_web_into_event_category_def5ae23
       value: web
       if: ctx.json?.event_type != null && ['FilteredWebsites_Event'].contains(ctx.json.event_type)
   - append:
       field: event.category
-      tag: append_file_into_event_category
+      tag: append_file_into_event_category_2220b275
       value: file
       if: ctx.json?.event_type != null && ['BlockedFiles_Event'].contains(ctx.json.event_type)
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_53f597f5
       value: info
       if: ctx.json?.event_type != null && !['Threat_Event'].contains(ctx.json.event_type)
   - append:
       field: event.type
-      tag: append_indicator_into_event_type
+      tag: append_indicator_into_event_type_8407df59
       value: indicator
       if: ctx.json?.event_type != null && ['Threat_Event'].contains(ctx.json.event_type)
   - rename:
       field: json.group_description
-      tag: rename_group_description
+      tag: rename_group_description_85180c17
       target_field: eset_protect.event.group_description
       ignore_missing: true
   - rename:
       field: json.group_name
-      tag: rename_group_name
+      tag: rename_group_name_67fb4726
       target_field: eset_protect.event.group_name
       ignore_missing: true
   - set:
       field: group.name
-      tag: set_group_name_from_event_group_name
+      tag: set_group_name_from_event_group_name_d9180ca4
       copy_from: eset_protect.event.group_name
       ignore_empty_value: true
   - rename:
       field: json.hostname
-      tag: rename_hostname
+      tag: rename_hostname_98a6690e
       target_field: eset_protect.event.hostname
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_event_hostname
+      tag: set_host_name_from_event_hostname_97b111e2
       copy_from: eset_protect.event.hostname
       if: ctx.eset_protect?.event?.hostname?.contains('.') == true
   - grok:
       field: eset_protect.event.hostname
-      tag: grok_host_hostname_and_domain_from_event_hostname
+      tag: grok_host_hostname_and_domain_from_event_hostname_c39aade4
       patterns:
         - '(%{DATA:host.hostname}\.%{GREEDYDATA:host.domain}|%{GREEDYDATA:host.hostname})'
       if: ctx.eset_protect?.event?.hostname != null
   - set:
       field: host.name
-      tag: set_host_name_from_host_hostname
+      tag: set_host_name_from_host_hostname_0630e024
       copy_from: host.hostname
       if: ctx.host?.hostname != null && ctx.host.name == null
   - lowercase:
       field: host.name
-      tag: lowercase_host_name
+      tag: lowercase_host_name_676c5247
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - append:
       field: related.hosts
-      tag: append_hostname_into_related_hosts
+      tag: append_hostname_into_related_hosts_6f8fa3bb
       value: "{{{host.hostname}}}"
       allow_duplicates: false
       if: ctx.host?.hostname != null
   - convert:
       field: json.ipv4
-      tag: convert_ipv4_to_ip
+      tag: convert_ipv4_to_ip_2d4a529d
       target_field: eset_protect.event.ipv4
       type: ip
       ignore_missing: true
@@ -167,19 +167,19 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: host.ip
-      tag: append_eset_protect_event_ipv4_into_host_ip
+      tag: append_eset_protect_event_ipv4_into_host_ip_ec2e2f3f
       value: "{{{eset_protect.event.ipv4}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv4 != null
   - append:
       field: related.ip
-      tag: append_ipv4_into_related_ip
+      tag: append_ipv4_into_related_ip_63a3a72c
       value: "{{{eset_protect.event.ipv4}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv4 != null
   - convert:
       field: json.ipv6
-      tag: convert_ipv6_to_ip
+      tag: convert_ipv6_to_ip_da32e3c3
       target_field: eset_protect.event.ipv6
       type: ip
       ignore_missing: true
@@ -191,19 +191,19 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: host.ip
-      tag: append_eset_protect_event_ipv6_into_host_ip
+      tag: append_eset_protect_event_ipv6_into_host_ip_40a45acb
       value: "{{{eset_protect.event.ipv6}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv6 != null
   - append:
       field: related.ip
-      tag: append_ipv6_into_related_ip
+      tag: append_ipv6_into_related_ip_8d10e8ea
       value: "{{{eset_protect.event.ipv6}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv6 != null
   - rename:
       field: json.occured
-      tag: rename_occured_to_occurred
+      tag: rename_occured_to_occurred_42a00da2
       target_field: json.occurred
       ignore_missing: true
       description: Fallback for legacy events with the misspelled "occured" field. Renamed to correct spelling "occurred".
@@ -217,7 +217,7 @@ processors:
       if: ctx.json?.occurred_plaintext != null && ctx.json.occurred_plaintext != ''
   - date:
       field: json.occurred
-      tag: date_occurred
+      tag: date_occurred_50017d8f
       target_field: eset_protect.event.occurred
       formats:
         - dd-MMM-yyyy HH:mm:ss
@@ -230,95 +230,95 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: "@timestamp"
-      tag: set_@timestamp_from_event_occurred
+      tag: set_@timestamp_from_event_occurred_0b4406c7
       copy_from: eset_protect.event.occurred
       ignore_empty_value: true
   - rename:
       field: json.os_name
-      tag: rename_os_name
+      tag: rename_os_name_3d4b407e
       target_field: eset_protect.event.os_name
       ignore_missing: true
   - set:
       field: host.os.name
-      tag: set_host_os_name_from_event_os_name
+      tag: set_host_os_name_from_event_os_name_d05580f8
       copy_from: eset_protect.event.os_name
       ignore_empty_value: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_9bd79323
       target_field: eset_protect.event.severity
       ignore_missing: true
   - rename:
       field: json.source_uuid
-      tag: rename_source_uuid
+      tag: rename_source_uuid_fee7ca5f
       target_field: eset_protect.event.source_uuid
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_event_source_uuid
+      tag: set_host_id_from_event_source_uuid_d6b2083c
       copy_from: eset_protect.event.source_uuid
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_source_uuid_into_related_hosts
+      tag: append_source_uuid_into_related_hosts_91f741ce
       value: "{{{eset_protect.event.source_uuid}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.source_uuid != null
   - rename:
       field: json.event_type
-      tag: rename_event_type
+      tag: rename_event_type_729d4216
       target_field: eset_protect.event.type
       ignore_missing: true
   - set:
       field: threat.indicator.provider
-      tag: set_threat_indicator_provider
+      tag: set_threat_indicator_provider_d4275cb5
       value: ESET PROTECT
       if: ctx.eset_protect?.event?.type != null && ['Threat_Event','HipsAggregated_Event','FirewallAggregated_Event','FilteredWebsites_Event','BlockedFiles_Event'].contains(ctx.eset_protect.event.type)
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type
+      tag: set_threat_indicator_type_8c18b88e
       value: file
       if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - rename:
       field: json.account
-      tag: rename_account
+      tag: rename_account_69a7c707
       target_field: eset_protect.event.account
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_account_into_related_user
+      tag: append_account_into_related_user_6e79b345
       value: "{{{eset_protect.event.account}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.account != null
   - rename:
       field: json.action
-      tag: rename_action
+      tag: rename_action_9ca447aa
       target_field: eset_protect.event.action
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_event_action
+      tag: set_event_action_from_event_action_9c12702f
       copy_from: eset_protect.event.action
       ignore_empty_value: true
       if: ctx.eset_protect?.event?.action != ''
   - rename:
       field: json.action_taken
-      tag: rename_action_taken
+      tag: rename_action_taken_cb635f0c
       target_field: eset_protect.event.action_taken
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_event_action_taken
+      tag: set_event_action_from_event_action_taken_ec5ac301
       copy_from: eset_protect.event.action_taken
       ignore_empty_value: true
       if: ctx.event?.action == null
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
@@ -329,7 +329,7 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: "-"
       if: ctx.event?.action instanceof List
       on_failure:
@@ -339,12 +339,12 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.action_error
-      tag: rename_action_error
+      tag: rename_action_error_c538b159
       target_field: eset_protect.event.action_error
       ignore_missing: true
   - convert:
       field: json.aggregate_count
-      tag: convert_aggregate_count_to_long
+      tag: convert_aggregate_count_to_long_9329b27b
       target_field: eset_protect.event.aggregate_count
       type: long
       ignore_missing: true
@@ -355,37 +355,37 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: threat.indicator.sightings
-      tag: set_threat_indicator_sightings_from_event_aggregate_count
+      tag: set_threat_indicator_sightings_from_event_aggregate_count_8a9b5055
       copy_from: eset_protect.event.aggregate_count
       ignore_empty_value: true
   - rename:
       field: json.application
-      tag: rename_application
+      tag: rename_application_5b7c6dba
       target_field: eset_protect.event.application
       ignore_missing: true
   - rename:
       field: json.cause
-      tag: rename_cause
+      tag: rename_cause_e253258e
       target_field: eset_protect.event.cause
       ignore_missing: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_event_cause
+      tag: set_event_reason_from_event_cause_ebe3d4c4
       copy_from: eset_protect.event.cause
       ignore_empty_value: true
   - rename:
       field: json.circumstances
-      tag: rename_circumstances
+      tag: rename_circumstances_249f70a9
       target_field: eset_protect.event.circumstances
       ignore_missing: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_event_circumstances
+      tag: set_event_reason_from_event_circumstances_fd68b3cf
       copy_from: eset_protect.event.circumstances
       ignore_empty_value: true
   - convert:
       field: json.computer_severity_score
-      tag: convert_computer_severity_score_to_long
+      tag: convert_computer_severity_score_to_long_5a263a21
       target_field: eset_protect.event.computer_severity_score
       type: long
       ignore_missing: true
@@ -396,7 +396,7 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
       field: json.count
-      tag: convert_count_to_long
+      tag: convert_count_to_long_649c8321
       target_field: eset_protect.event.count
       type: long
       ignore_missing: true
@@ -407,67 +407,67 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_f327b5a5
       target_field: eset_protect.event.description
       ignore_missing: true
   - rename:
       field: json.detail
-      tag: rename_detail
+      tag: rename_detail_3500f2a6
       target_field: eset_protect.event.detail
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_event_detail
+      tag: set_message_from_event_detail_f92122f0
       copy_from: eset_protect.event.detail
       ignore_empty_value: true
   - rename:
       field: json.domain
-      tag: rename_domain
+      tag: rename_domain_14d32228
       target_field: eset_protect.event.domain
       ignore_missing: true
   - rename:
       field: json.eialarmid
-      tag: rename_eialarmid
+      tag: rename_eialarmid_a9aaaf6b
       target_field: eset_protect.event.eialarmid
       ignore_missing: true
   - rename:
       field: json.eiconsolelink
-      tag: rename_eiconsolelink
+      tag: rename_eiconsolelink_9e6a7139
       target_field: eset_protect.event.eiconsolelink
       ignore_missing: true
   - set:
       field: event.reference
-      tag: set_event_reference_from_event_eiconsolelink
+      tag: set_event_reference_from_event_eiconsolelink_de737f2b
       copy_from: eset_protect.event.eiconsolelink
       ignore_empty_value: true
   - rename:
       field: json.engine_version
-      tag: rename_engine_version
+      tag: rename_engine_version_7683122b
       target_field: eset_protect.event.engine_version
       ignore_missing: true
   - rename:
       field: json.event
-      tag: rename_event
+      tag: rename_event_ee0e75bd
       target_field: eset_protect.event.name
       ignore_missing: true
   - rename:
       field: json.trigger_event
-      tag: rename_trigger_event
+      tag: rename_trigger_event_a779e95a
       target_field: eset_protect.event.trigger_event
       ignore_missing: true
   - rename:
       field: json.detection_uuid
-      tag: rename_detection_uuid
+      tag: rename_detection_uuid_b58e42a4
       target_field: eset_protect.event.detection_uuid
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_event_name
+      tag: set_message_from_event_name_a5a571dc
       copy_from: eset_protect.event.name
       ignore_empty_value: true
   - date:
       field: json.firstseen
-      tag: date_firstseen
+      tag: date_firstseen_33fc10ac
       target_field: eset_protect.event.firstseen
       formats:
         - yyyyMMdd'T'HHmmss
@@ -480,59 +480,59 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: threat.indicator.first_seen
-      tag: set_threat_indicator_first_seen_from_event_firstseen
+      tag: set_threat_indicator_first_seen_from_event_firstseen_f0d1dd76
       copy_from: eset_protect.event.firstseen
       ignore_empty_value: true
   - convert:
       field: json.handled
-      tag: convert_handled_to_string
+      tag: convert_handled_to_string_91560117
       target_field: eset_protect.event.handled
       type: string
       ignore_missing: true
   - set:
       field: eset_protect.event.is_handled
-      tag: set_is_handled_to_true
+      tag: set_is_handled_to_true_d4e315a5
       value: true
       if: ctx.eset_protect?.event?.handled != "1"
   - set:
       field: eset_protect.event.is_handled
-      tag: set_is_handled_to_false
+      tag: set_is_handled_to_false_10c2d540
       value: false
       if: ctx.eset_protect?.event?.handled != "0"
   - rename:
       field: json.hash
-      tag: rename_hash
+      tag: rename_hash_14171d41
       target_field: eset_protect.event.hash
       ignore_missing: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1_from_eset_protect_event_hash
+      tag: set_file_hash_sha1_from_eset_protect_event_hash_3cf5d687
       copy_from: eset_protect.event.hash
       ignore_empty_value: true
       if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
   - lowercase:
       field: file.hash.sha1
-      tag: lowercase_file_hash_sha1
+      tag: lowercase_file_hash_sha1_60cf757f
       ignore_missing: true
   - set:
       field: threat.indicator.file.hash.sha1
-      tag: set_threat_indicator_file_hash_sha1
+      tag: set_threat_indicator_file_hash_sha1_1bee1243
       copy_from: file.hash.sha1
       ignore_empty_value: true
       if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
   - append:
       field: related.hash
-      tag: append_eset_protect_event_hash_into_related_hash
+      tag: append_eset_protect_event_hash_into_related_hash_1b7963d7
       value: "{{{eset_protect.event.hash}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.hash != null
   - lowercase:
       field: related.hash
-      tag: lowercase_file_hash_sha1_030be11b
+      tag: lowercase_file_hash_sha1_d0aa97ba
       ignore_missing: true
   - convert:
       field: json.inbound
-      tag: convert_inbound_to_boolean
+      tag: convert_inbound_to_boolean_a4ee0681
       target_field: eset_protect.event.inbound
       type: boolean
       ignore_missing: true
@@ -543,12 +543,12 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: network.direction
-      tag: set_network_direction_to_inbound
+      tag: set_network_direction_to_inbound_26876c57
       value: inbound
       if: ctx.eset_protect?.event?.inbound == true
   - convert:
       field: json.need_restart
-      tag: convert_need_restart_to_boolean
+      tag: convert_need_restart_to_boolean_05a30388
       target_field: eset_protect.event.need_restart
       type: boolean
       ignore_missing: true
@@ -559,21 +559,21 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.object_type
-      tag: rename_object_type
+      tag: rename_object_type_f7740f94
       target_field: eset_protect.event.object_type
       ignore_missing: true
   - set:
       field: file.type
       value: file
-      tag: set_file_type_file
+      tag: set_file_type_file_164a9574
       if: ctx.eset_protect?.event?.object_type?.toLowerCase() == 'file'
   - rename:
       field: json.object_uri
-      tag: rename_object_uri
+      tag: rename_object_uri_2ab7f97a
       target_field: eset_protect.event.object_uri
       ignore_missing: true
   - script:
-      tag: script_parse_mailto_uri
+      tag: script_parse_mailto_uri_0d6f6176
       lang: painless
       description: Parse mailto URI fields into ECS email fields.
       if: "ctx.eset_protect?.event?.object_uri != null && ctx.eset_protect.event.object_uri instanceof String && ctx.eset_protect.event.object_uri.toLowerCase().startsWith('mailto:')"
@@ -644,7 +644,7 @@ processors:
       copy_from: eset_protect.event.object_uri
   - grok:
       field: file.path
-      tag: grok_file_path
+      tag: grok_file_path_0431f6e4
       patterns:
         - '^(file:///)?%{FILEPATH:file.path}$'
         - '.*/(?<file.name>.+\.(?<file.extension>.+))$'
@@ -653,32 +653,32 @@ processors:
       if: ctx.file?.path != null && ctx.file?.path != 'script' && !(ctx.file.path instanceof String && ctx.file.path.toLowerCase().startsWith('mailto:'))
   - rename:
       field: json.operation
-      tag: rename_operation
+      tag: rename_operation_59a7c538
       target_field: eset_protect.event.operation
       ignore_missing: true
   - rename:
       field: json.process_name
-      tag: rename_process_name
+      tag: rename_process_name_5018f1b5
       target_field: eset_protect.event.processname
       ignore_missing: true
   - rename:
       field: json.processname
-      tag: rename_processname
+      tag: rename_processname_01237a24
       target_field: eset_protect.event.processname
       ignore_missing: true
   - set:
       field: process.executable
-      tag: set_process_executable_from_event_processname
+      tag: set_process_executable_from_event_processname_8c60865a
       copy_from: eset_protect.event.processname
       ignore_empty_value: true
   - rename:
       field: json.command_line
-      tag: rename_command_line
+      tag: rename_command_line_2ec94331
       target_field: eset_protect.event.command_line
       ignore_missing: true
   - grok:
       field: eset_protect.event.processname
-      tag: grok_processname
+      tag: grok_processname_7d701654
       ignore_missing: true
       patterns:
         - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
@@ -692,73 +692,73 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.protocol
-      tag: rename_protocol
+      tag: rename_protocol_d2d747ac
       target_field: eset_protect.event.protocol
       ignore_missing: true
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_event_protocol
+      tag: set_network_protocol_from_event_protocol_3ea4a45e
       copy_from: eset_protect.event.protocol
       ignore_empty_value: true
   - lowercase:
       field: network.protocol
-      tag: lowercase_network_protocol
+      tag: lowercase_network_protocol_12733ef1
       ignore_missing: true
   - rename:
       field: json.result
-      tag: rename_result
+      tag: rename_result_9d1a05ac
       target_field: eset_protect.event.result
       ignore_missing: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success
+      tag: set_event_outcome_to_success_f44e87f0
       value: success
       if: ctx.eset_protect?.event?.result == "Success"
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure
+      tag: set_event_outcome_to_failure_4884ee90
       value: failure
       if: ctx.eset_protect?.event?.result == "Failed"
   - rename:
       field: json.rule_id
-      tag: rename_rule_id
+      tag: rename_rule_id_0e7f3fcc
       target_field: eset_protect.event.rule_id
       ignore_missing: true
   - rename:
       field: json.rule_name
-      tag: rename_rule_name
+      tag: rename_rule_name_fd9987f6
       target_field: eset_protect.event.rulename
       ignore_missing: true
   - rename:
       field: json.rulename
-      tag: rename_rulename
+      tag: rename_rulename_d4992c1b
       target_field: eset_protect.event.rulename
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_event_rulename
+      tag: set_rule_name_from_event_rulename_a3867db7
       copy_from: eset_protect.event.rulename
       ignore_empty_value: true
       if: ctx.eset_protect?.event?.rulename != ''
   - set:
       field: rule.name
-      tag: set_rule_name_from_event_rule_id
+      tag: set_rule_name_from_event_rule_id_17c4845a
       copy_from: eset_protect.event.rule_id
       ignore_empty_value: true
       if: ctx.rule?.name == null
   - rename:
       field: json.scan_id
-      tag: rename_scan_id
+      tag: rename_scan_id_b7738494
       target_field: eset_protect.event.scan_id
       ignore_missing: true
   - rename:
       field: json.scanner_id
-      tag: rename_scanner_id
+      tag: rename_scanner_id_9f231519
       target_field: eset_protect.event.scanner_id
       ignore_missing: true
   - convert:
       field: json.severity_score
-      tag: convert_severity_score_to_long
+      tag: convert_severity_score_to_long_a1666bc7
       target_field: eset_protect.event.severity_score
       type: long
       ignore_missing: true
@@ -769,12 +769,12 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.severity
-      tag: set_event_severity_from_event_severity_score
+      tag: set_event_severity_from_event_severity_score_f1459a23
       copy_from: eset_protect.event.severity_score
       ignore_empty_value: true
   - convert:
       field: json.source_address
-      tag: convert_source_address_to_ip
+      tag: convert_source_address_to_ip_7c03e823
       target_field: eset_protect.event.source_address
       type: ip
       ignore_missing: true
@@ -786,17 +786,17 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: source.ip
-      tag: set_source_ip_from_event_source_address
+      tag: set_source_ip_from_event_source_address_69ed1391
       copy_from: eset_protect.event.source_address
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip_to_source_geo
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      tag: geoip_source_ip_to_source_as
+      tag: geoip_source_ip_to_source_as_58199963
       field: source.ip
       target_field: source.as
       properties:
@@ -805,28 +805,28 @@ processors:
       ignore_missing: true
   - rename:
       field: source.as.asn
-      tag: rename_source_as_asn
+      tag: rename_source_as_asn_168bbbaf
       target_field: source.as.number
       ignore_missing: true
   - rename:
       field: source.as.organization_name
-      tag: rename_source_as_organization_name
+      tag: rename_source_as_organization_name_aa06a00b
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_source_address_into_related_ip
+      tag: append_source_address_into_related_ip_d4922d7f
       value: "{{{eset_protect.event.source_address}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.source_address != null
   - rename:
       field: json.source_address_type
-      tag: rename_source_address_type
+      tag: rename_source_address_type_586bee15
       target_field: eset_protect.event.source_address_type
       ignore_missing: true
   - convert:
       field: json.source_port
-      tag: convert_source_port_to_long
+      tag: convert_source_port_to_long_ba288d01
       target_field: eset_protect.event.source_port
       type: long
       ignore_missing: true
@@ -837,17 +837,17 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: source.port
-      tag: set_source_port_from_event_source_port
+      tag: set_source_port_from_event_source_port_9d3c054a
       copy_from: eset_protect.event.source_port
       ignore_empty_value: true
   - rename:
       field: json.target
-      tag: rename_target
+      tag: rename_target_31f456ee
       target_field: eset_protect.event.target
       ignore_missing: true
   - convert:
       field: json.target_address
-      tag: convert_target_address_to_ip
+      tag: convert_target_address_to_ip_f7b53b73
       target_field: eset_protect.event.target_address
       type: ip
       ignore_missing: true
@@ -859,17 +859,17 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_event_target_address
+      tag: set_destination_ip_from_event_target_address_bd43486f
       copy_from: eset_protect.event.target_address
       ignore_empty_value: true
   - geoip:
       field: destination.ip
-      tag: geoip_destination_ip_to_destination_geo
+      tag: geoip_destination_ip_to_destination_geo_71881fab
       target_field: destination.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      tag: geoip_destination_ip_to_destination_as
+      tag: geoip_destination_ip_to_destination_as_4e3ec16d
       field: destination.ip
       target_field: destination.as
       properties:
@@ -878,28 +878,28 @@ processors:
       ignore_missing: true
   - rename:
       field: destination.as.asn
-      tag: rename_destination_as_asn
+      tag: rename_destination_as_asn_4968f9c8
       target_field: destination.as.number
       ignore_missing: true
   - rename:
       field: destination.as.organization_name
-      tag: rename_destination_as_organization_name
+      tag: rename_destination_as_organization_name_fb88b41e
       target_field: destination.as.organization.name
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_target_address_into_related_ip
+      tag: append_target_address_into_related_ip_561c882c
       value: "{{{eset_protect.event.target_address}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.target_address != null
   - rename:
       field: json.target_address_type
-      tag: rename_target_address_type
+      tag: rename_target_address_type_25a2c8d4
       target_field: eset_protect.event.target_address_type
       ignore_missing: true
   - convert:
       field: json.target_port
-      tag: convert_target_port_to_long
+      tag: convert_target_port_to_long_8f095639
       target_field: eset_protect.event.target_port
       type: long
       ignore_missing: true
@@ -910,17 +910,17 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: destination.port
-      tag: set_destination_port_from_event_target_port
+      tag: set_destination_port_from_event_target_port_3c425039
       copy_from: eset_protect.event.target_port
       ignore_empty_value: true
   - rename:
       field: json.threat_flags
-      tag: rename_threat_flags
+      tag: rename_threat_flags_78ef7367
       target_field: eset_protect.event.threat_flags
       ignore_missing: true
   - convert:
       field: json.threat_handled
-      tag: convert_threat_handled_to_boolean
+      tag: convert_threat_handled_to_boolean_6f51c6cd
       target_field: eset_protect.event.threat_handled
       type: boolean
       ignore_missing: true
@@ -931,32 +931,32 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.threat_name
-      tag: rename_threat_name
+      tag: rename_threat_name_45a81458
       target_field: eset_protect.event.threat_name
       ignore_missing: true
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name_from_event_threat_name
+      tag: set_threat_indicator_name_from_event_threat_name_b989625a
       copy_from: eset_protect.event.threat_name
       ignore_empty_value: true
   - rename:
       field: json.threat_type
-      tag: rename_threat_type
+      tag: rename_threat_type_547281ab
       target_field: eset_protect.event.threat_type
       ignore_missing: true
   - rename:
       field: json.user
-      tag: rename_user
+      tag: rename_user_d079f48b
       target_field: eset_protect.event.username
       ignore_missing: true
   - rename:
       field: json.username
-      tag: rename_username
+      tag: rename_username_938fe7e6
       target_field: eset_protect.event.username
       ignore_missing: true
   - grok:
       field: eset_protect.event.username
-      tag: grok_user_name
+      tag: grok_user_name_b1c39e49
       ignore_missing: true
       patterns:
         - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
@@ -971,7 +971,7 @@ processors:
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
@@ -997,15 +997,15 @@ processors:
         - eset_protect.event.source_port
         - eset_protect.event.target_port
         - eset_protect.event.threat_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e4031c69
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -1036,15 +1036,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_6906b116
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

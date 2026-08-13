@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -22,7 +22,7 @@ processors:
       field: event.original
       target_field: json
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -40,7 +40,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - fail:
-      tag: fail_d1247e5f
+      tag: fail_missing_json_object_input_document_d1247e5f
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: missing json object in input document
   - rename:
@@ -48,7 +48,7 @@ processors:
       field: json
       target_field: jumpcloud.event
   - fingerprint:
-      tag: fingerprint_3fc41178
+      tag: fingerprint_to_id_3fc41178
       description: "Generate a unique document ID using the unique JumpCloud event ID and timestamp"
       fields:
         - jumpcloud.event.id
@@ -112,22 +112,22 @@ processors:
   - rename:
       field: jumpcloud.event.version
       target_field: jumpcloud.event.payload_version
-      tag: rename_jumpcloud_event_version_to_payload_version
+      tag: rename_jumpcloud_event_version_to_payload_version_79d158ff
       ignore_missing: true
   - convert:
       field: jumpcloud.event.payload_version
       type: string
-      tag: convert_jumpcloud_event_payload_version_to_string
+      tag: convert_jumpcloud_event_payload_version_to_string_dedb6e99
       ignore_missing: true
   - rename:
       field: jumpcloud.event.@version
       target_field: jumpcloud.event.version
-      tag: rename_jumpcloud_event_@version_to_version
+      tag: rename_jumpcloud_event_@version_to_version_b964869e
       ignore_missing: true
   - convert:
       field: jumpcloud.event.version
       type: string
-      tag: convert_jumpcloud_event_version_to_string
+      tag: convert_jumpcloud_event_version_to_string_cf989a87
       ignore_missing: true
   ### utilise host fields if they exist
   - set:
@@ -344,13 +344,13 @@ processors:
       if: "ctx.source?.address != null"
       allow_duplicates: false
   - remove:
-      tag: remove_615a3966
+      tag: remove_cleanup_temporary_other_garbage_fields_615a3966
       description: Cleanup temporary and other garbage fields
       field:
         - _tmp
       ignore_missing: true
   - remove:
-      tag: remove_4d2032e2
+      tag: remove_jumpcloud_fields_no_longer_needed_4d2032e2
       description: Remove jumpcloud fields that are no longer needed as they were mapped to ECS, unless instructed not to
       field:
         - jumpcloud.event.timestamp
@@ -372,15 +372,15 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
