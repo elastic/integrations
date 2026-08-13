@@ -342,27 +342,30 @@ processors:
       description: Unwrap service DLL nodes from the GraphQL connection into service_dll
       lang: painless
       source: |
-        if (ctx.observables?.edges instanceof List) {
-          for (def edge : ctx.observables.edges) {
-            def dllEdges = edge.node?.serviceDlls?.edges;
-            if (dllEdges instanceof List) {
-              def dlls = [];
-              for (def dllEdge : dllEdges) {
-                def dll = dllEdge.node;
-                if (dll != null) {
-                  if (dll.containsKey('x_opencti_additional_names')) {
-                    dll.additional_names = dll.remove('x_opencti_additional_names');
-                  }
-                  if (dll.containsKey('obsContent')) {
-                    dll.content = dll.remove('obsContent');
-                  }
-                  dlls.add(dll);
-                }
-              }
-              edge.node.service_dll = dlls;
-            }
-            edge.node?.remove('serviceDlls');
+        if (!(ctx.observables?.edges instanceof List)) {
+          return;
+        }
+        for (def edge : ctx.observables.edges) {
+          def serviceDlls = edge.node?.remove('serviceDlls');
+          def dllEdges = serviceDlls?.edges;
+          if (!(dllEdges instanceof List)) {
+            continue;
           }
+          def dlls = [];
+          for (def dllEdge : dllEdges) {
+            def dll = dllEdge.node;
+            if (dll == null) {
+              continue;
+            }
+            if (dll.containsKey('x_opencti_additional_names')) {
+              dll.additional_names = dll.remove('x_opencti_additional_names');
+            }
+            if (dll.containsKey('obsContent')) {
+              dll.content = dll.remove('obsContent');
+            }
+            dlls.add(dll);
+          }
+          edge.node.service_dll = dlls;
         }
 
   - script:
