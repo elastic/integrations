@@ -112,3 +112,38 @@ To see how a payload field is indexed, open the data stream in **Discover** and 
 | **[Vercel OTel] Audit Logs** | Governance and security overview of audit event volume, actors, top event types, user activity, and sensitive operations. |
 | **[Vercel OTel] Web Analytics** | Traffic and engagement overview covering page views, geography, devices, top pages, and custom events. |
 | **[Vercel OTel] Speed Insights** | Web Vitals performance overview tracking LCP, INP, CLS, and TTFB at the p75 benchmark over time and per page. |
+
+## Alert rules
+
+This package ships ten alert rule templates that you can enable and customize:
+
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| **[Vercel OTel] High HTTP 5xx error rate by log source** | HTTP 5xx rate exceeds 2% of lambda or edge requests over 15 minutes — the primary server-side health signal, evaluated per log source so a defect in either runtime is caught independently. | Critical |
+| **[Vercel OTel] Lambda/edge function crash rate elevated** | More than 1% of lambda/edge invocations return no HTTP response at all (`http.response.status_code == -1`) over 15 minutes — a harder failure than a 5xx, since the client never received any response. | Critical |
+| **[Vercel OTel] Elevated ERROR/WARNING log rate by source** | ERROR or WARNING log entries exceed 10% of a log source's volume over 15 minutes, catching recoverable exceptions logged to stdout/stderr that never surface as a bad HTTP status. | Medium |
+| **[Vercel OTel] Elevated TTFB p75 (edge/server latency)** | Site-wide p75 Time to First Byte exceeds the 1,800 ms "poor" Web Vitals threshold over a 1-hour window — an early warning of cold starts or edge congestion before it fully manifests as an LCP regression. | Warning |
+| **[Vercel OTel] Poor Core Web Vitals (p75) by route** | The p75 value of LCP, INP, or CLS for a specific route exceeds its "poor" Web Vitals threshold over a 1-hour window, isolating per-page regressions typically introduced by a recent deployment. | Medium |
+| **[Vercel OTel] Request rate drop (traffic collapse)** | Server-side request volume (Logs) drops by more than 50% versus the preceding 15 minutes, per project — often a broken deployment, DNS issue, or authentication barrier blocking users. | Critical |
+| **[Vercel OTel] Page view rate drop** | Web Analytics page view volume drops by more than 50% versus the preceding 15 minutes, per project — a client-side, user-facing engagement view that complements the server-side traffic collapse rule. | High |
+| **[Vercel OTel] Regional error rate skew** | HTTP 5xx rate within a single Vercel execution region exceeds 5% over 15 minutes even while the global rate looks healthy, pointing to a regional edge/lambda infrastructure issue rather than a code defect. | High |
+| **[Vercel OTel] Firewall deny spike** | Firewall (WAF) requests with a `deny` action exceed 100 in a 10-minute window, indicating either an active attack (DDoS, credential stuffing, crawling) or an overly restrictive rule change blocking real users. | High |
+| **[Vercel OTel] Sensitive audit activity spike by actor** | A single actor performs more than 5 sensitive audit actions (environment variable reads, drain/webhook/token/domain/team changes, project transfers) within a 1-hour window, a pattern consistent with automated abuse or a compromised credential. | High |
+
+All rules use ES|QL queries and are filtered to `deployment.environment.name: production`. Thresholds are conservative defaults — adjust them to match your traffic volume and SLA.
+
+## SLO templates
+
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
+This package includes five SLO templates:
+
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **[Vercel OTel] Server-side error rate** | 99% | Rolling 30 days | Proportion of production lambda and edge requests that complete without an HTTP 5xx response. Uses occurrence-based budgeting; excludes `http.response.status_code == -1` crashes, since no HTTP response was actually served. |
+| **[Vercel OTel] Largest contentful paint p75** | 99.5% | Rolling 30 days | Proportion of hourly windows where p75 LCP stays under 2,500 ms, Vercel's "good" Web Vitals threshold. Uses timeslice budgeting over Speed Insights. |
+| **[Vercel OTel] Interaction to next paint p75** | 99.5% | Rolling 30 days | Proportion of hourly windows where p75 INP stays under 200 ms, Vercel's "good" Web Vitals threshold. Uses timeslice budgeting over Speed Insights. |
+| **[Vercel OTel] Time to first byte p75** | 99.5% | Rolling 30 days | Proportion of hourly windows where p75 TTFB stays under 800 ms, Vercel's "good" Web Vitals threshold. Uses timeslice budgeting over Speed Insights. |
+| **[Vercel OTel] Cumulative layout shift p75** | 99.5% | Rolling 30 days | Proportion of hourly windows where p75 CLS stays under 0.1, Vercel's "good" Web Vitals threshold. Uses timeslice budgeting over Speed Insights. |
+
+All five SLOs are grouped by `vercel.project.id` and filtered to `deployment.environment.name: production`, allowing per-project tracking.

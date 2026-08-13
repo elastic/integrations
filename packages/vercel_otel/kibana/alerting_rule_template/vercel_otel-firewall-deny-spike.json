@@ -1,0 +1,50 @@
+{
+    "id": "vercel_otel-firewall-deny-spike",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the count of firewall (WAF) requests with a 'deny' action exceeds 100 in a 10-minute window. An elevated deny rate can indicate an active attack (DDoS, credential stuffing, crawling) or an overly restrictive firewall rule change blocking legitimate traffic.",
+        "name": "[Vercel OTel] Firewall deny spike",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "security"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-logs"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Firewall Deny Spike\n\n### Triage Steps\n1. Sample the denied requests: `FROM logs-vercel.logs.otel-default | WHERE vercel.log.source == \"firewall\" | EVAL waf_action = FIELD_EXTRACT(vercel.proxy, \"waf_action\") | WHERE waf_action == \"deny\" | KEEP @timestamp, url.path, client.address, user_agent.original | SORT @timestamp DESC | LIMIT 100`\n2. Check whether denies are concentrated on a small number of client IPs (`client.address`) or user agents \u2014 this points to a targeted attack rather than a rule misconfiguration.\n3. Check whether denies are spread across many paths/IPs but started right after a firewall rule change \u2014 review recent audit log `event_name` values related to firewall/rule configuration.\n4. If this is a genuine attack, no action may be required (the WAF is doing its job) \u2014 but consider notifying security/on-call if the volume is large enough to risk collateral impact (e.g. rate-limit exhaustion).\n5. If legitimate traffic is being blocked, review and relax the offending firewall rule.\n\n### Note\n`vercel.log.source == \"firewall\"` covers all WAF-processed requests, including `log`-only actions that are not actually blocked. This rule filters specifically to `waf_action == \"deny\"` via `FIELD_EXTRACT` to isolate real blocks.\n\n### Escalation\nEscalate to the security team if deny volume exceeds 10x the normal baseline or if source IPs correlate with known threat intelligence."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE vercel.log.source == \"firewall\"\n// vercel.proxy is a flattened field; sub-fields aren't queryable via dotted notation, use FIELD_EXTRACT instead\n| EVAL waf_action = FIELD_EXTRACT(vercel.proxy, \"waf_action\")\n// \"firewall\" source includes log-only entries too; isolate actual blocks\n| WHERE waf_action == \"deny\"\n| STATS denies = COUNT(*)\n// Alert threshold: tune based on your application's normal WAF deny baseline.\n// Consider grouping by client.address instead of a flat total if you want per-attacker alerting.\n| WHERE denies > 100"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

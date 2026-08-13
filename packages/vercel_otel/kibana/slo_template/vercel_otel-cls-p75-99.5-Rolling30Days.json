@@ -1,0 +1,53 @@
+{
+    "attributes": {
+        "name": "[Vercel OTel] Cumulative layout shift p75 99.5% rolling 30 days",
+        "description": "Tracks the 75th-percentile Cumulative Layout Shift (CLS) reported by Speed Insights for production page loads, targeting 99.5% of hourly windows with a p75 CLS score under 0.1 (Vercel's 'good' threshold) over a rolling 30-day window. A breach signals a layout-shifting regression \u2014 such as a newly introduced ad slot, web-font swap, or dynamically injected content \u2014 that visually destabilises the page for real users and risks accidental mis-clicks.",
+        "indicator": {
+            "type": "sli.metric.timeslice",
+            "params": {
+                "index": "metrics-*",
+                "filter": "data_stream.dataset: \"vercel.speedinsights.v1.otel\" and deployment.environment.name: \"production\" and metrics.CLS: *",
+                "metric": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "percentile",
+                            "field": "metrics.CLS",
+                            "percentile": 75
+                        }
+                    ],
+                    "equation": "A",
+                    "comparator": "LT",
+                    "threshold": 0.1
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "timeslices",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.995,
+            "timesliceTarget": 0.95,
+            "timesliceWindow": "1h"
+        },
+        "tags": [
+            "vercel",
+            "otel"
+        ],
+        "groupBy": [
+            "vercel.project.id"
+        ],
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-speed-insights"
+                }
+            ]
+        }
+    },
+    "id": "vercel_otel-cls-p75-99.5-Rolling30Days",
+    "type": "slo_template"
+}
