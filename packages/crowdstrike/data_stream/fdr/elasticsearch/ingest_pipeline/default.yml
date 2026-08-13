@@ -1040,6 +1040,47 @@ processors:
 
         ctx.process.args = commandLineToArgv(ctx.process.command_line);
         ctx.process.args_count = ctx.process.args.length;
+  - script:
+      description: >-
+        Split crowdstrike.CommandHistory on U+00B6 PILCROW SIGN into an array
+        and assign the result to both crowdstrike.CommandHistory and
+        process.command_line. Placed after split_command_line so that processor
+        only runs on string-valued command lines from crowdstrike.CommandLine.
+      tag: script_command_history_to_process_command_line_8c3e1f92
+      if: |-
+        ctx.crowdstrike?.event_simpleName == 'CommandHistory' &&
+        ctx.crowdstrike?.CommandHistory instanceof String &&
+        ctx.crowdstrike.CommandHistory != ''
+      source: |-
+        def history = ctx.crowdstrike.CommandHistory;
+        def commands = new ArrayList();
+        def remaining = history;
+        int idx = remaining.indexOf("¶");
+        while (idx >= 0) {
+          def cmd = remaining.substring(0, idx).trim();
+          if (!cmd.isEmpty()) {
+            commands.add(cmd);
+          }
+          remaining = remaining.substring(idx + 1);
+          idx = remaining.indexOf("¶");
+        }
+        if (!remaining.trim().isEmpty()) {
+          commands.add(remaining.trim());
+        }
+        ctx.crowdstrike.CommandHistory = commands;
+        ctx.process = ctx.process ?: [:];
+        ctx.process.command_line = commands;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse CommandHistory: {{{_ingest.on_failure_message}}}"
+  - set:
+      tag: set_process_user_name_command_history_4e2a8f1c
+      description: Map crowdstrike.UserName to process.user.name for CommandHistory events.
+      if: ctx.crowdstrike?.event_simpleName == 'CommandHistory' && ctx.crowdstrike?.UserName instanceof String && ctx.crowdstrike.UserName != ''
+      field: process.user.name
+      copy_from: crowdstrike.UserName
+      ignore_empty_value: true
   - rename:
       tag: rename_crowdstrike_ImageFileName_to_process_executable_1e9d3140
       if: ctx._temp?.isLibrary != true && ctx._temp?.isDriver != true
@@ -3183,6 +3224,31 @@ processors:
             ctx.crowdstrike.remove(field);
           }
         }
+
+  - script:
+      tag: script_process_interactive_logon_type_9b3d6c7a
+      description: >-
+        Set process.interactive from crowdstrike.LogonType whenever a process
+        object is present in the event. Placed after all other process
+        processors so that any processor that creates a process object
+        (TargetProcessId, ContextProcessId, etc.) has already run. Logon types
+        2 (Interactive), 10 (RemoteInteractive), 11 (CachedInteractive), and 12
+        (CachedRemoteInteractive) indicate an interactive shell session; all
+        other types are non-interactive.
+      if: >-
+        ctx.crowdstrike?.LogonType instanceof String &&
+        ctx.crowdstrike.LogonType != '' &&
+        ctx.process != null
+      source: |-
+        // Logon type reference: 2=Interactive, 3=Network, 4=Batch, 5=Service,
+        // 7=Unlock, 8=NetworkCleartext, 9=NewCredentials, 10=RemoteInteractive,
+        // 11=CachedInteractive, 12=CachedRemoteInteractive, 13=CachedUnlock
+        def logonType = ctx.crowdstrike.LogonType;
+        ctx.process.interactive = (logonType == '2' || logonType == '10' || logonType == '11' || logonType == '12');
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to set process.interactive from LogonType: {{{_ingest.on_failure_message}}}"
 
   # Cleanup.
   - remove:
