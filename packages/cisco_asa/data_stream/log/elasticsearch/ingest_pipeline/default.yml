@@ -1111,7 +1111,13 @@ processors:
       field: "message"
       description: "733100"
       patterns:
-        - \[(%{SPACE})?%{DATA:_temp_.cisco.burst.object}\] drop %{NOTSPACE:_temp_.cisco.burst.id} exceeded. Current burst rate is %{INT:_temp_.cisco.burst.current_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_rate}; Current average rate is %{INT:_temp_.cisco.burst.avg_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_avg_rate}; Cumulative total count is %{INT:_temp_.cisco.burst.cumulative_count}
+        - \[(%{SPACE})?(?<_temp_.cisco.burst.object>[^\]]+)\] drop %{NOTSPACE:_temp_.cisco.burst.id} exceeded. Current burst rate is %{INT:_temp_.cisco.burst.current_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_rate}; Current average rate is %{INT:_temp_.cisco.burst.avg_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_avg_rate}; Cumulative total count is %{INT:_temp_.cisco.burst.cumulative_count}
+  - gsub:
+      tag: gsub_burst_object_normalize_newlines
+      field: _temp_.cisco.burst.object
+      if: ctx._temp_?.cisco?.burst?.object != null
+      pattern: "\\s*[\\n\\r]+\\s*"
+      replacement: ""
   - dissect:
       if: "ctx._temp_.cisco.message_id == '734001'"
       tag: parse_734001
