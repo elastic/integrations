@@ -5,11 +5,118 @@
 package codeowners
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Tests for the exported Owners API (LoadOwners, Resolve,
+// EntriesUnder, ExplicitEntry, PackageOwnersByPath).
+
+func mustParseOwners(t *testing.T, content string) *Owners {
+	t.Helper()
+	inner, err := scanGithubOwners(strings.NewReader(content), "<in-memory>")
+	require.NoError(t, err)
+	return &Owners{inner: inner}
+}
+
+func TestResolve(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+/packages/nested/foo @elastic/ecosystem
+`
+	o := mustParseOwners(t, content)
+
+	cases := []struct {
+		name     string
+		path     string
+		expected []string
+		found    bool
+	}{
+		{
+			name:     "explicit package root",
+			path:     "/packages/aws",
+			expected: []string{"@elastic/obs-infraobs-integrations"},
+			found:    true,
+		},
+		{
+			name:     "explicit data stream override",
+			path:     "/packages/aws/data_stream/cloudtrail",
+			expected: []string{"@elastic/security-service-integrations"},
+			found:    true,
+		},
+		{
+			name:     "data stream without override falls back to package owner",
+			path:     "/packages/aws/data_stream/vpcflow",
+			expected: []string{"@elastic/obs-infraobs-integrations"},
+			found:    true,
+		},
+		{
+			name:     "nested category package",
+			path:     "/packages/nested/foo",
+			expected: []string{"@elastic/ecosystem"},
+			found:    true,
+		},
+		{
+			name:  "unknown path with no ancestor entry",
+			path:  "/packages/does-not-exist",
+			found: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got, found := o.Resolve(c.path)
+			assert.Equal(t, c.found, found)
+			if c.found {
+				assert.Equal(t, c.expected, got)
+			}
+		})
+	}
+}
+
+func TestEntriesUnder(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+/packages/aws/kibana @elastic/obs-infraobs-integrations
+/packages/awsome @elastic/unrelated-team
+`
+	o := mustParseOwners(t, content)
+
+	got := o.EntriesUnder("/packages/aws")
+	assert.ElementsMatch(t, []string{
+		"/packages/aws/data_stream/cloudtrail",
+		"/packages/aws/kibana",
+	}, got)
+}
+
+func TestExplicitEntry(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+`
+	o := mustParseOwners(t, content)
+
+	t.Run("returns entry for an explicitly defined path", func(t *testing.T) {
+		got, ok := o.ExplicitEntry("/packages/aws/data_stream/cloudtrail")
+		require.True(t, ok)
+		assert.Equal(t, []string{"@elastic/security-service-integrations"}, got)
+	})
+
+	t.Run("returns false for a path that only resolves via walk-up", func(t *testing.T) {
+		_, ok := o.ExplicitEntry("/packages/aws/data_stream/vpcflow")
+		assert.False(t, ok)
+	})
+
+	t.Run("returns false for an unknown path", func(t *testing.T) {
+		_, ok := o.ExplicitEntry("/packages/other")
+		assert.False(t, ok)
+	})
+}
 
 func TestCheckManifest(t *testing.T) {
 	cases := []struct {
@@ -166,6 +273,10 @@ func TestReadGithubOwners(t *testing.T) {
 			codeownersPath: "testdata/CODEOWNERS-invalid-override-wildcard",
 			valid:          false,
 		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			valid:          true,
+		},
 	}
 
 	for _, c := range cases {
@@ -195,6 +306,30 @@ func TestReturnPackageOwners(t *testing.T) {
 			packageName:    "aws",
 			datastream:     "",
 			expected:       []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services", "@elastic/security-service-integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "package with trailing slash",
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			packageName:    "content",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "data stream with trailing slash",
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			packageName:    "aws",
+			datastream:     "apigateway_logs",
+			expected:       []string{"@elastic/obs-infraobs-integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "nested package with trailing slash",
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			packageName:    "elastic_package_registry",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations"},
 			expectedError:  false,
 		},
 		{
@@ -240,6 +375,81 @@ func TestReturnPackageOwners(t *testing.T) {
 			}
 			require.NoError(t, err)
 			assert.Equal(t, c.expected, owners)
+		})
+	}
+}
+
+func TestPackageOwnersByPath(t *testing.T) {
+	cases := []struct {
+		title          string
+		codeownersPath string
+		pkgPath        string
+		datastream     string
+		expected       []string
+		expectedError  bool
+	}{
+		{
+			title:          "nested package",
+			codeownersPath: "testdata/CODEOWNERS-nested-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "nested package inherits category owner",
+			codeownersPath: "testdata/CODEOWNERS-nested-category-owner",
+			pkgPath:        "testdata/nested_packages/category/package_nested_2",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "nested package data stream",
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "stream_1",
+			expected:       []string{"@pkoutsovasilis"},
+			expectedError:  false,
+		},
+		{
+			title:          "top-level package",
+			codeownersPath: "testdata/CODEOWNERS-nested-valid",
+			pkgPath:        "testdata/nested_packages/package_top",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "data stream not in CODEOWNERS falls back to package owner",
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "stream_unknown",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "package path not found",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			pkgPath:        "packages/other",
+			datastream:     "",
+			expected:       []string{},
+			expectedError:  true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			owners, err := LoadOwners(c.codeownersPath)
+			require.NoError(t, err)
+
+			got, err := owners.PackageOwnersByPath(c.pkgPath, c.datastream)
+			if c.expectedError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, c.expected, got)
 		})
 	}
 }
