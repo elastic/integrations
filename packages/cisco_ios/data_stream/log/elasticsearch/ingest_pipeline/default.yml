@@ -188,12 +188,19 @@ processors:
             String fallback = (ctx._conf?.tz_offset != null) ? ctx._conf.tz_offset : 'UTC';
             ctx._temp_.date_timezone = fallback;
             ctx.event.timezone = ctx._temp_.tz;
+            ctx._temp_.tz_unmapped = true;
           }
         } else {
           // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
           // e.g. Europe/Athens needs to be put as a ZoneId and *not* inside the timestamp
           ctx._temp_.date_timezone = event_timezone;
         }
+  - append:
+      tag: append_cisco_ios_unmapped_timezone
+      field: tags
+      value: cisco_ios_unmapped_timezone
+      allow_duplicates: false
+      if: ctx._temp_?.tz_unmapped == true
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
