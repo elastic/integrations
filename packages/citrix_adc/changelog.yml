@@ -1,4 +1,12 @@
 # newer versions go on top
+- version: "1.18.7"
+  changes:
+    - description: Fix ICASTART Grok pattern to handle any combination of optional bracket prefix blocks (including [ICAUUID=…] and [TECHSUPPORT][LAUNCH][…]), optional Client_ip token, and optional SSLRelayAddress. The previous two-pattern approach left a gap when both a prefix and SSLRelayAddress were present (sdh-beats#7430), and also failed the no-prefix/no-SSLRelayAddress form documented in CTX578654.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20518
+    - description: Capture citrix_adc.log.ica_uuid and citrix_adc.log.client_ip from the ICASTART message prefix. client_ip feeds the existing geo/ASN enrichment pipeline, so ICASTART events now also populate client.ip, client.geo, and client.as.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20518
 - version: "1.18.6"
   changes:
     - description: Fix ICASTART Grok pattern to handle empty customername (double space) and trailing carriage return characters.
