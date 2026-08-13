@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # PingDirectory Integration for Elastic
 
 ## Overview
@@ -117,13 +116,13 @@ An example event for `http_access` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-25T13:25:19.182Z",
+    "@timestamp": "2026-05-25T18:55:19.182+05:30",
     "agent": {
-        "ephemeral_id": "90ac8dce-75e8-4010-a043-ecc2f21d82e6",
-        "id": "246e329f-fdf2-4048-8313-908aa20cf684",
-        "name": "elastic-agent-34933",
+        "ephemeral_id": "084f8557-355a-40ee-96ed-97f616cbca07",
+        "id": "3455b6e0-52f8-4828-a529-058ecb6d5ce3",
+        "name": "elastic-agent-66564",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "client": {
         "ip": "172.20.240.130",
@@ -131,16 +130,16 @@ An example event for `http_access` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.http_access",
-        "namespace": "22492",
+        "namespace": "60932",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "246e329f-fdf2-4048-8313-908aa20cf684",
+        "id": "3455b6e0-52f8-4828-a529-058ecb6d5ce3",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "event": {
         "action": "GET",
@@ -150,9 +149,8 @@ An example event for `http_access` looks as following:
         ],
         "dataset": "ping_directory.http_access",
         "duration": 124825000,
-        "ingested": "2026-07-10T07:22:36Z",
+        "ingested": "2026-08-13T11:14:53Z",
         "kind": "event",
-        "module": "ping_directory",
         "original": "[25/May/2026:18:55:19.182 +0530] RESULT instanceName=\"pingdirectory-elastic-test\" threadID=164 requestID=8 correlationID=\"7c0f360b-77f0-4951-9101-74d4f8358795\" from=\"172.20.240.130:55188\" method=\"GET\" url=\"https://10.50.15.29:2443/scim/v2\" requestHeader=\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\" requestHeader=\"Connection: keep-alive\" requestHeader=\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\" requestHeader=\"Sec-Fetch-Site: none\" requestHeader=\"Sec-Fetch-Dest: document\" requestHeader=\"Host: 10.50.15.29:2443\" requestHeader=\"Accept-Encoding: gzip, deflate, br, zstd\" requestHeader=\"Sec-Fetch-Mode: navigate\" requestHeader=\"sec-ch-ua: 'Chromium';v='148', 'Google Chrome';v='148', 'Not/A)Brand';v='99'\" requestHeader=\"sec-ch-ua-mobile: ?0\" requestHeader=\"Upgrade-Insecure-Requests: 1\" requestHeader=\"sec-ch-ua-platform: 'Windows'\" requestHeader=\"Sec-Fetch-User: ?1\" requestHeader=\"Accept-Language: en-GB,en-US;q=0.9,en;q=0.8\" statusCode=401 etime=124.825 responseContentLength=118 responseHeader=\"X-Frame-Options: SAMEORIGIN\" responseHeader=\"Correlation-Id: 7c0f360b-77f0-4951-9101-74d4f8358795\" responseHeader=\"Date: Mon, 25 May 2026 13:25:19 GMT\" responseContentType=\"application/scim+json\"",
         "outcome": "failure",
         "timezone": "+0530",
@@ -177,8 +175,7 @@ An example event for `http_access` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "fingerprint": "0b60a0596cd536564982c51f606c5a080b3414d05185b50d98cdb5c7e41df570",
-            "inode": "1470728",
+            "inode": "1982471",
             "path": "/tmp/service_logs/test-http-access.log"
         },
         "offset": 720
@@ -187,9 +184,7 @@ An example event for `http_access` looks as following:
         "protocol": "https"
     },
     "observer": {
-        "name": "pingdirectory-elastic-test",
-        "product": "PingDirectory",
-        "vendor": "PingIdentity"
+        "name": "pingdirectory-elastic-test"
     },
     "ping_directory": {
         "http_access": {
@@ -308,9 +303,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-25T18:48:06.786+05:30",
     "agent": {
-        "ephemeral_id": "5b343c98-d304-45e0-afd5-3994c2760039",
-        "id": "25248675-793d-4b6f-9d94-326f8c22bcb8",
-        "name": "elastic-agent-64422",
+        "ephemeral_id": "bce38323-dc6c-4c42-9334-52a521979aa0",
+        "id": "2b8063ac-53d3-460a-ae40-b83abdefd8aa",
+        "name": "elastic-agent-46676",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -319,14 +314,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "12482",
+        "namespace": "82148",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "25248675-793d-4b6f-9d94-326f8c22bcb8",
+        "id": "2b8063ac-53d3-460a-ae40-b83abdefd8aa",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -337,7 +332,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-08-11T10:48:15Z",
+        "ingested": "2026-08-13T11:13:47Z",
         "kind": "event",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=10.50.15.29; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "timezone": "+0530",
@@ -351,7 +346,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1974460",
+            "inode": "1978780",
             "path": "/tmp/service_logs/test-audit.log"
         },
         "flags": [
@@ -483,24 +478,24 @@ An example event for `ldap_access` looks as following:
 {
     "@timestamp": "2026-05-25T18:30:48.688+05:30",
     "agent": {
-        "ephemeral_id": "21e8bfb6-0fc0-4cae-85cb-927ca9209d57",
-        "id": "b55cf73b-98dc-476e-b895-6d7d0fee76e6",
-        "name": "elastic-agent-26139",
+        "ephemeral_id": "bf6ff11b-d051-4ba3-90f1-b8f949438588",
+        "id": "0ae347d5-b19b-4560-bcc6-96a3313015ee",
+        "name": "elastic-agent-22240",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ping_directory.ldap_access",
-        "namespace": "66896",
+        "namespace": "29370",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "b55cf73b-98dc-476e-b895-6d7d0fee76e6",
+        "id": "0ae347d5-b19b-4560-bcc6-96a3313015ee",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "action": "add result",
@@ -509,14 +504,14 @@ An example event for `ldap_access` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.ldap_access",
-        "duration": 24.567,
-        "ingested": "2026-07-03T07:12:26Z",
+        "duration": 24567000,
+        "ingested": "2026-08-13T11:16:53Z",
         "kind": "event",
         "original": "[25/May/2026:18:30:48.688 +0530] ADD RESULT instanceName=\"pingdirectory-elastic-test\" threadID=9 conn=4 op=1 msgID=2 requesterIP=\"127.0.0.1\" requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\" dn=\"ou=People,dc=example,dc=com\" resultCode=0 resultCodeName=\"Success\" qtime=0 etime=24.567 usedPrivileges=\"bypass-acl\"",
         "outcome": "success",
         "timezone": "+0530",
         "type": [
-            "change"
+            "creation"
         ]
     },
     "input": {
@@ -525,7 +520,7 @@ An example event for `ldap_access` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "2492551",
+            "inode": "1982602",
             "path": "/tmp/service_logs/test-ldap_access.log"
         },
         "offset": 0
@@ -562,7 +557,7 @@ An example event for `ldap_access` looks as following:
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "ping_directory-audit"
+        "ping_directory-ldap_access"
     ]
 }
 ```

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # PingDirectory Integration for Elastic
 
 ## Overview
