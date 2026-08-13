@@ -76,7 +76,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Validation
 
-Open Discover on `logs-whoisfreaks.whois-*` and confirm documents with
+Open Discover on `logs-ti_whoisfreaks.whois-*` and confirm documents with
 populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 ## Troubleshooting
@@ -143,10 +143,18 @@ The `whois` data stream provides WHOIS domain intelligence records.
 | data_stream.type | Data stream type. | constant_keyword |
 | domain.registered_domain | The highest registered domain, stripped of any subdomains. | keyword |
 | domain.registrar.name | Name of the domain registrar. | keyword |
+| ecs.version | ECS version this event conforms to. | keyword |
 | event.category | Event category. | keyword |
 | event.dataset | Name of the dataset. | keyword |
 | event.kind | The kind of the event. | keyword |
 | event.type | Event type. | keyword |
+| input.type | Type of input. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for threat feed visualizations. | keyword |
+| threat.feed.name | The name of the threat feed. | keyword |
+| threat.indicator.domain | Domain name related to a threat indicator. | keyword |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL pointing to the threat indicator information. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | whoisfreaks.administrative_address | Street address of the administrative contact. | text |
 | whoisfreaks.administrative_city | City of the administrative contact. | keyword |
 | whoisfreaks.administrative_company | Company of the administrative contact. | keyword |
@@ -229,12 +237,13 @@ An example event for `whois` looks as following:
     "event": {
         "kind": "enrichment",
         "category": [
+            "threat",
             "network"
         ],
         "type": [
             "info"
         ],
-        "dataset": "whoisfreaks.whois"
+        "dataset": "ti_whoisfreaks.whois"
     },
     "domain": {
         "registered_domain": "driveigo.world",
@@ -259,6 +268,18 @@ An example event for `whois` looks as following:
         "domain_status_2": "clienttransferprohibited",
         "days_until_expiry": 363,
         "is_newly_registered": false
+    },
+    "threat": {
+        "indicator": {
+            "type": "domain-name",
+            "domain": "driveigo.world",
+            "provider": "WhoisFreaks",
+            "reference": "https://whoisfreaks.com/"
+        },
+        "feed": {
+            "name": "WhoisFreaks",
+            "dashboard_id": "ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150"
+        }
     }
 }
 ```
@@ -292,4 +313,4 @@ The following **Elastic Security** detection rules are installed with the packag
 | WhoisFreaks - Domain Expiring Within 30 Days | Low | Portfolio / takeover risk for domains near expiry |
 | WhoisFreaks - Ingest Pipeline or API Error | Low | Collection health (invalid API key, download failures) |
 
-Enable the rules that match your monitoring goals. Rules query `logs-whoisfreaks.whois-*`.
+Enable the rules that match your monitoring goals. Rules query `logs-ti_whoisfreaks.whois-*`.

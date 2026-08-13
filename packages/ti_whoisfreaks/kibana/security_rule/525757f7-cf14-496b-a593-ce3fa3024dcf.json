@@ -1,9 +1,9 @@
 {
-    "id": "a056caae-3bb1-446a-a3cd-5f1de54f7a88",
+    "id": "525757f7-cf14-496b-a593-ce3fa3024dcf",
     "type": "security-rule",
     "attributes": {
-        "name": "WhoisFreaks - Domain Expiring Within 30 Days",
-        "description": "Detects domains in the WhoisFreaks feed with 30 or fewer days until expiry. Domains nearing expiry may indicate portfolio risk, accidental lapse, or opportunities for domain hijacking after expiration.",
+        "name": "WhoisFreaks - Newly Registered Domain Observed",
+        "description": "Detects domains that appear in the WhoisFreaks daily gTLD feed as newly registered (create_date on the same day as query_time). Newly registered domains are frequently used for phishing, malware staging, and brand impersonation.",
         "author": [
             "WhoisFreaks"
         ],
@@ -16,25 +16,25 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "max_signals": 100,
-        "query": "data_stream.dataset: \"whoisfreaks.whois\" and whoisfreaks.days_until_expiry <= 30 and event.kind: \"enrichment\"",
+        "query": "data_stream.dataset: \"ti_whoisfreaks.whois\" and whoisfreaks.is_newly_registered: true and event.kind: \"enrichment\"",
         "references": [
             "https://whoisfreaks.com/"
         ],
-        "risk_score": 21,
-        "rule_id": "a056caae-3bb1-446a-a3cd-5f1de54f7a88",
-        "severity": "low",
+        "risk_score": 47,
+        "rule_id": "525757f7-cf14-496b-a593-ce3fa3024dcf",
+        "severity": "medium",
         "tags": [
             "WhoisFreaks",
             "Domain",
             "Threat Intelligence",
             "WHOIS",
-            "Expiration"
+            "Newly Registered"
         ],
         "to": "now",
         "type": "query",
         "version": 1,
         "index": [
-            "logs-whoisfreaks.whois-*"
+            "logs-ti_whoisfreaks.whois-*"
         ],
         "threat": [
             {

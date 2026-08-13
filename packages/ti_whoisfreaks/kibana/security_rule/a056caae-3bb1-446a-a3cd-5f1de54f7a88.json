@@ -1,9 +1,9 @@
 {
-    "id": "5fe2f974-c954-415c-9aec-bb89c524e058",
+    "id": "a056caae-3bb1-446a-a3cd-5f1de54f7a88",
     "type": "security-rule",
     "attributes": {
-        "name": "WhoisFreaks - Ingest Pipeline or API Error",
-        "description": "Detects pipeline or upstream API failures from the WhoisFreaks integration (for example invalid API key or download errors). Persistent errors indicate a broken collection pipeline.",
+        "name": "WhoisFreaks - Domain Expiring Within 30 Days",
+        "description": "Detects domains in the WhoisFreaks feed with 30 or fewer days until expiry. Domains nearing expiry may indicate portfolio risk, accidental lapse, or opportunities for domain hijacking after expiration.",
         "author": [
             "WhoisFreaks"
         ],
@@ -16,25 +16,25 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "max_signals": 100,
-        "query": "data_stream.dataset: \"whoisfreaks.whois\" and event.kind: \"pipeline_error\"",
+        "query": "data_stream.dataset: \"ti_whoisfreaks.whois\" and whoisfreaks.days_until_expiry <= 30 and event.kind: \"enrichment\"",
         "references": [
             "https://whoisfreaks.com/"
         ],
         "risk_score": 21,
-        "rule_id": "5fe2f974-c954-415c-9aec-bb89c524e058",
+        "rule_id": "a056caae-3bb1-446a-a3cd-5f1de54f7a88",
         "severity": "low",
         "tags": [
             "WhoisFreaks",
             "Domain",
             "Threat Intelligence",
             "WHOIS",
-            "Collection Health"
+            "Expiration"
         ],
         "to": "now",
         "type": "query",
         "version": 1,
         "index": [
-            "logs-whoisfreaks.whois-*"
+            "logs-ti_whoisfreaks.whois-*"
         ],
         "threat": [
             {

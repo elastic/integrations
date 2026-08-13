@@ -17,6 +17,7 @@ processors:
       tag: set_event_category
       field: event.category
       value:
+        - threat
         - network
       if: "ctx.error == null"
   - set:
@@ -28,7 +29,7 @@ processors:
   - set:
       tag: set_event_dataset
       field: event.dataset
-      value: whoisfreaks.whois
+      value: ti_whoisfreaks.whois
 
   # --- Timestamps (only meaningful on successful records) ---
   - date:
@@ -82,6 +83,39 @@ processors:
       field: domain.registrar.name
       copy_from: whoisfreaks.domain_registrar_name
       ignore_empty_value: true
+
+  # --- Threat intelligence ECS fields (standard for ti_* packages) ---
+  - set:
+      tag: set_threat_indicator_type
+      field: threat.indicator.type
+      value: domain-name
+      if: "ctx.error == null && ctx.whoisfreaks?.domain_name != null"
+  - set:
+      tag: set_threat_indicator_domain
+      field: threat.indicator.domain
+      copy_from: whoisfreaks.domain_name
+      ignore_empty_value: true
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_feed_name
+      field: threat.feed.name
+      value: WhoisFreaks
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_feed_dashboard_id
+      field: threat.feed.dashboard_id
+      value: ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_indicator_provider
+      field: threat.indicator.provider
+      value: WhoisFreaks
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_indicator_reference
+      field: threat.indicator.reference
+      value: https://whoisfreaks.com/
+      if: "ctx.error == null"
 
   # --- Derived fields used by dashboards & alert rules ---
   - script:

@@ -75,7 +75,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Validation
 
-Open Discover on `logs-whoisfreaks.whois-*` and confirm documents with
+Open Discover on `logs-ti_whoisfreaks.whois-*` and confirm documents with
 populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 ## Troubleshooting
@@ -139,4 +139,4 @@ The following **Elastic Security** detection rules are installed with the packag
 | WhoisFreaks - Domain Expiring Within 30 Days | Low | Portfolio / takeover risk for domains near expiry |
 | WhoisFreaks - Ingest Pipeline or API Error | Low | Collection health (invalid API key, download failures) |
 
-Enable the rules that match your monitoring goals. Rules query `logs-whoisfreaks.whois-*`.
+Enable the rules that match your monitoring goals. Rules query `logs-ti_whoisfreaks.whois-*`.
