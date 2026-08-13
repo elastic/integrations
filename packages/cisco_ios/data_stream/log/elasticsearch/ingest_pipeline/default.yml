@@ -133,9 +133,12 @@ processors:
       tag: script_timezone
       description: >-
         Add support to map timezone abbreviations that are not supported by
-        Java manually. If no match is found, it will default back to
-        _conf.tz_offset as before. If tz_offset is not set, it will default to
-        UTC as before.
+        Java manually. A built-in IANA zone-ID map handles common APAC and
+        regional abbreviations (SGT, ICT, MYT, PHT, TRT, BRT, ART, CLT, PET).
+        Operators can extend coverage via _conf.tz_map. If an abbreviation is
+        still unrecognised after all lookups, _temp_.date_timezone falls back
+        to _conf.tz_offset or UTC, and event.timezone is set to the original
+        abbreviation so operators can identify and configure missing entries.
       if: ctx._temp_?.cisco_timestamp != null
       source: |-
         String get_timezone(def ctx) {
@@ -180,9 +183,11 @@ processors:
             ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
             ctx?._temp_.cisco_timestamp = ctx?._temp_.cisco_timestamp + " " + event_timezone;
           } catch (Exception e) {
+            // Preserve the original abbreviation in event.timezone so operators can
+            // detect and configure unrecognised timezone abbreviations via tz_map.
             String fallback = (ctx._conf?.tz_offset != null) ? ctx._conf.tz_offset : 'UTC';
             ctx._temp_.date_timezone = fallback;
-            ctx.event.timezone = fallback;
+            ctx.event.timezone = ctx._temp_.tz;
           }
         } else {
           // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
