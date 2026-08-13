@@ -71,7 +71,7 @@ processors:
       if: 'ctx.event?.original != null && ctx.event.original.startsWith("{")'
       on_failure:
         - fail:
-            tag: fail_84db1a04
+            tag: fail_decoding_message_field_json_ingest_84db1a04
             message: "Failed decoding message field as JSON: {{{ _ingest.on_failure_message }}}"
 
   #
@@ -79,12 +79,12 @@ processors:
   # This is used when ingesting CSV lines from a file.
   #
   - pipeline:
-      tag: pipeline_31a90dae
+      tag: pipeline_decode_csv_31a90dae
       name: '{{ IngestPipeline "decode_csv" }}'
       if: 'ctx.json == null'
       on_failure:
         - fail:
-            tag: fail_60399ae4
+            tag: fail_decoding_message_field_csv_ingest_60399ae4
             message: "Failed decoding message field as CSV: {{{ _ingest.on_failure_message }}}"
 
   #
@@ -408,7 +408,7 @@ processors:
   # Cleanup
   #
   - remove:
-      tag: remove_980077a6
+      tag: remove_cleanup_980077a6
       field:
         - recordedfuture.Algorithm
         - recordedfuture.EvidenceDetails
