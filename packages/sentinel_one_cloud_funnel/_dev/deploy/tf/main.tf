@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-sentinel_one_cloud_funnel-package"
+      team     = "security-service-integrations" # owner.github in manifest.yml
+      project  = "integrations-sentinel_one_cloud_funnel-package" # name in manifest.yml
     }
   }
 }

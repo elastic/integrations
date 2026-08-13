@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-tanium-package"
+      team     = "security-service-integrations" # owner.github in manifest.yml
+      project  = "integrations-tanium-package" # name in manifest.yml
     }
   }
 }

@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-sublime_security-package"
+      team     = "security-service-integrations" # owner.github in manifest.yml
+      project  = "integrations-sublime_security-package" # name in manifest.yml
     }
   }
 }

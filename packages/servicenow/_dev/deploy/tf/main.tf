@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "security-service-integrations"
-      project  = "integrations-servicenow-package"
+      team     = "security-service-integrations" # owner.github in manifest.yml
+      project  = "integrations-servicenow-package" # name in manifest.yml
     }
   }
 }
