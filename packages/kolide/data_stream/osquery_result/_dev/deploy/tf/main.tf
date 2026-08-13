@@ -13,8 +13,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "integration-experience"
-      project  = "integrations-kolide-package"
+      team     = "integration-experience"      # owner.github in manifest.yml
+      project  = "integrations-kolide-package" # name in manifest.yml
     }
   }
 }

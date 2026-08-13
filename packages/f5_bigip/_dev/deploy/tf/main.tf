@@ -10,8 +10,8 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "integration-experience"
-      project  = "integrations-f5_bigip-package"
+      team     = "integration-experience"       # owner.github in manifest.yml
+      project  = "integrations-f5_bigip-package" # name in manifest.yml
     }
   }
 }
