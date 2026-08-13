@@ -13,7 +13,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -35,7 +35,7 @@ processors:
       target_field: json
       ignore_failure: true
   - fingerprint:
-      tag: fingerprint_9c75a4ea
+      tag: fingerprint_to_id_9c75a4ea
       fields:
         - json.id
         - json.detection_timestamp
@@ -178,7 +178,7 @@ processors:
   - dissect:
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
+      tag: dissect_user_email_d5fb5c7e
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null
@@ -256,6 +256,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_carbon_black_cloud_alert_ttps_70bc895e
           field: carbon_black_cloud.alert.ttps
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -266,6 +267,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_carbon_black_cloud_alert_threat_category_f854345d
           field: carbon_black_cloud.alert.threat_category
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -276,6 +278,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_carbon_black_cloud_alert_ml_classification_anomalies_b058903b
           field: carbon_black_cloud.alert.ml_classification_anomalies
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -457,7 +460,7 @@ processors:
       target_field: carbon_black_cloud.alert.parent.effective_reputation
       ignore_missing: true
   - script:
-      tag: script_7f5ddc79
+      tag: script_removes_complete_path_from_ecs_7f5ddc79
       description: Removes complete path from ecs field parent.process.name
       lang: painless
       if: ctx?.process?.parent?.name != null
@@ -471,6 +474,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_carbon_black_cloud_alert_process_issuer_f4e35a92
           field: carbon_black_cloud.alert.process.issuer
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -481,6 +485,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_carbon_black_cloud_alert_process_publisher_25e93485
           field: carbon_black_cloud.alert.process.publisher
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -579,7 +584,7 @@ processors:
       target_field: carbon_black_cloud.alert.process.effective_reputation
       ignore_missing: true
   - script:
-      tag: script_92c9cb22
+      tag: script_removes_complete_path_from_ecs_92c9cb22
       description: Removes complete path from ecs field process.name
       lang: painless
       if: ctx?.process?.name != null
@@ -694,6 +699,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_carbon_black_cloud_alert_report_tags_07e5a212
           field: carbon_black_cloud.alert.report.tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -1061,7 +1067,7 @@ processors:
       value: 'THREAT'
   # cleanup & final additions
   - remove:
-      tag: remove_b449a2f0
+      tag: remove_cleanup_final_additions_b449a2f0
       field:
         - json.severity
         - json.detection_timestamp
@@ -1095,7 +1101,7 @@ processors:
         - json.report_tags
       ignore_missing: true
   - script:
-      tag: script_595da52a
+      tag: script_adds_remaining_fields_fields_under_595da52a
       description: Adds all the remaining fields in fields under carbon_black_cloud.alert.
       lang: painless
       if: ctx.json != null
@@ -1108,7 +1114,7 @@ processors:
       field: json
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -1127,12 +1133,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -48,7 +48,7 @@ processors:
     target_field: jira.audit.changed_values
     ignore_missing: true
 - script:
-    tag: script_ff2d4230
+    tag: script_modify_data_to_match_self_ff2d4230
     lang: painless
     description: Modify data to match Self Hosted
     source: >-
@@ -87,13 +87,16 @@ processors:
         }
 on_failure:
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message_8ac65503
     field: error.message
     value: >
       Processor "{{{ _ingest.on_failure_processor_type }}}"

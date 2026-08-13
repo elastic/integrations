@@ -198,15 +198,8 @@ processors:
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
-  - append:
-      tag: append_related_hosts_e6462550
-      field: related.hosts
-      value: '{{{host.hostname}}}'
-      if: ctx.host?.hostname != null
-      allow_duplicates: false
-      ignore_failure: true
   - script:
-      tag: script_582d405f
+      tag: script_dynamically_map_md5_sha256_hash_582d405f
       description: Dynamically map MD5 and SHA256 hash.
       lang: painless
       source: |
@@ -351,6 +344,7 @@ processors:
       field: json.parent_publisher
       processor:
         split:
+          tag: split_ingest_value_state_dbed191c
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -376,6 +370,7 @@ processors:
       field: json.process_publisher
       processor:
         split:
+          tag: split_ingest_value_state_c4b73818
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -412,7 +407,7 @@ processors:
       target_field: carbon_black_cloud.watchlist_hit.report.tags
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -444,7 +439,7 @@ processors:
         - json.device_internal_ip
       ignore_missing: true
   - script:
-      tag: script_c2322fc6
+      tag: script_adds_remaining_fields_fields_under_c2322fc6
       description: Adds all the remaining fields in fields under carbon_black_cloud.watchlist_hit.
       lang: painless
       if: ctx.json != null
@@ -457,7 +452,7 @@ processors:
       field: json
       ignore_missing: true
   - script:
-      tag: script_64844e7a
+      tag: script_remove_duplicate_values_64844e7a
       description: Remove duplicate values.
       lang: painless
       source: |
@@ -475,12 +470,15 @@ processors:
         }
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

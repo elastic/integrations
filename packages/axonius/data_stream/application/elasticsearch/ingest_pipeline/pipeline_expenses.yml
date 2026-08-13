@@ -3,7 +3,7 @@ description: Pipeline for processing expenses logs.
 processors:
   - convert:
       field: axonius.application.amount
-      tag: convert_amount_to_double
+      tag: convert_amount_to_double_0100343e
       type: double
       ignore_missing: true
       on_failure:
@@ -17,35 +17,35 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_application_related_user_email_into_related_user
+      tag: append_application_related_user_email_into_related_user_9acbaa36
       value: '{{{axonius.application.related_user.email}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.related_user?.email != null
   - set:
       field: user.id
-      tag: set_user_id_from_application_related_user_remote_id
+      tag: set_user_id_from_application_related_user_remote_id_3bd6c1f5
       copy_from: axonius.application.related_user.remote_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_application_related_user_remote_id_into_related_user
+      tag: append_application_related_user_remote_id_into_related_user_a3850852
       value: '{{{axonius.application.related_user.remote_id}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.related_user?.remote_id != null
   - set:
       field: user.name
-      tag: set_user_name_from_application_related_user_username
+      tag: set_user_name_from_application_related_user_username_611b8ccd
       copy_from: axonius.application.related_user.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_application_related_user_username_into_related_user
+      tag: append_application_related_user_username_into_related_user_6eb3c310
       value: '{{{axonius.application.related_user.username}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.related_user?.username != null
   - date:
       field: axonius.application.transaction_time
-      tag: date_transaction_time
+      tag: date_transaction_time_babf58dc
       target_field: axonius.application.transaction_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -63,27 +63,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_application_transaction_time
+      tag: set_event_start_from_application_transaction_time_a80b9732
       copy_from: axonius.application.transaction_time
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_application_user_email
+      tag: set_user_email_from_application_user_email_897b87d5
       copy_from: axonius.application.user_email
       ignore_empty_value: true
   - dissect:
-      tag: dissect_user_email
+      tag: dissect_user_email_c7a077f3
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
       pattern: '%{}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_application_user_email_into_related_user
+      tag: append_application_user_email_into_related_user_52be4061
       value: '{{{axonius.application.user_email}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.user_email != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -91,9 +92,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

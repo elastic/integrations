@@ -115,7 +115,7 @@ processors:
       target_field: event.id
       ignore_missing: true
   - fingerprint:
-      tag: fingerprint_f716d506
+      tag: fingerprint_to_id_f716d506
       fields:
         - event.id
       target_field: _id
@@ -182,7 +182,7 @@ processors:
       if: ctx.source?.ip != null
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_76d9b8ff
       params:
         login:
           category:
@@ -285,7 +285,7 @@ processors:
         - _config
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -312,12 +312,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

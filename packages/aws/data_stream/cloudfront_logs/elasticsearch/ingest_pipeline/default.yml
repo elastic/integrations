@@ -265,7 +265,7 @@ processors:
       processor:
         pipeline:
           name: '{{ IngestPipeline "pipeline_process_ip" }}'
-          tag: pipeline_process_ip
+          tag: pipeline_process_ip_a27fa621
           ignore_missing_pipeline: true
   - append:
       tag: append_error_message_ef8b6636
@@ -295,6 +295,7 @@ processors:
       field: network.forwarded_ip
       processor:
         append:
+          tag: append_related_ip_c8f52299
           field: related.ip
           value: "{{{ _ingest._value }}}"
       ignore_missing: true
@@ -499,15 +500,18 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_14080786
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -9,7 +9,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.category_id
-          tag: convert_finding_metadata_data_classifications_category_id_to_string
+          tag: convert_finding_metadata_data_classifications_category_id_to_string_96c765a5
           type: string
           ignore_missing: true
   - foreach:
@@ -19,7 +19,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.confidentiality_id
-          tag: convert_finding_metadata_data_classifications_confidentiality_id_to_string
+          tag: convert_finding_metadata_data_classifications_confidentiality_id_to_string_e763e3bc
           type: string
           ignore_missing: true
   - foreach:
@@ -29,14 +29,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.size
-          tag: convert_finding_metadata_data_classifications_size_to_long
+          tag: convert_finding_metadata_data_classifications_size_to_long_018ea3db
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_size_786b2a83
                 field: _ingest._value.size
                 ignore_missing: true
             - append:
+                tag: append_error_message_189828a1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -46,7 +48,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.status_id
-          tag: convert_finding_metadata_data_classifications_status_id_to_string
+          tag: convert_finding_metadata_data_classifications_status_id_to_string_ebc48f00
           type: string
           ignore_missing: true
   - foreach:
@@ -56,19 +58,21 @@ processors:
       processor:
         convert:
           field: _ingest._value.total
-          tag: convert_finding_metadata_data_classifications_total_to_long
+          tag: convert_finding_metadata_data_classifications_total_to_long_3a397eab
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_total_b9ef4be5
                 field: _ingest._value.total
                 ignore_missing: true
             - append:
+                tag: append_error_message_cb6021f0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.metadata.logged_time_dt
-      tag: date_metadata_logged_time_dt
+      tag: date_metadata_logged_time_dt_0fece172
       target_field: aws_securityhub.finding.metadata.logged_time_dt
       formats:
         - ISO8601
@@ -86,7 +90,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.metadata.logged_time
-      tag: date_metadata_logged_time
+      tag: date_metadata_logged_time_a3070fa8
       target_field: aws_securityhub.finding.metadata.logged_time
       formats:
         - UNIX_MS
@@ -107,7 +111,7 @@ processors:
       processor:
         date:
           field: _ingest._value.logged_time_dt
-          tag: date_metadata_loggers_logged_time_dt
+          tag: date_metadata_loggers_logged_time_dt_edd183a9
           target_field: _ingest._value.logged_time_dt
           formats:
             - ISO8601
@@ -115,6 +119,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_logged_time_dt_96f78709
                 field: _ingest._value.logged_time_dt
                 ignore_missing: true
   - foreach:
@@ -124,12 +129,13 @@ processors:
       processor:
         date:
           field: _ingest._value.logged_time
-          tag: date_metadata_loggers_logged_time
+          tag: date_metadata_loggers_logged_time_b485f712
           target_field: _ingest._value.logged_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_logged_time_43a88106
                 field: _ingest._value.logged_time
                 ignore_missing: true
   - foreach:
@@ -139,7 +145,7 @@ processors:
       processor:
         date:
           field: _ingest._value.transmit_time_dt
-          tag: date_metadata_loggers_transmit_time_dt
+          tag: date_metadata_loggers_transmit_time_dt_f3c9e00c
           target_field: _ingest._value.transmit_time_dt
           formats:
             - ISO8601
@@ -147,6 +153,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_transmit_time_dt_344c92f5
                 field: _ingest._value.transmit_time_dt
                 ignore_missing: true
   - foreach:
@@ -156,17 +163,18 @@ processors:
       processor:
         date:
           field: _ingest._value.transmit_time
-          tag: date_metadata_loggers_transmit_time
+          tag: date_metadata_loggers_transmit_time_757d18ad
           target_field: _ingest._value.transmit_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_transmit_time_ccf16028
                 field: _ingest._value.transmit_time
                 ignore_missing: true
   - date:
       field: aws_securityhub.finding.metadata.modified_time_dt
-      tag: date_metadata_modified_time_dt
+      tag: date_metadata_modified_time_dt_8d888735
       target_field: aws_securityhub.finding.metadata.modified_time_dt
       formats:
         - ISO8601
@@ -184,7 +192,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.metadata.modified_time
-      tag: date_metadata_modified_time
+      tag: date_metadata_modified_time_9ec1cb36
       target_field: aws_securityhub.finding.metadata.modified_time
       formats:
         - UNIX_MS
@@ -200,7 +208,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.metadata.processed_time_dt
-      tag: date_metadata_processed_time_dt
+      tag: date_metadata_processed_time_dt_f83bf714
       target_field: aws_securityhub.finding.metadata.processed_time_dt
       formats:
         - ISO8601
@@ -218,7 +226,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.metadata.processed_time
-      tag: date_metadata_processed_time
+      tag: date_metadata_processed_time_01fe61de
       target_field: aws_securityhub.finding.metadata.processed_time
       formats:
         - UNIX_MS
@@ -234,7 +242,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.metadata.sequence
-      tag: convert_finding_metadata_sequence_to_long
+      tag: convert_finding_metadata_sequence_to_long_4414d3bb
       type: long
       ignore_missing: true
       on_failure:
@@ -253,7 +261,7 @@ processors:
       processor:
         date:
           field: _ingest._value.time_dt
-          tag: date_metadata_transformation_info_list_time_dt
+          tag: date_metadata_transformation_info_list_time_dt_9ddf0e44
           target_field: _ingest._value.time_dt
           formats:
             - ISO8601
@@ -261,6 +269,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_time_dt_f54da65b
                 field: _ingest._value.time_dt
                 ignore_missing: true
   - foreach:
@@ -270,16 +279,18 @@ processors:
       processor:
         date:
           field: _ingest._value.time
-          tag: date_metadata_transformation_info_list_time
+          tag: date_metadata_transformation_info_list_time_4f6f0aa2
           target_field: _ingest._value.time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_time_e86e2766
                 field: _ingest._value.time
                 ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -287,9 +298,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

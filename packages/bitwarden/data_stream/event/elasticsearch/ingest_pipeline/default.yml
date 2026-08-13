@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -23,7 +23,7 @@ processors:
       value: event
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
@@ -34,7 +34,7 @@ processors:
       tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - fingerprint:
-      tag: fingerprint_1e1983a3
+      tag: fingerprint_to_id_1e1983a3
       fields:
         - json.date
         - json.actingUserId
@@ -53,7 +53,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.type
-      tag: 'convert_type_to_string'
+      tag: convert_type_to_string_3043f8cb
       target_field: bitwarden.event.type.value
       type: string
       ignore_missing: true
@@ -64,7 +64,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_2d613064
+      tag: script_set_event_category_type_outcome_2d613064
       lang: painless
       ignore_failure: false
       description: Set event category, type, outcome and type name.
@@ -620,7 +620,7 @@ processors:
       ignore_missing: true
   - date:
       field: json.date
-      tag: 'date_set_timestamp'
+      tag: date_set_timestamp_f43b6424
       formats:
         - ISO8601
       if: ctx.json?.date != null && ctx.json.date != ''
@@ -632,7 +632,7 @@ processors:
   - date:
       field: json.date
       target_field: bitwarden.event.date
-      tag: 'date_set_event_date'
+      tag: date_set_event_date_12946e15
       formats:
         - ISO8601
       if: ctx.json?.date != null && ctx.json.date != ''
@@ -643,7 +643,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.device
-      tag: 'convert_device_to_string'
+      tag: convert_device_to_string_c9a0d5b3
       target_field: bitwarden.event.device.value
       type: string
       ignore_missing: true
@@ -654,7 +654,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_06dca09b
+      tag: script_set_device_type_06dca09b
       lang: painless
       ignore_failure: false
       if: ctx.bitwarden?.event?.device?.value != null
@@ -693,7 +693,7 @@ processors:
         }
   - convert:
       field: json.ipAddress
-      tag: 'convert_ipAddress_to_string'
+      tag: convert_ipAddress_to_string_e2937ff3
       target_field: bitwarden.event.ip_address
       type: ip
       ignore_missing: true
@@ -747,7 +747,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
-      tag: script_06971239
+      tag: script_drops_null_empty_values_recursively_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -777,12 +777,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

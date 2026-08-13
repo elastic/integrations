@@ -4,27 +4,27 @@ description: Pipeline for processing Network Connection object.
 processors:
   - convert:
       field: ocsf.connection_info.boundary_id
-      tag: convert_connection_info_boundary_id_to_string
+      tag: convert_connection_info_boundary_id_to_string_5d96d1fc
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.connection_info.direction_id
-      tag: convert_connection_info_direction_id_to_string
+      tag: convert_connection_info_direction_id_to_string_df7daf0f
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.connection_info.protocol_ver_id
-      tag: convert_connection_info_protocol_ver_id_to_string
+      tag: convert_connection_info_protocol_ver_id_to_string_8b2ba293
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.connection_info.protocol_num
-      tag: convert_connection_info_protocol_num_to_long
+      tag: convert_connection_info_protocol_num_to_long_de14b19b
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.connection_info.tcp_flags
-      tag: convert_connection_info_tcp_flags_to_long
+      tag: convert_connection_info_tcp_flags_to_long_f00bff19
       type: long
       ignore_missing: true
       if: ctx.ocsf?.connection_info?.tcp_flags != ''
@@ -39,7 +39,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       field: ocsf.connection_info.protocol_ver
-      tag: lowercase_ocsf_connection_info_protocol_ver
+      tag: lowercase_ocsf_connection_info_protocol_ver_b9919aac
       target_field: network.type
       ignore_missing: true
       if: ctx.ocsf?.connection_info?.protocol_ver != ''
@@ -54,7 +54,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       field: ocsf.connection_info.protocol_name
-      tag: lowercase_ocsf_connection_info_protocol_name
+      tag: lowercase_ocsf_connection_info_protocol_name_197a9fda
       target_field: network.transport
       ignore_missing: true
       if: ctx.ocsf?.connection_info?.protocol_name != ''
@@ -69,47 +69,50 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.iana_number
-      tag: set_network_iana_number
+      tag: set_network_iana_number_9fc8cef0
       copy_from: ocsf.connection_info.protocol_num
       ignore_empty_value: true
   - append:
       field: network.direction
-      tag: append_connection_info_boundary_into_network_direction
+      tag: append_connection_info_boundary_into_network_direction_cb508000
       value: internal
       allow_duplicates: false
       if: ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'Internal'
   - append:
       field: network.direction
-      tag: append_network_direction_b450ec7f
+      tag: append_connection_info_boundary_into_network_direction_271b22f7
       value: external
       allow_duplicates: false
       if: ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'External'
   - append:
       field: network.direction
-      tag: append_connection_info_direction_into_network_direction
+      tag: append_connection_info_direction_into_network_direction_7bd14ff7
       value: inbound
       allow_duplicates: false
       if: ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Inbound'
   - append:
       field: network.direction
-      tag: append_network_direction_faa9869c
+      tag: append_connection_info_direction_into_network_direction_a323d8b4
       value: outbound
       allow_duplicates: false
       if: ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Outbound'
   - append:
       field: network.direction
-      tag: append_unknown_value_into_network_direction
+      tag: append_unknown_value_into_network_direction_65060a4c
       value: unknown
       allow_duplicates: false
       if: (ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Unknown') || (ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'Unknown')
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -14,7 +14,7 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - remove:
-      tag: remove_9403c696
+      tag: remove_drop_fields_unrelated_to_ingested_9403c696
       description: Drop fields unrelated to the ingested logs.
       field:
         - host
@@ -66,7 +66,7 @@ processors:
       ignore_missing: true
 
   - script:
-      tag: script_ed4257fd
+      tag: script_remove_massive_artifact_blobs_ed4257fd
       description: Remove massive artifact blobs.
       if: ctx.aws_bedrock?.invocation?.artifacts instanceof List
       lang: painless
@@ -113,7 +113,7 @@ processors:
       value: 0
   - script:
       description: Convert bodies back to JSON so that the string fields are valid JSON data.
-      tag: remarshal_bodies
+      tag: remarshal_bodies_d3252fa8
       lang: painless
       source: |
         String json(def val) {
@@ -204,7 +204,7 @@ processors:
         "normalizeIndex": "normalize_index"
         "latencyMs": "latency_ms"
         "stopReason": "stop_reason"
-      tag: painless_to_rename_fields_under_aws_bedrock_groups
+      tag: painless_to_rename_fields_under_aws_bedrock_groups_95f68f26
       source: |
         def renameKeys(Map src, Map keyMap) {
           def dst = new HashMap();
@@ -245,7 +245,7 @@ processors:
         ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
 
   - script:
-      tag: script_promote_system_to_object
+      tag: script_promote_system_to_object_70e74401
       if: ctx.aws_bedrock?.invocation?.system instanceof String
       source: |-
         Map sys = [:];
@@ -253,7 +253,7 @@ processors:
         sys.text = ctx.aws_bedrock.invocation.system;
         ctx.aws_bedrock.invocation.system = sys;
   - script:
-      tag: script_promote_messages_content_to_object
+      tag: script_promote_messages_content_to_object_fbc16d1f
       if: ctx.aws_bedrock?.invocation?.messages != null
       lang: painless
       source: |-
@@ -356,7 +356,7 @@ processors:
           }
         }
   - script:
-      tag: script_demote_messages_content_content_to_string
+      tag: script_demote_messages_content_content_to_string_3b74828a
       if: ctx.aws_bedrock?.invocation?.messages != null
       lang: painless
       source: |-
@@ -456,7 +456,7 @@ processors:
       copy_from: aws_bedrock.invocation.model_id
       ignore_failure: true
   - script:
-      tag: get_response_id_type_and_version
+      tag: get_response_id_type_and_version_ccc01a94
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json != null && ctx.gen_ai?.request?.model?.id instanceof String && ctx.gen_ai.request.model.id.contains('.')
       lang: painless
       source: |
@@ -518,7 +518,7 @@ processors:
       copy_from: aws_bedrock.invocation.output.output_body_json.id
       ignore_failure: true
   - script:
-      tag: append_input_message_content_kinds
+      tag: append_input_message_content_kinds_8006100a
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.messages instanceof List
       lang: painless
       source: |
@@ -547,7 +547,7 @@ processors:
         // convert the Set back to a List
         ctx.aws_bedrock.invocation.input.messages_content_kinds = new ArrayList(content_kinds_set);
   - script:
-      tag: ensure_output_body_json_object_elements
+      tag: ensure_output_body_json_object_elements_49729af7
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
       lang: painless
       source: |
@@ -560,7 +560,7 @@ processors:
           ctx.aws_bedrock.invocation.output.output_body_json[i].value = e;
         }
   - script:
-      tag: get_response_id_and_role_from_list
+      tag: get_response_id_and_role_from_list_c8cd8e02
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
       lang: painless
       source: |
@@ -578,17 +578,17 @@ processors:
           }
         }
   - set:
-      tag: get_response_role_from_object
+      tag: get_response_role_from_object_85b4884b
       if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message?.role != null'
       field: gen_ai.request.model.role
       copy_from: aws_bedrock.invocation.output.output_body_json.output.message.role
   - set:
-      tag: get_stop_reason
+      tag: get_stop_reason_19fbcb43
       if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.stop_reason != null'
       field: gen_ai.response.finish_reasons
       copy_from: aws_bedrock.invocation.output.output_body_json.stop_reason
   - script:
-      tag: get_response_time
+      tag: get_response_time_62f980da
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
       lang: painless
       source: |
@@ -618,7 +618,7 @@ processors:
       copy_from: aws_bedrock.invocation.error_code
       ignore_failure: true
   - script:
-      tag: get_guardrail_details
+      tag: get_guardrail_details_831d8861
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json != null
       lang: painless
       source: |
@@ -721,7 +721,7 @@ processors:
 
   # Remove massive fields only after the fields have been used.
   - script:
-      tag: script_9c28ef10
+      tag: script_remove_massive_input_bodies_keep_9c28ef10
       description: Remove massive input bodies and keep request perf stats.
       if: ctx.gen_ai?.prompt instanceof String
       lang: painless
@@ -734,7 +734,7 @@ processors:
         }
 
   - script:
-      tag: script_c45c8ed2
+      tag: script_convert_chat_completion_response_map_c45c8ed2
       description: Convert chat completion response in map or list format to user friendly format
       lang: painless
       source: |
@@ -814,7 +814,7 @@ processors:
         }
 
   - script:
-      tag: script_d7d75f45
+      tag: script_remove_massive_output_bodies_keep_d7d75f45
       description: Remove massive output bodies and keep response perf stats.
       if: ctx.gen_ai?.completion instanceof String
       lang: painless
@@ -827,7 +827,7 @@ processors:
         }
 
   - script:
-      tag: script_7e38081f
+      tag: script_drops_null_empty_values_recursively_7e38081f
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -848,18 +848,19 @@ processors:
       field:
         - aws_bedrock.invocation.input.input_body_json
         - aws_bedrock.invocation.output.output_body_json
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_14f80c3c
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
-      tag: script_24e76d73
+      tag: script_remove_massive_event_original_wanted_24e76d73
       description: Remove massive event.original if it was wanted.
       if: ctx.event?.original instanceof String && ctx.event.original.length() > 32766
       lang: painless
       source: |
         ctx.event.original = 'sha1-'+ctx.event.original.sha1()+':'+ctx.event.original.length().toString();
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -867,9 +868,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

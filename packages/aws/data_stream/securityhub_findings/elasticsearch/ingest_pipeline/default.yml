@@ -8,7 +8,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -23,12 +23,12 @@ processors:
   - append:
       field: event.type
       value: info
-      tag: set_event_tiype
+      tag: append_event_tiype_a75e9a8a
       allow_duplicates: false
   - append:
       field: event.category
       value: configuration
-      tag: append_event_category
+      tag: append_event_category_a5212642
       allow_duplicates: false
   - rename:
       tag: rename_message_to_event_original_56a77271
@@ -58,11 +58,11 @@ processors:
   - set:
       field: observer.vendor
       value: AWS Security Hub CSPM
-      tag: set_observer_vendor
+      tag: set_observer_vendor_eb5f23bd
   - set:
       field: cloud.provider
       value: aws
-      tag: set_cloud_provider
+      tag: set_cloud_provider_fccb2a9a
   - rename:
       tag: rename_json_Action_ActionType_to_aws_securityhub_findings_action_type_ccb5b183
       field: json.Action.ActionType
@@ -379,12 +379,14 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         convert:
+          tag: convert_ingest_value_LocalIpDetails_IpAddressV4_to_ingest_value_local_ip_address_v4_07d33383
           field: _ingest._value.LocalIpDetails.IpAddressV4
           target_field: _ingest._value.local.ip.address_v4
           type: ip
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_fcb5960d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -394,12 +396,14 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         convert:
+          tag: convert_ingest_value_LocalPortDetails_Port_to_ingest_value_local_port_number_3ad45d6c
           field: _ingest._value.LocalPortDetails.Port
           target_field: _ingest._value.local.port.number
           type: long
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_82de2445
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -409,6 +413,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_LocalPortDetails_PortName_to_ingest_value_local_port_name_5d82098b
           field: _ingest._value.LocalPortDetails.PortName
           target_field: _ingest._value.local.port.name
           ignore_missing: true
@@ -419,6 +424,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_RemoteIpDetails_City_CityName_to_ingest_value_remote_ip_city_name_1680e4f9
           field: _ingest._value.RemoteIpDetails.City.CityName
           target_field: _ingest._value.remote_ip.city.name
           ignore_missing: true
@@ -429,6 +435,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_RemoteIpDetails_Country_CountryCode_to_ingest_value_remote_ip_country_code_523b4046
           field: _ingest._value.RemoteIpDetails.Country.CountryCode
           target_field: _ingest._value.remote_ip.country.code
           ignore_missing: true
@@ -439,6 +446,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_RemoteIpDetails_Country_CountryName_to_ingest_value_remote_ip_country_name_68c4119f
           field: _ingest._value.RemoteIpDetails.Country.CountryName
           target_field: _ingest._value.remote_ip.country.name
           ignore_missing: true
@@ -449,12 +457,14 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         convert:
+          tag: convert_ingest_value_RemoteIpDetails_GeoLocation_Lat_to_ingest_value_remote_ip_geolocation_latitude_9416bcf2
           field: _ingest._value.RemoteIpDetails.GeoLocation.Lat
           target_field: _ingest._value.remote_ip.geolocation.latitude
           type: double
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_f52daddb
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -464,12 +474,14 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         convert:
+          tag: convert_ingest_value_RemoteIpDetails_GeoLocation_Lon_to_ingest_value_remote_ip_geolocation_longitude_45e7d658
           field: _ingest._value.RemoteIpDetails.GeoLocation.Lon
           target_field: _ingest._value.remote_ip.geolocation.longitude
           type: double
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_4387841d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -479,12 +491,14 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         convert:
+          tag: convert_ingest_value_RemoteIpDetails_IpAddressV4_to_ingest_value_remote_ip_ip_address_v4_ab332178
           field: _ingest._value.RemoteIpDetails.IpAddressV4
           target_field: _ingest._value.remote_ip.ip.address_v4
           type: ip
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_fb308438
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -494,12 +508,14 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         convert:
+          tag: convert_ingest_value_RemoteIpDetails_Organization_Asn_to_ingest_value_remote_ip_organization_asn_b333afc1
           field: _ingest._value.RemoteIpDetails.Organization.Asn
           target_field: _ingest._value.remote_ip.organization.asn
           type: string
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_a59c1a4d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
@@ -509,6 +525,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_RemoteIpDetails_Organization_AsnOrg_to_ingest_value_remote_ip_organization_asn_o_1aa21466
           field: _ingest._value.RemoteIpDetails.Organization.AsnOrg
           target_field: _ingest._value.remote_ip.organization.asn_organization
           ignore_missing: true
@@ -519,6 +536,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_RemoteIpDetails_Organization_Isp_to_ingest_value_remote_ip_organization_internet_cdd89a96
           field: _ingest._value.RemoteIpDetails.Organization.Isp
           target_field: _ingest._value.remote_ip.organization.internet_service_provider
           ignore_missing: true
@@ -529,6 +547,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         rename:
+          tag: rename_ingest_value_RemoteIpDetails_Organization_Org_to_ingest_value_remote_ip_organization_internet_0939cbc7
           field: _ingest._value.RemoteIpDetails.Organization.Org
           target_field: _ingest._value.remote_ip.organization.internet_provider
           ignore_missing: true
@@ -539,6 +558,7 @@ processors:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
         remove:
+          tag: remove_19f3a632
           field:
             - _ingest._value.LocalIpDetails
             - _ingest._value.LocalPortDetails
@@ -579,12 +599,12 @@ processors:
   - foreach:
       field: aws.securityhub_findings.compliance.related_requirements
       if: ctx.aws?.securityhub_findings?.compliance?.related_requirements instanceof List
-      tag: foreach_compliance_related_requirements
+      tag: foreach_compliance_related_requirements_7db4c689
       processor:
         append:
           field: rule.ruleset
           value: '{{{_ingest._value}}}'
-          tag: append_related_requirements_rule_ruleset
+          tag: append_related_requirements_rule_ruleset_bd4f87d8
           allow_duplicates: false
   - rename:
       tag: rename_json_Compliance_Status_to_aws_securityhub_findings_compliance_status_e71f9029
@@ -593,37 +613,37 @@ processors:
       ignore_missing: true
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_passed
+      tag: set_result_evaluation_passed_87a84100
       value: passed
       if: ctx.aws?.securityhub_findings?.compliance?.status == 'PASSED'
       ignore_empty_value: true
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_failed
+      tag: set_result_evaluation_failed_8b00ea89
       value: failed
       if: ctx.aws?.securityhub_findings?.compliance?.status == 'FAILED'
       ignore_empty_value: true
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_unknown
+      tag: set_result_evaluation_unknown_e79c5a26
       value: unknown
       if: ctx.result?.evaluation == null
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_success
+      tag: set_event_outcome_success_98b4830e
       value: success
       if: ctx.aws?.securityhub_findings?.compliance?.status == 'PASSED'
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_failure
+      tag: set_event_outcome_failure_a1aacc80
       value: failure
       if: ctx.aws?.securityhub_findings?.compliance?.status == 'FAILED'
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_unknown
+      tag: set_event_outcome_unknown_4ab8830e
       value: unknown
       if: ctx.event?.outcome == null
   - foreach:
@@ -631,6 +651,7 @@ processors:
       field: json.Compliance.StatusReasons
       processor:
         rename:
+          tag: rename_ingest_value_Description_to_ingest_value_description_344770ed
           field: _ingest._value.Description
           target_field: _ingest._value.description
           ignore_missing: true
@@ -641,6 +662,7 @@ processors:
       field: json.Compliance.StatusReasons
       processor:
         rename:
+          tag: rename_ingest_value_ReasonCode_to_ingest_value_reason_code_1835cbcc
           field: _ingest._value.ReasonCode
           target_field: _ingest._value.reason_code
           ignore_missing: true
@@ -680,7 +702,7 @@ processors:
       field: json.UpdatedAt
       if: ctx.json?.UpdatedAt != null && ctx.json.UpdatedAt != ''
       target_field: aws.securityhub_findings.updated_at
-      tag: date_updated_at
+      tag: date_updated_at_1abb666e
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
@@ -692,7 +714,7 @@ processors:
   - set:
       field: '@timestamp'
       copy_from: aws.securityhub_findings.updated_at
-      tag: set_timestamp
+      tag: set_timestamp_6c637a5e
       ignore_empty_value: true
   - convert:
       tag: convert_json_Criticality_to_aws_securityhub_findings_criticality_35758b8d
@@ -713,7 +735,7 @@ processors:
       ignore_missing: true
   - set:
       field: rule.description
-      tag: set_rule_description
+      tag: set_rule_description_b3dd4b15
       copy_from: aws.securityhub_findings.description
       ignore_empty_value: true
   - convert:
@@ -745,6 +767,7 @@ processors:
       field: json.FindingProviderFields.RelatedFindings
       processor:
         rename:
+          tag: rename_ingest_value_Id_to_ingest_value_id_52e6bf96
           field: _ingest._value.Id
           target_field: _ingest._value.id
           ignore_missing: true
@@ -755,6 +778,7 @@ processors:
       field: json.FindingProviderFields.RelatedFindings
       processor:
         rename:
+          tag: rename_ingest_value_ProductArn_to_ingest_value_product_arn_5a9c39ab
           field: _ingest._value.ProductArn
           target_field: _ingest._value.product.arn
           ignore_missing: true
@@ -824,7 +848,7 @@ processors:
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_generator_id
+      tag: set_rule_id_from_generator_id_7d1885f0
       copy_from: aws.securityhub_findings.generator.id
       ignore_empty_value: true
   - rename:
@@ -834,7 +858,7 @@ processors:
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_security_control_id
+      tag: set_rule_id_from_security_control_id_08ed6cd5
       copy_from: aws.securityhub_findings.compliance.security_control_id
       if: ctx.rule?.id == null
       ignore_empty_value: true
@@ -865,7 +889,7 @@ processors:
       field: json.ProcessedAt
       if: ctx.json?.ProcessedAt != null && ctx.json.ProcessedAt != ''
       target_field: aws.securityhub_findings.processed_at
-      tag: date_processed_at
+      tag: date_processed_at_ec34a910
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
@@ -876,7 +900,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created
+      tag: set_event_created_e7eb901f
       copy_from: aws.securityhub_findings.processed_at
       ignore_empty_value: true
   - foreach:
@@ -884,6 +908,7 @@ processors:
       field: json.Malware
       processor:
         rename:
+          tag: rename_ingest_value_Name_to_ingest_value_name_aebe3a05
           field: _ingest._value.Name
           target_field: _ingest._value.name
           ignore_missing: true
@@ -894,6 +919,7 @@ processors:
       field: json.Malware
       processor:
         rename:
+          tag: rename_ingest_value_Path_to_ingest_value_path_25622222
           field: _ingest._value.Path
           target_field: _ingest._value.path
           ignore_missing: true
@@ -904,6 +930,7 @@ processors:
       field: json.Malware
       processor:
         rename:
+          tag: rename_ingest_value_State_to_ingest_value_state_d7ab729c
           field: _ingest._value.State
           target_field: _ingest._value.state
           ignore_missing: true
@@ -914,6 +941,7 @@ processors:
       field: json.Malware
       processor:
         rename:
+          tag: rename_ingest_value_Type_to_ingest_value_type_1ab88ac1
           field: _ingest._value.Type
           target_field: _ingest._value.type
           ignore_missing: true
@@ -1132,6 +1160,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_ComponentId_to_ingest_value_component_id_310a39d0
           field: _ingest._value.ComponentId
           target_field: _ingest._value.component.id
           ignore_missing: true
@@ -1142,6 +1171,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_ComponentType_to_ingest_value_component_type_4ff22547
           field: _ingest._value.ComponentType
           target_field: _ingest._value.component.type
           ignore_missing: true
@@ -1152,6 +1182,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Egress_Destination_Address_to_ingest_value_egress_destination_address_2ac61f4d
           field: _ingest._value.Egress.Destination.Address
           target_field: _ingest._value.egress.destination.address
           ignore_missing: true
@@ -1162,15 +1193,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Egress_Destination_PortRanges_49bbb3a8
           field: _ingest._value.Egress.Destination.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_Begin_to_ingest_value_begin_43208904
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_abdb1989
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1182,15 +1216,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Egress_Destination_PortRanges_accf0e18
           field: _ingest._value.Egress.Destination.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_End_to_ingest_value_end_d27c5463
               field: _ingest._value.End
               target_field: _ingest._value.end
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_92895f3e
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1202,9 +1239,11 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Egress_Destination_PortRanges_4aef7ac1
           field: _ingest._value.Egress.Destination.PortRanges
           processor:
             remove:
+              tag: remove_2d5584ce
               field:
                 - _ingest._value.Begin
                 - _ingest._value.End
@@ -1218,6 +1257,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Egress_Destination_PortRanges_to_ingest_value_egress_destination_port_ranges_a70a8aeb
           field: _ingest._value.Egress.Destination.PortRanges
           target_field: _ingest._value.egress.destination.port_ranges
           ignore_missing: true
@@ -1228,6 +1268,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Egress_Protocol_to_ingest_value_egress_protocol_e9297a97
           field: _ingest._value.Egress.Protocol
           target_field: _ingest._value.egress.protocol
           ignore_missing: true
@@ -1238,6 +1279,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Egress_Source_Address_to_ingest_value_egress_source_address_efd772e0
           field: _ingest._value.Egress.Source.Address
           target_field: _ingest._value.egress.source.address
           ignore_missing: true
@@ -1248,15 +1290,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Egress_Source_PortRanges_985c5cde
           field: _ingest._value.Egress.Source.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_Begin_to_ingest_value_begin_24ee4654
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_52963cb2
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1268,15 +1313,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Egress_Source_PortRanges_e32f995e
           field: _ingest._value.Egress.Source.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_End_to_ingest_value_end_4fcf4846
               field: _ingest._value.End
               target_field: _ingest._value.end
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_a74ea58a
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1288,9 +1336,11 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Egress_Source_PortRanges_846d2399
           field: _ingest._value.Egress.Source.PortRanges
           processor:
             remove:
+              tag: remove_faa103d5
               field:
                 - _ingest._value.Begin
                 - _ingest._value.End
@@ -1304,6 +1354,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Egress_Source_PortRanges_to_ingest_value_egress_source_port_ranges_be75b65e
           field: _ingest._value.Egress.Source.PortRanges
           target_field: _ingest._value.egress.source.port_ranges
           ignore_missing: true
@@ -1314,6 +1365,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Ingress_Destination_Address_to_ingest_value_ingress_destination_address_9819f791
           field: _ingest._value.Ingress.Destination.Address
           target_field: _ingest._value.ingress.destination.address
           ignore_missing: true
@@ -1324,15 +1376,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Ingress_Destination_PortRanges_dca100d5
           field: _ingest._value.Ingress.Destination.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_Begin_to_ingest_value_begin_0736287e
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_c1db2b92
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1344,15 +1399,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Ingress_Destination_PortRanges_105720df
           field: _ingest._value.Ingress.Destination.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_End_to_ingest_value_end_249ba03d
               field: _ingest._value.End
               target_field: _ingest._value.end
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_6713d5ba
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1364,9 +1422,11 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Ingress_Destination_PortRanges_9171dad8
           field: _ingest._value.Ingress.Destination.PortRanges
           processor:
             remove:
+              tag: remove_697f8c7a
               field:
                 - _ingest._value.Begin
                 - _ingest._value.End
@@ -1380,6 +1440,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Ingress_Destination_PortRanges_to_ingest_value_ingress_destination_port_ranges_d610d9b0
           field: _ingest._value.Ingress.Destination.PortRanges
           target_field: _ingest._value.ingress.destination.port_ranges
           ignore_missing: true
@@ -1390,6 +1451,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Ingress_Protocol_to_ingest_value_ingress_protocol_cf75877c
           field: _ingest._value.Ingress.Protocol
           target_field: _ingest._value.ingress.protocol
           ignore_missing: true
@@ -1400,6 +1462,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Ingress_Source_Address_to_ingest_value_ingress_source_address_9cda431f
           field: _ingest._value.Ingress.Source.Address
           target_field: _ingest._value.ingress.source.address
           ignore_missing: true
@@ -1410,15 +1473,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Ingress_Source_PortRanges_9fd462ca
           field: _ingest._value.Ingress.Source.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_Begin_to_ingest_value_begin_237c613d
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_37f7d465
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
               ignore_failure: true
@@ -1431,15 +1497,18 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Ingress_Source_PortRanges_3cc80a1c
           field: _ingest._value.Ingress.Source.PortRanges
           processor:
             convert:
+              tag: convert_ingest_value_End_to_ingest_value_end_057323a4
               field: _ingest._value.End
               target_field: _ingest._value.end
               type: long
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_f2dfd044
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -1451,9 +1520,11 @@ processors:
       field: json.NetworkPath
       processor:
         foreach:
+          tag: foreach_ingest_value_Ingress_Source_PortRanges_4f447dcb
           field: _ingest._value.Ingress.Source.PortRanges
           processor:
             remove:
+              tag: remove_882d8465
               field:
                 - _ingest._value.Begin
                 - _ingest._value.End
@@ -1467,6 +1538,7 @@ processors:
       field: json.NetworkPath
       processor:
         rename:
+          tag: rename_ingest_value_Ingress_Source_PortRanges_to_ingest_value_ingress_source_port_ranges_31401a89
           field: _ingest._value.Ingress.Source.PortRanges
           target_field: _ingest._value.ingress.source.port_ranges
           ignore_missing: true
@@ -1730,7 +1802,7 @@ processors:
       ignore_missing: true
   - set:
       field: cloud.region
-      tag: set_cloud_region
+      tag: set_cloud_region_b629c1b9
       copy_from: aws.securityhub_findings.region
       ignore_empty_value: true
   - foreach:
@@ -1738,6 +1810,7 @@ processors:
       field: json.RelatedFindings
       processor:
         rename:
+          tag: rename_ingest_value_Id_to_ingest_value_id_b992f702
           field: _ingest._value.Id
           target_field: _ingest._value.id
           ignore_missing: true
@@ -1748,6 +1821,7 @@ processors:
       field: json.RelatedFindings
       processor:
         rename:
+          tag: rename_ingest_value_ProductArn_to_ingest_value_product_arn_23a53f77
           field: _ingest._value.ProductArn
           target_field: _ingest._value.product.arn
           ignore_missing: true
@@ -1770,12 +1844,12 @@ processors:
       ignore_missing: true
   - set:
       field: rule.reference
-      tag: set_rule_reference
+      tag: set_rule_reference_2050a69b
       copy_from: aws.securityhub_findings.remediation.recommendation.url
       ignore_empty_value: true
   - set:
       field: rule.remediation
-      tag: set_rule_remediation
+      tag: set_rule_remediation_23e69c78
       value: "{{{aws.securityhub_findings.remediation.recommendation.text}}}\r\n{{{aws.securityhub_findings.remediation.recommendation.url}}}"
       if: ctx.aws?.securityhub_findings?.remediation?.recommendation?.url != null && ctx.aws.securityhub_findings.remediation.recommendation.text != null
       ignore_empty_value: true
@@ -1786,7 +1860,7 @@ processors:
       ignore_missing: true
   - script:
       description: Extract fields from aws.securityhub_findings.resources with single resource.
-      tag: script_extract_fields_from_single_resource
+      tag: script_extract_fields_from_single_resource_65323ba0
       lang: painless
       if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 0
       source: |-
@@ -1957,7 +2031,7 @@ processors:
         }
   - script:
       description: Extract fields from aws.securityhub_findings.resources.
-      tag: script_extract_fields_from_multiple_resources
+      tag: script_extract_fields_from_multiple_resources_afc91637
       lang: painless
       if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 1
       source: |-
@@ -2185,7 +2259,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: aws.securityhub_findings.severity.normalized
-      tag: convert_severity_normalized
+      tag: convert_severity_normalized_30658d05
       target_field: event.severity
       if: ctx.aws?.securityhub_findings?.severity?.normalized != null
       type: long
@@ -2235,6 +2309,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         rename:
+          tag: rename_ingest_value_Category_to_ingest_value_category_2afba99f
           field: _ingest._value.Category
           target_field: _ingest._value.category
           ignore_missing: true
@@ -2245,6 +2320,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         date:
+          tag: date_ingest_value_LastObservedAt_to_ingest_value_last_observed_at_873524a9
           field: _ingest._value.LastObservedAt
           target_field: _ingest._value.last_observed_at
           formats:
@@ -2258,6 +2334,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         remove:
+          tag: remove_57b2c273
           field:
             - _ingest._value.LastObservedAt
           ignore_missing: true
@@ -2268,6 +2345,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         rename:
+          tag: rename_ingest_value_Source_to_ingest_value_source_2ec31a31
           field: _ingest._value.Source
           target_field: _ingest._value.source
           ignore_missing: true
@@ -2278,6 +2356,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         rename:
+          tag: rename_ingest_value_SourceUrl_to_ingest_value_source_url_449767c6
           field: _ingest._value.SourceUrl
           target_field: _ingest._value.source_url
           ignore_missing: true
@@ -2288,6 +2367,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         rename:
+          tag: rename_ingest_value_Value_to_ingest_value_value_fa80e85a
           field: _ingest._value.Value
           target_field: _ingest._value.value
           ignore_missing: true
@@ -2298,6 +2378,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         rename:
+          tag: rename_ingest_value_Type_to_ingest_value_type_a8af8ab7
           field: _ingest._value.Type
           target_field: _ingest._value.type
           ignore_missing: true
@@ -2308,6 +2389,7 @@ processors:
       field: json.ThreatIntelIndicators
       processor:
         set:
+          tag: set_threat_indicator_last_seen_e08e64dc
           field: threat.indicator.last_seen
           copy_from: _ingest._value.last_observed_at
           ignore_failure: true
@@ -2369,7 +2451,7 @@ processors:
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name
+      tag: set_rule_name_dca5a0d6
       copy_from: aws.securityhub_findings.title
       ignore_empty_value: true
   - rename:
@@ -2392,12 +2474,15 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_432a9cd5
           field: _ingest._value.Cvss
           processor:
             foreach:
+              tag: foreach_ingest_value_Adjustments_1045cab7
               field: _ingest._value.Adjustments
               processor:
                 rename:
+                  tag: rename_ingest_value_Metric_to_ingest_value_metric_02796a9c
                   field: _ingest._value.Metric
                   target_field: _ingest._value.metric
                   ignore_missing: true
@@ -2412,12 +2497,15 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_d07af65e
           field: _ingest._value.Cvss
           processor:
             foreach:
+              tag: foreach_ingest_value_Adjustments_831d28fa
               field: _ingest._value.Adjustments
               processor:
                 rename:
+                  tag: rename_ingest_value_Reason_to_ingest_value_reason_60212288
                   field: _ingest._value.Reason
                   target_field: _ingest._value.reason
                   ignore_missing: true
@@ -2432,9 +2520,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_3b92a878
           field: _ingest._value.Cvss
           processor:
             rename:
+              tag: rename_ingest_value_Adjustments_to_ingest_value_adjustments_c58d1cbb
               field: _ingest._value.Adjustments
               target_field: _ingest._value.adjustments
               ignore_missing: true
@@ -2447,15 +2537,18 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_a8a8ec11
           field: _ingest._value.Cvss
           processor:
             convert:
+              tag: convert_ingest_value_BaseScore_to_ingest_value_base_score_6ad0dbe1
               field: _ingest._value.BaseScore
               target_field: _ingest._value.base_score
               type: double
               ignore_missing: true
               on_failure:
                 - append:
+                    tag: append_error_message_a84eae23
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
@@ -2467,9 +2560,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_fe95df3a
           field: _ingest._value.Cvss
           processor:
             rename:
+              tag: rename_ingest_value_BaseVector_to_ingest_value_base_vector_5ae2dc2b
               field: _ingest._value.BaseVector
               target_field: _ingest._value.base_vector
               ignore_missing: true
@@ -2482,9 +2577,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_b8d3799a
           field: _ingest._value.Cvss
           processor:
             rename:
+              tag: rename_ingest_value_Source_to_ingest_value_source_b937541f
               field: _ingest._value.Source
               target_field: _ingest._value.source
               ignore_missing: true
@@ -2497,9 +2594,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_73011d02
           field: _ingest._value.Cvss
           processor:
             rename:
+              tag: rename_ingest_value_Version_to_ingest_value_version_88e14791
               field: _ingest._value.Version
               target_field: _ingest._value.version
               ignore_missing: true
@@ -2512,9 +2611,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_b1cac522
           field: _ingest._value.Cvss
           processor:
             set:
+              tag: set_vulnerability_score_base_ba6dfd46
               field: vulnerability.score.base
               copy_from: _ingest._value.base_score
               ignore_failure: true
@@ -2527,9 +2628,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_36492098
           field: _ingest._value.Cvss
           processor:
             set:
+              tag: set_vulnerability_score_version_6f74d20e
               field: vulnerability.score.version
               copy_from: _ingest._value.version
               ignore_failure: true
@@ -2542,9 +2645,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_Cvss_3bd59582
           field: _ingest._value.Cvss
           processor:
             remove:
+              tag: remove_02a4bdd0
               field:
                 - _ingest._value.BaseScore
               ignore_missing: true
@@ -2557,6 +2662,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_Cvss_to_ingest_value_cvss_4942c068
           field: _ingest._value.Cvss
           target_field: _ingest._value.cvss
           ignore_missing: true
@@ -2567,6 +2673,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_Id_to_ingest_value_id_7db9d512
           field: _ingest._value.Id
           target_field: _ingest._value.id
           ignore_missing: true
@@ -2577,6 +2684,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         set:
+          tag: set_vulnerability_id_7b4b1010
           field: vulnerability.id
           copy_from: _ingest._value.id
           ignore_failure: true
@@ -2587,6 +2695,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_ReferenceUrls_to_ingest_value_reference_urls_a92cbc35
           field: _ingest._value.ReferenceUrls
           target_field: _ingest._value.reference_urls
           ignore_missing: true
@@ -2597,6 +2706,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         set:
+          tag: set_vulnerability_reference_e9ba4e3b
           field: vulnerability.reference
           copy_from: _ingest._value.reference_urls
           ignore_failure: true
@@ -2607,6 +2717,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_RelatedVulnerabilities_to_ingest_value_related_vulnerabilities_e7a04de8
           field: _ingest._value.RelatedVulnerabilities
           target_field: _ingest._value.related_vulnerabilities
           ignore_missing: true
@@ -2617,6 +2728,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_Vendor_Name_to_ingest_value_vendor_name_bc098e26
           field: _ingest._value.Vendor.Name
           target_field: _ingest._value.vendor.name
           ignore_missing: true
@@ -2627,6 +2739,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         set:
+          tag: set_vulnerability_scanner_vendor_fea67b97
           field: vulnerability.scanner.vendor
           copy_from: _ingest._value.vendor.name
           ignore_failure: true
@@ -2637,6 +2750,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_Vendor_Url_to_ingest_value_vendor_url_f5d103c7
           field: _ingest._value.Vendor.Url
           target_field: _ingest._value.vendor.url
           ignore_missing: true
@@ -2647,6 +2761,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         date:
+          tag: date_ingest_value_Vendor_VendorCreatedAt_to_ingest_value_vendor_created_at_65d87d69
           field: _ingest._value.Vendor.VendorCreatedAt
           target_field: _ingest._value.vendor.created_at
           formats:
@@ -2660,6 +2775,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_Vendor_VendorSeverity_to_ingest_value_vendor_severity_dccd5f27
           field: _ingest._value.Vendor.VendorSeverity
           target_field: _ingest._value.vendor.severity
           ignore_missing: true
@@ -2670,6 +2786,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         date:
+          tag: date_ingest_value_Vendor_VendorUpdatedAt_to_ingest_value_vendor_updated_at_0a3f04d2
           field: _ingest._value.Vendor.VendorUpdatedAt
           target_field: _ingest._value.vendor.updated_at
           formats:
@@ -2683,6 +2800,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         remove:
+          tag: remove_123d54c5
           field:
             - _ingest._value.Vendor.VendorCreatedAt
             - _ingest._value.Vendor.VendorUpdatedAt
@@ -2694,9 +2812,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_9e8ede5c
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_Category_to_ingest_value_category_3211d7d9
               field: _ingest._value.Category
               target_field: _ingest._value.category
               ignore_missing: true
@@ -2709,9 +2829,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_df7d38f0
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_Architecture_to_ingest_value_architecture_7b95250b
               field: _ingest._value.Architecture
               target_field: _ingest._value.architecture
               ignore_missing: true
@@ -2724,9 +2846,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_bf1aff99
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_Epoch_to_ingest_value_epoch_7b30a55b
               field: _ingest._value.Epoch
               target_field: _ingest._value.epoch
               ignore_missing: true
@@ -2739,9 +2863,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_8f2f7f58
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_FilePath_to_ingest_value_file_path_1dc2915e
               field: _ingest._value.FilePath
               target_field: _ingest._value.file_path
               ignore_missing: true
@@ -2754,9 +2880,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_2061c58d
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_Name_to_ingest_value_name_4c237893
               field: _ingest._value.Name
               target_field: _ingest._value.name
               ignore_missing: true
@@ -2769,9 +2897,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_d544332c
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_PackageManager_to_ingest_value_package_manager_109b94df
               field: _ingest._value.PackageManager
               target_field: _ingest._value.package_manager
               ignore_missing: true
@@ -2784,9 +2914,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_8d6f9070
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_Release_to_ingest_value_release_91571c6a
               field: _ingest._value.Release
               target_field: _ingest._value.release
               ignore_missing: true
@@ -2799,9 +2931,11 @@ processors:
       field: json.Vulnerabilities
       processor:
         foreach:
+          tag: foreach_ingest_value_VulnerablePackages_844954e8
           field: _ingest._value.VulnerablePackages
           processor:
             rename:
+              tag: rename_ingest_value_Version_to_ingest_value_version_a653ab64
               field: _ingest._value.Version
               target_field: _ingest._value.version
               ignore_missing: true
@@ -2814,6 +2948,7 @@ processors:
       field: json.Vulnerabilities
       processor:
         rename:
+          tag: rename_ingest_value_VulnerablePackages_to_ingest_value_vulnerable_packages_620b6e01
           field: _ingest._value.VulnerablePackages
           target_field: _ingest._value.vulnerable_packages
           ignore_missing: true
@@ -2858,6 +2993,7 @@ processors:
       field: aws.securityhub_findings.action.port_probe.details
       processor:
         append:
+          tag: append_related_ip_b4927b15
           field: related.ip
           value: '{{{_ingest._value.local.ip.address_v4}}}'
           allow_duplicates: false
@@ -2869,6 +3005,7 @@ processors:
       field: aws.securityhub_findings.action.port_probe.details
       processor:
         append:
+          tag: append_related_ip_dc1dde3d
           field: related.ip
           value: '{{{_ingest._value.remote_ip.ip.address_v4}}}'
           allow_duplicates: false
@@ -2934,6 +3071,7 @@ processors:
       field: aws.securityhub_findings.threat_intel_indicators
       processor:
         remove:
+          tag: remove_fda7a966
           field:
             - _ingest._value.last_observed_at
             - _ingest._value.type
@@ -2946,6 +3084,7 @@ processors:
       field: aws.securityhub_findings.vulnerabilities
       processor:
         remove:
+          tag: remove_3eed942f
           field:
             - _ingest._value.cvss.base_score
             - _ingest._value.cvss.version
@@ -2976,15 +3115,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_14080786
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -4,16 +4,16 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-      tag: set-ecs_version
+      tag: set-ecs_version_6b2cef5e
   - set:
       field: event.kind
       value: event
-      tag: set-event_kind
+      tag: set-event_kind_d452ef2c
   - rename:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
-      tag: rename-azure
+      tag: rename-azure_aac23e8a
   - remove:
       tag: remove_routing_category_681b150d
       field: routing.category
@@ -24,21 +24,21 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
-      tag: rename-message
+      tag: rename-message_4217da53
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-      tag: remove-message
+      tag: remove-message_facc4822
   - json:
       field: event.original
       target_field: azure.graphactivitylogs
-      tag: json-event_original
+      tag: json-event_original_e5dc1b6f
   - script:
       description: Convert Azure JSON keys to snake case.
-      tag: azure-json-keys-to-snake-case
+      tag: azure-json-keys-to-snake-case_74fe0678
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -72,7 +72,7 @@ processors:
       field: azure.graphactivitylogs.time
       target_field: '@timestamp'
       if: ctx.azure?.graphactivitylogs?.time != null
-      tag: date-time
+      tag: date-time_2893a45c
       # Order is prioritized by observed frequency for this log
       # category.
       # We expect the first format to be used in 99% of cases.
@@ -87,12 +87,12 @@ processors:
   - remove:
       field: azure.graphactivitylogs.time
       ignore_missing: true
-      tag: remove-time
+      tag: remove-time_6e0181ec
   - date:
       field: azure.graphactivitylogs.properties.token_issued_at
       target_field: azure.graphactivitylogs.properties.token_issued_at
       if: ctx.azure?.graphactivitylogs?.properties?.token_issued_at != null
-      tag: date-token_issued_at
+      tag: date-token_issued_at_6005b7b9
       # Order is prioritized by observed frequency for this log
       # category.
       # We expect the first format to be used in 99% of cases.
@@ -113,19 +113,19 @@ processors:
       field: azure.graphactivitylogs.resource_id
       target_field: azure.resource_id
       ignore_missing: true
-      tag: rename-resource_id
+      tag: rename-resource_id_3ba630f3
   - convert:
         field: azure.graphactivitylogs.caller_ip_address
         target_field: source.ip
         type: ip
         ignore_missing: true
-        tag: convert-caller_ip_address
+        tag: convert-caller_ip_address_4b00cf64
         on_failure:
         - rename:
             field: azure.graphactivitylogs.caller_ip_address
             target_field: source.address
             ignore_missing: true
-            tag: rename-caller_ip_address
+            tag: rename-caller_ip_address_a9b14294
             on_failure:
             - append:
                 tag: append_error_message_adca0f13
@@ -136,14 +136,14 @@ processors:
         target_field: source.ip
         type: ip
         ignore_missing: true
-        tag: convert-properties_ip_address
+        tag: convert-properties_ip_address_9cede16e
         if: ctx.source?.ip == null
         on_failure:
         - rename:
             field: azure.graphactivitylogs.properties.ip_address
             target_field: source.address
             ignore_missing: true
-            tag: rename-properties_ip_address
+            tag: rename-properties_ip_address_230737de
             if: ctx.source?.address == null
             on_failure:
             - append:
@@ -156,42 +156,42 @@ processors:
         - azure.graphactivitylogs.caller_ip_address
         - azure.graphactivitylogs.properties.ip_address
       if: 'ctx.source?.ip != null'
-      tag: remove-caller_ip_address
+      tag: remove-caller_ip_address_2d333089
       ignore_missing: true
   - set:
       field: client.ip
       value: '{{source.ip}}'
-      tag: set-client_ip
+      tag: set-client_ip_f85c2091
       ignore_empty_value: true
   - set:
       field: service.id
       copy_from: azure.graphactivitylogs.properties.service_principal_id
-      tag: set_service_id
+      tag: set_service_id_e9d4220b
       ignore_empty_value: true
   - set:
       field: user.id
       copy_from: azure.graphactivitylogs.properties.service_principal_id
-      tag: set_user_id_from_service_principal_id
+      tag: set_user_id_from_service_principal_id_bf9de6e7
       if: ctx.user?.id == null
       ignore_empty_value: true
   - set:
       field: device.id
       copy_from: azure.graphactivitylogs.properties.c_device_id
-      tag: set_device_id
+      tag: set_device_id_61bef977
       ignore_empty_value: true
   - set:
       field: session.id
       copy_from: azure.graphactivitylogs.properties.c_sid
-      tag: set_session_id
+      tag: set_session_id_7126e142
       ignore_empty_value: true
   - set:
       field: token.id
       copy_from: azure.graphactivitylogs.properties.sign_in_activity_id
-      tag: set_token_id
+      tag: set_token_id_b863b36c
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append-related_ip
+      tag: append-related_ip_7dea03f7
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
@@ -199,25 +199,25 @@ processors:
       field: azure.graphactivitylogs.level
       target_field: log.level
       type: string
-      tag: convert-level
+      tag: convert-level_8e88e1a6
       ignore_missing: true
   - remove:
       field: azure.graphactivitylogs.level
       ignore_missing: true
-      tag: remove-level
+      tag: remove-level_55fa4772
   - convert:
       field: azure.graphactivitylogs.duration_ms
       target_field: event.duration
       type: long
       if: ctx.azure?.graphactivitylogs?.duration_ms != null
-      tag: convert-duration_ms
+      tag: convert-duration_ms_8305c74b
       ignore_failure: true
   - convert:
       field: azure.graphactivitylogs.properties.duration_ms
       target_field: event.duration
       type: long
       if: ctx.azure?.graphactivitylogs?.properties?.duration_ms != null && ctx.event?.duration == null
-      tag: convert-properties-duration_ms
+      tag: convert-properties-duration_ms_f687606f
       ignore_failure: true
   - script:
       lang: painless
@@ -226,29 +226,29 @@ processors:
           ctx.event.duration = ctx.event.duration * 1000000;
         }
       ignore_failure: true
-      tag: script-duration
+      tag: script-duration_4552d49c
   - remove:
       field:
         - azure.graphactivitylogs.duration_ms
         - azure.graphactivitylogs.properties.duration_ms
-      tag: remove-duration_ms
+      tag: remove-duration_ms_b8a6d85c
       if: ctx.event?.duration != null
       ignore_missing: true
   - rename:
       field: azure.graphactivitylogs.location
       target_field: destination.geo.region_name
       ignore_missing: true
-      tag: rename-location
+      tag: rename-location_bb16584a
   - rename:
       field: azure.graphactivitylogs.properties.location
       target_field: destination.geo.region_name
       if: ctx.destination?.geo?.region_name == null && ctx.azure?.graphactivitylogs?.properties?.location != null
-      tag: rename-properties-location
+      tag: rename-properties-location_61efbe6a
   - remove:
       field:
         - azure.graphactivitylogs.location
         - azure.graphactivitylogs.properties.location
-      tag: remove-location
+      tag: remove-location_204ad26d
       if: ctx.destination?.geo?.region_name != null
       ignore_missing: true
   - convert:
@@ -256,7 +256,7 @@ processors:
       target_field: event.action
       type: string
       ignore_missing: true
-      tag: convert-operation_name
+      tag: convert-operation_name_e5cdeac6
       on_failure:
         - append:
             tag: append_error_message_7fb22c2b
@@ -266,40 +266,40 @@ processors:
       field: azure.graphactivitylogs.tenant_id
       target_field: azure.tenant_id
       ignore_missing: true
-      tag: rename-tenant_id
+      tag: rename-tenant_id_26e0d793
   - rename:
       field: azure.graphactivitylogs.properties.tenant_id
       target_field: azure.tenant_id
       ignore_missing: true
       if: ctx.azure?.tenant_id == null
-      tag: rename-properties_tenant_id
+      tag: rename-properties_tenant_id_cc174fdb
   - remove:
       field:
         - azure.graphactivitylogs.tenant_id
         - azure.graphactivitylogs.properties.tenant_id
-      tag: remove-tenant_id
+      tag: remove-tenant_id_8e800dd5
       if: ctx.azure?.tenant_id != null
       ignore_missing: true
   - rename:
       field: azure.graphactivitylogs.correlation_id
       target_field: azure.correlation_id
       ignore_missing: true
-      tag: rename-correlation_id
+      tag: rename-correlation_id_404535e8
   - rename:
       field: azure.graphactivitylogs.properties.request_id
       target_field: http.request.id
       ignore_missing: true
-      tag: rename-properties_request_id
+      tag: rename-properties_request_id_3049b0aa
   - rename:
       field: azure.graphactivitylogs.properties.request_method
       target_field: http.request.method
       ignore_missing: true
-      tag: rename-properties_request_methods
+      tag: rename-properties_request_methods_8ca31c8f
   - uri_parts:
       field: azure.graphactivitylogs.properties.request_uri
       if: ctx.azure?.graphactivitylogs?.properties?.request_uri != null
       keep_original: true
-      tag: uri_parts-properties-request_uri
+      tag: uri_parts-properties-request_uri_5f9defda
       on_failure:
         - append:
             tag: append_error_message_deea897d
@@ -307,24 +307,24 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: azure.graphactivitylogs.properties.request_uri
-      tag: remove-properties_request_uri
+      tag: remove-properties_request_uri_f2cb929d
       if: ctx.url?.original != null
       ignore_missing: true
   - rename:
       field: azure.graphactivitylogs.properties.response_size_bytes
       target_field: http.response.bytes
       ignore_missing: true
-      tag: rename-properties_response_bytes
+      tag: rename-properties_response_bytes_b377f09d
   - rename:
       field: azure.graphactivitylogs.properties.response_status_code
       target_field: http.response.status_code
       ignore_missing: true
-      tag: rename-properties_response_statuscode
+      tag: rename-properties_response_statuscode_ac9b690e
   - split:
       field: azure.graphactivitylogs.properties.roles
       if: ctx.azure?.graphactivitylogs?.properties?.roles != null && ctx.azure.graphactivitylogs.properties.roles != ''
       separator: ' '
-      tag: split-properties_roles
+      tag: split-properties_roles_ed32f4d0
       on_failure:
         - append:
             tag: append_error_message_04111e88
@@ -334,7 +334,7 @@ processors:
       field: azure.graphactivitylogs.properties.scopes
       if: ctx.azure?.graphactivitylogs?.properties?.scopes != null && ctx.azure.graphactivitylogs.properties.scopes != ''
       separator: ' '
-      tag: split-properties_scopes
+      tag: split-properties_scopes_cb8c407d
       on_failure:
         - append:
             tag: append_error_message_49da506e
@@ -344,7 +344,7 @@ processors:
       field: azure.graphactivitylogs.properties.wids
       if: ctx.azure?.graphactivitylogs?.properties?.wids != null && ctx.azure.graphactivitylogs.properties.wids != ''
       separator: ' '
-      tag: split-properties_wids
+      tag: split-properties_wids_485c2cdc
       on_failure:
         - append:
             tag: append_error_message_bf16e90a
@@ -353,7 +353,7 @@ processors:
   - user_agent:
       field: azure.graphactivitylogs.properties.user_agent
       if: ctx.azure?.graphactivitylogs?.properties?.user_agent != null && ctx.azure.graphactivitylogs.properties.user_agent != ''
-      tag: user_agent-properties_user_agent
+      tag: user_agent-properties_user_agent_b4433cb2
       on_failure:
         - append:
             tag: append_error_message_1ffd98cd
@@ -361,39 +361,39 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: azure.graphactivitylogs.properties.user_agent
-      tag: remove-properties_user_agent
+      tag: remove-properties_user_agent_c0a3c709
       if: ctx.user_agent != null
       ignore_missing: true
   - rename:
       field: azure.graphactivitylogs.properties.user_id
       target_field: user.id
-      tag: rename-properties_user_id
+      tag: rename-properties_user_id_185a2050
       if: ctx.azure?.graphactivitylogs?.properties?.user_id != null && ctx.azure.graphactivitylogs.properties.user_id != ''
   - set:
       field: client.user.id
       value: '{{user.id}}'
-      tag: set_client_user_id_3614e25d
+      tag: set-client_ip_60ed6bdf
       ignore_empty_value: true
   - append:
       field: related.user
       value: '{{user.id}}'
-      tag: append-related_user
+      tag: append-related_user_1a61b0c8
       allow_duplicates: false
       if: 'ctx.user?.id != null'
   - rename:
       field: azure.graphactivitylogs.properties._billed_size
       target_field: azure.graphactivitylogs.properties.billed_size
       if: ctx.azure?.graphactivitylogs?.properties?._billed_size != null
-      tag: rename-properties_billed_size
+      tag: rename-properties_billed_size_add62507
   - rename:
       field: azure.graphactivitylogs.properties._is_billable
       target_field: azure.graphactivitylogs.properties.is_billable
       if: ctx.azure?.graphactivitylogs?.properties?._is_billable != null
-      tag: rename-properties_is_billable
+      tag: rename-properties_is_billable_3a2a7ee7
   - convert:
       field: azure.graphactivitylogs.properties.is_billable
       type: boolean
-      tag: convert-properties_is_billable
+      tag: convert-properties_is_billable_ffed8f0d
       ignore_missing: true
       on_failure:
         - append:
@@ -403,7 +403,7 @@ processors:
   - convert:
       field: azure.graphactivitylogs.properties.client_auth_method
       type: integer
-      tag: convert-properties_client_auth_method
+      tag: convert-properties_client_auth_method_6e39a62f
       ignore_missing: true
       on_failure:
         - append:
@@ -414,7 +414,7 @@ processors:
       field: azure.graphactivitylogs.properties.time_generated
       target_field: azure.graphactivitylogs.properties.time_generated
       if: ctx.azure?.graphactivitylogs?.properties?.time_generated != null
-      tag: date-properties_time_generated
+      tag: date-properties_time_generated_a49350cc
       # Order is prioritized by observed frequency for this log
       # category.
       # We expect the first format to be used in 99% of cases.
@@ -434,51 +434,51 @@ processors:
   - append:
       field: event.category
       value: api
-      tag: append_api_into_event_category
+      tag: append_api_into_event_category_0ee5fb30
       allow_duplicates: false
   - append:
       field: event.type
       value: access
-      tag: append_access_into_event_type
+      tag: append_access_into_event_type_d401c6ca
       allow_duplicates: false
       if: ctx.http?.request?.method == null || ctx.http.request.method == 'GET' || ctx.http.request.method == 'HEAD'
   - append:
       field: event.type
       value: creation
-      tag: append_creation_into_event_type
+      tag: append_creation_into_event_type_047e4926
       allow_duplicates: false
       if: ctx.http?.request?.method == 'POST'
   - append:
       field: event.type
       value: change
-      tag: append_change_into_event_type
+      tag: append_change_into_event_type_1f8475b8
       allow_duplicates: false
       if: ctx.http?.request?.method == 'PATCH' || ctx.http?.request?.method == 'PUT'
   - append:
       field: event.type
       value: deletion
-      tag: append_deletion_into_event_type
+      tag: append_deletion_into_event_type_a0bcb6da
       allow_duplicates: false
       if: ctx.http?.request?.method == 'DELETE'
   - append:
       field: event.type
       value: denied
-      tag: append_denied_into_event_type
+      tag: append_denied_into_event_type_dff4b231
       allow_duplicates: false
       if: ctx.http?.response?.status_code == 401 || ctx.http?.response?.status_code == 403
   - set:
       field: event.outcome
       value: success
-      tag: set-event_outcome-success
+      tag: set-event_outcome-success_1778cb48
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 200 && ctx.http.response.status_code < 300
   - set:
       field: event.outcome
       value: failure
-      tag: set-event_outcome-failure
+      tag: set-event_outcome-failure_920d8a8a
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
-      tag: pipeline-azure-shared-pipeline
+      tag: pipeline-azure-shared-pipeline_431c6aae
   - fingerprint:
       fields:
         - azure.graphactivitylogs.properties.request_uri
@@ -487,21 +487,21 @@ processors:
         - azure.graphactivitylogs.properties.time_generated
       target_field: _id
       ignore_missing: true
-      tag: fingerprint-id
+      tag: fingerprint-id_20ad8706
   - set:
       field: cloud.account.id
       value: '{{azure.tenant_id}}'
-      tag: set-cloud_account_id
+      tag: set-cloud_account_id_a16bbfe4
       ignore_empty_value: true
   - set:
       field: cloud.region
       value: '{{destination.geo.region_name}}'
-      tag: set-cloud_region
+      tag: set-cloud_region_d432e8db
       ignore_empty_value: true
   - set:
       field: cloud.service.name
       value: 'Microsoft Graph'
-      tag: set_cloud_service_name_75844292
+      tag: set-cloud_region_d8c6cfb9
       ignore_empty_value: true
   - geoip:
       tag: geoip_client_ip_to_client_geo_90831252
@@ -553,7 +553,7 @@ processors:
       target_field: client.as.organization.name
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -573,7 +573,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error
+      tag: set_pipeline_error_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -583,13 +583,16 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

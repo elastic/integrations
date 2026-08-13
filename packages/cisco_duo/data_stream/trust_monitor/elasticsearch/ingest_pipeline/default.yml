@@ -12,7 +12,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -25,7 +25,7 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
-      tag: rename_event_original
+      tag: rename_event_original_a7b1f822
   - remove:
       tag: remove_message_2ee3a7d4
       field: message
@@ -35,7 +35,7 @@ processors:
   - json:
       field: event.original
       target_field: json
-      tag: json_event_original
+      tag: json_event_original_191a3bad
       on_failure:
         - set:
             tag: set_event_kind_e68181f1
@@ -48,7 +48,7 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - date:
       field: json.surfaced_timestamp
-      tag: date_surfaced_timestamp
+      tag: date_surfaced_timestamp_38329e5b
       formats:
         - UNIX_MS
       on_failure:
@@ -63,106 +63,106 @@ processors:
         - json.surfaced_timestamp
       target_field: _id
       ignore_missing: true
-      tag: fingerprint_id
+      tag: fingerprint_id_37c11fb9
 
   ## Custom fields
   - rename:
       field: json.bypass_status_enabled
       target_field: cisco_duo.trust_monitor.bypass_status_enabled
       ignore_missing: true
-      tag: rename_bypass_status_enabled
+      tag: rename_bypass_status_enabled_84447552
   - rename:
       field: json.enabled_by
       target_field: cisco_duo.trust_monitor.enabled_by
       ignore_missing: true
-      tag: rename_enabled_by
+      tag: rename_enabled_by_348e61d1
   - rename:
       field: json.enabled_for
       target_field: cisco_duo.trust_monitor.enabled_for
       ignore_missing: true
-      tag: rename_enabled_for
+      tag: rename_enabled_for_a6d4f8c2
   - rename:
       field: json.explanations
       target_field: cisco_duo.trust_monitor.explanations
       ignore_missing: true
-      tag: rename_explanations
+      tag: rename_explanations_a699e0d5
   - rename:
       field: json.from_common_netblock
       target_field: cisco_duo.trust_monitor.from_common_netblock
       ignore_missing: true
-      tag: rename_from_common_netblock
+      tag: rename_from_common_netblock_06198933
   - rename:
       field: json.from_new_user
       target_field: cisco_duo.trust_monitor.from_new_user
       ignore_missing: true
-      tag: rename_from_new_user
+      tag: rename_from_new_user_6d1372ff
   - rename:
       field: json.low_risk_ip
       target_field: cisco_duo.trust_monitor.low_risk_ip
       ignore_missing: true
-      tag: rename_low_risk_ip
+      tag: rename_low_risk_ip_cb883594
   - rename:
       field: json.priority_event
       target_field: cisco_duo.trust_monitor.priority_event
       ignore_missing: true
-      tag: rename_priority_event
+      tag: rename_priority_event_b3e3ba99
   - rename:
       field: json.priority_reasons
       target_field: cisco_duo.trust_monitor.priority_reasons
       ignore_missing: true
-      tag: rename_priority_reasons
+      tag: rename_priority_reasons_120fe943
   - rename:
       field: json.sekey
       target_field: cisco_duo.trust_monitor.sekey
       ignore_missing: true
-      tag: rename_sekey
+      tag: rename_sekey_eea54f3f
   - rename:
       field: json.state
       target_field: cisco_duo.trust_monitor.state
       ignore_missing: true
-      tag: rename_state
+      tag: rename_state_12faaeb2
   - rename:
       field: json.state_updated_timestamp
       target_field: cisco_duo.trust_monitor.state_updated_timestamp
       ignore_missing: true
-      tag: rename_state_updated_timestamp
+      tag: rename_state_updated_timestamp_63bb2984
   - rename:
       field: json.surfaced_auth
       target_field: cisco_duo.trust_monitor.surfaced_auth
       ignore_missing: true
-      tag: rename_surfaced_auth
+      tag: rename_surfaced_auth_84e14efd
   - rename:
       field: json.triaged_as_interesting
       target_field: cisco_duo.trust_monitor.triaged_as_interesting
       ignore_missing: true
-      tag: rename_triaged_as_interesting
+      tag: rename_triaged_as_interesting_b0254a18
   - rename:
       field: json.triage_event_uri
       target_field: cisco_duo.trust_monitor.triage_event_uri
       ignore_missing: true
-      tag: rename_triage_event_uri
+      tag: rename_triage_event_uri_85df2421
   - rename:
       field: json.type
       target_field: cisco_duo.trust_monitor.type
       ignore_missing: true
-      tag: rename_type
+      tag: rename_type_6fe1b194
 
   ## ECS fields
   - set:
       field: event.id
       copy_from: cisco_duo.trust_monitor.sekey
       ignore_failure: true
-      tag: set_event_id
+      tag: set_event_id_67b579dc
   - uri_parts:
       field: cisco_duo.trust_monitor.triage_event_uri
-      tag: uri_parts_event_uri
+      tag: uri_parts_event_uri_bf788846
       ignore_missing: true
       ignore_failure: true
 
   ## Clean up
   - script:
       description: Drops null/empty values recursively
-      tag: drop_null_values
+      tag: drop_null_values_2aeacfaa
       lang: painless
       ignore_failure: true
       source: |
@@ -185,13 +185,16 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -297,17 +297,12 @@ processors:
       target_field: host.os.family
       ignore_missing: true
   - rename:
-      tag: rename_json_device_group_to_host_os_family_23384838
-      field: json.device_group
-      target_field: host.os.family
-      ignore_missing: true
-  - rename:
       tag: rename_json_regmod_name_to_registry_path_89f78f34
       field: json.regmod_name
       target_field: registry.path
       ignore_missing: true
   - script:
-      tag: script_a8b8bfce
+      tag: script_dynamically_map_md5_sha256_hash_a8b8bfce
       description: Dynamically map MD5 and SHA256 hash.
       lang: painless
       source: |
@@ -337,12 +332,12 @@ processors:
         }
 
   - pipeline:
-      tag: pipeline_process_non_procstart
+      tag: pipeline_process_non_procstart_c889941b
       name: '{{ IngestPipeline "process_other" }}'
       if: ctx.json?.type != null && ctx.json.type != 'endpoint.event.procstart'
       ignore_missing_pipeline: true
   - pipeline:
-      tag: pipeline_process_procstart
+      tag: pipeline_process_procstart_15fe8ae7
       name: '{{ IngestPipeline "process_procstart" }}'
       if: ctx.json?.type == 'endpoint.event.procstart'
       ignore_missing_pipeline: true
@@ -484,6 +479,7 @@ processors:
       field: json.crossproc_publisher
       processor:
         split:
+          tag: split_ingest_value_state_b9a35d04
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -627,6 +623,7 @@ processors:
       field: json.modload_publisher
       processor:
         split:
+          tag: split_ingest_value_state_3ee9725b
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -680,6 +677,7 @@ processors:
       field: json.scriptload_publisher
       processor:
         split:
+          tag: split_ingest_value_state_2f21cbd0
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -843,7 +841,7 @@ processors:
         - _temp_
       ignore_missing: true
   - script:
-      tag: script_1bbee248
+      tag: script_adds_remaining_fields_fields_under_1bbee248
       description: Adds all the remaining fields in fields under carbon_black_cloud.endpoint_event.
       lang: painless
       if: ctx.json != null
@@ -856,7 +854,7 @@ processors:
       field: json
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -874,7 +872,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - script:
-      tag: script_ecea2a9a
+      tag: script_remove_duplicate_values_ecea2a9a
       description: Remove duplicate values.
       lang: painless
       source: |
@@ -904,12 +902,15 @@ processors:
         }
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -3,7 +3,7 @@ description: Pipeline for processing software logs.
 processors:
   - date:
       field: axonius.application.approval_status_meta.last_modified
-      tag: date_approval_status_meta_last_modified
+      tag: date_approval_status_meta_last_modified_4b7be3ff
       target_field: axonius.application.approval_status_meta.last_modified
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -21,12 +21,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.application.installed_software
-      tag: foreach_installed_software_end_of_life
+      tag: foreach_installed_software_end_of_life_b48b51f9
       if: ctx.axonius?.application?.installed_software instanceof List
       processor:
         date:
           field: _ingest._value.end_of_life
-          tag: date_installed_software_end_of_life
+          tag: date_installed_software_end_of_life_a1f95f06
           target_field: _ingest._value.end_of_life
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -34,16 +34,17 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_end_of_life_bf9e05ab
                 field: _ingest._value.end_of_life
                 ignore_missing: true
   - foreach:
       field: axonius.application.installed_software
-      tag: foreach_installed_software_end_of_support
+      tag: foreach_installed_software_end_of_support_03fcf74b
       if: ctx.axonius?.application?.installed_software instanceof List
       processor:
         date:
           field: _ingest._value.end_of_support
-          tag: date_installed_software_end_of_support
+          tag: date_installed_software_end_of_support_226d54a1
           target_field: _ingest._value.end_of_support
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -51,50 +52,55 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_end_of_support_a549705e
                 field: _ingest._value.end_of_support
                 ignore_missing: true
   - foreach:
       field: axonius.application.installed_software
-      tag: foreach_installed_software_has_reached_end_of_life
+      tag: foreach_installed_software_has_reached_end_of_life_b085b7fe
       if: ctx.axonius?.application?.installed_software instanceof List
       processor:
         convert:
           field: _ingest._value.has_reached_end_of_life
-          tag: convert_installed_software_has_reached_end_of_life_to_boolean
+          tag: convert_installed_software_has_reached_end_of_life_to_boolean_0154b0b9
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_has_reached_end_of_life_67f614be
                 field: _ingest._value.has_reached_end_of_life
                 ignore_missing: true
             - append:
+                tag: append_error_message_310f153c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.application.installed_software
-      tag: foreach_installed_software_has_reached_end_of_support
+      tag: foreach_installed_software_has_reached_end_of_support_a22fbaaf
       if: ctx.axonius?.application?.installed_software instanceof List
       processor:
         convert:
           field: _ingest._value.has_reached_end_of_support
-          tag: convert_installed_software_has_reached_end_of_support_to_boolean
+          tag: convert_installed_software_has_reached_end_of_support_to_boolean_fea907b5
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_has_reached_end_of_support_095ace0f
                 field: _ingest._value.has_reached_end_of_support
                 ignore_missing: true
             - append:
+                tag: append_error_message_d5796f7b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.application.installed_software
-      tag: foreach_installed_software_last_used_date
+      tag: foreach_installed_software_last_used_date_06ba6cef
       if: ctx.axonius?.application?.installed_software instanceof List
       processor:
         date:
           field: _ingest._value.last_used_date
-          tag: date_installed_software_last_used_date
+          tag: date_installed_software_last_used_date_d5ffb5c0
           target_field: _ingest._value.last_used_date
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -102,11 +108,12 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_used_date_ebd18c59
                 field: _ingest._value.last_used_date
                 ignore_missing: true
   - date:
       field: axonius.application.last_used_date
-      tag: date_last_used_date
+      tag: date_last_used_date_86a93f12
       target_field: axonius.application.last_used_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -124,6 +131,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -131,9 +139,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

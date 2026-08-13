@@ -3,28 +3,28 @@ description: Pipeline for processing group logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_7c2c7053
       target_field: authentik.group
       on_failure:
         - append:
@@ -34,41 +34,41 @@ processors:
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_event
+      tag: fingerprint_event_5df148ab
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_asset
+      tag: set_event_kind_to_asset_50075a0b
       value: asset
   - append:
       field: event.category
-      tag: append_iam_to_event_category
+      tag: append_iam_to_event_category_0eb47497
       value: iam
   - append:
       field: event.type
-      tag: append_group_to_event_type
+      tag: append_group_to_event_type_4e2ae8d8
       value: group
   - append:
       field: event.type
-      tag: append_info_to_event_type
+      tag: append_info_to_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_dcc0500a
       value: authentik
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_391095ee
       value: authentik
   - set:
       field: group.id
-      tag: set_group_id_from_pk
+      tag: set_group_id_from_pk_eb1ac947
       copy_from: authentik.group.pk
       ignore_empty_value: true
   - convert:
       field: authentik.group.num_pk
-      tag: convert_num_pk_to_long
+      tag: convert_num_pk_to_long_1fd0194c
       type: long
       ignore_missing: true
       on_failure:
@@ -82,12 +82,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: group.name
-      tag: set_group_name_from_name
+      tag: set_group_name_from_name_71e5b837
       copy_from: authentik.group.name
       ignore_empty_value: true
   - convert:
       field: authentik.group.is_superuser
-      tag: convert_is_superuser_to_boolean
+      tag: convert_is_superuser_to_boolean_581f7ce2
       type: boolean
       ignore_missing: true
       on_failure:
@@ -106,7 +106,7 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_group_users_to_string
+          tag: convert_group_users_to_string_5ac4664a
           type: string
           ignore_missing: true
   - foreach:
@@ -116,7 +116,7 @@ processors:
       processor:
         append:
           field: user.id
-          tag: append_group_users_into_user_id
+          tag: append_group_users_into_user_id_bd991045
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
@@ -126,7 +126,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_group_users_into_related_user
+          tag: append_group_users_into_related_user_113d230e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
@@ -134,11 +134,11 @@ processors:
         - authentik.group.pk
         - authentik.group.name
         - authentik.group.users
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_ed9399bb
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -158,7 +158,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -168,13 +168,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

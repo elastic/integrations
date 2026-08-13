@@ -23,11 +23,11 @@ processors:
         - file.type
         - file.inode
       ignore_missing: true
-      tag: remove_file_fields
+      tag: remove_file_fields_dde1784c
   - date:
       field: ocsf.file.accessed_time_dt
       target_field: ocsf.file.accessed_time_dt
-      tag: date_file_accessed_time_dt
+      tag: date_file_accessed_time_dt_81828284
       formats:
         - ISO8601
         - UNIX_MS
@@ -44,13 +44,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.accessed
-      tag: set_file_accessed_from_file_accessed_time_dt
+      tag: set_file_accessed_from_file_accessed_time_dt_3b9f7b24
       copy_from: ocsf.file.accessed_time_dt
       ignore_empty_value: true
   - date:
       field: ocsf.file.accessed_time
       target_field: ocsf.file.accessed_time
-      tag: date_file_accessed_time
+      tag: date_file_accessed_time_14a54a52
       formats:
         - UNIX_MS
       if: ctx.ocsf?.file?.accessed_time != null && ctx.ocsf.file.accessed_time != ''
@@ -65,13 +65,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.accessed
-      tag: set_file_accessed_from_file_accessed_time
+      tag: set_file_accessed_from_file_accessed_time_68d0f3cc
       copy_from: ocsf.file.accessed_time
       ignore_empty_value: true
   - date:
       field: ocsf.file.created_time_dt
       target_field: ocsf.file.created_time_dt
-      tag: date_file_created_time_dt
+      tag: date_file_created_time_dt_44107471
       formats:
         - ISO8601
         - UNIX_MS
@@ -88,13 +88,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.created
-      tag: set_file_created_from_file_created_time_dt
+      tag: set_file_created_from_file_created_time_dt_2a71d7ae
       copy_from: ocsf.file.created_time_dt
       ignore_empty_value: true
   - date:
       field: ocsf.file.created_time
       target_field: ocsf.file.created_time
-      tag: date_file_created_time
+      tag: date_file_created_time_c2a3ef0a
       formats:
         - UNIX_MS
       if: ctx.ocsf?.file?.created_time != null && ctx.ocsf.file.created_time != ''
@@ -109,18 +109,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.created
-      tag: set_file_created_from_file_created_time
+      tag: set_file_created_from_file_created_time_ff32979c
       copy_from: ocsf.file.created_time
       ignore_empty_value: true
   - set:
       field: file.directory
-      tag: set_file_directory
+      tag: set_file_directory_e1015770
       copy_from: ocsf.file.parent_folder
       ignore_empty_value: true
   - script:
       description: Set value for file.hash.*.
       if: ctx.ocsf?.file?.hashes != null
-      tag: script_file_hash_*
+      tag: script_file_hash_*_5ee65335
       lang: painless
       params:
         MD5: md5
@@ -165,23 +165,23 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_file_hashes_value_into_related_hash
+          tag: append_file_hashes_value_into_related_hash_410f096e
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
   - set:
       field: file.inode
-      tag: set_file_inode
+      tag: set_file_inode_ab17a32c
       copy_from: ocsf.file.uid
       ignore_empty_value: true
   - set:
       field: file.mime_type
-      tag: set_file_mime_type
+      tag: set_file_mime_type_6d81b9ac
       copy_from: ocsf.file.mime_type
       ignore_empty_value: true
   - date:
       field: ocsf.file.modified_time_dt
       target_field: ocsf.file.modified_time_dt
-      tag: date_file_modified_time_dt
+      tag: date_file_modified_time_dt_af1b0ff5
       formats:
         - ISO8601
         - UNIX_MS
@@ -198,13 +198,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.mtime
-      tag: set_file_mtime_from_file_modified_time_dt
+      tag: set_file_mtime_from_file_modified_time_dt_1f0b33ab
       copy_from: ocsf.file.modified_time_dt
       ignore_empty_value: true
   - date:
       field: ocsf.file.modified_time
       target_field: ocsf.file.modified_time
-      tag: date_file_modified_time
+      tag: date_file_modified_time_5e941ef4
       formats:
         - UNIX_MS
       if: ctx.ocsf?.file?.modified_time != null && ctx.ocsf.file.modified_time != ''
@@ -219,33 +219,33 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.mtime
-      tag: set_file_mtime_from_file_modified_time
+      tag: set_file_mtime_from_file_modified_time_521ad769
       copy_from: ocsf.file.modified_time
       ignore_empty_value: true
   - set:
       field: file.name
-      tag: set_file_name
+      tag: set_file_name_6b4a0493
       copy_from: ocsf.file.name
       ignore_empty_value: true
   - set:
       field: file.owner
-      tag: set_file_owner
+      tag: set_file_owner_d3f9199b
       copy_from: ocsf.file.owner.name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_file_owner_name_into_related_user
+      tag: append_file_owner_name_into_related_user_a485cbf6
       value: '{{{ocsf.file.owner.name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.owner?.name != null
   - set:
       field: file.path
-      tag: set_file_path
+      tag: set_file_path_6e3e77cf
       copy_from: ocsf.file.path
       ignore_empty_value: true
   - convert:
       field: ocsf.file.size
-      tag: convert_file_size_to_long
+      tag: convert_file_size_to_long_cce69310
       type: long
       ignore_missing: true
       on_failure:
@@ -259,34 +259,34 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.size
-      tag: set_file_size
+      tag: set_file_size_edcbca95
       copy_from: ocsf.file.size
       ignore_empty_value: true
   - set:
       field: file.type
-      tag: set_file_type
+      tag: set_file_type_d7a3fcb7
       copy_from: ocsf.file.type
       ignore_empty_value: true
   - set:
       field: file.uid
-      tag: set_file_uid
+      tag: set_file_uid_4d533097
       copy_from: ocsf.file.owner.uid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_file_owner_uid_into_related_user
+      tag: append_file_owner_uid_into_related_user_2f1f0744
       value: '{{{ocsf.file.owner.uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.owner?.uid != null
   - set:
       field: file.x509.issuer.distinguished_name
-      tag: set_file_x509_issuer_distinguished_name
+      tag: set_file_x509_issuer_distinguished_name_8c04a5a6
       copy_from: ocsf.file.signature.certificate.issuer
       ignore_empty_value: true
   - date:
       field: ocsf.file.signature.certificate.expiration_time_dt
       target_field: ocsf.file.signature.certificate.expiration_time_dt
-      tag: date_file_signature_certificate_expiration_time_dt
+      tag: date_file_signature_certificate_expiration_time_dt_b3ca806c
       formats:
         - ISO8601
         - UNIX_MS
@@ -303,13 +303,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.x509.not_after
-      tag: set_file_x509_not_after_from_file_signature_certificate_expiration_time_dt
+      tag: set_file_x509_not_after_from_file_signature_certificate_expiration_time_dt_8bf6c0cf
       copy_from: ocsf.file.signature.certificate.expiration_time_dt
       ignore_empty_value: true
   - date:
       field: ocsf.file.signature.certificate.expiration_time
       target_field: ocsf.file.signature.certificate.expiration_time
-      tag: date_file_signature_certificate_expiration_time
+      tag: date_file_signature_certificate_expiration_time_cc2cae30
       formats:
         - UNIX_MS
       if: ctx.ocsf?.file?.signature?.certificate?.expiration_time != null && ctx.ocsf.file.signature.certificate.expiration_time != ''
@@ -324,67 +324,67 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.x509.not_after
-      tag: set_file_x509_not_after_from_file_signature_certificate_expiration_time
+      tag: set_file_x509_not_after_from_file_signature_certificate_expiration_time_39eff756
       copy_from: ocsf.file.signature.certificate.expiration_time
       ignore_empty_value: true
   - set:
       field: file.x509.serial_number
-      tag: set_file_x509_serial_number
+      tag: set_file_x509_serial_number_e1049f32
       copy_from: ocsf.file.signature.certificate.serial_number
       ignore_empty_value: true
   - set:
       field: file.x509.subject.distinguished_name
-      tag: set_file_x509_subject_distinguished_name
+      tag: set_file_x509_subject_distinguished_name_d53283dc
       copy_from: ocsf.file.signature.certificate.subject
       ignore_empty_value: true
   - set:
       field: file.x509.version_number
-      tag: set_file_x509_version_number
+      tag: set_file_x509_version_number_1048a3c2
       copy_from: ocsf.file.signature.certificate.version
       ignore_empty_value: true
   - convert:
       field: ocsf.file.accessor.account.type_id
-      tag: convert_file_accessor_account_type_id_to_string
+      tag: convert_file_accessor_account_type_id_to_string_19f82323
       type: string
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_file_accessor_uid_alt_into_related_user
+      tag: append_file_accessor_uid_alt_into_related_user_3021fe40
       value: '{{{ocsf.file.accessor.uid_alt}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.accessor?.uid_alt != null
   - append:
       field: related.user
-      tag: append_file_accessor_email_addr_into_related_user
+      tag: append_file_accessor_email_addr_into_related_user_9939df0d
       value: '{{{ocsf.file.accessor.email_addr}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.accessor?.email_addr != null
   - append:
       field: related.user
-      tag: append_file_accessor_full_name_into_related_user
+      tag: append_file_accessor_full_name_into_related_user_45461923
       value: '{{{ocsf.file.accessor.full_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.accessor?.full_name != null
   - append:
       field: related.user
-      tag: append_file_accessor_name_into_related_user
+      tag: append_file_accessor_name_into_related_user_59f414f1
       value: '{{{ocsf.file.accessor.name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.accessor?.name != null
   - append:
       field: related.user
-      tag: append_file_accessor_uid_into_related_user
+      tag: append_file_accessor_uid_into_related_user_da27495a
       value: '{{{ocsf.file.accessor.uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.accessor?.uid != null
   - convert:
       field: ocsf.file.accessor.type_id
-      tag: convert_file_accessor_type_id_to_string
+      tag: convert_file_accessor_type_id_to_string_fe2b1f59
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.attributes
-      tag: convert_file_attributes_to_long
+      tag: convert_file_attributes_to_long_c38e11b7
       type: long
       ignore_missing: true
       on_failure:
@@ -398,17 +398,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.file.confidentiality_id
-      tag: convert_file_confidentiality_id_to_string
+      tag: convert_file_confidentiality_id_to_string_00117222
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.creator.account.type_id
-      tag: convert_file_creator_account_type_id_to_string
+      tag: convert_file_creator_account_type_id_to_string_be700013
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.creator.type_id
-      tag: convert_file_creator_type_id_to_string
+      tag: convert_file_creator_type_id_to_string_d99618d0
       type: string
       ignore_missing: true
   - foreach:
@@ -419,7 +419,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.algorithm_id
-          tag: convert_file_signature_certificate_fingerprints_algorithm_id_to_string
+          tag: convert_file_signature_certificate_fingerprints_algorithm_id_to_string_122f7300
           type: string
           ignore_missing: true
   - foreach:
@@ -430,24 +430,24 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_file_signature_certificate_fingerprints_value_into_related_hash
+          tag: append_file_signature_certificate_fingerprints_value_into_related_hash_e1840f5d
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
   - convert:
       field: ocsf.file.signature.algorithm_id
-      tag: convert_file_signature_algorithm_id_to_string
+      tag: convert_file_signature_algorithm_id_to_string_f00ff739
       type: string
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_file_signature_value_into_related_hash
+      tag: append_file_signature_value_into_related_hash_ceee9f20
       value: '{{{ocsf.file.signature.value}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.signature?.value != null
   - date:
       field: ocsf.file.signature.certificate.created_time_dt
       target_field: ocsf.file.signature.certificate.created_time_dt
-      tag: date_file_signature_certificate_created_time_dt
+      tag: date_file_signature_certificate_created_time_dt_50053b52
       formats:
         - ISO8601
         - UNIX_MS
@@ -465,7 +465,7 @@ processors:
   - date:
       field: ocsf.file.signature.certificate.created_time
       target_field: ocsf.file.signature.certificate.created_time
-      tag: date_file_signature_certificate_created_time
+      tag: date_file_signature_certificate_created_time_e4310f8b
       formats:
         - UNIX_MS
       if: ctx.ocsf?.file?.signature?.certificate?.created_time != null && ctx.ocsf.file.signature.certificate.created_time != ''
@@ -481,7 +481,7 @@ processors:
   - date:
       field: ocsf.file.signature.created_time_dt
       target_field: ocsf.file.signature.created_time_dt
-      tag: date_file_signature_created_time_dt
+      tag: date_file_signature_created_time_dt_378f162b
       formats:
         - ISO8601
         - UNIX_MS
@@ -499,7 +499,7 @@ processors:
   - date:
       field: ocsf.file.signature.created_time
       target_field: ocsf.file.signature.created_time
-      tag: date_file_signature_created_time
+      tag: date_file_signature_created_time_d1ab7a06
       formats:
         - UNIX_MS
       if: ctx.ocsf?.file?.signature?.created_time != null && ctx.ocsf.file.signature.created_time != ''
@@ -514,12 +514,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.file.signature.digest.algorithm_id
-      tag: convert_file_signature_digest_algorithm_id_to_string
+      tag: convert_file_signature_digest_algorithm_id_to_string_3cd7c54d
       type: string
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_file_signature_digest_value_into_related_hash
+      tag: append_file_signature_digest_value_into_related_hash_49e2efff
       value: '{{{ocsf.file.signature.digest.value}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.signature?.digest?.value != null
@@ -531,32 +531,32 @@ processors:
       processor:
         convert:
           field: _ingest._value.algorithm_id
-          tag: convert_file_hashes_algorithm_id_to_string
+          tag: convert_file_hashes_algorithm_id_to_string_25d4eeae
           type: string
           ignore_missing: true
   - convert:
       field: ocsf.file.modifier.account.type_id
-      tag: convert_file_modifier_account_type_id_to_string
+      tag: convert_file_modifier_account_type_id_to_string_ad23dc58
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.modifier.type_id
-      tag: convert_file_modifier_type_id_to_string
+      tag: convert_file_modifier_type_id_to_string_9632490e
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.owner.account.type_id
-      tag: convert_file_owner_account_type_id_to_string
+      tag: convert_file_owner_account_type_id_to_string_6832468b
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.owner.type_id
-      tag: convert_file_owner_type_id_to_string
+      tag: convert_file_owner_type_id_to_string_90b0d89a
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.file.is_system
-      tag: convert_file_is_system_to_boolean
+      tag: convert_file_is_system_to_boolean_76c13256
       type: boolean
       ignore_missing: true
       on_failure:
@@ -570,95 +570,98 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.file.type_id
-      tag: convert_file_type_id_to_string
+      tag: convert_file_type_id_to_string_2b967242
       type: string
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_file_creator_uid_alt_into_related_user
+      tag: append_file_creator_uid_alt_into_related_user_52fc444f
       value: '{{{ocsf.file.creator.uid_alt}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.creator?.uid_alt != null
   - append:
       field: related.user
-      tag: append_file_creator_email_addr_into_related_user
+      tag: append_file_creator_email_addr_into_related_user_5c44d500
       value: '{{{ocsf.file.creator.email_addr}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.creator?.email_addr != null
   - append:
       field: related.user
-      tag: append_file_creator_full_name_into_related_user
+      tag: append_file_creator_full_name_into_related_user_c89a8afa
       value: '{{{ocsf.file.creator.full_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.creator?.full_name != null
   - append:
       field: related.user
-      tag: append_file_creator_name_into_related_user
+      tag: append_file_creator_name_into_related_user_fb34b0b2
       value: '{{{ocsf.file.creator.name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.creator?.name != null
   - append:
       field: related.user
-      tag: append_file_creator_uid_into_related_user
+      tag: append_file_creator_uid_into_related_user_38dbbfc7
       value: '{{{ocsf.file.creator.uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.creator?.uid != null
   - append:
       field: related.user
-      tag: append_file_modifier_uid_alt_into_related_user
+      tag: append_file_modifier_uid_alt_into_related_user_7d9e7ad2
       value: '{{{ocsf.file.modifier.uid_alt}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.modifier?.uid_alt != null
   - append:
       field: related.user
-      tag: append_file_modifier_email_addr_into_related_user
+      tag: append_file_modifier_email_addr_into_related_user_ea9a6d93
       value: '{{{ocsf.file.modifier.email_addr}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.modifier?.email_addr != null
   - append:
       field: related.user
-      tag: append_file_modifier_full_name_into_related_user
+      tag: append_file_modifier_full_name_into_related_user_6efb1642
       value: '{{{ocsf.file.modifier.full_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.modifier?.full_name != null
   - append:
       field: related.user
-      tag: append_file_modifier_name_into_related_user
+      tag: append_file_modifier_name_into_related_user_801f65e5
       value: '{{{ocsf.file.modifier.name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.modifier?.name != null
   - append:
       field: related.user
-      tag: append_file_modifier_uid_into_related_user
+      tag: append_file_modifier_uid_into_related_user_90e60d8f
       value: '{{{ocsf.file.modifier.uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.modifier?.uid != null
   - append:
       field: related.user
-      tag: append_file_owner_uid_alt_into_related_user
+      tag: append_file_owner_uid_alt_into_related_user_21a148c7
       value: '{{{ocsf.file.owner.uid_alt}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.owner?.uid_alt != null
   - append:
       field: related.user
-      tag: append_file_owner_email_addr_into_related_user
+      tag: append_file_owner_email_addr_into_related_user_767d91c6
       value: '{{{ocsf.file.owner.email_addr}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.owner?.email_addr != null
   - append:
       field: related.user
-      tag: append_file_owner_full_name_into_related_user
+      tag: append_file_owner_full_name_into_related_user_fccbc431
       value: '{{{ocsf.file.owner.full_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.file?.owner?.full_name != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

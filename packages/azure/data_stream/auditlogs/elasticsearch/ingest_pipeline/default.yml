@@ -276,7 +276,7 @@ processors:
           ctx.azure.auditlogs.properties.remove('targetResources');
         }
       ignore_failure: true
-      tag: whatever
+      tag: whatever_e7168594
   - rename:
       tag: rename_azure_auditlogs_properties_initiatedBy_to_azure_auditlogs_properties_initiated_by_01a8e84d
       field: azure.auditlogs.properties.initiatedBy
@@ -284,18 +284,18 @@ processors:
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_be6ed7e9
       copy_from: azure.auditlogs.properties.initiated_by.user.userPrincipalName
       ignore_empty_value: true
   - convert:
       field: azure.auditlogs.properties.initiated_by.user.id
-      tag: convert_user_id
+      tag: convert_user_id_2eecf067
       target_field: user.id
       type: string
       ignore_missing: true
   - set:
       field: user.full_name
-      tag: set_user_full_name
+      tag: set_user_full_name_4d40aed2
       copy_from: azure.auditlogs.properties.initiated_by.user.displayName
       ignore_empty_value: true
   - geoip:
@@ -339,7 +339,7 @@ processors:
       allow_duplicates: false
       if: ctx.azure?.auditlogs?.properties?.initiated_by?.app?.servicePrincipalId != null && ctx.azure.auditlogs.properties.initiated_by.app.servicePrincipalId != ''
   - script:
-      tag: script_53ba6dd6
+      tag: script_appends_target_resources_identifiers_53ba6dd6
       description: Appends target resources identifiers to `related.entity`
       lang: painless
       source: |
@@ -361,24 +361,24 @@ processors:
             value: "{{{ _ingest.on_failure_message }}}"
   - append:
       field: related.user
-      tag: append_user_id_to_related_user
+      tag: append_user_id_to_related_user_23cff8dc
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_user_full_name_to_related_user
+      tag: append_user_full_name_to_related_user_40705751
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.full_name != null
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:
       tag: set_event_kind_92954dfa
@@ -393,13 +393,16 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

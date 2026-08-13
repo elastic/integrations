@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -25,7 +25,7 @@ processors:
       tag: drop_f1de54d0
       if: ctx.json?.records instanceof List && ctx.json.records.length == 0
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -51,11 +51,11 @@ processors:
         }
         handleMap(ctx);
   - pipeline:
-      tag: pipeline_a9467602
+      tag: pipeline_cloud_a9467602
       name: '{{ IngestPipeline "cloud" }}'
       if: "ctx._config?.atlassian_cloud != null"
   - pipeline:
-      tag: pipeline_601611b9
+      tag: pipeline_self_hosted_601611b9
       name: '{{ IngestPipeline "self-hosted" }}'
       if: "ctx._config?.atlassian_cloud == null"
   - date:
@@ -72,7 +72,7 @@ processors:
       target_field: _tmp.source_ip
       ignore_missing: true
   - script:
-      tag: script_15386acc
+      tag: script_extract_first_ip_remaining_ips_15386acc
       lang: painless
       description: Extract first IP and remaining IPs.
       if: ctx._tmp?.source_ip instanceof List
@@ -92,14 +92,17 @@ processors:
       if: ctx.jira.audit?.additional_source_ips instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_2f3bdeea
           field: '{{{_ingest._value}}}'
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ce750782
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_27423476
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -134,7 +137,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_8c6fbeb6
       params:
         User created:
           category:
@@ -354,7 +357,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
-      tag: script_6a41bbc8
+      tag: script_add_ecs_user_fields_6a41bbc8
       lang: painless
       description: Add ECS User fields
       if: "['jira.auditing.category.usermanagement','jira.auditing.category.groupmanagement'].contains(ctx.jira?.audit?.type?.categoryI18nKey) || ['user management','group management'].contains(ctx.jira?.audit?.type?.category)"
@@ -461,6 +464,7 @@ processors:
       if: ctx.jira.audit?.additional_source_ips instanceof List
       processor:
         append:
+          tag: append_related_ip_ffc0596f
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -478,7 +482,7 @@ processors:
         - _config
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb_024f61e4
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -505,13 +509,16 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

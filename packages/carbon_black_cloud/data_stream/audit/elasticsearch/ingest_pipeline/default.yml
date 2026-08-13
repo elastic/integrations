@@ -12,7 +12,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -108,12 +108,12 @@ processors:
   - set:
       field: client.user.email
       copy_from: client.user.id
-      tag: copy_client_user_email
+      tag: copy_client_user_email_2d852384
       if: ctx.client?.user?.id != null && ctx.client.user.id.indexOf("@") > 0
   - dissect:
       field: client.user.email
       pattern: '%{client.user.name}@%{client.user.domain}'
-      tag: dissect_client_user_email
+      tag: dissect_client_user_email_6dcd6b88
       ignore_missing: true
       ignore_failure: true
   - append:
@@ -164,7 +164,7 @@ processors:
       field: json
       ignore_missing: true
   - script:
-      tag: script_e2ccbdd7
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -183,12 +183,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

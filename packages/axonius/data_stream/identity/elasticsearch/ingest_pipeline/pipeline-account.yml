@@ -8,7 +8,7 @@ processors:
       ignore_missing: true
   - convert:
       field: axonius.identity.active_users
-      tag: convert_active_users_to_long
+      tag: convert_active_users_to_long_6c0c9175
       type: long
       ignore_missing: true
       on_failure:
@@ -22,7 +22,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.admin_non_operational_users
-      tag: convert_admin_non_operational_users_to_long
+      tag: convert_admin_non_operational_users_to_long_2cf146a1
       type: long
       ignore_missing: true
       on_failure:
@@ -36,7 +36,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.admin_operational_active_users
-      tag: convert_admin_operational_active_users_to_long
+      tag: convert_admin_operational_active_users_to_long_07897bd1
       type: long
       ignore_missing: true
       on_failure:
@@ -50,7 +50,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.admin_operational_inactive_users
-      tag: convert_admin_operational_inactive_users_to_long
+      tag: convert_admin_operational_inactive_users_to_long_74232097
       type: long
       ignore_missing: true
       on_failure:
@@ -64,7 +64,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.admin_operational_users
-      tag: convert_admin_operational_users_to_long
+      tag: convert_admin_operational_users_to_long_f26eb1c4
       type: long
       ignore_missing: true
       on_failure:
@@ -78,7 +78,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.admins
-      tag: convert_admins_to_long
+      tag: convert_admins_to_long_771d435e
       type: long
       ignore_missing: true
       on_failure:
@@ -92,17 +92,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: service.id
-      tag: set_service_id_from_identity_application_id
+      tag: set_service_id_from_identity_application_id_32e68048
       copy_from: axonius.identity.application_id
       ignore_empty_value: true
   - set:
       field: service.name
-      tag: set_service_name_from_identity_application_name
+      tag: set_service_name_from_identity_application_name_f7902872
       copy_from: axonius.identity.application_name
       ignore_empty_value: true
   - date:
       field: axonius.identity.created_date
-      tag: date_created_date
+      tag: date_created_date_6edf10ea
       target_field: axonius.identity.created_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -120,12 +120,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_identity_created_date
+      tag: set_event_created_from_identity_created_date_caef68d5
       copy_from: axonius.identity.created_date
       ignore_empty_value: true
   - convert:
       field: axonius.identity.deleted_users
-      tag: convert_deleted_users_to_long
+      tag: convert_deleted_users_to_long_c5e2d03e
       type: long
       ignore_missing: true
       on_failure:
@@ -139,7 +139,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.direct_not_sso_users
-      tag: convert_direct_not_sso_users_to_long
+      tag: convert_direct_not_sso_users_to_long_3a157682
       type: long
       ignore_missing: true
       on_failure:
@@ -153,23 +153,23 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.email
-      tag: set_user_email_from_identity_email
+      tag: set_user_email_from_identity_email_bd9e7994
       copy_from: axonius.identity.email
       ignore_empty_value: true
   - dissect:
-      tag: dissect_user_email
+      tag: dissect_user_email_c7a077f3
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
       pattern: '%{}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_identity_email_into_related_user
+      tag: append_identity_email_into_related_user_bc270a41
       value: '{{{axonius.identity.email}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.email != null
   - convert:
       field: axonius.identity.external_users
-      tag: convert_external_users_to_long
+      tag: convert_external_users_to_long_8aaf490a
       type: long
       ignore_missing: true
       on_failure:
@@ -183,7 +183,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.inactive_users
-      tag: convert_inactive_users_to_long
+      tag: convert_inactive_users_to_long_db317099
       type: long
       ignore_missing: true
       on_failure:
@@ -197,7 +197,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.is_managed_by_direct_app
-      tag: convert_is_managed_by_direct_app_to_boolean
+      tag: convert_is_managed_by_direct_app_to_boolean_77b24ae6
       type: boolean
       ignore_missing: true
       on_failure:
@@ -211,7 +211,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.last_enrichment_run
-      tag: date_last_enrichment_run
+      tag: date_last_enrichment_run_b64c557f
       target_field: axonius.identity.last_enrichment_run
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -229,7 +229,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.managed_non_operational_users
-      tag: convert_managed_non_operational_users_to_long
+      tag: convert_managed_non_operational_users_to_long_4385a774
       type: long
       ignore_missing: true
       on_failure:
@@ -243,7 +243,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.managed_operational_users
-      tag: convert_managed_operational_users_to_long
+      tag: convert_managed_operational_users_to_long_fe2aa091
       type: long
       ignore_missing: true
       on_failure:
@@ -257,7 +257,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.managed_users
-      tag: convert_managed_users_to_long
+      tag: convert_managed_users_to_long_3c3ad47a
       type: long
       ignore_missing: true
       on_failure:
@@ -271,7 +271,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.managed_users_by_app
-      tag: convert_managed_users_by_app_to_long
+      tag: convert_managed_users_by_app_to_long_2ac4c891
       type: long
       ignore_missing: true
       on_failure:
@@ -285,7 +285,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.managed_users_by_sso
-      tag: convert_managed_users_by_sso_to_long
+      tag: convert_managed_users_by_sso_to_long_0d722c4f
       type: long
       ignore_missing: true
       on_failure:
@@ -299,7 +299,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.orphaned_users
-      tag: convert_orphaned_users_to_long
+      tag: convert_orphaned_users_to_long_988e0cfe
       type: long
       ignore_missing: true
       on_failure:
@@ -313,7 +313,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.paid_users
-      tag: convert_paid_users_to_long
+      tag: convert_paid_users_to_long_49dfa26e
       type: long
       ignore_missing: true
       on_failure:
@@ -327,7 +327,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.suspended_users
-      tag: convert_suspended_users_to_long
+      tag: convert_suspended_users_to_long_9c3bafa4
       type: long
       ignore_missing: true
       on_failure:
@@ -341,7 +341,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.unlinked_users
-      tag: convert_unlinked_users_to_long
+      tag: convert_unlinked_users_to_long_083fa9c8
       type: long
       ignore_missing: true
       on_failure:
@@ -355,6 +355,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -362,9 +363,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

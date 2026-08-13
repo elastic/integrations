@@ -39,7 +39,7 @@ processors:
       field: event.original
       target_field: azure.provisioning
   - drop:
-      tag: drop_03a2cc82
+      tag: drop_events_not_azure_provisioning_logs_03a2cc82
       description: Drop events that are not Azure Provisioning logs.
       if: ctx?.azure?.provisioning?.category == null || ctx.azure.provisioning.category != 'ProvisioningLogs'
   #
@@ -447,30 +447,29 @@ processors:
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_provisioningStepType_to_ingest_value_provisioning_step_type_ff5bd236
           field: _ingest._value.provisioningStepType
           target_field: _ingest._value.provisioning_step_type
           ignore_missing: true
-  - rename:
-     tag: rename_azure_provisioning_properties_activityDateTime_to_azure_provisioning_properties_activity_datetime_87f90255
-     field: azure.provisioning.properties.activityDateTime
-     target_field: azure.provisioning.properties.activity_datetime
-     ignore_missing: true
   - set:
       tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

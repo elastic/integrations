@@ -368,7 +368,7 @@ processors:
         - json
       ignore_missing: true
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:
       tag: set_observer_name_5e6c4eea
@@ -376,7 +376,7 @@ processors:
       copy_from: azure.resource.name
       ignore_empty_value: true
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -395,19 +395,23 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
+      tag: remove_5ad63527
       field:
         - json
         - _conf

@@ -53,7 +53,7 @@ processors:
     target_field: confluence.audit.changed_values
     ignore_missing: true
 - script:
-    tag: script_36fd60b5
+    tag: script_modify_data_to_match_self_36fd60b5
     lang: painless
     description: Modify data to match Self Hosted
     if: ctx.confluence?.audit != null
@@ -93,13 +93,16 @@ processors:
         }
 on_failure:
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message_8ac65503
     field: error.message
     value: >
       Processor "{{{ _ingest.on_failure_processor_type }}}"

@@ -12,7 +12,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -25,7 +25,7 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
-      tag: rename_event_original
+      tag: rename_event_original_a7b1f822
   - remove:
       tag: remove_message_2ee3a7d4
       field: message
@@ -35,7 +35,7 @@ processors:
   - json:
       field: event.original
       target_field: json
-      tag: json_event_original
+      tag: json_event_original_191a3bad
       on_failure:
         - set:
             tag: set_event_kind_e68181f1
@@ -48,7 +48,7 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - date:
       field: json.ts
-      tag: date_ts
+      tag: date_ts_e09148c0
       formats:
         - ISO8601
       on_failure:
@@ -58,7 +58,7 @@ processors:
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - fingerprint:
-      tag: fingerprint_id
+      tag: fingerprint_id_9692f495
       fields:
         - json.activity_id
         - json.akey
@@ -71,12 +71,12 @@ processors:
       field: json.access_device
       target_field: cisco_duo.activity.access_device
       ignore_missing: true
-      tag: rename_access_device
+      tag: rename_access_device_664a2342
   - convert:
       field: cisco_duo.activity.access_device.ip.address
       type: ip
       ignore_missing: true
-      tag: convert_ip_address
+      tag: convert_ip_address_1416c66a
       on_failure:
         - append:
             tag: append_error_message_48c94e3d
@@ -110,130 +110,130 @@ processors:
       field: cisco_duo.activity.access_device.as.asn
       target_field: cisco_duo.activity.access_device.as.number
       ignore_missing: true
-      tag: rename_as_number
+      tag: rename_as_number_cc409b43
   - rename:
       field: cisco_duo.activity.access_device.as.organization_name
       target_field: cisco_duo.activity.access_device.as.organization.name
       ignore_missing: true
-      tag: rename_as_org_name
+      tag: rename_as_org_name_52b18a6f
   - rename:
       field: json.action
       target_field: cisco_duo.activity.action
       ignore_missing: true
-      tag: rename_action
+      tag: rename_action_4d8bfe88
   - rename:
       field: json.activity_id
       target_field: cisco_duo.activity.id
       ignore_missing: true
-      tag: rename_activity_id
+      tag: rename_activity_id_29ba7fa9
   - rename:
       field: json.actor
       target_field: cisco_duo.activity.actor
       ignore_missing: true
-      tag: rename_actor
+      tag: rename_actor_69529c85
   - json:
       field: cisco_duo.activity.actor.details
       if: ctx.cisco_duo?.activity?.actor?.details instanceof String
-      tag: json_actor_details
+      tag: json_actor_details_135ed6f4
   - rename:
       field: json.akey
       target_field: cisco_duo.activity.akey
       ignore_missing: true
-      tag: rename_akey
+      tag: rename_akey_7893ba90
   - rename:
       field: json.application
       target_field: cisco_duo.activity.application
       ignore_missing: true
-      tag: rename_application
+      tag: rename_application_66261003
   - rename:
       field: json.old_target
       target_field: cisco_duo.activity.old_target
       ignore_missing: true
-      tag: rename_old_target
+      tag: rename_old_target_fb621fe6
   - json:
       field: cisco_duo.activity.old_target.details
       if: ctx.cisco_duo?.activity?.old_target?.details instanceof String
-      tag: json_old_target_details
+      tag: json_old_target_details_1a3da0a7
   - rename:
       field: json.outcome.result
       target_field: cisco_duo.activity.outcome
       ignore_missing: true
       if: ctx.json.outcome?.result != null
-      tag: rename_outcome
+      tag: rename_outcome_5a34aa01
   - rename:
       field: json.target
       target_field: cisco_duo.activity.target
       ignore_missing: true
-      tag: rename_target
+      tag: rename_target_f9248459
   - json:
       field: cisco_duo.activity.target.details
       if: ctx.cisco_duo?.activity?.target?.details instanceof String
-      tag: json_target_details
+      tag: json_target_details_1105966e
 
   ## ECS fields
   - set:
       field: event.id
       copy_from: cisco_duo.activity.id
       ignore_empty_value: true
-      tag: set_event_id
+      tag: set_event_id_2198f378
   - set:
       field: event.action
       copy_from: cisco_duo.activity.action.name
       ignore_empty_value: true
-      tag: set_event_action
+      tag: set_event_action_e74c186a
   - set:
       field: event.outcome
       value: success
       ignore_empty_value: true
       if: ctx.cisco_duo?.activity?.outcome == 'SUCCESS'
-      tag: set_event_outcome_success
+      tag: set_event_outcome_success_c3cffefa
   - set:
       field: event.outcome
       value: failure
       ignore_empty_value: true
       if: ctx.cisco_duo?.activity?.outcome == 'FAILURE'
-      tag: set_event_outcome_failure
+      tag: set_event_outcome_failure_2867dc7c
   - set:
       field: source.ip
       copy_from: cisco_duo.activity.access_device.ip.address
       ignore_empty_value: true
-      tag: set_source_ip
+      tag: set_source_ip_121decf6
   - set:
       field: source.geo
       copy_from: cisco_duo.activity.access_device.geo
       ignore_empty_value: true
-      tag: set_source_geo
+      tag: set_source_geo_e81e4978
   - set:
       field: source.as
       copy_from: cisco_duo.activity.access_device.as
       ignore_empty_value: true
-      tag: set_source_as
+      tag: set_source_as_528976d6
   - set:
       field: user.name
       copy_from: cisco_duo.activity.actor.name
       if: ctx.cisco_duo?.activity?.actor?.type == 'user'
       ignore_empty_value: true
-      tag: set_user_name
+      tag: set_user_name_719465af
   - set:
       field: user_agent.name
       copy_from: cisco_duo.activity.access_device.browser
       ignore_empty_value: true
-      tag: set_user_agent_name
+      tag: set_user_agent_name_8a966f0e
   - set:
       field: user_agent.version
       copy_from: cisco_duo.activity.access_device.browser_version
       ignore_empty_value: true
-      tag: set_user_agent_version
+      tag: set_user_agent_version_1f398670
   - set:
       field: user_agent.os.name
       copy_from: cisco_duo.activity.access_device.os
       ignore_empty_value: true
-      tag: set_user_agent_os_name
+      tag: set_user_agent_os_name_1c2b1b5c
   - set:
       field: user_agent.os.version
       copy_from: cisco_duo.activity.access_device.os_version
       ignore_empty_value: true
-      tag: set_user_agent_os_version
+      tag: set_user_agent_os_version_349ef483
 
   ## Related fields
   - append:
@@ -241,18 +241,18 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
-      tag: append_related_user
+      tag: append_related_user_325195a6
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
-      tag: append_related_ip
+      tag: append_related_ip_723473d3
 
   ## Clean up
   - script:
       description: Drops null/empty values recursively
-      tag: drop_null_values
+      tag: drop_null_values_2aeacfaa
       lang: painless
       ignore_failure: true
       source: |
@@ -275,13 +275,16 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

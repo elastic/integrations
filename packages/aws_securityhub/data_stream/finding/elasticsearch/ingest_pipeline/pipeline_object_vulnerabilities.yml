@@ -9,7 +9,7 @@ processors:
       processor:
         date:
           field: _ingest._value.advisory.created_time_dt
-          tag: date_vulnerabilities_advisory_created_time_dt
+          tag: date_vulnerabilities_advisory_created_time_dt_42427de2
           target_field: _ingest._value.advisory.created_time_dt
           formats:
             - ISO8601
@@ -17,6 +17,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_advisory_created_time_dt_8e599ede
                 field: _ingest._value.advisory.created_time_dt
                 ignore_missing: true
   - foreach:
@@ -26,12 +27,13 @@ processors:
       processor:
         date:
           field: _ingest._value.advisory.created_time
-          tag: date_vulnerabilities_advisory_created_time
+          tag: date_vulnerabilities_advisory_created_time_1e55ea9d
           target_field: _ingest._value.advisory.created_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_advisory_created_time_0a311538
                 field: _ingest._value.advisory.created_time
                 ignore_missing: true
   - foreach:
@@ -41,7 +43,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.advisory.install_state_id
-          tag: convert_vulnerabilities_advisory_install_state_id_to_string
+          tag: convert_vulnerabilities_advisory_install_state_id_to_string_3214fe2a
           type: string
           ignore_missing: true
   - foreach:
@@ -51,13 +53,15 @@ processors:
       processor:
         convert:
           field: _ingest._value.advisory.is_superseded
-          tag: convert_vulnerabilities_advisory_is_superseded_to_boolean
+          tag: convert_vulnerabilities_advisory_is_superseded_to_boolean_6c0bc66d
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_advisory_is_superseded_3771a1ce
                 field: _ingest._value.advisory.is_superseded
             - append:
+                tag: append_error_message_55b5b1e6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -67,7 +71,7 @@ processors:
       processor:
         date:
           field: _ingest._value.advisory.modified_time_dt
-          tag: date_vulnerabilities_advisory_modified_time_dt
+          tag: date_vulnerabilities_advisory_modified_time_dt_c58ff956
           target_field: _ingest._value.advisory.modified_time_dt
           formats:
             - ISO8601
@@ -75,6 +79,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_advisory_modified_time_dt_655421f8
                 field: _ingest._value.advisory.modified_time_dt
                 ignore_missing: true
   - foreach:
@@ -84,12 +89,13 @@ processors:
       processor:
         date:
           field: _ingest._value.advisory.modified_time
-          tag: date_vulnerabilities_advisory_modified_time
+          tag: date_vulnerabilities_advisory_modified_time_b7b2e313
           target_field: _ingest._value.advisory.modified_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_advisory_modified_time_1bacaa70
                 field: _ingest._value.advisory.modified_time
                 ignore_missing: true
   - foreach:
@@ -99,13 +105,15 @@ processors:
       processor:
         convert:
           field: _ingest._value.advisory.size
-          tag: convert_vulnerabilities_advisory_size_to_long
+          tag: convert_vulnerabilities_advisory_size_to_long_0b08a4a3
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_advisory_size_60e71a68
                 field: _ingest._value.advisory.size
             - append:
+                tag: append_error_message_a0346c25
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -114,18 +122,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_affected_code_0bc43040
           field: _ingest._value.affected_code
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.end_column
-              tag: convert_vulnerabilities_affected_code_end_column_to_long
+              tag: convert_vulnerabilities_affected_code_end_column_to_long_e4194bcf
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_end_column_f116ac5d
                     field: _ingest._value.end_column
                 - append:
+                    tag: append_error_message_ba30ba98
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -134,18 +145,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_affected_code_d66947d6
           field: _ingest._value.affected_code
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.end_line
-              tag: convert_vulnerabilities_affected_code_end_line_to_long
+              tag: convert_vulnerabilities_affected_code_end_line_to_long_04277d4e
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_end_line_2a3403f2
                     field: _ingest._value.end_line
                 - append:
+                    tag: append_error_message_34483c8e
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -154,18 +168,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_affected_code_1d1b8b56
           field: _ingest._value.affected_code
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.start_column
-              tag: convert_vulnerabilities_affected_code_start_column_to_long
+              tag: convert_vulnerabilities_affected_code_start_column_to_long_4c9cb17c
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_start_column_5cbbc9de
                     field: _ingest._value.start_column
                 - append:
+                    tag: append_error_message_009f2054
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -174,18 +191,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_affected_code_816ef138
           field: _ingest._value.affected_code
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.start_line
-              tag: convert_vulnerabilities_affected_code_start_line_to_long
+              tag: convert_vulnerabilities_affected_code_start_line_to_long_ea5dfafb
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_start_line_2070350e
                     field: _ingest._value.start_line
                 - append:
+                    tag: append_error_message_19a01064
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -194,18 +214,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_affected_packages_bb96e1f0
           field: _ingest._value.affected_packages
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.epoch
-              tag: convert_vulnerabilities_affected_packages_epoch_to_long
+              tag: convert_vulnerabilities_affected_packages_epoch_to_long_4d2f74f7
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_epoch_745758f7
                     field: _ingest._value.epoch
                 - append:
+                    tag: append_error_message_c31b2f2c
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -214,12 +237,13 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_affected_packages_a09a3662
           field: _ingest._value.affected_packages
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.type_id
-              tag: convert_vulnerabilities_affected_packages_type_id_to_string
+              tag: convert_vulnerabilities_affected_packages_type_id_to_string_f8a6ab4b
               type: string
               ignore_missing: true
   - foreach:
@@ -229,7 +253,7 @@ processors:
       processor:
         date:
           field: _ingest._value.cve.created_time_dt
-          tag: date_vulnerabilities_cve_created_time_dt
+          tag: date_vulnerabilities_cve_created_time_dt_5113f4a2
           target_field: _ingest._value.cve.created_time_dt
           formats:
             - ISO8601
@@ -237,6 +261,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_created_time_dt_9e7313bb
                 field: _ingest._value.cve.created_time_dt
                 ignore_missing: true
   - foreach:
@@ -246,12 +271,13 @@ processors:
       processor:
         date:
           field: _ingest._value.cve.created_time
-          tag: date_vulnerabilities_cve_created_time
+          tag: date_vulnerabilities_cve_created_time_6f1ce700
           target_field: _ingest._value.cve.created_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_created_time_9fe03108
                 field: _ingest._value.cve.created_time
                 ignore_missing: true
   - foreach:
@@ -260,18 +286,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_cve_cvss_b1e32acc
           field: _ingest._value.cve.cvss
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.base_score
-              tag: convert_vulnerabilities_cve_cvss_base_score_to_float
+              tag: convert_vulnerabilities_cve_cvss_base_score_to_float_76b820f7
               type: float
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_base_score_2ad09e9c
                     field: _ingest._value.base_score
                 - append:
+                    tag: append_error_message_66d32b53
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -280,18 +309,21 @@ processors:
       if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_cve_cvss_0a865020
           field: _ingest._value.cve.cvss
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.overall_score
-              tag: convert_vulnerabilities_cve_cvss_overall_score_to_float
+              tag: convert_vulnerabilities_cve_cvss_overall_score_to_float_1c3ad6d0
               type: float
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_overall_score_3d09fb41
                     field: _ingest._value.overall_score
                 - append:
+                    tag: append_error_message_e0d0b1bb
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -301,7 +333,7 @@ processors:
       processor:
         date:
           field: _ingest._value.cve.epss.created_time_dt
-          tag: date_vulnerabilities_cve_epss_created_time_dt
+          tag: date_vulnerabilities_cve_epss_created_time_dt_df61f7ec
           target_field: _ingest._value.cve.epss.created_time_dt
           formats:
             - ISO8601
@@ -309,6 +341,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_epss_created_time_dt_56822923
                 field: _ingest._value.cve.epss.created_time_dt
                 ignore_missing: true
   - foreach:
@@ -318,12 +351,13 @@ processors:
       processor:
         date:
           field: _ingest._value.cve.epss.created_time
-          tag: date_vulnerabilities_cve_epss_created_time
+          tag: date_vulnerabilities_cve_epss_created_time_a2387b14
           target_field: _ingest._value.cve.epss.created_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_epss_created_time_29808b70
                 field: _ingest._value.cve.epss.created_time
                 ignore_missing: true
   - foreach:
@@ -333,13 +367,15 @@ processors:
       processor:
         convert:
           field: _ingest._value.cve.epss.percentile
-          tag: convert_vulnerabilities_cve_epss_percentile_to_float
+          tag: convert_vulnerabilities_cve_epss_percentile_to_float_01b306d8
           type: float
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_epss_percentile_3135a563
                 field: _ingest._value.cve.epss.percentile
             - append:
+                tag: append_error_message_ec4387f2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -349,7 +385,7 @@ processors:
       processor:
         date:
           field: _ingest._value.cve.modified_time_dt
-          tag: date_vulnerabilities_cve_modified_time_dt
+          tag: date_vulnerabilities_cve_modified_time_dt_be3ccc7e
           target_field: _ingest._value.cve.modified_time_dt
           formats:
             - ISO8601
@@ -357,6 +393,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_modified_time_dt_79349a02
                 field: _ingest._value.cve.modified_time_dt
                 ignore_missing: true
   - foreach:
@@ -366,12 +403,13 @@ processors:
       processor:
         date:
           field: _ingest._value.cve.modified_time
-          tag: date_vulnerabilities_cve_modified_time
+          tag: date_vulnerabilities_cve_modified_time_e9f76349
           target_field: _ingest._value.cve.modified_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_cve_modified_time_3c0a7f52
                 field: _ingest._value.cve.modified_time
                 ignore_missing: true
   - foreach:
@@ -381,7 +419,7 @@ processors:
       processor:
         date:
           field: _ingest._value.exploit_last_seen_time_dt
-          tag: date_vulnerabilities_exploit_last_seen_time_dt
+          tag: date_vulnerabilities_exploit_last_seen_time_dt_85de9a33
           target_field: _ingest._value.exploit_last_seen_time_dt
           formats:
             - ISO8601
@@ -389,6 +427,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_exploit_last_seen_time_dt_efd2e5a6
                 field: _ingest._value.exploit_last_seen_time_dt
                 ignore_missing: true
   - foreach:
@@ -398,12 +437,13 @@ processors:
       processor:
         date:
           field: _ingest._value.exploit_last_seen_time
-          tag: date_vulnerabilities_exploit_last_seen_time
+          tag: date_vulnerabilities_exploit_last_seen_time_cdb812ca
           target_field: _ingest._value.exploit_last_seen_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_exploit_last_seen_time_f9303cbd
                 field: _ingest._value.exploit_last_seen_time
                 ignore_missing: true
   - foreach:
@@ -413,7 +453,7 @@ processors:
       processor:
         date:
           field: _ingest._value.first_seen_time_dt
-          tag: date_vulnerabilities_first_seen_time_dt
+          tag: date_vulnerabilities_first_seen_time_dt_113cf932
           target_field: _ingest._value.first_seen_time_dt
           formats:
             - ISO8601
@@ -421,6 +461,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_seen_time_dt_e90fcb9d
                 field: _ingest._value.first_seen_time_dt
                 ignore_missing: true
   - foreach:
@@ -430,12 +471,13 @@ processors:
       processor:
         date:
           field: _ingest._value.first_seen_time
-          tag: date_vulnerabilities_first_seen_time
+          tag: date_vulnerabilities_first_seen_time_574e52ab
           target_field: _ingest._value.first_seen_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_seen_time_d114b231
                 field: _ingest._value.first_seen_time
                 ignore_missing: true
   - foreach:
@@ -445,7 +487,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.fix_coverage_id
-          tag: convert_vulnerabilities_fix_coverage_id_to_string
+          tag: convert_vulnerabilities_fix_coverage_id_to_string_ac317d3f
           type: string
           ignore_missing: true
   - foreach:
@@ -455,13 +497,15 @@ processors:
       processor:
         convert:
           field: _ingest._value.is_exploit_available
-          tag: convert_vulnerabilities_is_exploit_available_to_boolean
+          tag: convert_vulnerabilities_is_exploit_available_to_boolean_17fa8b77
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_exploit_available_12266456
                 field: _ingest._value.is_exploit_available
             - append:
+                tag: append_error_message_7a4ed021
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -471,13 +515,15 @@ processors:
       processor:
         convert:
           field: _ingest._value.is_fix_available
-          tag: convert_vulnerabilities_is_fix_available_to_boolean
+          tag: convert_vulnerabilities_is_fix_available_to_boolean_29d59f5f
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_fix_available_763c7c71
                 field: _ingest._value.is_fix_available
             - append:
+                tag: append_error_message_70e568da
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -487,7 +533,7 @@ processors:
       processor:
         date:
           field: _ingest._value.last_seen_time_dt
-          tag: date_vulnerabilities_last_seen_time_dt
+          tag: date_vulnerabilities_last_seen_time_dt_78b67034
           target_field: _ingest._value.last_seen_time_dt
           formats:
             - ISO8601
@@ -495,6 +541,7 @@ processors:
             - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_seen_time_dt_283c3a66
                 field: _ingest._value.last_seen_time_dt
                 ignore_missing: true
   - foreach:
@@ -504,16 +551,18 @@ processors:
       processor:
         date:
           field: _ingest._value.last_seen_time
-          tag: date_vulnerabilities_last_seen_time
+          tag: date_vulnerabilities_last_seen_time_93b645ef
           target_field: _ingest._value.last_seen_time
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_seen_time_3e1ecbb1
                 field: _ingest._value.last_seen_time
                 ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -521,9 +570,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

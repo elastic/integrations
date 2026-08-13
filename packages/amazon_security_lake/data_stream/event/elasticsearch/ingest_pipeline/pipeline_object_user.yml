@@ -4,28 +4,28 @@ description: Pipeline for processing User object.
 processors:
   - set:
       field: user.target.domain
-      tag: set_user_target_domain
+      tag: set_user_target_domain_e756a589
       copy_from: ocsf.user.domain
       ignore_empty_value: true
   - set:
       field: user.target.email
-      tag: set_user_target_email
+      tag: set_user_target_email_fdecbaf0
       copy_from: ocsf.user.email_addr
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_email_addr_into_related_user
+      tag: append_user_email_addr_into_related_user_758bdcb2
       value: '{{{ocsf.user.email_addr}}}'
       allow_duplicates: false
       if: ctx.ocsf?.user?.email_addr != null
   - set:
       field: user.target.full_name
-      tag: set_user_target_full_name
+      tag: set_user_target_full_name_2168bc2f
       copy_from: ocsf.user.full_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_full_name_into_related_user
+      tag: append_user_full_name_into_related_user_e28c1440
       value: '{{{ocsf.user.full_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.user?.full_name != null
@@ -37,7 +37,7 @@ processors:
       processor:
         append:
           field: user.target.group.id
-          tag: append_user_target_group_id
+          tag: append_user_target_group_id_1b34b79a
           value: '{{{_ingest._value.uid}}}'
           allow_duplicates: false
   - foreach:
@@ -48,44 +48,44 @@ processors:
       processor:
         append:
           field: user.target.group.name
-          tag: append_user_target_group_name
+          tag: append_user_target_group_name_ac922c5b
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - set:
       field: user.target.id
-      tag: set_user_target_id
+      tag: set_user_target_id_bb37c7c8
       copy_from: ocsf.user.uid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_uid_into_related_user
+      tag: append_user_uid_into_related_user_874c5417
       value: '{{{ocsf.user.uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.user?.uid != null
   - set:
       field: user.target.name
-      tag: set_user_target_name
+      tag: set_user_target_name_fb45979f
       copy_from: ocsf.user.name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_d97808f3
       value: '{{{ocsf.user.name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.user?.name != null
   - convert:
       field: ocsf.user.account.type_id
-      tag: convert_user_account_type_id_to_string
+      tag: convert_user_account_type_id_to_string_920952ae
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.user.type_id
-      tag: convert_user_type_id_to_string
+      tag: convert_user_type_id_to_string_b3c482cb
       type: string
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_user_uid_alt_into_related_user
+      tag: append_user_uid_alt_into_related_user_05d3501b
       value: '{{{ocsf.user.uid_alt}}}'
       allow_duplicates: false
       if: ctx.ocsf?.user?.uid_alt != null
@@ -97,7 +97,7 @@ processors:
       processor:
         append:
           field: user.ldap_person.email_addrs
-          tag: append_user_ldap_person_email_addrs
+          tag: append_user_ldap_person_email_addrs_893bdada
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
@@ -108,12 +108,12 @@ processors:
       processor:
         append:
           field: user.ldap_person.labels
-          tag: append_user_ldap_person_labels
+          tag: append_user_ldap_person_labels_8c48ce8b
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - convert:
       field: ocsf.user.ldap_person.location.is_on_premises
-      tag: convert_user_ldap_person_location_is_on_premises_to_boolean
+      tag: convert_user_ldap_person_location_is_on_premises_to_boolean_0a3af7f5
       type: boolean
       ignore_missing: true
       on_failure:
@@ -127,12 +127,15 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

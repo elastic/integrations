@@ -39,7 +39,7 @@ processors:
       field: event.original
       target_field: azure.identityprotection
   - drop:
-      tag: drop_65d642d2
+      tag: drop_events_not_ad_identity_protection_65d642d2
       description: Drop events that are not AD Identity Protection logs.
       if: ctx?.azure?.identityprotection?.category == null || ctx.azure.identityprotection.category != 'RiskyUsers' && ctx.azure.identityprotection.category != 'UserRiskEvents'
   #
@@ -300,11 +300,11 @@ processors:
      field: user.name
      copy_from: azure.identityprotection.properties.user_principal_name
      ignore_empty_value: true
-     tag: set_user_name
+     tag: set_user_name_9a85879e
   - set:
       field: user.email
       copy_from: user.name
-      tag: set_user_email
+      tag: set_user_email_d6b77481
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   # Don't dissect the user email into <user.name>@<user.domain>
   # as the parts are meaningless on their own
@@ -440,17 +440,20 @@ processors:
       field: event.kind
       value: event
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

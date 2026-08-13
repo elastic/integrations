@@ -9,13 +9,14 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_tactics_27227918
           field: _ingest._value.tactics
           ignore_failure: true
           processor:
             append:
               field: threat.tactic.id
               value: '{{{_ingest._value.uid}}}'
-              tag: append_attacks_tactics_uid_into_threat_tactic_id
+              tag: append_attacks_tactics_uid_into_threat_tactic_id_546adda6
               allow_duplicates: false
   - foreach:
       tag: foreach_ocsf_attacks_995038e0
@@ -24,13 +25,14 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_tactics_485fd971
           field: _ingest._value.tactics
           ignore_failure: true
           processor:
             append:
               field: threat.tactic.name
               value: '{{{_ingest._value.name}}}'
-              tag: append_attacks_tactics_name_into_threat_tactic_name
+              tag: append_attacks_tactics_name_into_threat_tactic_name_1304cab2
               allow_duplicates: false
   - foreach:
       tag: foreach_ocsf_attacks_9754b9ec
@@ -41,7 +43,7 @@ processors:
         append:
           field: threat.technique.name
           value: '{{{_ingest._value.technique.name}}}'
-          tag: append_attacks_technique_name_into_threat_technique_name
+          tag: append_attacks_technique_name_into_threat_technique_name_e3ed4fae
           allow_duplicates: false
   - foreach:
       tag: foreach_ocsf_attacks_dc9adda0
@@ -52,16 +54,19 @@ processors:
         append:
           field: threat.technique.id
           value: '{{{_ingest._value.technique.uid}}}'
-          tag: append_attacks_technique_uid_into_threat_technique_id
+          tag: append_attacks_technique_uid_into_threat_technique_id_76497592
           allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

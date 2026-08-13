@@ -6,19 +6,19 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -82,7 +82,7 @@ processors:
       copy_from: http.request.id
       ignore_empty_value: true
   - fingerprint:
-      tag: fingerprint_1181e134
+      tag: fingerprint_to_id_1181e134
       description: >
         Fingerprint the event.original value in attempt to prevent the same
         event from being indexed more than once under connection failures or
@@ -111,7 +111,7 @@ processors:
       target_field: url.domain
       ignore_missing: true
   - urldecode:
-      tag: urldecode_httpMessage_path
+      tag: urldecode_httpMessage_path_d3949612
       field: json.httpMessage.path
       target_field: url.path
       ignore_missing: true
@@ -122,7 +122,7 @@ processors:
             field: url.path
             copy_from: json.httpMessage.path
   - urldecode:
-      tag: urldecode_httpMessage_query
+      tag: urldecode_httpMessage_query_1244a7c8
       field: json.httpMessage.query
       target_field: url.query
       ignore_missing: true
@@ -144,15 +144,15 @@ processors:
       type: long
       ignore_missing: true
   - urldecode:
-      tag: urldecode_httpMessage_responseHeaders
+      tag: urldecode_httpMessage_responseHeaders_a8b59110
       field: json.httpMessage.responseHeaders
       ignore_missing: true
   - remove:
-      tag: remove_http_message_response_headers_non_kv
+      tag: remove_http_message_response_headers_non_kv_a9f7dec0
       field: json.httpMessage.responseHeaders
       if: ctx.json?.httpMessage?.responseHeaders instanceof String && ctx.json.httpMessage.responseHeaders.contains(":") == false
   - gsub:
-      tag: gsub_http_message_response_headers_obs_fold
+      tag: gsub_http_message_response_headers_obs_fold_c41ff9eb
       description: >
         Replace RFC 7230 obs-fold (CRLF + space/tab) with a single SP so each line is a valid
         Name: value for KV. The json subtree is removed later in the pipeline.
@@ -161,7 +161,7 @@ processors:
       replacement: ' '
       ignore_missing: true
   - kv:
-      tag: kv_httpMessage_responseHeaders
+      tag: kv_httpMessage_responseHeaders_872f21e2
       field: json.httpMessage.responseHeaders
       target_field: akamai.siem.response.headers
       field_split: '\r\n'
@@ -171,15 +171,15 @@ processors:
       trim_key: ' '
       trim_value: ' '
   - urldecode:
-      tag: urldecode_httpMessage_requestHeaders
+      tag: urldecode_httpMessage_requestHeaders_cb8737cc
       field: json.httpMessage.requestHeaders
       ignore_missing: true
   - remove:
-      tag: remove_http_message_request_headers_non_kv
+      tag: remove_http_message_request_headers_non_kv_afefd93b
       field: json.httpMessage.requestHeaders
       if: ctx.json?.httpMessage?.requestHeaders instanceof String && ctx.json.httpMessage.requestHeaders.contains(":") == false
   - gsub:
-      tag: gsub_http_message_request_headers_obs_fold
+      tag: gsub_http_message_request_headers_obs_fold_c3292372
       description: >
         Obs-fold to SP before KV (see gsub_http_message_response_headers_obs_fold).
       field: json.httpMessage.requestHeaders
@@ -187,7 +187,7 @@ processors:
       replacement: ' '
       ignore_missing: true
   - kv:
-      tag: kv_httpMessage_requestHeaders
+      tag: kv_httpMessage_requestHeaders_29b0d51e
       field: json.httpMessage.requestHeaders
       target_field: akamai.siem.request.headers
       field_split: '\r\n'
@@ -197,7 +197,7 @@ processors:
       trim_key: ' '
       trim_value: ' '
   - script:
-      tag: script_65de2be3
+      tag: script_builds_url_full_field_out_65de2be3
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
       source: |
@@ -299,7 +299,7 @@ processors:
       type: long
       ignore_missing: true
       if: ctx.json.geo?.asn != '' && ctx.source?.as?.number == null
-      tag: convert_source_as_number
+      tag: convert_source_as_number_5cf4b5ba
   - rename:
       tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
@@ -307,7 +307,7 @@ processors:
       ignore_missing: true
   ## Attack Data
   - urldecode:
-      tag: urldecode_attackData_ruleActions
+      tag: urldecode_attackData_ruleActions_33ca8cb4
       field: json.attackData.ruleActions
       target_field: json.attackData.ruleActions
       ignore_missing: true
@@ -319,7 +319,7 @@ processors:
       preserve_trailing: true
       ignore_missing: true
   - urldecode:
-      tag: urldecode_attackData_ruleData
+      tag: urldecode_attackData_ruleData_7f6ea1b8
       field: json.attackData.ruleData
       target_field: json.attackData.ruleData
       ignore_missing: true
@@ -331,7 +331,7 @@ processors:
       preserve_trailing: true
       ignore_missing: true
   - urldecode:
-      tag: urldecode_attackData_ruleMessages
+      tag: urldecode_attackData_ruleMessages_a1483204
       field: json.attackData.ruleMessages
       target_field: json.attackData.ruleMessages
       ignore_missing: true
@@ -343,7 +343,7 @@ processors:
       preserve_trailing: true
       ignore_missing: true
   - urldecode:
-      tag: urldecode_attackData_ruleSelectors
+      tag: urldecode_attackData_ruleSelectors_6dd0f39c
       field: json.attackData.ruleSelectors
       target_field: json.attackData.ruleSelectors
       ignore_missing: true
@@ -355,7 +355,7 @@ processors:
       preserve_trailing: true
       ignore_missing: true
   - urldecode:
-      tag: urldecode_attackData_ruleTags
+      tag: urldecode_attackData_ruleTags_e083905f
       field: json.attackData.ruleTags
       target_field: json.attackData.ruleTags
       ignore_missing: true
@@ -367,7 +367,7 @@ processors:
       preserve_trailing: true
       ignore_missing: true
   - urldecode:
-      tag: urldecode_attackData_ruleVersions
+      tag: urldecode_attackData_ruleVersions_6819dff1
       field: json.attackData.ruleVersions
       target_field: json.attackData.ruleVersions
       ignore_missing: true
@@ -379,7 +379,7 @@ processors:
       preserve_trailing: true
       ignore_missing: true
   - urldecode:
-      tag: urldecode_attackData_rules
+      tag: urldecode_attackData_rules_c390ada0
       field: json.attackData.rules
       target_field: json.attackData.rules
       ignore_missing: true
@@ -393,7 +393,7 @@ processors:
   - script:
       lang: painless
       description: Base64 Decode the json.attackData.rule* fields
-      tag: script_base64_decode_attackData_rule
+      tag: script_base64_decode_attackData_rule_573db939
       params:
         items:
           - rules
@@ -446,6 +446,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_akamai_siem_rule_actions_d6da61b8
           field: akamai.siem.rule_actions
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -460,6 +461,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_akamai_siem_rule_tags_8ae71508
           field: akamai.siem.rule_tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -479,11 +481,6 @@ processors:
       target_field: akamai.siem.policy_id
       ignore_missing: true
   - rename:
-      tag: rename_json_attackData_policyId_to_akamai_siem_policy_id_e5d50d55
-      field: json.attackData.policyId
-      target_field: akamai.siem.policy_id
-      ignore_missing: true
-  - rename:
       tag: rename_json_attackData_slowPostAction_to_akamai_siem_slow_post_action_da1156fa
       field: json.attackData.slowPostAction
       target_field: akamai.siem.slow_post_action
@@ -494,12 +491,7 @@ processors:
       type: long
       ignore_missing: true
       if: ctx.json.attackData?.slowPostRate != ''
-      tag: convert_slow_post_rate
-  - rename:
-      tag: rename_json_attackData_clientReputation_to_akamai_siem_client_reputation_252c450d
-      field: json.attackData.clientReputation
-      target_field: akamai.siem.client_reputation
-      ignore_missing: true
+      tag: convert_slow_post_rate_2c400691
   - rename:
       tag: rename_json_attackData_clientReputation_to_akamai_siem_client_reputation_252c450d
       field: json.attackData.clientReputation
@@ -512,14 +504,14 @@ processors:
       type: long
       ignore_missing: true
       if: ctx.json.botData?.botScore != ''
-      tag: convert_bot_score
+      tag: convert_bot_score_3d7253de
   - convert:
       field: json.botData.responseSegment
       target_field: akamai.siem.bot.response_segment
       type: long
       ignore_missing: true
       if: ctx.json.botData?.responseSegment != ''
-      tag: convert_bot_response_segment
+      tag: convert_bot_response_segment_9e994ad5
   ## Client Data
   - rename:
       tag: rename_json_clientData_appBundleId_to_akamai_siem_client_data_app_bundle_id_df9d956d
@@ -537,7 +529,7 @@ processors:
       type: long
       ignore_missing: true
       if: ctx.json.clientData?.telemetryType != ''
-      tag: convert_telemetry_type
+      tag: convert_telemetry_type_0802ba2f
   - rename:
       tag: rename_json_clientData_sdkVersion_to_akamai_siem_client_data_sdk_version_0ff91826
       field: json.clientData.sdkVersion
@@ -546,17 +538,17 @@ processors:
   ## Identity
   - rename:
       field: json.identity.ja4
-      tag: rename_identity_ja4_to_identity_ja4
+      tag: rename_identity_ja4_to_identity_ja4_c4ad79bf
       target_field: akamai.siem.identity.ja4
       ignore_missing: true
   - rename:
       field: json.identity.tlsFingerprintV2
-      tag: rename_identity_tlsFingerprintV2_to_identity_tls_fingerprint_v2
+      tag: rename_identity_tlsFingerprintV2_to_identity_tls_fingerprint_v2_64720152
       target_field: akamai.siem.identity.tls_fingerprint_v2
       ignore_missing: true
   - rename:
       field: json.identity.tlsFingerprintV3
-      tag: rename_identity_tlsFingerprintV3_to_identity_tls_fingerprint_v3
+      tag: rename_identity_tlsFingerprintV3_to_identity_tls_fingerprint_v3_7b72c092
       target_field: akamai.siem.identity.tls_fingerprint_v3
       ignore_missing: true
   ## User Risk Data
@@ -571,24 +563,24 @@ processors:
       type: long
       ignore_missing: true
       if: ctx.json.userRiskData?.status != ''
-      tag: convert_user_risk_status
+      tag: convert_user_risk_status_99aca16d
   - convert:
       field: json.userRiskData.score
       target_field: akamai.siem.user_risk.score
       type: long
       ignore_missing: true
       if: ctx.json.userRiskData?.score != ''
-      tag: convert_user_risk_score
+      tag: convert_user_risk_score_cd266008
   - convert:
       field: json.userRiskData.allow
       target_field: akamai.siem.user_risk.allow
       type: long
       ignore_missing: true
       if: ctx.json.userRiskData?.allow != ''
-      tag: convert_user_risk_allow
+      tag: convert_user_risk_allow_69fdc970
   - kv:
       if: ctx.json.userRiskData?.risk != ""
-      tag: kv_userRiskData_risk
+      tag: kv_userRiskData_risk_2d834168
       field: json.userRiskData.risk
       target_field: akamai.siem.user_risk.risk
       field_split: '\|'
@@ -596,7 +588,7 @@ processors:
       ignore_missing: true
   - kv:
       if: ctx.json.userRiskData?.trust != ""
-      tag: kv_userRiskData_trust
+      tag: kv_userRiskData_trust_839917d8
       field: json.userRiskData.trust
       target_field: akamai.siem.user_risk.trust
       field_split: '\|'
@@ -605,7 +597,7 @@ processors:
   - script:
       description: Process key-value pairs, preserving keys without values.
       lang: painless
-      tag: script_userRiskData_general
+      tag: script_userRiskData_general_ade061bc
       if: ctx.json.userRiskData?.general instanceof String && ctx.json.userRiskData.general != ""
       source: |
         String text = ctx.json.userRiskData.general.trim();
@@ -662,7 +654,7 @@ processors:
         - _tmp
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -689,13 +681,16 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

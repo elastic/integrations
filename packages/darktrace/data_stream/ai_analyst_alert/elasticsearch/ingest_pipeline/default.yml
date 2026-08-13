@@ -20,7 +20,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -29,7 +29,7 @@ processors:
       field: event.original
       target_field: json
   - fingerprint:
-      tag: fingerprint_81343969
+      tag: fingerprint_to_id_81343969
       fields:
         - json.id
         - json.createdAt
@@ -90,12 +90,15 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_c9f6f206
           field: _ingest._value
           type: long
           on_failure:
             - remove:
+                tag: remove_ingest_value_73c5ba0b
                 field: _ingest._value
             - append:
+                tag: append_error_message_2a78d008
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -110,13 +113,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_did_ac5e76f1
           field: _ingest._value.did
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_did_75772865
                 field: _ingest._value.did
             - append:
+                tag: append_error_message_f4588125
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -126,6 +132,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_host_id_0aec023f
           field: host.id
           value: '{{{_ingest._value.did}}}'
           allow_duplicates: false
@@ -150,12 +157,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_hostname_to_ingest_value_temp_hostname_ip_e671f9d9
           field: _ingest._value.hostname
           type: ip
           target_field: _ingest._value._temp_.hostname_ip
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_host_hostname_77f0d2f3
                 field: host.hostname
                 value: '{{{_ingest._value.hostname}}}'
                 allow_duplicates: false
@@ -167,6 +176,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_related_ip_d6546feb
           field: related.ip
           value: '{{{_ingest._value._temp_.hostname_ip}}}'
           allow_duplicates: false
@@ -183,12 +193,14 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_identifier_to_ingest_value_temp_identifier_ip_2f64122d
           field: _ingest._value.identifier
           target_field: _ingest._value._temp_.identifier_ip
           type: ip
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_host_name_06a5f07b
                 field: host.name
                 value: '{{{_ingest._value.identifier}}}'
                 allow_duplicates: false
@@ -200,6 +212,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_related_ip_17f636c3
           field: related.ip
           value: '{{{_ingest._value._temp_.identifier_ip}}}'
           allow_duplicates: false
@@ -211,6 +224,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_related_hosts_ef217a19
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -222,6 +236,7 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_ip_to_ingest_value_temp_ip_4d05551c
           field: _ingest._value.ip
           target_field: _ingest._value._temp_.ip
           type: ip
@@ -233,6 +248,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_host_ip_64625f88
           field: host.ip
           value: '{{{_ingest._value._temp_.ip}}}'
           allow_duplicates: false
@@ -244,6 +260,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_related_ip_5bd08c1a
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -255,6 +272,7 @@ processors:
       ignore_failure: true
       processor:
         gsub:
+          tag: gsub_ingest_value_mac_to_ingest_value_mac_address_86f9375c
           field: _ingest._value.mac
           target_field: _ingest._value.mac_address
           pattern: '[:.]'
@@ -267,6 +285,7 @@ processors:
       ignore_failure: true
       processor:
         uppercase:
+          tag: uppercase_ingest_value_mac_address_878d1c82
           field: _ingest._value.mac_address
           ignore_missing: true
   - foreach:
@@ -276,6 +295,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_host_mac_1c4a47c8
           field: host.mac
           value: '{{{_ingest._value.mac_address}}}'
           allow_duplicates: false
@@ -287,13 +307,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_sid_3304a547
           field: _ingest._value.sid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_sid_32c38973
                 field: _ingest._value.sid
             - append:
+                tag: append_error_message_f4b6fe91
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -303,6 +326,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_623ff090
           field:
             - _ingest._value._temp_
             - _ingest._value.mac
@@ -368,18 +392,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_d21cbdf7
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_801dcd09
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_c942ded9
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     convert:
+                      tag: convert_ingest_value_ip_to_ingest_value_temp_ip_482d4859
                       field: _ingest._value.ip
                       target_field: _ingest._value._temp_.ip
                       type: ip
@@ -391,18 +419,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_b228446e
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_846a94ae
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_adbb4921
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     append:
+                      tag: append_related_ip_c1e96c79
                       field: related.ip
                       value: '{{{_ingest._value._temp_.ip}}}'
                       allow_duplicates: false
@@ -414,24 +446,29 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_96397062
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_95c7f793
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_7e6d2d4a
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     convert:
+                      tag: convert_ingest_value_hostname_to_ingest_value_temp_hostname_ip_03f22876
                       field: _ingest._value.hostname
                       target_field: _ingest._value._temp_.hostname_ip
                       type: ip
                       ignore_missing: true
                       on_failure:
                         - append:
+                            tag: append_related_hosts_79789350
                             field: related.hosts
                             value: '{{{_ingest._value.hostname}}}'
                             allow_duplicates: false
@@ -443,18 +480,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_def4c6c1
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_1b6559e2
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_8c97e460
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     append:
+                      tag: append_related_ip_5f6e8a70
                       field: related.ip
                       value: '{{{_ingest._value._temp_.hostname_ip}}}'
                       allow_duplicates: false
@@ -466,24 +507,29 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_ffc39af4
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_49b71981
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_06f4e910
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     convert:
+                      tag: convert_ingest_value_identifier_to_ingest_value_temp_identifier_ip_05586345
                       field: _ingest._value.identifier
                       target_field: _ingest._value._temp_.identifier_ip
                       type: ip
                       ignore_missing: true
                       on_failure:
                         - append:
+                            tag: append_related_hosts_045cdd00
                             field: related.hosts
                             value: '{{{_ingest._value.identifier}}}'
                             allow_duplicates: false
@@ -495,18 +541,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_5fe3f144
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_8457db0f
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_b946b9f0
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     append:
+                      tag: append_related_ip_dd749e03
                       field: related.ip
                       value: '{{{_ingest._value._temp_.identifier_ip}}}'
                       allow_duplicates: false
@@ -518,18 +568,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_25076cf5
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_896f1ce9
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_efabd28c
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     gsub:
+                      tag: gsub_ingest_value_mac_to_ingest_value_mac_address_07de7255
                       field: _ingest._value.mac
                       target_field: _ingest._value.mac_address
                       pattern: '[:.]'
@@ -542,18 +596,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_bd8ebde3
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_ffbc8d1a
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_d7e9fedd
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     uppercase:
+                      tag: uppercase_ingest_value_mac_address_52db402a
                       field: _ingest._value.mac_address
                       ignore_missing: true
   - foreach:
@@ -563,18 +621,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_8aec37e6
           field: _ingest._value
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_contents_06025622
               field: _ingest._value.contents
               ignore_failure: true
               processor:
                 foreach:
+                  tag: foreach_ingest_value_values_33633d70
                   field: _ingest._value.values
                   ignore_failure: true
                   processor:
                     remove:
+                      tag: remove_d4ffd821
                       field:
                         - _ingest._value._temp_
                         - _ingest._value.mac
@@ -701,7 +763,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_3773462d
+      tag: script_determine_event_duration_from_starting_3773462d
       description: Determine event.duration from starting and ending activity timestamp.
       if: ctx.json?.periods instanceof List
       lang: painless
@@ -716,6 +778,7 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_end_to_ingest_value_end_1586b5b0
           field: _ingest._value.end
           target_field: _ingest._value.end
           formats:
@@ -724,6 +787,7 @@ processors:
             - 'MMM dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_end_e239c638
                 field: _ingest._value.end
                 ignore_missing: true
   - foreach:
@@ -733,6 +797,7 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_start_to_ingest_value_start_bc1a1290
           field: _ingest._value.start
           target_field: _ingest._value.start
           formats:
@@ -741,6 +806,7 @@ processors:
             - 'MMM dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_start_f42135bf
                 field: _ingest._value.start
                 ignore_missing: true
   - rename:
@@ -755,6 +821,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_event_end_f733e9ac
           field: event.end
           value: '{{{_ingest._value.end}}}'
           allow_duplicates: false
@@ -766,6 +833,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_event_start_bdb19115
           field: event.start
           value: '{{{_ingest._value.start}}}'
           allow_duplicates: false
@@ -777,6 +845,7 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_timestamp_to_ingest_value_timestamp_dc7e8e0a
           field: _ingest._value.timestamp
           target_field: _ingest._value.timestamp
           formats:
@@ -785,6 +854,7 @@ processors:
             - 'MMM dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp_51fb6262
                 field: _ingest._value.timestamp
                 ignore_missing: true
   - foreach:
@@ -794,13 +864,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_pbid_457f1967
           field: _ingest._value.pbid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_pbid_30cb5421
                 field: _ingest._value.pbid
             - append:
+                tag: append_error_message_fb078790
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -810,14 +883,17 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_threatScore_to_ingest_value_threat_score_7d8e17ca
           field: _ingest._value.threatScore
           target_field: _ingest._value.threat_score
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_threatScore_5a5481bb
                 field: _ingest._value.threatScore
             - append:
+                tag: append_error_message_ec7ede5d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -827,6 +903,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
+          tag: rename_ingest_value_modelName_to_ingest_value_model_name_3b137d58
           field: _ingest._value.modelName
           target_field: _ingest._value.model_name
           ignore_missing: true
@@ -837,6 +914,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_rule_name_fbc2bd90
           field: rule.name
           value: '{{{_ingest._value.model_name}}}'
           allow_duplicates: false
@@ -848,6 +926,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_threatScore_92b2e106
           field: _ingest._value.threatScore
           ignore_missing: true
   - rename:
@@ -903,6 +982,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ef3865f4
           field:
             - _ingest._value.model_name
           ignore_missing: true
@@ -914,6 +994,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_380b17ab
           field:
             - _ingest._value.start
             - _ingest._value.end
@@ -926,13 +1007,14 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_46bf92b9
           field:
             - _ingest._value.did
             - _ingest._value.mac_address
           ignore_missing: true
           ignore_failure: true
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -951,12 +1033,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -24,7 +24,7 @@ processors:
       field: cloud.provider
       value: azure
   - drop:
-      tag: drop_a8ca7062
+      tag: drop_invalid_json_a8ca7062
       description: Drop if invalid json
       if: ctx.event?.original != null && ctx.event.original.contains('"records"')
   - json:
@@ -33,7 +33,7 @@ processors:
       target_field: azure.frontdoor.health_probe
   - script:
       description: Drops fields with empty or N/A values recursively
-      tag: script_to_drop_invalid_values
+      tag: script_to_drop_invalid_values_c57e05e6
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -125,7 +125,7 @@ processors:
       field: azure.frontdoor.health_probe.properties.totalLatencyMilliseconds
       target_field: azure.frontdoor.health_probe.total_latency_milliseconds
       type: long
-      tag: convert_total_latency
+      tag: convert_total_latency_fcdd052d
       on_failure:
         - append:
             tag: append_error_message_d383b0ab
@@ -140,7 +140,7 @@ processors:
       field: azure.frontdoor.health_probe.properties.connectionLatencyMilliseconds
       target_field: azure.frontdoor.health_probe.connection_latency_milliseconds
       type: long
-      tag: convert_connection_latency
+      tag: convert_connection_latency_33492a22
       on_failure:
         - append:
             tag: append_error_message_b23a8989
@@ -155,7 +155,7 @@ processors:
       field: azure.frontdoor.health_probe.properties.DNSLatencyMicroseconds
       target_field: azure.frontdoor.health_probe.dns_latency_microseconds
       type: long
-      tag: convert_dns_latency
+      tag: convert_dns_latency_0898e9d4
       on_failure:
         - append:
             tag: append_error_message_2948759a
@@ -189,7 +189,7 @@ processors:
         - azure.frontdoor.health_probe.properties
       ignore_missing: true
   - grok:
-      tag: grok_destination_address
+      tag: grok_destination_address_8d41e9cb
       field: destination.address
       if: ctx.destination?.address != null
       patterns:
@@ -205,7 +205,7 @@ processors:
         IPV6PORTSEP: '(?: port |[p#.])'
         PORT: '[0-9]+'
   - convert:
-      tag: convert_destination_ip
+      tag: convert_destination_ip_75ff66fc
       field: destination.ip
       target_field: destination.ip
       type: ip
@@ -253,24 +253,27 @@ processors:
 
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
       field: tags
-      tag: append_tags
+      tag: append_tags_b6c08950
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

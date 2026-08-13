@@ -15,18 +15,21 @@ processors:
       field: event.kind
       value: event
   - pipeline:
-      tag: pipeline_0749b8eb
+      tag: pipeline_parsed_message_0749b8eb
       if: "ctx?.tags != null && ctx.tags.contains('parse_message')"
       name: '{{ IngestPipeline "parsed-message" }}'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

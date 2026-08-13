@@ -24,7 +24,7 @@ processors:
       field: cloud.provider
       value: azure
   - drop:
-      tag: drop_a8ca7062
+      tag: drop_invalid_json_a8ca7062
       description: Drop if invalid json
       if: 'ctx.event?.original != null && ctx.event.original.contains(''"records"'')'
   - json:
@@ -33,7 +33,7 @@ processors:
       target_field: azure.frontdoor.access
   - script:
       description: Drops fields with empty or N/A values recursively
-      tag: script_to_drop_invalid_values
+      tag: script_to_drop_invalid_values_fe6ebb18
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -126,7 +126,7 @@ processors:
       field: azure.frontdoor.access.properties.timeToFirstByte
       target_field: azure.frontdoor.access.time_to_first_byte
       type: double
-      tag: convert_properties_time_to_first_byte
+      tag: convert_properties_time_to_first_byte_f233a479
       on_failure:
         - append:
             tag: append_error_message_88f1b7ab
@@ -151,7 +151,7 @@ processors:
       field: azure.frontdoor.access.properties.timeTaken
       target_field: azure.frontdoor.access.time_taken
       type: double
-      tag: convert_properties_time_taken
+      tag: convert_properties_time_taken_cbed6790
       on_failure:
         - append:
             tag: append_error_message_771fb26b
@@ -220,7 +220,7 @@ processors:
       ignore_missing: true
   - json:
       field: azure.frontdoor.access.identity
-      tag: json_identity
+      tag: json_identity_3f199193
       if: ctx.azure?.frontdoor?.access?.identity instanceof String
       on_failure:
         - append:
@@ -253,7 +253,7 @@ processors:
       target_field: azure.frontdoor.access.identity.authorization.evidence.principal_type
       ignore_missing: true
   - script:
-      tag: script_claims_cleanup
+      tag: script_claims_cleanup_0b0dcefd
       lang: painless
       if: ctx.azure?.frontdoor?.access?.identity?.claims != null
       source: |
@@ -274,7 +274,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Extract user fields into claims_initiated_by_user object from claims object
-      tag: script_claims_user
+      tag: script_claims_user_c03e6352
       if: ctx.azure?.frontdoor?.access?.identity?.claims instanceof Map
       lang: painless
       params:
@@ -433,12 +433,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

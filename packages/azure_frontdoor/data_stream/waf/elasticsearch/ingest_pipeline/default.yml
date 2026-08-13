@@ -24,7 +24,7 @@ processors:
       field: cloud.provider
       value: azure
   - drop:
-      tag: drop_99bd585e
+      tag: drop_invalid_json_99bd585e
       description: Drop if invalid json
       if: 'ctx.event?.original != null && ctx.event.original.contains("records")'
   - json:
@@ -33,7 +33,7 @@ processors:
       target_field: azure.frontdoor.waf
   - script:
       description: Drops fields with empty or N/A values recursively
-      tag: script_to_drop_invalid_values
+      tag: script_to_drop_invalid_values_fe6ebb18
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -129,7 +129,7 @@ processors:
       ignore_missing: true
   - uri_parts:
       field: url.original
-      tag: uri_parts_url_original
+      tag: uri_parts_url_original_8be8c143
       ignore_missing: true
       on_failure:
         - append:
@@ -150,7 +150,7 @@ processors:
       ignore_missing: true
   - json:
       field: azure.frontdoor.waf.identity
-      tag: json_identity
+      tag: json_identity_4b849c51
       if: ctx.azure?.frontdoor?.waf?.identity instanceof String
       on_failure:
         - append:
@@ -183,7 +183,7 @@ processors:
       target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_type
       ignore_missing: true
   - script:
-      tag: script_claims_cleanup
+      tag: script_claims_cleanup_cbf581ae
       lang: painless
       if: ctx.azure?.frontdoor?.waf?.identity?.claims != null
       source: |
@@ -204,7 +204,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Extract user fields into claims_initiated_by_user object from claims object
-      tag: script_claims_user
+      tag: script_claims_user_84ac0612
       if: ctx.azure?.frontdoor?.waf?.identity?.claims instanceof Map
       lang: painless
       params:
@@ -338,12 +338,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

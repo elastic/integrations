@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -25,7 +25,7 @@ processors:
       tag: drop_3b8f7055
       if: (ctx.json?.entities instanceof List && ctx.json.entities.length == 0) || (ctx.json?.results instanceof List && ctx.json.results.length == 0)
   - script:
-      tag: script_813978ed
+      tag: script_processor_iterates_over_whole_document_813978ed
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -51,11 +51,11 @@ processors:
         }
         handleMap(ctx.json);
   - pipeline:
-      tag: pipeline_a9467602
+      tag: pipeline_cloud_a9467602
       name: '{{ IngestPipeline "cloud" }}'
       if: "ctx._config?.atlassian_cloud != null"
   - pipeline:
-      tag: pipeline_601611b9
+      tag: pipeline_self_hosted_601611b9
       name: '{{ IngestPipeline "self-hosted" }}'
       if: "ctx._config?.atlassian_cloud == null"
   - convert:
@@ -89,7 +89,7 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - script:
-      tag: script_321eb5ed
+      tag: script_add_ecs_categorization_321eb5ed
       lang: painless
       description: Add ECS categorization
       params:
@@ -311,7 +311,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
-      tag: script_a2f1bb87
+      tag: script_add_ecs_user_fields_a2f1bb87
       lang: painless
       description: Add ECS User fields
       if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey) || ['Users and groups'].contains(ctx.confluence?.audit?.type?.category)"
@@ -453,7 +453,7 @@ processors:
         - _config
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -480,18 +480,22 @@ processors:
         handleMap(ctx);
 on_failure:
   - remove:
+      tag: remove_8c4a443b
       field:
         - _config
         - _tmp
       ignore_failure: true
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

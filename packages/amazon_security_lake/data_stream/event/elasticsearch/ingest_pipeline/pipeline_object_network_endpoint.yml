@@ -4,18 +4,18 @@ description: Pipeline for processing Network Endpoint object.
 processors:
   - append:
       field: source.domain
-      tag: append_src_endpoint_domain_into_source_domain
+      tag: append_src_endpoint_domain_into_source_domain_8802254b
       value: '{{{ocsf.src_endpoint.domain}}}'
       allow_duplicates: false
       if: ctx.ocsf?.src_endpoint?.domain != null
   - set:
       field: source.geo.city_name
-      tag: set_source_geo_city_name
+      tag: set_source_geo_city_name_6085c461
       copy_from: ocsf.src_endpoint.location.city
       ignore_empty_value: true
   - set:
       field: source.geo.continent_name
-      tag: set_source_geo_continent_name
+      tag: set_source_geo_continent_name_fdc66eb2
       copy_from: ocsf.src_endpoint.location.continent
       ignore_empty_value: true
   - foreach:
@@ -26,34 +26,36 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_src_endpoint_location_coordinates_to_double
+          tag: convert_src_endpoint_location_coordinates_to_double_3a534a29
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_e6f85f51
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_e35a2a26
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.geo.location
-      tag: set_source_geo_location
+      tag: set_source_geo_location_1aa17c87
       copy_from: ocsf.src_endpoint.location.coordinates
       ignore_empty_value: true
   - set:
       field: source.geo.country_iso_code
-      tag: set_source_geo_country_iso_code
+      tag: set_source_geo_country_iso_code_6f88674e
       copy_from: ocsf.src_endpoint.location.country
       ignore_empty_value: true
   - set:
       field: source.geo.name
-      tag: set_source_geo_name
+      tag: set_source_geo_name_2dda47e7
       copy_from: ocsf.src_endpoint.location.desc
       ignore_empty_value: true
   - convert:
       field: ocsf.src_endpoint.location.is_on_premises
-      tag: convert_src_endpoint_location_is_on_premises_to_boolean
+      tag: convert_src_endpoint_location_is_on_premises_to_boolean_7164707d
       type: boolean
       ignore_missing: true
       on_failure:
@@ -67,17 +69,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.geo.postal_code
-      tag: set_source_geo_postal_code
+      tag: set_source_geo_postal_code_de17f4aa
       copy_from: ocsf.src_endpoint.location.postal_code
       ignore_empty_value: true
   - set:
       field: source.geo.region_iso_code
-      tag: set_source_geo_region_iso_code
+      tag: set_source_geo_region_iso_code_2f42b072
       copy_from: ocsf.src_endpoint.location.region
       ignore_empty_value: true
   - append:
       field: source.domain
-      tag: append_src_endpoint_hostname_into_source_domain
+      tag: append_src_endpoint_hostname_into_source_domain_ca587f86
       value: '{{{ocsf.src_endpoint.hostname}}}'
       allow_duplicates: false
       if: ctx.ocsf?.src_endpoint?.hostname != null
@@ -89,16 +91,16 @@ processors:
       processor:
         append:
           field: related.hosts
-          tag: append_source_domain_into_related_hosts
+          tag: append_source_domain_into_related_hosts_ce621ed0
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
       field: ocsf.src_endpoint.ip
-      tag: remove_empty_src_endpoint_ip
+      tag: remove_empty_src_endpoint_ip_a010a147
       if: ctx.ocsf?.src_endpoint?.ip == '' || ctx.ocsf?.src_endpoint?.ip == '-'
   - convert:
       field: ocsf.src_endpoint.ip
-      tag: convert_src_endpoint_ip_to_ip
+      tag: convert_src_endpoint_ip_to_ip_ae8d1b59
       type: ip
       ignore_missing: true
       on_failure:
@@ -112,17 +114,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_src_endpoint_ip_into_related_ip
+      tag: append_src_endpoint_ip_into_related_ip_8ccf1aac
       value: '{{{ocsf.src_endpoint.ip}}}'
       allow_duplicates: false
       if: ctx.ocsf?.src_endpoint?.ip != null
   - set:
       field: source.ip
-      tag: set_source_ip
+      tag: set_source_ip_16e544d6
       copy_from: ocsf.src_endpoint.ip
       ignore_empty_value: true
   - script:
-      tag: drop_empty_src_endpoint_intermediate_ips_ip
+      tag: drop_empty_src_endpoint_intermediate_ips_ip_5bf6e549
       if: ctx.ocsf?.src_endpoint?.intermediate_ips instanceof List
       source: |-
         ctx.ocsf.src_endpoint.intermediate_ips.removeIf(v -> v == '-');
@@ -134,14 +136,16 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_src_endpoint_intermediate_ips_to_ip
+          tag: convert_src_endpoint_intermediate_ips_to_ip_538171e7
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_929e3826
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_12209a23
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -152,12 +156,12 @@ processors:
       processor:
         append:
           field: related.ip
-          tag: append_src_endpoint_intermediate_ips_into_related_ip
+          tag: append_src_endpoint_intermediate_ips_into_related_ip_fa93064e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - gsub:
       field: ocsf.src_endpoint.mac
-      tag: gsub_src_endpoint_mac
+      tag: gsub_src_endpoint_mac_2c17d9e8
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
@@ -168,7 +172,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: ocsf.src_endpoint.mac
-      tag: uppercase_src_endpoint_mac
+      tag: uppercase_src_endpoint_mac_afb01913
       ignore_missing: true
       if: ctx.ocsf?.src_endpoint?.mac != ''
       on_failure:
@@ -182,12 +186,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.mac
-      tag: set_source_mac
+      tag: set_source_mac_8220a240
       copy_from: ocsf.src_endpoint.mac
       ignore_empty_value: true
   - convert:
       field: ocsf.src_endpoint.port
-      tag: convert_src_endpoint_port_to_long
+      tag: convert_src_endpoint_port_to_long_d011c1d7
       type: long
       ignore_missing: true
       on_failure:
@@ -201,29 +205,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
-      tag: set_source_port
+      tag: set_source_port_fe837efa
       copy_from: ocsf.src_endpoint.port
       ignore_empty_value: true
   - append:
       field: network.application
-      tag: append_src_endpoint_svc_name_into_network_application
+      tag: append_src_endpoint_svc_name_into_network_application_99c19119
       value: '{{{ocsf.src_endpoint.svc_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.src_endpoint?.svc_name != null
   - append:
       field: destination.domain
-      tag: append_dst_endpoint_domain_into_destination_domain
+      tag: append_dst_endpoint_domain_into_destination_domain_41c5f0c6
       value: '{{{ocsf.dst_endpoint.domain}}}'
       allow_duplicates: false
       if: ctx.ocsf?.dst_endpoint?.domain != null
   - set:
       field: destination.geo.city_name
-      tag: set_destination_geo_city_name
+      tag: set_destination_geo_city_name_20f34c99
       copy_from: ocsf.dst_endpoint.location.city
       ignore_empty_value: true
   - set:
       field: destination.geo.continent_name
-      tag: set_destination_geo_continent_name
+      tag: set_destination_geo_continent_name_c640b948
       copy_from: ocsf.dst_endpoint.location.continent
       ignore_empty_value: true
   - foreach:
@@ -234,34 +238,36 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_dst_endpoint_location_coordinates_to_double
+          tag: convert_dst_endpoint_location_coordinates_to_double_b3b69f6d
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_851586cd
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_4a61de70
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.geo.location
-      tag: set_destination_geo_location
+      tag: set_destination_geo_location_9871e895
       copy_from: ocsf.dst_endpoint.location.coordinates
       ignore_empty_value: true
   - set:
       field: destination.geo.country_iso_code
-      tag: set_destination_geo_country_iso_code
+      tag: set_destination_geo_country_iso_code_6919142b
       copy_from: ocsf.dst_endpoint.location.country
       ignore_empty_value: true
   - set:
       field: destination.geo.name
-      tag: set_destination_geo_name
+      tag: set_destination_geo_name_49c4f197
       copy_from: ocsf.dst_endpoint.location.desc
       ignore_empty_value: true
   - convert:
       field: ocsf.dst_endpoint.location.is_on_premises
-      tag: convert_dst_endpoint_location_is_on_premises_to_boolean
+      tag: convert_dst_endpoint_location_is_on_premises_to_boolean_a5f48962
       type: boolean
       ignore_missing: true
       on_failure:
@@ -275,17 +281,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.geo.postal_code
-      tag: set_destination_geo_postal_code
+      tag: set_destination_geo_postal_code_088cfb3d
       copy_from: ocsf.dst_endpoint.location.postal_code
       ignore_empty_value: true
   - set:
       field: destination.geo.region_iso_code
-      tag: set_destination_geo_region_iso_code
+      tag: set_destination_geo_region_iso_code_b2941709
       copy_from: ocsf.dst_endpoint.location.region
       ignore_empty_value: true
   - append:
       field: destination.domain
-      tag: append_dst_endpoint_hostname_into_destination_domain
+      tag: append_dst_endpoint_hostname_into_destination_domain_143d0a3c
       value: '{{{ocsf.dst_endpoint.hostname}}}'
       allow_duplicates: false
       if: ctx.ocsf?.dst_endpoint?.hostname != null
@@ -297,16 +303,16 @@ processors:
       processor:
         append:
           field: related.hosts
-          tag: append_destination_domain_into_related_hosts
+          tag: append_destination_domain_into_related_hosts_e2a287e7
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
       field: ocsf.dst_endpoint.ip
-      tag: remove_empty_dst_endpoint_ip
+      tag: remove_empty_dst_endpoint_ip_02f0b6d8
       if: ctx.ocsf?.dst_endpoint?.ip == '' || ctx.ocsf?.dst_endpoint?.ip == '-'
   - convert:
       field: ocsf.dst_endpoint.ip
-      tag: convert_dst_endpoint_ip_to_ip
+      tag: convert_dst_endpoint_ip_to_ip_b9753642
       type: ip
       ignore_missing: true
       on_failure:
@@ -320,17 +326,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_dst_endpoint_ip_into_related_ip
+      tag: append_dst_endpoint_ip_into_related_ip_1163990b
       value: '{{{ocsf.dst_endpoint.ip}}}'
       allow_duplicates: false
       if: ctx.ocsf?.dst_endpoint?.ip != null
   - set:
       field: destination.ip
-      tag: set_destination_ip
+      tag: set_destination_ip_0544e1b4
       copy_from: ocsf.dst_endpoint.ip
       ignore_empty_value: true
   - script:
-      tag: drop_empty_dst_endpoint_intermediate_ips_ip
+      tag: drop_empty_dst_endpoint_intermediate_ips_ip_097636a4
       if: ctx.ocsf?.dst_endpoint?.intermediate_ips instanceof List
       source: |-
         ctx.ocsf.dst_endpoint.intermediate_ips.removeIf(v -> v == '-');
@@ -342,14 +348,16 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_dst_endpoint_intermediate_ips_to_ip
+          tag: convert_dst_endpoint_intermediate_ips_to_ip_0127e660
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_603a44ec
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_e5af3b1c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -360,12 +368,12 @@ processors:
       processor:
         append:
           field: related.ip
-          tag: append_dst_endpoint_intermediate_ips_into_related_ip
+          tag: append_dst_endpoint_intermediate_ips_into_related_ip_9365937e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - gsub:
       field: ocsf.dst_endpoint.mac
-      tag: gsub_dst_endpoint_mac
+      tag: gsub_dst_endpoint_mac_d2d8bbf6
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
@@ -376,7 +384,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: ocsf.dst_endpoint.mac
-      tag: uppercase_dst_endpoint_mac
+      tag: uppercase_dst_endpoint_mac_2d6014f3
       ignore_missing: true
       if: ctx.ocsf?.dst_endpoint?.mac != ''
       on_failure:
@@ -390,12 +398,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.mac
-      tag: set_destination_mac
+      tag: set_destination_mac_1a7e0fe2
       copy_from: ocsf.dst_endpoint.mac
       ignore_empty_value: true
   - convert:
       field: ocsf.dst_endpoint.port
-      tag: convert_dst_endpoint_port_to_long
+      tag: convert_dst_endpoint_port_to_long_5622ae8a
       type: long
       ignore_missing: true
       on_failure:
@@ -409,18 +417,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port
+      tag: set_destination_port_0c43e30b
       copy_from: ocsf.dst_endpoint.port
       ignore_empty_value: true
   - append:
       field: network.application
-      tag: append_dst_endpoint_domain_svc_name_into_network_application
+      tag: append_dst_endpoint_domain_svc_name_into_network_application_e7986613
       value: '{{{ocsf.dst_endpoint.svc_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.dst_endpoint?.svc_name != null
   - lowercase:
       field: network.application
-      tag: lowercase_network_application
+      tag: lowercase_network_application_8406d5ba
       ignore_missing: true
       if: ctx.network?.application != ''
       on_failure:
@@ -434,12 +442,15 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

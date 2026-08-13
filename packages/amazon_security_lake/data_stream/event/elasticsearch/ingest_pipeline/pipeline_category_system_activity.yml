@@ -4,7 +4,7 @@ description: Pipeline for processing System Activity category.
 processors:
   - convert:
       field: ocsf.access_mask
-      tag: convert_access_mask_to_long
+      tag: convert_access_mask_to_long_d9315a0d
       type: long
       ignore_missing: true
       on_failure:
@@ -18,12 +18,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.disposition_id
-      tag: convert_disposition_id_to_string
+      tag: convert_disposition_id_to_string_fecc6e3a
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.kernel.is_system
-      tag: convert_kernel_is_system_to_boolean
+      tag: convert_kernel_is_system_to_boolean_a10221a5
       type: boolean
       ignore_missing: true
       on_failure:
@@ -37,12 +37,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.kernel.type_id
-      tag: convert_kernel_type_id_to_string
+      tag: convert_kernel_type_id_to_string_8a5851ad
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.actual_permissions
-      tag: convert_actual_permissions_to_long
+      tag: convert_actual_permissions_to_long_cbf55d27
       type: long
       ignore_missing: true
       on_failure:
@@ -56,7 +56,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.requested_permissions
-      tag: convert_requested_permissions_to_long
+      tag: convert_requested_permissions_to_long_d20d7d6c
       type: long
       ignore_missing: true
       on_failure:
@@ -70,13 +70,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.module.load_type_id
-      tag: convert_module_load_type_id_to_string
+      tag: convert_module_load_type_id_to_string_d542405a
       type: string
       ignore_missing: true
   - date:
       field: ocsf.job.created_time
       target_field: ocsf.job.created_time
-      tag: date_job_created_time
+      tag: date_job_created_time_4c0514f0
       formats:
         - UNIX_MS
       if: ctx.ocsf?.job?.created_time != null && ctx.ocsf.job.created_time != ''
@@ -92,7 +92,7 @@ processors:
   - date:
       field: ocsf.job.created_time_dt
       target_field: ocsf.job.created_time_dt
-      tag: date_job_created_time_dt
+      tag: date_job_created_time_dt_23983834
       formats:
         - ISO8601
         - UNIX_MS
@@ -110,7 +110,7 @@ processors:
   - date:
       field: ocsf.job.last_run_time
       target_field: ocsf.job.last_run_time
-      tag: date_job_last_run_time
+      tag: date_job_last_run_time_809ea6eb
       formats:
         - UNIX_MS
       if: ctx.ocsf?.job?.last_run_time != null && ctx.ocsf.job.last_run_time != ''
@@ -126,7 +126,7 @@ processors:
   - date:
       field: ocsf.job.last_run_time_dt
       target_field: ocsf.job.last_run_time_dt
-      tag: date_job_last_run_time_dt
+      tag: date_job_last_run_time_dt_a4ba5507
       formats:
         - ISO8601
         - UNIX_MS
@@ -144,7 +144,7 @@ processors:
   - date:
       field: ocsf.job.next_run_time
       target_field: ocsf.job.next_run_time
-      tag: date_job_next_run_time
+      tag: date_job_next_run_time_c101b5db
       formats:
         - UNIX_MS
       if: ctx.ocsf?.job?.next_run_time != null && ctx.ocsf.job.next_run_time != ''
@@ -160,7 +160,7 @@ processors:
   - date:
       field: ocsf.job.next_run_time_dt
       target_field: ocsf.job.next_run_time_dt
-      tag: date_job_next_run_time_dt
+      tag: date_job_next_run_time_dt_21d47a67
       formats:
         - ISO8601
         - UNIX_MS
@@ -177,28 +177,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.target.domain
-      tag: set_job_user_target_domain
+      tag: set_job_user_target_domain_db552e34
       copy_from: ocsf.job.user.domain
       ignore_empty_value: true
   - set:
       field: user.target.email
-      tag: set_job_user_target_email
+      tag: set_job_user_target_email_a03f3d9a
       copy_from: ocsf.job.user.email_addr
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_job_user_email_addr_into_related_user
+      tag: append_job_user_email_addr_into_related_user_d3c5d6a2
       value: '{{{ocsf.job.user.email_addr}}}'
       allow_duplicates: false
       if: ctx.ocsf?.job?.user?.email_addr != null
   - set:
       field: user.target.full_name
-      tag: set_job_user_target_full_name
+      tag: set_job_user_target_full_name_aa23de4c
       copy_from: ocsf.job.user.full_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_full_name_into_related_user
+      tag: append_user_full_name_into_related_user_8f3a4605
       value: '{{{ocsf.job.user.full_name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.job?.user?.full_name != null
@@ -210,7 +210,7 @@ processors:
       processor:
         append:
           field: user.target.group.id
-          tag: append_job_user_target_group_id
+          tag: append_job_user_target_group_id_45800a8c
           value: '{{{_ingest._value.uid}}}'
           allow_duplicates: false
   - foreach:
@@ -221,48 +221,48 @@ processors:
       processor:
         append:
           field: user.target.group.name
-          tag: append_job_user_target_group_name
+          tag: append_job_user_target_group_name_a67d2ab3
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - set:
       field: user.target.id
-      tag: set_job_user_target_id
+      tag: set_job_user_target_id_dd066457
       copy_from: ocsf.job.user.uid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_job_user_uid_into_related_user
+      tag: append_job_user_uid_into_related_user_0cc3a590
       value: '{{{ocsf.job.user.uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.job?.user?.uid != null
   - set:
       field: user.target.name
-      tag: set_job_user_target_name
+      tag: set_job_user_target_name_02b3749d
       copy_from: ocsf.job.user.name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_job_user_name_into_related_user
+      tag: append_job_user_name_into_related_user_814c161e
       value: '{{{ocsf.job.user.name}}}'
       allow_duplicates: false
       if: ctx.ocsf?.job?.user?.name != null
   - convert:
       field: ocsf.job.run_state_id
-      tag: convert_job_run_state_id_to_string
+      tag: convert_job_run_state_id_to_string_7048461e
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.exit_code
-      tag: convert_exit_code_to_string
+      tag: convert_exit_code_to_string_4ec2aced
       type: string
       ignore_missing: true
   - set:
       field: process.exit_code
-      tag: set_process_exit_code
+      tag: set_process_exit_code_cc04b8c3
       copy_from: ocsf.exit_code
       ignore_empty_value: true
   - convert:
       field: ocsf.injection_type_id
-      tag: convert_injection_type_id_to_string
+      tag: convert_injection_type_id_to_string_9133f944
       type: string
       ignore_missing: true

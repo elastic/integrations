@@ -6,11 +6,11 @@ processors:
       field: ecs.version
       value: '9.1.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_35d11e6e
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
-      tag: fingerprint_4f7ab4db
+      tag: fingerprint_to_id_4f7ab4db
       description: >-
         The fingerprint prevents some duplication of user audit events in cases
         of retransmission on connection failures.
@@ -19,10 +19,10 @@ processors:
       target_field: _id
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_7246681b
       target_field: beyondinsight_password_safe.useraudit
   - script:
-      tag: script_c96d5f07
+      tag: script_remove_null_values_empty_strings_c96d5f07
       description: Remove null values and empty strings from beyondinsight_password_safe.useraudit.
       lang: painless
       source: |
@@ -31,7 +31,7 @@ processors:
           (entry.getValue() instanceof String && entry.getValue().isEmpty())
         );
   - script:
-      tag: script_numeric_id_to_string
+      tag: script_numeric_id_to_string_4581ed6d
       description: Convert numeric ID fields to strings.
       params:
         numeric_ids:
@@ -46,7 +46,7 @@ processors:
           }
         }
   - script:
-      tag: script_camel_to_snake_naming
+      tag: script_camel_to_snake_naming_ccb990f4
       description: Rename CapitalCamelCase-ish fields to lower_snake_case.
       params:
         field_mappings:
@@ -143,12 +143,12 @@ processors:
       field: user.name
       ignore_empty_value: true
   - rename:
-      tag: rename_user_email
+      tag: rename_user_email_dbcb090c
       if: ctx.user?.name instanceof String && ctx.user.name.indexOf("@") > 0
       field: user.name
       target_field: user.email
   - dissect:
-      tag: dissect_user_email
+      tag: dissect_user_email_250c4926
       if: ctx.user?.email != null
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
@@ -179,15 +179,18 @@ processors:
       allow_duplicates: false
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

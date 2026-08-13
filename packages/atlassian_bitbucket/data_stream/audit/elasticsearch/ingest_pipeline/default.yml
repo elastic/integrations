@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -25,7 +25,7 @@ processors:
       tag: drop_7c77088c
       if: ctx.json?.entities instanceof List && ctx.json.entities.length == 0
   - script:
-      tag: script_8c9e51e1
+      tag: script_processor_iterates_over_whole_document_8c9e51e1
       lang: painless
       if: ctx.json instanceof Map
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -161,7 +161,7 @@ processors:
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_7ce24fa3
       params:
         bitbucket.service.user.audit.action.usercreated:
           category:
@@ -384,7 +384,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
-      tag: script_6651f4c6
+      tag: script_add_ecs_user_fields_6651f4c6
       lang: painless
       description: Add ECS User fields
       if: "['bitbucket.service.audit.category.usersandgroups'].contains(ctx.bitbucket?.audit?.type?.categoryI18nKey)"
@@ -479,7 +479,7 @@ processors:
         - _tmp
       ignore_missing: true
   - script:
-      tag: script_4d6993cb
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -506,13 +506,16 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

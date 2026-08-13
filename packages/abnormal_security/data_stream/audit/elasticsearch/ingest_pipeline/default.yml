@@ -3,28 +3,28 @@ description: Pipeline for processing audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -35,88 +35,88 @@ processors:
       fields:
         - json.timestamp
         - json.actionDetails.messageId
-      tag: fingerprint_audit
+      tag: fingerprint_audit_102733de
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_260c72c1
       value: Abnormal
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_c28c3312
       value: Inbound Email Security
   - rename:
       field: json.action
-      tag: rename_action
+      tag: rename_action_460b98cc
       target_field: abnormal_security.audit.action
       ignore_missing: true
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_c0d9ddab
       value: authentication
       if: ctx.abnormal_security?.audit?.action?.toLowerCase()  == 'login'
   - append:
       field: event.type
-      tag: append_event_type_d25582d7
+      tag: append_event_type_1fc8906c
       value: start
       if: ctx.abnormal_security?.audit?.action?.toLowerCase()  == 'login'
   - append:
       field: event.category
-      tag: append_event_category_7d57db6e
+      tag: append_event_category_63850177
       value: configuration
       if: ctx.abnormal_security?.audit?.action?.toLowerCase()  == 'update_remediation_status'
   - append:
       field: event.type
-      tag: append_event_type_e8c748b4
+      tag: append_event_type_cf4186eb
       value: change
       if: ctx.abnormal_security?.audit?.action?.toLowerCase()  == 'update_remediation_status'
   - set:
       field: event.action
-      tag: set_event_action_from_audit_action
+      tag: set_event_action_from_audit_action_4b290913
       copy_from: abnormal_security.audit.action
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - convert:
       field: json.actionDetails.messageId
-      tag: convert_actionDetails_messageId
+      tag: convert_actionDetails_messageId_93ce1858
       target_field: abnormal_security.audit.action_details.message_id
       type: string
       ignore_missing: true
   - rename:
       field: json.actionDetails.providedReason
-      tag: rename_actionDetails_providedReason
+      tag: rename_actionDetails_providedReason_6bbdcf5e
       target_field: abnormal_security.audit.action_details.provided_reason
       ignore_missing: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_audit_action_details_provided_reason
+      tag: set_event_reason_from_audit_action_details_provided_reason_4ee88882
       copy_from: abnormal_security.audit.action_details.provided_reason
       ignore_empty_value: true
   - rename:
       field: json.actionDetails.requestUrl
-      tag: rename_actionDetails_requestUrl
+      tag: rename_actionDetails_requestUrl_90530026
       target_field: abnormal_security.audit.action_details.request_url
       ignore_missing: true
   - set:
       field: url.original
-      tag: set_url_original_from_audit_action_details_request_url
+      tag: set_url_original_from_audit_action_details_request_url_0b6164a0
       copy_from: abnormal_security.audit.action_details.request_url
       ignore_empty_value: true
   - uri_parts:
       field: url.original
-      tag: uri_parts_url_original
+      tag: uri_parts_url_original_8be8c143
       ignore_missing: true
       on_failure:
         - append:
@@ -125,12 +125,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_254070bf
       target_field: abnormal_security.audit.category
       ignore_missing: true
   - convert:
       field: json.sourceIp
-      tag: convert_sourceIp_to_ip
+      tag: convert_sourceIp_to_ip_b480cf02
       target_field: abnormal_security.audit.source_ip
       type: ip
       ignore_missing: true
@@ -142,48 +142,48 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_audit_source_ip
+      tag: set_source_ip_from_audit_source_ip_b7250682
       copy_from: abnormal_security.audit.source_ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       ignore_missing: true
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
-      tag: append_related_ip_from_source_ip
+      tag: append_related_ip_from_source_ip_c47af1f5
       if: ctx.source?.ip != null
       allow_duplicates: false
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_feff8d57
       target_field: abnormal_security.audit.status
       ignore_missing: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_from_audit_status_success
+      tag: set_event_outcome_from_audit_status_success_38f37cb5
       value: success
       if: ctx.abnormal_security?.audit?.status?.toLowerCase().contains('success')
   - set:
       field: event.outcome
-      tag: set_event_outcome_from_audit_status_failure
+      tag: set_event_outcome_from_audit_status_failure_10dc0d92
       value: failure
       if: ctx.abnormal_security?.audit?.status?.toLowerCase().contains('fail')
   - rename:
       field: json.tenantName
-      tag: rename_tenantName
+      tag: rename_tenantName_9ab3cac2
       target_field: abnormal_security.audit.tenant_name
       ignore_missing: true
   - set:
       field: cloud.account.name
-      tag: set_cloud_account_name_from_audit_tenant_name
+      tag: set_cloud_account_name_from_audit_tenant_name_0b852af8
       copy_from: abnormal_security.audit.tenant_name
       ignore_empty_value: true
   - date:
       field: json.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_054335aa
       target_field: abnormal_security.audit.timestamp
       formats:
         - yyyy-MM-dd' 'HH:mm:ss.SSSSSSXXXXX
@@ -196,22 +196,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_timestamp
+      tag: set_@timestamp_from_audit_timestamp_a19c219b
       copy_from: abnormal_security.audit.timestamp
       ignore_empty_value: true
   - rename:
       field: json.user.email
-      tag: rename_user_email
+      tag: rename_user_email_c2641235
       target_field: abnormal_security.audit.user.email
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_audit_user_email
+      tag: set_user_email_from_audit_user_email_310c060d
       copy_from: abnormal_security.audit.user.email
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_abnormal_security_from_name_into_related_user
+      tag: append_abnormal_security_from_name_into_related_user_a68f3fe6
       value: '{{{abnormal_security.audit.user.email}}}'
       allow_duplicates: false
       if: ctx.abnormal_security?.audit?.user?.email != null
@@ -225,15 +225,15 @@ processors:
         - abnormal_security.audit.tenant_name
         - abnormal_security.audit.timestamp
         - abnormal_security.audit.user.email
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_8d2b5a46
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_5b1adf16
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -253,7 +253,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -263,13 +263,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

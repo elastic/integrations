@@ -3,10 +3,10 @@ description: Pipeline for processing access session logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,26 +16,26 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -44,73 +44,73 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: json.body
-      tag: rename_body
+      tag: rename_body_7555714c
       target_field: beyondtrust_pra.access_session.body
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_access_session_body
+      tag: set_message_from_access_session_body_f0a1abb8
       copy_from: beyondtrust_pra.access_session.body
       ignore_empty_value: true
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_b4e39bfb
       value: Privileged Remote Access
   - set:
       field: observer.type
-      tag: set_observer_type
+      tag: set_observer_type_5f5ce80f
       value: Proxy
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_333a3a1b
       value: BeyondTrust
   - rename:
       field: json.destination.display_name
-      tag: rename_destination_display_name
+      tag: rename_destination_display_name_06cbde88
       target_field: beyondtrust_pra.access_session.destination.display_name
       ignore_missing: true
   - rename:
       field: json.destination.gsnumber
-      tag: rename_destination_gsnumber
+      tag: rename_destination_gsnumber_247dee46
       target_field: beyondtrust_pra.access_session.destination.gsnumber
       ignore_missing: true
   - rename:
       field: json.destination.hostname
-      tag: rename_destination_hostname
+      tag: rename_destination_hostname_7f38d759
       target_field: beyondtrust_pra.access_session.destination.hostname
       ignore_missing: true
   - set:
       field: destination.domain
-      tag: set_destination_domain_from_access_session_destination_hostname
+      tag: set_destination_domain_from_access_session_destination_hostname_0de07a69
       copy_from: beyondtrust_pra.access_session.destination.hostname
       ignore_empty_value: true
   - rename:
       field: json.destination.id
-      tag: rename_destination_id
+      tag: rename_destination_id_f42b6183
       target_field: beyondtrust_pra.access_session.destination.id
       ignore_missing: true
   - set:
       field: destination.user.id
-      tag: set_destination_user_id_from_access_session_destination_id
+      tag: set_destination_user_id_from_access_session_destination_id_e6948768
       copy_from: beyondtrust_pra.access_session.destination.id
       ignore_empty_value: true
   - set:
       field: beyondtrust_pra.access_session.destination.invited
-      tag: set_destination_invited_true
+      tag: set_destination_invited_true_71dd255a
       value: true
       if: ctx.json?.destination?.invited == 1
   - set:
       field: beyondtrust_pra.access_session.destination.invited
-      tag: set_destination_invited_false
+      tag: set_destination_invited_false_80e6d75f
       value: false
       if: ctx.json?.destination?.invited == 0
   - convert:
       field: beyondtrust_pra.access_session.destination.invited
-      tag: convert_destination_invited_to_boolean
+      tag: convert_destination_invited_to_boolean_e09967c5
       type: boolean
       ignore_missing: true
       on_failure:
@@ -120,18 +120,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.destination.os
-      tag: rename_destination_os
+      tag: rename_destination_os_f2301791
       target_field: beyondtrust_pra.access_session.destination.os
       ignore_missing: true
   - grok:
       field: json.destination.private_ip
-      tag: grok_destination_private_ip
+      tag: grok_destination_private_ip_dab30381
       patterns:
         - ^%{IP:json.destination.private_ip}:%{POSINT:json.destination.private_port}$
       ignore_failure: true
   - convert:
       field: json.destination.private_ip
-      tag: convert_destination_private_ip_to_ip
+      tag: convert_destination_private_ip_to_ip_c6819cd3
       target_field: beyondtrust_pra.access_session.destination.private_ip
       type: ip
       ignore_missing: true
@@ -143,12 +143,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.nat.ip
-      tag: set_destination_nat_ip_from_access_session_destination_private_ip
+      tag: set_destination_nat_ip_from_access_session_destination_private_ip_0f049bd1
       copy_from: beyondtrust_pra.access_session.destination.private_ip
       ignore_empty_value: true
   - convert:
       field: json.destination.private_port
-      tag: convert_destination_private_port_to_long
+      tag: convert_destination_private_port_to_long_694c9161
       target_field: beyondtrust_pra.access_session.destination.private_port
       type: long
       ignore_missing: true
@@ -159,18 +159,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.nat.port
-      tag: set_destination_nat_port_from_destination_private_port
+      tag: set_destination_nat_port_from_destination_private_port_f97f8ea8
       copy_from: beyondtrust_pra.access_session.destination.private_port
       ignore_empty_value: true
   - grok:
       field: json.destination.public_ip
-      tag: grok_destination_public_ip
+      tag: grok_destination_public_ip_999eb23f
       patterns:
         - ^%{IP:json.destination.public_ip}:%{POSINT:json.destination.public_port}$
       ignore_failure: true
   - convert:
       field: json.destination.public_ip
-      tag: convert_destination_public_ip_to_ip
+      tag: convert_destination_public_ip_to_ip_4a928659
       target_field: beyondtrust_pra.access_session.destination.public_ip
       type: ip
       ignore_missing: true
@@ -182,17 +182,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_access_session_destination_public_ip
+      tag: set_destination_ip_from_access_session_destination_public_ip_4d75c23e
       copy_from: beyondtrust_pra.access_session.destination.public_ip
       ignore_empty_value: true
   - geoip:
       field: destination.ip
-      tag: geoip_destination_ip
+      tag: geoip_destination_ip_71881fab
       target_field: destination.geo
       ignore_missing: true
   - convert:
       field: json.destination.public_port
-      tag: convert_destination_public_port_to_long
+      tag: convert_destination_public_port_to_long_ab13194e
       target_field: beyondtrust_pra.access_session.destination.public_port
       type: long
       ignore_missing: true
@@ -203,13 +203,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port_from_destination_public_port
+      tag: set_destination_port_from_destination_public_port_a630a758
       copy_from: beyondtrust_pra.access_session.destination.public_port
       ignore_empty_value: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
-      tag: geoip_destination_as
+      tag: geoip_destination_as_4e3ec16d
       target_field: destination.as
       properties:
         - asn
@@ -217,17 +217,17 @@ processors:
       ignore_missing: true
   - rename:
       field: destination.as.asn
-      tag: rename_destination_as_asn
+      tag: rename_destination_as_asn_4968f9c8
       target_field: destination.as.number
       ignore_missing: true
   - rename:
       field: destination.as.organization_name
-      tag: rename_destination_as_organization_name
+      tag: rename_destination_as_organization_name_fb88b41e
       target_field: destination.as.organization.name
       ignore_missing: true
   - convert:
       field: json.destination.seconds_involved
-      tag: convert_destination_seconds_involved_to_long
+      tag: convert_destination_seconds_involved_to_long_df57f748
       target_field: beyondtrust_pra.access_session.destination.seconds_involved
       type: long
       ignore_missing: true
@@ -238,51 +238,51 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: beyondtrust_pra.access_session.destination.session_owner
-      tag: set_destination_session_owner_true
+      tag: set_destination_session_owner_true_c407b17c
       value: true
       if: ctx.json?.destination?.session_owner == 1
   - set:
       field: beyondtrust_pra.access_session.destination.session_owner
-      tag: set_destination_session_owner_false
+      tag: set_destination_session_owner_false_86d301a0
       value: false
       if: ctx.json?.destination?.session_owner == 0
   - rename:
       field: json.destination.type
-      tag: rename_destination_type
+      tag: rename_destination_type_1bf19f94
       target_field: beyondtrust_pra.access_session.destination.type
       ignore_missing: true
   - rename:
       field: json.destination.username
-      tag: rename_destination_username
+      tag: rename_destination_username_9ee2ae55
       target_field: beyondtrust_pra.access_session.destination.username
       ignore_missing: true
   - set:
       field: destination.user.name
-      tag: set_destination_user_name_from_access_session_destination_username
+      tag: set_destination_user_name_from_access_session_destination_username_c1a59221
       copy_from: beyondtrust_pra.access_session.destination.username
       ignore_empty_value: true
   - rename:
       field: json.encoded_body
-      tag: rename_encoded_body
+      tag: rename_encoded_body_b9c40328
       target_field: beyondtrust_pra.access_session.encoded_body
       ignore_missing: true
   - rename:
       field: json.event_type
-      tag: rename_event_type
+      tag: rename_event_type_e5d12a5c
       target_field: beyondtrust_pra.access_session.event_type
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_access_session_event_type
+      tag: set_event_action_from_access_session_event_type_cf21b5af
       copy_from: beyondtrust_pra.access_session.event_type
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
@@ -293,7 +293,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
@@ -302,7 +302,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: map_event_category_and_event_type_from_event_action
+      tag: map_event_category_and_event_type_from_event_action_a383af7b
       lang: painless
       description: Map event.category and event.type from event.action
       if: ctx.event?.action != null
@@ -469,17 +469,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.filename
-      tag: rename_filename
+      tag: rename_filename_48d60ea2
       target_field: beyondtrust_pra.access_session.filename
       ignore_missing: true
   - set:
       field: file.name
-      tag: set_file_name_from_access_session_filename
+      tag: set_file_name_from_access_session_filename_3689cd25
       copy_from: beyondtrust_pra.access_session.filename
       ignore_empty_value: true
   - convert:
       field: json.filesize
-      tag: convert_filesize_to_long
+      tag: convert_filesize_to_long_475c4c81
       target_field: beyondtrust_pra.access_session.filesize
       type: long
       ignore_missing: true
@@ -490,74 +490,76 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.size
-      tag: set_file_size_from_access_session_filesize
+      tag: set_file_size_from_access_session_filesize_80502cfd
       copy_from: beyondtrust_pra.access_session.filesize
       ignore_empty_value: true
   - foreach:
       field: json.files.file
       if: ctx.json?.files?.file instanceof List
-      tag: foreach_files_filesize_to_long
+      tag: foreach_files_filesize_to_long_39ec17b4
       processor:
         convert:
           field: _ingest._value.filesize
-          tag: convert_files_file_filesize_to_long
+          tag: convert_files_file_filesize_to_long_2401a49a
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_filesize_47544d50
                 field: _ingest._value.filesize
                 ignore_missing: true
             - append:
+                tag: append_error_message_cf35f408
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.files.file
-      tag: rename_files_file
+      tag: rename_files_file_893fead4
       target_field: beyondtrust_pra.access_session.files.file
       ignore_missing: true
   - rename:
       field: json.performed_by.display_name
-      tag: rename_performed_by_display_name
+      tag: rename_performed_by_display_name_fcab6c1e
       target_field: beyondtrust_pra.access_session.performed_by.display_name
       ignore_missing: true
   - rename:
       field: json.performed_by.gsnumber
-      tag: rename_performed_by_gsnumber
+      tag: rename_performed_by_gsnumber_6e33da61
       target_field: beyondtrust_pra.access_session.performed_by.gsnumber
       ignore_missing: true
   - rename:
       field: json.performed_by.hostname
-      tag: rename_performed_by_hostname
+      tag: rename_performed_by_hostname_3400e25e
       target_field: beyondtrust_pra.access_session.performed_by.hostname
       ignore_missing: true
   - set:
       field: source.domain
-      tag: set_source_domain_from_access_session_performed_by_hostname
+      tag: set_source_domain_from_access_session_performed_by_hostname_5a4ecef4
       copy_from: beyondtrust_pra.access_session.performed_by.hostname
       ignore_empty_value: true
   - rename:
       field: json.performed_by.id
-      tag: rename_performed_by_id
+      tag: rename_performed_by_id_181a883d
       target_field: beyondtrust_pra.access_session.performed_by.id
       ignore_missing: true
   - set:
       field: source.user.id
-      tag: set_source_user_id_from_access_session_performed_by_id
+      tag: set_source_user_id_from_access_session_performed_by_id_993a5ed4
       copy_from: beyondtrust_pra.access_session.performed_by.id
       ignore_empty_value: true
   - set:
       field: beyondtrust_pra.access_session.performed_by.invited
-      tag: set_performed_by_invited_true
+      tag: set_performed_by_invited_true_c0c00fd3
       value: true
       if: ctx.json?.performed_by?.invited == 1
   - set:
       field: beyondtrust_pra.access_session.performed_by.invited
-      tag: set_performed_by_invited_false
+      tag: set_performed_by_invited_false_938e7bf4
       value: false
       if: ctx.json?.performed_by?.invited == 0
   - convert:
       field: beyondtrust_pra.access_session.performed_by.invited
-      tag: convert_performed_by_invited_to_boolean
+      tag: convert_performed_by_invited_to_boolean_945a6ea8
       type: boolean
       ignore_missing: true
       on_failure:
@@ -567,18 +569,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.performed_by.os
-      tag: rename_performed_by_os
+      tag: rename_performed_by_os_9e56c63e
       target_field: beyondtrust_pra.access_session.performed_by.os
       ignore_missing: true
   - grok:
       field: json.performed_by.private_ip
-      tag: grok_performed_by_private_ip
+      tag: grok_performed_by_private_ip_8d8982de
       patterns:
         - ^%{IP:json.performed_by.private_ip}:%{POSINT:json.performed_by.private_port}$
       ignore_failure: true
   - convert:
       field: json.performed_by.private_ip
-      tag: convert_performed_by_private_ip_to_ip
+      tag: convert_performed_by_private_ip_to_ip_6f5bf94e
       target_field: beyondtrust_pra.access_session.performed_by.private_ip
       type: ip
       ignore_missing: true
@@ -590,12 +592,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.nat.ip
-      tag: set_source_nat_ip_from_access_session_performed_by_private_ip
+      tag: set_source_nat_ip_from_access_session_performed_by_private_ip_f3d14747
       copy_from: beyondtrust_pra.access_session.performed_by.private_ip
       ignore_empty_value: true
   - convert:
       field: json.performed_by.private_port
-      tag: convert_performed_by_private_port_to_long
+      tag: convert_performed_by_private_port_to_long_8ac8db84
       target_field: beyondtrust_pra.access_session.performed_by.private_port
       type: long
       ignore_missing: true
@@ -606,18 +608,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.nat.port
-      tag: set_source_nat_port_from_performed_by_private_port
+      tag: set_source_nat_port_from_performed_by_private_port_ad6cf8c2
       copy_from: beyondtrust_pra.access_session.performed_by.private_port
       ignore_empty_value: true
   - grok:
       field: json.performed_by.public_ip
-      tag: grok_performed_by_public_ip
+      tag: grok_performed_by_public_ip_0a253aae
       patterns:
         - ^%{IP:json.performed_by.public_ip}:%{POSINT:json.performed_by.public_port}$
       ignore_failure: true
   - convert:
       field: json.performed_by.public_ip
-      tag: convert_performed_by_public_ip_to_ip
+      tag: convert_performed_by_public_ip_to_ip_7c0ae04b
       target_field: beyondtrust_pra.access_session.performed_by.public_ip
       type: ip
       ignore_missing: true
@@ -629,12 +631,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_access_session_performed_by_public_ip
+      tag: set_source_ip_from_access_session_performed_by_public_ip_7c2ba671
       copy_from: beyondtrust_pra.access_session.performed_by.public_ip
       ignore_empty_value: true
   - convert:
       field: json.performed_by.public_port
-      tag: convert_performed_by_public_port_to_long
+      tag: convert_performed_by_public_port_to_long_1888a36e
       target_field: beyondtrust_pra.access_session.performed_by.public_port
       type: long
       ignore_missing: true
@@ -645,18 +647,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
-      tag: set_source_port_from_performed_by_public_port
+      tag: set_source_port_from_performed_by_public_port_5699b5a3
       copy_from: beyondtrust_pra.access_session.performed_by.public_port
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
-      tag: geoip_source_as
+      tag: geoip_source_as_58199963
       target_field: source.as
       properties:
         - asn
@@ -664,27 +666,27 @@ processors:
       ignore_missing: true
   - rename:
       field: source.as.asn
-      tag: rename_source_as_asn
+      tag: rename_source_as_asn_168bbbaf
       target_field: source.as.number
       ignore_missing: true
   - rename:
       field: source.as.organization_name
-      tag: rename_source_as_organization_name
+      tag: rename_source_as_organization_name_aa06a00b
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
       field: host.geo
-      tag: set_host_geo_from_source_geo
+      tag: set_host_geo_from_source_geo_74fe0864
       copy_from: source.geo
       ignore_empty_value: true
   - append:
       field: host.ip
       value: "{{{source.ip}}}"
-      tag: append_host_ip_from_source_ip
+      tag: append_host_ip_from_source_ip_769883b8
       if: ctx?.source?.ip != null
   - convert:
       field: json.performed_by.seconds_involved
-      tag: convert_performed_by_seconds_involved_to_long
+      tag: convert_performed_by_seconds_involved_to_long_8a45e250
       target_field: beyondtrust_pra.access_session.performed_by.seconds_involved
       type: long
       ignore_missing: true
@@ -695,32 +697,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: beyondtrust_pra.access_session.performed_by.session_owner
-      tag: set_performed_by_session_owner_true
+      tag: set_performed_by_session_owner_true_45cc042d
       value: true
       if: ctx.json?.performed_by?.session_owner == 1
   - set:
       field: beyondtrust_pra.access_session.performed_by.session_owner
-      tag: set_performed_by_session_owner_false
+      tag: set_performed_by_session_owner_false_1b590417
       value: false
       if: ctx.json?.performed_by?.session_owner == 0
   - rename:
       field: json.performed_by.type
-      tag: rename_performed_by_type
+      tag: rename_performed_by_type_f56ec448
       target_field: beyondtrust_pra.access_session.performed_by.type
       ignore_missing: true
   - rename:
       field: json.performed_by.username
-      tag: rename_performed_by_username
+      tag: rename_performed_by_username_bfdbdc37
       target_field: beyondtrust_pra.access_session.performed_by.username
       ignore_missing: true
   - set:
       field: source.user.name
-      tag: set_source_user_name_from_access_session_performed_by_username
+      tag: set_source_user_name_from_access_session_performed_by_username_e47b8241
       copy_from: beyondtrust_pra.access_session.performed_by.username
       ignore_empty_value: true
   - rename:
       field: json.session.command_shell_recordings.command_shell_recording
-      tag: rename_session_command_shell_recordings_command_shell_recording
+      tag: rename_session_command_shell_recordings_command_shell_recording_427a7035
       target_field: beyondtrust_pra.access_session.session.command_shell_recordings.command_shell_recording
       ignore_missing: true
   - foreach:
@@ -731,28 +733,28 @@ processors:
       processor:
         rename:
             field: _ingest._value.#text
-            tag: rename_session_custom_attributes_custom_attribute_#text
+            tag: rename_session_custom_attributes_custom_attribute_#text_8b5116ea
             target_field: _ingest._value.text
             ignore_missing: true
   - rename:
       field: json.session.custom_attributes
-      tag: rename_session_custom_attributes
+      tag: rename_session_custom_attributes_c1c605d1
       target_field: beyondtrust_pra.access_session.session.custom_attributes
       if: ctx.json?.session?.custom_attributes != null && ctx.json.session.custom_attributes instanceof Map
       ignore_missing: true
   - rename:
       field: json.session.duration
-      tag: rename_session_duration
+      tag: rename_session_duration_c564fb90
       target_field: beyondtrust_pra.access_session.session.duration
       ignore_missing: true
   - rename:
       field: json.session.end_time.#text
-      tag: rename_session_end_time_#text
+      tag: rename_session_end_time_#text_6ae584e5
       target_field: beyondtrust_pra.access_session.session.end_time.text
       ignore_missing: true
   - date:
       field: beyondtrust_pra.access_session.session.end_time.text
-      tag: date_session_end_time_#text
+      tag: date_session_end_time_#text_2b32d50b
       formats:
         - ISO8601
       if: ctx.beyondtrust_pra?.access_session?.session?.end_time?.text != null && ctx.beyondtrust_pra.access_session.session.end_time.text != ''
@@ -763,7 +765,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.session.end_time.timestamp
-      tag: date_session_end_time_timestamp
+      tag: date_session_end_time_timestamp_21ce826b
       target_field: beyondtrust_pra.access_session.session.end_time.timestamp
       formats:
         - UNIX
@@ -775,7 +777,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.session.file_move_count
-      tag: convert_session_file_move_count_to_long
+      tag: convert_session_file_move_count_to_long_902fe24a
       target_field: beyondtrust_pra.access_session.session.file_move_count
       type: long
       ignore_missing: true
@@ -786,7 +788,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.session.file_transfer_count
-      tag: convert_session_file_transfer_count_to_long
+      tag: convert_session_file_transfer_count_to_long_f58b1341
       target_field: beyondtrust_pra.access_session.session.file_transfer_count
       type: long
       ignore_missing: true
@@ -797,7 +799,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.session.file_delete_count
-      tag: convert_session_file_delete_count_to_long
+      tag: convert_session_file_delete_count_to_long_bcb94721
       target_field: beyondtrust_pra.access_session.session.file_delete_count
       type: long
       ignore_missing: true
@@ -808,97 +810,97 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: 'json.session.jump_group.#text'
-      tag: rename_session_jump_group_#text
+      tag: rename_session_jump_group_#text_0fc28b07
       target_field: beyondtrust_pra.access_session.session.jump_group.text
       ignore_missing: true
   - rename:
       field: json.session.jump_group.id
-      tag: rename_session_jump_group_id
+      tag: rename_session_jump_group_id_1fa29312
       target_field: beyondtrust_pra.access_session.session.jump_group.id
       ignore_missing: true
   - rename:
       field: json.session.jump_group.type
-      tag: rename_session_jump_group_type
+      tag: rename_session_jump_group_type_5923fbb9
       target_field: beyondtrust_pra.access_session.session.jump_group.type
       ignore_missing: true
   - rename:
       field: 'json.session.jumpoint.#text'
-      tag: rename_session_jumpoint_#text
+      tag: rename_session_jumpoint_#text_75ab989e
       target_field: beyondtrust_pra.access_session.session.jumpoint.text
       ignore_missing: true
   - rename:
       field: json.session.jumpoint.id
-      tag: rename_session_jumpoint_id
+      tag: rename_session_jumpoint_id_97e4fa3e
       target_field: beyondtrust_pra.access_session.session.jumpoint.id
       ignore_missing: true
   - rename:
       field: json.session.lseq
-      tag: rename_session_lseq
+      tag: rename_session_lseq_22874e6e
       target_field: beyondtrust_pra.access_session.session.lseq
       ignore_missing: true
   - rename:
       field: json.session.lsid
-      tag: rename_session_lsid
+      tag: rename_session_lsid_ec8c8a66
       target_field: beyondtrust_pra.access_session.session.lsid
       ignore_missing: true
   - rename:
       field: 'json.session.primary_customer.#text'
-      tag: rename_session_primary_customer_#text
+      tag: rename_session_primary_customer_#text_eeb3fcb8
       target_field: beyondtrust_pra.access_session.session.primary_customer.text
       ignore_missing: true
   - rename:
       field: json.session.primary_customer.gsnumber
-      tag: rename_session_primary_customer_gsnumber
+      tag: rename_session_primary_customer_gsnumber_6ecb4cc0
       target_field: beyondtrust_pra.access_session.session.primary_customer.gsnumber
       ignore_missing: true
   - rename:
       field: 'json.session.primary_rep.#text'
-      tag: rename_session_primary_rep_#text
+      tag: rename_session_primary_rep_#text_a7348b6f
       target_field: beyondtrust_pra.access_session.session.primary_rep.text
       ignore_missing: true
   - rename:
       field: json.session.primary_rep.gsnumber
-      tag: rename_session_primary_rep_gsnumber
+      tag: rename_session_primary_rep_gsnumber_16e9d829
       target_field: beyondtrust_pra.access_session.session.primary_rep.gsnumber
       ignore_missing: true
   - rename:
       field: json.session.primary_rep.id
-      tag: rename_session_primary_rep_id
+      tag: rename_session_primary_rep_id_863960d7
       target_field: beyondtrust_pra.access_session.session.primary_rep.id
       ignore_missing: true
   - rename:
       field: json.session.session_chat_download_url
-      tag: rename_session_session_chat_download_url
+      tag: rename_session_session_chat_download_url_4acf44a5
       target_field: beyondtrust_pra.access_session.session.session_chat_download_url
       ignore_missing: true
   - rename:
       field: json.session.session_chat_view_url
-      tag: rename_session_session_chat_view_url
+      tag: rename_session_session_chat_view_url_50d125fd
       target_field: beyondtrust_pra.access_session.session.session_chat_view_url
       ignore_missing: true
   - rename:
       field: json.session.session_recording_download_url
-      tag: rename_session_session_recording_download_url
+      tag: rename_session_session_recording_download_url_0a9dd16b
       target_field: beyondtrust_pra.access_session.session.session_recording_download_url
       ignore_missing: true
   - rename:
       field: json.session.session_recording_view_url
-      tag: rename_session_session_recording_view_url
+      tag: rename_session_session_recording_view_url_4f6f8f46
       target_field: beyondtrust_pra.access_session.session.session_recording_view_url
       ignore_missing: true
   - rename:
       field: json.session.session_type
-      tag: rename_session_session_type
+      tag: rename_session_session_type_375b28a9
       target_field: beyondtrust_pra.access_session.session.session_type
       ignore_missing: true
   - rename:
       field: 'json.session.start_time.#text'
-      tag: rename_session_start_time_#text
+      tag: rename_session_start_time_#text_10bcadab
       target_field: beyondtrust_pra.access_session.session.start_time.text
       ignore_missing: true
   - date:
       field: beyondtrust_pra.access_session.session.start_time.text
-      tag: date_session_start_time_#text
+      tag: date_session_start_time_#text_b6753f22
       formats:
         - ISO8601
       if: ctx.beyondtrust_pra?.access_session?.session?.start_time?.text != null && ctx.beyondtrust_pra.access_session.session.start_time.text != ''
@@ -909,7 +911,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.session.start_time.timestamp
-      tag: date_session_start_time_timestamp
+      tag: date_session_start_time_timestamp_ac55de36
       target_field: beyondtrust_pra.access_session.session.start_time.timestamp
       formats:
         - UNIX
@@ -926,16 +928,18 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_data_row_6b0824e4
           field: _ingest._value.data.row
           ignore_failure: true
           processor:
             foreach:
+              tag: foreach_ingest_value_field_467e2068
               field: _ingest._value.field
               ignore_failure: true
               processor:
                 rename:
                   field: _ingest._value.#text
-                  tag: rename_system_information_category_data_row_field_#text
+                  tag: rename_system_information_category_data_row_field_#text_d80f3469
                   target_field: _ingest._value.text
                   ignore_missing: true
   - foreach:
@@ -945,22 +949,23 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_description_field_daec9aa3
           field: _ingest._value.description.field
           ignore_failure: true
           processor:
             rename:
               field: _ingest._value.#text
-              tag: rename_system_information_category_description_field_#text
+              tag: rename_system_information_category_description_field_#text_58d6c080
               target_field: _ingest._value.text
               ignore_missing: true
   - rename:
       field: json.system_information.category
-      tag: rename_system_information_category
+      tag: rename_system_information_category_30f46904
       target_field: beyondtrust_pra.access_session.system_information.category
       ignore_missing: true
   - date:
       field: json.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_8f6e2f8d
       target_field: beyondtrust_pra.access_session.timestamp
       formats:
         - ISO8601
@@ -973,17 +978,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_access_session_timestamp
+      tag: set_@timestamp_from_access_session_timestamp_3087ba03
       copy_from: beyondtrust_pra.access_session.timestamp
       ignore_empty_value: true
   - rename:
       field: json.data.value
-      tag: rename_data_value
+      tag: rename_data_value_b4fb669f
       target_field: beyondtrust_pra.access_session.data.value
       ignore_missing: true
   - rename:
       field: json.data.name
-      tag: rename_data_name
+      tag: rename_data_name_c58d8935
       target_field: beyondtrust_pra.access_session.data.name
       ignore_missing: true
   - append:
@@ -1072,21 +1077,21 @@ processors:
         - beyondtrust_pra.access_session.performed_by.public_port
         - beyondtrust_pra.access_session.performed_by.username
         - beyondtrust_pra.access_session.timestamp
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_7e90d7a8
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -1112,13 +1117,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

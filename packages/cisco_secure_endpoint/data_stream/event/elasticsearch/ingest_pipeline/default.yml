@@ -13,7 +13,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -29,7 +29,7 @@ processors:
   ## ECS General Mapping ##
   #########################
   - fingerprint:
-      tag: fingerprint_97baa791
+      tag: fingerprint_to_id_97baa791
       fields:
         - "json.data.timestamp"
         - "json.data.timestamp_nanoseconds"
@@ -313,11 +313,11 @@ processors:
         - '%{GREEDYDATA:user.name}'
       ignore_missing: true
       ignore_failure: true
-      tag: grok_user_name
+      tag: grok_user_name_29c71cda
   - set:
       field: user.email
       copy_from: cisco.secure_endpoint.computer.user
-      tag: set_user_email
+      tag: set_user_email_a89843ef
       if: ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco.secure_endpoint.computer.user.indexOf("@") > 0
   #########################
   ## ECS Network Mapping ##
@@ -453,11 +453,6 @@ processors:
       target_field: process.hash.md5
       ignore_missing: true
   - rename:
-      tag: rename_cisco_secure_endpoint_file_parent_identity_md5_to_process_hash_md5_16aec6bb
-      field: cisco.secure_endpoint.file.parent.identity.md5
-      target_field: process.hash.md5
-      ignore_missing: true
-  - rename:
       tag: rename_cisco_secure_endpoint_network_info_parent_file_name_to_process_name_62d6541f
       field: cisco.secure_endpoint.network_info.parent.file_name
       target_field: process.name
@@ -479,7 +474,7 @@ processors:
       ignore_missing: true
   - script:
       description: Set process.command_line and process.args.
-      tag: set-process-command_line
+      tag: set-process-command_line_5c4b0527
       lang: painless
       source: |
         def commandLine = ctx.cisco?.secure_endpoint?.command_line?.arguments;
@@ -501,7 +496,7 @@ processors:
         }
   - script:
       description: Set process.args_count and process.executable based on process.args.
-      tag: set-process-args_count
+      tag: set-process-args_count_6338f59f
       lang: painless
       if: ctx.process?.args != null
       source: |
@@ -644,6 +639,7 @@ processors:
       field: cisco.secure_endpoint.vulnerabilities
       processor:
         append:
+          tag: append_cisco_secure_endpoint_related_cve_5388df99
           field: cisco.secure_endpoint.related.cve
           value: "{{{ _ingest._value.cve }}}"
           allow_duplicates: false
@@ -721,7 +717,7 @@ processors:
       ignore_failure: true
       if: ctx.cisco?.secure_endpoint?.threat_hunting?.incident_end_time != null
   - script:
-      tag: script_65cd3e9e
+      tag: script_processor_iterates_over_whole_document_65cd3e9e
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.
       if: ctx.json != null
@@ -758,17 +754,21 @@ processors:
       ignore_missing: true
 on_failure:
   - remove:
+      tag: remove_f3d169b2
       field:
         - json
       ignore_missing: true
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_7920691e
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" failed with message "{{{ _ingest.on_failure_message }}}"

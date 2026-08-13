@@ -9,7 +9,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String || ctx.division instanceof String || ctx.team instanceof String
-      tag: remove_agentless_metadata
+      tag: remove_agentless_metadata_b8eb1cbf
 
   - rename:
       tag: rename_message_to_raw_message_d5239467
@@ -47,7 +47,7 @@ processors:
         ctx.tags = flatTags;
   # --- SEVERITY CONVERSION ---
   - script:
-      tag: convert_severity
+      tag: convert_severity_bec19257
       if: ctx.severity instanceof String
       lang: painless
       source: >
@@ -238,13 +238,13 @@ processors:
 
   - set:
       field: threat.indicator.ip
-      tag: set_threat_indicator_ip
+      tag: set_threat_indicator_ip_73b4c4b0
       copy_from: entity_content.root_domain.ip_address
       ignore_empty_value: true
       ignore_failure: true
   - append:
       field: related.ip
-      tag: append_threat_indicator_ip_to_related
+      tag: append_threat_indicator_ip_to_related_f6bb2e5f
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.ip != null
@@ -444,18 +444,18 @@ processors:
 
   - append:
       field: event.category
-      tag: append_event_category_threat
+      tag: append_event_category_threat_8e392818
       value: threat
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_event_type_indicator
+      tag: append_event_type_indicator_d9f6d523
       value: indicator
       allow_duplicates: false
 
   # --- (Ledger Style: Creates new row on update) ---
   - fingerprint:
-      tag: fingerprint_3e374f5f
+      tag: fingerprint_to_id_3e374f5f
       fields:
         - event.id
         - last_activity_timestamp
@@ -481,7 +481,7 @@ processors:
 
   # --- Final Cleanup ---
   - remove:
-      tag: remove_ed249bf5
+      tag: remove_final_cleanup_ed249bf5
       field:
         - raw_message
         - id
@@ -506,7 +506,7 @@ processors:
       ignore_missing: true
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: remove_nulls
+      tag: remove_nulls_9ae917b7
       source: |-
         void handleMap(Map map) {
           map.values().removeIf(v -> {
@@ -533,17 +533,17 @@ processors:
 on_failure:
   - append:
       field: error.message
-      tag: append_pipeline_error_message
+      tag: append_pipeline_error_message_d916120d
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_kind
+      tag: set_pipeline_error_kind_72b1902f
       value: pipeline_error
   - append:
       field: tags
-      tag: append_preserve_original_event_on_failure
+      tag: append_preserve_original_event_on_failure_279d5a5c
       value: preserve_original_event
       allow_duplicates: false

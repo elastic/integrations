@@ -9,7 +9,7 @@ processors:
 # Validate that the input document conforms to the expected format
 # to avoid repetitive checks.
 - fail:
-    tag: fail_fe8eb0b5
+    tag: fail_validates_input_document_format_fe8eb0b5
     description: 'Validates input document format'
     message: 'json object is missing from event'
     if: 'ctx.json == null'
@@ -19,13 +19,13 @@ processors:
 # CB Event Forwarded splits an input event with multiple docs into multiple
 # output events with a single doc each.
 - fail:
-    tag: fail_75776c22
+    tag: fail_validates_docs_field_contains_single_75776c22
     description: 'Validates that docs field contains a single document'
     message: 'docs array has more than one entry, this is unsupported. Use CB Event Forwarder as source of events'
     if: 'ctx.json.docs != null && ctx.json.docs instanceof List && ctx.json.docs.size() > 1'
 
 - script:
-    tag: script_7aeeb654
+    tag: script_selects_single_document_from_docs_7aeeb654
     description: 'Selects a single document from docs input field'
     lang: painless
     if: 'ctx.json.docs != null'
@@ -186,7 +186,7 @@ processors:
     if: 'ctx.host?.name == null'
 
 - script:
-    tag: script_e4134e8a
+    tag: script_removes_empty_string_fields_e4134e8a
     description: 'Removes empty string fields'
     lang: painless
     source: |-
@@ -214,7 +214,7 @@ processors:
           value: unknown
 
 - script:
-    tag: script_9a32e22c
+    tag: script_sets_ecs_categorisation_fields_9a32e22c
     description: 'Sets ECS categorisation fields from EDR Event ID.'
     lang: painless
     params:
@@ -532,7 +532,7 @@ processors:
 
 # Most of the time doc.endpoint is an array. Convert it to array otherwise.
 - script:
-    tag: script_4578d809
+    tag: script_converts_doc_endpoint_to_array_4578d809
     description: 'Converts doc.endpoint to an array'
     lang: painless
     source: |-
@@ -566,6 +566,7 @@ processors:
     if: 'ctx.host?.name == null && ctx.json.doc?.hostname == null && ctx.json.doc?.endpoint != null'
     processor:
       grok:
+        tag: grok_ingest_value_1a237280
         field: '_ingest._value'
         patterns:
           # endpoint field format is "HOSTNAME|ID"
@@ -646,6 +647,7 @@ processors:
     ignore_missing: true
     processor:
       set:
+        tag: set_file_path_c45e0c7d
         field: file.path
         value: '{{{ _ingest._value }}}'
 
@@ -814,7 +816,7 @@ processors:
 # Map ioc_type field to STIX 2.0 Cyber Observable values (threat.indicator.type).
 #
 - script:
-    tag: script_d42d724f
+    tag: script_maps_ioc_type_field_d42d724f
     lang: painless
     if: 'ctx.json.ioc_type != null'
     description: >
@@ -946,7 +948,7 @@ processors:
 # Remove unneeded fields
 #
 - remove:
-    tag: remove_91f35213
+    tag: remove_unneeded_fields_91f35213
     field:
     - message
     - _tmp
@@ -972,12 +974,15 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
+    tag: append_error_message_206bb8ac
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

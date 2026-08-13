@@ -27,7 +27,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_eae67111
 
   - remove:
       tag: remove_message_76fa2a57
@@ -43,21 +43,21 @@ processors:
       pattern: '(.*"Password": *").*?(".*)'
       replacement: '$1<REDACTED>$2'
       ignore_missing: true
-      tag: redact_event_original
+      tag: redact_event_original_43719511
 
   - remove:
       description: "Remove filebeat parsed json object if redaction occurred"
       if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
       field: json
       ignore_missing: true
-      tag: remove_json_due_to_redaction
+      tag: remove_json_due_to_redaction_0b2bb736
 
   - json:
       if: ctx.event?.original != null && ctx.json == null
       description: "Parse JSON from event.original only if we don't already have a JSON object provided by filebeat, or if redaction occurred"
       field: event.original
       target_field: json
-      tag: json_event_original
+      tag: json_event_original_08acf48d
 
   - date:
       if: ctx.json?.event?.DateTime != null
@@ -65,7 +65,7 @@ processors:
       field: json.event.DateTime
       formats:
         - ISO8601
-      tag: parse_json_event_datetime
+      tag: parse_json_event_datetime_fa64d5f3
 
   - date:
       if: ctx.json?.event?.DateTime == null && ctx.json?.time != null
@@ -73,7 +73,7 @@ processors:
       field: json.time
       formats:
         - ISO8601
-      tag: parse_json_time
+      tag: parse_json_time_60c053bd
 
   - set:
       tag: set_event_id_5b2ab158
@@ -103,14 +103,14 @@ processors:
       target_field: source.ip
       type: ip
       ignore_missing: true
-      tag: convert_json_event_sourceip
+      tag: convert_json_event_sourceip_6e61fed3
 
   - append:
       if: ctx.source?.ip != null
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
-      tag: append_source_ip_to_related_ip
+      tag: append_source_ip_to_related_ip_a2ab3b40
 
   - convert:
       if: ctx.json?.event?.SourcePort != ""
@@ -119,7 +119,7 @@ processors:
       target_field: source.port
       type: long
       ignore_missing: true
-      tag: convert_json_event_sourceport
+      tag: convert_json_event_sourceport_43b9a00a
 
   - geoip:
       tag: geoip_source_ip_to_source_geo_5b302835
@@ -166,7 +166,7 @@ processors:
       ignore_empty_value: true
 
   - script:
-      tag: script_ba747eae
+      tag: script_count_body_length_ba747eae
       description: "Count body length so we have can search based on size of body strings"
       if: ctx.http?.request?.body?.content != null && (ctx.http?.request?.body?.content instanceof String)
       lang: painless
@@ -258,7 +258,7 @@ processors:
           lowercaseMap.put(entry.getKey().toLowerCase(), entry.getValue());
         }
         ctx.json.event.Headers = lowercaseMap;
-      tag: lowercase_http_header_names
+      tag: lowercase_http_header_names_0224e100
 
   - set:
       if: ctx.http?.request?.referrer == null
@@ -266,7 +266,7 @@ processors:
       field: http.request.referrer
       copy_from: json.event.Headers.referer
       ignore_empty_value: true
-      tag: ecs_map_headers_referer_http_request_referrer
+      tag: ecs_map_headers_referer_http_request_referrer_263ad33c
 
   - set:
       if: ctx.url?.domain == null
@@ -274,7 +274,7 @@ processors:
       field: url.domain
       copy_from: json.event.Headers.host
       ignore_empty_value: true
-      tag: ecs_map_headers_host_url_domain
+      tag: ecs_map_headers_host_url_domain_0f7587ba
 
   - gsub:
       description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.domain if not already obtained"
@@ -284,7 +284,7 @@ processors:
       target_field: url.domain
       pattern: '(:[0-9]+)*$'
       replacement: ''
-      tag: gsub1_json_event_HostHTTPRequest
+      tag: gsub1_json_event_HostHTTPRequest_fe7dd1c6
 
   - gsub:
       description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.port if not already obtained"
@@ -294,7 +294,7 @@ processors:
       target_field: _tmp.port
       pattern: '^.*:'
       replacement: ''
-      tag: gsub2_json_event_HostHTTPRequest
+      tag: gsub2_json_event_HostHTTPRequest_324de738
 
   - convert:
       description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.port if not already obtained"
@@ -302,7 +302,7 @@ processors:
       target_field: url.port
       type: integer
       ignore_missing: true
-      tag: convert__tmp_port
+      tag: convert__tmp_port_3f6cc5bd
 
   - convert:
       description: "Use convert to copy url.domain to destination.ip, ignore failures which indicates non-IP content"
@@ -311,7 +311,7 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
-      tag: convert_url_domain
+      tag: convert_url_domain_abaf32a0
 
   - set:
       tag: set_destination_port_0500e88f
@@ -355,14 +355,14 @@ processors:
       field: user.name
       copy_from: json.event.User
       ignore_empty_value: true
-      tag: ecs_map_user_name
+      tag: ecs_map_user_name_e4d7700e
 
   - append:
       if: ctx.user?.name != null
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_ca4b5429
 
   - rename:
       tag: rename_json_to_beelzebub_e13ea439
@@ -370,7 +370,7 @@ processors:
       target_field: beelzebub
 
   - script:
-      tag: script_44cc395e
+      tag: script_drops_null_empty_values_recursively_44cc395e
       description: "Drops null/empty values recursively to minimise event size"
       lang: painless
       source: |
@@ -389,7 +389,7 @@ processors:
           dropEmptyFields(ctx);
 
   - remove:
-      tag: remove_3504a80c
+      tag: remove_temporary_other_unnecessary_fields_3504a80c
       description: "Remove temporary and other unnecessary fields"
       field:
         - _tmp
@@ -397,7 +397,7 @@ processors:
       ignore_missing: true
 
   - remove:
-      tag: remove_d4353bcd
+      tag: remove_ecs_mapped_fields_d4353bcd
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       description: "Remove ECS mapped fields"
       field:
@@ -417,7 +417,7 @@ processors:
 
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 
@@ -430,15 +430,17 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
 
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
 
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

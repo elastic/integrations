@@ -100,6 +100,7 @@ processors:
       field: json.process_publisher
       processor:
         split:
+          tag: split_ingest_value_state_c4b73818
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -182,6 +183,7 @@ processors:
       field: json.childproc_publisher
       processor:
         split:
+          tag: split_ingest_value_state_bf199e66
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
@@ -210,12 +212,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -9,17 +9,17 @@ description: |
 processors:
   - rename:
       field: doppler.slug
-      tag: rename_slug_to_log_id
+      tag: rename_slug_to_log_id_332194be
       target_field: doppler.activity.log_id
       ignore_missing: true
   - rename:
       field: doppler.link
-      tag: rename_link
+      tag: rename_link_95219518
       target_field: doppler.activity.url
       ignore_missing: true
   - rename:
       field: doppler.text
-      tag: rename_text
+      tag: rename_text_05176602
       target_field: doppler.activity.description
       ignore_missing: true
   # Doppler's `text` is dashboard prose with embedded HTML (e.g. <strong>, <a href>);
@@ -28,62 +28,62 @@ processors:
   # keeps a malformed-markup event flowing rather than failing it.
   - html_strip:
       field: doppler.activity.description
-      tag: html_strip_description
+      tag: html_strip_description_e79a6138
       ignore_missing: true
       ignore_failure: true
   - set:
       field: doppler.activity.project.id
-      tag: set_project_id
+      tag: set_project_id_c1cd1c20
       copy_from: doppler.metadata.projectId
       ignore_empty_value: true
   - set:
       field: doppler.activity.project.name
-      tag: set_project_name
+      tag: set_project_name_f7b81e55
       copy_from: doppler.metadata.projectName
       ignore_empty_value: true
   - set:
       field: doppler.activity.config.name
-      tag: set_config_name
+      tag: set_config_name_fa68377e
       copy_from: doppler.metadata.configName
       ignore_empty_value: true
   - set:
       field: doppler.activity.environment.id
-      tag: set_environment_id
+      tag: set_environment_id_2b6039f9
       copy_from: doppler.metadata.environmentId
       ignore_empty_value: true
   - set:
       field: doppler.activity.environment.name
-      tag: set_environment_name
+      tag: set_environment_name_294d41ca
       copy_from: doppler.metadata.environmentName
       ignore_empty_value: true
   - set:
       field: doppler.activity.secrets_changed.added
-      tag: set_secrets_added
+      tag: set_secrets_added_10263245
       copy_from: doppler.metadata.diff.added
       ignore_empty_value: true
   - set:
       field: doppler.activity.secrets_changed.removed
-      tag: set_secrets_removed
+      tag: set_secrets_removed_4e23b7fb
       copy_from: doppler.metadata.diff.removed
       ignore_empty_value: true
   - set:
       field: doppler.activity.secrets_changed.updated
-      tag: set_secrets_updated
+      tag: set_secrets_updated_bbf7f8e1
       copy_from: doppler.metadata.diff.updated
       ignore_empty_value: true
   - set:
       field: doppler.activity.role.name
-      tag: set_role_name
+      tag: set_role_name_19b380fb
       copy_from: doppler.metadata.role
       ignore_empty_value: true
   - set:
       field: doppler.activity.role.new
-      tag: set_role_new
+      tag: set_role_new_45fb437b
       copy_from: doppler.metadata.newRole
       ignore_empty_value: true
   - set:
       field: doppler.activity.role.old
-      tag: set_role_old
+      tag: set_role_old_059863bd
       copy_from: doppler.metadata.oldRole
       ignore_empty_value: true
   # Workplace seat role changes (team.seat.update) carry the transition under
@@ -91,13 +91,13 @@ processors:
   # detections work the same for project and workplace roles.
   - set:
       field: doppler.activity.role.new
-      tag: set_role_new_workplace
+      tag: set_role_new_workplace_b5be2656
       copy_from: doppler.metadata.newWorkplaceRole
       ignore_empty_value: true
       if: ctx.doppler?.activity?.role?.new == null
   - set:
       field: doppler.activity.role.old
-      tag: set_role_old_workplace
+      tag: set_role_old_workplace_d07bec88
       copy_from: doppler.metadata.oldWorkplaceRole
       ignore_empty_value: true
       if: ctx.doppler?.activity?.role?.old == null
@@ -105,7 +105,7 @@ processors:
   # present, so it is not mistaken for a target identity below).
   - set:
       field: doppler.activity.role.name
-      tag: set_role_name_custom
+      tag: set_role_name_custom_09c9c296
       copy_from: doppler.metadata.name
       ignore_empty_value: true
       if: ctx.event?.action != null && ctx.event.action.startsWith('custom_roles')
@@ -116,12 +116,12 @@ processors:
   ##
   - set:
       field: user.target.email
-      tag: set_user_target_email
+      tag: set_user_target_email_d57057e1
       copy_from: doppler.metadata.userEmail
       ignore_empty_value: true
   - set:
       field: user.target.name
-      tag: set_user_target_name
+      tag: set_user_target_name_e429dffa
       copy_from: doppler.metadata.userName
       ignore_empty_value: true
   # team.seat.* and personal-token events carry the affected identity under
@@ -130,33 +130,33 @@ processors:
   # present (i.e. a real user context).
   - set:
       field: user.target.email
-      tag: set_user_target_email_seat
+      tag: set_user_target_email_seat_59b9f991
       copy_from: doppler.metadata.email
       ignore_empty_value: true
   - set:
       field: user.target.full_name
-      tag: set_user_target_full_name_seat
+      tag: set_user_target_full_name_seat_7fc8f0d6
       copy_from: doppler.metadata.name
       ignore_empty_value: true
       if: ctx.doppler?.metadata?.email != null
   - set:
       field: user.target.id
-      tag: set_user_target_id_sa
+      tag: set_user_target_id_sa_f7d81095
       copy_from: doppler.metadata.serviceAccountId
       ignore_empty_value: true
   - set:
       field: user.target.name
-      tag: set_user_target_name_sa
+      tag: set_user_target_name_sa_12041d53
       copy_from: doppler.metadata.serviceAccountName
       ignore_empty_value: true
   - set:
       field: group.id
-      tag: set_group_id
+      tag: set_group_id_efcf1fa4
       copy_from: doppler.metadata.groupId
       ignore_empty_value: true
   - set:
       field: group.name
-      tag: set_group_name
+      tag: set_group_name_6d305f0e
       copy_from: doppler.metadata.groupName
       ignore_empty_value: true
   # team.group.members.add carries the added identity under metadata.addedMembers
@@ -166,7 +166,7 @@ processors:
   # parsing the flattened metadata blob.
   - script:
       lang: painless
-      tag: promote_added_members
+      tag: promote_added_members_98d29773
       description: Promote team.group.members.add members to user.target and members_added.
       if: ctx.doppler?.metadata?.addedMembers != null
       source: |-
@@ -201,7 +201,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            tag: append_promote_added_members_error
+            tag: append_promote_added_members_error_45bac340
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -211,17 +211,17 @@ processors:
   # created token; promote it for token-creation and token-then-read hunts.
   - set:
       field: doppler.activity.token.id
-      tag: set_token_id
+      tag: set_token_id_a05e31e3
       copy_from: doppler.metadata.serviceAccountTokenId
       ignore_empty_value: true
   - set:
       field: doppler.activity.token.name
-      tag: set_token_name_sa
+      tag: set_token_name_sa_c2969bad
       copy_from: doppler.metadata.serviceAccountTokenName
       ignore_empty_value: true
   - set:
       field: doppler.activity.token.name
-      tag: set_token_name_service
+      tag: set_token_name_service_1662aec6
       copy_from: doppler.metadata.serviceTokenName
       ignore_empty_value: true
       if: ctx.doppler?.activity?.token?.name == null
@@ -229,23 +229,23 @@ processors:
   # booleans so detections can flag the creation of write-capable tokens.
   - set:
       field: doppler.activity.service_token.read_access
-      tag: set_service_token_read
+      tag: set_service_token_read_1b36c93d
       copy_from: doppler.metadata.readAccess
       ignore_empty_value: true
   - convert:
       field: doppler.activity.service_token.read_access
-      tag: convert_service_token_read
+      tag: convert_service_token_read_8024e98a
       type: boolean
       ignore_missing: true
       ignore_failure: true
   - set:
       field: doppler.activity.service_token.write_access
-      tag: set_service_token_write
+      tag: set_service_token_write_ac4b1410
       copy_from: doppler.metadata.writeAccess
       ignore_empty_value: true
   - convert:
       field: doppler.activity.service_token.write_access
-      tag: convert_service_token_write
+      tag: convert_service_token_write_3a2b67d2
       type: boolean
       ignore_missing: true
       ignore_failure: true
@@ -253,13 +253,13 @@ processors:
   # use the new* keys instead. Fall back so the field is populated there too.
   - set:
       field: doppler.activity.environment.id
-      tag: set_environment_id_new
+      tag: set_environment_id_new_35445c38
       copy_from: doppler.metadata.newEnvironmentId
       ignore_empty_value: true
       if: ctx.doppler?.activity?.environment?.id == null
   - set:
       field: doppler.activity.environment.name
-      tag: set_environment_name_new
+      tag: set_environment_name_new_bad1aae7
       copy_from: doppler.metadata.newEnvironmentName
       ignore_empty_value: true
       if: ctx.doppler?.activity?.environment?.name == null
@@ -267,12 +267,12 @@ processors:
   # "renamed from <env>" pivots (e.g. a config moved out of prod) are queryable.
   - set:
       field: doppler.activity.environment.old_id
-      tag: set_environment_old_id
+      tag: set_environment_old_id_a8729388
       copy_from: doppler.metadata.oldEnvironmentId
       ignore_empty_value: true
   - set:
       field: doppler.activity.environment.old_name
-      tag: set_environment_old_name
+      tag: set_environment_old_name_9bfda50f
       copy_from: doppler.metadata.oldEnvironmentName
       ignore_empty_value: true
   # Service-account token creation events embed a partial API key preview. Drop it
@@ -280,30 +280,30 @@ processors:
   # searchable field (it remains only in event.original when preservation is on).
   - remove:
       field: doppler.metadata.serviceAccountTokenApiKeyPreview
-      tag: remove_token_api_key_preview
+      tag: remove_token_api_key_preview_e4790443
       ignore_missing: true
   # Retain the full, per-type metadata object as a flattened blob for completeness.
   - rename:
       field: doppler.metadata
-      tag: rename_metadata
+      tag: rename_metadata_dd9e336e
       target_field: doppler.activity.metadata
       ignore_missing: true
   - uri_parts:
       field: doppler.activity.url
-      tag: uri_parts_link
+      tag: uri_parts_link_b95dbc06
       target_field: url
       keep_original: false
       ignore_failure: true
       if: ctx.doppler?.activity?.url != null
   - set:
       field: url.full
-      tag: set_url_full
+      tag: set_url_full_a3f5354f
       copy_from: doppler.activity.url
       ignore_empty_value: true
 on_failure:
   - append:
       field: error.message
-      tag: append_pipeline_failure_message
+      tag: append_pipeline_failure_message_e6ec426f
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -311,13 +311,14 @@ on_failure:
         failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: error.type
-      tag: set_error_type
+      tag: set_error_type_9beb640c
       value: pipeline_error
   - set:
       field: event.kind
-      tag: set_event_kind_pipeline_error
+      tag: set_event_kind_pipeline_error_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

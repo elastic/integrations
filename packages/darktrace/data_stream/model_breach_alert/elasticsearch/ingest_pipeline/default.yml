@@ -20,7 +20,7 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -29,7 +29,7 @@ processors:
       field: event.original
       target_field: json
   - fingerprint:
-      tag: fingerprint_1cec355f
+      tag: fingerprint_to_id_1cec355f
       fields:
         - json.time
         - json.creationTime
@@ -57,7 +57,7 @@ processors:
       field: event.type
       value: [info]
   - script:
-      tag: script_b1769ed3
+      tag: script_dynamically_map_event_fields_b1769ed3
       description: Dynamically map event.* fields from metric label.
       lang: painless
       if: ctx.json?.triggeredComponents instanceof List
@@ -70,16 +70,20 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_related_f608c173
           field: _ingest._value.related
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_e14ed4fe
               field: _ingest._value
               type: long
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_1925ce1c
                     field: _ingest._value
                 - append:
+                    tag: append_error_message_00e01c55
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - rename:
@@ -279,6 +283,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_related_ip_5bd08c1a
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -290,6 +295,7 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_ip_to_ingest_value_temp_ip_25ce7757
           field: _ingest._value.ip
           target_field: _ingest._value._temp_.ip
           type: ip
@@ -301,6 +307,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_related_ip_2aaad7c5
           field: related.ip
           value: '{{{_ingest._value._temp_.ip}}}'
           allow_duplicates: false
@@ -312,6 +319,7 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_timems_to_ingest_value_timems_2777b521
           field: _ingest._value.timems
           target_field: _ingest._value.timems
           formats:
@@ -320,6 +328,7 @@ processors:
             - 'MMM dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_timems_b2e98aac
                 field: _ingest._value.timems
                 ignore_missing: true
   - foreach:
@@ -329,6 +338,7 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_time_to_ingest_value_time_1d342eaa
           field: _ingest._value.time
           target_field: _ingest._value.time
           formats:
@@ -338,6 +348,7 @@ processors:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_time_6ef483da
                 field: _ingest._value.time
                 ignore_missing: true
   - foreach:
@@ -347,13 +358,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_sid_35dd6090
           field: _ingest._value.sid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_sid_9b1700b1
                 field: _ingest._value.sid
             - append:
+                tag: append_error_message_6216db23
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -363,6 +377,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_temp_51fed512
           field: _ingest._value._temp_
           ignore_missing: true
   - rename:
@@ -422,13 +437,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_tid_c9ec0fc1
           field: _ingest._value.tid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_tid_f4c300a9
                 field: _ingest._value.tid
             - append:
+                tag: append_error_message_750940e9
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -438,13 +456,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_thid_5c4e3a6f
           field: _ingest._value.thid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_thid_d40973f1
                 field: _ingest._value.thid
             - append:
+                tag: append_error_message_9e5962bb
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -454,13 +475,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_expiry_675b227f
           field: _ingest._value.expiry
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_expiry_4732232a
                 field: _ingest._value.expiry
             - append:
+                tag: append_error_message_c6d407a0
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -470,13 +494,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_restricted_7b1bf73a
           field: _ingest._value.restricted
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_restricted_b7483dc9
                 field: _ingest._value.restricted
             - append:
+                tag: append_error_message_121e49f7
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -486,14 +513,17 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_isReferenced_to_ingest_value_is_referenced_f8877ec4
           field: _ingest._value.isReferenced
           target_field: _ingest._value.is_referenced
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_isReferenced_4624e85b
                 field: _ingest._value.isReferenced
             - append:
+                tag: append_error_message_49acb9b1
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -503,13 +533,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_data_auto_6adef37d
           field: _ingest._value.data.auto
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_data_auto_802c18df
                 field: _ingest._value.data.auto
             - append:
+                tag: append_error_message_167758f2
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -519,13 +552,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_data_color_a5cecb1d
           field: _ingest._value.data.color
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_color_ce53f111
                 field: _ingest._value.color
             - append:
+                tag: append_error_message_d9625e0f
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -535,6 +571,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_isReferenced_3cfed13f
           field: _ingest._value.isReferenced
           ignore_missing: true
   - rename:
@@ -569,6 +606,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
+          tag: rename_ingest_value_techniqueID_to_ingest_value_id_dd92f1ee
           field: _ingest._value.techniqueID
           target_field: _ingest._value.id
           ignore_missing: true
@@ -579,6 +617,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
+          tag: rename_ingest_value_technique_to_ingest_value_name_782f4ef9
           field: _ingest._value.technique
           target_field: _ingest._value.name
           ignore_missing: true
@@ -594,6 +633,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_threat_technique_id_8a940a07
           field: threat.technique.id
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
@@ -605,6 +645,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_threat_technique_name_6445abb7
           field: threat.technique.name
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
@@ -775,6 +816,7 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_defeatID_to_ingest_value_id_d249832d
           field: _ingest._value.defeatID
           target_field: _ingest._value.id
           type: string
@@ -786,6 +828,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_defeatID_cd387df1
           field: _ingest._value.defeatID
           ignore_missing: true
   - foreach:
@@ -795,18 +838,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_7f902101
           field: _ingest._value
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_defeatID_to_ingest_value_id_2712377c
               field: _ingest._value.defeatID
               target_field: _ingest._value.id
               type: string
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_defeatID_2078c314
                     field: _ingest._value.defeatID
                 - append:
+                    tag: append_error_message_62341125
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -816,10 +863,12 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_7a15cbc5
           field: _ingest._value
           ignore_failure: true
           processor:
             remove:
+              tag: remove_ingest_value_defeatID_8aacb88a
               field: _ingest._value.defeatID
               ignore_missing: true
 
@@ -949,7 +998,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_5418b37b
+      tag: script_dynamically_map_model_logic_data_5418b37b
       description: Dynamically map model.logic.data array using model.logic.type field.
       if: ctx.json?.model?.logic?.data instanceof List
       lang: painless
@@ -1212,7 +1261,7 @@ processors:
       copy_from: darktrace.model_breach_alert.score
       ignore_failure: true
   - script:
-      tag: script_93e44b08
+      tag: script_normalize_event_risk_score_93e44b08
       description: Normalize event.risk_score to event.risk_score_norm
       lang: painless
       if: ctx.event?.risk_score != null
@@ -1246,7 +1295,7 @@ processors:
       target_field: darktrace.model_breach_alert.acknowledged
       ignore_missing: true
   - date:
-      tag: date_acknowledged_time
+      tag: date_acknowledged_time_39e1aa92
       field: darktrace.model_breach_alert.acknowledged.time
       target_field: darktrace.model_breach_alert.acknowledged.time
       formats:
@@ -1264,7 +1313,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
-      tag: handle_acknowledged_status
+      tag: handle_acknowledged_status_736d665e
       lang: painless
       source: |
         ctx.darktrace = ctx.darktrace ?: [:];
@@ -1298,13 +1347,13 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_boolean_acknowledged_to_is_acknowledged
+      tag: rename_boolean_acknowledged_to_is_acknowledged_18ed0ade
       if: ctx.darktrace?.model_breach_alert?.acknowledged instanceof boolean
       field: darktrace.model_breach_alert.acknowledged
       target_field: darktrace.model_breach_alert.is_acknowledged
       ignore_failure: true
   - append:
-      tag: append_related_user_acknowledged_username
+      tag: append_related_user_acknowledged_username_3776cab3
       field: related.user
       value: '{{{darktrace.model_breach_alert.acknowledged.username}}}'
       allow_duplicates: false
@@ -1317,13 +1366,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_cbid_2d8da6e6
           field: _ingest._value.cbid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_cbid_dc6a3907
                 field: _ingest._value.cbid
             - append:
+                tag: append_error_message_ed8c360d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1333,13 +1385,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_chid_2f4e24ea
           field: _ingest._value.chid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_chid_22e88779
                 field: _ingest._value.chid
             - append:
+                tag: append_error_message_90936791
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1349,13 +1404,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_cid_93dfd0ba
           field: _ingest._value.cid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_cid_d39249e4
                 field: _ingest._value.cid
             - append:
+                tag: append_error_message_d4cf9106
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1365,17 +1423,20 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_interval_339211bd
           field: _ingest._value.interval
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_interval_c1bf2d09
                 field: _ingest._value.interval
             - append:
+                tag: append_error_message_e5f7624d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_a7a5c9e8
+      tag: script_stringify_logic_data_field_triggeredcomponents_a7a5c9e8
       description: Stringify logic.data field of triggeredComponents array.
       lang: painless
       if: ctx.json?.triggeredComponents instanceof List
@@ -1388,13 +1449,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_metric_mlid_efc9d301
           field: _ingest._value.metric.mlid
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_metric_mlid_2cfc2e3e
                 field: _ingest._value.metric.mlid
             - append:
+                tag: append_error_message_4cf5de7d
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1404,13 +1468,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_size_5fc03181
           field: _ingest._value.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_size_30eef18a
                 field: _ingest._value.size
             - append:
+                tag: append_error_message_c1f131fe
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1420,13 +1487,16 @@ processors:
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_threshold_77657db3
           field: _ingest._value.threshold
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_threshold_20aa1a15
                 field: _ingest._value.threshold
             - append:
+                tag: append_error_message_663739ad
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1436,6 +1506,7 @@ processors:
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_time_to_ingest_value_time_cd3ae92e
           field: _ingest._value.time
           target_field: _ingest._value.time
           formats:
@@ -1444,6 +1515,7 @@ processors:
             - 'MMM dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_time_39746948
                 field: _ingest._value.time
                 ignore_missing: true
   - foreach:
@@ -1453,6 +1525,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_event_start_f40f832f
           field: event.start
           value: '{{{_ingest._value.time}}}'
           allow_duplicates: false
@@ -1464,17 +1537,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_6bd6a899
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_cfid_fbc3d2c2
               field: _ingest._value.cfid
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_cfid_f77c6430
                     field: _ingest._value.cfid
                 - append:
+                    tag: append_error_message_3c558f1d
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1484,10 +1561,12 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_e5d7b1b8
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             rename:
+              tag: rename_ingest_value_comparatorType_to_ingest_value_comparator_type_e8ce42d9
               field: _ingest._value.comparatorType
               target_field: _ingest._value.comparator_type
               ignore_missing: true
@@ -1498,10 +1577,12 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_e4ff3456
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             rename:
+              tag: rename_ingest_value_filterType_to_ingest_value_filter_type_0d97a462
               field: _ingest._value.filterType
               target_field: _ingest._value.filter_type
               ignore_missing: true
@@ -1512,17 +1593,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_46a40c61
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_data_auto_12481a9d
               field: _ingest._value.trigger.tag.data.auto
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_data_auto_9cff7d5d
                     field: _ingest._value.trigger.tag.data.auto
                 - append:
+                    tag: append_error_message_0e4d5bc4
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1532,17 +1617,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_c2ff607c
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_data_color_e6220749
               field: _ingest._value.trigger.tag.data.color
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_data_color_9d441cde
                     field: _ingest._value.trigger.tag.data.color
                 - append:
+                    tag: append_error_message_489e8239
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1552,17 +1641,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_88431a8d
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_expiry_0c677425
               field: _ingest._value.trigger.tag.expiry
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_expiry_e0141e12
                     field: _ingest._value.trigger.tag.expiry
                 - append:
+                    tag: append_error_message_009c7942
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1572,18 +1665,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_76f4be4d
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_isReferenced_to_ingest_value_trigger_tag_is_referenced_03b3243c
               field: _ingest._value.trigger.tag.isReferenced
               target_field: _ingest._value.trigger.tag.is_referenced
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_isReferenced_c183a30f
                     field: _ingest._value.trigger.tag.isReferenced
                 - append:
+                    tag: append_error_message_15141485
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1593,17 +1690,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_59d3d479
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_restricted_9a5f4157
               field: _ingest._value.trigger.tag.restricted
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_restricted_ae0ba74b
                     field: _ingest._value.trigger.tag.restricted
                 - append:
+                    tag: append_error_message_bdbae1e8
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1613,17 +1714,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_a6882b64
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_thid_a539868c
               field: _ingest._value.trigger.tag.thid
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_thid_f4612481
                     field: _ingest._value.trigger.tag.thid
                 - append:
+                    tag: append_error_message_cd636056
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1633,17 +1738,21 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_7f9eaba4
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             convert:
+              tag: convert_ingest_value_trigger_tag_tid_433fafad
               field: _ingest._value.trigger.tag.tid
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_trigger_tag_tid_ba85f2f9
                     field: _ingest._value.trigger.tag.tid
                 - append:
+                    tag: append_error_message_00fc301a
                     field: error.message
                     value: '{{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1653,10 +1762,12 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_triggeredFilters_581476df
           field: _ingest._value.triggeredFilters
           ignore_failure: true
           processor:
             remove:
+              tag: remove_ingest_value_trigger_tag_isReferenced_f6cfbe15
               field: _ingest._value.trigger.tag.isReferenced
               ignore_missing: true
   - foreach:
@@ -1666,6 +1777,7 @@ processors:
       ignore_failure: true
       processor:
         rename:
+          tag: rename_ingest_value_triggeredFilters_to_ingest_value_triggered_filters_c79539e8
           field: _ingest._value.triggeredFilters
           target_field: _ingest._value.triggered_filters
           ignore_missing: true
@@ -1707,12 +1819,13 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_4027d75d
           field:
             - _ingest._value.time
           ignore_missing: true
           ignore_failure: true
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -1731,13 +1844,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

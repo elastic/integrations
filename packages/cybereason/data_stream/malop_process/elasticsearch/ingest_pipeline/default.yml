@@ -3,36 +3,36 @@ description: Pipeline for processing malop_process logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_6a9683d3
       value: ["malware"]
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       value: ["info"]
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_552e65e1
       target_field: json
       if: ctx.event?.original != null
       on_failure:
@@ -42,7 +42,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_to_parse_different_message_object
+      tag: script_to_parse_different_message_object_8d16a44a
       description: Script to parse different(suspicionsmap and evidencemap) message objects.
       if: ctx.json != null
       source: >-
@@ -55,7 +55,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
-      tag: fingerprint_b981ea88
+      tag: fingerprint_to_id_b981ea88
       fields:
         - json.guidString
         - json.simpleValues.malopLastUpdateTime.values
@@ -69,7 +69,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementType
-          tag: rename_elementValues_affectedMachines_elementValues_elementType
+          tag: rename_elementValues_affectedMachines_elementValues_elementType_68136994
           target_field: _ingest._value.element_type
           ignore_missing: true
   - foreach:
@@ -80,15 +80,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasMalops
-          tag: convert_elementValues_affectedMachines_elementValues_hasMalops_to_boolean
+          tag: convert_elementValues_affectedMachines_elementValues_hasMalops_to_boolean_61957e43
           target_field: _ingest._value.has_malops
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasMalops_713db63d
                 field: _ingest._value.hasMalops
                 ignore_missing: true
             - append:
+                tag: append_error_message_e17d536d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -99,15 +101,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasSuspicions
-          tag: convert_elementValues_affectedMachines_elementValues_hasSuspicions_to_boolean
+          tag: convert_elementValues_affectedMachines_elementValues_hasSuspicions_to_boolean_779d94c8
           target_field: _ingest._value.has_suspicions
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasSuspicions_38e17543
                 field: _ingest._value.hasSuspicions
                 ignore_missing: true
             - append:
+                tag: append_error_message_0e919dca
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -118,7 +122,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementValues
-          tag: rename_elementValues_affectedMachines_elementValues_elementValues
+          tag: rename_elementValues_affectedMachines_elementValues_elementValues_6cff9598
           target_field: _ingest._value.object
           ignore_missing: true
   - foreach:
@@ -129,15 +133,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.elementDisplayName.totalValues
-          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_elementDisplayName_totalValues_to_long
+          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_elementDisplayName_totalValues_to_long_3a81edca
           target_field: _ingest._value.simple_values.element_display_name.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_elementDisplayName_totalValues_cdab7262
                 field: _ingest._value.simpleValues.elementDisplayName.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_4db1616a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -148,7 +154,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.elementDisplayName.values
-          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_elementDisplayName_values
+          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_elementDisplayName_values_614844d3
           target_field: _ingest._value.simple_values.element_display_name.values
           ignore_missing: true
   - foreach:
@@ -159,15 +165,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.group.totalValues
-          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_group_totalValues_to_long
+          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_group_totalValues_to_long_a8918f11
           target_field: _ingest._value.simple_values.group.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_group_totalValues_a5cc7e24
                 field: _ingest._value.simpleValues.group.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_c880f9d2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -178,7 +186,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.group.values
-          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_group_values
+          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_group_values_810f11cc
           target_field: _ingest._value.simple_values.group.values
           ignore_missing: true
   - foreach:
@@ -189,15 +197,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.guid.totalValues
-          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_guid_totalValues_to_long
+          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_guid_totalValues_to_long_ba5798cc
           target_field: _ingest._value.simple_values.guid.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_guid_totalValues_2914c2b3
                 field: _ingest._value.simpleValues.guid.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_6f7968cc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -208,7 +218,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.guid.values
-          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_guid_values
+          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_guid_values_6f888a8e
           target_field: _ingest._value.simple_values.guid.values
           ignore_missing: true
   - foreach:
@@ -219,15 +229,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasMalops.totalValues
-          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasMalops_totalValues_to_long
+          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasMalops_totalValues_to_long_88e8b50e
           target_field: _ingest._value.simple_values.has_malops.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasMalops_totalValues_ef8f7240
                 field: _ingest._value.simpleValues.hasMalops.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_3b4bc0a9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -237,19 +249,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasMalops_values_448b3145
           field: _ingest._value.simpleValues.hasMalops.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasMalops_values_to_boolean
+              tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasMalops_values_to_boolean_136d5d26
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_13fa5da1
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_25a26b9e
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -260,7 +275,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasMalops.values
-          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_hasMalops_values
+          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_hasMalops_values_0d273afc
           target_field: _ingest._value.simple_values.has_malops.values
           ignore_missing: true
   - foreach:
@@ -271,15 +286,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasSuspicions.totalValues
-          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasSuspicions_totalValues_to_long
+          tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasSuspicions_totalValues_to_long_deedb497
           target_field: _ingest._value.simple_values.has_suspicions.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasSuspicions_totalValues_823cb519
                 field: _ingest._value.simpleValues.hasSuspicions.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_1c660365
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -289,19 +306,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasSuspicions_values_87ae62d7
           field: _ingest._value.simpleValues.hasSuspicions.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasSuspicions_values_to_boolean
+              tag: convert_elementValues_affectedMachines_elementValues_simpleValues_hasSuspicions_values_to_boolean_05a61abd
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_ebf90a33
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_2d0a9d09
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -312,7 +332,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasSuspicions.values
-          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_hasSuspicions_values
+          tag: rename_elementValues_affectedMachines_elementValues_simpleValues_hasSuspicions_values_e5fbce18
           target_field: _ingest._value.simple_values.has_suspicions.values
           ignore_missing: true
   - foreach:
@@ -322,6 +342,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
+          tag: remove_2d62b2bc
           field:
             - _ingest._value.simpleValues.hasSuspicions.totalValues
             - _ingest._value.simpleValues.guid.totalValues
@@ -339,16 +360,16 @@ processors:
           field:
             - _ingest._value.hasMalops
             - _ingest._value.hasSuspicions
-          tag: remove_elementValues_affectedMachines_elementValues
+          tag: remove_elementValues_affectedMachines_elementValues_8d1f1aed
           ignore_missing: true
   - rename:
       field: json.elementValues.affectedMachines.elementValues
-      tag: rename_elementValues_affectedMachines_elementValues
+      tag: rename_elementValues_affectedMachines_elementValues_d63c16d2
       target_field: cybereason.malop_process.element_values.affected_machines.element_values
       ignore_missing: true
   - convert:
       field: json.elementValues.affectedMachines.guessedTotal
-      tag: convert_elementValues_affectedMachines_guessedTotal_to_long
+      tag: convert_elementValues_affectedMachines_guessedTotal_to_long_d57c1e76
       target_field: cybereason.malop_process.element_values.affected_machines.guessed_total
       type: long
       ignore_missing: true
@@ -359,7 +380,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.affectedMachines.totalMalicious
-      tag: convert_elementValues_affectedMachines_totalMalicious_to_long
+      tag: convert_elementValues_affectedMachines_totalMalicious_to_long_7b58d1c1
       target_field: cybereason.malop_process.element_values.affected_machines.total_malicious
       type: long
       ignore_missing: true
@@ -370,7 +391,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.affectedMachines.totalSuspicious
-      tag: convert_elementValues_affectedMachines_totalSuspicious_to_long
+      tag: convert_elementValues_affectedMachines_totalSuspicious_to_long_fe522cd6
       target_field: cybereason.malop_process.element_values.affected_machines.total_suspicious
       type: long
       ignore_missing: true
@@ -381,7 +402,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.affectedMachines.totalValues
-      tag: convert_elementValues_affectedMachines_totalValues_to_long
+      tag: convert_elementValues_affectedMachines_totalValues_to_long_27561f77
       target_field: cybereason.malop_process.element_values.affected_machines.total_values
       type: long
       ignore_missing: true
@@ -398,7 +419,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementType
-          tag: rename_elementValues_affectedUsers_elementValues_elementType
+          tag: rename_elementValues_affectedUsers_elementValues_elementType_18d9441d
           target_field: _ingest._value.element_type
           ignore_missing: true
   - foreach:
@@ -409,15 +430,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasMalops
-          tag: convert_elementValues_affectedUsers_elementValues_hasMalops_to_boolean
+          tag: convert_elementValues_affectedUsers_elementValues_hasMalops_to_boolean_8448e479
           target_field: _ingest._value.has_malops
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasMalops_73128756
                 field: _ingest._value.hasMalops
                 ignore_missing: true
             - append:
+                tag: append_error_message_5410fde9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -428,15 +451,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasSuspicions
-          tag: convert_elementValues_affectedUsers_elementValues_hasSuspicions_to_boolean
+          tag: convert_elementValues_affectedUsers_elementValues_hasSuspicions_to_boolean_899faf5f
           target_field: _ingest._value.has_suspicions
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasSuspicions_dfe83143
                 field: _ingest._value.hasSuspicions
                 ignore_missing: true
             - append:
+                tag: append_error_message_3329472a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -447,7 +472,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementValues
-          tag: rename_elementValues_affectedUsers_elementValues_elementValues
+          tag: rename_elementValues_affectedUsers_elementValues_elementValues_6eac567e
           target_field: _ingest._value.object
           ignore_missing: true
   - foreach:
@@ -458,15 +483,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.elementDisplayName.totalValues
-          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_elementDisplayName_totalValues_to_long
+          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_elementDisplayName_totalValues_to_long_68fa555f
           target_field: _ingest._value.simple_values.element_display_name.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_elementDisplayName_totalValues_2979d7d1
                 field: _ingest._value.simpleValues.elementDisplayName.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_7dcb9250
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -477,7 +504,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.elementDisplayName.values
-          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_elementDisplayName_values
+          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_elementDisplayName_values_94e3e19a
           target_field: _ingest._value.simple_values.element_display_name.values
           ignore_missing: true
   - foreach:
@@ -488,15 +515,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.group.totalValues
-          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_group_totalValues_to_long
+          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_group_totalValues_to_long_89e0fb88
           target_field: _ingest._value.simple_values.group.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_group_totalValues_84004444
                 field: _ingest._value.simpleValues.group.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_72a82618
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -507,7 +536,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.group.values
-          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_group_values
+          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_group_values_1db3cce1
           target_field: _ingest._value.simple_values.group.values
           ignore_missing: true
   - foreach:
@@ -518,15 +547,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.guid.totalValues
-          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_guid_totalValues_to_long
+          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_guid_totalValues_to_long_b575633b
           target_field: _ingest._value.simple_values.guid.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_guid_totalValues_947f46ae
                 field: _ingest._value.simpleValues.guid.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_64ec2904
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -537,7 +568,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.guid.values
-          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_guid_values
+          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_guid_values_92eecb79
           target_field: _ingest._value.simple_values.guid.values
           ignore_missing: true
   - foreach:
@@ -548,15 +579,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasMalops.totalValues
-          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasMalops_totalValues_to_long
+          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasMalops_totalValues_to_long_8937c5ee
           target_field: _ingest._value.simple_values.has_malops.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasMalops_totalValues_03cc6ffd
                 field: _ingest._value.simpleValues.hasMalops.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_d31235e8
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -566,19 +599,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasMalops_values_11bfc7ac
           field: _ingest._value.simpleValues.hasMalops.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasMalops_values_to_boolean
+              tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasMalops_values_to_boolean_46c34960
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_76e36b2d
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_bad0baf7
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -589,7 +625,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasMalops.values
-          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_hasMalops_values
+          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_hasMalops_values_6e9d21fd
           target_field: _ingest._value.simple_values.has_malops.values
           ignore_missing: true
   - foreach:
@@ -600,15 +636,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasSuspicions.totalValues
-          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasSuspicions_totalValues_to_long
+          tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasSuspicions_totalValues_to_long_a2b9712d
           target_field: _ingest._value.simple_values.has_suspicions.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasSuspicions_totalValues_5810d633
                 field: _ingest._value.simpleValues.hasSuspicions.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_f8b8087b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -618,19 +656,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasSuspicions_values_4d8408df
           field: _ingest._value.simpleValues.hasSuspicions.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasSuspicions_values_to_boolean
+              tag: convert_elementValues_affectedUsers_elementValues_simpleValues_hasSuspicions_values_to_boolean_707cf3ae
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_2edd42eb
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_795a8e67
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -641,7 +682,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasSuspicions.values
-          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_hasSuspicions_values
+          tag: rename_elementValues_affectedUsers_elementValues_simpleValues_hasSuspicions_values_9b37188c
           target_field: _ingest._value.simple_values.has_suspicions.values
           ignore_missing: true
   - foreach:
@@ -651,7 +692,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_elementValues_affectedUsers_elementValues_totalValues_field
+          tag: remove_elementValues_affectedUsers_elementValues_totalValues_field_6a45f707
           field:
             - _ingest._value.simpleValues.hasSuspicions.totalValues
             - _ingest._value.simpleValues.guid.totalValues
@@ -669,16 +710,16 @@ processors:
           field:
             - _ingest._value.hasMalops
             - _ingest._value.hasSuspicions
-          tag: remove_elementValues_affectedUsers_elementValues
+          tag: remove_elementValues_affectedUsers_elementValues_30489d04
           ignore_missing: true
   - rename:
       field: json.elementValues.affectedUsers.elementValues
-      tag: rename_elementValues_affectedUsers_elementValues
+      tag: rename_elementValues_affectedUsers_elementValues_dddc71cf
       target_field: cybereason.malop_process.element_values.affected_users.element_values
       ignore_missing: true
   - convert:
       field: json.elementValues.affectedUsers.guessedTotal
-      tag: convert_elementValues_affectedUsers_guessedTotal_to_long
+      tag: convert_elementValues_affectedUsers_guessedTotal_to_long_01b48c38
       target_field: cybereason.malop_process.element_values.affected_users.guessed_total
       type: long
       ignore_missing: true
@@ -689,7 +730,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.affectedUsers.totalMalicious
-      tag: convert_elementValues_affectedUsers_totalMalicious_to_long
+      tag: convert_elementValues_affectedUsers_totalMalicious_to_long_2aec7ee9
       target_field: cybereason.malop_process.element_values.affected_users.total_malicious
       type: long
       ignore_missing: true
@@ -700,7 +741,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.affectedUsers.totalSuspicious
-      tag: convert_elementValues_affectedUsers_totalSuspicious_to_long
+      tag: convert_elementValues_affectedUsers_totalSuspicious_to_long_99abad7b
       target_field: cybereason.malop_process.element_values.affected_users.total_suspicious
       type: long
       ignore_missing: true
@@ -711,7 +752,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.affectedUsers.totalValues
-      tag: convert_elementValues_affectedUsers_totalValues_to_long
+      tag: convert_elementValues_affectedUsers_totalValues_to_long_038c0014
       target_field: cybereason.malop_process.element_values.affected_users.total_values
       type: long
       ignore_missing: true
@@ -728,7 +769,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementType
-          tag: rename_elementValues_filesToRemediate_elementValues_elementType
+          tag: rename_elementValues_filesToRemediate_elementValues_elementType_ed8cdf2e
           target_field: _ingest._value.element_type
           ignore_missing: true
   - foreach:
@@ -739,15 +780,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasMalops
-          tag: convert_elementValues_filesToRemediate_elementValues_hasMalops_to_boolean
+          tag: convert_elementValues_filesToRemediate_elementValues_hasMalops_to_boolean_3cdfc490
           target_field: _ingest._value.has_malops
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasMalops_36654de1
                 field: _ingest._value.hasMalops
                 ignore_missing: true
             - append:
+                tag: append_error_message_e375f91e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -758,15 +801,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasSuspicions
-          tag: convert_elementValues_filesToRemediate_elementValues_hasSuspicions_to_boolean
+          tag: convert_elementValues_filesToRemediate_elementValues_hasSuspicions_to_boolean_bc080754
           target_field: _ingest._value.has_suspicions
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasSuspicions_7b0c5edc
                 field: _ingest._value.hasSuspicions
                 ignore_missing: true
             - append:
+                tag: append_error_message_234b1f06
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -777,7 +822,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementValues
-          tag: rename_elementValues_filesToRemediate_elementValues_elementValues
+          tag: rename_elementValues_filesToRemediate_elementValues_elementValues_55a4c4fa
           target_field: _ingest._value.object
           ignore_missing: true
   - foreach:
@@ -788,15 +833,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.elementDisplayName.totalValues
-          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_elementDisplayName_totalValues_to_long
+          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_elementDisplayName_totalValues_to_long_a75641ee
           target_field: _ingest._value.simple_values.element_display_name.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_elementDisplayName_totalValues_ead2acb7
                 field: _ingest._value.simpleValues.elementDisplayName.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_58f11b81
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -807,7 +854,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.elementDisplayName.values
-          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_elementDisplayName_values
+          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_elementDisplayName_values_45e9fb43
           target_field: _ingest._value.simple_values.element_display_name.values
           ignore_missing: true
   - foreach:
@@ -818,15 +865,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.group.totalValues
-          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_group_totalValues_to_long
+          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_group_totalValues_to_long_7620516a
           target_field: _ingest._value.simple_values.group.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_group_totalValues_0da30347
                 field: _ingest._value.simpleValues.group.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_9f8fae19
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -837,7 +886,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.group.values
-          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_group_values
+          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_group_values_6de63a83
           target_field: _ingest._value.simple_values.group.values
           ignore_missing: true
   - foreach:
@@ -848,15 +897,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.guid.totalValues
-          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_guid_totalValues_to_long
+          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_guid_totalValues_to_long_5533e52a
           target_field: _ingest._value.simple_values.guid.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_guid_totalValues_e7b86d84
                 field: _ingest._value.simpleValues.guid.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_be2c2843
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -867,7 +918,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.guid.values
-          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_guid_values
+          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_guid_values_887b2c82
           target_field: _ingest._value.simple_values.guid.values
           ignore_missing: true
   - foreach:
@@ -878,15 +929,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasMalops.totalValues
-          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasMalops_totalValues_to_long
+          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasMalops_totalValues_to_long_741916f0
           target_field: _ingest._value.simple_values.has_malops.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasMalops_totalValues_f5872ff8
                 field: _ingest._value.simpleValues.hasMalops.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_073a0f4f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -896,19 +949,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasMalops_values_5be9538e
           field: _ingest._value.simpleValues.hasMalops.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasMalops_values_to_boolean
+              tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasMalops_values_to_boolean_7c90d137
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_a748c2aa
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_374f0a76
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -919,7 +975,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasMalops.values
-          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_hasMalops_values
+          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_hasMalops_values_d5d9412d
           target_field: _ingest._value.simple_values.has_malops.values
           ignore_missing: true
   - foreach:
@@ -930,15 +986,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasSuspicions.totalValues
-          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasSuspicions_totalValues_to_long
+          tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasSuspicions_totalValues_to_long_6c44a52c
           target_field: _ingest._value.simple_values.has_suspicions.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasSuspicions_totalValues_b9ddb977
                 field: _ingest._value.simpleValues.hasSuspicions.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_0906a16d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -948,19 +1006,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasSuspicions_values_b955c4d1
           field: _ingest._value.simpleValues.hasSuspicions.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasSuspicions_values_to_boolean
+              tag: convert_elementValues_filesToRemediate_elementValues_simpleValues_hasSuspicions_values_to_boolean_29e2973a
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_02df3a1f
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_100d6b14
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -970,7 +1031,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_elementValues_filesToRemediate_elementValues_totalValues_field
+          tag: remove_elementValues_filesToRemediate_elementValues_totalValues_field_3f7f13f6
           field:
             - _ingest._value.simpleValues.hasSuspicions.totalValues
             - _ingest._value.simpleValues.guid.totalValues
@@ -986,7 +1047,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasSuspicions.values
-          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_hasSuspicions_values
+          tag: rename_elementValues_filesToRemediate_elementValues_simpleValues_hasSuspicions_values_3988816f
           target_field: _ingest._value.simple_values.has_suspicions.values
           ignore_missing: true
   - foreach:
@@ -999,16 +1060,16 @@ processors:
           field:
             - _ingest._value.hasMalops
             - _ingest._value.hasSuspicions
-          tag: remove_elementValues_filesToRemediate_elementValues
+          tag: remove_elementValues_filesToRemediate_elementValues_cd94a8f5
           ignore_missing: true
   - rename:
       field: json.elementValues.filesToRemediate.elementValues
-      tag: rename_elementValues_filesToRemediate_elementValues
+      tag: rename_elementValues_filesToRemediate_elementValues_0022d3c9
       target_field: cybereason.malop_process.element_values.files_to_remediate.element_values
       ignore_missing: true
   - convert:
       field: json.elementValues.filesToRemediate.guessedTotal
-      tag: convert_elementValues_filesToRemediate_guessedTotal_to_long
+      tag: convert_elementValues_filesToRemediate_guessedTotal_to_long_e1edcc9d
       target_field: cybereason.malop_process.element_values.files_to_remediate.guessed_total
       type: long
       ignore_missing: true
@@ -1019,7 +1080,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.filesToRemediate.totalMalicious
-      tag: convert_elementValues_filesToRemediate_totalMalicious_to_long
+      tag: convert_elementValues_filesToRemediate_totalMalicious_to_long_3654851f
       target_field: cybereason.malop_process.element_values.files_to_remediate.total_malicious
       type: long
       ignore_missing: true
@@ -1030,7 +1091,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.filesToRemediate.totalSuspicious
-      tag: convert_elementValues_filesToRemediate_totalSuspicious_to_long
+      tag: convert_elementValues_filesToRemediate_totalSuspicious_to_long_27831861
       target_field: cybereason.malop_process.element_values.files_to_remediate.total_suspicious
       type: long
       ignore_missing: true
@@ -1041,7 +1102,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.filesToRemediate.totalValues
-      tag: convert_elementValues_filesToRemediate_totalValues_to_long
+      tag: convert_elementValues_filesToRemediate_totalValues_to_long_d99a9b4a
       target_field: cybereason.malop_process.element_values.files_to_remediate.total_values
       type: long
       ignore_missing: true
@@ -1058,7 +1119,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementType
-          tag: rename_elementValues_primaryRootCauseElements_elementValues_elementType
+          tag: rename_elementValues_primaryRootCauseElements_elementValues_elementType_ee27ea0b
           target_field: _ingest._value.element_type
           ignore_missing: true
   - foreach:
@@ -1069,15 +1130,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasMalops
-          tag: convert_elementValues_primaryRootCauseElements_elementValues_hasMalops_to_boolean
+          tag: convert_elementValues_primaryRootCauseElements_elementValues_hasMalops_to_boolean_9eebc296
           target_field: _ingest._value.has_malops
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasMalops_9cdd2580
                 field: _ingest._value.hasMalops
                 ignore_missing: true
             - append:
+                tag: append_error_message_57dc64f0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1088,15 +1151,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasSuspicions
-          tag: convert_elementValues_primaryRootCauseElements_elementValues_hasSuspicions_to_boolean
+          tag: convert_elementValues_primaryRootCauseElements_elementValues_hasSuspicions_to_boolean_f7fee1cc
           target_field: _ingest._value.has_suspicions
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasSuspicions_c6ab800d
                 field: _ingest._value.hasSuspicions
                 ignore_missing: true
             - append:
+                tag: append_error_message_9c5b1f74
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1109,7 +1174,7 @@ processors:
           field:
             - _ingest._value.hasMalops
             - _ingest._value.hasSuspicions
-          tag: remove_elementValues_primaryRootCauseElements_elementValues
+          tag: remove_elementValues_primaryRootCauseElements_elementValues_e88ff684
           ignore_missing: true
   - foreach:
       tag: foreach_json_elementValues_primaryRootCauseElements_elementValues_ba1845bc
@@ -1119,7 +1184,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementValues
-          tag: rename_elementValues_primaryRootCauseElements_elementValues_elementValues
+          tag: rename_elementValues_primaryRootCauseElements_elementValues_elementValues_b99628fd
           target_field: _ingest._value.object
           ignore_missing: true
   - foreach:
@@ -1130,15 +1195,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.elementDisplayName.totalValues
-          tag: convert_elementValues_primaryRootCauseElements_elementValues_simpleValues_elementDisplayName_totalValues_to_long
+          tag: convert_elementValues_primaryRootCauseElements_elementValues_simpleValues_elementDisplayName_totalValues_to_long_d3465965
           target_field: _ingest._value.simple_values.element_display_name.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_elementDisplayName_totalValues_4d6cdb37
                 field: _ingest._value.simpleValues.elementDisplayName.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_8cdeeab2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1149,7 +1216,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.elementDisplayName.values
-          tag: rename_elementValues_primaryRootCauseElements_elementValues_simpleValues_elementDisplayName_values
+          tag: rename_elementValues_primaryRootCauseElements_elementValues_simpleValues_elementDisplayName_values_4dfb0690
           target_field: _ingest._value.simple_values.element_display_name.values
           ignore_missing: true
   - foreach:
@@ -1160,15 +1227,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.group.totalValues
-          tag: convert_elementValues_primaryRootCauseElements_elementValues_simpleValues_group_totalValues_to_long
+          tag: convert_elementValues_primaryRootCauseElements_elementValues_simpleValues_group_totalValues_to_long_8b076cf8
           target_field: _ingest._value.simple_values.group.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_group_totalValues_4673127a
                 field: _ingest._value.simpleValues.group.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_159f30cb
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1179,7 +1248,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.group.values
-          tag: rename_elementValues_primaryRootCauseElements_elementValues_simpleValues_group_values
+          tag: rename_elementValues_primaryRootCauseElements_elementValues_simpleValues_group_values_ca3e9a5a
           target_field: _ingest._value.simple_values.group.values
           ignore_missing: true
   - foreach:
@@ -1190,15 +1259,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.guid.totalValues
-          tag: convert_elementValues_primaryRootCauseElements_elementValues_simpleValues_guid_totalValues_to_long
+          tag: convert_elementValues_primaryRootCauseElements_elementValues_simpleValues_guid_totalValues_to_long_06aeba3c
           target_field: _ingest._value.simple_values.guid.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_guid_totalValues_a2b3f0d7
                 field: _ingest._value.simpleValues.guid.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_eb036382
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1209,7 +1280,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.guid.values
-          tag: rename_elementValues_primaryRootCauseElements_elementValues_simpleValues_guid_values
+          tag: rename_elementValues_primaryRootCauseElements_elementValues_simpleValues_guid_values_62a99d2e
           target_field: _ingest._value.simple_values.guid.values
           ignore_missing: true
   - foreach:
@@ -1219,7 +1290,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_elementValues_primaryRootCauseElements_elementValues_totalValues_field
+          tag: remove_elementValues_primaryRootCauseElements_elementValues_totalValues_field_1d3e9c2a
           field:
             - _ingest._value.simpleValues.guid.totalValues
             - _ingest._value.simpleValues.elementDisplayName.totalValues
@@ -1227,12 +1298,12 @@ processors:
           ignore_missing: true
   - rename:
       field: json.elementValues.primaryRootCauseElements.elementValues
-      tag: rename_elementValues_primaryRootCauseElements_elementValues
+      tag: rename_elementValues_primaryRootCauseElements_elementValues_bcd8f4c4
       target_field: cybereason.malop_process.element_values.primary_root_cause_elements.element_values
       ignore_missing: true
   - convert:
       field: json.elementValues.primaryRootCauseElements.guessedTotal
-      tag: convert_elementValues_primaryRootCauseElements_guessedTotal_to_long
+      tag: convert_elementValues_primaryRootCauseElements_guessedTotal_to_long_d2771e07
       target_field: cybereason.malop_process.element_values.primary_root_cause_elements.guessed_total
       type: long
       ignore_missing: true
@@ -1243,7 +1314,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.primaryRootCauseElements.totalMalicious
-      tag: convert_elementValues_primaryRootCauseElements_totalMalicious_to_long
+      tag: convert_elementValues_primaryRootCauseElements_totalMalicious_to_long_c3b9c214
       target_field: cybereason.malop_process.element_values.primary_root_cause_elements.total_malicious
       type: long
       ignore_missing: true
@@ -1254,7 +1325,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.primaryRootCauseElements.totalSuspicious
-      tag: convert_elementValues_primaryRootCauseElements_totalSuspicious_to_long
+      tag: convert_elementValues_primaryRootCauseElements_totalSuspicious_to_long_c2aa1dfd
       target_field: cybereason.malop_process.element_values.primary_root_cause_elements.total_suspicious
       type: long
       ignore_missing: true
@@ -1265,7 +1336,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.primaryRootCauseElements.totalValues
-      tag: convert_elementValues_primaryRootCauseElements_totalValues_to_long
+      tag: convert_elementValues_primaryRootCauseElements_totalValues_to_long_44e85801
       target_field: cybereason.malop_process.element_values.primary_root_cause_elements.total_values
       type: long
       ignore_missing: true
@@ -1282,7 +1353,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementType
-          tag: rename_elementValues_rootCauseElements_elementValues_elementType
+          tag: rename_elementValues_rootCauseElements_elementValues_elementType_11660b4f
           target_field: _ingest._value.element_type
           ignore_missing: true
   - foreach:
@@ -1293,15 +1364,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasMalops
-          tag: convert_elementValues_rootCauseElements_elementValues_hasMalops_to_boolean
+          tag: convert_elementValues_rootCauseElements_elementValues_hasMalops_to_boolean_fe38f3f9
           target_field: _ingest._value.has_malops
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasMalops_387d4feb
                 field: _ingest._value.hasMalops
                 ignore_missing: true
             - append:
+                tag: append_error_message_73ffde06
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1312,15 +1385,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasSuspicions
-          tag: convert_elementValues_rootCauseElements_elementValues_hasSuspicions_to_boolean
+          tag: convert_elementValues_rootCauseElements_elementValues_hasSuspicions_to_boolean_402a7801
           target_field: _ingest._value.has_suspicions
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasSuspicions_6a08f51d
                 field: _ingest._value.hasSuspicions
                 ignore_missing: true
             - append:
+                tag: append_error_message_33aeb938
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1331,7 +1406,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementValues
-          tag: rename_elementValues_rootCauseElements_elementValues_elementValues
+          tag: rename_elementValues_rootCauseElements_elementValues_elementValues_864e98b4
           target_field: _ingest._value.object
           ignore_missing: true
   - foreach:
@@ -1342,15 +1417,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.elementDisplayName.totalValues
-          tag: convert_elementValues_rootCauseElements_elementValues_simpleValues_elementDisplayName_totalValues_to_long
+          tag: convert_elementValues_rootCauseElements_elementValues_simpleValues_elementDisplayName_totalValues_to_long_f5c89871
           target_field: _ingest._value.simple_values.element_display_name.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_elementDisplayName_totalValues_440b75e4
                 field: _ingest._value.simpleValues.elementDisplayName.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_8a7ecebb
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1361,7 +1438,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.elementDisplayName.values
-          tag: rename_elementValues_rootCauseElements_elementValues_simpleValues_elementDisplayName_values
+          tag: rename_elementValues_rootCauseElements_elementValues_simpleValues_elementDisplayName_values_eb7a511e
           target_field: _ingest._value.simple_values.element_display_name.values
           ignore_missing: true
   - foreach:
@@ -1372,15 +1449,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.group.totalValues
-          tag: convert_elementValues_rootCauseElements_elementValues_simpleValues_group_totalValues_to_long
+          tag: convert_elementValues_rootCauseElements_elementValues_simpleValues_group_totalValues_to_long_27e2f097
           target_field: _ingest._value.simple_values.group.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_group_totalValues_668689de
                 field: _ingest._value.simpleValues.group.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_fc17e35a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1391,7 +1470,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.group.values
-          tag: rename_elementValues_rootCauseElements_elementValues_simpleValues_group_values
+          tag: rename_elementValues_rootCauseElements_elementValues_simpleValues_group_values_d5aecf54
           target_field: _ingest._value.simple_values.group.values
           ignore_missing: true
   - foreach:
@@ -1402,15 +1481,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.guid.totalValues
-          tag: convert_elementValues_rootCauseElements_elementValues_simpleValues_guid_totalValues_to_long
+          tag: convert_elementValues_rootCauseElements_elementValues_simpleValues_guid_totalValues_to_long_800af2ea
           target_field: _ingest._value.simple_values.guid.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_guid_totalValues_dda8a6eb
                 field: _ingest._value.simpleValues.guid.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_6a591434
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1420,7 +1501,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_elementValues_rootCauseElements_elementValues_totalValues_field
+          tag: remove_elementValues_rootCauseElements_elementValues_totalValues_field_76826931
           field:
             - _ingest._value.simpleValues.guid.totalValues
             - _ingest._value.simpleValues.elementDisplayName.totalValues
@@ -1434,7 +1515,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.guid.values
-          tag: rename_elementValues_rootCauseElements_elementValues_simpleValues_guid_values
+          tag: rename_elementValues_rootCauseElements_elementValues_simpleValues_guid_values_34fff176
           target_field: _ingest._value.simple_values.guid.values
           ignore_missing: true
   - foreach:
@@ -1447,16 +1528,16 @@ processors:
           field:
             - _ingest._value.hasMalops
             - _ingest._value.hasSuspicions
-          tag: remove_elementValues_rootCauseElements_elementValues
+          tag: remove_elementValues_rootCauseElements_elementValues_57739f07
           ignore_missing: true
   - rename:
       field: json.elementValues.rootCauseElements.elementValues
-      tag: rename_elementValues_rootCauseElements_elementValues
+      tag: rename_elementValues_rootCauseElements_elementValues_3acae179
       target_field: cybereason.malop_process.element_values.root_cause_elements.element_values
       ignore_missing: true
   - convert:
       field: json.elementValues.rootCauseElements.guessedTotal
-      tag: convert_elementValues_rootCauseElements_guessedTotal_to_long
+      tag: convert_elementValues_rootCauseElements_guessedTotal_to_long_e71ea991
       target_field: cybereason.malop_process.element_values.root_cause_elements.guessed_total
       type: long
       ignore_missing: true
@@ -1467,7 +1548,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.rootCauseElements.totalMalicious
-      tag: convert_elementValues_rootCauseElements_totalMalicious_to_long
+      tag: convert_elementValues_rootCauseElements_totalMalicious_to_long_59e3080a
       target_field: cybereason.malop_process.element_values.root_cause_elements.total_malicious
       type: long
       ignore_missing: true
@@ -1478,7 +1559,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.rootCauseElements.totalSuspicious
-      tag: convert_elementValues_rootCauseElements_totalSuspicious_to_long
+      tag: convert_elementValues_rootCauseElements_totalSuspicious_to_long_8af22d2c
       target_field: cybereason.malop_process.element_values.root_cause_elements.total_suspicious
       type: long
       ignore_missing: true
@@ -1489,7 +1570,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.rootCauseElements.totalValues
-      tag: convert_elementValues_rootCauseElements_totalValues_to_long
+      tag: convert_elementValues_rootCauseElements_totalValues_to_long_64485c01
       target_field: cybereason.malop_process.element_values.root_cause_elements.total_values
       type: long
       ignore_missing: true
@@ -1506,7 +1587,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementType
-          tag: rename_elementValues_suspects_elementValues_elementType
+          tag: rename_elementValues_suspects_elementValues_elementType_743887d0
           target_field: _ingest._value.element_type
           ignore_missing: true
   - foreach:
@@ -1517,15 +1598,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasMalops
-          tag: convert_elementValues_suspects_elementValues_hasMalops_to_boolean
+          tag: convert_elementValues_suspects_elementValues_hasMalops_to_boolean_c8fabd53
           target_field: _ingest._value.has_malops
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasMalops_e00ee8ab
                 field: _ingest._value.hasMalops
                 ignore_missing: true
             - append:
+                tag: append_error_message_c48d4ac1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1536,15 +1619,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.hasSuspicions
-          tag: convert_elementValues_suspects_elementValues_hasSuspicions_to_boolean
+          tag: convert_elementValues_suspects_elementValues_hasSuspicions_to_boolean_17ebbb9e
           target_field: _ingest._value.has_suspicions
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hasSuspicions_611d5f00
                 field: _ingest._value.hasSuspicions
                 ignore_missing: true
             - append:
+                tag: append_error_message_154cbeea
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1555,7 +1640,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.elementValues
-          tag: rename_elementValues_suspects_elementValues_elementValues
+          tag: rename_elementValues_suspects_elementValues_elementValues_6d9034d7
           target_field: _ingest._value.object
           ignore_missing: true
   - foreach:
@@ -1566,15 +1651,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.elementDisplayName.totalValues
-          tag: convert_elementValues_suspects_elementValues_simpleValues_elementDisplayName_totalValues_to_long
+          tag: convert_elementValues_suspects_elementValues_simpleValues_elementDisplayName_totalValues_to_long_622641ed
           target_field: _ingest._value.simple_values.element_display_name.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_elementDisplayName_totalValues_78e4dcad
                 field: _ingest._value.simpleValues.elementDisplayName.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_31c4f8a6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1585,7 +1672,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.elementDisplayName.values
-          tag: rename_elementValues_suspects_elementValues_simpleValues_elementDisplayName_values
+          tag: rename_elementValues_suspects_elementValues_simpleValues_elementDisplayName_values_4fc7b52f
           target_field: _ingest._value.simple_values.element_display_name.values
           ignore_missing: true
   - foreach:
@@ -1596,15 +1683,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.group.totalValues
-          tag: convert_elementValues_suspects_elementValues_simpleValues_group_totalValues_to_long
+          tag: convert_elementValues_suspects_elementValues_simpleValues_group_totalValues_to_long_2a600bac
           target_field: _ingest._value.simple_values.group.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_group_totalValues_81db6ea1
                 field: _ingest._value.simpleValues.group.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_e0386e65
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1615,7 +1704,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.group.values
-          tag: rename_elementValues_suspects_elementValues_simpleValues_group_values
+          tag: rename_elementValues_suspects_elementValues_simpleValues_group_values_3c904893
           target_field: _ingest._value.simple_values.group.values
           ignore_missing: true
   - foreach:
@@ -1626,15 +1715,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.guid.totalValues
-          tag: convert_elementValues_suspects_elementValues_simpleValues_guid_totalValues_to_long
+          tag: convert_elementValues_suspects_elementValues_simpleValues_guid_totalValues_to_long_acd24789
           target_field: _ingest._value.simple_values.guid.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_guid_totalValues_a8310186
                 field: _ingest._value.simpleValues.guid.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_a278deeb
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1645,7 +1736,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.guid.values
-          tag: rename_elementValues_suspects_elementValues_simpleValues_guid_values
+          tag: rename_elementValues_suspects_elementValues_simpleValues_guid_values_ad619677
           target_field: _ingest._value.simple_values.guid.values
           ignore_missing: true
   - foreach:
@@ -1656,15 +1747,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasMalops.totalValues
-          tag: convert_elementValues_suspects_elementValues_simpleValues_hasMalops_totalValues_to_long
+          tag: convert_elementValues_suspects_elementValues_simpleValues_hasMalops_totalValues_to_long_7b4bb2df
           target_field: _ingest._value.simple_values.has_malops.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasMalops_totalValues_d89bc080
                 field: _ingest._value.simpleValues.hasMalops.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_22d62c0e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1674,19 +1767,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasMalops_values_262d59d6
           field: _ingest._value.simpleValues.hasMalops.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_suspects_elementValues_simpleValues_hasMalops_values_to_boolean
+              tag: convert_elementValues_suspects_elementValues_simpleValues_hasMalops_values_to_boolean_b68a9643
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_0bd2b2be
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_710b6d53
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1697,7 +1793,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasMalops.values
-          tag: rename_elementValues_suspects_elementValues_simpleValues_hasMalops_values
+          tag: rename_elementValues_suspects_elementValues_simpleValues_hasMalops_values_09623187
           target_field: _ingest._value.simple_values.has_malops.values
           ignore_missing: true
   - foreach:
@@ -1708,15 +1804,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.simpleValues.hasSuspicions.totalValues
-          tag: convert_elementValues_suspects_elementValues_simpleValues_hasSuspicions_totalValues_to_long
+          tag: convert_elementValues_suspects_elementValues_simpleValues_hasSuspicions_totalValues_to_long_fea5cc13
           target_field: _ingest._value.simple_values.has_suspicions.total_values
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_simpleValues_hasSuspicions_totalValues_11730345
                 field: _ingest._value.simpleValues.hasSuspicions.totalValues
                 ignore_missing: true
             - append:
+                tag: append_error_message_c35c6733
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1726,19 +1824,22 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_simpleValues_hasSuspicions_values_96a9bc25
           field: _ingest._value.simpleValues.hasSuspicions.values
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_elementValues_suspects_elementValues_simpleValues_hasSuspicions_values_to_boolean
+              tag: convert_elementValues_suspects_elementValues_simpleValues_hasSuspicions_values_to_boolean_cb5b96f5
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_3d248b28
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_288e2317
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1748,7 +1849,7 @@ processors:
       ignore_failure: true
       processor:
         remove:
-          tag: remove_elementValues_suspects_elementValues_totalValues_field
+          tag: remove_elementValues_suspects_elementValues_totalValues_field_a461324d
           field:
             - _ingest._value.simpleValues.hasSuspicions.totalValues
             - _ingest._value.simpleValues.guid.totalValues
@@ -1764,7 +1865,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.simpleValues.hasSuspicions.values
-          tag: rename_elementValues_suspects_elementValues_simpleValues_hasSuspicions_values
+          tag: rename_elementValues_suspects_elementValues_simpleValues_hasSuspicions_values_b83c14e5
           target_field: _ingest._value.simple_values.has_suspicions.values
           ignore_missing: true
   - foreach:
@@ -1777,16 +1878,16 @@ processors:
           field:
             - _ingest._value.hasMalops
             - _ingest._value.hasSuspicions
-          tag: remove_elementValues_suspects_elementValues
+          tag: remove_elementValues_suspects_elementValues_a4ef8931
           ignore_missing: true
   - rename:
       field: json.elementValues.suspects.elementValues
-      tag: rename_elementValues_suspects_elementValues
+      tag: rename_elementValues_suspects_elementValues_1a2a559f
       target_field: cybereason.malop_process.element_values.suspects.element_values
       ignore_missing: true
   - convert:
       field: json.elementValues.suspects.guessedTotal
-      tag: convert_elementValues_suspects_guessedTotal_to_long
+      tag: convert_elementValues_suspects_guessedTotal_to_long_9b04270a
       target_field: cybereason.malop_process.element_values.suspects.guessedTotal
       type: long
       ignore_missing: true
@@ -1797,7 +1898,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.suspects.totalMalicious
-      tag: convert_elementValues_suspects_totalMalicious_to_long
+      tag: convert_elementValues_suspects_totalMalicious_to_long_c228daec
       target_field: cybereason.malop_process.element_values.suspects.total_malicious
       type: long
       ignore_missing: true
@@ -1808,7 +1909,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.suspects.totalSuspicious
-      tag: convert_elementValues_suspects_totalSuspicious_to_long
+      tag: convert_elementValues_suspects_totalSuspicious_to_long_aea2ae09
       target_field: cybereason.malop_process.element_values.suspects.total_suspicious
       type: long
       ignore_missing: true
@@ -1819,7 +1920,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.elementValues.suspects.totalValues
-      tag: convert_elementValues_suspects_totalValues_to_long
+      tag: convert_elementValues_suspects_totalValues_to_long_769fad67
       target_field: cybereason.malop_process.element_values.suspects.total_values
       type: long
       ignore_missing: true
@@ -1830,32 +1931,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: evidenceMap
-      tag: rename_evidenceMap
+      tag: rename_evidenceMap_3344344a
       target_field: cybereason.malop_process.evidence_map
       ignore_missing: true
   - rename:
       field: json.filterData.groupByValue
-      tag: rename_filterData_groupByValue
+      tag: rename_filterData_groupByValue_a9fd37dc
       target_field: cybereason.malop_process.filter_data.group_by_value
       ignore_missing: true
   - rename:
       field: json.filterData.sortInGroupValue
-      tag: rename_filterData_sortInGroupValue
+      tag: rename_filterData_sortInGroupValue_8d2b1a7d
       target_field: cybereason.malop_process.filter_data.sort_in_group_value
       ignore_missing: true
   - rename:
       field: json.guidString
-      tag: rename_guidString
+      tag: rename_guidString_2be2256e
       target_field: cybereason.malop_process.guid_string
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_guidString_into_event_id
+      tag: set_guidString_into_event_id_5012a40f
       copy_from: cybereason.malop_process.guid_string
       ignore_empty_value: true
   - convert:
       field: json.isMalicious
-      tag: convert_isMalicious_to_boolean
+      tag: convert_isMalicious_to_boolean_61dca3d2
       target_field: cybereason.malop_process.is_malicious
       type: boolean
       ignore_missing: true
@@ -1866,12 +1967,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.labelsIds
-      tag: rename_labelsIds
+      tag: rename_labelsIds_7336ed29
       target_field: cybereason.malop_process.labels_ids
       ignore_missing: true
   - convert:
       field: json.malicious
-      tag: convert_malicious_to_boolean
+      tag: convert_malicious_to_boolean_3284cf13
       target_field: cybereason.malop_process.malicious
       type: boolean
       ignore_missing: true
@@ -1882,12 +1983,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.malopPriority
-      tag: rename_malopPriority
+      tag: rename_malopPriority_6ab0f98c
       target_field: cybereason.malop_process.malop_priority
       ignore_missing: true
   - convert:
       field: json.simpleValues.allRansomwareProcessesSuspended.totalValues
-      tag: convert_simpleValues_allRansomwareProcessesSuspended_totalValues_to_long
+      tag: convert_simpleValues_allRansomwareProcessesSuspended_totalValues_to_long_42d0f75a
       target_field: cybereason.malop_process.simple_values.all_ransomware_processes_suspended.total_values
       type: long
       ignore_missing: true
@@ -1904,24 +2005,26 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_allRansomwareProcessesSuspended_values_to_boolean
+          tag: convert_simpleValues_allRansomwareProcessesSuspended_values_to_boolean_52eaf581
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_b06213d3
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_ad42b58a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.allRansomwareProcessesSuspended.values
-      tag: rename_simpleValues_allRansomwareProcessesSuspended_values
+      tag: rename_simpleValues_allRansomwareProcessesSuspended_values_df7af7c6
       target_field: cybereason.malop_process.simple_values.all_ransomware_processes_suspended.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.creationTime.totalValues
-      tag: convert_simpleValues_creationTime_totalValues_to_long
+      tag: convert_simpleValues_creationTime_totalValues_to_long_316f7d3e
       target_field: cybereason.malop_process.simple_values.creation_time.total_values
       type: long
       ignore_missing: true
@@ -1938,12 +2041,13 @@ processors:
       processor:
         date:
           field: _ingest._value
-          tag: date_simpleValues_creationTime_values
+          tag: date_simpleValues_creationTime_values_0c6de4ad
           target_field: _ingest._value
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_6651c814
                 field: _ingest._value
                 ignore_missing: true
   - foreach:
@@ -1954,17 +2058,17 @@ processors:
       processor:
         set:
           field: event.created
-          tag: set_simpleValues_creationTime_values_into_event_created
+          tag: set_simpleValues_creationTime_values_into_event_created_d58d0960
           copy_from: _ingest._value
           ignore_empty_value: true
   - rename:
       field: json.simpleValues.creationTime.values
-      tag: rename_simpleValues_creationTime_values
+      tag: rename_simpleValues_creationTime_values_aa786e05
       target_field: cybereason.malop_process.simple_values.creation_time.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.decisionFeature.totalValues
-      tag: convert_simpleValues_decisionFeature_totalValues_to_long
+      tag: convert_simpleValues_decisionFeature_totalValues_to_long_dc1baea1
       target_field: cybereason.malop_process.simple_values.decision_feature.total_values
       type: long
       ignore_missing: true
@@ -1975,12 +2079,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.decisionFeature.values
-      tag: rename_simpleValues_decisionFeature_values
+      tag: rename_simpleValues_decisionFeature_values_c058c8b9
       target_field: cybereason.malop_process.simple_values.decision_feature.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.decisionFeatureSet.totalValues
-      tag: convert_simpleValues_decisionFeatureSet_totalValues_to_long
+      tag: convert_simpleValues_decisionFeatureSet_totalValues_to_long_e698c482
       target_field: cybereason.malop_process.simple_values.decision_feature_set.total_values
       type: long
       ignore_missing: true
@@ -1991,12 +2095,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.decisionFeatureSet.values
-      tag: rename_simpleValues_decisionFeatureSet_values
+      tag: rename_simpleValues_decisionFeatureSet_values_9ddae06f
       target_field: cybereason.malop_process.simple_values.decision_feature_set.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.detectionType.totalValues
-      tag: convert_simpleValues_detectionType_totalValues_to_long
+      tag: convert_simpleValues_detectionType_totalValues_to_long_ef622aac
       target_field: cybereason.malop_process.simple_values.detection_type.total_values
       type: long
       ignore_missing: true
@@ -2007,12 +2111,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.detectionType.values
-      tag: rename_simpleValues_detectionType_values
+      tag: rename_simpleValues_detectionType_values_6dbda3df
       target_field: cybereason.malop_process.simple_values.detection_type.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.hasRansomwareSuspendedProcesses.totalValues
-      tag: convert_simpleValues_hasRansomwareSuspendedProcesses_totalValues_to_long
+      tag: convert_simpleValues_hasRansomwareSuspendedProcesses_totalValues_to_long_9f7a455d
       target_field: cybereason.malop_process.simple_values.has_ransomware_suspended_processes.total_values
       type: long
       ignore_missing: true
@@ -2029,24 +2133,26 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_hasRansomwareSuspendedProcesses_values_to_boolean
+          tag: convert_simpleValues_hasRansomwareSuspendedProcesses_values_to_boolean_8de58150
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_55ca63f3
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_71f4031a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.hasRansomwareSuspendedProcesses.values
-      tag: rename_simpleValues_hasRansomwareSuspendedProcesses_values
+      tag: rename_simpleValues_hasRansomwareSuspendedProcesses_values_38a35d79
       target_field: cybereason.malop_process.simple_values.has_ransomware_suspended_processes.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.iconBase64.totalValues
-      tag: convert_simpleValues_iconBase64_totalValues_to_long
+      tag: convert_simpleValues_iconBase64_totalValues_to_long_e2400909
       target_field: cybereason.malop_process.simple_values.icon_base64.total_values
       type: long
       ignore_missing: true
@@ -2057,12 +2163,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.iconBase64.values
-      tag: rename_simpleValues_iconBase64_values
+      tag: rename_simpleValues_iconBase64_values_dab83feb
       target_field: cybereason.malop_process.simple_values.icon_base64.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.isBlocked.totalValues
-      tag: convert_simpleValues_isBlocked_totalValues_to_long
+      tag: convert_simpleValues_isBlocked_totalValues_to_long_5ffc5066
       target_field: cybereason.malop_process.simple_values.is_blocked.total_values
       type: long
       ignore_missing: true
@@ -2079,24 +2185,26 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_isBlocked_values_to_boolean
+          tag: convert_simpleValues_isBlocked_values_to_boolean_b95bf5d7
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_5d9d69dd
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_1658d801
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.isBlocked.values
-      tag: rename_simpleValues_isBlocked_values
+      tag: rename_simpleValues_isBlocked_values_a1421d05
       target_field: cybereason.malop_process.simple_values.is_blocked.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.malopActivityTypes.totalValues
-      tag: convert_simpleValues_malopActivityTypes_totalValues_to_long
+      tag: convert_simpleValues_malopActivityTypes_totalValues_to_long_f84a6013
       target_field: cybereason.malop_process.simple_values.malop.activity_types.total_values
       type: long
       ignore_missing: true
@@ -2107,12 +2215,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.malopActivityTypes.values
-      tag: rename_simpleValues_malopActivityTypes_values
+      tag: rename_simpleValues_malopActivityTypes_values_11270a59
       target_field: cybereason.malop_process.simple_values.malop.activity_types.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.malopLastUpdateTime.totalValues
-      tag: convert_simpleValues_malopLastUpdateTime_totalValues_to_long
+      tag: convert_simpleValues_malopLastUpdateTime_totalValues_to_long_84ad5491
       target_field: cybereason.malop_process.simple_values.malop.last_update_time.total_values
       type: long
       ignore_missing: true
@@ -2129,12 +2237,13 @@ processors:
       processor:
         date:
           field: _ingest._value
-          tag: date_simpleValues_malopLastUpdateTime_values
+          tag: date_simpleValues_malopLastUpdateTime_values_915ccad2
           target_field: _ingest._value
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_f430569c
                 field: _ingest._value
                 ignore_missing: true
   - foreach:
@@ -2145,17 +2254,17 @@ processors:
       processor:
         set:
           field: '@timestamp'
-          tag: set_simpleValues_malopLastUpdateTime_values_into_@timestamp
+          tag: set_simpleValues_malopLastUpdateTime_values_into_@timestamp_3f6c4835
           copy_from: _ingest._value
           ignore_empty_value: true
   - rename:
       field: json.simpleValues.malopLastUpdateTime.values
-      tag: rename_simpleValues_malopLastUpdateTime_values
+      tag: rename_simpleValues_malopLastUpdateTime_values_56bde06f
       target_field: cybereason.malop_process.simple_values.malop.last_update_time.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.malopStartTime.totalValues
-      tag: convert_simpleValues_malopStartTime_totalValues_to_long
+      tag: convert_simpleValues_malopStartTime_totalValues_to_long_30cf40b1
       target_field: cybereason.malop_process.simple_values.malop.start_time.total_values
       type: long
       ignore_missing: true
@@ -2172,22 +2281,23 @@ processors:
       processor:
         date:
           field: _ingest._value
-          tag: date_simpleValues_malopStartTime_values
+          tag: date_simpleValues_malopStartTime_values_0d58672f
           target_field: _ingest._value
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_2c7e0518
                 field: _ingest._value
                 ignore_missing: true
   - rename:
       field: json.simpleValues.malopStartTime.values
-      tag: rename_simpleValues_malopStartTime_values
+      tag: rename_simpleValues_malopStartTime_values_fe00c63c
       target_field: cybereason.malop_process.simple_values.malop.start_time.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.rootCauseElementCompanyProduct.totalValues
-      tag: convert_simpleValues_rootCauseElementCompanyProduct_totalValues_to_long
+      tag: convert_simpleValues_rootCauseElementCompanyProduct_totalValues_to_long_a91ce2cc
       target_field: cybereason.malop_process.simple_values.root_cause_element.company_product.total_values
       type: long
       ignore_missing: true
@@ -2198,12 +2308,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.rootCauseElementCompanyProduct.values
-      tag: rename_simpleValues_rootCauseElementCompanyProduct_values
+      tag: rename_simpleValues_rootCauseElementCompanyProduct_values_564f1b7c
       target_field: cybereason.malop_process.simple_values.root_cause_element.company_product.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.rootCauseElementHashes.totalValues
-      tag: convert_simpleValues_rootCauseElementHashes_totalValues_to_long
+      tag: convert_simpleValues_rootCauseElementHashes_totalValues_to_long_5d30958c
       target_field: cybereason.malop_process.simple_values.root_cause_element.hashes.total_values
       type: long
       ignore_missing: true
@@ -2220,17 +2330,17 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_json_simpleValues_rootCauseElementHashes_values_into_related_hash
+          tag: append_json_simpleValues_rootCauseElementHashes_values_into_related_hash_9a0edea6
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.simpleValues.rootCauseElementHashes.values
-      tag: rename_simpleValues_rootCauseElementHashes_values
+      tag: rename_simpleValues_rootCauseElementHashes_values_5706eab2
       target_field: cybereason.malop_process.simple_values.root_cause_element.hashes.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.rootCauseElementNames.totalValues
-      tag: convert_simpleValues_rootCauseElementNames_totalValues_to_long
+      tag: convert_simpleValues_rootCauseElementNames_totalValues_to_long_857d3169
       target_field: cybereason.malop_process.simple_values.root_cause_element.names.total_values
       type: long
       ignore_missing: true
@@ -2241,12 +2351,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.rootCauseElementNames.values
-      tag: rename_simpleValues_rootCauseElementNames_values
+      tag: rename_simpleValues_rootCauseElementNames_values_efddd3bd
       target_field: cybereason.malop_process.simple_values.root_cause_element.names.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.rootCauseElementTypes.totalValues
-      tag: convert_simpleValues_rootCauseElementTypes_totalValues_to_long
+      tag: convert_simpleValues_rootCauseElementTypes_totalValues_to_long_da3e1a93
       target_field: cybereason.malop_process.simple_values.root_cause_element.types.total_values
       type: long
       ignore_missing: true
@@ -2257,12 +2367,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.rootCauseElementTypes.values
-      tag: rename_simpleValues_rootCauseElementTypes_values
+      tag: rename_simpleValues_rootCauseElementTypes_values_7863bd82
       target_field: cybereason.malop_process.simple_values.root_cause_element.types.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.totalNumberOfIncomingConnections.totalValues
-      tag: convert_simpleValues_totalNumberOfIncomingConnections_totalValues_to_long
+      tag: convert_simpleValues_totalNumberOfIncomingConnections_totalValues_to_long_ab6ae76c
       target_field: cybereason.malop_process.simple_values.total.number_of.incoming_connections.total_values
       type: long
       ignore_missing: true
@@ -2279,24 +2389,26 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_totalNumberOfIncomingConnections_values_to_long
+          tag: convert_simpleValues_totalNumberOfIncomingConnections_values_to_long_fe099036
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_211a3849
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_98f4a213
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.totalNumberOfIncomingConnections.values
-      tag: rename_simpleValues_totalNumberOfIncomingConnections_values
+      tag: rename_simpleValues_totalNumberOfIncomingConnections_values_888a5fee
       target_field: cybereason.malop_process.simple_values.total.number_of.incoming_connections.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.totalNumberOfOutgoingConnections.totalValues
-      tag: convert_simpleValues_totalNumberOfOutgoingConnections_totalValues_to_long
+      tag: convert_simpleValues_totalNumberOfOutgoingConnections_totalValues_to_long_7abdadc1
       target_field: cybereason.malop_process.simple_values.total.number_of.outgoing_connections.total_values
       type: long
       ignore_missing: true
@@ -2313,24 +2425,26 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_totalNumberOfOutgoingConnections_values_to_long
+          tag: convert_simpleValues_totalNumberOfOutgoingConnections_values_to_long_16f56b1d
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_0b7016d6
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_087a702e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.simpleValues.totalNumberOfOutgoingConnections.values
-      tag: rename_simpleValues_totalNumberOfOutgoingConnections_values
+      tag: rename_simpleValues_totalNumberOfOutgoingConnections_values_6a2dc250
       target_field: cybereason.malop_process.simple_values.total.number_of.outgoing_connections.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.totalReceivedBytes.totalValues
-      tag: convert_simpleValues_totalReceivedBytes_totalValues_to_long
+      tag: convert_simpleValues_totalReceivedBytes_totalValues_to_long_dd0653b9
       target_field: cybereason.malop_process.simple_values.total.received_bytes.total_values
       type: long
       ignore_missing: true
@@ -2347,14 +2461,16 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_totalReceivedBytes_values_to_long
+          tag: convert_simpleValues_totalReceivedBytes_values_to_long_ffd398fb
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_1d5c53d6
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_3f543187
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -2365,17 +2481,17 @@ processors:
       processor:
         set:
           field: destination.bytes
-          tag: set_simpleValues_totalReceivedBytes_values_into_destination_bytes
+          tag: set_simpleValues_totalReceivedBytes_values_into_destination_bytes_9dd67052
           copy_from: _ingest._value
           ignore_empty_value: true
   - rename:
       field: json.simpleValues.totalReceivedBytes.values
-      tag: rename_simpleValues_totalReceivedBytes_values
+      tag: rename_simpleValues_totalReceivedBytes_values_2a8209a0
       target_field: cybereason.malop_process.simple_values.total.received_bytes.values
       ignore_missing: true
   - convert:
       field: json.simpleValues.totalTransmittedBytes.totalValues
-      tag: convert_simpleValues_totalTransmittedBytes_totalValues_to_long
+      tag: convert_simpleValues_totalTransmittedBytes_totalValues_to_long_1071d90e
       target_field: cybereason.malop_process.simple_values.total.transmitted_bytes.total_values
       type: long
       ignore_missing: true
@@ -2392,14 +2508,16 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_simpleValues_totalTransmittedBytes_values_to_long
+          tag: convert_simpleValues_totalTransmittedBytes_values_to_long_1d548dd1
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_343fa41c
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_0b7b5fdc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -2410,17 +2528,17 @@ processors:
       processor:
         set:
           field: source.bytes
-          tag: set_simpleValues_totalTransmittedBytes_values_into_source_bytes
+          tag: set_simpleValues_totalTransmittedBytes_values_into_source_bytes_86e54a53
           copy_from: _ingest._value
           ignore_empty_value: true
   - rename:
       field: json.simpleValues.totalTransmittedBytes.values
-      tag: rename_simpleValues_totalTransmittedBytes_values
+      tag: rename_simpleValues_totalTransmittedBytes_values_25a63eec
       target_field: cybereason.malop_process.simple_values.total.transmitted_bytes.values
       ignore_missing: true
   - convert:
       field: json.suspect
-      tag: convert_suspect_to_boolean
+      tag: convert_suspect_to_boolean_ec2aaa76
       target_field: cybereason.malop_process.suspect
       type: boolean
       ignore_missing: true
@@ -2431,7 +2549,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.suspicionCount
-      tag: convert_suspicionCount_to_long
+      tag: convert_suspicionCount_to_long_a107c4c0
       target_field: cybereason.malop_process.suspicion_count
       type: long
       ignore_missing: true
@@ -2442,12 +2560,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.suspicions
-      tag: rename_suspicions
+      tag: rename_suspicions_092ca5ac
       target_field: cybereason.malop_process.suspicions
       ignore_missing: true
   - rename:
       field: suspicionsMap
-      tag: rename_suspicionsMap
+      tag: rename_suspicionsMap_f1385d34
       target_field: cybereason.malop_process.suspicions_map
       ignore_missing: true
   - remove:
@@ -2457,15 +2575,15 @@ processors:
         - cybereason.malop_process.simple_values.total.received_bytes.values
         - cybereason.malop_process.simple_values.malop.last_update_time.values
         - cybereason.malop_process.guid_string
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d21f2562
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_44aeee7c
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -2496,13 +2614,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

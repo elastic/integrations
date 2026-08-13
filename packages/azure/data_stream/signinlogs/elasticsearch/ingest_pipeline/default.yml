@@ -21,7 +21,7 @@ processors:
       target_field: azure.signinlogs
   - script:
       description: Convert Azure JSON keys to snake case.
-      tag: azure-json-keys-to-snake-case
+      tag: azure-json-keys-to-snake-case_ffb87af5
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -52,7 +52,7 @@ processors:
 
         ctx.azure['signinlogs'] = keysToSnakeCase(ctx.azure.signinlogs);
   - drop:
-      tag: drop_8d6904af
+      tag: drop_non_signinlogs_8d6904af
       description: Drop non-SignInLogs.
       if: ctx.azure?.signinlogs?.category == null || !ctx.azure.signinlogs.category.endsWith('SignInLogs')
     # Unfortunately, some Azure services generate logs with
@@ -226,7 +226,7 @@ processors:
       target_field: azure.signinlogs.properties.risk_level_during_signin
       ignore_missing: true
   - script:
-      tag: script_ee25521c
+      tag: script_build_message_field_using_combination_ee25521c
       description: Build message field using a combination of failure reason and additional details
       source: "String reason = ctx?.azure?.signinlogs?.properties?.status?.failure_reason; String details = ctx?.azure?.signinlogs?.properties?.status?.additional_details; if (reason != null && details != null) { ctx['message'] = reason + ' (' + details + ')'; } else if (reason != null) { ctx['message'] = reason; } else if (details != null) { ctx['message'] = details; }"
 
@@ -264,7 +264,7 @@ processors:
         - azure.signinlogs.properties.location
       ignore_missing: true
   - script:
-      tag: script_d5205082
+      tag: script_turns_authentication_processing_details_array_d5205082
       description: "Turns the authentication_processing_details array elements into key/value pairs. For example, the array element ``{key: 'key1', value: 'value1'}`` becomes ``{key1: 'value1'}``."
       lang: painless
       source: |
@@ -307,11 +307,11 @@ processors:
      field: user.name
      copy_from: azure.signinlogs.properties.user_principal_name
      ignore_empty_value: true
-     tag: set_user_name
+     tag: set_user_name_1fc0a1cd
   - set:
       field: user.email
       copy_from: user.name
-      tag: set_user_email
+      tag: set_user_email_d6b77481
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   # Don't dissect the user email into <user.name>@<user.domain>
   # as the parts are meaningless on their own
@@ -441,10 +441,10 @@ processors:
       allow_duplicates: false
       if: ctx.azure?.signinlogs?.properties?.device_detail?.device_id != null && ctx.azure.signinlogs.properties.device_detail.device_id != ''
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -463,13 +463,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

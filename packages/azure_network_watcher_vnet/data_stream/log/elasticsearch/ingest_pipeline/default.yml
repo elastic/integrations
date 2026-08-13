@@ -3,38 +3,38 @@ description: Pipeline for processing VNet logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_2c621924
       value: network
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_a75e9a8a
       value: info
       allow_duplicates: false
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_552e65e1
       target_field: json
       if: ctx.event?.original != null
       on_failure:
@@ -44,7 +44,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.time
-      tag: date_time
+      tag: date_time_ea8afaf9
       target_field: azure_network_watcher_vnet.log.time
       formats:
         - ISO8601
@@ -56,89 +56,90 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_timestamp
+      tag: set_timestamp_27d40682
       copy_from: azure_network_watcher_vnet.log.time
       ignore_empty_value: true
   - convert:
       field: json.flowLogVersion
-      tag: convert_flowLogVersion_to_string
+      tag: convert_flowLogVersion_to_string_29a6e249
       type: string
       ignore_missing: true
   - rename:
       field: json.flowLogVersion
-      tag: rename_flowLogVersion
+      tag: rename_flowLogVersion_f466dd68
       target_field: azure_network_watcher_vnet.log.flow_log.version
       ignore_missing: true
   - rename:
       field: json.flowLogGUID
-      tag: rename_flowLogGUID
+      tag: rename_flowLogGUID_cc8f4b01
       target_field: azure_network_watcher_vnet.log.flow_log.guid
       ignore_missing: true
   - rename:
       field: json.flowLogResourceID
-      tag: rename_flowLogResourceID
+      tag: rename_flowLogResourceID_6bc38f77
       target_field: azure_network_watcher_vnet.log.flow_log.resource_id
       ignore_missing: true
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_4d38f3a3
       target_field: azure_network_watcher_vnet.log.category
       ignore_missing: true
   - rename:
       field: json.targetResourceID
-      tag: rename_targetResourceID
+      tag: rename_targetResourceID_39493b55
       target_field: azure_network_watcher_vnet.log.target_resource_id
       ignore_missing: true
   - rename:
       field: json.operationName
-      tag: rename_operationName
+      tag: rename_operationName_8a215de7
       target_field: azure_network_watcher_vnet.log.operation_name
       ignore_missing: true
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_rename_aclID
+      tag: foreach_flowRecords_flow_to_rename_aclID_90470be5
       processor:
         rename:
           field: _ingest._value.aclID
-          tag: rename_aclID
+          tag: rename_aclID_43d72e91
           target_field: _ingest._value.acl_id
           ignore_missing: true
   - uppercase:
       field: json.macAddress
-      tag: uppercase_mac_address
+      tag: uppercase_mac_address_da3a589c
       ignore_missing: true
       if: ctx.json?.macAddress != null && ctx.json.macAddress != ''
       target_field: azure_network_watcher_vnet.log.mac_address
   - gsub:
       field: azure_network_watcher_vnet.log.mac_address
       if: ctx.azure_network_watcher_vnet?.log?.mac_address != null && ctx.azure_network_watcher_vnet.log.mac_address!= ''
-      tag: gsub_mac_address
+      tag: gsub_mac_address_cd43507c
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - set:
       field: source.mac
-      tag: set_source_mac
+      tag: set_source_mac_5e4ac8c5
       copy_from: azure_network_watcher_vnet.log.mac_address
       ignore_empty_value: true
   - foreach:
       field: json.flowRecords.flows
-      tag: foreach_flowRecords_flow_to_append_rule_to_rule_name
+      tag: foreach_flowRecords_flow_to_append_rule_to_rule_name_b630d5fc
       if: ctx.json?.flowRecords?.flows instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_flowGroups_7387332f
           field: _ingest._value.flowGroups
           ignore_failure: true
           processor:
             append:
               field: rule.name
-              tag: append_rule_to_rule_name
+              tag: append_rule_to_rule_name_bcc55614
               value: '{{{_ingest._value.rule}}}'
               allow_duplicates: false
   - script:
       lang: painless
-      tag: script_to_extract_flow_tupple_values
+      tag: script_to_extract_flow_tupple_values_f862f46a
       description: Script to extract flow tupple values.
       if: ctx.json?.flowRecords?.flows instanceof List
       source: |
@@ -294,423 +295,457 @@ processors:
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_destination_port_to_long
+      tag: foreach_flowRecords_flow_to_convert_destination_port_to_long_993973e5
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_destination_port_to_long
+          tag: foreach_flowGroups_to_convert_destination_port_to_long_7961b18e
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_destination_port_to_long
+              tag: foreach_tuples_to_convert_destination_port_to_long_447a9241
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.destination.port
-                  tag: convert_destination_port_to_long
+                  tag: convert_destination_port_to_long_634bb59e
                   type: long
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_destination_port_ae24c6f0
                         field: _ingest._value.destination.port
                     - append:
+                        tag: append_error_message_a7913641
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_source_port_to_long
+      tag: foreach_flowRecords_flow_to_convert_source_port_to_long_cde91258
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_source_port_to_long
+          tag: foreach_flowGroups_to_convert_source_port_to_long_a4d00424
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_source_port_to_long
+              tag: foreach_tuples_to_convert_source_port_to_long_b4b6806e
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.source.port
-                  tag: convert_source_port_to_long
+                  tag: convert_source_port_to_long_aa1d7029
                   type: long
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_source_port_eae526bc
                         field: _ingest._value.source.port
                     - append:
+                        tag: append_error_message_30ed783f
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_destination_ip_to_ip
+      tag: foreach_flowRecords_flow_to_convert_destination_ip_to_ip_c85c4679
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_destination_ip_to_ip
+          tag: foreach_flowGroups_to_convert_destination_ip_to_ip_a0e7bb96
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_destination_ip_to_ip
+              tag: foreach_tuples_to_convert_destination_ip_to_ip_44629776
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.destination.ip
-                  tag: convert_destination_ip_to_ip
+                  tag: convert_destination_ip_to_ip_0c79bdb7
                   type: ip
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_destination_ip_4c1e6936
                         field: _ingest._value.destination.ip
                     - append:
+                        tag: append_error_message_dc40e4b0
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_source_ip_to_ip
+      tag: foreach_flowRecords_flow_to_convert_source_ip_to_ip_65ad03ec
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_source_ip_to_ip
+          tag: foreach_flowGroups_to_convert_source_ip_to_ip_18ef4d4f
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_source_ip_to_ip
+              tag: foreach_tuples_to_convert_source_ip_to_ip_a08ee6dd
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.source.ip
-                  tag: convert_source_ip_to_ip
+                  tag: convert_source_ip_to_ip_cd626217
                   type: ip
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_source_ip_c484b59e
                         field: _ingest._value.source.ip
                     - append:
+                        tag: append_error_message_c8fb3cae
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_packets_received_to_long
+      tag: foreach_flowRecords_flow_to_convert_packets_received_to_long_f97647f2
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_packets_received_to_long
+          tag: foreach_flowGroups_to_convert_packets_received_to_long_83ebfbae
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_packets_received_to_long
+              tag: foreach_tuples_to_convert_packets_received_to_long_a6214045
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.packets.received
-                  tag: convert_packets_received_to_long
+                  tag: convert_packets_received_to_long_6801ded4
                   type: long
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_packets_received_95325ba4
                         field: _ingest._value.packets.received
                     - append:
+                        tag: append_error_message_b138189f
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_packets_sent_to_long
+      tag: foreach_flowRecords_flow_to_convert_packets_sent_to_long_2d694956
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_packets_sent_to_long
+          tag: foreach_flowGroups_to_convert_packets_sent_to_long_fa80b1b6
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_packets_sent_to_long
+              tag: foreach_tuples_to_convert_packets_sent_to_long_de9adac9
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.packets.sent
-                  tag: convert_packets_sent_to_long
+                  tag: convert_packets_sent_to_long_ceb21a4b
                   type: long
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_packets_sent_f0255db5
                         field: _ingest._value.packets.sent
                     - append:
+                        tag: append_error_message_2ba677b8
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_bytes_received_to_long
+      tag: foreach_flowRecords_flow_to_convert_bytes_received_to_long_0fc1754e
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_bytes_received_to_long
+          tag: foreach_flowGroups_to_convert_bytes_received_to_long_9409a2e3
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_bytes_received_to_long
+              tag: foreach_tuples_to_convert_bytes_received_to_long_e8cbec10
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.bytes.received
-                  tag: convert_bytes_received_to_long
+                  tag: convert_bytes_received_to_long_37d1f3c1
                   type: long
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_bytes_received_ff4386c2
                         field: _ingest._value.bytes.received
                     - append:
+                        tag: append_error_message_645f71aa
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_convert_bytes_sent_to_long
+      tag: foreach_flowRecords_flow_to_convert_bytes_sent_to_long_66fb5847
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_convert_bytes_sent_to_long
+          tag: foreach_flowGroups_to_convert_bytes_sent_to_long_45cf3c82
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_convert_bytes_sent_to_long
+              tag: foreach_tuples_to_convert_bytes_sent_to_long_e08e1245
               ignore_failure: true
               processor:
                 convert:
                   field: _ingest._value.bytes.sent
-                  tag: convert_bytes_sent_to_long
+                  tag: convert_bytes_sent_to_long_2bcfe742
                   type: long
                   ignore_missing: true
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_bytes_sent_bc9fa76f
                         field: _ingest._value.bytes.sent
                     - append:
+                        tag: append_error_message_b6e9f395
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_date_timestamp
+      tag: foreach_flowRecords_flow_to_date_timestamp_a5618309
       processor:
         foreach:
           field: _ingest._value.flowGroups
-          tag: foreach_flowGroups_to_date_timestamp
+          tag: foreach_flowGroups_to_date_timestamp_c5d8bbaa
           ignore_failure: true
           processor:
             foreach:
               field: _ingest._value.tuples
-              tag: foreach_tuples_to_date_timestamp
+              tag: foreach_tuples_to_date_timestamp_ddd212ae
               ignore_failure: true
               processor:
                 date:
                   field: _ingest._value.timestamp
-                  tag: date_timestamp
+                  tag: date_timestamp_bc36c05d
                   target_field: _ingest._value.timestamp
                   formats:
                     - UNIX_MS
                   on_failure:
                     - remove:
+                        tag: remove_ingest_value_timestamp_9ad0c86d
                         field: _ingest._value.timestamp
                     - append:
+                        tag: append_error_message_7d75d381
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.flowRecords.flows
       if: ctx.json?.flowRecords?.flows instanceof List
-      tag: foreach_flowRecords_flow_to_rename_flowGroups
+      tag: foreach_flowRecords_flow_to_rename_flowGroups_db60630e
       processor:
         rename:
           field: _ingest._value.flowGroups
-          tag: rename_flowGroups
+          tag: rename_flowGroups_f684d8eb
           target_field: _ingest._value.groups
           ignore_missing: true
   - rename:
       field: json.flowRecords.flows
-      tag: rename_records_flows
+      tag: rename_records_flows_5c43a0ac
       target_field: azure_network_watcher_vnet.log.records.flows
       ignore_missing: true
   - foreach:
       field: source.port
       if: ctx.source?.port instanceof List
-      tag: foreach_source_port_to_convert_source_port_to_long
+      tag: foreach_source_port_to_convert_source_port_to_long_d6d33cf6
       processor:
         convert:
           field: _ingest._value
-          tag: convert_source_port_to_long
+          tag: convert_source_port_to_long_bac4c596
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_40abddb3
                 field: _ingest._value
             - append:
+                tag: append_error_message_2609ea76
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: destination.port
       if: ctx.destination?.port instanceof List
-      tag: foreach_destination_port_to_convert_destination_port_to_long
+      tag: foreach_destination_port_to_convert_destination_port_to_long_1f04f4e7
       processor:
         convert:
           field: _ingest._value
-          tag: convert_destination_port_to_long
+          tag: convert_destination_port_to_long_6a360ca0
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_e00601be
                 field: _ingest._value
             - append:
+                tag: append_error_message_c8f8da51
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: source.ip
-      tag: foreach_source_ip_to_convert_source_ip_to_ip
+      tag: foreach_source_ip_to_convert_source_ip_to_ip_88b4cc25
       if: ctx.source?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_source_ip_to_ip
+          tag: convert_source_ip_to_ip_71f95908
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_1d0382ca
                 field: _ingest._value
             - append:
+                tag: append_error_message_f6742968
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: destination.ip
-      tag: foreach_destination_ip_to_convert_destination_ip_to_ip
+      tag: foreach_destination_ip_to_convert_destination_ip_to_ip_8c237df7
       if: ctx.destination?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_destination_ip_to_ip
+          tag: convert_destination_ip_to_ip_8854d2f1
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_94428c2c
                 field: _ingest._value
             - append:
+                tag: append_error_message_76f30ed8
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: source.packets
       if: ctx.source?.packets instanceof List
-      tag: foreach_source_packets_to_convert_source_packets_to_long
+      tag: foreach_source_packets_to_convert_source_packets_to_long_2d94e372
       processor:
         convert:
           field: _ingest._value
-          tag: convert_source_packets_to_long
+          tag: convert_source_packets_to_long_0637a653
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_61bf3dde
                 field: _ingest._value
             - append:
+                tag: append_error_message_ec159c8e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: source.bytes
       if: ctx.source?.bytes instanceof List
-      tag: foreach_source_bytes_to_convert_source_bytes_to_long
+      tag: foreach_source_bytes_to_convert_source_bytes_to_long_601c02c4
       processor:
         convert:
           field: _ingest._value
-          tag: convert_source_bytes_to_long
+          tag: convert_source_bytes_to_long_e29d1e79
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_5ae5730c
                 field: _ingest._value
             - append:
+                tag: append_error_message_04cd253e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: destination.packets
       if: ctx.destination?.packets instanceof List
-      tag: foreach_destination_packets_to_convert_destination_packets_to_long
+      tag: foreach_destination_packets_to_convert_destination_packets_to_long_444e90da
       processor:
         convert:
           field: _ingest._value
-          tag: convert_destination_packets_to_long
+          tag: convert_destination_packets_to_long_809cf0d1
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_d020800d
                 field: _ingest._value
             - append:
+                tag: append_error_message_ebe7a6fc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: destination.bytes
       if: ctx.destination?.bytes instanceof List
-      tag: foreach_destination_bytes_to_convert_destination_bytes_to_long
+      tag: foreach_destination_bytes_to_convert_destination_bytes_to_long_6bb79445
       processor:
         convert:
           field: _ingest._value
-          tag: convert_destination_bytes_to_long
+          tag: convert_destination_bytes_to_long_4d07d45f
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_fe7f688e
                 field: _ingest._value
             - append:
+                tag: append_error_message_27bc6731
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: destination.ip
-      tag: foreach_destination_ip_to_append_related_ip_from_destination_ip
+      tag: foreach_destination_ip_to_append_related_ip_from_destination_ip_187caa5b
       if: ctx.destination?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_destination_ip
+          tag: append_related_ip_from_destination_ip_c5704d67
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: source.ip
-      tag: foreach_source_ip_to_append_related_ip_from_source_ip
+      tag: foreach_source_ip_to_append_related_ip_from_source_ip_a24b266c
       if: ctx.source?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_source_ip
+          tag: append_related_ip_from_source_ip_8883f4a3
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: network.direction
       if: ctx.network?.direction instanceof List
-      tag: foreach_network_direction_to_lowercase_network_direction
+      tag: foreach_network_direction_to_lowercase_network_direction_addda786
       processor:
         lowercase:
           field: _ingest._value
-          tag: lowercase_network_direction
+          tag: lowercase_network_direction_77cf651a
           ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "azure_shared_pipeline" }}'
       if: ctx.azure_network_watcher_vnet?.log?.flow_log?.resource_id != null
-      tag: pipeline_azure_shared
+      tag: pipeline_azure_shared_4b2c3812
       ignore_missing_pipeline: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -728,7 +763,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -738,12 +773,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -112,12 +112,12 @@ processors:
       ignore_missing: true
   - set:
       field: destination.nat.ip
-      tag: set_destination_nat_ip_from_properties_translated_ip
+      tag: set_destination_nat_ip_from_properties_translated_ip_a974736e
       copy_from: json.properties.TranslatedIp
       ignore_empty_value: true
   - set:
       field: destination.nat.port
-      tag: set_destination_nat_port_from_properties_translated_port
+      tag: set_destination_nat_port_from_properties_translated_port_e317278a
       copy_from: json.properties.TranslatedPort
       ignore_empty_value: true
   - rename:
@@ -148,7 +148,7 @@ processors:
   - uri_parts:
       field: json.properties.TargetUrl
       if: ctx.json?.properties?.TargetUrl != null
-      tag: uri_parts_targeturl
+      tag: uri_parts_targeturl_03be1dd4
       keep_original: true
       on_failure:
         - append:
@@ -292,13 +292,13 @@ processors:
       if: ctx.json?.event?.alert?.action != null
   - append:
       field: event.type
-      tag: append_allowed_into_event_type
+      tag: append_allowed_into_event_type_73c303b1
       value: allowed
       if: ctx.event?.action?.equalsIgnoreCase('Allow') == true
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_denied_into_event_type
+      tag: append_denied_into_event_type_bd12037d
       value: denied
       if: ctx.event?.action?.equalsIgnoreCase('Deny') == true
       allow_duplicates: false
@@ -311,7 +311,7 @@ processors:
       ignore_missing: true
   - set:
       field: source.address
-      tag: set_source_address_from_source_ip
+      tag: set_source_address_from_source_ip_ac60f014
       copy_from: source.ip
       if: ctx.source?.address == null
       ignore_empty_value: true
@@ -324,7 +324,7 @@ processors:
       ignore_missing: true
   - set:
       field: destination.address
-      tag: set_destination_address_from_destination_ip
+      tag: set_destination_address_from_destination_ip_147762bc
       copy_from: destination.ip
       if: ctx.destination?.address == null
       ignore_empty_value: true
@@ -515,7 +515,7 @@ processors:
         - azure.firewall.proto
       ignore_missing: true
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:
       tag: set_observer_name_5e6c4eea
@@ -523,7 +523,7 @@ processors:
       copy_from: azure.resource.name
       ignore_empty_value: true
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -553,19 +553,23 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
+      tag: remove_5ad63527
       field:
         - json
         - _conf

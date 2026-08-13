@@ -6,11 +6,11 @@ processors:
       field: ecs.version
       value: '9.1.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_35d11e6e
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
-      tag: fingerprint_b6cca44d
+      tag: fingerprint_to_id_b6cca44d
       description: >-
         This API does does not have a cursor.
         The integration collects all assets on each execution.
@@ -20,10 +20,10 @@ processors:
       target_field: _id
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_44b8d7b1
       target_field: beyondinsight_password_safe.asset
   - script:
-      tag: script_69fcb8e3
+      tag: script_remove_null_values_empty_strings_69fcb8e3
       description: Remove null values and empty strings from beyondinsight_password_safe.asset.
       lang: painless
       source: |
@@ -32,7 +32,7 @@ processors:
           (entry.getValue() instanceof String && entry.getValue().isEmpty())
         );
   - script:
-      tag: script_numeric_id_to_string
+      tag: script_numeric_id_to_string_9368534a
       description: Convert numeric ID fields to strings.
       params:
         numeric_ids:
@@ -47,7 +47,7 @@ processors:
           }
         }
   - script:
-      tag: script_camel_to_snake_naming
+      tag: script_camel_to_snake_naming_8dff3b5c
       description: Rename CapitalCamelCase-ish fields to lower_snake_case.
       params:
         field_mappings:
@@ -103,7 +103,7 @@ processors:
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub_mac_address
+      tag: gsub_mac_address_0913df46
   - uppercase:
       tag: uppercase_beyondinsight_password_safe_asset_mac_address_6daad50f
       field: beyondinsight_password_safe.asset.mac_address
@@ -177,15 +177,18 @@ processors:
       allow_duplicates: false
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

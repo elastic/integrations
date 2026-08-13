@@ -63,7 +63,7 @@ processors:
         param_nano: 1000000
       ignore_failure: true
   - script:
-      tag: script_924392cb
+      tag: script_drops_null_empty_values_recursively_924392cb
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -81,18 +81,21 @@ processors:
         }
         dropEmptyFields(ctx);
   - pipeline:
-      tag: pipeline_8653a0ad
+      tag: pipeline_azure_shared_pipeline_8653a0ad
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

@@ -135,7 +135,7 @@ processors:
       ignore_missing: true
       description: 'Remove the properties string field.'
   - script:
-      tag: script_ea1c8e63
+      tag: script_convert_single_quotes_to_double_ea1c8e63
       lang: painless
       source: >-
         if (ctx?.temp_properties != null) {
@@ -459,10 +459,10 @@ processors:
       value: event
       ignore_failure: true
   - pipeline:
-      tag: pipeline_7877e1a4
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - pipeline:
-      tag: pipeline_3294151d
+      tag: pipeline_springcloudlogs_inner_pipeline_3294151d
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
       name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'
   - rename:
@@ -483,13 +483,16 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

@@ -3,11 +3,11 @@ description: Pipeline for parsing Azure shared log fields.
 processors:
   - set:
       field: cloud.provider
-      tag: set_cloud_provider
+      tag: set_cloud_provider_aab27161
       value: azure
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
-      tag: extracts_values_flow_log_resource_id_if_subscription_id_resource_group_provider_namespace_authorization_rule_present
+      tag: extracts_values_flow_log_resource_id_if_subscription_id_resource_group_provider_namespace_authorization_rule_present_580bbdca
       patterns:
         - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}/NAMESPACES/%{NAMESPACE:azure.resource.namespace}/AUTHORIZATIONRULES/%{RULE:azure.resource.authorization_rule}
         - /subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
@@ -21,7 +21,7 @@ processors:
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
       if: "ctx.azure?.subscription_id == null"
-      tag: extracts_values_flow_log_resource_id_if_subscription_id_resource_group_provider_name_present
+      tag: extracts_values_flow_log_resource_id_if_subscription_id_resource_group_provider_name_present_afadcdd3
       patterns:
         - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
         - /subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
@@ -34,7 +34,7 @@ processors:
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
       if: "ctx.azure?.subscription_id == null"
-      tag: grok_azure_network_watcher_nsg_log_resource_id_3be8524a
+      tag: extracts_values_flow_log_resource_id_if_subscription_id_resource_group_provider_name_present_8b2bd501
       patterns:
         - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
         - /subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
@@ -47,7 +47,7 @@ processors:
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
       if: "ctx.azure?.subscription_id == null"
-      tag: extracts_values_flow_log_resource_id_if_resource_provider_present
+      tag: extracts_values_flow_log_resource_id_if_resource_provider_present_81a45a9a
       patterns:
         - /providers/%{PROVIDER:azure.resource.provider}
         - /PROVIDERS/%{PROVIDER:azure.resource.provider}
@@ -57,7 +57,7 @@ processors:
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
       if: "ctx.azure?.subscription_id == null"
-      tag: extracts_values_flow_log_resource_id_if_sbscription_id_resource_provider_present
+      tag: extracts_values_flow_log_resource_id_if_sbscription_id_resource_provider_present_f4277912
       patterns:
         - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}
         - /subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource.provider}
@@ -68,7 +68,7 @@ processors:
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
       if: "ctx.azure?.subscription_id == null"
-      tag: extracts_values_flow_log_resource_id_if_sbscription_id_resource_group_present
+      tag: extracts_values_flow_log_resource_id_if_sbscription_id_resource_group_present_d3e139ab
       patterns:
         - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}
         - /subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}
@@ -79,7 +79,7 @@ processors:
   - grok:
       field: azure_network_watcher_nsg.log.resource_id
       if: "ctx.azure?.subscription_id == null"
-      tag: extracts_values_flow_log_resource_id_if_sbscription_id_present
+      tag: extracts_values_flow_log_resource_id_if_sbscription_id_present_e126924a
       patterns:
         - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}
         - /subscriptions/%{SUBID:azure.subscription_id}
@@ -88,17 +88,20 @@ processors:
       ignore_failure: true
   - set:
       field: azure.resource.id
-      tag: set_azure_resource_id_from_flow_log_resource_id
+      tag: set_azure_resource_id_from_flow_log_resource_id_7167f7cd
       copy_from: azure_network_watcher_nsg.log.resource_id
       ignore_empty_value: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -16,7 +16,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - fingerprint:
-      tag: fingerprint_1d1c9553
+      tag: fingerprint_to_id_1d1c9553
       fields:
         - admin_by_request_epm.auditlog
       target_field: "_id"
@@ -30,7 +30,7 @@ processors:
   # Scripts for processing input #
   ####################
   - script:
-      tag: script_a3eb5add
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -50,7 +50,7 @@ processors:
 
   - script:
       description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
+      tag: additional-info-keys-to-snake-case_ecb725d4
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -203,7 +203,7 @@ processors:
         NANOSECOND: \d{7}
 
   - script:
-      tag: script_4fbc04b0
+      tag: script_creating_new_field_response_time_4fbc04b0
       lang: painless
       description: Creating new field response_time_in_seconds from hours, minutes, seconds and nanoseconds
       if: ctx.admin_by_request_epm.auditlog.response_time != null
@@ -228,12 +228,15 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

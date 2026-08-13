@@ -13,13 +13,13 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
@@ -53,7 +53,7 @@ processors:
       ignore_empty_value: true
   - convert:
       field: json.accessAll
-      tag: 'convert_accessAll_to_boolean'
+      tag: convert_accessAll_to_boolean_59ec88f8
       target_field: bitwarden.group.access_all
       type: boolean
       ignore_missing: true
@@ -85,19 +85,22 @@ processors:
       ignore_empty_value: true
   - foreach:
       field: json.collections
-      tag: 'convert_collection_readOnly_to_boolean'
+      tag: convert_collection_readOnly_to_boolean_8b36bd7e
       if: ctx.json?.collections instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_readOnly_to_ingest_value_read_only_628fd764
           field: _ingest._value.readOnly
           target_field: _ingest._value.read_only
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_readOnly_70f5b69c
                 field: _ingest._value.readOnly
                 ignore_missing: true
             - append:
+                tag: append_error_message_96ea4957
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -106,6 +109,7 @@ processors:
       if: ctx.json?.collections instanceof List
       processor:
         remove:
+          tag: remove_7dc4cbfe
           field:
             - _ingest._value.readOnly
           ignore_missing: true
@@ -128,7 +132,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
-      tag: script_06971239
+      tag: script_drops_null_empty_values_recursively_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -158,12 +162,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

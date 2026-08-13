@@ -31,7 +31,7 @@ processors:
 
 # regardless of file input or HTTP input JSON should now exist, fail if not
 - fail:
-    tag: fail_4e674a5b
+    tag: fail_provide_more_useful_error_message_4e674a5b
     description: Provide a more useful error message if json object is missing
     if: ctx.json == null || !(ctx.json instanceof Map)
     message: missing json object in input document
@@ -103,7 +103,7 @@ processors:
 
 # NOTE: The final processor in the ecs pipeline lowercases the keys for all first level objects under bbot.data, e.g. bbot.SCAN becomes bbot.scan
 - pipeline:
-    tag: pipeline_7b2aeda6
+    tag: pipeline_ecs_mapping_now_done_separate_7b2aeda6
     description: All ECS mapping is now done in a separate pipeline for sanity, this could be further split to per event type pipelines if things get more complicated.
     name: '{{ IngestPipeline "ecs" }}'
 
@@ -127,18 +127,18 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-    tag: 'Remove null/empty values recursively.'
+    tag: remove_null_empty_values_recursively_7170f89c
     on_failure:
     - append:
         tag: append_error_message_46179fef
         field: error.message
         value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
     - fail:
-        tag: fail_86e03e48
+        tag: fail_processor_ingest_failure_processor_type_86e03e48
         message: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}'
 
 - remove:
-    tag: remove_3504a80c
+    tag: remove_temporary_other_unnecessary_fields_3504a80c
     description: "Remove temporary and other unnecessary fields"
     field:
         - _tmp
@@ -160,7 +160,7 @@ processors:
     if: ctx.bbot != null
 
 - remove:
-    tag: remove_96dd451a
+    tag: remove_ecs_mapped_fields_unless_tags_96dd451a
     description: "Remove ECS mapped fields unless tags indicate not to"
     field:
         - bbot.timestamp
@@ -174,12 +174,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_4d6acdc2
       field: error.message
       value: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}'

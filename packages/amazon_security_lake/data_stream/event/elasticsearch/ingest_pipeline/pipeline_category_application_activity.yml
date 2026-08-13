@@ -10,7 +10,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.owner.account.type_id
-          tag: convert_resources_owner_account_type_id_to_string
+          tag: convert_resources_owner_account_type_id_to_string_482d44a7
           type: string
           ignore_missing: true
   - foreach:
@@ -21,7 +21,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.owner.type_id
-          tag: convert_resources_owner_type_id_to_string
+          tag: convert_resources_owner_type_id_to_string_5f9720de
           type: string
           ignore_missing: true
   - foreach:
@@ -32,7 +32,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_resources_owner_uid_alt_into_related_user
+          tag: append_resources_owner_uid_alt_into_related_user_e228cab2
           value: '{{{_ingest._value.owner.uid_alt}}}'
           allow_duplicates: false
   - foreach:
@@ -43,7 +43,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_resources_owner_email_addr_into_related_user
+          tag: append_resources_owner_email_addr_into_related_user_e0ea48af
           value: '{{{_ingest._value.owner.email_addr}}}'
           allow_duplicates: false
   - foreach:
@@ -54,7 +54,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_resources_owner_full_name_into_related_user
+          tag: append_resources_owner_full_name_into_related_user_d806780f
           value: '{{{_ingest._value.owner.full_name}}}'
           allow_duplicates: false
   - foreach:
@@ -65,7 +65,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_resources_owner_name_into_related_user
+          tag: append_resources_owner_name_into_related_user_4766da1f
           value: '{{{_ingest._value.owner.name}}}'
           allow_duplicates: false
   - foreach:
@@ -76,7 +76,7 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_resources_owner_uid_into_related_user
+          tag: append_resources_owner_uid_into_related_user_2d20a658
           value: '{{{_ingest._value.owner.uid}}}'
           allow_duplicates: false
   - foreach:
@@ -87,7 +87,7 @@ processors:
       processor:
         append:
           field: package.description
-          tag: append_web_resources_desc_into_package_description
+          tag: append_web_resources_desc_into_package_description_da0e704f
           value: '{{{_ingest._value.desc}}}'
           allow_duplicates: false
   - foreach:
@@ -98,7 +98,7 @@ processors:
       processor:
         append:
           field: package.name
-          tag: append_web_resources_name_into_package_description
+          tag: append_web_resources_name_into_package_description_a12e9450
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
@@ -109,12 +109,12 @@ processors:
       processor:
         append:
           field: package.type
-          tag: append_web_resources_desc_into_package_description
+          tag: append_web_resources_desc_into_package_description_74399ce5
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
   - convert:
       field: ocsf.http_response.code
-      tag: convert_http_response_code_to_long
+      tag: convert_http_response_code_to_long_620ba8f6
       type: long
       ignore_missing: true
       on_failure:
@@ -128,12 +128,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
-      tag: set_http_response_status_code
+      tag: set_http_response_status_code_d25f15c3
       copy_from: ocsf.http_response.code
       ignore_empty_value: true
   - convert:
       field: ocsf.http_response.length
-      tag: convert_http_response_length_to_long
+      tag: convert_http_response_length_to_long_95fa6526
       type: long
       ignore_missing: true
       on_failure:
@@ -147,12 +147,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.body.bytes
-      tag: set_http_response_body_bytes
+      tag: set_http_response_body_bytes_c9a779f4
       copy_from: ocsf.http_response.length
       ignore_empty_value: true
   - convert:
       field: ocsf.http_response.latency
-      tag: convert_http_response_latency_to_long
+      tag: convert_http_response_latency_to_long_1785c5bd
       type: long
       ignore_missing: true
       on_failure:
@@ -166,17 +166,20 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.body.content
-      tag: set_http_response_body_content
+      tag: set_http_response_body_content_d8f249dd
       copy_from: ocsf.http_response.message
       ignore_empty_value: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

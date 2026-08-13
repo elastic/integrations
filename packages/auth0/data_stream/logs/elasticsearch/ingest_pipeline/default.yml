@@ -83,7 +83,7 @@ processors:
 - set:
     field: user.email
     copy_from: auth0.logs.data.user_name
-    tag: copy_user_email
+    tag: copy_user_email_00fddb72
     if: ctx.auth0?.logs?.data?.user_name != null && ctx.auth0.logs.data.user_name.indexOf("@") > 0
 - set:
     tag: set_user_id_2975f88e
@@ -94,19 +94,19 @@ processors:
     field: related.user
     value: '{{{user.id}}}'
     allow_duplicates: false
-    tag: append_related_user_id
+    tag: append_related_user_id_23cff8dc
     if: ctx.user?.id != null
 - append:
     field: related.user
     value: '{{{user.name}}}'
     allow_duplicates: false
-    tag: append_related_user_name
+    tag: append_related_user_name_325195a6
     if: ctx.user?.name != null
 - append:
     field: related.user
     value: '{{{user.email}}}'
     allow_duplicates: false
-    tag: append_related_user_email
+    tag: append_related_user_email_b9ac313b
     if: ctx.user?.email != null
 - user_agent:
     tag: user_agent_auth0_logs_data_user_agent_699d351f
@@ -134,7 +134,7 @@ processors:
     copy_from: auth0.logs.data.type
     ignore_empty_value: true
 - script:
-    tag: script_91f7e898
+    tag: script_sets_event_type_category_action_91f7e898
     lang: painless
     description: Sets event type, category and action based on type
     if: ctx.auth0?.logs?.data?.type != null
@@ -1085,7 +1085,7 @@ processors:
          }
 - script:
     if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
-    tag: convert_timestamp_initiated_at to string removing any scientific notation if present
+    tag: convert_timestamp_initiated_at_to_string_removing_any_scientific_notation_if_present_e80b2ab8
     lang: painless
     source: >
       ctx.auth0.logs.data.details.initiatedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.initiatedAt.toString()));
@@ -1096,7 +1096,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - script:
     if: ctx?.auth0?.logs?.data?.details?.completedAt != null
-    tag: convert_timestamp_completed_at to string removing any scientific notation if present
+    tag: convert_timestamp_completed_at_to_string_removing_any_scientific_notation_if_present_3233ab0d
     lang: painless
     source: >
       ctx.auth0.logs.data.details.completedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.completedAt.toString()));
@@ -1137,7 +1137,7 @@ processors:
 # Clean up
 ##
 - remove:
-    tag: remove_0ca75707
+    tag: remove_clean_up_0ca75707
     field:
       - json
       - auth0.logs.data.$event_schema.version
@@ -1149,7 +1149,7 @@ processors:
       - auth0.logs.data.log_id
     ignore_missing: true
 - script:
-    tag: script_4d6993cb
+    tag: script_processor_iterates_over_whole_document_4d6993cb
     lang: painless
     description: This script processor iterates over the whole document to remove fields with null values.
     source: |
@@ -1177,12 +1177,15 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
+    tag: append_error_message_206bb8ac
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

@@ -3,28 +3,28 @@ description: Pipeline for processing audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_552e65e1
       target_field: json
       if: ctx.event?.original != null
       on_failure:
@@ -34,12 +34,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_5a3d7c1d
       value: iam
       if: ctx.json?.action?.type != null && !( ctx.json.action.type.contains('APP') || ctx.json.action.type.contains('EXPORT') || ctx.json.action.type.contains('DESIGN') )
   - script:
       description: Append action type values to the event type.
-      tag: script_to_append_event_type
+      tag: script_to_append_event_type_7360d28a
       lang: painless
       if: ctx.json?.action?.type != null
       source: >-
@@ -69,34 +69,34 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action.app_id
-      tag: rename_action_app_id
+      tag: rename_action_app_id_12fd88c4
       target_field: canva.audit.action.app.id
       ignore_missing: true
   - rename:
       field: json.action.app_name
-      tag: rename_action_app_name
+      tag: rename_action_app_name_c565ba39
       target_field: canva.audit.action.app.name
       ignore_missing: true
   - rename:
       field: json.action.app_version
-      tag: rename_action_app_version
+      tag: rename_action_app_version_a565fd4e
       target_field: canva.audit.action.app.version
       ignore_missing: true
   - rename:
       field: json.action.approval_status
-      tag: rename_action_approval_status
+      tag: rename_action_approval_status_07c5a879
       target_field: canva.audit.action.approval_status
       ignore_missing: true
   - rename:
       field: json.action.changed_fields
-      tag: rename_action_changed_fields
+      tag: rename_action_changed_fields_b0417d3b
       target_field: canva.audit.action.changed_fields
       ignore_missing: true
   - script:
       lang: painless
       description: Convert changes fields to boolean.
       if: ctx.json?.action?.changes instanceof List
-      tag: convert_changes_fields_to_boolean
+      tag: convert_changes_fields_to_boolean_9317e490
       source: |
         def convertKeysToBoolean(Map versionMap, String[] keysToConvert) {
             def convertedMap = [: ];
@@ -156,7 +156,7 @@ processors:
       lang: painless
       description: Append changes fields to related User.
       if: ctx.json?.action?.changes instanceof List
-      tag: append_changes_fields_to_related_user
+      tag: append_changes_fields_to_related_user_1f6404bd
       source: |
         def relatedUser = new HashSet();
         def relatedList = new ArrayList();
@@ -194,69 +194,69 @@ processors:
         ctx.related.put('user', relatedList);
   - rename:
       field: json.action.changes
-      tag: rename_action_changes
+      tag: rename_action_changes_3dda3050
       target_field: canva.audit.action.changes
       ignore_missing: true
   - rename:
       field: json.action.country_code
-      tag: rename_action_country_code
+      tag: rename_action_country_code_f52f833b
       target_field: canva.audit.action.country_code
       ignore_missing: true
   - set:
       field: source.geo.country_iso_code
-      tag: set_source_geo_country_iso_code_from_audit_action_country_code
+      tag: set_source_geo_country_iso_code_from_audit_action_country_code_30e98a40
       copy_from: canva.audit.action.country_code
       ignore_empty_value: true
   - rename:
       field: json.action.create_type
-      tag: rename_action_create_type
+      tag: rename_action_create_type_9d6569d4
       target_field: canva.audit.action.create_type
       ignore_missing: true
   - rename:
       field: json.action.default_team_id
-      tag: rename_action_default_team_id
+      tag: rename_action_default_team_id_c9ec19db
       target_field: canva.audit.action.default_team.id
       ignore_missing: true
   - rename:
       field: json.action.default_team_policy
-      tag: rename_action_default_team_policy
+      tag: rename_action_default_team_policy_d03382bc
       target_field: canva.audit.action.default_team.policy
       ignore_missing: true
   - rename:
       field: json.action.description
-      tag: rename_action_description
+      tag: rename_action_description_776bad69
       target_field: canva.audit.action.description
       ignore_missing: true
   - rename:
       field: json.action.design_type
-      tag: rename_action_design_type
+      tag: rename_action_design_type_6fbbd540
       target_field: canva.audit.action.design_type
       ignore_missing: true
   - rename:
       field: json.action.display_name
-      tag: rename_action_display_name
+      tag: rename_action_display_name_96a54485
       target_field: canva.audit.action.display_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_action_display_name_into_related_user
+      tag: append_canva_audit_action_display_name_into_related_user_1372f827
       value: '{{{canva.audit.action.display_name}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.action?.display_name != null
   - rename:
       field: json.action.email
-      tag: rename_action_email
+      tag: rename_action_email_a7825687
       target_field: canva.audit.action.email
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_action_email_into_related_user
+      tag: append_canva_audit_action_email_into_related_user_4080749e
       value: '{{{canva.audit.action.email}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.action?.email != null
   - convert:
       field: json.action.email_verified
-      tag: convert_action_email_verified_to_boolean
+      tag: convert_action_email_verified_to_boolean_f3fafd32
       target_field: canva.audit.action.email_verified
       type: boolean
       ignore_missing: true
@@ -267,7 +267,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action.emails
-      tag: rename_action_emails
+      tag: rename_action_emails_0b95f8ec
       target_field: canva.audit.action.emails
       ignore_missing: true
   - foreach:
@@ -277,12 +277,12 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_action_emails_into_related_user
+          tag: append_action_emails_into_related_user_b5a1f976
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - script:
       description: Script to set the event duration.
-      tag: script_to_set_event_duration
+      tag: script_to_set_event_duration_bdb112ac
       lang: painless
       if: ctx.json?.action?.end_timestamp != null && ctx.json?.action?.start_timestamp != null
       source: >-
@@ -294,7 +294,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.action.end_timestamp
-      tag: date_action_end_timestamp
+      tag: date_action_end_timestamp_45125170
       target_field: canva.audit.action.end_timestamp
       formats:
         - ISO8601
@@ -307,72 +307,72 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_audit_action_end_timestamp
+      tag: set_event_end_from_audit_action_end_timestamp_97102d4a
       copy_from: canva.audit.action.end_timestamp
       ignore_empty_value: true
   - rename:
       field: json.action.first_name
-      tag: rename_action_first_name
+      tag: rename_action_first_name_a1b7fbb6
       target_field: canva.audit.action.first_name
       ignore_missing: true
   - rename:
       field: json.action.last_name
-      tag: rename_action_last_name
+      tag: rename_action_last_name_4591d7a8
       target_field: canva.audit.action.last_name
       ignore_missing: true
   - rename:
       field: json.action.locale
-      tag: rename_action_locale
+      tag: rename_action_locale_26b5c0ae
       target_field: canva.audit.action.locale
       ignore_missing: true
   - rename:
       field: json.action.login_type
-      tag: rename_action_login_type
+      tag: rename_action_login_type_42d8064f
       target_field: canva.audit.action.login_type
       ignore_missing: true
   - rename:
       field: json.action.managing_entity.team.display_name
-      tag: rename_action_managing_entity_team_display_name
+      tag: rename_action_managing_entity_team_display_name_2628b3f8
       target_field: canva.audit.action.managing_entity.team.display_name
       ignore_missing: true
   - rename:
       field: json.action.managing_entity.team.id
-      tag: rename_action_managing_entity_team_id
+      tag: rename_action_managing_entity_team_id_06a059ee
       target_field: canva.audit.action.managing_entity.team.id
       ignore_missing: true
   - rename:
       field: json.action.managing_entity.organization.id
-      tag: rename_action_managing_entity_organization_id
+      tag: rename_action_managing_entity_organization_id_a03faf41
       target_field: canva.audit.action.managing_entity.organization.id
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id
+      tag: set_organization_id_e1068a82
       copy_from: canva.audit.action.managing_entity.organization.id
       ignore_empty_value: true
   - rename:
       field: json.action.managing_entity.type
-      tag: rename_action_managing_entity_type
+      tag: rename_action_managing_entity_type_d35bdb4b
       target_field: canva.audit.action.managing_entity.type
       ignore_missing: true
   - rename:
       field: json.action.new_display_name
-      tag: rename_action_new_display_name
+      tag: rename_action_new_display_name_f5a5c309
       target_field: canva.audit.action.new_display_name
       ignore_missing: true
   - rename:
       field: json.action.new_name
-      tag: rename_action_new_name
+      tag: rename_action_new_name_704fac08
       target_field: canva.audit.action.new_name
       ignore_missing: true
   - rename:
       field: json.action.new_permissions
-      tag: rename_action_new_permissions
+      tag: rename_action_new_permissions_8ee81a45
       target_field: canva.audit.action.new_permissions
       ignore_missing: true
   - rename:
       field: json.action.new_role
-      tag: rename_action_new_role
+      tag: rename_action_new_role_4d1acecf
       target_field: canva.audit.action.new_role
       ignore_missing: true
   - foreach:
@@ -382,98 +382,98 @@ processors:
       processor:
         append:
           field: related.user
-          tag: append_action_oauth_accounts_external_user_id_into_related_user
+          tag: append_action_oauth_accounts_external_user_id_into_related_user_486a68eb
           value: '{{{_ingest._value.external_user_id}}}'
           allow_duplicates: false
   - rename:
       field: json.action.oauth_accounts
-      tag: rename_action_oauth_accounts
+      tag: rename_action_oauth_accounts_1e8e7390
       target_field: canva.audit.action.oauth_accounts
       ignore_missing: true
   - rename:
       field: json.action.oauth_platform
-      tag: rename_action_oauth_platform
+      tag: rename_action_oauth_platform_b24665a1
       target_field: canva.audit.action.oauth_platform
       ignore_missing: true
   - rename:
       field: json.action.old_display_name
-      tag: rename_action_old_display_name
+      tag: rename_action_old_display_name_1c912dff
       target_field: canva.audit.action.old_display_name
       ignore_missing: true
   - rename:
       field: json.action.old_name
-      tag: rename_action_old_name
+      tag: rename_action_old_name_fb8b43b6
       target_field: canva.audit.action.old_name
       ignore_missing: true
   - rename:
       field: json.action.old_permissions
-      tag: rename_action_old_permissions
+      tag: rename_action_old_permissions_72f18458
       target_field: canva.audit.action.old_permissions
       ignore_missing: true
   - rename:
       field: json.action.old_role
-      tag: rename_action_old_role
+      tag: rename_action_old_role_0fadf40d
       target_field: canva.audit.action.old_role
       ignore_missing: true
   - rename:
       field: json.action.original_design_id
-      tag: rename_action_original_design_id
+      tag: rename_action_original_design_id_8c0ea26b
       target_field: canva.audit.action.original_design_id
       ignore_missing: true
   - rename:
       field: json.action.output_type
-      tag: rename_action_output_type
+      tag: rename_action_output_type_a19f02ca
       target_field: canva.audit.action.output_type
       ignore_missing: true
   - rename:
       field: json.action.permissions
-      tag: rename_action_permissions
+      tag: rename_action_permissions_3112a847
       target_field: canva.audit.action.permissions
       ignore_missing: true
   - rename:
       field: json.action.phone_number
-      tag: rename_action_phone_number
+      tag: rename_action_phone_number_ffbbad63
       target_field: canva.audit.action.phone_number
       ignore_missing: true
   - set:
       field: canva.audit.action.phone_number
-      tag: mask_action_phone_number
+      tag: mask_action_phone_number_04ab8acc
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.canva?.audit?.action?.phone_number != null
   - rename:
       field: json.action.reason.type
-      tag: rename_action_reason_type
+      tag: rename_action_reason_type_d397aad3
       target_field: canva.audit.action.reason.type
       ignore_missing: true
   - rename:
       field: json.action.report_type
-      tag: rename_action_report_type
+      tag: rename_action_report_type_dc4a8425
       target_field: canva.audit.action.report_type
       ignore_missing: true
   - rename:
       field: json.action.role
-      tag: rename_action_role
+      tag: rename_action_role_96b156c1
       target_field: canva.audit.action.role
       ignore_missing: true
   - append:
       field: user.changes.roles
-      tag: append_canva_audit_action_role_into_user_changes_roles
+      tag: append_canva_audit_action_role_into_user_changes_roles_080ebad3
       value: '{{{canva.audit.action.role}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.action?.role != null
   - rename:
       field: json.action.saml_accounts
-      tag: rename_action_saml_accounts
+      tag: rename_action_saml_accounts_b27d47f8
       target_field: canva.audit.action.saml_accounts
       ignore_missing: true
   - rename:
       field: json.action.session_scope
-      tag: rename_action_session_scope
+      tag: rename_action_session_scope_f5b8c9d4
       target_field: canva.audit.action.session_scope
       ignore_missing: true
   - convert:
       field: json.action.sms_mfa_enabled
-      tag: convert_action_sms_mfa_enabled_to_boolean
+      tag: convert_action_sms_mfa_enabled_to_boolean_a54b234f
       target_field: canva.audit.action.sms_mfa_enabled
       type: boolean
       ignore_missing: true
@@ -484,7 +484,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.action.start_timestamp
-      tag: date_action_start_timestamp
+      tag: date_action_start_timestamp_9362e8e4
       target_field: canva.audit.action.start_timestamp
       formats:
         - ISO8601
@@ -497,58 +497,58 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_audit_action_start_timestamp
+      tag: set_event_start_from_audit_action_start_timestamp_cfa2444d
       copy_from: canva.audit.action.start_timestamp
       ignore_empty_value: true
   - rename:
       field: json.action.team.display_name
-      tag: rename_action_team_display_name
+      tag: rename_action_team_display_name_4ac9d4cf
       target_field: canva.audit.action.team.display_name
       ignore_missing: true
   - rename:
       field: json.action.team.id
-      tag: rename_action_team_id
+      tag: rename_action_team_id_6ce175ce
       target_field: canva.audit.action.team.id
       ignore_missing: true
   - rename:
       field: json.action.team_address.city
-      tag: rename_action_team_address_city
+      tag: rename_action_team_address_city_d10e48b2
       target_field: canva.audit.action.team_address.city
       ignore_missing: true
   - rename:
       field: json.action.team_address.country_code
-      tag: rename_action_team_address_country_code
+      tag: rename_action_team_address_country_code_41ec4fb9
       target_field: canva.audit.action.team_address.country_code
       ignore_missing: true
   - convert:
       field: json.action.team_address.postcode
-      tag: convert_action_team_address_postcode
+      tag: convert_action_team_address_postcode_6addd47b
       target_field: canva.audit.action.team_address.postcode
       type: string
       ignore_missing: true
   - rename:
       field: json.action.team_address.street1
-      tag: rename_action_team_address_street1
+      tag: rename_action_team_address_street1_bb34a8ca
       target_field: canva.audit.action.team_address.street1
       ignore_missing: true
   - set:
       field: canva.audit.action.team_address.street1
-      tag: mask_team_address_street1
+      tag: mask_team_address_street1_9e255c90
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.canva?.audit?.action?.team_address?.street1 != null
   - rename:
       field: json.action.team_address.subdivision
-      tag: rename_action_team_address_subdivision
+      tag: rename_action_team_address_subdivision_c59007c6
       target_field: canva.audit.action.team_address.subdivision
       ignore_missing: true
   - rename:
       field: json.action.title
-      tag: rename_action_title
+      tag: rename_action_title_4f43925e
       target_field: canva.audit.action.title
       ignore_missing: true
   - convert:
       field: json.action.totp_mfa_enabled
-      tag: convert_action_totp_mfa_enabled_to_boolean
+      tag: convert_action_totp_mfa_enabled_to_boolean_7a8126ff
       target_field: canva.audit.action.totp_mfa_enabled
       type: boolean
       ignore_missing: true
@@ -559,21 +559,21 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action.type
-      tag: rename_action_type
+      tag: rename_action_type_cb7d6bd8
       target_field: canva.audit.action.type
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_audit_action_type
+      tag: set_event_action_from_audit_action_type_3eb72f75
       copy_from: canva.audit.action.type
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
@@ -584,7 +584,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
@@ -594,153 +594,153 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action.user.display_name
-      tag: rename_action_user_display_name
+      tag: rename_action_user_display_name_32d8ed4f
       target_field: canva.audit.action.user.display_name
       ignore_missing: true
   - set:
       field: user.changes.full_name
-      tag: set_user_changes_full_name_from_audit_action_user_display_name
+      tag: set_user_changes_full_name_from_audit_action_user_display_name_0c324d2c
       copy_from: canva.audit.action.user.display_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_changes_full_name_into_related_user
+      tag: append_user_changes_full_name_into_related_user_ff6de110
       value: '{{{user.changes.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.full_name != null
   - rename:
       field: json.action.user.email
-      tag: rename_action_user_email
+      tag: rename_action_user_email_7f29652f
       target_field: canva.audit.action.user.email
       ignore_missing: true
   - set:
       field: user.changes.email
-      tag: set_user_changes_email_from_audit_action_user_email
+      tag: set_user_changes_email_from_audit_action_user_email_84816e16
       copy_from: canva.audit.action.user.email
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_changes_email_into_related_user
+      tag: append_user_changes_email_into_related_user_0b3ff21b
       value: '{{{user.changes.email}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.email != null
   - rename:
       field: json.action.user.id
-      tag: rename_action_user_id
+      tag: rename_action_user_id_0feebeac
       target_field: canva.audit.action.user.id
       ignore_missing: true
   - set:
       field: user.changes.id
-      tag: set_user_changes_id_from_audit_action_user_id
+      tag: set_user_changes_id_from_audit_action_user_id_81f41f9f
       copy_from: canva.audit.action.user.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_changes_id_into_related_user
+      tag: append_user_changes_id_into_related_user_b44b0559
       value: '{{{user.changes.id}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.id != null
   - rename:
       field: json.action.user_scope
-      tag: rename_action_user_scope
+      tag: rename_action_user_scope_792473a2
       target_field: canva.audit.action.user_scope
       ignore_missing: true
   - rename:
       field: json.action.view_type
-      tag: rename_action_view_type
+      tag: rename_action_view_type_4411353b
       target_field: canva.audit.action.view_type
       ignore_missing: true
   - rename:
       field: json.actor.details.type
-      tag: rename_actor_details_type
+      tag: rename_actor_details_type_f3565137
       target_field: canva.audit.actor.details.type
       ignore_missing: true
   - rename:
       field: json.actor.organization.id
-      tag: rename_actor_organization_id
+      tag: rename_actor_organization_id_9967cf08
       target_field: canva.audit.actor.organization.id
       ignore_missing: true
   - rename:
       field: json.actor.team.display_name
-      tag: rename_actor_team_display_name
+      tag: rename_actor_team_display_name_c9c3470e
       target_field: canva.audit.actor.team.display_name
       ignore_missing: true
   - rename:
       field: json.actor.team.id
-      tag: rename_actor_team_id
+      tag: rename_actor_team_id_69ed21dc
       target_field: canva.audit.actor.team.id
       ignore_missing: true
   - rename:
       field: json.actor.type
-      tag: rename_actor_type
+      tag: rename_actor_type_8281ecd5
       target_field: canva.audit.actor.type
       ignore_missing: true
   - rename:
       field: json.actor.user.display_name
-      tag: rename_actor_user_display_name
+      tag: rename_actor_user_display_name_ffc9ec46
       target_field: canva.audit.actor.user.display_name
       ignore_missing: true
   - set:
       field: user.full_name
-      tag: set_user_full_name_from_audit_actor_user_display_name
+      tag: set_user_full_name_from_audit_actor_user_display_name_b1ead6ad
       copy_from: canva.audit.actor.user.display_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_full_name_into_related_user
+      tag: append_user_full_name_into_related_user_40705751
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.full_name != null
   - rename:
       field: json.actor.user.email
-      tag: rename_actor_user_email
+      tag: rename_actor_user_email_b68a6498
       target_field: canva.audit.actor.user.email
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_audit_actor_user_email
+      tag: set_user_email_from_audit_actor_user_email_210ed507
       copy_from: canva.audit.actor.user.email
       ignore_empty_value: true
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
-      tag: dissect_user_email
+      tag: dissect_user_email_71c776e8
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_user_email_into_related_user
+      tag: append_user_email_into_related_user_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - rename:
       field: json.actor.user.id
-      tag: rename_actor_user_id
+      tag: rename_actor_user_id_177acf97
       target_field: canva.audit.actor.user.id
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_audit_actor_user_id
+      tag: set_user_id_from_audit_actor_user_id_82520050
       copy_from: canva.audit.actor.user.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_user_id_into_related_user_23cff8dc
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - rename:
       field: json.context.device_id
-      tag: rename_context_device_id
+      tag: rename_context_device_id_a7c6a3b2
       target_field: canva.audit.context.device_id
       ignore_missing: true
   - set:
       field: device.id
-      tag: set_device_id_from_audit_context_device_id
+      tag: set_device_id_from_audit_context_device_id_1470e23f
       copy_from: canva.audit.context.device_id
       ignore_empty_value: true
   - convert:
       field: json.context.ip_address
-      tag: convert_context_ip_address_to_ip
+      tag: convert_context_ip_address_to_ip_1be0c72e
       target_field: canva.audit.context.ip_address
       type: ip
       ignore_missing: true
@@ -752,7 +752,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_audit_context_ip_address
+      tag: set_source_ip_from_audit_context_ip_address_63fba6d7
       copy_from: canva.audit.context.ip_address
       ignore_empty_value: true
   - geoip:
@@ -762,64 +762,64 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_723473d3
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - rename:
       field: json.context.request_id
-      tag: rename_context_request_id
+      tag: rename_context_request_id_d14157e2
       target_field: canva.audit.context.request_id
       ignore_missing: true
   - rename:
       field: json.context.session
-      tag: rename_context_session
+      tag: rename_context_session_76e9d91c
       target_field: canva.audit.context.session
       ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_a9234d1f
       target_field: canva.audit.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_audit_id
+      tag: set_event_id_from_audit_id_e0cdc92f
       copy_from: canva.audit.id
       ignore_empty_value: true
   - rename:
       field: json.outcome.details.resource_id
-      tag: rename_outcome_details_resource_id
+      tag: rename_outcome_details_resource_id_e9d04614
       target_field: canva.audit.outcome.details.resource.id
       ignore_missing: true
   - rename:
       field: json.outcome.details.resource_type
-      tag: rename_outcome_details_resource_type
+      tag: rename_outcome_details_resource_type_291f9b20
       target_field: canva.audit.outcome.details.resource.type
       ignore_missing: true
   - rename:
       field: json.outcome.details.type
-      tag: rename_outcome_details_type
+      tag: rename_outcome_details_type_4773e229
       target_field: canva.audit.outcome.details.type
       ignore_missing: true
   - rename:
       field: json.outcome.details.user_id
-      tag: rename_outcome_details_user_id
+      tag: rename_outcome_details_user_id_88725a91
       target_field: canva.audit.outcome.details.user_id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_outcome_details_user_id_into_related_user
+      tag: append_canva_audit_outcome_details_user_id_into_related_user_888da9f3
       value: '{{{canva.audit.outcome.details.user_id}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.outcome?.details?.user_id != null
   - rename:
       field: json.outcome.result
-      tag: rename_outcome_result
+      tag: rename_outcome_result_ac08f0b2
       target_field: canva.audit.outcome.result
       ignore_missing: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_unknown
+      tag: set_event_outcome_to_unknown_8398e93e
       value: unknown
       if: ctx.canva?.audit?.outcome?.result != null
   - set:
@@ -836,165 +836,165 @@ processors:
       override: true
   - rename:
       field: json.target.id
-      tag: rename_target_id
+      tag: rename_target_id_a4db3f71
       target_field: canva.audit.target.id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_target_id_into_related_user
+      tag: append_canva_audit_target_id_into_related_user_a38904ff
       value: '{{{canva.audit.target.id}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.target?.id != null
   - rename:
       field: json.target.name
-      tag: rename_target_name
+      tag: rename_target_name_c57fe80c
       target_field: canva.audit.target.name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_target_name_into_related_user
+      tag: append_canva_audit_target_name_into_related_user_9bce7d78
       value: '{{{canva.audit.target.name}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.target?.name != null
   - rename:
       field: json.target.organization.id
-      tag: rename_target_organization_id
+      tag: rename_target_organization_id_91404108
       target_field: canva.audit.target.organization.id
       ignore_missing: true
   - rename:
       field: json.target.owner.organization.id
-      tag: rename_target_owner_organization_id
+      tag: rename_target_owner_organization_id_bec0c70f
       target_field: canva.audit.target.owner.organization.id
       ignore_missing: true
   - rename:
       field: json.target.owner.team.display_name
-      tag: rename_target_owner_team_display_name
+      tag: rename_target_owner_team_display_name_90b84701
       target_field: canva.audit.target.owner.team.display_name
       ignore_missing: true
   - rename:
       field: json.target.owner.team.id
-      tag: rename_target_owner_team_id
+      tag: rename_target_owner_team_id_737c6b7c
       target_field: canva.audit.target.owner.team.id
       ignore_missing: true
   - rename:
       field: json.target.owner.type
-      tag: rename_target_owner_type
+      tag: rename_target_owner_type_78f295e1
       target_field: canva.audit.target.owner.type
       ignore_missing: true
   - rename:
       field: json.target.owner.user.display_name
-      tag: rename_target_owner_user_display_name
+      tag: rename_target_owner_user_display_name_05e386ac
       target_field: canva.audit.target.owner.user.display_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_target_owner_user_display_name_into_related_user
+      tag: append_canva_audit_target_owner_user_display_name_into_related_user_d057f32f
       value: '{{{canva.audit.target.owner.user.display_name}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.target?.owner?.user?.display_name != null
   - rename:
       field: json.target.owner.user.email
-      tag: rename_target_owner_user_email
+      tag: rename_target_owner_user_email_bd843270
       target_field: canva.audit.target.owner.user.email
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_target_owner_user_email_into_related_user
+      tag: append_canva_audit_target_owner_user_email_into_related_user_3506ab5e
       value: '{{{canva.audit.target.owner.user.email}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.target?.owner?.user?.email != null
   - rename:
       field: json.target.owner.user.id
-      tag: rename_target_owner_user_id
+      tag: rename_target_owner_user_id_e353e2f8
       target_field: canva.audit.target.owner.user.id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_canva_audit_target_owner_user_id_into_related_user
+      tag: append_canva_audit_target_owner_user_id_into_related_user_76edf484
       value: '{{{canva.audit.target.owner.user.id}}}'
       allow_duplicates: false
       if: ctx.canva?.audit?.target?.owner?.user?.id != null
   - rename:
       field: json.target.resource_type
-      tag: rename_target_resource_type
+      tag: rename_target_resource_type_65c8de07
       target_field: canva.audit.target.resource_type
       ignore_missing: true
   - rename:
       field: json.target.target_type
-      tag: rename_target_target_type
+      tag: rename_target_target_type_e68aa274
       target_field: canva.audit.target.target_type
       ignore_missing: true
   - rename:
       field: json.target.team.display_name
-      tag: rename_target_team_display_name
+      tag: rename_target_team_display_name_c1009fc1
       target_field: canva.audit.target.team.display_name
       ignore_missing: true
   - set:
       field: user.group.name
-      tag: set_user_group_full_name_from_target_team_display_name
+      tag: set_user_group_full_name_from_target_team_display_name_39357d9c
       copy_from: canva.audit.target.team.display_name
       ignore_empty_value: true
   - rename:
       field: json.target.team.id
-      tag: rename_target_team_id
+      tag: rename_target_team_id_e5ae1085
       target_field: canva.audit.target.team.id
       ignore_missing: true
   - set:
       field: user.group.id
-      tag: set_user_group_id_from_audit_target_team_id
+      tag: set_user_group_id_from_audit_target_team_id_276bf1e0
       copy_from: canva.audit.target.team.id
       ignore_empty_value: true
   - rename:
       field: json.target.user.display_name
-      tag: rename_target_user_display_name
+      tag: rename_target_user_display_name_47e780ca
       target_field: canva.audit.target.user.display_name
       ignore_missing: true
   - set:
       field: user.target.full_name
-      tag: set_user_target_full_name_from_audit_target_user_display_name
+      tag: set_user_target_full_name_from_audit_target_user_display_name_1244fb24
       copy_from: canva.audit.target.user.display_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_target_full_name_into_related_user
+      tag: append_user_target_full_name_into_related_user_e5db41d9
       value: '{{{user.target.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.full_name != null
   - rename:
       field: json.target.user.email
-      tag: rename_target_user_email
+      tag: rename_target_user_email_f42b1cf5
       target_field: canva.audit.target.user.email
       ignore_missing: true
   - set:
       field: user.target.email
-      tag: set_user_target_email_from_audit_target_user_email
+      tag: set_user_target_email_from_audit_target_user_email_febef382
       copy_from: canva.audit.target.user.email
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_target_email_into_related_user
+      tag: append_user_target_email_into_related_user_423dd870
       value: '{{{user.target.email}}}'
       allow_duplicates: false
       if: ctx.user?.target?.email != null
   - rename:
       field: json.target.user.id
-      tag: rename_target_user_id
+      tag: rename_target_user_id_4d117d1c
       target_field: canva.audit.target.user.id
       ignore_missing: true
   - set:
       field: user.target.id
-      tag: set_user_target_id_from_audit_target_user_id
+      tag: set_user_target_id_from_audit_target_user_id_e0b60d40
       copy_from: canva.audit.target.user.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_target_id_into_related_user
+      tag: append_user_target_id_into_related_user_410a320f
       value: '{{{user.target.id}}}'
       allow_duplicates: false
       if: ctx.user?.target?.id != null
   - date:
       field: json.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_d8578208
       target_field: canva.audit.timestamp
       formats:
         - ISO8601
@@ -1007,7 +1007,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_timestamp
+      tag: set_@timestamp_from_audit_timestamp_807d7635
       copy_from: canva.audit.timestamp
       ignore_empty_value: true
   - remove:
@@ -1034,15 +1034,15 @@ processors:
         - canva.audit.target.user.id
         - canva.audit.timestamp
         - canva.audit.action.managing_entity.organization.id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_caff6aa8
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_32b50a2a
       lang: painless
       source: |-
         boolean drop(Object object) {
@@ -1062,7 +1062,7 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
@@ -1072,13 +1072,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

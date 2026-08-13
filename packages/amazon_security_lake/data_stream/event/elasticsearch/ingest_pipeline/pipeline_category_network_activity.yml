@@ -4,7 +4,7 @@ description: Pipeline for processing Network Activity category.
 processors:
   - convert:
       field: ocsf.disposition_id
-      tag: convert_disposition_id_to_string
+      tag: convert_disposition_id_to_string_fecc6e3a
       type: string
       ignore_missing: true
   - foreach:
@@ -14,12 +14,13 @@ processors:
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_flag_ids_1adbb516
           field: _ingest._value.flag_ids
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_answers_flag_ids_to_string
+              tag: convert_answers_flag_ids_to_string_a3fc8781
               type: string
               ignore_missing: true
   - foreach:
@@ -30,7 +31,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.packet_uid
-          tag: convert_answers_packet_uid_to_string
+          tag: convert_answers_packet_uid_to_string_29358940
           type: string
           ignore_missing: true
   - foreach:
@@ -41,14 +42,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.ttl
-          tag: convert_answers_ttl_to_long
+          tag: convert_answers_ttl_to_long_6c029e5d
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ttl_0ed08252
                 field: _ingest._value.ttl
                 ignore_missing: true
             - append:
+                tag: append_error_message_1c7df6c4
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -59,7 +62,7 @@ processors:
       processor:
         append:
           field: dns.answers.data
-          tag: append_answers_data_into_dns_answer_data
+          tag: append_answers_data_into_dns_answer_data_b76e8b95
           value: '{{{_ingest._value.rdata}}}'
           allow_duplicates: false
   - foreach:
@@ -70,7 +73,7 @@ processors:
       processor:
         append:
           field: dns.id
-          tag: append_answers_packet_uid_into_dns_id
+          tag: append_answers_packet_uid_into_dns_id_4af6ada8
           value: '{{{_ingest._value.packet_uid}}}'
           allow_duplicates: false
   - foreach:
@@ -81,7 +84,7 @@ processors:
       processor:
         append:
           field: dns.answers.class
-          tag: append_answers_class_into_dns_answer_class
+          tag: append_answers_class_into_dns_answer_class_671ceda4
           value: '{{{_ingest._value.class}}}'
           allow_duplicates: false
   - foreach:
@@ -92,7 +95,7 @@ processors:
       processor:
         append:
           field: dns.answers.type
-          tag: append_answers_type_into_dns_answer_type
+          tag: append_answers_type_into_dns_answer_type_f935ccc1
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
   - foreach:
@@ -103,45 +106,45 @@ processors:
       processor:
         append:
           field: dns.answers.ttl
-          tag: append_answers_ttl_into_dns_answer_ttl
+          tag: append_answers_ttl_into_dns_answer_ttl_abb3719f
           value: '{{{_ingest._value.ttl}}}'
           allow_duplicates: false
   - convert:
       field: ocsf.query.opcode_id
-      tag: convert_query_opcode_id_to_string
+      tag: convert_query_opcode_id_to_string_8d307724
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.query.packet_uid
-      tag: convert_query_packet_uid_to_string
+      tag: convert_query_packet_uid_to_string_6e95d12c
       type: string
       ignore_missing: true
   - set:
       field: dns.question.name
-      tag: set_dns_question_name
+      tag: set_dns_question_name_35714868
       copy_from: ocsf.query.hostname
       ignore_empty_value: true
   - append:
       field: dns.id
-      tag: append_query_packet_uid_into_dns_id
+      tag: append_query_packet_uid_into_dns_id_63f20061
       value: '{{{ocsf.query.packet_uid}}}'
       allow_duplicates: false
       if: ctx.ocsf?.query?.packet_uid != null
   - append:
       field: dns.question.class
-      tag: append_query_class_into_dns_question_class
+      tag: append_query_class_into_dns_question_class_10cb5656
       value: '{{{ocsf.query.class}}}'
       allow_duplicates: false
       if: ctx.ocsf?.query?.class != null
   - append:
       field: dns.question.type
-      tag: append_query_type_into_dns_question_type
+      tag: append_query_type_into_dns_question_type_65ba57da
       value: '{{{ocsf.query.type}}}'
       allow_duplicates: false
       if: ctx.ocsf?.query?.type != null
   - date:
       field: ocsf.query_time_dt
-      tag: date_query_time_dt
+      tag: date_query_time_dt_244ebc0f
       target_field: ocsf.query_time_dt
       formats:
         - ISO8601
@@ -159,7 +162,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.query_time
-      tag: date_query_time
+      tag: date_query_time_fa3ff7fb
       target_field: ocsf.query_time
       formats:
         - UNIX_MS
@@ -175,17 +178,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: dns.response_code
-      tag: set_dns_response_code
+      tag: set_dns_response_code_05652dc2
       copy_from: ocsf.rcode
       ignore_empty_value: true
   - convert:
       field: ocsf.rcode_id
-      tag: convert_rcode_id_to_string
+      tag: convert_rcode_id_to_string_2b9a5402
       type: string
       ignore_missing: true
   - date:
       field: ocsf.response_time_dt
-      tag: date_response_time_dt
+      tag: date_response_time_dt_1a08948c
       target_field: ocsf.response_time_dt
       formats:
         - ISO8601
@@ -203,7 +206,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.response_time
-      tag: date_response_time
+      tag: date_response_time_788eb283
       target_field: ocsf.response_time
       formats:
         - UNIX_MS
@@ -219,7 +222,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_dns_header_flags
+      tag: script_dns_header_flags_936c3f17
       if: ctx.ocsf?.answers instanceof List
       params:
         'Authoritative Answer': 'AA'
@@ -252,7 +255,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.http_response.code
-      tag: convert_http_response_code_to_long
+      tag: convert_http_response_code_to_long_620ba8f6
       type: long
       ignore_missing: true
       on_failure:
@@ -266,12 +269,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
-      tag: set_http_response_status_code
+      tag: set_http_response_status_code_d25f15c3
       copy_from: ocsf.http_response.code
       ignore_empty_value: true
   - convert:
       field: ocsf.http_response.length
-      tag: convert_http_response_length_to_long
+      tag: convert_http_response_length_to_long_95fa6526
       type: long
       ignore_missing: true
       on_failure:
@@ -285,12 +288,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.body.bytes
-      tag: set_http_response_body_bytes
+      tag: set_http_response_body_bytes_c9a779f4
       copy_from: ocsf.http_response.length
       ignore_empty_value: true
   - convert:
       field: ocsf.http_response.latency
-      tag: convert_http_response_latency_to_long
+      tag: convert_http_response_latency_to_long_1785c5bd
       type: long
       ignore_missing: true
       on_failure:
@@ -304,12 +307,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.body.content
-      tag: set_http_response_body_content
+      tag: set_http_response_body_content_d8f249dd
       copy_from: ocsf.http_response.message
       ignore_empty_value: true
   - convert:
       field: ocsf.http_status
-      tag: convert_http_status_to_long
+      tag: convert_http_status_to_long_e1558e88
       type: long
       ignore_missing: true
       on_failure:
@@ -323,7 +326,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.lease_dur
-      tag: convert_lease_dur_to_long
+      tag: convert_lease_dur_to_long_10e0ed52
       type: long
       ignore_missing: true
       on_failure:
@@ -337,22 +340,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.hostname
-      tag: set_observer_hostname
+      tag: set_observer_hostname_d0aaeee9
       copy_from: ocsf.relay.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_relay_hostname_into_related_hosts
+      tag: append_relay_hostname_into_related_hosts_66c880b6
       value: '{{{ocsf.relay.hostname}}}'
       allow_duplicates: false
       if: ctx.ocsf?.relay?.hostname != null
   - remove:
       field: ocsf.relay.ip
-      tag: remove_empty_relay_ip
+      tag: remove_empty_relay_ip_f814f7d9
       if: ctx.ocsf?.relay?.ip == '' || ctx.ocsf?.relay?.ip == '-'
   - convert:
       field: ocsf.relay.ip
-      tag: convert_relay_ip_to_ip
+      tag: convert_relay_ip_to_ip_cd756451
       type: ip
       ignore_missing: true
       on_failure:
@@ -366,12 +369,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.ip
-      tag: set_observer_ip
+      tag: set_observer_ip_ba626666
       copy_from: ocsf.relay.ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_relay_ip_into_related_ip
+      tag: append_relay_ip_into_related_ip_abfc3e2f
       value: '{{{ocsf.relay.ip}}}'
       allow_duplicates: false
       if: ctx.ocsf?.relay?.ip != null
@@ -379,7 +382,7 @@ processors:
       field: ocsf.relay.mac
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub_relay_mac
+      tag: gsub_relay_mac_dc5a87b8
       ignore_missing: true
       on_failure:
         - remove:
@@ -392,7 +395,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: ocsf.relay.mac
-      tag: uppercase_relay_mac
+      tag: uppercase_relay_mac_c245c5cf
       ignore_missing: true
       if: ctx.ocsf?.relay?.mac != ''
       on_failure:
@@ -406,17 +409,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.mac
-      tag: set_observer_mac
+      tag: set_observer_mac_ca3f2c64
       copy_from: ocsf.relay.mac
       ignore_empty_value: true
   - set:
       field: observer.name
-      tag: set_observer_name
+      tag: set_observer_name_4dc77525
       copy_from: ocsf.relay.name
       ignore_empty_value: true
   - convert:
       field: ocsf.relay.subnet_prefix
-      tag: convert_relay_subnet_prefix_to_long
+      tag: convert_relay_subnet_prefix_to_long_60665395
       type: long
       ignore_missing: true
       on_failure:
@@ -430,17 +433,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.type
-      tag: set_observer_type
+      tag: set_observer_type_e738f6f0
       copy_from: ocsf.relay.type
       ignore_empty_value: true
   - convert:
       field: ocsf.relay.type_id
-      tag: convert_relay_type_id_to_string
+      tag: convert_relay_type_id_to_string_b52eadbf
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.is_renewal
-      tag: convert_is_renewal_to_boolean
+      tag: convert_is_renewal_to_boolean_e9e8e578
       type: boolean
       ignore_missing: true
       on_failure:
@@ -454,12 +457,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.request.id
-      tag: set_http_request_id
+      tag: set_http_request_id_99c1e09b
       copy_from: ocsf.request.uid
       ignore_empty_value: true
   - convert:
       field: ocsf.response.code
-      tag: convert_response_code_to_long
+      tag: convert_response_code_to_long_400056c9
       type: long
       ignore_missing: true
       on_failure:
@@ -473,17 +476,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
-      tag: set_http_response_status_code_d3e275b9
+      tag: set_http_response_status_code_2034cce4
       copy_from: ocsf.response.code
       ignore_empty_value: true
   - set:
       field: tls.server.certificate_chain
-      tag: set_tls_server_certificate_chain
+      tag: set_tls_server_certificate_chain_1eeae3cd
       copy_from: ocsf.certificate_chain
       ignore_empty_value: true
   - convert:
       field: ocsf.remote_display.color_depth
-      tag: convert_remote_display_color_depth_to_long
+      tag: convert_remote_display_color_depth_to_long_074946e3
       type: long
       ignore_missing: true
       on_failure:
@@ -497,7 +500,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.remote_display.physical_height
-      tag: convert_remote_display_physical_height_to_long
+      tag: convert_remote_display_physical_height_to_long_92498c14
       type: long
       ignore_missing: true
       on_failure:
@@ -511,7 +514,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.remote_display.physical_orientation
-      tag: convert_remote_display_physical_orientation_to_long
+      tag: convert_remote_display_physical_orientation_to_long_0b99ec28
       type: long
       ignore_missing: true
       on_failure:
@@ -525,7 +528,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.remote_display.physical_width
-      tag: convert_remote_display_physical_width_to_long
+      tag: convert_remote_display_physical_width_to_long_0d3bc82e
       type: long
       ignore_missing: true
       on_failure:
@@ -539,7 +542,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.remote_display.scale_factor
-      tag: convert_remote_display_scale_factor_to_long
+      tag: convert_remote_display_scale_factor_to_long_237f3fc6
       type: long
       ignore_missing: true
       on_failure:
@@ -553,7 +556,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.dce_rpc.opnum
-      tag: convert_dce_rpc_opnum_to_long
+      tag: convert_dce_rpc_opnum_to_long_e4fe683b
       type: long
       ignore_missing: true
       on_failure:
@@ -567,7 +570,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.dce_rpc.rpc_interface.ack_reason
-      tag: convert_dce_rpc_rpc_interface_ack_reason_to_long
+      tag: convert_dce_rpc_rpc_interface_ack_reason_to_long_4e0cdc1d
       type: long
       ignore_missing: true
       on_failure:
@@ -581,7 +584,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.dce_rpc.rpc_interface.ack_result
-      tag: convert_dce_rpc_rpc_interface_ack_result_to_long
+      tag: convert_dce_rpc_rpc_interface_ack_result_to_long_2d7508b2
       type: long
       ignore_missing: true
       on_failure:
@@ -595,34 +598,34 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.share_type_id
-      tag: convert_share_type_id_to_string
+      tag: convert_share_type_id_to_string_d969a4f3
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.client_hassh.fingerprint.algorithm_id
-      tag: convert_client_hassh_fingerprint_algorithm_id_to_string
+      tag: convert_client_hassh_fingerprint_algorithm_id_to_string_fb4a0422
       type: string
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_client_hassh_fingerprint_value_into_related_hash
+      tag: append_client_hassh_fingerprint_value_into_related_hash_9f8fcd42
       value: '{{{ocsf.client_hassh.fingerprint.value}}}'
       allow_duplicates: false
       if: ctx.ocsf?.client_hassh?.fingerprint?.value != null
   - convert:
       field: ocsf.server_hassh.fingerprint.algorithm_id
-      tag: convert_server_hassh_fingerprint_algorithm_id_to_string
+      tag: convert_server_hassh_fingerprint_algorithm_id_to_string_cb5f9213
       type: string
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_server_hassh_fingerprint_value_into_related_hash
+      tag: append_server_hassh_fingerprint_value_into_related_hash_2fd863d8
       value: '{{{ocsf.server_hassh.fingerprint.value}}}'
       allow_duplicates: false
       if: ctx.ocsf?.server_hassh?.fingerprint?.value != null
   - convert:
       field: ocsf.port
-      tag: convert_port_to_long
+      tag: convert_port_to_long_601e3fae
       type: long
       ignore_missing: true
       on_failure:
@@ -642,19 +645,21 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_codes_to_long
+          tag: convert_codes_to_long_d04be2a3
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_c38e2edb
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_9493fb7e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.attempt
-      tag: convert_attempt_to_long
+      tag: convert_attempt_to_long_253a9283
       type: long
       ignore_missing: true
       on_failure:
@@ -668,12 +673,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.direction_id
-      tag: convert_direction_id_to_string
+      tag: convert_direction_id_to_string_833fd4c7
       type: string
       ignore_missing: true
   - set:
       field: email.cc.address
-      tag: set_email_cc_address
+      tag: set_email_cc_address_31f17a1f
       copy_from: ocsf.email.cc
       ignore_empty_value: true
   - foreach:
@@ -685,51 +690,51 @@ processors:
         append:
           field: related.user
           value: '{{{_ingest._value}}}'
-          tag: append_email_cc_into_related_user
+          tag: append_email_cc_into_related_user_72012ffe
           allow_duplicates: false
   - append:
       field: related.user
-      tag: append_email_delivered_to_into_related_user
+      tag: append_email_delivered_to_into_related_user_2de3c388
       value: '{{{ocsf.email.delivered_to}}}'
       allow_duplicates: false
       if: ctx.ocsf?.email?.delivered_to != null
   - set:
       field: email.local_id
-      tag: set_email_local_id
+      tag: set_email_local_id_b1f339bf
       copy_from: ocsf.email.uid
       ignore_empty_value: true
   - append:
       field: email.from.address
-      tag: append_email_from_into_email_from_address
+      tag: append_email_from_into_email_from_address_34266509
       value: '{{{ocsf.email.from}}}'
       allow_duplicates: false
       if: ctx.ocsf?.email?.from != null
   - append:
       field: related.user
-      tag: append_email_from_into_related_user
+      tag: append_email_from_into_related_user_9bae879e
       value: '{{{ocsf.email.from}}}'
       allow_duplicates: false
       if: ctx.ocsf?.email?.from != null
   - set:
       field: email.message_id
-      tag: set_email_message_id
+      tag: set_email_message_id_2503f686
       copy_from: ocsf.email.message_uid
       ignore_empty_value: true
   - append:
       field: email.reply_to.address
-      tag: append_email_reply_to_into_email_reply_to_address
+      tag: append_email_reply_to_into_email_reply_to_address_f3d8f624
       value: '{{{ocsf.email.reply_to}}}'
       allow_duplicates: false
       if: ctx.ocsf?.email?.reply_to != null
   - append:
       field: related.user
-      tag: append_email_reply_to_into_related_user
+      tag: append_email_reply_to_into_related_user_7608f6e6
       value: '{{{ocsf.email.reply_to}}}'
       allow_duplicates: false
       if: ctx.ocsf?.email?.reply_to != null
   - append:
       field: related.user
-      tag: append_email_smtp_from_into_related_user
+      tag: append_email_smtp_from_into_related_user_ee49e319
       value: '{{{ocsf.email.smtp_from}}}'
       allow_duplicates: false
       if: ctx.ocsf?.email?.smtp_from != null
@@ -742,11 +747,11 @@ processors:
         append:
           field: related.user
           value: '{{{_ingest._value}}}'
-          tag: append_email_smtp_to_into_related_user
+          tag: append_email_smtp_to_into_related_user_30c5b955
           allow_duplicates: false
   - convert:
       field: ocsf.email.size
-      tag: convert_email_size_to_long
+      tag: convert_email_size_to_long_96bb62dd
       type: long
       ignore_missing: true
       on_failure:
@@ -760,12 +765,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: email.subject
-      tag: set_email_subject_address
+      tag: set_email_subject_address_71ec02fd
       copy_from: ocsf.email.subject
       ignore_empty_value: true
   - set:
       field: email.to.address
-      tag: set_email_to_address
+      tag: set_email_to_address_d74fd98a
       copy_from: ocsf.email.to
       ignore_empty_value: true
   - foreach:
@@ -777,10 +782,10 @@ processors:
         append:
           field: related.user
           value: '{{{_ingest._value}}}'
-          tag: append_email_to_into_related_user
+          tag: append_email_to_into_related_user_63f51980
           allow_duplicates: false
   - script:
-      tag: drop_empty_x_originating_ip
+      tag: drop_empty_x_originating_ip_046475c7
       if: ctx.ocsf?.email?.x_originating_ip instanceof List
       source: |-
         ctx.ocsf.email.x_originating_ip.removeIf(v -> v == '-');
@@ -792,14 +797,16 @@ processors:
       processor:
         convert:
           field: _ingest._value
-          tag: convert_email_x_originating_ip_to_ip
+          tag: convert_email_x_originating_ip_to_ip_02e54dfe
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_22f2aac4
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_1b52ae26
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -811,11 +818,11 @@ processors:
         append:
           field: related.ip
           value: '{{{_ingest._value}}}'
-          tag: append_email_x_originating_ip_into_related_ip
+          tag: append_email_x_originating_ip_into_related_ip_9ed98515
           allow_duplicates: false
   - date:
       field: ocsf.expiration_time_dt
-      tag: date_expiration_time_dt
+      tag: date_expiration_time_dt_78e85dac
       target_field: ocsf.expiration_time_dt
       formats:
         - ISO8601
@@ -833,7 +840,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.expiration_time
-      tag: date_expiration_time
+      tag: date_expiration_time_5f7e7a13
       target_field: ocsf.expiration_time
       formats:
         - UNIX_MS
@@ -849,38 +856,38 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: email.local_id
-      tag: set_email_local_id_from_email_uid
+      tag: set_email_local_id_from_email_uid_d8c05394
       copy_from: ocsf.email_uid
       ignore_empty_value: true
   - convert:
       field: ocsf.url.category_ids
-      tag: convert_url_category_ids_to_string
+      tag: convert_url_category_ids_to_string_8a0bf5b0
       type: string
       ignore_missing: true
   - set:
       field: url.query
-      tag: set_url_query
+      tag: set_url_query_43fd3b3d
       copy_from: ocsf.url.query_string
       ignore_empty_value: true
   - set:
       field: url.domain
-      tag: set_url_domain
+      tag: set_url_domain_7cc880f0
       copy_from: ocsf.url.hostname
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_url_hostname_into_related_hosts
+      tag: append_url_hostname_into_related_hosts_dd30160c
       value: '{{{ocsf.url.hostname}}}'
       allow_duplicates: false
       if: ctx.ocsf?.url?.hostname != null
   - set:
       field: url.path
-      tag: set_url_path
+      tag: set_url_path_e6606de8
       copy_from: ocsf.url.path
       ignore_empty_value: true
   - convert:
       field: ocsf.url.port
-      tag: convert_url_port_to_long
+      tag: convert_url_port_to_long_2c755c71
       type: long
       ignore_missing: true
       on_failure:
@@ -894,44 +901,47 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: url.port
-      tag: set_url_port
+      tag: set_url_port_b96024b4
       copy_from: ocsf.url.port
       ignore_empty_value: true
   - set:
       field: url.scheme
-      tag: set_url_scheme
+      tag: set_url_scheme_af07a9c3
       copy_from: ocsf.url.scheme
       ignore_empty_value: true
   - set:
       field: url.subdomain
-      tag: set_url_subdomain
+      tag: set_url_subdomain_5b7e3989
       copy_from: ocsf.url.subdomain
       ignore_empty_value: true
   - set:
       field: url.original
-      tag: set_url_original
+      tag: set_url_original_783019e5
       copy_from: ocsf.url.url_string
       ignore_empty_value: true
   - set:
       field: email.attachments.file.size
-      tag: append_ocsf_file_size_into_related_email_attachments_file_size
+      tag: set_ocsf_file_size_into_related_email_attachments_file_size_c0ff5d8f
       copy_from: ocsf.file.size
       ignore_empty_value: true
       if: ctx.ocsf?.file?.size != null && ctx.ocsf?.class_uid == "4011" && ctx.ocsf?.category_uid == "4"
   - set:
       field: email.attachments.file.name
-      tag: append_ocsf_file_name_into_related_email_attachments_file_name
+      tag: set_ocsf_file_name_into_related_email_attachments_file_name_38e5d14a
       copy_from: ocsf.file.name
       ignore_empty_value: true
       if: ctx.ocsf?.file?.name != null && ctx.ocsf?.class_uid == "4011" && ctx.ocsf?.category_uid == "4"
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

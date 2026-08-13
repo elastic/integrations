@@ -61,7 +61,7 @@ processors:
 
 - remove:
     field: message
-    tag: remove_message
+    tag: remove_message_facc4822
     ignore_missing: true
     if: ctx.event?.original != null
     description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -104,7 +104,7 @@ processors:
 - convert:
     field: bitdefender.event.auto_renew_period
     type: long
-    tag: convert_auto_renew_period_to_long
+    tag: convert_auto_renew_period_to_long_5db1b117
     ignore_missing: true
     on_failure:
       - remove:
@@ -119,7 +119,7 @@ processors:
 - convert:
     field: bitdefender.event.blocked
     type: long
-    tag: convert_blocked_to_long
+    tag: convert_blocked_to_long_6e722511
     ignore_missing: true
     on_failure:
       - remove:
@@ -134,7 +134,7 @@ processors:
 - convert:
     field: bitdefender.event.cleaned
     type: long
-    tag: convert_cleaned_to_long
+    tag: convert_cleaned_to_long_ccda1771
     ignore_missing: true
     on_failure:
       - remove:
@@ -149,7 +149,7 @@ processors:
 - convert:
     field: bitdefender.event.deleted
     type: long
-    tag: convert_deleted_to_long
+    tag: convert_deleted_to_long_00178883
     ignore_missing: true
     on_failure:
       - remove:
@@ -164,7 +164,7 @@ processors:
 - convert:
     field: bitdefender.event.ignored
     type: long
-    tag: convert_ignored_to_long
+    tag: convert_ignored_to_long_2b4cfb29
     ignore_missing: true
     on_failure:
       - remove:
@@ -179,7 +179,7 @@ processors:
 - convert:
     field: bitdefender.event.deviceClass
     type: integer
-    tag: convert_deviceClass_to_int
+    tag: convert_deviceClass_to_int_14e2e737
     ignore_missing: true
     on_failure:
       - remove:
@@ -194,7 +194,7 @@ processors:
 - convert:
     field: bitdefender.event.license_limit
     type: long
-    tag: convert_license_limit_to_long
+    tag: convert_license_limit_to_long_1d6e435c
     ignore_missing: true
     on_failure:
       - remove:
@@ -209,7 +209,7 @@ processors:
 - convert:
     field: bitdefender.event.mailboxes
     type: long
-    tag: convert_mailboxes_to_long
+    tag: convert_mailboxes_to_long_038ad37d
     ignore_missing: true
     on_failure:
       - remove:
@@ -224,7 +224,7 @@ processors:
 - convert:
     field: bitdefender.event.minimal_commitment_usage_endpoints
     type: long
-    tag: convert_minimal_commitment_usage_endpoints_to_long
+    tag: convert_minimal_commitment_usage_endpoints_to_long_bfaa2462
     ignore_missing: true
     on_failure:
       - remove:
@@ -239,7 +239,7 @@ processors:
 - convert:
     field: bitdefender.event.parent_process_id
     type: long
-    tag: convert_parent_process_id_to_long
+    tag: convert_parent_process_id_to_long_ab9d827c
     ignore_missing: true
     on_failure:
       - remove:
@@ -254,7 +254,7 @@ processors:
 - convert:
     field: bitdefender.event.present
     type: long
-    tag: convert_present_to_long
+    tag: convert_present_to_long_4ac816ae
     ignore_missing: true
     on_failure:
       - remove:
@@ -269,7 +269,7 @@ processors:
 - convert:
     field: bitdefender.event.productId
     type: long
-    tag: convert_productId_to_long
+    tag: convert_productId_to_long_ace7a787
     ignore_missing: true
     on_failure:
       - remove:
@@ -284,7 +284,7 @@ processors:
 - convert:
     field: bitdefender.event.quarantined
     type: long
-    tag: convert_quarantined_to_long
+    tag: convert_quarantined_to_long_4b139684
     ignore_missing: true
     on_failure:
       - remove:
@@ -299,7 +299,7 @@ processors:
 - convert:
     field: bitdefender.event.vendorId
     type: long
-    tag: convert_vendorId_to_long
+    tag: convert_vendorId_to_long_613a5198
     ignore_missing: true
     on_failure:
       - remove:
@@ -314,7 +314,7 @@ processors:
 - convert:
     field: bitdefender.event.storage_ip
     type: ip
-    tag: convert_storage_ip_to_ip
+    tag: convert_storage_ip_to_ip_29c0ce15
     ignore_missing: true
     on_failure:
       - remove:
@@ -493,7 +493,7 @@ processors:
     ignore_missing: true
 
 - script:
-    tag: script_c3e4c8a5
+    tag: script_map_organization_id_to_organization_c3e4c8a5
     description: Map organization ID to organization name
     lang: painless
     if: 'ctx.organization?.id != null && ctx._tmp?.tenants != null'
@@ -527,7 +527,7 @@ processors:
 
 ### work out event.kind
 - script:
-    tag: script_8af05528
+    tag: script_work_out_event_kind_8af05528
     lang: painless
     params:
       "adcloud": "event"
@@ -573,7 +573,7 @@ processors:
       }
 # work out event.category
 - script:
-    tag: script_233482ea
+    tag: script_work_out_event_category_233482ea
     lang: painless
     params:
       "adcloud": ["database"]
@@ -619,7 +619,7 @@ processors:
       }
 # work out event.type
 - script:
-    tag: script_b960eadf
+    tag: script_work_out_event_type_b960eadf
     lang: painless
     params:
       "adcloud": ["info"]
@@ -665,7 +665,7 @@ processors:
       }
 # translate module code to a useful description
 - script:
-    tag: script_eb1ef3f8
+    tag: script_translate_module_code_to_useful_eb1ef3f8
     lang: painless
     params:
       "adcloud": "Cloud AD Integration"
@@ -842,6 +842,7 @@ processors:
     if: ctx.bitdefender?.event?.computer_ip instanceof List
     processor:
       append:
+        tag: append_host_ip_d8802cf2
         field: host.ip
         value: '{{{_ingest._value}}}'
         allow_duplicates: false
@@ -1572,6 +1573,7 @@ processors:
     if: ctx.host?.ip instanceof List
     processor:
       append:
+        tag: append_related_ip_cc4d8a3d
         field: related.ip
         value: '{{{_ingest._value}}}'
         allow_duplicates: false
@@ -1741,7 +1743,7 @@ processors:
 
 ### cleanup
 - script:
-    tag: script_e4fcb8ee
+    tag: script_drops_null_empty_values_recursively_e4fcb8ee
     description: Drops null/empty values recursively.
     lang: painless
     source: |
@@ -1776,7 +1778,7 @@ processors:
 
 ### TODO - actually clean out the bitdefender fields properly from those we can be certain are ECS mapped
 - remove:
-    tag: remove_9028662e
+    tag: remove_todo_actually_clean_out_bitdefender_9028662e
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
     field:
       - bitdefender.event.id
@@ -1798,12 +1800,15 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
+    tag: append_error_message_206bb8ac
     field: error.message
     value: "{{{ _ingest.on_failure_message }}}"

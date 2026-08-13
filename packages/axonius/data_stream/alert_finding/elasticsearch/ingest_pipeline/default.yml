@@ -3,17 +3,17 @@ description: Pipeline for processing Alert Finding logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_f2e4d3c3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -23,48 +23,48 @@ processors:
 
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_4fab7c8d
       target_field: axonius.alert_finding
   # Fingerprint the full raw payload because the Axonius API does not expose a stable entity ID for alert finding assets; the transform keys on this value for deduplication.
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_event_original
+      tag: fingerprint_event_original_f71753bb
       target_field: axonius.alert_finding.transform_unique_id
       ignore_missing: true
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       field: event.kind
       value: alert
   - convert:
       field: axonius.alert_finding.adapter_list_length
-      tag: convert_adapter_list_length_to_long
+      tag: convert_adapter_list_length_to_long_6a6f75cc
       type: long
       ignore_missing: true
       on_failure:
         - remove:
             field: axonius.alert_finding.adapter_list_length
             ignore_missing: true
-            tag: remove_adapter_list_length_to_long
+            tag: remove_adapter_list_length_to_long_b2522728
         - append:
             tag: append_error_message_a2a35f6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_rename_fields
+      tag: script_rename_fields_bca05752
       lang: painless
       description: Renames all axonius.alert_finding.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
@@ -81,17 +81,17 @@ processors:
         }
   - set:
       field: event.id
-      tag: set_event_id_from_alert_finding_alert_config_id
+      tag: set_event_id_from_alert_finding_alert_config_id_a1b1fa90
       copy_from: axonius.alert_finding.alert_config_id
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_from_alert_finding_finding_message
+      tag: set_message_from_alert_finding_finding_message_24653c0c
       copy_from: axonius.alert_finding.finding_message
       ignore_empty_value: true
   - date:
       field: axonius.alert_finding.trigger_date
-      tag: date_trigger_date
+      tag: date_trigger_date_5caae440
       target_field: axonius.alert_finding.trigger_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -102,29 +102,29 @@ processors:
         - remove:
             field: axonius.alert_finding.trigger_date
             ignore_missing: true
-            tag: remove_trigger_date
+            tag: remove_trigger_date_ffc9cec4
         - append:
             tag: append_error_message_ae374f12
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_alert_finding_trigger_date
+      tag: set_@timestamp_from_alert_finding_trigger_date_8d7abc21
       copy_from: axonius.alert_finding.trigger_date
       ignore_empty_value: true
   - set:
       field: axonius.alert_finding.friendly_name
-      tag: set_friendly_name_from_alert_finding_finding_name
+      tag: set_friendly_name_from_alert_finding_finding_name_5e8252fd
       copy_from: axonius.alert_finding.finding_name
       ignore_empty_value: true
   - remove:
       field:
         - axonius.alert_finding.finding_message
         - axonius.alert_finding.trigger_date
-      tag: remove_alert_finding_fields_mapped_to_ecs
+      tag: remove_alert_finding_fields_mapped_to_ecs_e0eb8fa0
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -151,11 +151,12 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -163,9 +164,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

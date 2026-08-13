@@ -3,40 +3,45 @@ description: Pipeline for processing firewall logs.
 processors:
   - foreach:
       field: axonius.network.inbound_rules
-      tag: foreach_inbound_rules_from_port
+      tag: foreach_inbound_rules_from_port_2a5836f6
       if: ctx.axonius?.network?.inbound_rules instanceof List
       processor:
         convert:
           field: _ingest._value.from_port
-          tag: convert_inbound_rules_from_port_to_long
+          tag: convert_inbound_rules_from_port_to_long_b2316b7e
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_from_port_b1260eac
                 field: _ingest._value.from_port
                 ignore_missing: true
             - append:
+                tag: append_error_message_1fc2e530
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.inbound_rules
-      tag: foreach_inbound_rules_to_port
+      tag: foreach_inbound_rules_to_port_f069194e
       if: ctx.axonius?.network?.inbound_rules instanceof List
       processor:
         convert:
           field: _ingest._value.to_port
-          tag: convert_inbound_rules_to_port_to_long
+          tag: convert_inbound_rules_to_port_to_long_415a544c
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_to_port_4c2d2d6c
                 field: _ingest._value.to_port
                 ignore_missing: true
             - append:
+                tag: append_error_message_2b45c952
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -44,9 +49,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

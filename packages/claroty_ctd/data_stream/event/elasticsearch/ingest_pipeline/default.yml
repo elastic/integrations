@@ -3,7 +3,7 @@ description: Pipeline for processing Event logs.
 processors:
   - script:
       description: Drops fields which have N/A values recursively.
-      tag: script_to_drop_N/A_values_fields
+      tag: script_to_drop_N/A_values_fields_be39f122
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -21,24 +21,24 @@ processors:
         drop(ctx);
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - script:
       lang: painless
-      tag: script_to_set_event_kind_type_catgeory
+      tag: script_to_set_event_kind_type_catgeory_95a1e100
       description: Script to set event_kind, event_category, event_type.
       if: ctx.cef?.device?.event_class_id != null
       source: |
@@ -61,32 +61,32 @@ processors:
       field: cef.device.event_class_id
       pattern: '%{cef.device.event_class_id}-%{claroty_ctd.event.class_type}'
       if: ctx.cef?.device?.event_class_id != null
-      tag: dissect_event_class_type_for_alert
+      tag: dissect_event_class_type_for_alert_9f40b5e3
       ignore_failure: true
   - dissect:
       field: cef.device.event_class_id
       pattern: '%{cef.device.event_class_id}/%{claroty_ctd.event.class_type}'
       if: ctx.cef?.device?.event_class_id != null
-      tag: dissect_event_class_type_for_event
+      tag: dissect_event_class_type_for_event_ae9ede36
       ignore_failure: true
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_74b4ac5d
       copy_from: cef.device.vendor
       ignore_empty_value: true
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_4499d340
       copy_from: cef.device.product
       ignore_empty_value: true
   - set:
       field: observer.version
-      tag: set_observer_version
+      tag: set_observer_version_0497f982
       copy_from: cef.device.version
       ignore_empty_value: true
   - convert:
       field: cef.severity
-      tag: convert_Ctdseverity_to_long
+      tag: convert_Ctdseverity_to_long_6ffdbabe
       target_field: claroty_ctd.event.severity
       type: long
       ignore_missing: true
@@ -97,31 +97,31 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.name
-      tag: rename_cef_name
+      tag: rename_cef_name_392f103a
       target_field: claroty_ctd.event.name
       ignore_missing: true
   - rename:
       field: cef.version
-      tag: rename_cef_version
+      tag: rename_cef_version_0cb577bf
       target_field: claroty_ctd.event.version
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdAction
-      tag: rename_CtdAction
+      tag: rename_CtdAction_547fb6db
       target_field: claroty_ctd.event.action.value
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_event_action_value
+      tag: set_event_action_from_event_action_value_eb9ab7fa
       copy_from: claroty_ctd.event.action.value
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
@@ -132,7 +132,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
@@ -142,28 +142,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdActionStatus
-      tag: rename_CtdActionStatus
+      tag: rename_CtdActionStatus_f6861235
       target_field: claroty_ctd.event.action.status
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdAlertId
-      tag: rename_CtdAlertId
+      tag: rename_CtdAlertId_ce64546d
       target_field: claroty_ctd.event.alert.id
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdAlertLink
-      tag: rename_CtdAlertLink
+      tag: rename_CtdAlertLink_90505b98
       target_field: claroty_ctd.event.alert.link
       ignore_missing: true
   - append:
       field: event.reference
-      tag: append_CtdAlertLink_into_related_ip
+      tag: append_CtdAlertLink_into_related_ip_97593d18
       value: "{{{claroty_ctd.event.alert.link}}}"
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.alert?.link != null
   - convert:
       field: cef.extensions.CtdAlertScore
-      tag: convert_CtdAlertScore_to_long
+      tag: convert_CtdAlertScore_to_long_7ad11c93
       target_field: claroty_ctd.event.alert.score
       type: long
       ignore_missing: true
@@ -175,44 +175,44 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.risk_score
-      tag: set_event_risk_score_from_event_alert_score
+      tag: set_event_risk_score_from_event_alert_score_886f141b
       copy_from: claroty_ctd.event.alert.score
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdAlertStatus
-      tag: rename_CtdAlertStatus
+      tag: rename_CtdAlertStatus_bbd51284
       target_field: claroty_ctd.event.alert.status
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdAlertTypeId
-      tag: rename_CtdAlertTypeId
+      tag: rename_CtdAlertTypeId_0863f04c
       target_field: claroty_ctd.event.alert.type_id
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdApplication
-      tag: rename_CtdApplication
+      tag: rename_CtdApplication_2fa84112
       target_field: claroty_ctd.event.application
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdAssignedTo
-      tag: rename_CtdAssignedTo
+      tag: rename_CtdAssignedTo_949a881a
       target_field: claroty_ctd.event.assigned_to
       ignore_missing: true
   - append:
       field: user.name
-      tag: append_user_name_from_event_assigned_to
+      tag: append_user_name_from_event_assigned_to_5642d25d
       value: '{{{claroty_ctd.event.assigned_to}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.assigned_to != null
   - append:
       field: related.user
-      tag: append_CtdAssignedTo_into_related.user
+      tag: append_CtdAssignedTo_into_related.user_c340b9b2
       value: '{{{claroty_ctd.event.assigned_to}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.assigned_to != null
   - convert:
       field: cef.extensions.CtdBusyDmA
-      tag: convert_CtdBusyDmA_to_double
+      tag: convert_CtdBusyDmA_to_double_05328bb8
       target_field: claroty_ctd.event.busy.dm.a_value
       type: double
       ignore_missing: true
@@ -224,7 +224,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdBusyDm
-      tag: convert_CtdBusyDm_to_double
+      tag: convert_CtdBusyDm_to_double_855b7daa
       target_field: claroty_ctd.event.busy.dm.value
       type: double
       ignore_missing: true
@@ -236,7 +236,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdBusyFd
-      tag: convert_CtdBusyFd_to_double
+      tag: convert_CtdBusyFd_to_double_f5c5e535
       target_field: claroty_ctd.event.busy.fd
       type: double
       ignore_missing: true
@@ -248,7 +248,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdBusySdaA
-      tag: convert_CtdBusySdaA_to_double
+      tag: convert_CtdBusySdaA_to_double_9f5718f9
       target_field: claroty_ctd.event.busy.sda.a_value
       type: double
       ignore_missing: true
@@ -260,7 +260,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdBusySdaB
-      tag: convert_CtdBusySdaB_to_double
+      tag: convert_CtdBusySdaB_to_double_93fbd4d8
       target_field: claroty_ctd.event.busy.sda.b_value
       type: double
       ignore_missing: true
@@ -272,7 +272,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdBusySda
-      tag: convert_CtdBusySda_to_double
+      tag: convert_CtdBusySda_to_double_324620eb
       target_field: claroty_ctd.event.busy.sda.value
       type: double
       ignore_missing: true
@@ -284,7 +284,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdBusySr
-      tag: convert_CtdBusySr_to_double
+      tag: convert_CtdBusySr_to_double_6f8027ce
       target_field: claroty_ctd.event.busy.sr
       type: double
       ignore_missing: true
@@ -296,7 +296,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdCapsaverFolderCleanup
-      tag: convert_CtdCapsaverFolderCleanup_to_boolean
+      tag: convert_CtdCapsaverFolderCleanup_to_boolean_b72ce96c
       target_field: claroty_ctd.event.capsaver.folder_cleanup
       type: boolean
       if: ctx.cef?.extensions?.CtdCapsaverFolderCleanup != ""
@@ -308,27 +308,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdCapsaverUtilzationTest
-      tag: rename_CtdCapsaverUtilzationTest
+      tag: rename_CtdCapsaverUtilzationTest_f5fead9e
       target_field: claroty_ctd.event.capsaver.utilzation_test
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdCategory
-      tag: rename_CtdCategory
+      tag: rename_CtdCategory_56baae7e
       target_field: claroty_ctd.event.category
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrScheduler
-      tag: rename_CtdWrkrScheduler
+      tag: rename_CtdWrkrScheduler_24a64736
       target_field: claroty_ctd.event.worker.scheduler
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdCommunity
-      tag: rename_CtdCommunity
+      tag: rename_CtdCommunity_e6775cc5
       target_field: claroty_ctd.event.community
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdConcludeTime
-      tag: convert_CtdConcludeTime_to_long
+      tag: convert_CtdConcludeTime_to_long_58ac14a7
       target_field: claroty_ctd.event.conclude_time
       type: long
       ignore_missing: true
@@ -340,7 +340,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdCpu
-      tag: convert_CtdCpu_to_double
+      tag: convert_CtdCpu_to_double_76cde540
       target_field: claroty_ctd.event.cpu
       type: double
       ignore_missing: true
@@ -352,12 +352,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.cpu.usage
-      tag: set_host_cpu_usage_from_event_cpu
+      tag: set_host_cpu_usage_from_event_cpu_1d11beec
       copy_from: claroty_ctd.event.cpu
       ignore_empty_value: true
   - convert:
       field: cef.extensions.CtdCtrlSite
-      tag: convert_CtdCtrlSite_to_double
+      tag: convert_CtdCtrlSite_to_double_85d88ec2
       target_field: claroty_ctd.event.ctrl_site
       type: double
       ignore_missing: true
@@ -369,17 +369,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdCveId
-      tag: rename_CtdCveId
+      tag: rename_CtdCveId_9740ad8c
       target_field: claroty_ctd.event.cve.id
       ignore_missing: true
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id_from_event_cve_id
+      tag: set_vulnerability_id_from_event_cve_id_b7689c75
       copy_from: claroty_ctd.event.cve.id
       ignore_empty_value: true
   - date:
       field: cef.extensions.CtdCveModifiedDate
-      tag: date_CtdCveModifiedDate
+      tag: date_CtdCveModifiedDate_8e554f95
       target_field: claroty_ctd.event.cve.modified_date
       formats:
         - "dd MMM yyyy"
@@ -393,12 +393,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdCvePipeService
-      tag: rename_CtdCvePipeService
+      tag: rename_CtdCvePipeService_4f7338ea
       target_field: claroty_ctd.event.cve.pipe_service
       ignore_missing: true
   - date:
       field: cef.extensions.CtdCvePublishDate
-      tag: date_CtdCvePublishDate
+      tag: date_CtdCvePublishDate_12728b18
       target_field: claroty_ctd.event.cve.publish_date
       formats:
         - "dd MMM yyyy"
@@ -412,7 +412,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdCveScore
-      tag: convert_CtdCveScore_to_double
+      tag: convert_CtdCveScore_to_double_b0dbb740
       target_field: claroty_ctd.event.cve.score
       type: double
       ignore_missing: true
@@ -424,12 +424,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_event_cve_score
+      tag: set_vulnerability_score_base_from_event_cve_score_85ae8bc2
       copy_from: claroty_ctd.event.cve.score
       ignore_empty_value: true
   - convert:
       field: cef.extensions.CtdInsightsDefaultPassword
-      tag: convert_CtdInsightsDefaultPassword_to_boolean
+      tag: convert_CtdInsightsDefaultPassword_to_boolean_67d59586
       target_field: claroty_ctd.event.default_password
       type: boolean
       ignore_missing: true
@@ -441,12 +441,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdDestinationAssetType
-      tag: rename_CtdDestinationAssetType
+      tag: rename_CtdDestinationAssetType_63cdb12c
       target_field: claroty_ctd.event.destination.asset_type
       ignore_missing: true
   - split:
       field: cef.extensions.CtdDestinationHost
-      tag: split_CtdDestinationHost_into_destination_host
+      tag: split_CtdDestinationHost_into_destination_host_057d3db8
       target_field: claroty_ctd.event.destination.host
       separator: ',\s*'
       ignore_missing: true
@@ -458,22 +458,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.domain
-      tag: set_destination_domain_from_event_destination_host
+      tag: set_destination_domain_from_event_destination_host_3469155c
       copy_from: claroty_ctd.event.destination.host
       ignore_empty_value: true
   - foreach:
       field: claroty_ctd.event.destination.host
-      tag: foreach_claroty_ctd_event_destination_host
+      tag: foreach_claroty_ctd_event_destination_host_45b177ec
       if: ctx.claroty_ctd?.event?.destination?.host instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_destination_host_into_related_hosts
+          tag: append_destination_host_into_related_hosts_2091ffc2
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - split:
       field: cef.extensions.CtdDestinationIp
-      tag: split_CtdDestinationIp_into_destination_ip
+      tag: split_CtdDestinationIp_into_destination_ip_3f73d3b2
       target_field: claroty_ctd.event.destination.ip
       separator: ',\s*'
       ignore_missing: true
@@ -485,39 +485,41 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: claroty_ctd.event.destination.ip
-      tag: foreach_claroty_ctd_event_destination_ip_1
+      tag: foreach_claroty_ctd_event_destination_ip_1_b94fd2c0
       if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_destination_ip_to_ip
+          tag: convert_destination_ip_to_ip_3c199235
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_fee40662
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_b1b2d875
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_event_destination_ip
+      tag: set_destination_ip_from_event_destination_ip_1ddec1fd
       copy_from: claroty_ctd.event.destination.ip
       ignore_empty_value: true
   - foreach:
       field: claroty_ctd.event.destination.ip
-      tag: foreach_claroty_ctd_event_destination_ip_2
+      tag: foreach_claroty_ctd_event_destination_ip_2_2810525b
       if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_destination_ip_into_related_ip
+          tag: append_destination_ip_into_related_ip_1f8b609c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - split:
       field: cef.extensions.CtdDestinationMac
-      tag: split_CtdDestinationMac_into_destination_mac
+      tag: split_CtdDestinationMac_into_destination_mac_bd4513dc
       target_field: claroty_ctd.event.destination.mac
       separator: ',\s*'
       ignore_missing: true
@@ -529,27 +531,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.mac
-      tag: set_destination_mac_from_event_destination_mac
+      tag: set_destination_mac_from_event_destination_mac_af9c41b8
       copy_from: claroty_ctd.event.destination.mac
       ignore_empty_value: true
   - foreach:
       field: destination.mac
-      tag: foreach_destination_mac
+      tag: foreach_destination_mac_08d68898
       if: ctx.destination?.mac instanceof List
       processor:
         gsub:
           field: _ingest._value
-          tag: gsub_destination_mac
+          tag: gsub_destination_mac_9570ae9d
           pattern: '[-:.]'
           replacement: '-'
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_6f53c629
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: destination.mac
-      tag: uppercase_destination_mac
+      tag: uppercase_destination_mac_298d4fd8
       ignore_missing: true
       on_failure:
         - append:
@@ -558,17 +561,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdDestinationZone
-      tag: rename_CtdDestinationZone
+      tag: rename_CtdDestinationZone_e3c4b66d
       target_field: claroty_ctd.event.destination.zone
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdDeviceExternalId
-      tag: rename_CtdDeviceExternalId
+      tag: rename_CtdDeviceExternalId_f951102f
       target_field: claroty_ctd.event.device_external_id
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdDissectionCoverage
-      tag: convert_CtdDissectionCoverage_to_long
+      tag: convert_CtdDissectionCoverage_to_long_dc137c2e
       target_field: claroty_ctd.event.dissection.coverage
       type: long
       ignore_missing: true
@@ -580,7 +583,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyDcerpc
-      tag: convert_CtdDissectionEfficiencyDcerpc_to_double
+      tag: convert_CtdDissectionEfficiencyDcerpc_to_double_49e1821f
       target_field: claroty_ctd.event.dissection.efficiency.dcerpc
       type: double
       ignore_missing: true
@@ -592,7 +595,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyFactorytalkRna
-      tag: convert_CtdDissectionEfficiencyFactorytalkRna_to_double
+      tag: convert_CtdDissectionEfficiencyFactorytalkRna_to_double_50b1d1c5
       target_field: claroty_ctd.event.dissection.efficiency.factory_talk_rna
       type: double
       ignore_missing: true
@@ -604,7 +607,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyGeIfix
-      tag: convert_CtdDissectionEfficiencyGeIfix_to_double
+      tag: convert_CtdDissectionEfficiencyGeIfix_to_double_6114029d
       target_field: claroty_ctd.event.dissection.efficiency.ge_ifix
       type: double
       ignore_missing: true
@@ -616,7 +619,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyHttp
-      tag: convert_CtdDissectionEfficiencyHttp_to_double
+      tag: convert_CtdDissectionEfficiencyHttp_to_double_d6f87dd1
       target_field: claroty_ctd.event.dissection.efficiency.http
       type: double
       ignore_missing: true
@@ -628,7 +631,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyJrmi
-      tag: convert_CtdDissectionEfficiencyJrmi_to_double
+      tag: convert_CtdDissectionEfficiencyJrmi_to_double_022d3c79
       target_field: claroty_ctd.event.dissection.efficiency.jrmi
       type: double
       ignore_missing: true
@@ -640,7 +643,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyLdap
-      tag: convert_CtdDissectionEfficiencyLdap_to_double
+      tag: convert_CtdDissectionEfficiencyLdap_to_double_24cf809f
       target_field: claroty_ctd.event.dissection.efficiency.ldap
       type: double
       ignore_missing: true
@@ -652,7 +655,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyLlc
-      tag: convert_CtdDissectionEfficiencyLlc_to_double
+      tag: convert_CtdDissectionEfficiencyLlc_to_double_9a950e86
       target_field: claroty_ctd.event.dissection.efficiency.llc
       type: double
       ignore_missing: true
@@ -664,7 +667,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyMatrikonNopc
-      tag: convert_CtdDissectionEfficiencyMatrikonNopc_to_double
+      tag: convert_CtdDissectionEfficiencyMatrikonNopc_to_double_e033c504
       target_field: claroty_ctd.event.dissection.efficiency.matrikon_nopc
       type: double
       ignore_missing: true
@@ -676,7 +679,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyModbus
-      tag: convert_CtdDissectionEfficiencyModbus_to_double
+      tag: convert_CtdDissectionEfficiencyModbus_to_double_9a8c279a
       target_field: claroty_ctd.event.dissection.efficiency.modbus
       type: double
       ignore_missing: true
@@ -688,7 +691,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyRdp
-      tag: convert_CtdDissectionEfficiencyRdp_to_double
+      tag: convert_CtdDissectionEfficiencyRdp_to_double_ca442590
       target_field: claroty_ctd.event.dissection.efficiency.rdp
       type: double
       ignore_missing: true
@@ -700,7 +703,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencySmb
-      tag: convert_CtdDissectionEfficiencySmb_to_double
+      tag: convert_CtdDissectionEfficiencySmb_to_double_448085be
       target_field: claroty_ctd.event.dissection.efficiency.smb
       type: double
       ignore_missing: true
@@ -712,7 +715,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencySsh
-      tag: convert_CtdDissectionEfficiencySsh_to_double
+      tag: convert_CtdDissectionEfficiencySsh_to_double_5c0cbad3
       target_field: claroty_ctd.event.dissection.efficiency.ssh
       type: double
       ignore_missing: true
@@ -724,7 +727,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencySsl
-      tag: convert_CtdDissectionEfficiencySsl_to_double
+      tag: convert_CtdDissectionEfficiencySsl_to_double_cb4c0736
       target_field: claroty_ctd.event.dissection.efficiency.ssl
       type: double
       ignore_missing: true
@@ -736,7 +739,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyTcpHttp
-      tag: convert_CtdDissectionEfficiencyTcpHttp_to_double
+      tag: convert_CtdDissectionEfficiencyTcpHttp_to_double_8b506512
       target_field: claroty_ctd.event.dissection.efficiency.tcp_http
       type: double
       ignore_missing: true
@@ -748,7 +751,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyVnc
-      tag: convert_CtdDissectionEfficiencyVnc_to_double
+      tag: convert_CtdDissectionEfficiencyVnc_to_double_4a43043d
       target_field: claroty_ctd.event.dissection.efficiency.vnc
       type: double
       ignore_missing: true
@@ -760,7 +763,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyVrrpProtocolMatcher
-      tag: convert_CtdDissectionEfficiencyVrrpProtocolMatcher_to_double
+      tag: convert_CtdDissectionEfficiencyVrrpProtocolMatcher_to_double_eeb8444b
       target_field: claroty_ctd.event.dissection.efficiency.vrrp_protocol_matcher
       type: double
       ignore_missing: true
@@ -772,7 +775,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectionEfficiencyZabbix
-      tag: convert_CtdDissectionEfficiencyZabbix_to_double
+      tag: convert_CtdDissectionEfficiencyZabbix_to_double_16a4d3e2
       target_field: claroty_ctd.event.dissection.efficiency.zabbix
       type: double
       ignore_missing: true
@@ -784,7 +787,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDissectorNgPacketDrops
-      tag: convert_CtdDissectorNgPacketDrops_to_long
+      tag: convert_CtdDissectorNgPacketDrops_to_long_412613ab
       target_field: claroty_ctd.event.dissector_ng_packet_drops
       type: long
       ignore_missing: true
@@ -796,7 +799,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdDroppedEntities
-      tag: convert_CtdDroppedEntities_to_long
+      tag: convert_CtdDroppedEntities_to_long_777e5d36
       target_field: claroty_ctd.event.dropped_entities
       type: long
       ignore_missing: true
@@ -808,7 +811,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: cef.extensions.CtdEndOfLifeDate
-      tag: date_CtdEndOfLifeDate
+      tag: date_CtdEndOfLifeDate_02284975
       target_field: claroty_ctd.event.end_of_life_date
       formats:
         - "dd MMM yyyy"
@@ -822,12 +825,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdEventTypeId
-      tag: rename_CtdEventTypeId
+      tag: rename_CtdEventTypeId_b8ddff59
       target_field: claroty_ctd.event.event_type_id
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdExceptions
-      tag: convert_CtdExceptions_to_long
+      tag: convert_CtdExceptions_to_long_5f5ea6f8
       target_field: claroty_ctd.event.exceptions
       type: long
       ignore_missing: true
@@ -839,38 +842,38 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdExternalId
-      tag: rename_CtdExternalId
+      tag: rename_CtdExternalId_6f2bd0bf
       target_field: claroty_ctd.event.external.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_event_external_id
+      tag: set_event_id_from_event_external_id_ee095905
       copy_from: claroty_ctd.event.external.id
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdSignatureExternalLinks
-      tag: rename_CtdSignatureExternalLinks
+      tag: rename_CtdSignatureExternalLinks_ab50a428
       target_field: claroty_ctd.event.external.links
       ignore_missing: true
   - append:
       field: threat.indicator.reference
-      tag: append_claroty_ctd_event_external_links_into_threat_indicator_reference
+      tag: append_claroty_ctd_event_external_links_into_threat_indicator_reference_42d2e221
       value: '{{{claroty_ctd.event.external.links}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.external?.links != null
   - rename:
       field: cef.extensions.CtdFilePath
-      tag: rename_CtdFilePath
+      tag: rename_CtdFilePath_8008202d
       target_field: claroty_ctd.event.file_path
       ignore_missing: true
   - set:
       field: file.path
-      tag: set_file_path_from_event_file_path
+      tag: set_file_path_from_event_file_path_87b75c12
       copy_from: claroty_ctd.event.file_path
       ignore_empty_value: true
   - convert:
       field: cef.extensions.CtdFullOutputPacketDrops
-      tag: convert_CtdFullOutputPacketDrops_to_long
+      tag: convert_CtdFullOutputPacketDrops_to_long_e6e5682d
       target_field: claroty_ctd.event.full_output_packet_drops
       type: long
       ignore_missing: true
@@ -882,7 +885,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdInputPacketDrops
-      tag: convert_CtdInputPacketDrops_to_long
+      tag: convert_CtdInputPacketDrops_to_long_74a2007e
       target_field: claroty_ctd.event.input_packet_drops
       type: long
       ignore_missing: true
@@ -894,7 +897,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdInsightsPasswordPlaintext
-      tag: convert_CtdInsightsPasswordPlaintext_to_boolean
+      tag: convert_CtdInsightsPasswordPlaintext_to_boolean_d8ace15a
       target_field: claroty_ctd.event.insight.password_plaintext
       type: boolean
       ignore_missing: true
@@ -906,68 +909,68 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdInsightState
-      tag: rename_CtdInsightState
+      tag: rename_CtdInsightState_ec2869d7
       target_field: claroty_ctd.event.insight.state
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdInsightUser
-      tag: rename_CtdInsightUser
+      tag: rename_CtdInsightUser_a1caf3b3
       target_field: claroty_ctd.event.insight.user
       ignore_missing: true
   - append:
       field: user.name
-      tag: append_claroty_ctd_event_insight_user_into_user_name
+      tag: append_claroty_ctd_event_insight_user_into_user_name_14aff115
       value: '{{{claroty_ctd.event.insight.user}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.insight?.user != null
   - append:
       field: related.user
-      tag: append_CtdInsightUser_into_related.user
+      tag: append_CtdInsightUser_into_related.user_c3a82e04
       value: '{{{claroty_ctd.event.insight.user}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.insight?.user != null
   - rename:
       field: cef.extensions.CtdInsightsProtocol
-      tag: rename_CtdInsightsProtocol
+      tag: rename_CtdInsightsProtocol_a150cb5f
       target_field: claroty_ctd.event.insights.protocol
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdInsightsProtocolVersion
-      tag: rename_CtdInsightsProtocolVersion
+      tag: rename_CtdInsightsProtocolVersion_8d37d5aa
       target_field: claroty_ctd.event.insights.protocol_version
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdInsightsSeverity
-      tag: rename_CtdInsightsSeverity
+      tag: rename_CtdInsightsSeverity_ad287d12
       target_field: claroty_ctd.event.insights.severity
       ignore_missing: true
   - set:
       field: event.severity
-      tag: set_event_severity_from_event_insights_severity
+      tag: set_event_severity_from_event_insights_severity_472c268a
       value: 2
       if: (['low', 'Low'].contains(ctx.claroty_ctd?.event?.insights?.severity))
       ignore_empty_value: true
   - set:
       field: event.severity
-      tag: set_event_severity_025fbc37
+      tag: set_event_severity_from_event_insights_severity_485ff29a
       value: 5
       if: (['medium', 'Medium'].contains(ctx.claroty_ctd?.event?.insights?.severity))
       ignore_empty_value: true
   - set:
       field: event.severity
-      tag: set_event_severity_025f441d
+      tag: set_event_severity_from_event_insights_severity_4509f4e9
       value: 7
       if: (['high', 'High'].contains(ctx.claroty_ctd?.event?.insights?.severity))
       ignore_empty_value: true
   - set:
       field: event.severity
-      tag: set_event_severity_ff52587d
+      tag: set_event_severity_from_event_insights_severity_65d65d6f
       value: 10
       if: (['critical', 'Critical'].contains(ctx.claroty_ctd?.event?.insights?.severity))
       ignore_empty_value: true
   - date:
       field: cef.extensions.CtdLastManaged
-      tag: date_CtdLastManaged
+      tag: date_CtdLastManaged_5dc81797
       target_field: claroty_ctd.event.last_managed
       formats:
         - "dd MMM yyyy"
@@ -981,12 +984,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdLogType
-      tag: rename_CtdLogType
+      tag: rename_CtdLogType_a9e55e67
       target_field: claroty_ctd.event.log_type
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics
-      tag: convert_CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics_to_double
+      tag: convert_CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics_to_double_69b04495
       target_field: claroty_ctd.event.loop_call_duration.baseline_tracker_wrker_handle_network_statistics
       type: double
       ignore_missing: true
@@ -998,7 +1001,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected
-      tag: convert_CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected_to_double
+      tag: convert_CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected_to_double_820647a2
       target_field: claroty_ctd.event.loop_call_duration.cloud_client_wrkr_base_run_cloud_connected
       type: double
       ignore_missing: true
@@ -1010,7 +1013,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdLoopCallDurationPollObjects
-      tag: convert_CtdLoopCallDurationPollObjects_to_double
+      tag: convert_CtdLoopCallDurationPollObjects_to_double_21bd082f
       target_field: claroty_ctd.event.loop_call_duration.poll_objects
       type: double
       ignore_missing: true
@@ -1022,7 +1025,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdIsGhost
-      tag: convert_CtdIsGhost_to_boolean
+      tag: convert_CtdIsGhost_to_boolean_10cb9b67
       target_field: claroty_ctd.event.is_ghost
       type: boolean
       ignore_missing: true
@@ -1034,7 +1037,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdMem
-      tag: convert_CtdMem_to_double
+      tag: convert_CtdMem_to_double_63fb9039
       target_field: claroty_ctd.event.memory
       type: double
       ignore_missing: true
@@ -1046,59 +1049,59 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdMessage
-      tag: rename_CtdMessage
+      tag: rename_CtdMessage_5391fa32
       target_field: claroty_ctd.event.message
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_event_message
+      tag: set_message_from_event_message_58c14fac
       copy_from: claroty_ctd.event.message
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdMethod
-      tag: rename_CtdMethod
+      tag: rename_CtdMethod_4a76f412
       target_field: claroty_ctd.event.method
       ignore_missing: true
   - set:
       field: http.request.method
-      tag: set_http_request_method_from_event_method
+      tag: set_http_request_method_from_event_method_a810b895
       copy_from: claroty_ctd.event.method
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdMitreAttackTacticNames
-      tag: rename_CtdMitreAttackTacticNames
+      tag: rename_CtdMitreAttackTacticNames_0c021fdf
       target_field: claroty_ctd.event.mitre_attack.tactic_names
       ignore_missing: true
   - append:
       field: threat.tactic.name
-      tag: append_claroty_ctd_event_mitre_attack_tactic_names_into_threat_tactic_name
+      tag: append_claroty_ctd_event_mitre_attack_tactic_names_into_threat_tactic_name_6f7b9afa
       value: '{{{claroty_ctd.event.mitre_attack.tactic_names}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.mitre_attack?.tactic_names != null
   - rename:
       field: cef.extensions.CtdMitreAttackTechniqueIds
-      tag: rename_CtdMitreAttackTechniqueIds
+      tag: rename_CtdMitreAttackTechniqueIds_8599dd25
       target_field: claroty_ctd.event.mitre_attack.technique_ids
       ignore_missing: true
   - append:
       field: threat.technique.id
-      tag: append_claroty_ctd_event_mitre_attack_technique_ids_into_threat_technique_id
+      tag: append_claroty_ctd_event_mitre_attack_technique_ids_into_threat_technique_id_985f6309
       value: '{{{claroty_ctd.event.mitre_attack.technique_ids}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.mitre_attack?.technique_ids != null
   - rename:
       field: cef.extensions.CtdModel
-      tag: rename_CtdModel
+      tag: rename_CtdModel_32595c43
       target_field: claroty_ctd.event.model
       ignore_missing: true
   - set:
       field: device.model.identifier
-      tag: set_device_model_identifier_from_event_model
+      tag: set_device_model_identifier_from_event_model_2621fdfb
       copy_from: claroty_ctd.event.model
       ignore_empty_value: true
   - convert:
       field: cef.extensions.CtdMysqlQuery
-      tag: convert_CtdMysqlQuery_to_double
+      tag: convert_CtdMysqlQuery_to_double_9c2587c6
       target_field: claroty_ctd.event.mysql_query
       type: double
       ignore_missing: true
@@ -1110,7 +1113,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdInsightsNoPassword
-      tag: convert_CtdInsightsNoPassword_to_boolean
+      tag: convert_CtdInsightsNoPassword_to_boolean_1421c43e
       target_field: claroty_ctd.event.no_password
       type: boolean
       ignore_missing: true
@@ -1122,7 +1125,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdNumberOfAccessedClients
-      tag: convert_CtdNumberOfAccessedClients_to_long
+      tag: convert_CtdNumberOfAccessedClients_to_long_65568ad5
       target_field: claroty_ctd.event.number_of.accesed_client
       type: long
       ignore_missing: true
@@ -1134,7 +1137,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdNumberOfInterfaces
-      tag: convert_CtdNumberOfInterfaces_to_long
+      tag: convert_CtdNumberOfInterfaces_to_long_a3b6848b
       target_field: claroty_ctd.event.number_of.interface
       type: long
       ignore_missing: true
@@ -1146,7 +1149,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdNumberOfNeighbors
-      tag: convert_CtdNumberOfNeighbors_to_long
+      tag: convert_CtdNumberOfNeighbors_to_long_6dcf33ff
       target_field: claroty_ctd.event.number_of.neighbours
       type: long
       ignore_missing: true
@@ -1158,17 +1161,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdOperatingSystem
-      tag: rename_CtdOperatingSystem
+      tag: rename_CtdOperatingSystem_364fa001
       target_field: claroty_ctd.event.operating_system
       ignore_missing: true
   - set:
       field: host.os.name
-      tag: set_host_os_name_from_event_operating_system
+      tag: set_host_os_name_from_event_operating_system_44c7d610
       copy_from: claroty_ctd.event.operating_system
       ignore_empty_value: true
   - convert:
       field: cef.extensions.CtdOutputPacketDrops
-      tag: convert_CtdOutputPacketDrops_to_long
+      tag: convert_CtdOutputPacketDrops_to_long_47bab1ab
       target_field: claroty_ctd.event.output_packet_drops
       type: long
       ignore_missing: true
@@ -1180,7 +1183,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdPostgresQuery
-      tag: convert_CtdPostgresQuery_to_double
+      tag: convert_CtdPostgresQuery_to_double_dabc77f4
       target_field: claroty_ctd.event.postgres_query
       type: double
       ignore_missing: true
@@ -1192,21 +1195,21 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdProtocol
-      tag: rename_CtdProtocol
+      tag: rename_CtdProtocol_9da5e96d
       target_field: claroty_ctd.event.protocol
       ignore_missing: true
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_event_protocol
+      tag: set_network_protocol_from_event_protocol_3eafbd29
       copy_from: claroty_ctd.event.protocol
       ignore_empty_value: true
   - lowercase:
       field: network.protocol
-      tag: lowercase_network_protocol
+      tag: lowercase_network_protocol_12733ef1
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdPsqlIdleInTransactionSessions
-      tag: convert_CtdPsqlIdleInTransactionSessions_to_long
+      tag: convert_CtdPsqlIdleInTransactionSessions_to_long_82fb719b
       target_field: claroty_ctd.event.psql_idle.in_transaction_sessions
       type: long
       ignore_missing: true
@@ -1218,7 +1221,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdPsqlIdleSessions
-      tag: convert_CtdPsqlIdleSessions_to_long
+      tag: convert_CtdPsqlIdleSessions_to_long_8cf9828a
       target_field: claroty_ctd.event.psql_idle.sessions
       type: long
       ignore_missing: true
@@ -1230,7 +1233,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuBaselineTracker
-      tag: convert_CtdQuBaselineTracker_to_long
+      tag: convert_CtdQuBaselineTracker_to_long_ef5e1dfc
       target_field: claroty_ctd.event.queue.baseline_tracker
       type: long
       ignore_missing: true
@@ -1242,7 +1245,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuBridge
-      tag: convert_CtdQuBridge_to_long
+      tag: convert_CtdQuBridge_to_long_cacce2e4
       target_field: claroty_ctd.event.queue.bridge
       type: long
       ignore_missing: true
@@ -1254,7 +1257,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuCentralBridge
-      tag: convert_CtdQuCentralBridge_to_long
+      tag: convert_CtdQuCentralBridge_to_long_1cb3df66
       target_field: claroty_ctd.event.queue.central_bridge
       type: long
       ignore_missing: true
@@ -1266,7 +1269,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuConcluding
-      tag: convert_CtdQuConcluding_to_long
+      tag: convert_CtdQuConcluding_to_long_71b5b154
       target_field: claroty_ctd.event.queue.concluding
       type: long
       ignore_missing: true
@@ -1278,7 +1281,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuDiodeFeeder
-      tag: convert_CtdQuDiodeFeeder_to_long
+      tag: convert_CtdQuDiodeFeeder_to_long_a260f082
       target_field: claroty_ctd.event.queue.diode_feeder
       type: long
       ignore_missing: true
@@ -1290,7 +1293,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuDissectorA
-      tag: convert_CtdQuDissectorA_to_long
+      tag: convert_CtdQuDissectorA_to_long_481a64e6
       target_field: claroty_ctd.event.queue.dissector.a_value
       type: long
       ignore_missing: true
@@ -1302,7 +1305,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuDissectorNg
-      tag: convert_CtdQuDissectorNg_to_long
+      tag: convert_CtdQuDissectorNg_to_long_b3970ad9
       target_field: claroty_ctd.event.queue.dissector.ng
       type: long
       ignore_missing: true
@@ -1314,7 +1317,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuDissector
-      tag: convert_CtdQuDissector_to_long
+      tag: convert_CtdQuDissector_to_long_abcb02e1
       target_field: claroty_ctd.event.queue.dissector.value
       type: long
       ignore_missing: true
@@ -1326,7 +1329,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuIndicatorService
-      tag: convert_CtdQuIndicatorService_to_long
+      tag: convert_CtdQuIndicatorService_to_long_9ed12c28
       target_field: claroty_ctd.event.queue.indicator_service
       type: long
       ignore_missing: true
@@ -1338,7 +1341,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuLeecher
-      tag: convert_CtdQuLeecher_to_long
+      tag: convert_CtdQuLeecher_to_long_1bca1b01
       target_field: claroty_ctd.event.queue.leecher
       type: long
       ignore_missing: true
@@ -1350,7 +1353,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuMonitor
-      tag: convert_CtdQuMonitor_to_long
+      tag: convert_CtdQuMonitor_to_long_ddd183f8
       target_field: claroty_ctd.event.queue.monitor
       type: long
       ignore_missing: true
@@ -1362,7 +1365,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuNetworkStatistics
-      tag: convert_CtdQuNetworkStatistics_to_long
+      tag: convert_CtdQuNetworkStatistics_to_long_e233fe05
       target_field: claroty_ctd.event.queue.network_statistics
       type: long
       ignore_missing: true
@@ -1374,7 +1377,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuPackets
-      tag: convert_CtdQuPackets_to_long
+      tag: convert_CtdQuPackets_to_long_20fae92d
       target_field: claroty_ctd.event.queue.packets.count
       type: long
       ignore_missing: true
@@ -1386,7 +1389,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuPacketsErrors
-      tag: convert_CtdQuPacketsErrors_to_long
+      tag: convert_CtdQuPacketsErrors_to_long_fe6d690d
       target_field: claroty_ctd.event.queue.packets.errors
       type: long
       ignore_missing: true
@@ -1398,7 +1401,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuPreprocessing
-      tag: convert_CtdQuPreprocessing_to_long
+      tag: convert_CtdQuPreprocessing_to_long_260956c0
       target_field: claroty_ctd.event.queue.preprocessing.count
       type: long
       ignore_missing: true
@@ -1410,7 +1413,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuPriorityProcessing
-      tag: convert_CtdQuPriorityProcessing_to_long
+      tag: convert_CtdQuPriorityProcessing_to_long_d272aed6
       target_field: claroty_ctd.event.queue.priority_processing
       type: long
       ignore_missing: true
@@ -1422,7 +1425,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuProcessing
-      tag: convert_CtdQuProcessing_to_long
+      tag: convert_CtdQuProcessing_to_long_40b0bbfb
       target_field: claroty_ctd.event.queue.processing.count
       type: long
       ignore_missing: true
@@ -1434,7 +1437,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuProcessingHigh
-      tag: convert_CtdQuProcessingHigh_to_long
+      tag: convert_CtdQuProcessingHigh_to_long_b7302e8b
       target_field: claroty_ctd.event.queue.processing.high
       type: long
       ignore_missing: true
@@ -1446,7 +1449,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQueuePurge
-      tag: convert_CtdQueuePurge_to_long
+      tag: convert_CtdQueuePurge_to_long_195151fe
       target_field: claroty_ctd.event.queue.purge
       type: long
       ignore_missing: true
@@ -1458,7 +1461,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuStatisticsNg
-      tag: convert_CtdQuStatisticsNg_to_long
+      tag: convert_CtdQuStatisticsNg_to_long_b3b7b2dd
       target_field: claroty_ctd.event.queue.statistics_ng
       type: long
       ignore_missing: true
@@ -1470,7 +1473,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuSyslogEvents
-      tag: convert_CtdQuSyslogEvents_to_long
+      tag: convert_CtdQuSyslogEvents_to_long_821c793b
       target_field: claroty_ctd.event.queue.syslog.events
       type: long
       ignore_missing: true
@@ -1482,7 +1485,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuSyslogInsights
-      tag: convert_CtdQuSyslogInsights_to_long
+      tag: convert_CtdQuSyslogInsights_to_long_1a34d89d
       target_field: claroty_ctd.event.queue.syslog.insights
       type: long
       ignore_missing: true
@@ -1494,7 +1497,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuSyslogAlerts
-      tag: convert_CtdQuSyslogSlerts_to_long
+      tag: convert_CtdQuSyslogSlerts_to_long_193b02d2
       target_field: claroty_ctd.event.queue.syslog.alerts
       type: long
       ignore_missing: true
@@ -1506,7 +1509,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuZordonUpdates
-      tag: convert_CtdQuZordonUpdates_to_long
+      tag: convert_CtdQuZordonUpdates_to_long_a5300c7a
       target_field: claroty_ctd.event.queue.zordon_updates
       type: long
       ignore_missing: true
@@ -1518,7 +1521,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdQuPreprocessingNg
-      tag: convert_CtdQuPreprocessingNg_to_long
+      tag: convert_CtdQuPreprocessingNg_to_long_89d42231
       target_field: claroty_ctd.event.queue.preprocessing.ng
       type: long
       ignore_missing: true
@@ -1530,7 +1533,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdRdDissectorA
-      tag: convert_CtdRdDissectorA_to_long
+      tag: convert_CtdRdDissectorA_to_long_61dbcbe9
       target_field: claroty_ctd.event.read_count.dissector.a_value
       type: long
       ignore_missing: true
@@ -1542,7 +1545,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdRdDissector
-      tag: convert_CtdRdDissector_to_long
+      tag: convert_CtdRdDissector_to_long_7043a9bd
       target_field: claroty_ctd.event.read_count.dissector.count
       type: long
       ignore_missing: true
@@ -1554,7 +1557,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdRdDissectorNg
-      tag: convert_CtdRdDissectorNg_to_long
+      tag: convert_CtdRdDissectorNg_to_long_0628184d
       target_field: claroty_ctd.event.read_count.dissector.ng
       type: long
       ignore_missing: true
@@ -1566,7 +1569,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdRdPreprocessing
-      tag: convert_CtdRdPreprocessing_to_long
+      tag: convert_CtdRdPreprocessing_to_long_48b57e5e
       target_field: claroty_ctd.event.read_count.preprocessing.count
       type: long
       ignore_missing: true
@@ -1578,7 +1581,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdRdPreprocessingNg
-      tag: convert_CtdRdPreprocessingNg_to_long
+      tag: convert_CtdRdPreprocessingNg_to_long_0dcab810
       target_field: claroty_ctd.event.read_count.preprocessing.ng
       type: long
       ignore_missing: true
@@ -1590,7 +1593,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: cef.extensions.CtdRealTime
-      tag: date_CtdRealTime
+      tag: date_CtdRealTime_7c4e1ba6
       target_field: claroty_ctd.event.real_time
       formats:
         - "MMM dd yyyy HH:mm:ss"
@@ -1603,29 +1606,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdResolvedAs
-      tag: rename_CtdResolvedAs
+      tag: rename_CtdResolvedAs_1a196509
       target_field: claroty_ctd.event.resolved.as
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdResolvedBy
-      tag: rename_CtdResolvedBy
+      tag: rename_CtdResolvedBy_8a395b49
       target_field: claroty_ctd.event.resolved.by
       ignore_missing: true
   - append:
       field: user.name
-      tag: append_claroty_ctd_event_resolved_by_into_user_name
+      tag: append_claroty_ctd_event_resolved_by_into_user_name_7e1b4d2b
       value: '{{{claroty_ctd.event.resolved.by}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.resolved?.by != null
   - append:
       field: related.user
-      tag: append_claroty_ctd_event_resolved_by_into_related.user
+      tag: append_claroty_ctd_event_resolved_by_into_related.user_24d2bf1a
       value: '{{{claroty_ctd.event.resolved.by}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.resolved?.by != null
   - convert:
       field: cef.extensions.CtdRiskScore
-      tag: convert_CtdRiskScore_to_long
+      tag: convert_CtdRiskScore_to_long_69f37a16
       target_field: claroty_ctd.event.risk_score
       type: long
       ignore_missing: true
@@ -1637,87 +1640,87 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.risk.calculated_score
-      tag: set_host_risk_calculated_score_from_event_risk_score
+      tag: set_host_risk_calculated_score_from_event_risk_score_384b1177
       copy_from: claroty_ctd.event.risk_score
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdSensorName
-      tag: rename_CtdSensorName
+      tag: rename_CtdSensorName_5ea4b251
       target_field: claroty_ctd.event.sensor_name
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSeries
-      tag: rename_CtdSeries
+      tag: rename_CtdSeries_b9e04d0f
       target_field: claroty_ctd.event.series
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcDocker
-      tag: rename_CtdSvcDocker
+      tag: rename_CtdSvcDocker_6f650bf3
       target_field: claroty_ctd.event.service.docker
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcIcsranger
-      tag: rename_CtdSvcIcsranger
+      tag: rename_CtdSvcIcsranger_87928ced
       target_field: claroty_ctd.event.service.icsranger
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcJwthenticator
-      tag: rename_CtdSvcJwthenticator
+      tag: rename_CtdSvcJwthenticator_2860f802
       target_field: claroty_ctd.event.service.jwthenticator
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcMariaDb
-      tag: rename_CtdSvcMariaDb
+      tag: rename_CtdSvcMariaDb_53f915f1
       target_field: claroty_ctd.event.service.mariadb
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcNetunnel
-      tag: rename_CtdSvcNetunnel
+      tag: rename_CtdSvcNetunnel_2c42dd71
       target_field: claroty_ctd.event.service.netunnel
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcPostgres
-      tag: rename_CtdSvcPostgres
+      tag: rename_CtdSvcPostgres_5fea5347
       target_field: claroty_ctd.event.service.postgres
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcRabbitMq
-      tag: rename_CtdSvcRabbitMq
+      tag: rename_CtdSvcRabbitMq_19a2baa1
       target_field: claroty_ctd.event.service.rabbit_mq
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcRedis
-      tag: rename_CtdSvcRedis
+      tag: rename_CtdSvcRedis_76030622
       target_field: claroty_ctd.event.service.redis
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcWatchdog
-      tag: rename_CtdSvcWatchdog
+      tag: rename_CtdSvcWatchdog_5bf26665
       target_field: claroty_ctd.event.service.watchdog
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSvcFirewalld
-      tag: rename_CtdSvcFirewalld
+      tag: rename_CtdSvcFirewalld_8f5219a9
       target_field: claroty_ctd.event.service.firewalld
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSignatureConfidence
-      tag: rename_CtdSignatureConfidence
+      tag: rename_CtdSignatureConfidence_87c27c90
       target_field: claroty_ctd.event.signature.confidence
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSignatureCriticality
-      tag: rename_CtdSignatureCriticality
+      tag: rename_CtdSignatureCriticality_d527d0ba
       target_field: claroty_ctd.event.signature.criticality
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSignatureId
-      tag: rename_CtdSignatureId
+      tag: rename_CtdSignatureId_d3626192
       target_field: claroty_ctd.event.signature.id
       ignore_missing: true
   - date:
       field: cef.extensions.CtdSignatureLastUpdatedByClaroty
-      tag: date_CtdSignatureLastUpdatedByClaroty
+      tag: date_CtdSignatureLastUpdatedByClaroty_1ee7c185
       target_field: claroty_ctd.event.signature.last_updated
       formats:
         - "dd MMM yyy, HH:mm"
@@ -1731,47 +1734,47 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.modified_at
-      tag: set_threat_indicator_modified_at_from_event_signature_last_updated
+      tag: set_threat_indicator_modified_at_from_event_signature_last_updated_2d0348a2
       copy_from: claroty_ctd.event.signature.last_updated
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdSignatureName
-      tag: rename_CtdSignatureName
+      tag: rename_CtdSignatureName_f30e1957
       target_field: claroty_ctd.event.signature.name
       ignore_missing: true
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name_from_event_signature_name
+      tag: set_threat_indicator_name_from_event_signature_name_b57e4ebe
       copy_from: claroty_ctd.event.signature.name
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdSignaturePoweredBy
-      tag: rename_CtdSignaturePoweredBy
+      tag: rename_CtdSignaturePoweredBy_8896c42a
       target_field: claroty_ctd.event.signature.powered_by
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSignatureTags
-      tag: rename_CtdSignatureTags
+      tag: rename_CtdSignatureTags_a81ee9e3
       target_field: claroty_ctd.event.signature.tags
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSite
-      tag: rename_CtdSite
+      tag: rename_CtdSite_7477b1ce
       target_field: claroty_ctd.event.site
       ignore_missing: true
   - set:
       field: observer.hostname
-      tag: set_observer_hostname_from_event_site
+      tag: set_observer_hostname_from_event_site_88f41f73
       copy_from: claroty_ctd.event.site
       ignore_empty_value: true
   - rename:
       field: cef.extensions.CtdSnifferStatusCentral
-      tag: rename_CtdSnifferStatusCentral
+      tag: rename_CtdSnifferStatusCentral_ab510581
       target_field: claroty_ctd.event.sniffer_status.central
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdSnifferStatusSite
-      tag: convert_CtdSnifferStatusSite_to_double
+      tag: convert_CtdSnifferStatusSite_to_double_9290b140
       target_field: claroty_ctd.event.sniffer_status.site
       type: double
       ignore_missing: true
@@ -1783,17 +1786,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdSnifferStatus
-      tag: rename_CtdSnifferStatus
+      tag: rename_CtdSnifferStatus_6d40565d
       target_field: claroty_ctd.event.sniffer_status.value
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdSourceAssetType
-      tag: rename_CtdSourceAssetType
+      tag: rename_CtdSourceAssetType_d0e1ab38
       target_field: claroty_ctd.event.source.asset_type
       ignore_missing: true
   - split:
       field: cef.extensions.CtdSourceHost
-      tag: split_CtdSourceHost_into_source_host
+      tag: split_CtdSourceHost_into_source_host_58aee818
       target_field: claroty_ctd.event.source.host
       separator: ',\s*'
       ignore_missing: true
@@ -1805,22 +1808,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.domain
-      tag: set_source_domain_from_event_source_host
+      tag: set_source_domain_from_event_source_host_a944d43f
       copy_from: claroty_ctd.event.source.host
       ignore_empty_value: true
   - foreach:
       field: claroty_ctd.event.source.host
-      tag: foreach_claroty_ctd_event_source_host
+      tag: foreach_claroty_ctd_event_source_host_becbf12b
       if: ctx.claroty_ctd?.event?.source?.host instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_source_host_into_related_hosts
+          tag: append_source_host_into_related_hosts_e3a9bcff
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - split:
       field: cef.extensions.CtdSourceIp
-      tag: split_CtdSourceIp_into_source_ip
+      tag: split_CtdSourceIp_into_source_ip_38b4a2e1
       target_field: claroty_ctd.event.source.ip
       separator: ',\s*'
       ignore_missing: true
@@ -1832,39 +1835,41 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: claroty_ctd.event.source.ip
-      tag: foreach_claroty_ctd_event_source_ip_1
+      tag: foreach_claroty_ctd_event_source_ip_1_57c9d8b3
       if: ctx.claroty_ctd?.event?.source?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_source_ip_to_ip
+          tag: convert_source_ip_to_ip_eb53853c
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_21b7cc17
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_612bf538
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_event_source_ip
+      tag: set_source_ip_from_event_source_ip_f6c75aaf
       copy_from: claroty_ctd.event.source.ip
       ignore_empty_value: true
   - foreach:
       field: claroty_ctd.event.source.ip
-      tag: foreach_claroty_ctd_event_source_ip_2
+      tag: foreach_claroty_ctd_event_source_ip_2_2332c2d7
       if: ctx.claroty_ctd?.event?.source?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_source_ip_into_related_ip
+          tag: append_source_ip_into_related_ip_0da2547e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - split:
       field: cef.extensions.CtdSourceMac
-      tag: split_CtdSourceMac_into_source_mac
+      tag: split_CtdSourceMac_into_source_mac_1d01a91c
       target_field: claroty_ctd.event.source.mac
       separator: ',\s*'
       ignore_missing: true
@@ -1876,27 +1881,28 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.mac
-      tag: set_source_mac_from_event_source_mac
+      tag: set_source_mac_from_event_source_mac_179b5b16
       copy_from: claroty_ctd.event.source.mac
       ignore_empty_value: true
   - foreach:
       field: source.mac
-      tag: foreach_source_mac
+      tag: foreach_source_mac_6677795c
       if: ctx.source?.mac instanceof List
       processor:
         gsub:
           field: _ingest._value
-          tag: gsub_source_mac
+          tag: gsub_source_mac_e52a0302
           pattern: '[-:.]'
           replacement: '-'
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_0f9c2742
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: source.mac
-      tag: uppercase_source_mac
+      tag: uppercase_source_mac_560987b8
       ignore_missing: true
       on_failure:
         - append:
@@ -1905,17 +1911,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdSourceZone
-      tag: rename_CtdSourceZone
+      tag: rename_CtdSourceZone_7b44288b
       target_field: claroty_ctd.event.source.zone
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdStoryId
-      tag: rename_CtdStoryId
+      tag: rename_CtdStoryId_f2881924
       target_field: claroty_ctd.event.story_id
       ignore_missing: true
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsDissectorPypySum
-      tag: convert_CtdTagArtifactsDropsDissectorPypySum_to_long
+      tag: convert_CtdTagArtifactsDropsDissectorPypySum_to_long_bf1b8098
       target_field: claroty_ctd.event.tag_artifacts_drops.dissector_pypy.sum
       type: long
       ignore_missing: true
@@ -1927,7 +1933,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsDissectorPypy
-      tag: convert_CtdTagArtifactsDropsDissectorPypy_to_long
+      tag: convert_CtdTagArtifactsDropsDissectorPypy_to_long_fd200b96
       target_field: claroty_ctd.event.tag_artifacts_drops.dissector_pypy.value
       type: long
       ignore_missing: true
@@ -1939,7 +1945,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsPreprocessorSum
-      tag: convert_CtdTagArtifactsDropsPreprocessorSum_to_long
+      tag: convert_CtdTagArtifactsDropsPreprocessorSum_to_long_684d9f7c
       target_field: claroty_ctd.event.tag_artifacts_drops.preprocessor.sum
       type: long
       ignore_missing: true
@@ -1951,7 +1957,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsPreprocessor
-      tag: convert_CtdTagArtifactsDropsPreprocessor_to_long
+      tag: convert_CtdTagArtifactsDropsPreprocessor_to_long_d9b915bf
       target_field: claroty_ctd.event.tag_artifacts_drops.preprocessor.value
       type: long
       ignore_missing: true
@@ -1963,7 +1969,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsProcessorSum
-      tag: convert_CtdTagArtifactsDropsProcessorSum_to_long
+      tag: convert_CtdTagArtifactsDropsProcessorSum_to_long_5258173c
       target_field: claroty_ctd.event.tag_artifacts_drops.processor.sum
       type: long
       ignore_missing: true
@@ -1975,7 +1981,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsProcessor
-      tag: convert_CtdTagArtifactsDropsProcessor_to_long
+      tag: convert_CtdTagArtifactsDropsProcessor_to_long_db2404ef
       target_field: claroty_ctd.event.tag_artifacts_drops.processor.value
       type: long
       ignore_missing: true
@@ -1987,7 +1993,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsSnifferSum
-      tag: convert_CtdTagArtifactsDropsSnifferSum_to_long
+      tag: convert_CtdTagArtifactsDropsSnifferSum_to_long_75937dbc
       target_field: claroty_ctd.event.tag_artifacts_drops.sniffer.sum
       type: long
       ignore_missing: true
@@ -1999,7 +2005,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdTagArtifactsDropsSniffer
-      tag: convert_CtdTagArtifactsDropsSniffer_to_long
+      tag: convert_CtdTagArtifactsDropsSniffer_to_long_24ed4b08
       target_field: claroty_ctd.event.tag_artifacts_drops.sniffer.value
       type: long
       ignore_missing: true
@@ -2011,7 +2017,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: cef.extensions.CtdTimeGenerated
-      tag: date_CtdTimeGenerated
+      tag: date_CtdTimeGenerated_ad6a58ba
       target_field: claroty_ctd.event.time
       formats:
         - "MMM dd yyyy HH:mm:ss"
@@ -2025,12 +2031,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_event_time
+      tag: set_@timestamp_from_event_time_051ce8ef
       copy_from: claroty_ctd.event.time
       ignore_empty_value: true
   - convert:
       field: cef.extensions.CtdUnhandledEvents
-      tag: convert_CtdUnhandledEvents_to_long
+      tag: convert_CtdUnhandledEvents_to_long_a43aeb4d
       target_field: claroty_ctd.event.unhandled_events
       type: long
       ignore_missing: true
@@ -2042,7 +2048,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdUsedEtc
-      tag: convert_CtdUsedEtc_to_double
+      tag: convert_CtdUsedEtc_to_double_bce370ba
       target_field: claroty_ctd.event.used.etc
       type: double
       ignore_missing: true
@@ -2054,7 +2060,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdUsedOptIcsranger
-      tag: convert_CtdUsedOptIcsranger_to_double
+      tag: convert_CtdUsedOptIcsranger_to_double_6378147e
       target_field: claroty_ctd.event.used.opt_icsranger
       type: double
       ignore_missing: true
@@ -2066,7 +2072,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdUsedTmp
-      tag: convert_CtdUsedTmp_to_double
+      tag: convert_CtdUsedTmp_to_double_41239795
       target_field: claroty_ctd.event.used.tmp
       type: double
       ignore_missing: true
@@ -2078,7 +2084,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdUsedVar
-      tag: convert_CtdUsedVar_to_double
+      tag: convert_CtdUsedVar_to_double_cc30c406
       target_field: claroty_ctd.event.used.var
       type: double
       ignore_missing: true
@@ -2090,174 +2096,174 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.extensions.CtdUser
-      tag: rename_CtdUser
+      tag: rename_CtdUser_f0204708
       target_field: claroty_ctd.event.user
       ignore_missing: true
   - append:
       field: user.name
-      tag: append_claroty_ctd_event_user_into_user_name
+      tag: append_claroty_ctd_event_user_into_user_name_8a085f09
       value: '{{{claroty_ctd.event.user}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.user != null
   - append:
       field: related.user
-      tag: append_claroty_ctd_event_user_into_related.user
+      tag: append_claroty_ctd_event_user_into_related.user_ab471b85
       value: '{{{claroty_ctd.event.user}}}'
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.user != null
   - rename:
       field: cef.extensions.CtdWrkrActiveExecuter
-      tag: rename_CtdWrkrActiveExecuter
+      tag: rename_CtdWrkrActiveExecuter_9b5973d1
       target_field: claroty_ctd.event.worker.active.executer
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrActive
-      tag: rename_CtdWrkrActive
+      tag: rename_CtdWrkrActive_d15c50c7
       target_field: claroty_ctd.event.worker.active.value
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrAuthentication
-      tag: rename_CtdWrkrAuthentication
+      tag: rename_CtdWrkrAuthentication_4e49edcb
       target_field: claroty_ctd.event.worker.authentication
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrBaselineTracker
-      tag: rename_CtdWrkrBaselineTracker
+      tag: rename_CtdWrkrBaselineTracker_2f021302
       target_field: claroty_ctd.event.worker.baseline_tracker
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrBridge
-      tag: rename_CtdWrkrBridge
+      tag: rename_CtdWrkrBridge_f34fa946
       target_field: claroty_ctd.event.worker.bridge
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrCacher
-      tag: rename_CtdWrkrCacher
+      tag: rename_CtdWrkrCacher_7e717820
       target_field: claroty_ctd.event.worker.cacher
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrCapsaver
-      tag: rename_CtdWrkrCapsaver
+      tag: rename_CtdWrkrCapsaver_c7084282
       target_field: claroty_ctd.event.worker.capsaver
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrCloudAgent
-      tag: rename_CtdWrkrCloudAgent
+      tag: rename_CtdWrkrCloudAgent_642a027c
       target_field: claroty_ctd.event.worker.cloud.agent
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrCloudClient
-      tag: rename_CtdWrkrCloudClient
+      tag: rename_CtdWrkrCloudClient_a9c7c577
       target_field: claroty_ctd.event.worker.cloud.client
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrConcluder
-      tag: rename_CtdWrkrConcluder
+      tag: rename_CtdWrkrConcluder_c19783f0
       target_field: claroty_ctd.event.worker.concluder
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrConfiguratorNginx
-      tag: rename_CtdWrkrConfiguratorNginx
+      tag: rename_CtdWrkrConfiguratorNginx_3e48bca2
       target_field: claroty_ctd.event.worker.configurator.nginx
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrConfigurator
-      tag: rename_CtdWrkrConfigurator
+      tag: rename_CtdWrkrConfigurator_cd545d56
       target_field: claroty_ctd.event.worker.configurator.value
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrDissectorA
-      tag: rename_CtdWrkrDissectorA
+      tag: rename_CtdWrkrDissectorA_4a40c65d
       target_field: claroty_ctd.event.worker.dissector.a_value
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrDissector
-      tag: rename_CtdWrkrDissector
+      tag: rename_CtdWrkrDissector_b077db3a
       target_field: claroty_ctd.event.worker.dissector.value
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrEnricher
-      tag: rename_CtdWrkrEnricher
+      tag: rename_CtdWrkrEnricher_2c5d744b
       target_field: claroty_ctd.event.worker.enricher
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrIndicatorsApi
-      tag: rename_CtdWrkrIndicatorsApi
+      tag: rename_CtdWrkrIndicatorsApi_493ad597
       target_field: claroty_ctd.event.worker.indicators.api
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrIndicators
-      tag: rename_CtdWrkrIndicators
+      tag: rename_CtdWrkrIndicators_6f600c2f
       target_field: claroty_ctd.event.worker.indicators.value
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrInsights
-      tag: rename_CtdWrkrInsights
+      tag: rename_CtdWrkrInsights_45601701
       target_field: claroty_ctd.event.worker.insights
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrknownThreats
-      tag: rename_CtdWrkrknownThreats
+      tag: rename_CtdWrkrknownThreats_694383d2
       target_field: claroty_ctd.event.worker.known_threats
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrLeecher
-      tag: rename_CtdWrkrLeecher
+      tag: rename_CtdWrkrLeecher_541ea655
       target_field: claroty_ctd.event.worker.leecher
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrMailer
-      tag: rename_CtdWrkrMailer
+      tag: rename_CtdWrkrMailer_6df02039
       target_field: claroty_ctd.event.worker.mailer
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrMitre
-      tag: rename_CtdWrkrMitre
+      tag: rename_CtdWrkrMitre_b2129aa8
       target_field: claroty_ctd.event.worker.mitre
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrNotifications
-      tag: rename_CtdWrkrNotifications
+      tag: rename_CtdWrkrNotifications_821be5eb
       target_field: claroty_ctd.event.worker.notifications
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrPreprocessor
-      tag: rename_CtdWrkrPreprocessor
+      tag: rename_CtdWrkrPreprocessor_f79c1a19
       target_field: claroty_ctd.event.worker.preprocessor
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrProcessor
-      tag: rename_CtdWrkrProcessor
+      tag: rename_CtdWrkrProcessor_a13cc000
       target_field: claroty_ctd.event.worker.processor
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrSensor
-      tag: rename_CtdWrkrSensor
+      tag: rename_CtdWrkrSensor_575785a3
       target_field: claroty_ctd.event.worker.sensor
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrSyncManager
-      tag: rename_CtdWrkrSyncManager
+      tag: rename_CtdWrkrSyncManager_b6fa7160
       target_field: claroty_ctd.event.worker.sync_manager
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrWebAuth
-      tag: rename_CtdWrkrWebAuth
+      tag: rename_CtdWrkrWebAuth_6d0fc25b
       target_field: claroty_ctd.event.worker.web.auth
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrWebNginx
-      tag: rename_CtdWrkrWebNginx
+      tag: rename_CtdWrkrWebNginx_5405fbea
       target_field: claroty_ctd.event.worker.web.nginx
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrWebRanger
-      tag: rename_CtdWrkrWebRanger
+      tag: rename_CtdWrkrWebRanger_a9a1064f
       target_field: claroty_ctd.event.worker.web.ranger
       ignore_missing: true
   - rename:
       field: cef.extensions.CtdWrkrWebWs
-      tag: rename_CtdWrkrWebWs
+      tag: rename_CtdWrkrWebWs_29f3da8e
       target_field: claroty_ctd.event.worker.web.ws
       ignore_missing: true
   - script:
@@ -2294,7 +2300,7 @@ processors:
         }
   - convert:
       field: cef.extensions.CtdWrkrWorkersRestart
-      tag: convert_CtdWrkrWorkersRestart_to_long
+      tag: convert_CtdWrkrWorkersRestart_to_long_864ca30f
       target_field: claroty_ctd.event.worker.workers.restart
       type: long
       ignore_missing: true
@@ -2306,7 +2312,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdWrkrWorkersStop
-      tag: convert_CtdWrkrWorkersStop_to_long
+      tag: convert_CtdWrkrWorkersStop_to_long_1ce10c47
       target_field: claroty_ctd.event.worker.workers.stop
       type: long
       ignore_missing: true
@@ -2318,7 +2324,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: cef.extensions.CtdYaraScannerTest
-      tag: convert_CtdYaraScannerTest_to_long
+      tag: convert_CtdYaraScannerTest_to_long_451260f0
       target_field: claroty_ctd.event.yara_scanner_test
       type: long
       ignore_missing: true
@@ -2330,7 +2336,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: cef.device.event_class_id
-      tag: rename_cef_device_event_class_id
+      tag: rename_cef_device_event_class_id_ff870572
       target_field: claroty_ctd.event.class_id
       ignore_missing: true
   - remove:
@@ -2366,15 +2372,15 @@ processors:
         - claroty_ctd.event.source.mac
         - claroty_ctd.event.time
         - claroty_ctd.event.user
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d2a566ab
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: cef
-      tag: remove_json
+      tag: remove_json_4b3cc0c1
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_44aeee7c
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -2393,7 +2399,7 @@ processors:
       description: Drops null/empty values recursively.
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -2404,13 +2410,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

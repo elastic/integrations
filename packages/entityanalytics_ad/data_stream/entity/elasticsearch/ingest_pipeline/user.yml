@@ -3,34 +3,34 @@ description: Pipeline for processing user logs.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_5b3c8dc9
       value: ['iam']
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_8957b990
       value: ['user', 'info']
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_3b1716d3
       value: activedirectory_user
 
   - pipeline:
       name: '{{ IngestPipeline "common" }}'
-      tag: pipeline_entity
+      tag: pipeline_entity_e2cc926a
       ignore_missing_pipeline: true
 
   - script:
       lang: painless
       ignore_failure: false
-      tag: Set User Account Control
+      tag: set_user_account_control_f61c551e
       description: script_set_user_account_control
       # USER_ACCOUNT Codes
       # https://learn.microsoft.com/en-us/windows/win32/adschema/a-useraccountcontrol
@@ -75,167 +75,167 @@ processors:
   - date:
       field: activedirectory.user.when_created
       target_field: asset.create_date
-      tag: date_user_created
+      tag: date_user_created_c587b185
       formats:
         - ISO8601
       if: ctx.activedirectory?.user?.when_created != null && ctx.activedirectory.user.when_created != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_user_created
+            tag: on_failure_remove_date_user_created_91abdbab
             field: activedirectory.user.when_created
         - append:
-            tag: on_failure_append_date_user_created
+            tag: on_failure_append_date_user_created_254b90cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.user.when_changed
       target_field: asset.last_updated
-      tag: date_user_changed
+      tag: date_user_changed_8df3d4c3
       formats:
         - ISO8601
       if: ctx.activedirectory?.user?.when_changed != null && ctx.activedirectory.user.when_changed != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_user_changed
+            tag: on_failure_remove_date_user_changed_fe8b9331
             field: activedirectory.user.when_changed
         - append:
-            tag: on_failure_append_date_user_changed
+            tag: on_failure_append_date_user_changed_1db4063b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.user.pwd_last_set
       target_field: user.account.password_change_date
-      tag: date_user_password_changed
+      tag: date_user_password_changed_251f10d9
       formats:
         - ISO8601
       if: ctx.activedirectory?.user?.pwd_last_set != null && ctx.activedirectory.user.pwd_last_set != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_user_pwd_last_set
+            tag: on_failure_remove_date_user_pwd_last_set_5e6673ea
             field: activedirectory.user.pwd_last_set
         - append:
-            tag: on_failure_append_date_user_pwd_last_set
+            tag: on_failure_append_date_user_pwd_last_set_dd1197c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.user.last_logon_timestamp
       target_field: user.entity.lifecycle.last_activity
-      tag: date_user_last_logon_timestamp
+      tag: date_user_last_logon_timestamp_30fdbd36
       formats:
         - ISO8601
       if: ctx.activedirectory?.user?.last_logon_timestamp != null && ctx.activedirectory.user.last_logon_timestamp != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_user_last_logon_timestamp
+            tag: on_failure_remove_date_user_last_logon_timestamp_0b0bd040
             field: activedirectory.user.last_logon_timestamp
         - append:
-            tag: on_failure_append_date_user_last_logon_timestamp
+            tag: on_failure_append_date_user_last_logon_timestamp_24893ed2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
-      tag: set_user_asset_name
+      tag: set_user_asset_name_e2db4a32
       field: asset.name
       copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
   - set:
-      tag: set_user_name
+      tag: set_user_name_2c2910f6
       field: user.name
       copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email
+      tag: set_user_email_0b6d1b1e
       copy_from: activedirectory.user.mail
       ignore_empty_value: true
   - gsub:
-      tag: gsub_user_dn
+      tag: gsub_user_dn_7b99b97a
       field: activedirectory.user.distinguished_name
       pattern: '^.*?DC='
       replacement: ''
       target_field: user.domain
       if: ctx.activedirectory?.user?.distinguished_name != null
   - gsub:
-      tag: gsub_user_domain
+      tag: gsub_user_domain_d8dffcf0
       field: user.domain
       pattern: ',DC='
       replacement: '.'
       if: ctx.user?.domain != null
   - set:
-      tag: set_user_asset_id
+      tag: set_user_asset_id_010e65d6
       field: asset.id
       copy_from: activedirectory.user.object_sid
   - set:
-      tag: set_user_id
+      tag: set_user_id_636b66ee
       field: user.id
       copy_from: activedirectory.user.object_sid
 
   - set:
-      tag: set_user_logon_script_enabled
+      tag: set_user_logon_script_enabled_da1ddd02
       field: activedirectory.user.logon_script_enabled
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('SCRIPT') == true
   - set:
-      tag: set_user_enabled_true
+      tag: set_user_enabled_true_916fd9e5
       field: activedirectory.user.enabled
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE') == false
   - set:
-      tag: set_user_enabled_false
+      tag: set_user_enabled_false_4c55fbe1
       field: activedirectory.user.enabled
       value: false
       if: ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE') == true
 
   - set:
-      tag: set_user_locked
+      tag: set_user_locked_674e8b5c
       field: activedirectory.user.locked
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('LOCKOUT') == true
 
   - set:
-      tag: set_user_password_not_required
+      tag: set_user_password_not_required_e74fa9b7
       field: activedirectory.user.password_not_required
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('PASSWD_NOTREQD') == true
 
   - set:
-      tag: set_user_reversible_encryption_password
+      tag: set_user_reversible_encryption_password_ce08a6e9
       field: activedirectory.user.reversible_encryption_password
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED') == true
 
   - set:
-      tag: set_user_unconstrained_delegation
+      tag: set_user_unconstrained_delegation_e0a44948
       field: activedirectory.user.unconstrained_delegation
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_FOR_DELEGATION') == true
 
   - set:
-      tag: set_user_sensitive_object
+      tag: set_user_sensitive_object_a30af174
       field: activedirectory.user.sensitive_object
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('NOT_DELEGATED') == true
 
   - set:
-      tag: set_user_use_des_key_only
+      tag: set_user_use_des_key_only_8940687b
       field: activedirectory.user.use_des_key_only
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('USE_DES_KEY_ONLY') == true
 
   - set:
-      tag: set_user_dont_require_preauth
+      tag: set_user_dont_require_preauth_1f3347e5
       field: activedirectory.user.dont_require_preauth
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('DONT_REQUIRE_PREAUTH') == true
 
   - set:
-      tag: set_user_constrained_delegation
+      tag: set_user_constrained_delegation_85abf34c
       field: activedirectory.user.constrained_delegation
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
 
   - set:
-      tag: set_user_mfa_enabled
+      tag: set_user_mfa_enabled_14781380
       field: user.entity.attributes.mfa_enabled
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('SMARTCARD_REQUIRED') == true
@@ -243,7 +243,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
-      tag: handle_user_group_details
+      tag: handle_user_group_details_5a7fee8c
       description: Collect user's group details and set privileged_group_member flag based on group membership.
       if: ctx.activedirectory?.groups instanceof List
       # Well-known SIDs - Name to SID mapping
@@ -295,7 +295,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
-      tag: set_user_relationships
+      tag: set_user_relationships_fd498f61
       description: Build user.entity.relationships from managedObjects (administers) and directReports (supervises).
       if: ctx.activedirectory?.user?.managed_objects != null || ctx.activedirectory?.user?.direct_reports != null
       source: |-
@@ -381,7 +381,7 @@ processors:
         }
 
   - set:
-      tag: set_user_account_never_expires
+      tag: set_user_account_never_expires_bce7dc86
       field: activedirectory.user.account_never_expires
       value: true
       if: ctx.activedirectory?.user?.account_expires == "0" || ctx.activedirectory?.user?.account_expires == "9223372036854775807"
@@ -389,55 +389,55 @@ processors:
   - append:
       field: related.user
       value: "{{{activedirectory.user.sam_account_name}}}"
-      tag: append_name_into_related_user
+      tag: append_name_into_related_user_1be19527
       allow_duplicates: false
       if: ctx.activedirectory?.user?.sam_account_name != null
   - append:
       field: related.user
       value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_user
+      tag: append_id_into_related_user_0252a58e
       allow_duplicates: false
       if: ctx.activedirectory?.id != null
   - append:
       field: related.user
       value: "{{{activedirectory.user.object_guid}}}"
-      tag: append_object_guid_into_related_user
+      tag: append_object_guid_into_related_user_45eabcbd
       allow_duplicates: false
       if: ctx.activedirectory?.user?.object_guid != null
   - append:
       field: related.user
       value: "{{{activedirectory.user.mail}}}"
-      tag: append_mail_into_related_user
+      tag: append_mail_into_related_user_7db2aba7
       allow_duplicates: false
       if: ctx.activedirectory?.user?.mail != null
   - append:
       field: related.user
       value: "{{{activedirectory.user.user_principal_name}}}"
-      tag: append_upn_into_related_user
+      tag: append_upn_into_related_user_2a41c091
       allow_duplicates: false
       if: ctx.activedirectory?.user?.user_principal_name != null
 
   - rename:
-      tag: rename_activedirectory_id_to_user_object_dn
+      tag: rename_activedirectory_id_to_user_object_dn_f4ac08e1
       field: activedirectory.id
       target_field: activedirectory.user.object_dn
 
   - rename:
-      tag: rename_activedirectory_to_entityanalytics_ad
+      tag: rename_activedirectory_to_entityanalytics_ad_3c2c8fd4
       field: activedirectory
       target_field: entityanalytics_ad
 
 on_failure:
   - append:
-      tag: pipeline_error
+      tag: pipeline_error_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: pipeline_error_kind
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_error_preserve_original_event
+      tag: pipeline_error_preserve_original_event_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
