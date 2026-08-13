@@ -13,12 +13,12 @@ import (
 
 // PostComment posts a result comment on the originating backport PR.
 // It is a no-op when backportPRNumber or workingBranch is empty.
-func PostComment(backportPRNumber, workingBranch, notFoundPackages, outcome, runID, repository string) error {
+func PostComment(backportPRNumber, workingBranch, notFoundPackages, outcome, runID, repository, existingSyncPRURL string) error {
 	if backportPRNumber == "" || workingBranch == "" {
 		return nil
 	}
 
-	body, err := buildCommentBody(workingBranch, notFoundPackages, outcome, runID, repository, syncPRURL, branchExistsOnRemote)
+	body, err := buildCommentBody(workingBranch, notFoundPackages, outcome, existingSyncPRURL, runID, repository, syncPRURL, branchExistsOnRemote)
 	if err != nil {
 		return fmt.Errorf("building comment body: %w", err)
 	}
@@ -28,13 +28,19 @@ func PostComment(backportPRNumber, workingBranch, notFoundPackages, outcome, run
 }
 
 func buildCommentBody(
-	workingBranch, notFoundPackages, outcome, runID, repository string,
+	workingBranch, notFoundPackages, outcome, existingSyncPRURL, runID, repository string,
 	syncURLFn func(string) (string, error),
 	branchExistsFn func(string, string) (bool, error),
 ) (string, error) {
 	switch outcome {
 	case "skipped":
 		return "**Changelog sync skipped** — all changelog versions are already present on `main`.", nil
+
+	case "already_exists":
+		if existingSyncPRURL != "" {
+			return fmt.Sprintf("**Changelog sync skipped** — a sync PR already exists: %s", existingSyncPRURL), nil
+		}
+		return fmt.Sprintf("**Changelog sync skipped** — working branch `%s` already has a sync PR.", workingBranch), nil
 
 	case "success":
 		syncURL, err := syncURLFn(workingBranch)
@@ -72,6 +78,7 @@ func buildCommentBody(
 			compareURL := fmt.Sprintf("https://github.com/%s/compare/main...%s", repository, workingBranch)
 			body += fmt.Sprintf("\n\nThe working branch was pushed. You can [open a PR manually](%s).", compareURL)
 		}
+		body += "\n\nComment `/sync-changelog` on this PR to retry."
 		return body, nil
 	}
 }
