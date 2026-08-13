@@ -10,13 +10,16 @@ set -euo pipefail
 GEN_DIR="packages/crowdstrike/_dev/scripts/fdr-gen"
 OUT_DIR="packages/crowdstrike/data_stream/fdr/elasticsearch/ingest_pipeline"
 
-echo "--- [crowdstrike] Regenerate FDR ingest pipelines"
+echo "--- [crowdstrike] Regenerate FDR ingest pipelines into a temp directory"
+ORIG_DIR="$(mktemp -d)"
+cp "${OUT_DIR}"/*.yml "${ORIG_DIR}/"
 (cd "${GEN_DIR}" && ./generate.sh)
 
 echo "--- [crowdstrike] Check FDR pipelines match their generators"
-if ! git diff --exit-code -- "${OUT_DIR}"; then
+if ! diff -rq "${ORIG_DIR}" "${OUT_DIR}"; then
   echo "^^^ +++"
   echo "FDR ingest pipelines are out of sync with ${GEN_DIR}."
   echo "Edit the generators, run ./generate.sh in that directory, and commit the result."
   exit 1
 fi
+rm -rf "${ORIG_DIR}"

@@ -289,6 +289,27 @@ warning, and informational represent unknown. Error represent failure.`)
 
 	BLANK()
 
+	SCRIPT().
+		TAG("script_process_interactive_logon_type").
+		DESCRIPTION("Set process.interactive from crowdstrike.LogonType whenever a process object is present in the event. Placed after all other process processors so that any processor that creates a process object (TargetProcessId, ContextProcessId, etc.) has already run. Logon types 2 (Interactive), 10 (RemoteInteractive), 11 (CachedInteractive), and 12 (CachedRemoteInteractive) indicate an interactive shell session; all other types are non-interactive.").
+		IF(`
+		  ctx.crowdstrike?.LogonType instanceof String &&
+		  ctx.crowdstrike.LogonType != '' &&
+		  ctx.process != null
+		`).
+		SOURCE(`
+        // Logon type reference: 2=Interactive, 3=Network, 4=Batch, 5=Service,
+        // 7=Unlock, 8=NetworkCleartext, 9=NewCredentials, 10=RemoteInteractive,
+        // 11=CachedInteractive, 12=CachedRemoteInteractive, 13=CachedUnlock
+        def logonType = ctx.crowdstrike.LogonType;
+        ctx.process.interactive = (logonType == '2' || logonType == '10' || logonType == '11' || logonType == '12');
+		`).
+		ON_FAILURE(
+			APPEND("error.message", "Failed to set process.interactive from LogonType: {{{_ingest.on_failure_message}}}"),
+		)
+
+	BLANK()
+
 	cleanup()
 
 	Generate()
@@ -836,6 +857,43 @@ func processFields() {
             ctx.process.args_count = ctx.process.args.length;
 		`)
 
+	SCRIPT().
+		TAG("script_command_history_to_process_command_line").
+		DESCRIPTION("Split crowdstrike.CommandHistory on U+00B6 PILCROW SIGN into an array and assign the result to both crowdstrike.CommandHistory and process.command_line. Placed after split_command_line so that processor only runs on string-valued command lines from crowdstrike.CommandLine.").
+		IF(`
+		  ctx.crowdstrike?.event_simpleName == 'CommandHistory' &&
+		  ctx.crowdstrike?.CommandHistory instanceof String &&
+		  ctx.crowdstrike.CommandHistory != ''
+		`).
+		SOURCE(`
+        def history = ctx.crowdstrike.CommandHistory;
+        def commands = new ArrayList();
+        def remaining = history;
+        int idx = remaining.indexOf("¶");
+        while (idx >= 0) {
+          def cmd = remaining.substring(0, idx).trim();
+          if (!cmd.isEmpty()) {
+            commands.add(cmd);
+          }
+          remaining = remaining.substring(idx + 1);
+          idx = remaining.indexOf("¶");
+        }
+        if (!remaining.trim().isEmpty()) {
+          commands.add(remaining.trim());
+        }
+        ctx.crowdstrike.CommandHistory = commands;
+        ctx.process = ctx.process ?: [:];
+        ctx.process.command_line = commands;
+		`).
+		ON_FAILURE(
+			APPEND("error.message", "Failed to parse CommandHistory: {{{_ingest.on_failure_message}}}"),
+		)
+	SET("process.user.name").
+		TAG("set_process_user_name_command_history").
+		DESCRIPTION("Map crowdstrike.UserName to process.user.name for CommandHistory events.").
+		IF(`ctx.crowdstrike?.event_simpleName == 'CommandHistory' && ctx.crowdstrike?.UserName instanceof String && ctx.crowdstrike.UserName != ''`).
+		COPY_FROM("crowdstrike.UserName").
+		IGNORE_EMPTY(true)
 	RENAME("crowdstrike.ImageFileName", "process.executable").
 		IF(`ctx._temp?.isLibrary != true && ctx._temp?.isDriver != true`).
 		IGNORE_MISSING(true)
