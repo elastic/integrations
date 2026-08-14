@@ -133,12 +133,13 @@ processors:
       tag: script_timezone
       description: >-
         Add support to map timezone abbreviations that are not supported by
-        Java manually. A built-in IANA zone-ID map handles common APAC and
-        regional abbreviations (SGT, ICT, MYT, PHT, TRT, BRT, ART, CLT, PET).
+        Java manually. A built-in IANA zone-ID map handles common abbreviations
+        from multiple regions (SGT, ICT, MYT, PHT, TRT, BRT, ART, CLT, PET).
         Operators can extend coverage via _conf.tz_map. If an abbreviation is
         still unrecognised after all lookups, _temp_.date_timezone falls back
-        to _conf.tz_offset or UTC, and event.timezone is set to the original
-        abbreviation so operators can identify and configure missing entries.
+        to _conf.tz_offset or UTC, event.timezone is set to the original
+        abbreviation, and the document is tagged cisco_ios_unmapped_timezone so
+        operators can identify and configure missing entries.
       if: ctx._temp_?.cisco_timestamp != null
       source: |-
         String get_timezone(def ctx) {
