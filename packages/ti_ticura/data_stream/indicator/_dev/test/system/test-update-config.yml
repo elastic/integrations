@@ -1,0 +1,25 @@
+input: cel
+service: cel
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}/v1/feeds/update/full?targetFormat=ECSV1&mode=url
+    api_token: test-token
+    interval: 1m
+    http_client_timeout: 5m
+    preserve_original_event: false
+wait_for_data_timeout: 90s
+# Verifies fingerprint-based update detection. The feed has 4 lines, but uuid
+# upd00001 appears TWICE — same uuid and same last_seen, different content
+# (risk 50 -> 90) and therefore a different ticura.indicator.fingerprint. Because
+# the document _id is fingerprint(ticura.indicator.uuid + ticura.indicator.fingerprint),
+# the two versions get distinct _ids and BOTH are ingested → hit_count 4. If the
+# fingerprint were dropped from the _id (uuid-only), the second version would
+# collide with the first and be rejected as a duplicate → hit_count 3. So this
+# guards that content updates are ingested as new versions rather than silently
+# dropped. (All 4 _ids are distinct, so no create-conflict/409 occurs on the
+# happy path.)
+assert:
+  hit_count: 4
+  fields_present:
+    - ticura.indicator.uuid
+    - ticura.indicator.fingerprint

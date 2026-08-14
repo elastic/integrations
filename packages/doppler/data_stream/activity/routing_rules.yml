@@ -1,0 +1,14 @@
+# All Doppler events arrive on doppler.activity via the single http_endpoint
+# input. security.secret_read is typically the highest-volume event type, so it
+# is rerouted to a dedicated doppler.secret_read data stream where retention,
+# shard sizing, and detection rules can be scoped independently. The activity
+# pipeline maps the shared envelope before the reroute; the secret_read pipeline
+# handles only the session and secrets-list shaping.
+- source_dataset: doppler.activity
+  rules:
+    - target_dataset: doppler.secret_read
+      if: ctx.event?.action == 'security.secret_read'
+      namespace:
+        - "{{data_stream.namespace}}"
+        # Fallback namespace when the reroute runs before a namespace is set.
+        - default

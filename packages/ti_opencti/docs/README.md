@@ -4,6 +4,11 @@ The OpenCTI integration allows you to ingest data from the [OpenCTI](https://fil
 
 Use this integration to get indicator data from OpenCTI. You can monitor and explore the ingested data on the OpenCTI dashboard or in Kibana's Discover tab. Indicator match rules in [Elastic Security](https://www.elastic.co/guide/en/security/current/es-overview.html) can then use the ingested indicator data to generate alerts about detected threats.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The OpenCTI integration collects one type of data stream: indicator.
@@ -89,9 +94,9 @@ All filters work together using AND logic at the top level. Within each multi-va
 
 The OpenCTI integration supports running on multiple Elastic Agents for high availability. When multiple agents fetch the same indicators:
 
-- **Automatic Deduplication**: The integration uses a fingerprint-based document ID to prevent duplicates. Each indicator gets a consistent ID based on its `standard_id` and `modified` timestamp.
+- **Automatic Deduplication**: The integration uses a fingerprint-based document ID to prevent duplicates. Each indicator version gets a consistent ID based on its `standard_id`, `modified` and `updated_at` timestamps.
 - **No Manual Configuration Needed**: Deduplication works automatically - just deploy the integration to multiple agents.
-- **Update Handling**: When an indicator is updated in OpenCTI, the new version replaces the old one in Elasticsearch.
+- **Update Handling**: When an indicator is updated in OpenCTI, a new document is indexed alongside the previous version in `logs-ti_opencti.indicator-*`. The `latest_ioc` transform keeps only the most recent version per indicator in `logs-ti_opencti_latest.indicator`, which is the index detection rules and dashboards should query.
 
 #### Best Practices for HA Setup
 
@@ -145,26 +150,26 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-05T11:37:38.726Z",
+    "@timestamp": "2026-07-29T12:09:03.572Z",
     "agent": {
-        "ephemeral_id": "638d123f-09b5-4d0f-aa84-168b3e311640",
-        "id": "d9bcb055-c833-401c-836b-698a37b90613",
-        "name": "elastic-agent-20893",
+        "ephemeral_id": "f2c072b7-7955-4811-9ae3-9c6fe3f315c4",
+        "id": "83d99a75-f67a-4fa0-a55e-3dcaf28762bd",
+        "name": "elastic-agent-82823",
         "type": "filebeat",
-        "version": "9.1.3"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
-        "namespace": "26786",
+        "namespace": "14780",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d9bcb055-c833-401c-836b-698a37b90613",
+        "id": "83d99a75-f67a-4fa0-a55e-3dcaf28762bd",
         "snapshot": false,
-        "version": "9.1.3"
+        "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -174,10 +179,10 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2025-11-05T11:37:41Z",
+        "ingested": "2026-07-29T12:09:06Z",
         "kind": "enrichment",
         "module": "ti_opencti",
-        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":[],\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":[{\"value\":\"information-credibility-6\"},{\"value\":\"osint\"}],\"objectMarking\":[{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}],\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":false,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
+        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":[],\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":[{\"value\":\"information-credibility-6\"},{\"value\":\"osint\"}],\"objectMarking\":[{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}],\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":false,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"updated_at\":\"2023-01-17T05:53:43.100Z\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
         "type": [
             "indicator"
         ]
@@ -202,6 +207,7 @@ An example event for `indicator` looks as following:
             "revoked": false,
             "score": 40,
             "standard_id": "indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b",
+            "updated_at": "2023-01-17T05:53:43.100Z",
             "valid_from": "2018-02-05T08:04:53.000Z",
             "valid_until": "2019-02-05T08:04:53.000Z"
         },
@@ -270,6 +276,7 @@ Timestamps are mapped as follows:
 | -           | event.ingested                | Time the event arrived in the central data store |
 | created     | event.created                 | Time of the indicator's creation |
 | modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
+| updated_at  | opencti.indicator.updated_at  | Time the indicator record was last updated in the OpenCTI platform, including UI edits, enrichment and scoring changes |
 | valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
 | valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
 | -           | opencti.indicator.invalid_or_revoked_from | The earliest time at which an indicator reaches its `valid_until` time or is marked as revoked |
@@ -312,6 +319,7 @@ The documentation for ECS fields can be found at:
 | opencti.indicator.rule_compatible | Whether the indicator is compatible with detection rules. | boolean |
 | opencti.indicator.score | An integer score for the indicator. | long |
 | opencti.indicator.standard_id | A predictable STIX ID, generated based on one or multiple attributes of the indicator. | keyword |
+| opencti.indicator.updated_at | The date and time the indicator was last updated in the OpenCTI platform (including UI edits, enrichment, and scoring changes). Distinct from threat.indicator.modified_at, which reflects the source-supplied STIX modified timestamp. | date |
 | opencti.indicator.valid_from | The time from which this indicator is considered a valid indicator of the behaviors it is related to or represents. | date |
 | opencti.indicator.valid_until | The time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents. | date |
 | opencti.observable.artifact.additional_names | Additional names of the artifact. | keyword |

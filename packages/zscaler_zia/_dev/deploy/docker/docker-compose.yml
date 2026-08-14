@@ -20,11 +20,21 @@ services:
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9023 -p=tcp /sample_logs/endpoint_dlp.log
+  zscaler-zia-email-dlp-tcp:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9025 -p=tcp /sample_logs/email_dlp.log
   zscaler-zia-firewall-tcp:
     image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9012 -p=tcp /sample_logs/firewall.log
+  zscaler-zia-sandbox-verdict-tcp:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9027 -p=tcp /sample_logs/sandbox_verdict.log
   zscaler-zia-saas-security-activity-tcp:
     image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
@@ -75,6 +85,16 @@ services:
       - STREAM_ADDR=http://elastic-agent:9561/
       - STREAM_WEBHOOK_HEADER=Content-Type=application/ndjson
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/endpoint_dlp-http_endpoint.log
+  zscaler-zia-email-dlp-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9564/
+      - STREAM_WEBHOOK_HEADER=Content-Type=application/json
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/email_dlp-http_endpoint.log
   zscaler-zia-firewall-http-endpoint:
     image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
@@ -85,6 +105,16 @@ services:
       - STREAM_ADDR=http://elastic-agent:9557/
       - STREAM_WEBHOOK_HEADER=Content-Type=application/ndjson
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/firewall-http_endpoint.log
+  zscaler-zia-sandbox-verdict-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9566/
+      - STREAM_WEBHOOK_HEADER=Content-Type=application/json
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/sandbox_verdict-http_endpoint.log
   zscaler-zia-saas-security-activity-http-endpoint:
     image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
