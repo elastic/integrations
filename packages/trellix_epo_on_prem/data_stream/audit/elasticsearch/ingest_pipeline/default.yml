@@ -158,12 +158,26 @@ processors:
       allow_duplicates: false
   - append:
       field: event.category
+      tag: append_iam_into_event_category
+      if: ctx.event?.action != null && ['create-user', 'delete-user', 'edit-user'].contains(ctx.event.action)
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_user_into_event_type
+      if: ctx.event?.category != null && ctx.event.category.contains('iam')
+      value: user
+      allow_duplicates: false
+  - append:
+      field: event.category
       tag: append_configuration_into_event_category
+      if: ctx.event?.category == null || ctx.event.category.isEmpty()
       value: configuration
       allow_duplicates: false
   - append:
       field: event.type
       tag: append_change_into_event_type
+      if: ctx.event?.type == null || ctx.event.type.isEmpty()
       value: change
       allow_duplicates: false
   - date:
