@@ -1,7 +1,7 @@
-format_version: 3.3.2
+format_version: 3.7.0
 name: cloud_security_posture
 title: "Security Posture Management"
-version: "3.5.0"
+version: "3.6.0"
 source:
   license: "Elastic-2.0"
 description: "Identify & remediate configuration risks in your Cloud infrastructure"
@@ -99,6 +99,11 @@ policy_templates:
       - type: cloudbeat/cis_eks
         title: Amazon EKS Benchmark
         description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
+        iac_blueprints:
+          - id: aws/federated-identity/account/v1
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-eks.cloudformation.patches.json
+            title: EKS benchmark federated identity role
   - name: cspm
     title: Cloud Security Posture Management (CSPM)
     description: Identify & remediate configuration risks in the Cloud services you leverage
@@ -130,6 +135,11 @@ policy_templates:
       - type: cloudbeat/cis_aws
         title: Amazon Web Services
         description: CIS Benchmark for Amazon Web Services Foundations
+        iac_blueprints:
+          - id: aws/federated-identity/account/v1
+            format: cloudformation
+            patches: iac/aws-federated-identity-account.cloudformation.patches.json
+            title: CSPM federated identity role with SecurityAudit access
         vars:
           - name: cloud_formation_template
             type: text
@@ -229,6 +239,11 @@ policy_templates:
       - type: cloudbeat/vuln_mgmt_aws
         title: Amazon Web Services Vulnerability Management
         description: Vulnerability scan over running resources
+        iac_blueprints:
+          - id: aws/federated-identity/account/v1
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cnvm.cloudformation.patches.json
+            title: CNVM federated identity role with EC2 and Inspector2 access
         vars:
           - name: cloud_formation_template
             type: text
