@@ -296,11 +296,17 @@ The `log` data stream provides events from QNAP NAS of the following types: syst
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
+| qnap.nas.action | Raw numeric action code for unmapped RFC 5424 actions | keyword |
 | qnap.nas.application | QNAP application that generated the event | keyword |
 | qnap.nas.category | Sub-component of the QNAP application that generated the event | keyword |
+| qnap.nas.client_app | Client application name from RFC 5424 structured data | keyword |
+| qnap.nas.client_id | Client session identifier from RFC 5424 structured data | keyword |
 | qnap.nas.connection_type | Connection type (ex. Samba) | keyword |
 | qnap.nas.file.new_path | Renamed/Moved path of accessed resource | keyword |
 | qnap.nas.file.path | Path of accessed resource | keyword |
+| qnap.nas.mac | MAC address of connecting client from RFC 5424 structured data | keyword |
+| qnap.nas.service | Raw numeric service code from RFC 5424 structured data | keyword |
+| qnap.nas.source | Source attribute from RFC 5424 QuLog@Access structured data | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
@@ -323,6 +329,8 @@ The `log` data stream provides events from QNAP NAS of the following types: syst
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.name | Short name or login of the user. | keyword |
 | user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
+| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
 ##### log sample event
