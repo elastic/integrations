@@ -31,7 +31,7 @@ processors:
       tag: grok_event_original
       if: ctx.event?.original != null
       patterns:
-        - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
+        - "(?:%{SYSLOG_HEADER})?\\s*(?<_temp_.full_message>[\\s\\S]*)"
       pattern_definitions:
         SYSLOG_HEADER: "(?:%{SYSPRIORITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
         SYSPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
@@ -52,7 +52,7 @@ processors:
       if: ctx._temp_.full_message != null
       patterns:
         - '^%{ASA_DATE:_temp_.raw_date}: %{DATA:_temp_.full_message}$'
-        - '%{GREEDYDATA:_temp_.full_message}'
+        - '(?<_temp_.full_message>[\s\S]*)'
       pattern_definitions:
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
         TZ: "[A-Z]{1,7}([+-]\\d{1,2}|[+-]\\d{2}:\\d{2})?"
@@ -95,9 +95,9 @@ processors:
       if: ctx._temp_?.full_message != null
       tag: grok_full_message
       patterns:
-        - "%{FTD_PREFIX}-(?:%{FTD_SUFFIX:_temp_.cisco.suffix}-)?%{NONNEGINT:event.severity:int}-%{POSINT:_temp_.cisco.message_id}?:?\\s*%{GREEDYDATA:message}"
+        - "%{FTD_PREFIX}-(?:%{FTD_SUFFIX:_temp_.cisco.suffix}-)?%{NONNEGINT:event.severity:int}-%{POSINT:_temp_.cisco.message_id}?:?\\s*(?<message>[\\s\\S]*)"
         # Before version 6.3, messages for connection, security intelligence, and intrusion events didn't include an event type ID in the message header.
-        - "%{GREEDYDATA:message}"
+        - "(?<message>[\\s\\S]*)"
       pattern_definitions:
         FTD_SUFFIX: "[^0-9-]+"
         # Before version 6.3, FTD used ASA prefix in syslog messages
