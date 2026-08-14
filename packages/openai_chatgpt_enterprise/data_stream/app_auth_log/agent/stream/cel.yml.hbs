@@ -26,7 +26,7 @@ program: |-
   (
     // PHASE 1 — list files (only when the worklist is empty). This is the only
     // paginated call: it pages forward with `after` = last_end_time (ascending).
-    (has(state.worklist) && size(state.worklist) > 0) ?
+    (size(state.?cursor.worklist.orValue([])) > 0) ?
       state
     :
       state.?cursor.last_end_time.orValue(string(now - duration(state.initial_interval))).as(after,
@@ -45,9 +45,11 @@ program: |-
               },
             }
           ).do_request().as(resp, (resp.StatusCode == 200) ?
-            bytes(resp.Body).decode_json().as(body,
+            resp.Body.decode_json().as(body,
               {
-                "worklist": body.?data.orValue([]),
+                // worklist and list_has_more live under cursor so that a restart
+                // mid-page resumes the queue instead of losing it while
+                // last_end_time has already advanced past those files.
                 "cursor": {
                   // Empty pages return last_end_time: null; keep the current
                   // `after` in that case so the cursor never becomes null.
@@ -55,11 +57,12 @@ program: |-
                     body.last_end_time
                   :
                     after,
+                  "worklist": body.?data.orValue([]),
+                  // Termination is driven by has_more, not by an empty page: this
+                  // API re-returns the boundary record when re-queried with the same
+                  // `after`, so an empty response is never observed on has_more=false.
+                  "list_has_more": body.?has_more.orValue(false),
                 },
-                // Termination is driven by has_more, not by an empty page: this
-                // API re-returns the boundary record when re-queried with the same
-                // `after`, so an empty response is never observed on has_more=false.
-                "list_has_more": body.?has_more.orValue(false),
                 "want_more": size(body.?data.orValue([])) > 0,
               }
             )
@@ -86,13 +89,11 @@ program: |-
     // PHASE 2 — download the first queued file, then drop it from the worklist.
     // This endpoint 307-redirects to a signed URL serving the JSON Lines body
     // (redirect auto-followed). It has no pagination of its own.
-    !has(state.worklist) ?
-      state
-    : (size(state.worklist) > 0) ?
+    (size(state.?cursor.worklist.orValue([])) > 0) ?
       state.with(
         request(
           "GET",
-          state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + string(state.resource_id) + "/logs/" + string(state.worklist[0].id)
+          state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + string(state.resource_id) + "/logs/" + string(state.cursor.worklist[0].id)
         ).with(
           {
             "Header": {
@@ -106,10 +107,12 @@ program: |-
                 "message": l,
               }
             ),
-            "worklist": tail(state.worklist),
+            // Shallow-merge into the existing cursor so last_end_time and
+            // list_has_more survive the worklist update.
+            "cursor": state.cursor.with({"worklist": tail(state.cursor.worklist)}),
             // Keep going while files remain in this page, or the list reported
             // more pages. Stops right after the last file of the last page.
-            "want_more": size(state.worklist) > 1 || state.?list_has_more.orValue(false),
+            "want_more": size(state.cursor.worklist) > 1 || state.?cursor.list_has_more.orValue(false),
           }
         :
           {
@@ -117,7 +120,7 @@ program: |-
               "error": {
                 "code": string(resp.StatusCode),
                 "id": resp.Status,
-                "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs/" + string(state.worklist[0].id) + ": " + (
+                "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs/" + string(state.cursor.worklist[0].id) + ": " + (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
@@ -125,11 +128,18 @@ program: |-
                 ),
               },
             },
-            "worklist": tail(state.worklist),
-            "want_more": size(state.worklist) > 1 || state.?list_has_more.orValue(false),
+            // Leave the worklist untouched and stop: the single-object error form
+            // drops the cursor, so the next evaluation retries this same file
+            // instead of silently skipping it.
+            "want_more": false,
           }
         )
       )
+    : state.?events.hasValue() ?
+      // A listing error from PHASE 1 must survive: without this guard the empty
+      // batch below overwrites it on every run after the first, because the
+      // worklist key already exists (empty) from the previous evaluation.
+      state
     :
       state.with(
         {

@@ -139,22 +139,22 @@ An example event for `auth_log` looks as following:
 {
     "@timestamp": "2026-07-15T10:53:18.000Z",
     "agent": {
-        "ephemeral_id": "4474e3c9-7a41-4b3d-bc3c-14f903733703",
-        "id": "5ec78776-e8cd-446a-93af-32bd65607825",
-        "name": "elastic-agent-10602",
+        "ephemeral_id": "b834d3bc-c7d1-4834-b889-c88e3fc76e0c",
+        "id": "0b322121-717b-47b5-8cb6-ce123cdca9f3",
+        "name": "elastic-agent-97411",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.auth_log",
-        "namespace": "39461",
+        "namespace": "23437",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "5ec78776-e8cd-446a-93af-32bd65607825",
+        "id": "0b322121-717b-47b5-8cb6-ce123cdca9f3",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -166,7 +166,7 @@ An example event for `auth_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.auth_log",
         "id": "9532e1b4-e44a-42c7-a52a-083c345e0001",
-        "ingested": "2026-08-11T11:15:49Z",
+        "ingested": "2026-08-14T10:41:42Z",
         "kind": "event",
         "original": "{\"event_id\":\"9532e1b4-e44a-42c7-a52a-083c345e0001\",\"type\":\"AUTH_LOG\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"timestamp\":\"2026-07-15T10:53:18Z\",\"request_metadata\":{\"client_ip\":\"81.2.69.142\",\"client_ip_details\":{\"country\":\"GB\",\"city\":\"London\",\"region\":\"England\",\"region_code\":\"ENG\",\"latitude\":\"51.50853\",\"longitude\":\"-0.12574\"},\"client_ja3\":\"f90ffded875933863a95a1a84285c922\",\"client_ja4\":\"q13d0311h3_55b375c5d22e_653d80c3fe9d\"},\"action_data\":{\"action\":\"login_success\",\"role\":\"standard-user\"}}",
         "outcome": "success",
@@ -273,22 +273,22 @@ An example event for `app_auth_log` looks as following:
 {
     "@timestamp": "2026-07-09T10:10:00.000Z",
     "agent": {
-        "ephemeral_id": "7eb4bbfe-bb77-43cd-8939-efadb1796d96",
-        "id": "d0be91b9-cbd1-4fdd-b4e1-aeea6dade4e7",
-        "name": "elastic-agent-98363",
+        "ephemeral_id": "2964dae4-65d7-48a9-8fd0-f77597b1ed16",
+        "id": "3a221b13-0594-417e-98d1-f36f4eebd3fb",
+        "name": "elastic-agent-47565",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.app_auth_log",
-        "namespace": "39305",
+        "namespace": "95890",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "d0be91b9-cbd1-4fdd-b4e1-aeea6dade4e7",
+        "id": "3a221b13-0594-417e-98d1-f36f4eebd3fb",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -300,7 +300,7 @@ An example event for `app_auth_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.app_auth_log",
         "id": "7b3e4de1-2219-4d6c-9d6e-8f4d40c7c001",
-        "ingested": "2026-07-19T08:36:02Z",
+        "ingested": "2026-08-14T12:41:25Z",
         "kind": "event",
         "original": "{\"event_id\":\"7b3e4de1-2219-4d6c-9d6e-8f4d40c7c001\",\"type\":\"APP_AUTH_LOG\",\"timestamp\":\"2026-07-09T10:10:00.000000Z\",\"principal\":{\"id\":\"be545252-ad04-4cfa-9ca5-deca58416151\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-AbCdEf1234567890\",\"user_email\":\"user@example.org\"},\"app_id\":\"asdk_app_0123456789abcdef0123456789abcdef\",\"link_id\":\"link_00112233445566778899aabbccddeeff\",\"action\":\"link\"}",
         "type": [
