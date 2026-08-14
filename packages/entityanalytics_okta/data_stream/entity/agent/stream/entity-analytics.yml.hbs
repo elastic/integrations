@@ -43,12 +43,25 @@ enrich_with:
   - groups
 {{#if enrich_user_roles}}
   - roles
+{{else if enrich_user_perms}}
+{{!-- Permissions enrichment implies role enrichment. The legacy path infers
+      this from "perms", but the minimal-state path only fetches permissions
+      as part of the "roles" enrichment, so it must be listed explicitly. --}}
+  - roles
 {{/if}}
 {{#if enrich_user_factors}}
   - factors
 {{/if}}
 {{#if enrich_user_perms}}
+{{!-- The minimal-state provider validates enrich_with strictly and names
+      this enrichment "permissions"; the legacy path only understands
+      "perms". Collapse to "permissions" once the minimum supported agent
+      accepts it on the legacy path too. --}}
+{{#if use_minimal_state}}
+  - permissions
+{{else}}
   - perms
+{{/if}}
 {{/if}}
 {{#if enrich_user_devices}}
   - devices
