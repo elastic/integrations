@@ -1,5 +1,5 @@
 connectors:
-    forward: {}
+    forward/componentid-0: {}
 exporters:
     elasticsearch/componentid-0:
         endpoints:
@@ -47,16 +47,17 @@ receivers:
                   static_configs:
                     - targets:
                         - metrics.temporal.io
+secret_references: []
 service:
     pipelines:
-        metrics:
+        metrics/componentid-0:
             exporters:
                 - elasticsearch/componentid-0
             receivers:
-                - forward
-        metrics/componentid-0:
+                - forward/componentid-0
+        metrics/componentid-1:
             exporters:
-                - forward
+                - forward/componentid-0
             processors:
                 - resourcedetection/componentid-0
                 - transform/componentid-1
