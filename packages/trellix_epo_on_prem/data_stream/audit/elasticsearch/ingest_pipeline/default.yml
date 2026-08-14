@@ -169,6 +169,24 @@ processors:
       value: user
       allow_duplicates: false
   - append:
+      field: event.type
+      tag: append_creation_into_event_type
+      if: ctx.event?.action == 'create-user'
+      value: creation
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type
+      if: ctx.event?.action == 'delete-user'
+      value: deletion
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_change_into_event_type_for_edit_user
+      if: ctx.event?.action == 'edit-user'
+      value: change
+      allow_duplicates: false
+  - append:
       field: event.category
       tag: append_configuration_into_event_category
       if: ctx.event?.category == null || ctx.event.category.isEmpty()

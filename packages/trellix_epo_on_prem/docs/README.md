@@ -136,22 +136,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-16T13:45:04+05:30",
     "agent": {
-        "ephemeral_id": "2821005f-7624-455c-a150-eaae34e4dc86",
-        "id": "900c2761-4ae0-4fbc-83c7-203ac68d8faf",
-        "name": "elastic-agent-96448",
+        "ephemeral_id": "76d2dec5-d870-4dcb-af16-2f3323e5c0b1",
+        "id": "e75a7138-b8af-4406-a67d-b2100dcd9d94",
+        "name": "elastic-agent-34387",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.audit",
-        "namespace": "84970",
+        "namespace": "51130",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "900c2761-4ae0-4fbc-83c7-203ac68d8faf",
+        "id": "e75a7138-b8af-4406-a67d-b2100dcd9d94",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -164,13 +164,14 @@ An example event for `audit` looks as following:
         "dataset": "trellix_epo_on_prem.audit",
         "end": "2026-07-16T13:45:05+05:30",
         "id": "1943",
-        "ingested": "2026-08-13T12:38:54Z",
+        "ingested": "2026-08-14T11:22:53Z",
         "kind": "event",
         "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"tempuser\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
         "outcome": "success",
         "start": "2026-07-16T13:45:04+05:30",
         "type": [
-            "user"
+            "user",
+            "deletion"
         ]
     },
     "input": {
