@@ -1,0 +1,342 @@
+---
+description: Parse EKS audit JSON into aws.eks.audit and ECS.
+on_failure:
+- set:
+    tag: set_pipeline_error
+    field: event.kind
+    value: pipeline_error
+- append:
+    tag: preserve_original_event_on_failure
+    allow_duplicates: false
+    field: tags
+    value: preserve_original_event
+- append:
+    tag: append_pipeline_error
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+processors:
+- rename:
+    tag: rename_message_to_event_original
+    field: message
+    if: ctx.event?.original == null
+    ignore_missing: true
+    target_field: event.original
+- json:
+    tag: parse_event_original
+    field: event.original
+    if: ctx.event?.original != null && ctx.aws?.eks?.audit == null
+    target_field: aws.eks.audit
+- remove:
+    field: aws.eks.audit
+    if: ctx.aws?.eks?.audit != null && !(ctx.aws.eks.audit instanceof Map)
+    ignore_missing: true
+    tag: discard_non_object_audit_payload
+- remove:
+    tag: remove_message
+    field: message
+    if: ctx.event?.original != null
+    ignore_missing: true
+- remove:
+    tag: remove_response_object_metadata
+    field:
+    - aws.eks.audit.responseObject.metadata
+    if: ctx.aws?.eks?.audit?.responseObject != null
+    ignore_missing: true
+- remove:
+    tag: remove_request_object_metadata
+    field:
+    - aws.eks.audit.requestObject.metadata
+    if: ctx.aws?.eks?.audit?.requestObject != null
+    ignore_missing: true
+- script:
+    if: ctx.aws?.eks?.audit instanceof Map
+    lang: painless
+    source: |
+      void normalizeApiGroups(def rules) {
+        if (!(rules instanceof List)) {
+          return;
+        }
+        for (def rule : rules) {
+          if (!(rule instanceof Map)) {
+            continue;
+          }
+          def groups = rule.get('apiGroups');
+          if (!(groups instanceof List)) {
+            continue;
+          }
+          for (int i = 0; i < groups.size(); i++) {
+            if (groups.get(i) == '') {
+              groups.set(i, 'core');
+            }
+          }
+        }
+      }
+      Map audit = ctx.aws.eks.audit;
+      def objectRef = audit.get('objectRef');
+      if (objectRef instanceof Map && objectRef.get('apiGroup') == '') {
+        objectRef.put('apiGroup', 'core');
+      }
+      def requestObject = audit.get('requestObject');
+      if (requestObject instanceof Map) {
+        normalizeApiGroups(requestObject.get('rules'));
+      }
+      def responseObject = audit.get('responseObject');
+      if (responseObject instanceof Map) {
+        normalizeApiGroups(responseObject.get('rules'));
+      }
+    tag: normalize_core_api_groups
+- remove:
+    field:
+    - aws.eks.audit.requestObject.data
+    - aws.eks.audit.requestObject.stringData
+    - aws.eks.audit.responseObject.data
+    - aws.eks.audit.responseObject.stringData
+    if: ctx.aws?.eks?.audit?.objectRef?.resource == 'secrets'
+    ignore_missing: true
+    tag: redact_secret_payload_values
+- foreach:
+    tag: redact_secret_list_payload_values
+    field: aws.eks.audit.responseObject.items
+    if: ctx.aws?.eks?.audit?.objectRef?.resource == 'secrets' && ctx.aws?.eks?.audit?.responseObject?.items instanceof List
+    ignore_missing: true
+    processor:
+      remove:
+        field:
+        - _ingest._value.data
+        - _ingest._value.stringData
+        - _ingest._value.metadata.annotations
+        ignore_missing: true
+        tag: redact_secret_list_item_payload_values
+- set:
+    tag: set_event_kind
+    field: event.kind
+    value: event
+- set:
+    tag: set_event_action
+    copy_from: aws.eks.audit.verb
+    field: event.action
+    if: ctx.aws?.eks?.audit?.verb != null
+    ignore_empty_value: true
+- append:
+    tag: set_event_category
+    field: event.category
+    value: configuration
+    if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null
+    allow_duplicates: false
+- append:
+    tag: set_event_type_creation
+    field: event.type
+    value: creation
+    if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null && ctx.aws?.eks?.audit?.verb == 'create'
+    allow_duplicates: false
+- append:
+    tag: set_event_type_deletion
+    field: event.type
+    value: deletion
+    if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null && ['delete', 'deletecollection'].contains(ctx.aws?.eks?.audit?.verb)
+    allow_duplicates: false
+- append:
+    tag: set_event_type_change
+    field: event.type
+    value: change
+    if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null && ['update', 'patch'].contains(ctx.aws?.eks?.audit?.verb)
+    allow_duplicates: false
+- append:
+    tag: set_event_type_access
+    field: event.type
+    value: access
+    if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null && ['get', 'list', 'watch'].contains(ctx.aws?.eks?.audit?.verb)
+    allow_duplicates: false
+- append:
+    tag: set_event_type_info
+    field: event.type
+    value: info
+    if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null && ctx.aws?.eks?.audit?.verb != null && !['create', 'delete', 'deletecollection', 'update', 'patch', 'get', 'list', 'watch'].contains(ctx.aws?.eks?.audit?.verb)
+    allow_duplicates: false
+- script:
+    if: ctx.aws?.eks?.audit?.user?.extra instanceof Map
+    lang: painless
+    source: 'Map extra = ctx.aws.eks.audit.user.extra; Map normalized = new HashMap(); for (def entry : extra.entrySet()) { normalized[entry.getKey().replace(''.'', ''_'')] = entry.getValue(); } ctx.aws.eks.audit.user.extra = normalized;'
+    tag: normalize_user_extra_keys
+- script:
+    if: ctx.aws?.eks?.audit?.impersonatedUser?.extra instanceof Map
+    lang: painless
+    source: 'Map extra = ctx.aws.eks.audit.impersonatedUser.extra; Map normalized = new HashMap(); for (def entry : extra.entrySet()) { normalized[entry.getKey().replace(''.'', ''_'')] = entry.getValue(); } ctx.aws.eks.audit.impersonatedUser.extra = normalized;'
+    tag: normalize_impersonated_user_extra_keys
+- script:
+    tag: normalize_annotation_keys_and_set_outcome
+    if: ctx.aws?.eks?.audit?.annotations != null
+    lang: painless
+    source: 'Map annotations = ctx[''aws''][''eks''][''audit''][''annotations'']; Map updatedAnnotation = new HashMap(); for (String key: annotations.keySet()) {
+      updatedAnnotation[key.replace(''.'', ''_'')] = annotations[key]; if (key == ''authorization.k8s.io/decision'') { if (annotations[''authorization.k8s.io/decision'']
+      == ''allow'') { ctx.event.outcome = ''success''; } else if (annotations[''authorization.k8s.io/decision''] == ''forbid'') { ctx.event.outcome = ''failure'';
+      } } } ctx[''aws''][''eks''][''audit''][''annotations''] = updatedAnnotation'
+- set:
+    tag: set_success_outcome_from_status
+    field: event.outcome
+    value: success
+    if: ctx.event?.outcome == null && ctx.aws?.eks?.audit?.responseStatus?.code != null && ctx.aws.eks.audit.responseStatus.code < 400
+- set:
+    tag: set_failure_outcome_from_status
+    field: event.outcome
+    value: failure
+    if: ctx.event?.outcome == null && ctx.aws?.eks?.audit?.responseStatus?.code != null && ctx.aws.eks.audit.responseStatus.code >= 400
+- set:
+    tag: set_user_name
+    copy_from: aws.eks.audit.user.username
+    field: user.name
+    if: ctx.aws?.eks?.audit?.user?.username != null
+    ignore_empty_value: true
+- set:
+    tag: set_user_id
+    copy_from: aws.eks.audit.user.uid
+    field: user.id
+    if: ctx.aws?.eks?.audit?.user?.uid != null
+    ignore_empty_value: true
+- set:
+    tag: set_user_agent_original
+    copy_from: aws.eks.audit.userAgent
+    field: user_agent.original
+    if: ctx.aws?.eks?.audit?.userAgent != null
+    ignore_empty_value: true
+- convert:
+    tag: convert_source_ips
+    field: aws.eks.audit.sourceIPs
+    if: ctx.aws?.eks?.audit?.sourceIPs != null
+    ignore_failure: true
+    ignore_missing: true
+    target_field: source.ip
+    type: ip
+- set:
+    tag: set_client_ip
+    copy_from: source.ip
+    field: client.ip
+    if: ctx.source?.ip != null
+    ignore_empty_value: true
+- set:
+    tag: set_orchestrator_type
+    field: orchestrator.type
+    value: kubernetes
+- set:
+    tag: set_orchestrator_api_version
+    copy_from: aws.eks.audit.apiVersion
+    field: orchestrator.api_version
+    if: ctx.aws?.eks?.audit?.apiVersion != null
+    ignore_empty_value: true
+- set:
+    tag: set_orchestrator_resource_type
+    copy_from: aws.eks.audit.objectRef.resource
+    field: orchestrator.resource.type
+    if: ctx.aws?.eks?.audit?.objectRef?.resource != null
+    ignore_empty_value: true
+- set:
+    tag: set_orchestrator_namespace
+    copy_from: aws.eks.audit.objectRef.namespace
+    field: orchestrator.namespace
+    if: ctx.aws?.eks?.audit?.objectRef?.namespace != null
+    ignore_empty_value: true
+- set:
+    tag: set_orchestrator_resource_name
+    copy_from: aws.eks.audit.objectRef.name
+    field: orchestrator.resource.name
+    if: ctx.aws?.eks?.audit?.objectRef?.name != null
+    ignore_empty_value: true
+- append:
+    allow_duplicates: false
+    field: related.user
+    if: ctx.aws?.eks?.audit?.user?.uid != null
+    tag: append_related_user_uid
+    value: '{{{aws.eks.audit.user.uid}}}'
+- append:
+    allow_duplicates: false
+    field: related.user
+    if: ctx.aws?.eks?.audit?.user?.username != null
+    tag: append_related_user_name
+    value: '{{{aws.eks.audit.user.username}}}'
+- foreach:
+    tag: append_related_source_ips
+    field: source.ip
+    if: ctx.source?.ip != null && ctx.source.ip instanceof List
+    processor:
+      append:
+        allow_duplicates: false
+        field: related.ip
+        tag: append_related_source_ip
+        value: '{{{_ingest._value}}}'
+- set:
+    tag: set_event_id
+    copy_from: aws.eks.audit.auditID
+    field: event.id
+    if: ctx.aws?.eks?.audit?.auditID != null
+    ignore_empty_value: true
+- set:
+    tag: set_user_group_name
+    copy_from: aws.eks.audit.user.groups
+    field: user.group.name
+    if: ctx.aws?.eks?.audit?.user?.groups != null
+    ignore_empty_value: true
+- set:
+    tag: set_effective_user_name
+    copy_from: aws.eks.audit.impersonatedUser.username
+    field: user.effective.name
+    if: ctx.aws?.eks?.audit?.impersonatedUser?.username != null
+    ignore_empty_value: true
+- set:
+    tag: set_effective_user_id
+    copy_from: aws.eks.audit.impersonatedUser.uid
+    field: user.effective.id
+    if: ctx.aws?.eks?.audit?.impersonatedUser?.uid != null
+    ignore_empty_value: true
+- set:
+    tag: set_effective_user_group_name
+    copy_from: aws.eks.audit.impersonatedUser.groups
+    field: user.effective.group.name
+    if: ctx.aws?.eks?.audit?.impersonatedUser?.groups != null
+    ignore_empty_value: true
+- date:
+    tag: set_timestamp_from_request_received
+    field: aws.eks.audit.requestReceivedTimestamp
+    formats:
+    - ISO8601
+    if: ctx.aws?.eks?.audit?.requestReceivedTimestamp != null
+    target_field: '@timestamp'
+- date:
+    tag: set_event_end_from_stage_timestamp
+    field: aws.eks.audit.stageTimestamp
+    formats:
+    - ISO8601
+    if: ctx.aws?.eks?.audit?.stageTimestamp != null
+    target_field: event.end
+- set:
+    if: ctx.aws?.eks?.audit?.apiVersion != 'audit.k8s.io/v1' || ctx.aws.eks.audit.kind != 'Event' || ctx.aws.eks.audit.auditID == null
+    field: event.kind
+    value: pipeline_error
+    tag: set_pipeline_error_for_unsupported_audit_record
+- append:
+    if: ctx.event?.kind == 'pipeline_error'
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    tag: preserve_unsupported_audit_record
+- set:
+    if: ctx.event?.kind == 'pipeline_error'
+    field: error.message
+    value: 'Unsupported Amazon EKS audit record: expected a Kubernetes audit.k8s.io Event with an audit ID.'
+    tag: report_unsupported_audit_record
+- script:
+    description: Drops null/empty values recursively
+    ignore_failure: true
+    lang: painless
+    source: "void handleMap(Map map) {\n  map.values().removeIf(v -> {\n    if (v instanceof Map) {\n      handleMap(v);\n    } else if (v instanceof List) {\n  \
+      \    handleList(v);\n    }\n    return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)\n  });\n}\nvoid handleList(List\
+      \ list) {\n  list.removeIf(v -> {\n    if (v instanceof Map) {\n      handleMap(v);\n    } else if (v instanceof List) {\n      handleList(v);\n    }\n    return\
+      \ v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)\n  });\n}\nhandleMap(ctx);\n"
+    tag: script_to_drop_empty_values
+- remove:
+    field: event.original
+    if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+    ignore_missing: true
+    tag: remove_event_original

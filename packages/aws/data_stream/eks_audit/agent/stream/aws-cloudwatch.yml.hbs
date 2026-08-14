@@ -1,0 +1,80 @@
+data_stream:
+  dataset: aws.eks_audit
+
+{{#if log_group_arn}}
+log_group_arn: {{ log_group_arn }}
+{{else}}
+{{#if log_group_name}}
+log_group_name: {{ log_group_name }}
+{{else}}
+{{#if log_group_name_prefix}}
+log_group_name_prefix: {{ log_group_name_prefix }}
+{{#if include_linked_accounts_with_prefix}}
+include_linked_accounts_for_prefix_mode: {{ include_linked_accounts_with_prefix }}
+{{/if}}
+{{/if}}
+{{/if}}
+{{/if}}
+{{#unless log_group_arn}}
+region_name: {{ region_name }}
+{{/unless}}
+log_stream_prefix: {{ log_stream_prefix }}
+{{#if number_of_workers }}
+number_of_workers: {{ number_of_workers }}
+{{/if}}
+{{#if start_position }}
+start_position: {{ start_position }}
+{{/if}}
+{{#if scan_frequency }}
+scan_frequency: {{ scan_frequency }}
+{{/if}}
+{{#if api_sleep }}
+api_sleep: {{ api_sleep }}
+{{/if}}
+{{#if latency }}
+latency: {{ latency }}
+{{/if}}
+{{#if credential_profile_name}}
+credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if shared_credential_file}}
+shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if api_timeout}}
+api_timeout: {{api_timeout}}
+{{/if}}
+{{#if default_region}}
+default_region: {{default_region}}
+{{/if}}
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
+{{#if role_arn}}
+role_arn: {{role_arn}}
+{{/if}}
+{{#if external_id}}
+external_id: {{external_id}}
+{{/if}}
+{{#if proxy_url }}
+proxy_url: {{proxy_url}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

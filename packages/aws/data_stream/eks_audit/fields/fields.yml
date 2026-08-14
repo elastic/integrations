@@ -1,0 +1,315 @@
+- name: aws.eks.audit.apiVersion
+  type: keyword
+  description: Kubernetes audit API version of the event.
+- name: aws.eks.audit.kind
+  type: keyword
+  description: Kubernetes object kind of the audit event.
+- name: aws.eks.audit.level
+  type: keyword
+  description: Audit policy level at which the event was generated.
+- name: aws.eks.audit.auditID
+  type: keyword
+  description: Unique audit ID generated for the request.
+- name: aws.eks.audit.stage
+  type: keyword
+  description: Request-handling stage at which this audit event was generated.
+- name: aws.eks.audit.requestURI
+  type: keyword
+  description: Request URI sent by the client to the Kubernetes API server.
+- name: aws.eks.audit.verb
+  type: keyword
+  description: Kubernetes verb associated with the request, or the lowercase HTTP method for a non-resource request.
+- name: aws.eks.audit.user.groups
+  type: keyword
+  description: Groups to which the authenticated user belongs.
+- name: aws.eks.audit.user.username
+  type: keyword
+  description: Name that identifies the authenticated user.
+- name: aws.eks.audit.user.uid
+  type: keyword
+  description: Unique identifier of the authenticated user.
+- name: aws.eks.audit.user.extra.*
+  type: object
+  object_type: keyword
+  description: Additional information supplied by the authenticator for the authenticated user. Dots in keys are replaced with underscores.
+- name: aws.eks.audit.impersonatedUser.groups
+  type: keyword
+  description: Groups to which the impersonated user belongs.
+- name: aws.eks.audit.impersonatedUser.username
+  type: keyword
+  description: Name that identifies the impersonated user.
+- name: aws.eks.audit.impersonatedUser.uid
+  type: keyword
+  description: Unique identifier of the impersonated user.
+- name: aws.eks.audit.impersonatedUser.extra.*
+  type: object
+  object_type: keyword
+  description: Additional information supplied for the impersonated user. Dots in keys are replaced with underscores.
+- name: aws.eks.audit.sourceIPs
+  type: keyword
+  description: Source IP addresses from which the request originated, including intermediate proxies.
+- name: aws.eks.audit.userAgent
+  type: text
+  description: User agent string reported by the client. This value is client supplied and must not be trusted.
+- name: aws.eks.audit.objectRef.resource
+  type: keyword
+  description: Kubernetes resource type targeted by the request.
+- name: aws.eks.audit.objectRef.namespace
+  type: keyword
+  description: Kubernetes namespace of the targeted object.
+- name: aws.eks.audit.objectRef.name
+  type: keyword
+  description: Name of the targeted Kubernetes object.
+- name: aws.eks.audit.objectRef.uid
+  type: keyword
+  description: Unique identifier of the targeted Kubernetes object.
+- name: aws.eks.audit.objectRef.apiGroup
+  type: keyword
+  description: API group that contains the targeted object. The empty Kubernetes core API group is normalized to `core`.
+- name: aws.eks.audit.objectRef.apiVersion
+  type: keyword
+  description: Version of the API group that contains the targeted object.
+- name: aws.eks.audit.objectRef.resourceVersion
+  type: keyword
+  description: Resource version of the targeted Kubernetes object.
+- name: aws.eks.audit.objectRef.subresource
+  type: keyword
+  description: Kubernetes subresource targeted by the request.
+- name: aws.eks.audit.responseStatus.code
+  type: integer
+  description: Suggested HTTP response code for the status, or 0 when not set.
+- name: aws.eks.audit.responseStatus.status
+  type: keyword
+  description: Status of the Kubernetes API operation.
+- name: aws.eks.audit.responseStatus.message
+  type: text
+  description: Human-readable description of the operation status.
+- name: aws.eks.audit.responseStatus.reason
+  type: keyword
+  description: Machine-readable reason for a failed operation.
+- name: aws.eks.audit.requestObject.spec.type
+  type: keyword
+  description: Type specified by the Kubernetes API request object.
+- name: aws.eks.audit.requestObject.spec.serviceAccountName
+  type: keyword
+  description: Service account assigned to the requested workload.
+- name: aws.eks.audit.requestObject.spec.restartPolicy
+  type: keyword
+  description: Restart policy specified for the requested workload.
+- name: aws.eks.audit.requestObject.spec.hostNetwork
+  type: boolean
+  description: Whether the requested workload uses the host network namespace.
+- name: aws.eks.audit.requestObject.spec.hostIPC
+  type: boolean
+  description: Whether the requested workload uses the host IPC namespace.
+- name: aws.eks.audit.requestObject.spec.hostPID
+  type: boolean
+  description: Whether the requested workload uses the host PID namespace.
+- name: aws.eks.audit.requestObject.spec.volumes.hostPath
+  type: flattened
+  description: Host path volume definitions in the Kubernetes API request object.
+- name: aws.eks.audit.requestObject.spec.securityContext.runAsUser
+  type: integer
+  description: User ID configured for processes in the requested workload.
+- name: aws.eks.audit.requestObject.spec.securityContext.runAsGroup
+  type: integer
+  description: Primary group ID configured for processes in the requested workload.
+- name: aws.eks.audit.requestObject.spec.securityContext.runAsNonRoot
+  type: boolean
+  description: Whether the requested workload requires processes to run as a non-root user.
+- name: aws.eks.audit.requestObject.spec.containers
+  type: group
+  description: Containers specified by the Kubernetes API request object.
+  fields:
+    - name: image
+      type: keyword
+      description: Container image specified by the request.
+    - name: name
+      type: keyword
+      description: Name of the requested container.
+    - name: command
+      type: text
+      description: Entrypoint command specified for the requested container.
+    - name: volumeMounts
+      type: flattened
+      description: Volume mounts specified for the requested container.
+    - name: securityContext
+      type: group
+      description: Security context specified for the requested container.
+      fields:
+        - name: privileged
+          type: boolean
+          description: Whether the requested container runs in privileged mode.
+        - name: allowPrivilegeEscalation
+          type: boolean
+          description: Whether the requested container allows privilege escalation.
+        - name: runAsUser
+          type: integer
+          description: User ID configured for processes in the requested container.
+        - name: runAsGroup
+          type: integer
+          description: Primary group ID configured for processes in the requested container.
+        - name: runAsNonRoot
+          type: boolean
+          description: Whether the requested container must run as a non-root user.
+        - name: procMount
+          type: keyword
+          description: Proc filesystem mount type configured for the requested container.
+        - name: capabilities.add
+          type: keyword
+          description: Linux capabilities added to the requested container.
+        - name: seccompProfile.type
+          type: keyword
+          description: Seccomp profile type configured for the requested container.
+- name: aws.eks.audit.requestObject.rules
+  type: group
+  description: Authorization policy rules supplied in the Kubernetes API request object.
+  fields:
+    - name: apiGroups
+      type: keyword
+      description: Kubernetes API groups to which the rule applies. The empty Kubernetes core API group is normalized to `core`. Because rule objects are non-nested, arrays flatten across rules and predicates on separate rule fields may match different rule objects.
+    - name: resources
+      type: keyword
+      description: Kubernetes resources to which the rule applies. Because rule objects are non-nested, arrays flatten across rules and predicates on separate rule fields may match different rule objects.
+    - name: resourceNames
+      type: keyword
+      description: Kubernetes resource names to which the rule applies.
+    - name: verbs
+      type: keyword
+      description: Kubernetes verbs allowed by the rule. Because rule objects are non-nested, arrays flatten across rules and predicates on separate rule fields may match different rule objects.
+    - name: nonResourceURLs
+      type: keyword
+      description: Non-resource URLs to which the rule applies.
+- name: aws.eks.audit.requestObject.roleRef.name
+  type: keyword
+  description: Name of the role referenced by the Kubernetes API request object.
+- name: aws.eks.audit.responseObject.spec.hostNetwork
+  type: boolean
+  description: Whether the returned workload uses the host network namespace.
+- name: aws.eks.audit.responseObject.spec.hostIPC
+  type: boolean
+  description: Whether the returned workload uses the host IPC namespace.
+- name: aws.eks.audit.responseObject.spec.hostPID
+  type: boolean
+  description: Whether the returned workload uses the host PID namespace.
+- name: aws.eks.audit.responseObject.spec.volumes.hostPath
+  type: flattened
+  description: Host path volume definitions in the Kubernetes API response object.
+- name: aws.eks.audit.responseObject.spec.restartPolicy
+  type: keyword
+  description: Restart policy in the returned workload specification.
+- name: aws.eks.audit.responseObject.spec.containers
+  type: group
+  description: Containers returned in the Kubernetes API response object.
+  fields:
+    - name: volumeMounts
+      type: flattened
+      description: Volume mounts returned for the container.
+    - name: securityContext
+      type: group
+      description: Security context returned for the container.
+      fields:
+        - name: privileged
+          type: boolean
+          description: Whether the returned container runs in privileged mode.
+        - name: allowPrivilegeEscalation
+          type: boolean
+          description: Whether the returned container allows privilege escalation.
+        - name: runAsUser
+          type: integer
+          description: User ID configured for processes in the returned container.
+- name: aws.eks.audit.responseObject.rules
+  type: group
+  description: Authorization policy rules returned in the Kubernetes API response object.
+  fields:
+    - name: apiGroups
+      type: keyword
+      description: Kubernetes API groups to which the returned rule applies. The empty Kubernetes core API group is normalized to `core`. Because rule objects are non-nested, arrays flatten across rules and predicates on separate rule fields may match different rule objects.
+    - name: resources
+      type: keyword
+      description: Kubernetes resources to which the returned rule applies. Because rule objects are non-nested, arrays flatten across rules and predicates on separate rule fields may match different rule objects.
+    - name: resourceNames
+      type: keyword
+      description: Kubernetes resource names to which the returned rule applies.
+    - name: verbs
+      type: keyword
+      description: Kubernetes verbs allowed by the returned rule. Because rule objects are non-nested, arrays flatten across rules and predicates on separate rule fields may match different rule objects.
+    - name: nonResourceURLs
+      type: keyword
+      description: Non-resource URLs to which the returned rule applies.
+- name: aws.eks.audit.responseObject.items
+  type: group
+  description: Objects returned by a Kubernetes list or watch response. Secret `data`, `stringData`, and metadata annotations are removed from every item.
+  fields:
+    - name: metadata.name
+      type: keyword
+      description: Name of the returned Kubernetes object.
+- name: aws.eks.audit.responseObject.roleRef.kind
+  type: keyword
+  description: Kind of role referenced by the Kubernetes API response object.
+- name: aws.eks.audit.requestReceivedTimestamp
+  type: date
+  description: Time when the request reached the Kubernetes API server.
+- name: aws.eks.audit.stageTimestamp
+  type: date
+  description: Time when the request reached the audit stage recorded by this event.
+- name: aws.eks.audit.annotations.authorization_k8s_io/decision
+  type: keyword
+  description: Kubernetes authorization decision for the request, such as allow or forbid.
+- name: aws.eks.audit.annotations.authorization_k8s_io/reason
+  type: text
+  description: Reason reported by the Kubernetes authorizer for its decision.
+- name: aws.eks.audit.annotations.pod-security_kubernetes_io/audit-violations
+  type: text
+  description: Pod Security admission violations reported in audit mode.
+- name: aws.eks.audit.annotations.*
+  type: object
+  object_type: keyword
+  description: Additional string-valued Kubernetes audit annotations dynamically indexed as keywords, with dots in annotation keys replaced by underscores.
+- name: aws.eks.audit.requestObject.subjects
+  type: group
+  description: Subjects bound to a role by the Kubernetes API request object.
+  fields:
+    - name: kind
+      type: keyword
+      description: Kind of subject in the requested role binding.
+    - name: name
+      type: keyword
+      description: Name of the subject in the requested role binding.
+    - name: namespace
+      type: keyword
+      description: Namespace of the subject in the requested role binding.
+- name: aws.eks.audit.responseObject.subjects
+  type: group
+  description: Subjects bound to a role in the Kubernetes API response object.
+  fields:
+    - name: kind
+      type: keyword
+      description: Kind of subject in the returned role binding.
+    - name: name
+      type: keyword
+      description: Name of the subject in the returned role binding.
+    - name: namespace
+      type: keyword
+      description: Namespace of the subject in the returned role binding.
+- name: aws.eks.cluster.name
+  type: keyword
+  description: Amazon EKS cluster name extracted from the CloudWatch log group.
+- name: aws.eks.log_type
+  type: keyword
+  description: Amazon EKS control-plane log type.
+- name: aws.eks.component
+  type: keyword
+  description: Amazon EKS control-plane component.
+- name: aws.cloudwatch.log_group
+  type: keyword
+  description: Name of the CloudWatch Logs log group from which the event was collected.
+- name: aws.cloudwatch.log_stream
+  type: keyword
+  description: Name of the CloudWatch Logs log stream from which the event was collected.
+- name: aws.cloudwatch.region
+  type: keyword
+  description: AWS Region containing the CloudWatch Logs log group.
+- name: aws.cloudwatch.account_id
+  type: keyword
+  description: AWS account ID that owns the CloudWatch Logs log group.

@@ -1,0 +1,73 @@
+---
+description: Enrich Amazon EKS CloudWatch metadata and parse Kubernetes audit events.
+processors:
+- set:
+    tag: set_event_ingested
+    field: event.ingested
+    value: '{{{_ingest.timestamp}}}'
+- set:
+    tag: set_ecs_version
+    field: ecs.version
+    value: 8.11.0
+    override: false
+- set:
+    tag: set_event_dataset
+    field: event.dataset
+    value: aws.eks_audit
+- set:
+    tag: set_cloud_provider
+    field: cloud.provider
+    value: aws
+- set:
+    tag: set_eks_log_type
+    field: aws.eks.log_type
+    value: audit
+- set:
+    tag: set_eks_component
+    field: aws.eks.component
+    value: kube-apiserver
+- set:
+    tag: set_cloud_region
+    field: cloud.region
+    copy_from: aws.cloudwatch.region
+    if: ctx.aws?.cloudwatch?.region != null
+    ignore_empty_value: true
+- set:
+    tag: set_cloud_account_id
+    field: cloud.account.id
+    copy_from: aws.cloudwatch.account_id
+    if: ctx.aws?.cloudwatch?.account_id != null
+    ignore_empty_value: true
+- script:
+    tag: extract_eks_cluster_name
+    description: Extract the EKS cluster name from the CloudWatch log group.
+    lang: painless
+    if: ctx.aws?.cloudwatch?.log_group instanceof String && ctx.aws.cloudwatch.log_group.startsWith('/aws/eks/')
+    source: 'String group = ctx.aws.cloudwatch.log_group; String marker = ''/aws/eks/''; int start = marker.length(); int end = group.indexOf(''/'', start); if (end < 0) { end = group.length();
+      } if (end > start) { if (ctx.aws.eks == null) { ctx.aws.eks = new HashMap(); } ctx.aws.eks.cluster = [''name'': group.substring(start, end)]; }'
+- set:
+    tag: set_orchestrator_cluster_name
+    field: orchestrator.cluster.name
+    copy_from: aws.eks.cluster.name
+    if: ctx.aws?.eks?.cluster?.name != null
+    ignore_empty_value: true
+- pipeline:
+    tag: route_to_audit_pipeline
+    name: '{{ IngestPipeline "audit" }}'
+on_failure:
+- set:
+    tag: set_pipeline_error
+    field: event.kind
+    value: pipeline_error
+- append:
+    tag: preserve_original_event_on_failure
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+- append:
+    tag: append_pipeline_error
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

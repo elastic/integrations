@@ -1,0 +1,40 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.4.0
+            name: aws
+      name: test-name-aws
+      streams:
+        - api_sleep: 200ms
+          api_timeout: 120s
+          data_stream:
+            dataset: aws.eks_audit
+          log_group_name: /aws/eks/prod-cluster/cluster
+          log_stream_prefix: kube-apiserver-audit
+          number_of_workers: 1
+          publisher_pipeline.disable_host: true
+          region_name: us-east-1
+          scan_frequency: 1m
+          start_position: beginning
+          tags:
+            - forwarded
+            - aws-eks-audit
+      type: aws-cloudwatch
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws.eks_audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
