@@ -121,7 +121,7 @@ policy_templates:
         type: text
         title: Username
         required: false
-        description: Username for basic authentication
+        description: Username for basic authentication. When set, basic auth is used and Bearer Token is ignored.
         show_user: true
       - name: password
         type: password
@@ -136,8 +136,10 @@ policy_templates:
         type: password
         title: Bearer Token
         required: false
-        secret: true
-        description: Bearer token sent as Authorization Bearer credentials.
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        description: Bearer token sent as Authorization Bearer credentials. Ignored when Username is set.
         show_user: true
 owner:
   github: elastic/ecosystem
