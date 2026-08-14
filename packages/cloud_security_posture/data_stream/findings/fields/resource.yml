@@ -9,3 +9,52 @@
       type: keyword
     - name: sub_type
       type: keyword
+    # Declared at this depth, rather than on `raw` as a whole, because
+    # elastic-package's document validator only suppresses undefined-field
+    # errors ONE level below a disabled object (findParentElementDefinition in
+    # internal/fields/validate.go looks at the immediate parent only). Pipeline
+    # test fixtures must therefore keep the payload flat under `data`.
+    # Production is unaffected either way: the index template's `dynamic: false`
+    # already stops anything under `raw` from being indexed at any depth.
+    - name: raw.resource.data
+      type: object
+      enabled: false
+      description: >-
+        Raw resource payload as returned by the cloud provider. Stored but not
+        indexed, to keep its arbitrary provider-defined shape from exploding the
+        field count. Fields needed for queries are lifted out of it at ingest,
+        see resource.lifecycle.
+    - name: lifecycle
+      type: group
+      description: >-
+        Lifecycle state of the resource, lifted at ingest from resource.raw,
+        which is not queryable because the findings index template sets
+        dynamic: false and resource.raw.resource.data is declared
+        enabled: false. Currently populated for gcp-compute-instance; other
+        providers may populate the same fields later. Used by serverless CSPM
+        metering (https://github.com/elastic/security-team/issues/17662).
+      fields:
+        - name: status
+          type: keyword
+          description: >-
+            Provider-reported lifecycle status of the resource, verbatim
+            (for example RUNNING or TERMINATED for GCP compute instances).
+        - name: incarnation
+          type: keyword
+          description: >-
+            Creation timestamp of the resource as an opaque identity token,
+            used to tell apart re-created resources that reuse the same name.
+        - name: created_at
+          type: date
+          description: Time at which the resource was created.
+        - name: last_started_at
+          type: date
+          description: Time at which the resource was last started.
+        - name: last_stopped_at
+          type: date
+          description: Time at which the resource was last stopped.
+        - name: last_run_ms
+          type: long
+          description: >-
+            Duration in milliseconds of the resource's last completed run,
+            precomputed as last_stopped_at minus last_started_at.
