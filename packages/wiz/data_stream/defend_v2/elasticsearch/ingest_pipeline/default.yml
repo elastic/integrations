@@ -1,0 +1,631 @@
+---
+description: Pipeline for processing Wiz Defend v2 detection logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.17.0'
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Defend
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Wiz
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_json_event_original_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      tag: fingerprint_defend_v2_id_and_updated_at
+      fields:
+        - json.id
+        - json.updatedAt
+      target_field: _id
+      ignore_missing: true
+
+  # rename to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case
+      if: ctx.json != null
+      source: |
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              if (!entry.getKey().contains("@")) {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        ctx.wiz = ctx.wiz ?: [:];
+        ctx.wiz.defend_v2 = convertToSnakeCase(ctx.json);
+  - rename:
+      field: wiz.defend_v2.triggering_events.total_count_v2
+      tag: rename_triggering_events_total_count_v2
+      target_field: wiz.defend_v2.triggering_events.total_count
+      ignore_missing: true
+  - rename:
+      field: wiz.defend_v2.primary_actor.inactive_in_last90_days
+      tag: rename_primary_actor_inactive_in_last90_days
+      target_field: wiz.defend_v2.primary_actor.inactive_in_last_90_days
+      ignore_missing: true
+
+  # convert values
+  - date:
+      field: wiz.defend_v2.created_at
+      tag: date_created_at
+      target_field: wiz.defend_v2.created_at
+      formats:
+        - ISO8601
+      if: ctx.wiz?.defend_v2?.created_at != null && ctx.wiz.defend_v2.created_at != ''
+      on_failure:
+        - remove:
+            field: wiz.defend_v2.created_at
+            tag: remove_created_at_on_date_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_date_created_at_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: wiz.defend_v2.updated_at
+      tag: date_updated_at
+      target_field: wiz.defend_v2.updated_at
+      formats:
+        - ISO8601
+      if: ctx.wiz?.defend_v2?.updated_at != null && ctx.wiz.defend_v2.updated_at != ''
+      on_failure:
+        - remove:
+            field: wiz.defend_v2.updated_at
+            tag: remove_updated_at_on_date_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_date_updated_at_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+  - set:
+      field: message
+      tag: set_message_from_description
+      copy_from: wiz.defend_v2.description
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_updated_at
+      copy_from: wiz.defend_v2.updated_at
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+  - set:
+      field: event.id
+      tag: set_event_id_from_defend_v2_id
+      copy_from: wiz.defend_v2.id
+      ignore_empty_value: true
+  - script:
+      description: Set event severity based on detection severity.
+      tag: set_event_severity_from_defend_v2_severity
+      if: ctx.wiz?.defend_v2?.severity instanceof String
+      lang: painless
+      source: |-
+        String severity = ctx.wiz.defend_v2.severity;
+        if (severity.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 0;
+        } else if (severity.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+
+  # cloud.*
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_primary_resource_region
+      copy_from: wiz.defend_v2.primary_resource.region
+      ignore_empty_value: true
+  - foreach:
+      field: wiz.defend_v2.cloud_accounts
+      tag: foreach_cloud_accounts_into_cloud_account_id
+      if: ctx.wiz?.defend_v2?.cloud_accounts instanceof List
+      processor:
+        append:
+          field: cloud.account.id
+          tag: append_cloud_account_id
+          value: '{{{_ingest._value.external_id}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_cloud_account_id_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.cloud_accounts
+      tag: foreach_cloud_accounts_into_cloud_account_name
+      if: ctx.wiz?.defend_v2?.cloud_accounts instanceof List
+      processor:
+        append:
+          field: cloud.account.name
+          tag: append_cloud_account_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_cloud_account_name_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.cloud_accounts
+      tag: foreach_cloud_accounts_into_cloud_provider
+      if: ctx.wiz?.defend_v2?.cloud_accounts instanceof List
+      processor:
+        append:
+          field: cloud.provider
+          tag: append_cloud_provider
+          value: '{{{_ingest._value.cloud_provider}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_cloud_provider_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # organization.*
+  - foreach:
+      field: wiz.defend_v2.cloud_organizations
+      tag: foreach_cloud_organizations_into_organization_id
+      if: ctx.wiz?.defend_v2?.cloud_organizations instanceof List
+      processor:
+        append:
+          field: organization.id
+          tag: append_organization_id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_organization_id_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.cloud_organizations
+      tag: foreach_cloud_organizations_into_organization_name
+      if: ctx.wiz?.defend_v2?.cloud_organizations instanceof List
+      processor:
+        append:
+          field: organization.name
+          tag: append_organization_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_organization_name_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # user.*
+  - set:
+      field: user.email
+      tag: set_user_email_from_primary_actor_email
+      copy_from: wiz.defend_v2.primary_actor.email
+      ignore_empty_value: true
+
+  # process.*
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_process_command_line
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: process.command_line
+          tag: append_process_command_line_from_triggering_events
+          value: '{{{_ingest._value.command_line}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_process_command_line_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_process_executable
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: process.executable
+          tag: append_process_executable_from_triggering_events
+          value: '{{{_ingest._value.runtime_program.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_process_executable_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_process_name
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: process.name
+          tag: append_process_name_from_triggering_events
+          value: '{{{_ingest._value.runtime_program.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_process_name_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_process_parent_name
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: process.parent.name
+          tag: append_process_parent_name_from_triggering_events
+          value: '{{{_ingest._value.parent_runtime_program.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_process_parent_name_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # source.*
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_source_ip
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_source_ip_from_triggering_events
+          value: '{{{_ingest._value.actor_ip}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_source_ip_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_geoip_source_ip_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # container.*
+  - set:
+      field: container.id
+      tag: set_container_id_from_primary_resource_external_id
+      copy_from: wiz.defend_v2.primary_resource.external_id
+      if: ctx.wiz?.defend_v2?.primary_resource?.type != null && ctx.wiz.defend_v2.primary_resource.type.equalsIgnoreCase('CONTAINER')
+      ignore_empty_value: true
+  - set:
+      field: container.name
+      tag: set_container_name_from_primary_resource_name
+      copy_from: wiz.defend_v2.primary_resource.name
+      if: ctx.wiz?.defend_v2?.primary_resource?.type != null && ctx.wiz.defend_v2.primary_resource.type.equalsIgnoreCase('CONTAINER')
+      ignore_empty_value: true
+
+  # cloud.instance.id, host.name, file.path, event.action (triggering event audit logs)
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_cloud_instance_id
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: cloud.instance.id
+          tag: append_cloud_instance_id_from_triggering_events
+          value: '{{{_ingest._value.raw_audit_log_record.common.vm_external_id}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_cloud_instance_id_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_host_name
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: host.name
+          tag: append_host_name_from_triggering_events
+          value: '{{{_ingest._value.raw_audit_log_record.common.host_info.hostname}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_host_name_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_file_path
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: file.path
+          tag: append_file_path_from_triggering_events
+          value: '{{{_ingest._value.raw_audit_log_record.alert.file_event_details.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_file_path_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_event_action
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: event.action
+          tag: append_event_action_from_triggering_events
+          value: '{{{_ingest._value.raw_audit_log_record.alert.event.kind}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_event_action_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # host.os.type (triggering event audit logs)
+  - script:
+      tag: script_set_host_os_type_from_triggering_events
+      lang: painless
+      description: Map host OS type from all triggering event audit logs.
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List && !ctx.wiz.defend_v2.triggering_events.nodes.isEmpty()
+      source: |-
+        String mapOsType(def osType) {
+          if (osType == null) {
+            return null;
+          }
+          String os = osType.toString().toLowerCase();
+          if (os.contains('windows')) {
+            return 'windows';
+          } else if (os.contains('mac') || os.contains('darwin')) {
+            return 'macos';
+          } else if (os.contains('linux') || os.contains('amazon') || os.contains('ubuntu') || os.contains('debian') || os.contains('centos') || os.contains('rhel') || os.contains('unix')) {
+            return 'linux';
+          } else if (os.contains('android')) {
+            return 'android';
+          } else if (os.contains('ios')) {
+            return 'ios';
+          }
+          return null;
+        }
+        def osTypes = [];
+        for (def node : ctx.wiz.defend_v2.triggering_events.nodes) {
+          def audit = node.raw_audit_log_record;
+          if (!(audit instanceof Map)) {
+            continue;
+          }
+          def common = audit.common;
+          if (!(common instanceof Map)) {
+            continue;
+          }
+          def hostInfo = common.host_info;
+          if (!(hostInfo instanceof Map)) {
+            continue;
+          }
+          String mappedOsType = mapOsType(hostInfo.os_type);
+          if (mappedOsType != null && !osTypes.contains(mappedOsType)) {
+            osTypes.add(mappedOsType);
+          }
+        }
+        if (!osTypes.isEmpty()) {
+          ctx.host = ctx.host ?: [:];
+          ctx.host.os = ctx.host.os ?: [:];
+          ctx.host.os.type = osTypes.size() == 1 ? osTypes[0] : osTypes;
+        }
+
+  # rule.*
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_rule_match_rule_id
+      copy_from: wiz.defend_v2.rule_match.rule.id
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_rule_match_rule_name
+      copy_from: wiz.defend_v2.rule_match.rule.name
+      ignore_empty_value: true
+  - foreach:
+      field: wiz.defend_v2.rule_match.rule.security_sub_categories
+      tag: foreach_security_sub_categories_into_rule_category
+      if: ctx.wiz?.defend_v2?.rule_match?.rule?.security_sub_categories instanceof List
+      processor:
+        append:
+          field: rule.category
+          tag: append_rule_category_from_security_sub_categories
+          value: '{{{_ingest._value.category.name}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_rule_category_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # related.*
+  - foreach:
+      field: wiz.defend_v2.triggering_events.nodes
+      tag: foreach_triggering_events_into_related_ip
+      if: ctx.wiz?.defend_v2?.triggering_events?.nodes instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip_from_triggering_events
+          value: '{{{_ingest._value.actor_ip}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_related_ip_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_related_user_from_primary_actor_email
+      value: '{{{wiz.defend_v2.primary_actor.email}}}'
+      if: ctx.wiz?.defend_v2?.primary_actor?.email != null
+      allow_duplicates: false
+  - foreach:
+      field: host.name
+      tag: foreach_host_name_into_related_hosts
+      if: ctx.host?.name instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_related_hosts_from_host_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_related_hosts_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - remove:
+      field:
+        - wiz.defend_v2.updated_at
+        - wiz.defend_v2.id
+        - wiz.defend_v2.description
+        - wiz.defend_v2.rule_match.rule.id
+        - wiz.defend_v2.rule_match.rule.name
+        - wiz.defend_v2.primary_resource.region
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_into_error_message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
+      value: preserve_original_event
+      allow_duplicates: false

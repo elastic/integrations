@@ -340,7 +340,7 @@ processors:
       field: "message"
       description: "106023"
       patterns:
-        - ^%{NOTSPACE:event.outcome} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{POSINT:source.port})?\s*(\(%{CISCO_USER:_temp_.cisco.source_username}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{POSINT:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
+        - ^%{NOTSPACE:event.outcome} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\s*(\(%{CISCO_USER:_temp_.cisco.source_username}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -434,7 +434,7 @@ processors:
       patterns:
         - "AAA user (authentication|authorization) Rejected(%{SPACE})?: reason = %{REASON:event.reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?: user IP = %{IP:source.address}"
       pattern_definitions:
-        REASON: (AAA failure|Account has been disabled|Invalid password|Password has expired|Password is expiring|Password malformed|Unspecified)
+        REASON: (AAA failure|Account has been disabled|Account has been locked out|Invalid password|Password has expired|Password is expiring|Password malformed|Unspecified|Users account has expired)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       tag: grok_message_9e29df82

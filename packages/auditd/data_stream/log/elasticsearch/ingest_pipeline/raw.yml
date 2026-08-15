@@ -54,6 +54,18 @@ processors:
         - '%{AUDIT_PREFIX}\s*.*$'
         - '%{AUDIT_PREFIX}\s*$'
         - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES}'
+  - gsub:
+      field: auditd.log.sub_kv
+      pattern: '(res=[a-z]+)([A-Z][A-Za-z_]+=)'
+      replacement: '$1 $2'
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: auditd.log.kv
+      pattern: '(res=[a-z]+)([A-Z][A-Za-z_]+=)'
+      replacement: '$1 $2'
+      ignore_missing: true
+      ignore_failure: true
   - kv:
       if: ctx.auditd?.log?.kv != null
       field: auditd.log.kv
