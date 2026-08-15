@@ -34,7 +34,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-vercel.speedinsights.v1.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND metrics.TTFB IS NOT NULL\n| STATS\n    ttfb_p75 = PERCENTILE(metrics.TTFB, 75),\n    samples = COUNT(*)\n// Minimum sample size, since Speed Insights data is sampled\n| WHERE samples >= 20\n// \"Poor\" threshold per the Web Vitals spec table (milliseconds); lower toward 800-1800 for a stricter,\n// earlier-warning threshold aligned with the \"needs improvement\" boundary\n| WHERE ttfb_p75 > 1800.0"
+                "esql": "TS metrics-vercel.speedinsights.v1.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND metrics.TTFB IS NOT NULL\n| STATS\n    ttfb_p75 = PERCENTILE(metrics.TTFB, 75),\n    samples = COUNT(metrics.TTFB)\n// Minimum sample size, since Speed Insights data is sampled\n| WHERE samples >= 20\n// \"Poor\" threshold per the Web Vitals spec table (milliseconds); lower toward 800-1800 for a stricter,\n// earlier-warning threshold aligned with the \"needs improvement\" boundary\n| WHERE ttfb_p75 > 1800.0"
             },
             "size": 0,
             "threshold": [

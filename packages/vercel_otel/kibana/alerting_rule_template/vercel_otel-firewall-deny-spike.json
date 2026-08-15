@@ -34,7 +34,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE vercel.log.source == \"firewall\"\n// vercel.proxy is a flattened field; sub-fields aren't queryable via dotted notation, use FIELD_EXTRACT instead\n| EVAL waf_action = FIELD_EXTRACT(vercel.proxy, \"waf_action\")\n// \"firewall\" source includes log-only entries too; isolate actual blocks\n| WHERE waf_action == \"deny\"\n| STATS denies = COUNT(*)\n// Alert threshold: tune based on your application's normal WAF deny baseline.\n// Consider grouping by client.address instead of a flat total if you want per-attacker alerting.\n| WHERE denies > 100"
+                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND vercel.log.source == \"firewall\"\n// vercel.proxy is a flattened field; sub-fields aren't queryable via dotted notation, use FIELD_EXTRACT instead\n| EVAL waf_action = FIELD_EXTRACT(vercel.proxy, \"waf_action\")\n// \"firewall\" source includes log-only entries too; isolate actual blocks\n| WHERE waf_action == \"deny\"\n| STATS denies = COUNT(*)\n// Alert threshold: tune based on your application's normal WAF deny baseline.\n// Consider grouping by client.address instead of a flat total if you want per-attacker alerting.\n| WHERE denies > 100"
             },
             "size": 0,
             "threshold": [
