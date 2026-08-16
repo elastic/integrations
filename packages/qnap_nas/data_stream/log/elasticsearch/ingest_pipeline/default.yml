@@ -28,7 +28,7 @@ processors:
       field: event.original
       patterns:
         - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NAS} %{SYSLOGPROG}: %{LOG_TYPE:event.provider}: %{GREEDYDATA:_tmp.message}'
-        - '^(%{ECS_SYSLOG_PRI})?1 %{RFC5424_TIMESTAMP:_tmp.timestamp_iso8601} %{NAS} %{PROG:process.name}: %{POSINT:process.pid:int} - \[QuLog@Access %{DATA:_tmp.sd_params}\] %{GREEDYDATA:_tmp.message}'
+        - '^(%{ECS_SYSLOG_PRI})?1 %{RFC5424_TIMESTAMP:_tmp.timestamp_iso8601} %{NAS} %{PROG:process.name}: %{POSINT:process.pid:int} - \[(?i:QuLog)@%{WORD:_tmp.sd_id} %{DATA:_tmp.sd_params}\](?: %{GREEDYDATA:_tmp.message})?'
       pattern_definitions:
         NAS: '(?:%{IP:host.ip}|%{HOSTNAME:host.name})'
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
@@ -69,6 +69,21 @@ processors:
       tag: set_event_created_e3f09e3b
       field: event.created
       copy_from: '@timestamp'
+  - lowercase:
+      tag: lowercase_tmp_sd_id
+      field: _tmp.sd_id
+      ignore_missing: true
+  # Align the RFC 5424 SD-IDs with the provider values the RFC 3164 patterns capture.
+  - set:
+      tag: set_event_provider_conn_log
+      field: event.provider
+      value: conn log
+      if: ctx._tmp?.sd_id == 'access'
+  - set:
+      tag: set_event_provider_event_log
+      field: event.provider
+      value: event log
+      if: ctx._tmp?.sd_id == 'event'
   - kv:
       tag: kv_tmp_sd_params_to_tmp_sd
       field: _tmp.sd_params
@@ -78,6 +93,26 @@ processors:
       target_field: _tmp.sd
       ignore_missing: true
       if: ctx._tmp?.sd_params != null
+  # Older firmware upper cases both the SD-ID and its parameter names, and unset parameters
+  # are sent as empty strings rather than omitted.
+  - script:
+      tag: script_normalize_sd_params
+      lang: painless
+      description: Lower case structured data parameter names and drop empty values
+      if: ctx._tmp?.sd instanceof Map
+      source: >-
+        Map normalized = new HashMap();
+        for (def entry : ctx._tmp.sd.entrySet()) {
+          if (entry.getValue() != '') {
+            normalized.put(entry.getKey().toLowerCase(), entry.getValue());
+          }
+        }
+        ctx._tmp.sd = normalized;
+  - remove:
+      tag: remove_empty_tmp_message
+      field: _tmp.message
+      ignore_missing: true
+      if: ctx._tmp?.message == ''
   - rename:
       tag: rename_tmp_sd_ip_to_source_address
       field: _tmp.sd.ip
@@ -121,36 +156,80 @@ processors:
       ignore_missing: true
       if: ctx._tmp?.sd_params != null
   - rename:
-      tag: rename_tmp_sd_mac_to_qnap_nas_mac
+      tag: rename_tmp_sd_mac_to_source_mac
       field: _tmp.sd.mac
-      target_field: qnap.nas.mac
+      target_field: source.mac
       ignore_missing: true
       if: ctx._tmp?.sd_params != null
-  - rename:
-      tag: rename_tmp_sd_service_to_qnap_nas_service
-      field: _tmp.sd.service
-      target_field: qnap.nas.service
+  # QNAP emits MAC addresses colon-separated, ECS requires hyphen-separated upper case.
+  - gsub:
+      tag: gsub_source_mac_separator
+      field: source.mac
+      pattern: '[:.]'
+      replacement: '-'
       ignore_missing: true
-      if: ctx._tmp?.sd_params != null
+  - uppercase:
+      tag: uppercase_source_mac
+      field: source.mac
+      ignore_missing: true
   - rename:
       tag: rename_tmp_sd_source_to_qnap_nas_source
       field: _tmp.sd.source
       target_field: qnap.nas.source
       ignore_missing: true
       if: ctx._tmp?.sd_params != null
+  - rename:
+      tag: rename_tmp_sd_category_to_qnap_nas_category
+      field: _tmp.sd.category
+      target_field: qnap.nas.category
+      ignore_missing: true
+      if: ctx._tmp?.sd_params != null && ctx._tmp?.sd?.category != '---'
+  - rename:
+      tag: rename_tmp_sd_service_to_qnap_nas_service
+      field: _tmp.sd.service
+      target_field: qnap.nas.service
+      ignore_missing: true
+      if: ctx._tmp?.sd_id == 'access'
+  # For QuLog@Access the MSG segment holds the accessed resource, optionally prefixed with the
+  # owning application in brackets. For QuLog@Event it holds the log message instead.
+  - grok:
+      tag: grok_tmp_message_access_resource
+      field: _tmp.message
+      patterns:
+        - '^\[%{DATA:_tmp.msg_application}\] ?%{FILE_PATH:_tmp.msg_path}$'
+        - '^\[%{DATA:_tmp.msg_application}\]$'
+        - '^%{GREEDYDATA:_tmp.msg_application}$'
+      pattern_definitions:
+        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._tmp?.sd_id == 'access'
+  - set:
+      tag: set_qnap_nas_application_from_msg
+      field: qnap.nas.application
+      copy_from: _tmp.msg_application
+      if: ctx._tmp?.msg_application != null && ctx.qnap?.nas?.application == null
+  - set:
+      tag: set_qnap_nas_file_path_from_msg
+      field: qnap.nas.file.path
+      copy_from: _tmp.msg_path
+      if: ctx._tmp?.msg_path != null && ctx.qnap?.nas?.file?.path == null
+  - rename:
+      tag: rename_tmp_message_to_message
+      field: _tmp.message
+      target_field: message
+      ignore_missing: true
+      if: ctx._tmp?.sd_id != null && ctx._tmp?.sd_id != 'access'
   - script:
       tag: script_rfc5424_action_mapping
       lang: painless
-      description: Map RFC 5424 numeric action codes to ECS event.action values
-      if: ctx._tmp?.sd?.action != null
+      description: Map QuLog@Access numeric action codes to ECS event.action values
+      if: ctx._tmp?.sd_id == 'access' && ctx._tmp?.sd?.action != null
       source: >-
         String action = ctx._tmp.sd.action;
+        String result = ctx._tmp.sd.action_result;
         if (action == '512') {
-          if (ctx._tmp.sd.action_result == '0') {
-            ctx.event.action = 'login-success';
-          } else {
-            ctx.event.action = 'login-fail';
-          }
+          ctx.event.action = (result == null || result == '0') ? 'login-success' : 'login-fail';
         } else {
           if (ctx.qnap == null) { ctx.qnap = new HashMap(); }
           if (ctx.qnap.nas == null) { ctx.qnap.nas = new HashMap(); }
