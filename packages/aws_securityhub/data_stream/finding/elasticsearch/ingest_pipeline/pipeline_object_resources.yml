@@ -377,6 +377,84 @@ processors:
           tag: convert_resources_resource_relationship_query_language_id_to_string_fbfcd08c
           type: string
           ignore_missing: true
+  # Foreach child processors cannot use 'if', so scripts are used to conditionally
+  # convert date fields that are only present on some resource types.
+  - script:
+      tag: date_resources_databucket_time_fields
+      lang: painless
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      source: |
+        def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
+        for (def res : ctx.aws_securityhub.finding.resources) {
+          if (res == null || !(res.databucket instanceof Map)) {
+            continue;
+          }
+          def db = res.databucket;
+          if (db.created_time_dt instanceof String && db.created_time_dt != '') {
+            def zdt;
+            try { zdt = ZonedDateTime.parse(db.created_time_dt); }
+            catch (Exception e) { zdt = ZonedDateTime.parse(db.created_time_dt, spaceFmt); }
+            db.created_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+          if (db.created_time != null) {
+            def ms = ((Number)db.created_time).longValue();
+            db.created_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+          if (!(db.file instanceof Map)) {
+            continue;
+          }
+          def f = db.file;
+          if (f.modified_time_dt instanceof String && f.modified_time_dt != '') {
+            def zdt;
+            try { zdt = ZonedDateTime.parse(f.modified_time_dt); }
+            catch (Exception e) { zdt = ZonedDateTime.parse(f.modified_time_dt, spaceFmt); }
+            f.modified_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+          if (f.modified_time != null) {
+            def ms = ((Number)f.modified_time).longValue();
+            f.modified_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: date_resources_image_time_fields
+      lang: painless
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      source: |
+        def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
+        for (def res : ctx.aws_securityhub.finding.resources) {
+          if (res == null || !(res.image instanceof Map)) {
+            continue;
+          }
+          def img = res.image;
+          if (img.created_time_dt instanceof String && img.created_time_dt != '') {
+            def zdt;
+            try { zdt = ZonedDateTime.parse(img.created_time_dt); }
+            catch (Exception e) { zdt = ZonedDateTime.parse(img.created_time_dt, spaceFmt); }
+            img.created_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+          if (img.created_time != null) {
+            def ms = ((Number)img.created_time).longValue();
+            img.created_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+          if (img.modified_time_dt instanceof String && img.modified_time_dt != '') {
+            def zdt;
+            try { zdt = ZonedDateTime.parse(img.modified_time_dt); }
+            catch (Exception e) { zdt = ZonedDateTime.parse(img.modified_time_dt, spaceFmt); }
+            img.modified_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+          if (img.modified_time != null) {
+            def ms = ((Number)img.modified_time).longValue();
+            img.modified_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
       tag: append_error_message_417e65c9
