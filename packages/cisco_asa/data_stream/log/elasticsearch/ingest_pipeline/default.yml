@@ -468,12 +468,12 @@ processors:
       field: "message"
       description: "113015"
       patterns:
-      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{DATA:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
+      - "^AAA user authentication Rejected%{SPACE}: reason = %{REASON:_temp_.cisco.rejection_reason}%{SPACE}: local database%{SPACE}: [Uu]ser = %{DATA:source.user.name}%{SPACE}: [Uu]ser IP = %{IPORNONE}%{SPACE}$"
+      - "^AAA user authentication Rejected%{SPACE}: reason = %{REASON:_temp_.cisco.rejection_reason}%{SPACE}: local database%{SPACE}: [Uu]ser = %{USERPART:source.user.name}%{SPACE}$"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|User was not found)
-        USERNAME: "[a-zA-Z0-9._'-]+"
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
-
+        IPORNONE: (%{IP:source.address}|None)
+        USERPART: "[^:]+?"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       tag: parse_113019
@@ -949,12 +949,13 @@ processors:
       field: "message"
       description: "609002"
       pattern: "Teardown local-host %{_temp_.cisco.source_interface}:%{source.address} duration %{_temp_.duration_hms}"
-  - dissect:
+  - grok:
       if: '["611102", "611101"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_611101-611102
       field: "message"
       description: "611102, 611101"
-      pattern: 'User authentication %{}: IP address: %{source.address}, Uname: %{server.user.name}'
+      patterns:
+        - '^User authentication %{DATA}:(?:\s*IP address: %{IP:source.address},)? Uname: %{DATA:server.user.name}$'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710003'"
       tag: parse_710003

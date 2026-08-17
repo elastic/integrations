@@ -1,9 +1,19 @@
 # newer versions go on top
+- version: "2.45.14"
+  changes:
+    - description: Fix parsing of messages containing embedded newlines, which were previously truncated at the first newline. Affects message 733100, where a long burst object such as `domain\username` is wrapped across lines by the device. As part of this, `cisco.asa.burst.object` no longer retains the `#012` syslog escape or trailing padding, so a value previously indexed as `LOCAL\username#012 ` is now `LOCAL\username`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20763
+- version: "2.45.13"
+  changes:
+    - description: Fix grok pattern for message 113015 to handle the no-IP variant where user IP is absent.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20691
 - version: "2.45.12"
   changes:
-    - description: Fix grok pattern for message 733100 to handle multi-line burst object values containing embedded newlines (e.g. domain\username wrapped across lines).
+    - description: Fix 611101/611102 parse failure when IP address is absent by converting dissect to an anchored grok pattern with an optional IP segment.
       type: bugfix
-      link: https://github.com/elastic/integrations/pull/1
+      link: https://github.com/elastic/integrations/pull/20657
 - version: "2.45.11"
   changes:
     - description: Add 'User was not found' as a valid rejection reason for ASA 113005 messages.

@@ -34,19 +34,19 @@ receivers:
     prometheus/componentid-0:
         config:
             scrape_configs:
-                - basic_auth:
-                    password: prometheus_password
-                    username: prometheus_user
+                - authorization:
+                    credentials: test-bearer-token
+                    type: Bearer
                   honor_labels: false
                   honor_timestamps: true
                   job_name: prometheus_scrape
-                  metrics_path: /metrics
-                  scheme: http
-                  scrape_interval: 30s
-                  scrape_timeout: 10s
+                  metrics_path: /v1/metrics
+                  scheme: https
+                  scrape_interval: 60s
+                  scrape_timeout: 30s
                   static_configs:
                     - targets:
-                        - localhost:9090
+                        - metrics.temporal.io
 secret_references: []
 service:
     pipelines:
