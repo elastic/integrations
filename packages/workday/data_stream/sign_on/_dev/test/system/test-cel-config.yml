@@ -1,3 +1,4 @@
+wait_for_data_timeout: 1m
 input: cel
 service: workday
 vars:
@@ -29,6 +30,8 @@ data_stream:
     username: test_user
     password: test_password
     initial_interval: 24h
+    interval: 10s
     preserve_original_event: true
 assert:
-  hit_count: 2
+  # First poll returns 2 rows; after cursor advances the next poll returns 2 more.
+  hit_count: 4

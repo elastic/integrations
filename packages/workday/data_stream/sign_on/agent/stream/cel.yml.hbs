@@ -43,7 +43,11 @@ program: |-
               :
                 [],
               "cursor": {
-                "last_timestamp": state.end_time,
+                "last_timestamp":
+                  (has(body.Report_Entry) && size(body.Report_Entry) > 0) ?
+                    state.end_time
+                  :
+                    state.?cursor.last_timestamp.orValue(state.end_time),
               },
               "want_more": false,
             }
