@@ -79,8 +79,9 @@ _meta:
   # Bump this version to delete, reinstall, and restart the transform during package
   # install. Required for any change to this file.
   fleet_transform_version: 0.1.0
-  # Install and run under the installing user's credentials rather than the
-  # kibana system user. The elastic/kibana service account has no create_index
-  # or write privileges on the destination index, so a kibana-system install
-  # fails with a security_exception and the transform is never registered.
-  run_as_kibana_system: false
+  # run_as_kibana_system is deliberately left unset (defaults to true). This is
+  # an internal Elastic transform writing a system index that a Kibana
+  # background task bills from — not user data — so it runs as the internal
+  # user, matching the misconfiguration transform in this package. Setting it
+  # false would install under the logged-in user's credentials, which is for
+  # integration data that must stay scoped to what that user can read.
