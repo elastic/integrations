@@ -1,0 +1,57 @@
+[
+  {
+    "op": "add",
+    "path": "/Resources/ElasticFederatedIdentityRole/Properties/ManagedPolicyArns/-",
+    "value": "arn:aws:iam::aws:policy/SecurityAudit"
+  },
+  {
+    "op": "add",
+    "path": "/Resources/ElasticCAISupplementalPolicy",
+    "value": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "ElasticCAISupplemental",
+        "Roles": [{ "Ref": "ElasticFederatedIdentityRole" }],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "CAIConfigAccess",
+              "Effect": "Allow",
+              "Action": [
+                "config:ListDiscoveredResources",
+                "config:SelectResourceConfig",
+                "config:SelectAggregateResourceConfig",
+                "config:DescribeConfigurationRecorders",
+                "config:DescribeAggregationAuthorizations",
+                "config:DescribeConfigurationAggregators"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "CAIOrganizationsAccess",
+              "Effect": "Allow",
+              "Action": [
+                "organizations:DescribeOrganization",
+                "organizations:ListAccounts",
+                "organizations:ListAccountsForParent",
+                "organizations:ListOrganizationalUnitsForParent",
+                "organizations:ListRoots"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "CAICrossAccountAccess",
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole",
+                "sts:GetCallerIdentity"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    }
+  }
+]
