@@ -182,6 +182,9 @@ processors:
               ZoneId.of(ctx._conf.tz_offset);
               return ctx._conf.tz_offset;
             } catch (Exception e) {
+              // Flag the misconfiguration separately from an unmapped
+              // abbreviation so the two are distinguishable in Discover.
+              ctx._temp_.tz_offset_invalid = true;
               return 'UTC';
             }
           }
@@ -228,8 +231,14 @@ processors:
             // detect and configure unrecognised timezone abbreviations via tz_map.
             String fallback = get_fallback_timezone(ctx);
             ctx._temp_.date_timezone = fallback;
-            ctx.event.timezone = (ctx._temp_?.tz != null) ? ctx._temp_.tz : fallback;
-            ctx._temp_.tz_unmapped = true;
+            if (ctx._temp_?.tz != null) {
+              ctx.event.timezone = ctx._temp_.tz;
+              ctx._temp_.tz_unmapped = true;
+            } else {
+              // No abbreviation was present, so nothing was left unmapped; the
+              // only fault here is the configured offset, tagged separately.
+              ctx.event.timezone = fallback;
+            }
           }
         } else {
           // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
@@ -240,8 +249,14 @@ processors:
           } catch (Exception e) {
             String fallback = get_fallback_timezone(ctx);
             ctx._temp_.date_timezone = fallback;
-            ctx.event.timezone = (ctx._temp_?.tz != null) ? ctx._temp_.tz : fallback;
-            ctx._temp_.tz_unmapped = true;
+            if (ctx._temp_?.tz != null) {
+              ctx.event.timezone = ctx._temp_.tz;
+              ctx._temp_.tz_unmapped = true;
+            } else {
+              // No abbreviation was present, so nothing was left unmapped; the
+              // only fault here is the configured offset, tagged separately.
+              ctx.event.timezone = fallback;
+            }
           }
         }
   - append:
@@ -250,6 +265,12 @@ processors:
       value: cisco_ios_unmapped_timezone
       allow_duplicates: false
       if: ctx._temp_?.tz_unmapped == true
+  - append:
+      tag: append_cisco_ios_invalid_tz_offset
+      field: tags
+      value: cisco_ios_invalid_tz_offset
+      allow_duplicates: false
+      if: ctx._temp_?.tz_offset_invalid == true
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
