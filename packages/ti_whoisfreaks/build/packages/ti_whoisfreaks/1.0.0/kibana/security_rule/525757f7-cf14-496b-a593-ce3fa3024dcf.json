@@ -1,0 +1,69 @@
+{
+    "id": "525757f7-cf14-496b-a593-ce3fa3024dcf",
+    "type": "security-rule",
+    "attributes": {
+        "name": "WhoisFreaks - Newly Registered Domain Observed",
+        "description": "Detects domains that appear in the WhoisFreaks daily gTLD feed as newly registered (create_date on the same day as query_time). Newly registered domains are frequently used for phishing, malware staging, and brand impersonation.",
+        "author": [
+            "WhoisFreaks"
+        ],
+        "enabled": true,
+        "false_positives": [
+            "Legitimate bulk domain registrations by portfolio managers or registrars."
+        ],
+        "from": "now-24h",
+        "interval": "1h",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 100,
+        "query": "data_stream.dataset: \"ti_whoisfreaks.whois\" and whoisfreaks.is_newly_registered: true and event.kind: \"enrichment\"",
+        "references": [
+            "https://whoisfreaks.com/"
+        ],
+        "risk_score": 47,
+        "rule_id": "525757f7-cf14-496b-a593-ce3fa3024dcf",
+        "severity": "medium",
+        "tags": [
+            "WhoisFreaks",
+            "Domain",
+            "Threat Intelligence",
+            "WHOIS",
+            "Newly Registered"
+        ],
+        "to": "now",
+        "type": "query",
+        "version": 1,
+        "index": [
+            "logs-ti_whoisfreaks.whois-*"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1596",
+                        "name": "Search Open Technical Databases",
+                        "reference": "https://attack.mitre.org/techniques/T1596/",
+                        "subtechnique": [
+                            {
+                                "id": "T1596.002",
+                                "name": "WHOIS",
+                                "reference": "https://attack.mitre.org/techniques/T1596/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "note": "Investigate the domain against brand lists, phishing reports, and internal asset inventories."
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-08-11T12:00:00.000Z",
+    "references": [],
+    "typeMigrationVersion": "8.16.0"
+}

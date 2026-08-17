@@ -2,38 +2,63 @@ title: "WHOIS"
 type: logs
 streams:
   - input: cel
-    title: "WhoisFreaks Domainer WHOIS (gTLD) via CEL"
+    title: "WhoisFreaks Domainer WHOIS (gTLD + ccTLD) via CEL"
     description: |-
-      Collect the daily WhoisFreaks gTLD domainer WHOIS CSV feed via the CEL input.
+      Page through the daily WhoisFreaks gTLD and ccTLD domainer WHOIS stream feeds via the CEL input.
     template_path: cel.yml.hbs
     vars:
       - name: resource_url
         type: text
         title: "Resource URL"
         description: |-
-          The base HTTPS URL of the WhoisFreaks gTLD domainer download endpoint,
-          without any query parameters (no whois or date). The input builds
-          the query string itself. The API key is sent separately as a
-          request header, not as a query parameter.
+          The base HTTPS URL of the WhoisFreaks domainer stream endpoint, without
+          a TLD segment or query parameters. The input appends `/gtld` and
+          `/cctld` and builds the query string itself (`date`, `whois`, `limit`,
+          `offset`, and `apiKey`).
         required: true
         show_user: true
-        default: https://files.whoisfreaks.com/v3.1/download/domainer/gtld
+        default: https://files.whoisfreaks.com/v3.3/stream/domainer
+      - name: status_url
+        type: text
+        title: "Status URL"
+        description: |-
+          The public WhoisFreaks database file status endpoint. On each poll the
+          integration reads `newly.gtld.last_update` and `newly.cctld.last_update`
+          from this endpoint and pages through a feed only when its date is newer
+          than the last date already ingested, so re-polling never re-ingests the
+          same file. This endpoint is public and does not require the API key.
+        required: true
+        show_user: false
+        default: https://files.whoisfreaks.com/v3.3/status
       - name: api_key
         type: password
         secret: true
         title: "API Key"
         description: |-
-          Your WhoisFreaks API Key, from the WhoisFreaks billing dashboard. This
-          is sent as the `X-API-KEY` request header on every request.
+          Your WhoisFreaks API Key, from the WhoisFreaks billing dashboard. It is
+          sent as the `apiKey` query parameter on each stream request. The status
+          endpoint is public and does not use it.
         required: true
         show_user: true
+      - name: page_limit
+        type: integer
+        title: "Page Size"
+        description: |-
+          Number of records requested per page (the `limit` sent to the stream
+          endpoint). The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls memory and request count per poll, not
+          how much data is ingested. Larger pages mean fewer requests but more
+          memory per request. 5000 is a safe default; lower it on small agents.
+        required: true
+        show_user: true
+        default: 5000
       - name: resource_date
         type: text
         title: "File Date (optional)"
         description: |-
-          Specific file date to download, format yyyy-MM-dd (e.g. 2026-08-10).
-          Leave empty to always fetch the most recently published file, which
-          is the recommended setting for a recurring poll.
+          Specific file date to ingest, format yyyy-MM-dd (e.g. 2026-08-10).
+          Leave empty to always page the most recently published file, which is
+          the recommended setting for a recurring poll.
         required: false
         show_user: true
         default: ""
@@ -41,22 +66,21 @@ streams:
         type: text
         title: "Resource Interval"
         description: |-
-          How often the API is polled. WhoisFreaks publishes current-day gTLD
-          files by 17:00 UTC, so polling more often than once a day will
-          re-download the same file (harmless: ingestion is deduplicated).
+          How often the status endpoint is checked for a new file. When a newer
+          date is found the whole day is paged in one burst; otherwise the poll
+          does nothing. WhoisFreaks publishes current-day files by 17:00 UTC.
           Supports seconds, minutes and hours.
         required: true
         show_user: true
-        default: 24h
+        default: 1h
       - name: resource_timeout
         type: text
         title: "Request Timeout"
         description: |-
-          Timeout for downloading the CSV.gz file. The bulk gTLD file can be
-          large, so this is set higher than the 30s default.
+          Timeout for a single page request.
         required: false
         show_user: false
-        default: 5m
+        default: 2m
 elasticsearch:
   index_template:
     mappings:

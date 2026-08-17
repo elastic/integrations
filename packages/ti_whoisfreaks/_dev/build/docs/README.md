@@ -3,12 +3,12 @@
 
 ## Overview
 
-The WhoisFreaks integration collects the daily gTLD "domainer" WHOIS database
-feed published by [WhoisFreaks](https://whoisfreaks.com/) and indexes it into
-Elasticsearch. Each poll downloads a `.csv.gz` file containing one row per
-domain (registrar, registrant/admin/tech/billing contacts, name servers,
-status codes, and dates), decompresses and parses it, and publishes one
-document per domain record.
+The WhoisFreaks integration collects the daily gTLD and ccTLD "domainer" WHOIS
+database feeds published by [WhoisFreaks](https://whoisfreaks.com/) and indexes
+them into Elasticsearch. Each poll downloads a `.csv.gz` file per feed containing
+one row per domain (registrar, registrant/admin/tech/billing contacts, name
+servers, status codes, and dates), decompresses and parses it, and publishes one
+document per domain record (tagged with `whoisfreaks.tld_type`).
 
 ### Compatibility
 
@@ -19,22 +19,38 @@ Subscription** and an API key from the WhoisFreaks billing dashboard.
 
 The `whois` data stream uses the Elastic Agent **CEL input** to:
 
-1. Issue an HTTPS GET request to the WhoisFreaks gTLD domainer download
-   endpoint, with `whois=true` and (optionally) `date` sent as **query
-   parameters**, and the API key sent as an `X-API-KEY` **request header**.
-2. Decompress the gzip response body and parse it as a headered CSV via
+1. Query the public WhoisFreaks **status endpoint** (`/v3.1/status`) and read
+   `gtld.lastUpdate` and `cctld.lastUpdate`. These hold the dates of the latest
+   available gTLD and ccTLD files.
+2. Compare each date against the last file of that type already ingested, which
+   is tracked in two independent cursors in the input's persistent state. A feed
+   whose date is unchanged is skipped, so re-polling never re-downloads the same
+   daily file (and the tiny status check is cheap enough to run frequently). The
+   two feeds advance independently, so if the gTLD file publishes before the
+   ccTLD file, each is pulled as soon as it appears.
+3. For each feed with a newer date, issue an HTTPS GET to the corresponding
+   download endpoint (`/gtld` or `/cctld`) with `whois=true` and `date` as query
+   parameters and the API key sent as the **`X-API-KEY` request header**, then
+   decompress the gzip body and parse it as a headered CSV via
    `.mime("application/gzip").mime("text/csv; header=present")`.
-3. Map each CSV row to a `whoisfreaks.*` field group and emit it as an
-   event.
-4. Run the result through an ingest pipeline that sets `@timestamp`,
+4. Map each CSV row to a `whoisfreaks.*` field group, tag it with
+   `whoisfreaks.tld_type` (`gtld` or `cctld`), emit it as an event, and advance
+   that feed's cursor to the downloaded date.
+5. Run the result through an ingest pipeline that sets `@timestamp`,
    parses the WHOIS dates, derives `whoisfreaks.days_until_expiry` and
    `whoisfreaks.is_newly_registered`, and fingerprints
-   `domain_name` + `query_time` into the document `_id` for idempotent
-   re-polling.
+   `tld_type` + `domain_name` + `query_time` into the document `_id` for
+   idempotent re-polling.
+
+A pinned **File Date** overrides steps 1 and 2 and downloads that specific date once
+for both feeds. Because the status check gates each download, you can safely set
+a short **Resource Interval** (for example `1h`) without repeatedly pulling the
+large CSVs: only the poll that first sees a new date for a feed triggers its
+download.
 
 ## What data does this integration collect?
 The WhoisFreaks integration collects log messages of the following types:
-* Domain WHOIS records for gTLDs.
+* Domain WHOIS records for newly registered gTLDs and ccTLDs.
 
 ### Supported use cases
 
@@ -67,7 +83,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 ### Set up steps in Kibana
 
 1. Add the WhoisFreaks integration to an Agent policy.
-2. Set Resource URL to the base gTLD download endpoint (no query string).
+2. Set Resource URL to the base domainer download endpoint (no TLD segment or query string).
 3. Paste your API Key.
 4. Leave File Date empty to always fetch the latest file, or pin a
    `yyyy-MM-dd` value.
@@ -140,3 +156,12 @@ The following **Elastic Security** detection rules are installed with the packag
 | WhoisFreaks - Ingest Pipeline or API Error | Low | Collection health (invalid API key, download failures) |
 
 Enable the rules that match your monitoring goals. Rules query `logs-ti_whoisfreaks.whois-*`.
+
+> **Note on `whoisfreaks.days_until_expiry`:** this value is computed once at
+> ingest time as the difference between the record's `query_time` and its
+> `expiry_date`. It is not recomputed as time passes. For this daily
+> newly-registered feed the value stays accurate, because records are ingested
+> the day they are captured, so the "Domain Expiring Within 30 Days" rule sees
+> fresh values. If you reuse the data for long-lived domains, compute
+> days-to-expiry from `whoisfreaks.expiry_date` against `now` (for example, a
+> runtime field) rather than relying on the stored value.

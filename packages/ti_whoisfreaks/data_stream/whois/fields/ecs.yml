@@ -1,3 +1,4 @@
+# Convenience fields specific to this integration (not part of ECS).
 - name: domain
   type: group
   fields:
@@ -13,52 +14,28 @@
           level: extended
           type: keyword
           description: Name of the domain registrar.
-- name: event
-  type: group
-  fields:
-    - name: kind
-      type: keyword
-      description: The kind of the event.
-    - name: category
-      type: keyword
-      description: Event category.
-    - name: type
-      type: keyword
-      description: Event type.
-    - name: dataset
-      type: keyword
-      description: Name of the dataset.
-- name: ecs
-  type: group
-  fields:
-    - name: version
-      type: keyword
-      description: ECS version this event conforms to.
-- name: threat
-  type: group
-  description: Fields to classify events and alerts according to a threat taxonomy.
-  fields:
-    - name: feed
-      type: group
-      fields:
-        - name: name
-          type: keyword
-          description: The name of the threat feed.
-        - name: dashboard_id
-          type: keyword
-          description: Dashboard ID used for threat feed visualizations.
-    - name: indicator
-      type: group
-      fields:
-        - name: type
-          type: keyword
-          description: Type of indicator as represented by Cyber Observable in STIX 2.0.
-        - name: domain
-          type: keyword
-          description: Domain name related to a threat indicator.
-        - name: provider
-          type: keyword
-          description: The name of the indicator's provider.
-        - name: reference
-          type: keyword
-          description: Reference URL pointing to the threat indicator information.
+
+# ECS fields. Definitions come from the ECS reference (see _dev/build/build.yml).
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.category
+- external: ecs
+  name: event.type
+- external: ecs
+  name: event.dataset
+- external: ecs
+  name: threat.feed.name
+- external: ecs
+  name: threat.feed.dashboard_id
+- external: ecs
+  name: threat.indicator.type
+- name: threat.indicator.domain
+  type: keyword
+  description: Domain name related to a threat indicator.
+- external: ecs
+  name: threat.indicator.provider
+- external: ecs
+  name: threat.indicator.reference
