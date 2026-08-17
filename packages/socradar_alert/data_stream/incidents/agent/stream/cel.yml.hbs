@@ -29,7 +29,7 @@ program: |-
         "limit": [string(state.limit)],
         "include_total_records": ["true"],
         "show_page_in_response": ["true"],
-        "page": [string(state.?current_page.orValue(1))],
+        "page": [string(int(state.?current_page.orValue(1)))],
         "include_alarm_details": ["true"],
         "include_company_id": ["true"],
         "start_date": [
@@ -43,11 +43,11 @@ program: |-
     ).do_request().as(resp,
       (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
-          (state.?current_page.orValue(1) < int(body.?data.?total_pages.orValue(1))) ?
+          (int(state.?current_page.orValue(1)) < int(body.?data.?total_pages.orValue(1))) ?
             {
               "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
               "want_more": true,
-              "current_page": state.?current_page.orValue(1) + 1,
+              "current_page": int(state.?current_page.orValue(1)) + 1,
             }
           :
             {
