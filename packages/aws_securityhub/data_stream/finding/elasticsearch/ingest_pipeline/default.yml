@@ -1204,6 +1204,66 @@ processors:
       tag: convert_finding_verdict_id_to_string_aa5dd11b
       type: string
       ignore_missing: true
+  - date:
+      field: aws_securityhub.finding.databucket.created_time_dt
+      tag: date_finding_databucket_created_time_dt
+      target_field: aws_securityhub.finding.databucket.created_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.databucket?.created_time_dt != null && ctx.aws_securityhub.finding.databucket.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.databucket.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.databucket.created_time
+      tag: date_finding_databucket_created_time
+      target_field: aws_securityhub.finding.databucket.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.databucket?.created_time != null && ctx.aws_securityhub.finding.databucket.created_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.databucket.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.databucket.file.modified_time_dt
+      tag: date_finding_databucket_file_modified_time_dt
+      target_field: aws_securityhub.finding.databucket.file.modified_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.databucket?.file?.modified_time_dt != null && ctx.aws_securityhub.finding.databucket.file.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.databucket.file.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.databucket.file.modified_time
+      tag: date_finding_databucket_file_modified_time
+      target_field: aws_securityhub.finding.databucket.file.modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.databucket?.file?.modified_time != null && ctx.aws_securityhub.finding.databucket.file.modified_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.databucket.file.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # convert values
   - pipeline:
@@ -1406,6 +1466,28 @@ processors:
           }
         }
 
+        // Convert key:value tags into object for better searchability.
+        for (def resource: ctx.aws_securityhub.finding.resources) {
+          if (resource.tags instanceof List) {
+            def tags = [:];
+            for (def tag: resource.tags) {
+              tags[tag.name] = tag.value;
+            }
+            resource.tags = tags;
+          }
+          if (resource.databucket instanceof Map && resource.databucket.tags instanceof List) {
+            def tags = [:];
+            for (def tag: resource.databucket.tags) {
+              tags[tag.name] = tag.value;
+            }
+            resource.databucket.tags = tags;
+          }
+        }
+
+        if (res == null) {
+          return;
+        }
+
         // Define fields to be extracted. 
         ctx.resource = ctx.resource ?: [:];
         ctx.user = ctx.user ?: [:];
@@ -1422,13 +1504,8 @@ processors:
         // Extract resource field
         ctx.resource.type = res.type;
         ctx.resource.id = res.uid;
-        if (res.tags instanceof List) {
-          for (def tag: res.tags) {
-            if (tag.name == 'Name') {
-              ctx.resource.name = tag.value;
-              break;
-            }
-          }
+        if (res.tags instanceof Map && res.tags['Name'] != null) {
+          ctx.resource.name = res.tags['Name'];
         }
 
         // Extract ECS user field
@@ -1465,12 +1542,8 @@ processors:
         }
 
         // Extract ECS orchestrator field
-        if (res.tags instanceof List) {
-          for (def tag: res.tags) {
-            if (tag.name == 'aws:eks:cluster-name') {
-              ctx.orchestrator.cluster.name = tag.value;
-            }
-          }
+        if (res.tags instanceof Map && res.tags['aws:eks:cluster-name'] != null) {
+          ctx.orchestrator.cluster.name = res.tags['aws:eks:cluster-name'];
         }
         if (res.type == 'AWS::EKS::Cluster') {
           ctx.orchestrator.cluster.id = res.uid;
@@ -1488,16 +1561,6 @@ processors:
           ctx.cloud.instance.name = res.name;
         }
 
-        // Convert key:value tags into object for better searchability.
-        for (def resource: ctx.aws_securityhub.finding.resources) {
-          if (resource.tags instanceof List) {
-            def tags = [:];
-            for (def tag: resource.tags) {
-              tags[tag.name] = tag.value;
-            }
-            resource.tags = tags;
-          }
-        }
       on_failure:
         - append:
             tag: append_error_message_d0c2e3f7
