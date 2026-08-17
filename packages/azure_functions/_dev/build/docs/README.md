@@ -175,11 +175,11 @@ _string_
 
 `partition_receive_timeout` :
 _string_
-(Processor v2 only) Maximum time to wait before processing the messages received from the event hub. The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Defaults to `5s`.
+(Processor v2 only) Maximum time to wait before processing the messages received from the event hub. The partition consumer waits up to a "receive count" or a "receive timeout," whichever comes first. Defaults to `5s`.
 
 `partition_receive_count` :
 _int_
-(Processor v2 only) Maximum number of messages from the event hub to wait for before processing them. The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Defaults to `100`.
+(Processor v2 only) Maximum number of messages from the event hub to wait for before processing them. The partition consumer waits up to a "receive count" or a "receive timeout," whichever comes first. Defaults to `100`.
 
 `migrate_checkpoint` :
 _bool_
