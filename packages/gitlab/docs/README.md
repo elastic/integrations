@@ -1197,7 +1197,7 @@ Collect logs for Pages. Check out the [GitLab Pages log docs](https://docs.gitla
 | gitlab.pages.config_addr |  | keyword |
 | gitlab.pages.content_type |  | keyword |
 | gitlab.pages.correlation_id |  | keyword |
-| gitlab.pages.duration_ms |  | long |
+| gitlab.pages.duration_ms |  | float |
 | gitlab.pages.error |  | keyword |
 | gitlab.pages.gid |  | keyword |
 | gitlab.pages.host |  | keyword |
