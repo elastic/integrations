@@ -1,10 +1,10 @@
 {
     "attributes": {
         "columns": [
-            "xm_cyber.risk_score.scenario.id",
-            "labels.scenario_name",
-            "labels.risk_grade",
-            "labels.risk_score"
+            "vulnerability.id",
+            "gti.vulnerability.attributes.cvss.cvssv2_0.base_score",
+            "gti.vulnerability.attributes.cvss.cvssv2_0.temporal_score",
+            "gti.vulnerability.attributes.cvss.cvssv2_0.vector"
         ],
         "description": "",
         "grid": {},
@@ -25,14 +25,31 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "xm_cyber.risk_score"
+                                "query": "ti_google_threat_intelligence.enriched_vulnerability"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "xm_cyber.risk_score"
+                                "data_stream.dataset": "ti_google_threat_intelligence.enriched_vulnerability"
                             }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "exists": {
+                            "field": "gti.vulnerability.attributes.cvss.cvssv2_0.base_score"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "gti.vulnerability.attributes.cvss.cvssv2_0.base_score",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
                         }
                     }
                 ],
@@ -50,11 +67,12 @@
             ]
         ],
         "timeRestore": false,
-        "title": "[Logs XM Cyber] Scenario Details"
+        "title": "Detected Events CVSS V2 Details"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-04-30T09:37:46.896Z",
-    "id": "xm_cyber-32f648df-d7e1-4757-af30-edf43a9a1299",
+    "created_at": "2026-07-24T05:28:49.618Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "ti_google_threat_intelligence-e4bcb39c-aa93-4988-bfb6-e610d22051d1",
     "references": [
         {
             "id": "logs-*",
@@ -65,8 +83,14 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "search",
-    "typeMigrationVersion": "10.5.0"
+    "typeMigrationVersion": "10.5.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
