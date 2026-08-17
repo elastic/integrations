@@ -1,0 +1,284 @@
+---
+description: Pipeline for processing Workday user inventory logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: workday.user
+      if: ctx.event?.original != null
+  - fingerprint:
+      fields:
+        - workday.user.Employee_ID
+      tag: fingerprint_user
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_user_into_event_type
+      value: user
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+  - rename:
+      field: workday.user.Employee_ID
+      tag: set_user_id_from_employee_id
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: workday.user.User_Name
+      tag: set_user_name_from_user_name
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: workday.user.primaryWorkEmail
+      tag: set_user_email_from_primary_work_email
+      target_field: user.email
+      ignore_missing: true
+  - dissect:
+      field: user.email
+      pattern: '%{}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_failure: true
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != ''
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user.name != ''
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null && ctx.user.email != ''
+  - append:
+      field: related.user
+      tag: append_manager_id_into_related_user
+      value: '{{{workday.user.Manager_ID}}}'
+      allow_duplicates: false
+      if: ctx.workday?.user?.Manager_ID != null && ctx.workday.user.Manager_ID != ''
+  - append:
+      field: related.user
+      tag: append_manager_email_into_related_user
+      value: '{{{workday.user.Manager_Email}}}'
+      allow_duplicates: false
+      if: ctx.workday?.user?.Manager_Email != null && ctx.workday.user.Manager_Email != ''
+  - set:
+      field: workday.user.WorkerIsManager
+      tag: set_worker_is_manager_true
+      value: true
+      if: ctx.workday?.user?.WorkerIsManager == '1'
+  - set:
+      field: workday.user.WorkerIsManager
+      tag: set_worker_is_manager_false
+      value: false
+      if: ctx.workday?.user?.WorkerIsManager == '0'
+  - convert:
+      field: workday.user.WorkerIsManager
+      tag: convert_worker_is_manager_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.workday?.user?.WorkerIsManager != ''
+      on_failure:
+        - remove:
+            field: workday.user.WorkerIsManager
+            tag: remove_invalid_worker_is_manager
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: workday.user.Organization_Roles
+      tag: split_organization_roles
+      separator: ';'
+      ignore_missing: true
+      if: ctx.workday?.user?.Organization_Roles != null && ctx.workday.user.Organization_Roles instanceof String && ctx.workday.user.Organization_Roles != ''
+  - foreach:
+      field: workday.user.Organization_Roles
+      tag: trim_organization_roles
+      ignore_missing: true
+      if: ctx.workday?.user?.Organization_Roles instanceof List
+      processor:
+        trim:
+          field: _ingest._value
+          tag: trim_organization_role_value
+  - rename:
+      field: workday.user.Organization_Roles
+      tag: rename_organization_roles_to_user_roles
+      target_field: user.roles
+      ignore_missing: true
+  - rename:
+      field: workday.user.User-Based_Security_Groups_for_User
+      tag: rename_security_groups_temp
+      target_field: workday.user.user_based_security_groups
+      ignore_missing: true
+  - split:
+      field: workday.user.user_based_security_groups
+      tag: split_user_based_security_groups
+      separator: ';'
+      ignore_missing: true
+      if: ctx.workday?.user?.user_based_security_groups != null && ctx.workday.user.user_based_security_groups instanceof String && ctx.workday.user.user_based_security_groups != ''
+  - foreach:
+      field: workday.user.user_based_security_groups
+      tag: trim_user_based_security_groups
+      ignore_missing: true
+      if: ctx.workday?.user?.user_based_security_groups instanceof List
+      processor:
+        trim:
+          field: _ingest._value
+          tag: trim_user_based_security_group_value
+  - rename:
+      field: workday.user.user_based_security_groups
+      tag: rename_security_groups_to_user_group_name
+      target_field: user.group.name
+      ignore_missing: true
+  - date:
+      field: workday.user.Hire_Date
+      tag: date_Hire_Date
+      target_field: workday.user.Hire_Date
+      formats:
+        - yyyy-MM-dd
+      if: ctx.workday?.user?.Hire_Date != null && ctx.workday.user.Hire_Date != ''
+      on_failure:
+        - remove:
+            field: workday.user.Hire_Date
+            tag: remove_invalid_Hire_Date
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_Hire_Date
+      copy_from: workday.user.Hire_Date
+      ignore_empty_value: true
+  - date:
+      field: workday.user.Last_Account_or_Proxy_Login_Moment
+      tag: date_Last_Account_or_Proxy_Login_Moment
+      target_field: workday.user.Last_Account_or_Proxy_Login_Moment
+      formats:
+        - ISO8601
+      if: ctx.workday?.user?.Last_Account_or_Proxy_Login_Moment != null && ctx.workday.user.Last_Account_or_Proxy_Login_Moment != ''
+      on_failure:
+        - remove:
+            field: workday.user.Last_Account_or_Proxy_Login_Moment
+            tag: remove_invalid_Last_Account_or_Proxy_Login_Moment
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: workday.user.termination_date
+      tag: date_termination_date
+      target_field: workday.user.termination_date
+      formats:
+        - yyyy-MM-dd
+        - ISO8601
+      if: ctx.workday?.user?.termination_date != null && ctx.workday.user.termination_date != ''
+      on_failure:
+        - remove:
+            field: workday.user.termination_date
+            tag: remove_invalid_termination_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - workday.user.Hire_Date
+      tag: remove_custom_fields_mapped_with_ecs_fields
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
