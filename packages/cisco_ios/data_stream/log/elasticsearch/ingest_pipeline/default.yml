@@ -176,20 +176,59 @@ processors:
           return 'UTC';
         }
 
+        String get_fallback_timezone(def ctx) {
+          if (ctx._conf?.tz_offset != null) {
+            try {
+              ZoneId.of(ctx._conf.tz_offset);
+              return ctx._conf.tz_offset;
+            } catch (Exception e) {
+              return 'UTC';
+            }
+          }
+          return 'UTC';
+        }
+
         def event_timezone = get_timezone(ctx);
         if (!event_timezone.contains('+') && !event_timezone.contains('-') && !(event_timezone.length() > 4)) {
-          // timezone abbreviation e.g. CEST need to be put inside the timestamp
+          // Some short abbreviations are valid zone IDs in their own right
+          // (MET, CET, EET) and can be handed to the date processor directly.
+          boolean tz_resolved = false;
           try {
-            SimpleDateFormat sdf = new SimpleDateFormat("z");
-            sdf.parse(event_timezone);
-            ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
-            ctx?._temp_.cisco_timestamp = ctx?._temp_.cisco_timestamp + " " + event_timezone;
+            ZoneId.of(event_timezone);
+            ctx._temp_.date_timezone = event_timezone;
+            tz_resolved = true;
           } catch (Exception e) {
+            tz_resolved = false;
+          }
+
+          if (!tz_resolved) {
+            try {
+              SimpleDateFormat sdf = new SimpleDateFormat("z");
+              sdf.parse(event_timezone);
+              ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+              // Putting the abbreviation inside the timestamp preserves its
+              // DST-aware offset (ACDT is +10:30, where the resolved zone alone
+              // yields +09:30). Only do so when the java.time parser used by the
+              // date processor also recognises it: SimpleDateFormat accepts some
+              // abbreviations (CHST) that it does not, which fails the document.
+              try {
+                DateTimeFormatter.ofPattern("z", Locale.ENGLISH).parse(event_timezone);
+                ctx._temp_.cisco_timestamp = ctx._temp_.cisco_timestamp + " " + event_timezone;
+              } catch (Exception inner) {
+                // Leave the abbreviation out; date_timezone above still applies.
+              }
+              tz_resolved = true;
+            } catch (Exception e) {
+              tz_resolved = false;
+            }
+          }
+
+          if (!tz_resolved) {
             // Preserve the original abbreviation in event.timezone so operators can
             // detect and configure unrecognised timezone abbreviations via tz_map.
-            String fallback = (ctx._conf?.tz_offset != null) ? ctx._conf.tz_offset : 'UTC';
+            String fallback = get_fallback_timezone(ctx);
             ctx._temp_.date_timezone = fallback;
-            ctx.event.timezone = ctx._temp_.tz;
+            ctx.event.timezone = (ctx._temp_?.tz != null) ? ctx._temp_.tz : fallback;
             ctx._temp_.tz_unmapped = true;
           }
         } else {
@@ -199,9 +238,9 @@ processors:
             ZoneId.of(event_timezone);
             ctx._temp_.date_timezone = event_timezone;
           } catch (Exception e) {
-            String fallback = (ctx._conf?.tz_offset != null) ? ctx._conf.tz_offset : 'UTC';
+            String fallback = get_fallback_timezone(ctx);
             ctx._temp_.date_timezone = fallback;
-            ctx.event.timezone = ctx._temp_.tz;
+            ctx.event.timezone = (ctx._temp_?.tz != null) ? ctx._temp_.tz : fallback;
             ctx._temp_.tz_unmapped = true;
           }
         }
