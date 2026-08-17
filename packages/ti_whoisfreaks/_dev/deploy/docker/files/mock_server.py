@@ -54,9 +54,13 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         qs = parse_qs(parsed.query)
         if parsed.path == "/v3.1/status":
+            # Shape matches the real WhoisFreaks Database Files Status endpoint:
+            # https://whoisfreaks.com/documentation/database-file-status
             body = json.dumps({
-                "gtld": {"lastUpdate": "2026-08-04", "availableFrom": "2026-05-01"},
-                "cctld": {"lastUpdate": "2026-08-04", "availableFrom": "2026-05-01"},
+                "newly": {
+                    "gtld": {"last_update": "2026-08-04", "available_from": "2026-05-01"},
+                    "cctld": {"last_update": "2026-08-04", "available_from": "2026-05-01"},
+                },
             }).encode()
             self._send(200, "application/json", body)
             return
