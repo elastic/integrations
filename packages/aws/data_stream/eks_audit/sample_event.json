@@ -1,0 +1,132 @@
+{
+    "@timestamp": "2026-08-05T08:00:00.000Z",
+    "aws": {
+        "cloudwatch": {
+            "log_group": "/aws/eks/prod-cluster/cluster",
+            "log_stream": "kube-apiserver-audit-123",
+            "region": "us-east-1",
+            "account_id": "123456789012"
+        },
+        "eks": {
+            "cluster": {
+                "name": "prod-cluster"
+            },
+            "log_type": "audit",
+            "component": "kube-apiserver",
+            "audit": {
+                "apiVersion": "audit.k8s.io/v1",
+                "kind": "Event",
+                "level": "RequestResponse",
+                "stage": "ResponseComplete",
+                "requestReceivedTimestamp": "2026-08-05T08:00:00Z",
+                "stageTimestamp": "2026-08-05T08:00:01Z",
+                "sourceIPs": [
+                    "198.51.100.10"
+                ],
+                "userAgent": "kubectl/v1.31.0",
+                "user": {
+                    "username": "arn:aws:iam::123456789012:user/alice",
+                    "uid": "aws-iam-authenticator:123456789012:alice",
+                    "groups": [
+                        "system:authenticated"
+                    ]
+                },
+                "auditID": "allowed-secret",
+                "verb": "get",
+                "requestURI": "/api/v1/secrets",
+                "objectRef": {
+                    "resource": "secrets",
+                    "namespace": "default",
+                    "name": "app-secret"
+                },
+                "responseStatus": {
+                    "code": 200
+                },
+                "annotations": {
+                    "authorization_k8s_io/decision": "allow",
+                    "authorization_k8s_io/reason": "RBAC decision"
+                }
+            }
+        }
+    },
+    "client": {
+        "ip": [
+            "198.51.100.10"
+        ]
+    },
+    "cloud": {
+        "account": {
+            "id": "123456789012"
+        },
+        "provider": "aws",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.eks_audit",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "action": "get",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "aws.eks_audit",
+        "end": "2026-08-05T08:00:01.000Z",
+        "id": "allowed-secret",
+        "ingested": "2026-08-05T08:00:02.000Z",
+        "kind": "event",
+        "outcome": "success",
+        "type": [
+            "access"
+        ]
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "orchestrator": {
+        "api_version": "audit.k8s.io/v1",
+        "cluster": {
+            "name": "prod-cluster"
+        },
+        "namespace": "default",
+        "resource": {
+            "name": "app-secret",
+            "type": "secrets"
+        },
+        "type": "kubernetes"
+    },
+    "related": {
+        "ip": [
+            "198.51.100.10"
+        ],
+        "user": [
+            "aws-iam-authenticator:123456789012:alice",
+            "arn:aws:iam::123456789012:user/alice"
+        ]
+    },
+    "source": {
+        "ip": [
+            "198.51.100.10"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "aws-eks-audit"
+    ],
+    "user": {
+        "group": {
+            "name": [
+                "system:authenticated"
+            ]
+        },
+        "id": "aws-iam-authenticator:123456789012:alice",
+        "name": "arn:aws:iam::123456789012:user/alice"
+    },
+    "user_agent": {
+        "original": "kubectl/v1.31.0"
+    }
+}

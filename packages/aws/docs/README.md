@@ -249,6 +249,7 @@ This is an overview of the type of data you can collect from each AWS service:
 | EBS              |    x    |         |
 | EC2              |    x    |    x    |
 | ECS              |    x    |         |
+| EKS              |         |    x    |
 | ELB              |    x    |    x    |
 | Fargate          |    x    |         |
 | Kinesis          |    x    |         |
