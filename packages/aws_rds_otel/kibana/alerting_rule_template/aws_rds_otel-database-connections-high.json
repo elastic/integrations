@@ -3,7 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "description": "Alerts when average database connections exceed a threshold. Uses the Average statistic per AWS recommended alarms. CloudWatch does not publish max_connections — set the threshold against your engine limit and normal baseline.",
+    "description": "Alerts when an RDS instance's peak connection count over the last 15 minutes climbs materially above its own trailing 45-minute baseline (>= 3x, with a 20-connection floor), or exceeds an absolute ceiling for instances with no baseline history. Detects connection exhaustion on any instance class without knowing max_connections.",
     "name": "[AWS RDS OTel] Database connections high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -29,7 +29,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"DatabaseConnections\"\n    AND stat == \"Average\"\n| STATS avg_connections = AVG(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)\n    BY DBInstanceIdentifier, cloud.region\n// Average connection count — set relative to max_connections and baseline (default: 100)\n| WHERE avg_connections > 100\n| SORT avg_connections DESC"
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"DatabaseConnections\"\n    AND stat == \"Maximum\"\n    AND DBInstanceIdentifier IS NOT NULL\n| STATS\n    incident_peak = MAX(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`) WHERE @timestamp >= ?_tend - 15 minutes,\n    baseline_avg  = AVG(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`) WHERE @timestamp <  ?_tend - 15 minutes\n  BY DBInstanceIdentifier, cloud.region\n// Fire on a MATERIAL climb above THIS instance's own trailing-45m baseline (>= 3x, with\n// a >= 20-connection floor to ignore near-idle noise), OR on the absolute default for\n// instances with no baseline history. RDS emits no max_connections metric and small\n// instance classes cap below any fixed default (db.t3.micro ~= 73), so a purely absolute\n// threshold can be unreachable exactly when exhaustion is real; the relative form also\n// stays quiet for steadily-busy instances that always run high.\n| WHERE (incident_peak >= 20 AND baseline_avg IS NOT NULL AND incident_peak >= 3.0 * baseline_avg)\n    OR incident_peak > 100\n| SORT incident_peak DESC"
       },
       "size": 0,
       "threshold": [
@@ -37,7 +37,7 @@
       ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
-      "timeWindowSize": 15,
+      "timeWindowSize": 60,
       "timeWindowUnit": "m",
       "groupBy": "row",
       "termField": "DBInstanceIdentifier",

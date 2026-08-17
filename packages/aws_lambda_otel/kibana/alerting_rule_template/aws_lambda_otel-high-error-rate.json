@@ -3,7 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
-        "description": "Alerts when a Lambda function exceeds a configurable error rate (Errors / Invocations) over a 15-minute window. Evaluates the top 10 functions by error rate.",
+        "description": "Alerts when a Lambda function's error rate (Errors / Invocations) over the last 15 minutes is above an absolute floor AND materially above the function's own trailing 45-minute baseline (>= 2x or +10 percentage points). Functions with no usable baseline fall back to the absolute floor. Evaluates the top 10 functions by error rate.",
         "name": "[AWS Lambda OTel] High error rate",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND stat == \"Sum\"\n    AND MetricName IN (\"Errors\", \"Invocations\")\n| STATS\n    total_errors = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`),\n    total_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)\n  BY FunctionName, cloud.region\n// Minimum invocation volume — tune for low-traffic functions\n| WHERE total_invocations > 10\n| EVAL error_rate_pct = ROUND(total_errors / total_invocations * 100.0, 2)\n// Alert threshold (%): adjust based on SLO (e.g. 1% for most workloads)\n| WHERE error_rate_pct > 1.0\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT error_rate_pct DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND stat == \"Sum\"\n    AND MetricName IN (\"Errors\", \"Invocations\")\n    AND FunctionName IS NOT NULL\n| STATS\n    incident_errors      = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`)      WHERE @timestamp >= ?_tend - 15 minutes,\n    incident_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) WHERE @timestamp >= ?_tend - 15 minutes,\n    baseline_errors      = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`)      WHERE @timestamp <  ?_tend - 15 minutes,\n    baseline_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) WHERE @timestamp <  ?_tend - 15 minutes\n  BY FunctionName, cloud.region\n// Minimum invocation volume — tune for low-traffic functions\n| WHERE incident_invocations > 10\n| EVAL error_rate_pct = ROUND(TO_DOUBLE(incident_errors) / incident_invocations * 100.0, 2),\n       baseline_error_rate_pct = CASE(baseline_invocations > 10, ROUND(TO_DOUBLE(baseline_errors) / baseline_invocations * 100.0, 2), null)\n// Fire when the CURRENT 15m error rate is above the absolute floor (tune to SLO) AND\n// materially above THIS function's own trailing-45m baseline (>= 2x, or +10 percentage\n// points). Functions without a usable baseline fall back to the floor alone. Workloads\n// with a steady ambient error rate no longer alert perpetually; genuine rate jumps fire.\n| WHERE error_rate_pct > 1.0\n    AND (baseline_error_rate_pct IS NULL OR error_rate_pct >= 2.0 * baseline_error_rate_pct OR error_rate_pct >= baseline_error_rate_pct + 10.0)\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT error_rate_pct DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
@@ -37,7 +37,7 @@
             ],
             "thresholdComparator": ">",
             "timeField": "@timestamp",
-            "timeWindowSize": 15,
+            "timeWindowSize": 60,
             "timeWindowUnit": "m",
             "groupBy": "row",
             "termField": "function_id",
