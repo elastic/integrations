@@ -35,9 +35,6 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
 3. **Verify data**:
    - Discover filter `data_stream.dataset: "temporal.cloud_metrics.otel"`
 
-## Dashboards
-
-Kibana dashboards for Temporal Cloud metrics can be added in a later package version. Until then, explore metrics in Discover / Lens using `data_stream.dataset: "temporal.cloud_metrics.otel"`.
 
 ## Metrics Reference
 
