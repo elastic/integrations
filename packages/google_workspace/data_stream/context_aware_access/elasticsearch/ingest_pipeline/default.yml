@@ -36,9 +36,6 @@ processors:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
       tag: drop_empty_events
-  - set:
-      field: event.kind
-      value: [event]
   - date:
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
@@ -333,6 +330,30 @@ processors:
       field: google_workspace.context_aware_access.CAA_DEVICE_STATE
       target_field: google_workspace.context_aware_access.device.state
       ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_network_into_event_category
+      value: network
+      if: ctx.event?.action != null && ["ACCESS_DENY_EVENT","ACCESS_DENY_INTERNAL_ERROR_EVENT","MONITOR_MODE_ACCESS_DENY_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_denied_into_event_type
+      value: denied
+      if: ctx.event?.action != null && ["ACCESS_DENY_EVENT","ACCESS_DENY_INTERNAL_ERROR_EVENT","MONITOR_MODE_ACCESS_DENY_EVENT"].contains(ctx.event.action)
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.event?.action != null && ["ACCESS_DENY_EVENT","ACCESS_DENY_INTERNAL_ERROR_EVENT","MONITOR_MODE_ACCESS_DENY_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      if: ctx.event?.type == null
   - remove:
       field:
         - json
