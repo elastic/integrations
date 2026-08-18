@@ -1,0 +1,72 @@
+title: Bitdefender IP Reputation
+release: beta
+type: logs
+streams:
+  - input: cel
+    title: Bitdefender IP Reputation Feed
+    description: Collect IP reputation indicators from Bitdefender Threat Intelligence
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll the Bitdefender API (e.g. 5m, 1h)
+        required: true
+        show_user: true
+        default: 5m
+      - name: resource_url
+        type: text
+        title: API Endpoint URL
+        description: Bitdefender reputation API endpoint
+        required: true
+        show_user: false
+        default: https://feeds.ti.bitdefender.com/reputation
+      - name: feed_name
+        type: text
+        title: Feed name
+        description: Bitdefender feed name
+        required: true
+        show_user: false
+        default: ip-feed
+      - name: initial_lookback
+        type: text
+        title: Initial lookback
+        description: Window to fetch on first run when no checkpoint exists
+        required: true
+        show_user: true
+        default: 1h
+      - name: safety_lag
+        type: text
+        title: Safety lag
+        description: Delay from current time to avoid querying very fresh or future data
+        required: true
+        show_user: true
+        default: 60s
+      - name: overlap
+        type: text
+        title: Checkpoint overlap
+        description: Overlap between runs to tolerate scheduler drift
+        required: true
+        show_user: true
+        default: 120s
+      - name: max_window
+        type: text
+        title: Max request window
+        description: Maximum time slice requested in one API call
+        required: true
+        show_user: true
+        default: 1h
+      - name: from_param
+        type: text
+        title: From query parameter
+        description: Query parameter name used for the interval start
+        required: true
+        show_user: false
+        default: from
+      - name: to_param
+        type: text
+        title: To query parameter
+        description: Query parameter name used for the interval end
+        required: true
+        show_user: false
+        default: to
