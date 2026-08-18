@@ -16,14 +16,15 @@ request.url: "{{api_url}}/2.0/events"
 request.method: "GET"
 request.transforms:
   # If next_stream_position has scientific notation (from an earlier package
-  # version), convert it to a plain integer. Otherwise use the stored string,
-  # or the default initial value.
+  # version), convert it to a plain integer (with a margin to account for
+  # rounding errors). Otherwise use the stored string, or the default initial
+  # value.
   - set:
       target: url.params.stream_position
       value: >-
         [[- if index .cursor "next_stream_position" -]]
           [[- if ne .cursor.next_stream_position (replaceAll "e+" "" .cursor.next_stream_position) -]]
-            [[- toInt .cursor.next_stream_position -]]
+            [[- add (toInt .cursor.next_stream_position) -256 -]]
           [[- else -]]
             [[- .cursor.next_stream_position -]]
           [[- end -]]
