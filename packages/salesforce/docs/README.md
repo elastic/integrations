@@ -14,12 +14,13 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login`, `Logout`, and `AuraRequest` data streams can collect from either EventLogFile or the corresponding real-time object (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`). The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, and so on.
 - `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
+- `aura_request`: Collects server-side Aura framework requests made by the Salesforce Lightning Experience UI.
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
@@ -29,6 +30,8 @@ The Salesforce integration collects the following events using the Salesforce RE
 - [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform\_events.meta/platform\_events/sforce\_api\_objects\_logouteventstream.htm)
 - [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile.htm)
 - [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_setupaudittrail.htm)
+- [Aura Request EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile\_lightning\_component.htm)
+- [AuraRequestEventLog Object](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_aurarequesteventlog.htm)
 
 ## Compatibility
 
@@ -74,6 +77,7 @@ The Salesforce integration collects the following data streams:
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as `ApexCallout`, `ApexExecution`, `ApexRestApi`, `ApexSoap`, `ApexTrigger`, and `ExternalCustomApexCallout`.
 - `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
+- `aura_request`: Collects server-side Aura framework requests made by the Salesforce Lightning Experience UI, which is effectively the record and component level access log for the modern Salesforce UI.
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
@@ -81,6 +85,7 @@ The Salesforce integration collects the following events using the Salesforce RE
 - For `logout` — [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) and [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
 - For `apex` — [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile.htm)
 - For `setupaudittrail` — [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
+- For `aura_request` — [Aura Request EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_lightning_component.htm) and the [AuraRequestEventLog Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_aurarequesteventlog.htm)
 
 ## What do I need to use this integration?
 
@@ -102,6 +107,14 @@ The Salesforce integration collects the following events using the Salesforce RE
 
 NOTE: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
 
+- For the `aura_request` data stream, additional requirements apply:
+
+  - The data stream is disabled by default because of its volume and licensing requirements. Enable it explicitly in the integration policy.
+  - The `AuraRequest` event type is not part of the EventLogFile subset that Salesforce includes at no extra cost (`Apex Unexpected Exception`, `API Total Usage`, `CORS Violation Record`, `CSP Violation`, `Hostname Redirects`, `Insecure External Assets`, `Login`, and `Logout`), so it requires Salesforce Shield or the Event Monitoring add-on. Developer Edition orgs get all event types with one day of retention, and Developer and Trial orgs must opt in to event log file generation.
+  - Collecting from the `AuraRequestEventLog` object requires API version 61.0 or later, and the `View Event Log Object Data` user permission (or the `Event Monitoring User` permission set) on the integration user. The `View All Data` permission that also grants access to `EventLogFile` does not grant access to event log objects.
+  - Event log objects such as `AuraRequestEventLog` are available in Enterprise, Performance, and Unlimited editions with Salesforce Shield or the Event Monitoring add-on. They are available only on Hyperforce instances and are unavailable in Government Cloud, so `EventLogFile` is the only option in those orgs.
+  - Choose the collection method based on the latency and retention you need. `EventLogFile` runs three to six hours behind on the hourly interval (longer when Salesforce is under load) and arrives the next day on the daily interval, and file retention is one day without the Event Monitoring add-on or up to one year with it, as configured in `Event Monitoring Settings`. The `AuraRequestEventLog` object becomes queryable 25 to 45 minutes after an event, but retains only 30 days of data and limits each query to a 15 day window, so keep the initial interval at or below `360h` when using it.
+
 ## How do I deploy this integration?
 
 For step-by-step instructions on how to set up an integration, see [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html).
@@ -109,14 +122,14 @@ For step-by-step instructions on how to set up an integration, see [Getting star
 ### Onboard and configure
 
 1. Install Elastic Agent and enroll it in Fleet.
-2. In Fleet, add the Salesforce integration and enable the `apex`, `login`, `logout`, and/or `setupaudittrail` data streams as needed.
+2. In Fleet, add the Salesforce integration and enable the `apex`, `aura_request`, `login`, `logout`, and/or `setupaudittrail` data streams as needed.
 3. Enter your Salesforce instance URL and API version.
 4. Choose an authentication method:
    - JWT bearer flow: set Client ID, Username, Private key path (PEM), and JWT audience URL.
    - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (base domain).
-5. For `login` and `logout`, choose which sources to collect:
+5. For `login`, `logout`, and `aura_request`, choose which sources to collect:
    - EventLogFile (batch logs)
-   - Platform Events (`LoginEvent`, `LogoutEvent`)
+   - Real-time objects (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`)
 6. Optional tuning:
    - Set an initial interval to backfill historical data.
    - Adjust the collection interval per source.
@@ -241,7 +254,7 @@ Alternatively, you can use the Salesforce instance API version as described in t
 Once the Salesforce integration is successfully configured, follow these steps to validate the setup:
 
 1. Navigate to the `Assets` tab in the Salesforce Integration. You will find a list of available dashboards related to your configured data streams.
-2. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail).
+2. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail, aura_request).
 3. Verify that the dashboard is populated with the expected data.
 
 If the dashboard displays the data correctly, your integration is successfully validated.
@@ -251,6 +264,7 @@ If the dashboard displays the data correctly, your integration is successfully v
 This integration ships curated Kibana dashboards for each data stream. After data starts flowing, open the Salesforce integration and go to the Assets tab to launch:
 
 - Apex dashboard
+- AuraRequest dashboard
 - Login dashboard
 - Logout dashboard
 - SetupAuditTrail dashboard
@@ -280,15 +294,15 @@ This section provides solutions to common issues you might encounter while using
 
 ### Request timeout
 
-If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
+If you experience delays in the response from the Salesforce server in the `apex`, `aura_request`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
 
 ```
 Error running EventLogFile collection: error reading log file body: context deadline exceeded (Client.Timeout or context cancellation while reading body)
 ```
 
-This is most common in the `apex` data stream, where individual `EventLogFile` downloads can be large.
+This is most common in the `apex` and `aura_request` data streams, where individual `EventLogFile` downloads can be large.
 
-**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`). For example, set it to `120s`.
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`, or `180s` for `aura_request`). For example, set it to `120s`.
 
 ### Data ingestion error
 
@@ -334,6 +348,7 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 - Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage.
 - Backfill: Use the initial interval to safely ingest historical data. Large backfills may consume significant Salesforce API quotas; consider staging by data stream.
 - Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower-latency signals but may have throughput and retention limits in your org.
+- AuraRequest volume: the `aura_request` data stream records every server-side Aura request, so it is by far the highest volume data stream in this integration. A single user loading one Lightning page can generate dozens of events. Size your storage accordingly, and consider enabling only one of the two collection methods rather than both, since they surface the same events.
 - Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large result sets are expected.
 
 ## Reference
@@ -525,6 +540,202 @@ An example event for `apex` looks as following:
 | salesforce.apex.uri_derived_id | The 18-character case-safe ID of the URI of the page that's receiving the request. | keyword |  |  |
 | salesforce.apex.user_agent | The numeric code for the type of client used to make the request (for example, the browser, application, or API). | keyword |  |  |
 | salesforce.apex.user_id_derived | The 18-character case-safe ID of the user who's using Salesforce services through the UI or the API. | keyword |  |  |
+| salesforce.instance_url | The Salesforce instance URL. | keyword |  |  |
+
+
+#### AuraRequest
+
+The `aura_request` data stream captures the server-side Aura framework requests that Salesforce Lightning Experience makes when users load pages, open records, or when components fetch data. It is the record and component level access log for the modern Salesforce UI, which makes it useful for detecting UI-driven data scraping, guest user abuse, and abnormal access patterns.
+
+An example event for `aura_request` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-03T06:18:45.933Z",
+    "agent": {
+        "ephemeral_id": "982baf6d-28e3-48e4-9faf-6f097c39ed49",
+        "id": "94f87ac1-7ea2-4478-b9cf-f920462a6cca",
+        "name": "elastic-agent-49589",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "salesforce.aura_request",
+        "namespace": "11352",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "94f87ac1-7ea2-4478-b9cf-f920462a6cca",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "action": "aura-request",
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "salesforce.aura_request",
+        "duration": 677000000,
+        "ingested": "2026-08-18T09:39:01Z",
+        "kind": "event",
+        "original": "{\"ACTION_MESSAGE\":\"1$serviceComponent://ui.force.components.controllers.hoverAction.HoverActionController/ACTION$getActions=52;2$aura://RecordUiController/ACTION$getRecordWithFields=118\",\"ACTION_MESSAGE_LENGTH\":\"10098\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"372\",\"DB_TOTAL_TIME\":\"167546388\",\"EASY_SUITE_VALUE\":\"C360SuiteEE\",\"EVENT_TYPE\":\"AuraRequest\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"SLB:9b1c4de8f0a2b3c4d5e6f708192a3b4c\",\"REQUEST_METHOD\":\"POST\",\"REQUEST_STATUS\":\"S\",\"RUN_TIME\":\"677\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"TIMESTAMP\":\"20260803061845.933\",\"TIMESTAMP_DERIVED\":\"2026-08-03T06:18:45.933Z\",\"URI\":\"/aura\",\"URI_ID_DERIVED\":\"\",\"USER_AGENT\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_TYPE\":\"Standard\"}",
+        "outcome": "success",
+        "provider": "EventLogFile",
+        "type": [
+            "access"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-49589",
+        "ip": [
+            "172.19.0.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "3A-9B-E2-81-F3-33",
+            "86-5C-DE-29-71-39"
+        ],
+        "name": "elastic-agent-49589",
+        "os": {
+            "kernel": "6.12.76-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "http": {
+        "request": {
+            "id": "SLB:9b1c4de8f0a2b3c4d5e6f708192a3b4c",
+            "method": "POST"
+        }
+    },
+    "input": {
+        "type": "salesforce"
+    },
+    "organization": {
+        "id": "00D5j000000VI3n"
+    },
+    "related": {
+        "ip": [
+            "81.2.69.142"
+        ],
+        "user": [
+            "0055j000000utlPAAQ",
+            "0055j000000utlP"
+        ]
+    },
+    "salesforce": {
+        "aura_request": {
+            "action_message": "1$serviceComponent://ui.force.components.controllers.hoverAction.HoverActionController/ACTION$getActions=52;2$aura://RecordUiController/ACTION$getRecordWithFields=118",
+            "action_message_length": 10098,
+            "actions": [
+                {
+                    "controller": "ui.force.components.controllers.hoverAction.HoverActionController",
+                    "duration": 52,
+                    "id": "1",
+                    "method": "getActions",
+                    "scheme": "serviceComponent"
+                },
+                {
+                    "controller": "RecordUiController",
+                    "duration": 118,
+                    "id": "2",
+                    "method": "getRecordWithFields",
+                    "scheme": "aura"
+                }
+            ],
+            "cpu_time": 372,
+            "db_total_time": 167546388,
+            "easy_suite_value": "C360SuiteEE",
+            "login_key": "Obv9123BzbaxqCo1",
+            "request_status": "S",
+            "run_time": 677,
+            "session_key": "WvtsJ1235oW24EbH",
+            "user_id": "0055j000000utlP",
+            "user_type": "Standard"
+        },
+        "instance_url": "http://svc-salesforce:8010"
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142"
+    },
+    "tags": [
+        "preserve_original_event",
+        "salesforce-aura_request"
+    ],
+    "url": {
+        "original": "/aura",
+        "path": "/aura"
+    },
+    "user": {
+        "id": "0055j000000utlPAAQ"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Mac OS X 10.15.7",
+            "name": "Mac OS X",
+            "version": "10.15.7"
+        },
+        "version": "150.0.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| input.type | Type of filebeat input. | keyword |  |  |
+| salesforce.aura_request.action_message | The action (Apex method) names and times for all the actions in the request. Salesforce documents the format as `1action1Name=action1Time;action2Name=action2Time...`, and observed values take the form `\<actionId\>$\<scheme\>://\<controller\>/ACTION$\<method\>=\<milliseconds\>` with `;` between actions. The parsed form is available under `salesforce.aura_request.actions`. | keyword |  |  |
+| salesforce.aura_request.action_message_length |  | long |  |  |
+| salesforce.aura_request.actions.controller | The Aura or Apex controller that handled the action, either a fully qualified path or a bare class name. | keyword |  |  |
+| salesforce.aura_request.actions.duration | The time the action took, in milliseconds, as reported in `ACTION_MESSAGE`. Zero is a common and valid value. | long | ms | gauge |
+| salesforce.aura_request.actions.id | The Aura client-assigned identifier of the action within the request. This is an identifier rather than a positional index, so the identifiers of a multi-action request are frequently out of order. | keyword |  |  |
+| salesforce.aura_request.actions.method | The name of the controller method invoked by the action. | keyword |  |  |
+| salesforce.aura_request.actions.scheme | The Aura descriptor scheme of the action. Observed values are `serviceComponent`, `aura`, and `java`. | keyword |  |  |
+| salesforce.aura_request.client_ip | The IP address of the client that's using Salesforce services. A Salesforce internal IP (such as a login from AppExchange) is shown as `Salesforce.com IP`. Values that are usable IP addresses are mapped to `source.ip` instead, so only the non-address values remain here. | keyword |  |  |
+| salesforce.aura_request.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | long | ms | gauge |
+| salesforce.aura_request.db_total_time | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and `DB_CPU_TIME`. Compare this field to `salesforce.aura_request.cpu_time` to determine whether performance issues are occurring in the database layer or in your own code. | long | nanos | gauge |
+| salesforce.aura_request.easy_suite_value | The org's Small Business Suite Edition, if applicable. This field populates only for Small Business Suite editions and Salesforce Foundations. Otherwise, it will be empty. Documented values: `Freemium` (Salesforce Free Suite), `Starter` (Salesforce Starter Suite), `Pro` (Salesforce Pro Suite), and `C360SuiteEE` (Salesforce Foundations). Available in API version 66.0 and later. | keyword |  |  |
+| salesforce.aura_request.id | The record ID of the `AuraRequestEventLog` object on the real-time collection path. | keyword |  |  |
+| salesforce.aura_request.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
+| salesforce.aura_request.request_status | The status of the request for a page view or user interface action: `S` Success, which is also returned when an Apex controller throws an exception; `F` Failure, typically 4xx or 5xx HTTP codes; `U` Undefined; `A` Authorization Error; `R` Redirect, typically a 3xx HTTP code; `N` Not Found, a 404 error. This field can have a blank value. | keyword |  |  |
+| salesforce.aura_request.run_time | The amount of time that the request took in milliseconds. | long | ms | gauge |
+| salesforce.aura_request.session_key | The user's unique session ID. You can use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started. | keyword |  |  |
+| salesforce.aura_request.uri_id | The 18-character case insensitive ID of the URI of the page that's receiving the request. | keyword |  |  |
+| salesforce.aura_request.user_agent_code | The numeric code for the type of client used to make the request, for example the browser, application, or API. `AuraRequest` rows now carry the raw User-Agent header, which is mapped to `user_agent.original` instead, so only legacy numeric codes remain here. | keyword |  |  |
+| salesforce.aura_request.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. The 18-character case insensitive form of the same ID is mapped to `user.id`. | keyword |  |  |
+| salesforce.aura_request.user_type | The category of user license. Documented values: `CsnOnly`, `CspLitePortal`, `CustomerSuccess`, `Guest`, `PowerCustomerSuccess`, `PowerPartner`, `SelfService`, and `Standard`. | keyword |  |  |
 | salesforce.instance_url | The Salesforce instance URL. | keyword |  |  |
 
 

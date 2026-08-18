@@ -84,6 +84,36 @@ rules:
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v58.0/sobjects/LogoutEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"6f86fbe7-17a3-4a02-8dfe-dee2a38ab73a","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
         headers:
           content-type: ["text/json"]
+  # AuraRequest ELF
+  - path: /services/data/v61.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'AuraRequest' ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v61.0/sobjects/EventLogFile/0AT5j00002GWEsRGAZ"},"CreatedDate":"2026-08-04T02:03:41.000+0000","LogDate":"2026-08-03T00:00:00.000+0000","LogFile":"/services/data/v61.0/sobjects/EventLogFile/0AT5j00002GWEsRGAZ/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v61.0/sobjects/EventLogFile/0AT5j00002GWEsRGAZ/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","DB_TOTAL_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","REQUEST_METHOD","ACTION_MESSAGE","ACTION_MESSAGE_LENGTH","EASY_SUITE_VALUE","USER_AGENT","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED"
+          "AuraRequest","20260803061845.933","SLB:9b1c4de8f0a2b3c4d5e6f708192a3b4c","00D5j000000VI3n","0055j000000utlP","677","372","167546388","/aura","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","Standard","S","POST","1$serviceComponent://ui.force.components.controllers.hoverAction.HoverActionController/ACTION$getActions=52;2$aura://RecordUiController/ACTION$getRecordWithFields=118","10098","C360SuiteEE","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","2026-08-03T06:18:45.933Z","0055j000000utlPAAQ","81.2.69.142",""
+          "AuraRequest","20260803061851.204","TID:1f2e3d4c5b6a7980","00D5j000000VI3n","0055j000000utlP","94","41","5734027","/lightning/r/Account/0015j00000AbCdEAAQ/view","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","Standard","","GET","","","","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","2026-08-03T06:18:51.204Z","0055j000000utlPAAQ","81.2.69.142","0015j00000AbCdEAAQ"
+  # AuraRequest Object
+  - path: /services/data/v61.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT FIELDS(STANDARD) FROM AuraRequestEventLog"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v61.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ActionMessage":"1$serviceComponent://ui.instrumentation.components.beacon.InstrumentationBeaconController/ACTION$sendData=6","ClientIp":"81.2.69.142","CpuTime":267,"DatabaseTotalTime":369420065,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:1a2b3c4d5e6f7890","RequestMethod":"POST","RunTime":638,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:52:53.911+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+        headers:
+          content-type: ["text/json"]
   # Apex ELF
   - path: /services/data/v56.0/query/
     methods: ["GET"]
