@@ -14,7 +14,7 @@ inputs:
                 ioc_expiration_duration: 90d
           fields_under_root: true
           interval: 24h
-          program: |-
+          program: |
             state.?commercial_url.orValue(state.url).trim_right("/").as(base_url,
               (
                 has(state.?cursor.after) ?
@@ -27,13 +27,13 @@ inputs:
                   )
               ).as(since,
                 state.with(
-                  (state.?api_type.orValue("community") == "commercial") ?
+                  state.?api_type.orValue("community") == "commercial" ?
                     (
-                      (!has(state.username) || !has(state.password)) ?
+                      !has(state.username) || !has(state.password) ?
                         {
                           "events": {
                             "error": {
-                              "code": 400,
+                              "code": "400",
                               "id": "configuration_error",
                               "message": "api_type is 'commercial' but username/password are not configured",
                             },
@@ -42,7 +42,7 @@ inputs:
                         }
                       :
                         (
-                          (has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60)) ?
+                          has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
                             state.token
                           :
                             request(
@@ -59,7 +59,7 @@ inputs:
                                   "Content-Type": ["application/json"],
                                 },
                               }
-                            ).do_request().as(auth_resp, (auth_resp.StatusCode == 200) ?
+                            ).do_request().as(auth_resp, auth_resp.StatusCode == 200 ?
                               auth_resp.Body.decode_json().as(auth_body,
                                 {
                                   "access_token": auth_body.token,
@@ -73,7 +73,7 @@ inputs:
                                     "code": string(auth_resp.StatusCode),
                                     "id": auth_resp.Status,
                                     "message": "POST " + base_url + "/v1/login: " + (
-                                      (size(auth_resp.Body) != 0) ?
+                                      size(auth_resp.Body) != 0 ?
                                         string(auth_resp.Body)
                                       :
                                         auth_resp.Status + " (" + string(auth_resp.StatusCode) + ")"
@@ -99,7 +99,7 @@ inputs:
                                 "Authorization": ["Bearer " + token.access_token],
                               },
                             }
-                          ).do_request().as(resp, (resp.StatusCode == 200) ?
+                          ).do_request().as(resp, resp.StatusCode == 200 ?
                             resp.Body.decode_json().as(body,
                               {
                                 "events": body.items.map(ind,
@@ -109,11 +109,11 @@ inputs:
                                 ),
                                 "want_more": has(body.?meta.next_cursor),
                                 "cursor": (
-                                  (body.items.size() > 0) ?
+                                  body.items.size() > 0 ?
                                     optional.of(
                                       (
                                         has(state.?cursor.first_seen) ?
-                                          (max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max()))
+                                          max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max())
                                         :
                                           body.items.map(ind, timestamp(ind.first_seen)).max()
                                       ).format(time_layout.RFC3339)
@@ -146,7 +146,7 @@ inputs:
                                   "code": string(resp.StatusCode),
                                   "id": resp.Status,
                                   "message": "GET " + base_url + "/threatfox/v1/iocs: " + (
-                                    (size(resp.Body) != 0) ?
+                                    size(resp.Body) != 0 ?
                                       string(resp.Body)
                                     :
                                       resp.Status + " (" + string(resp.StatusCode) + ")"
@@ -158,61 +158,60 @@ inputs:
                           )
                         )
                     )
-                  :
-                    !has(state.auth_key) ?
-                      {
-                        "events": {
-                          "error": {
-                            "code": 400,
-                            "id": "configuration_error",
-                            "message": "api_type is 'community' but auth_key is not configured",
-                          },
+                  : !has(state.auth_key) ?
+                    {
+                      "events": {
+                        "error": {
+                          "code": "400",
+                          "id": "configuration_error",
+                          "message": "api_type is 'community' but auth_key is not configured",
                         },
-                        "want_more": false,
+                      },
+                      "want_more": false,
+                    }
+                  :
+                    request(
+                      "POST",
+                      state.url,
+                      "{ \"query\": \"get_iocs\", \"days\": " + state.?cursor.days.orValue(state.initial_interval) + " }"
+                    ).with(
+                      {
+                        "Header": {
+                          "Content-Type": ["application/json"],
+                          "Auth-Key": [state.auth_key],
+                        },
                       }
-                    :
-                      request(
-                        "POST",
-                        state.url,
-                        "{ \"query\": \"get_iocs\", \"days\": " + state.?cursor.days.orValue(state.initial_interval) + " }"
-                      ).with(
-                        {
-                          "Header": {
-                            "Content-Type": ["application/json"],
-                            "Auth-Key": [state.auth_key],
-                          },
-                        }
-                      ).as(req,
-                        req.do_request().as(resp, (resp.StatusCode == 200) ?
-                          resp.Body.decode_json().as(body,
-                            {
-                              "events": has(body.data) ?
-                                body.data.map(ind, {"message": ind.encode_json()})
-                              :
-                                [],
-                              "cursor": {
-                                "days": "1",
-                              },
-                            }
-                          )
-                        :
+                    ).as(req,
+                      req.do_request().as(resp, resp.StatusCode == 200 ?
+                        resp.Body.decode_json().as(body,
                           {
-                            "events": {
-                              "error": {
-                                "code": string(resp.StatusCode),
-                                "id": resp.Status,
-                                "message": "POST " + state.url.trim_right("/") + ":" + (
-                                  (size(resp.Body) != 0) ?
-                                    string(resp.Body)
-                                  :
-                                    resp.Status + " (" + string(resp.StatusCode) + ")"
-                                ),
-                              },
+                            "events": has(body.data) ?
+                              body.data.map(ind, {"message": ind.encode_json()})
+                            :
+                              [],
+                            "cursor": {
+                              "days": "1",
                             },
-                            "want_more": false,
                           }
                         )
+                      :
+                        {
+                          "events": {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": resp.Status,
+                              "message": "POST " + state.url.trim_right("/") + ":" + (
+                                size(resp.Body) != 0 ?
+                                  string(resp.Body)
+                                :
+                                  resp.Status + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                          "want_more": false,
+                        }
                       )
+                    )
                 )
               )
             )
