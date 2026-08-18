@@ -51,7 +51,7 @@ processors:
       tag: grok_extra_timestamp
       if: ctx._temp_.full_message != null
       patterns:
-        - '^%{ASA_DATE:_temp_.raw_date}: %{DATA:_temp_.full_message}$'
+        - '^%{ASA_DATE:_temp_.raw_date}: (?<_temp_.full_message>[\s\S]*)'
         - '(?<_temp_.full_message>[\s\S]*)'
       pattern_definitions:
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
@@ -1112,9 +1112,12 @@ processors:
       field: "message"
       description: "733100"
       patterns:
-        - \[(%{SPACE})?(?<_temp_.cisco.burst.object>[^\]]+)\] drop %{NOTSPACE:_temp_.cisco.burst.id} exceeded. Current burst rate is %{INT:_temp_.cisco.burst.current_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_rate}; Current average rate is %{INT:_temp_.cisco.burst.avg_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_avg_rate}; Cumulative total count is %{INT:_temp_.cisco.burst.cumulative_count}
+        - \[(%{SPACE})?(?<_temp_.cisco.burst.object>[^\]]*)\] drop %{NOTSPACE:_temp_.cisco.burst.id} exceeded. Current burst rate is %{INT:_temp_.cisco.burst.current_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_rate}; Current average rate is %{INT:_temp_.cisco.burst.avg_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_avg_rate}; Cumulative total count is %{INT:_temp_.cisco.burst.cumulative_count}
   - gsub:
       tag: gsub_burst_object_normalize_newlines
+      description: >-
+        The device wraps a long burst object, such as domain\username, across
+        two lines, so the value arrives split.
       field: _temp_.cisco.burst.object
       if: ctx._temp_?.cisco?.burst?.object != null
       pattern: "\\s*(#012|[\\n\\r]+)\\s*"
