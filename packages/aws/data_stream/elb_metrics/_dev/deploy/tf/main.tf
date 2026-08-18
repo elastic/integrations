@@ -218,7 +218,14 @@ resource "aws_lb" "alb" {
   # Use the same AZ-qualified subnet set as the target so the ALB always spans
   # the target's Availability Zone when regions do not offer t3.micro
   # everywhere.
-  subnets            = slice(sort(data.aws_subnets.target.ids), 0, min(2, length(data.aws_subnets.target.ids)))
+  subnets = slice(sort(data.aws_subnets.target.ids), 0, 2)
+
+  lifecycle {
+    precondition {
+      condition     = length(data.aws_subnets.target.ids) >= 2
+      error_message = "ALB system test needs at least 2 subnets in different AZs that offer t3.micro (AWS requires ≥2 AZs for Application Load Balancers)."
+    }
+  }
 
   tags = {
     Name = "elastic-package-test-${var.TEST_RUN_ID}"
