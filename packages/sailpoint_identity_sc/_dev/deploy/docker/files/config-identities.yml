@@ -185,9 +185,8 @@ rules:
         body: |
           []
   # Search Identities — General fallback termination (any other searchAfter)
-  # Catches any searchAfter request not matched by a more specific rule above.
-  # Returns an empty array to safely terminate pagination for any unexpected cursor position.
-  # This prevents regressions where a cursor mismatch causes the agent to loop indefinitely.
+  # Defensive catch-all: returns an empty array for any searchAfter value not matched by a
+  # more specific rule above, so pagination always terminates cleanly regardless of cursor value.
   - path: /v2026/search
     methods:
       - POST

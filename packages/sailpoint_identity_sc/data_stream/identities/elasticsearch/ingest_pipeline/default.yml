@@ -205,6 +205,11 @@ processors:
       tag: set_entity_name
       copy_from: user.full_name
       if: ctx.user?.full_name != null
+  - set:
+      field: user.entity.name
+      tag: set_entity_name_fallback
+      copy_from: user.name
+      if: ctx.user?.full_name == null && ctx.user?.name != null
   - append:
       field: user.entity.type
       tag: append_entity_type
@@ -300,6 +305,11 @@ processors:
   - remove:
       field: json._supervises
       tag: remove_supervises_placeholder
+      ignore_missing: true
+  - rename:
+      field: json._supervises_error
+      target_field: sailpoint_identity_sc.identity.supervises_error
+      tag: rename_supervises_error
       ignore_missing: true
 
   # --- related.user ---

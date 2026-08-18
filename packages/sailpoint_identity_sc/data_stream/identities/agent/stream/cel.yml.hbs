@@ -101,10 +101,10 @@ program: |-
   									"sort": ["+id"],
   								}.encode_json()
   							).do_request().as(sresp,
-  								(sresp.StatusCode == 200) ?
-  									e.with(
-  										{
-  											?"_supervises": sresp.Body.decode_json().as(reports,
+  								e.with(
+  									{
+  										?"_supervises": (sresp.StatusCode == 200) ?
+  											sresp.Body.decode_json().as(reports,
   												size(reports) > 0 ?
   													optional.of({
   														"user": {
@@ -115,11 +115,19 @@ program: |-
   													})
   												:
   													optional.none()
-  											),
-  										}
-  									)
-  								:
-  									e
+  											)
+  										:
+  											optional.none(),
+  										?"_supervises_error": (sresp.StatusCode != 200) ?
+  											optional.of(
+  												"POST /" + state.api_version +
+  													"/search (direct reports for " + e.id + "): " +
+  													string(sresp.StatusCode)
+  											)
+  										:
+  											optional.none(),
+  									}
+  								)
   							)
   						:
   							e

@@ -40,22 +40,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "b773fe07-dabe-4cf1-99ed-767556ec6b10",
-        "id": "8fd557b0-9d5b-47b4-bab1-d1217d45029a",
-        "name": "elastic-agent-39244",
+        "ephemeral_id": "eb6b5bb1-49db-4a17-b37d-5a88478b8144",
+        "id": "a2e85794-f17c-4166-81b6-b746512d1ffd",
+        "name": "elastic-agent-22925",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.events",
-        "namespace": "11769",
+        "namespace": "13725",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8fd557b0-9d5b-47b4-bab1-d1217d45029a",
+        "id": "a2e85794-f17c-4166-81b6-b746512d1ffd",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -65,7 +65,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_sc.events",
-        "ingested": "2026-08-06T14:23:48Z",
+        "ingested": "2026-08-18T11:28:22Z",
         "kind": "event",
         "module": "sailpoint_identity_sc",
         "type": [
@@ -279,22 +279,22 @@ An example event for `identities` looks as following:
 {
     "@timestamp": "2025-01-10T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "2df4a7a5-c850-4fb5-92a2-4a9f09d47e3c",
-        "id": "6792248b-205a-4642-9909-dce8c3a9dd9f",
-        "name": "elastic-agent-24087",
+        "ephemeral_id": "e13e1ef1-a239-4a28-85ee-5e9be118277e",
+        "id": "d37cea46-0ea1-4bce-9d5e-208d6625c6eb",
+        "name": "elastic-agent-55410",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.identities",
-        "namespace": "51450",
+        "namespace": "32529",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "6792248b-205a-4642-9909-dce8c3a9dd9f",
+        "id": "d37cea46-0ea1-4bce-9d5e-208d6625c6eb",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -305,7 +305,7 @@ An example event for `identities` looks as following:
         ],
         "created": "2024-04-04T21:36:00.000Z",
         "dataset": "sailpoint_identity_sc.identities",
-        "ingested": "2026-08-06T14:25:27Z",
+        "ingested": "2026-08-18T11:30:12Z",
         "kind": "asset",
         "module": "sailpoint_identity_sc",
         "original": "{\"_type\":\"identity\",\"created\":\"2024-04-04T21:36:00.000Z\",\"disabled\":false,\"displayName\":\"Alice Johnson\",\"email\":\"alice.johnson@example.com\",\"firstName\":\"Alice\",\"id\":\"identity-id-001\",\"inactive\":false,\"isManager\":true,\"lastName\":\"Johnson\",\"locked\":false,\"modified\":\"2025-01-10T00:00:00.000Z\",\"name\":\"alice.johnson\",\"protected\":false,\"status\":\"ACTIVE\",\"synced\":\"2025-01-10T01:00:00.000Z\",\"type\":\"identity\"}",
@@ -457,6 +457,7 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.source.id | ID of the authoritative source for this identity. | keyword |
 | sailpoint_identity_sc.identity.source.name | Name of the authoritative source for this identity. | keyword |
 | sailpoint_identity_sc.identity.status | Identity lifecycle status (for example, ACTIVE). | keyword |
+| sailpoint_identity_sc.identity.supervises_error | Error from the supervises enrichment call. Set when the direct reports lookup returned a non-200 response; absent when enrichment succeeded or was not attempted. | keyword |
 | sailpoint_identity_sc.identity.tags | Tags applied to this identity. | keyword |
 | sailpoint_identity_sc.identity.visible_segments | List of segment names visible to this identity. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
