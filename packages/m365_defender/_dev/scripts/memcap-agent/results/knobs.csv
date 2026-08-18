@@ -1,0 +1,9 @@
+# Knob ladder, 2026-08-04, agent 9.6.0-SNAPSHOT. Every row is the same sustained worst
+# case (shipped pages, 400 alerts/incident, DRAIN=1 INTERVAL=10s HOLD_S=300) with one
+# thing changed. Same PROVENANCE caveat as sustained.csv: transcribed from console
+# output. The bounded-pages row's raw page total was not recorded and is left empty
+# rather than back-computed. Regenerate with `AXIS=knob DRAIN=1 INTERVAL=10s HOLD_S=300 bin/sweep.sh`.
+axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,workingset_peak_bytes,anon_bytes,oom,agent_image,run_log
+knob,1,baseline (nothing changed),alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,3221225472,,300,129863880,1589641216,1186988032,,0,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+knob,2,GOMEMLIMIT=850MiB (nothing else),alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,1073741824,850MiB,300,129863880,1073741824,961544192,,0,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+knob,3,incident batch_size 50->10 + vulnerability pageSize 10000->1000,alert+incident+vulnerability,alert=1000 incident=10 vulnerability=1000 alerts_per_incident=400,sustained,1073741824,,300,,687865856,541065216,,0,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,

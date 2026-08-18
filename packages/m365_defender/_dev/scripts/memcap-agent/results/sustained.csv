@@ -1,0 +1,13 @@
+# Sustained runs, 2026-08-04, agent 9.6.0-SNAPSHOT. DRAIN=1 INTERVAL=10s HOLD_S=300.
+# PROVENANCE: these rows predate the results CSV, so they were transcribed from the
+# console output of the runs (recorded to MB) rather than emitted by the runner.
+# workingset_peak_bytes is empty: the runner did not yet record the sampled working-set
+# high-water mark when these ran, and the console output that printed it is gone. The
+# working set here is therefore the closing snapshot, which for a sustained run understates
+# the maximum; peak_bytes (cgroup usage, page cache included) is the reliable column.
+# Re-running the sweep regenerates them at full precision, with the peak, and should
+# replace this file:
+#   AXIS=alerts_per_incident DRAIN=1 INTERVAL=10s HOLD_S=300 SWEEP_CAP=3g POINTS="100 400" bin/sweep.sh
+axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,workingset_peak_bytes,anon_bytes,oom,agent_image,run_log
+alerts_per_incident,100,,alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=100,sustained,3221225472,,300,43580715,723517440,569376768,,0,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+alerts_per_incident,400,,alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,3221225472,,300,129863880,1589641216,1186988032,,0,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,

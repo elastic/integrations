@@ -160,7 +160,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Data Retention and ILM Configuration
 
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+The Vulnerabilities data stream performs a full sync that pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, it ships an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days, keeping storage usage under control. The other data streams do not define a custom ILM policy and follow the default index lifecycle for their destination indices.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`.
 
@@ -176,6 +176,46 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 | Critical               | 99               |
 
 ## Troubleshooting
+
+Most issues fall into one of the scenarios below. To confirm the integration is working end to end, see [Validation](#validation). For how long collected data is kept, see [Data Retention and ILM Configuration](#data-retention-and-ilm-configuration).
+
+### Enabling request tracing
+
+When debugging a permissions issue or unexpected API responses on the Alerts, Incidents, or Vulnerabilities data streams, enable request tracing and inspect the request trace logs to see the interaction with the server. (The Events data stream is collected over Azure Event Hub and does not use request tracing.) OAuth2 token values can be decoded using [https://jwt.ms/](https://jwt.ms/) and should include a `roles` section listing the configured permissions.
+
+**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
+
+### Authentication failures
+
+The Alerts, Incidents, and Vulnerabilities data streams authenticate to Microsoft with OAuth2 client credentials. If the integration reports a degraded status in Fleet and logs OAuth2 token errors, confirm that the client secret has not expired, that the Tenant ID and Client ID are correct, and that admin consent is still granted for the application. Generate a new client secret and update the integration if needed. The degraded status clears on the next successful poll.
+
+The Events data stream authenticates to Azure Event Hub with a connection string or Microsoft Entra client secret. For those errors, verify the connection string, the storage account, and the RBAC role assignments (Azure Event Hubs Data Receiver and Storage Blob Data Contributor).
+
+### Missing permissions
+
+A `403 Forbidden` response means the Azure application is missing a required API permission. Alerts and Incidents require `SecurityIncident.Read.All`; Vulnerabilities require `Vulnerability.Read.All`. Add the permission, grant admin consent, and wait for the next poll.
+
+### No data is collected
+
+If the integration is healthy but no data appears, confirm that the collection method for the data stream you expect is enabled, and that there is activity in the tenant for that data stream and time window. For the Events data stream, also confirm that the Azure Event Hub and its Blob Storage account are reachable and that Microsoft Defender XDR is configured to stream events to that Event Hub. Check the logs for successful polls or Event Hub reads, then see [Validation](#validation).
+
+### Recovering after an outage
+
+Each data stream saves its position and resumes from there when the agent restarts, so a short outage backfills automatically on the following polls:
+
+- Alerts and Incidents resume from the last `lastUpdateDateTime` cursor and page forward through the backlog. Overlapping records are de-duplicated during ingest (a stable document `_id` is derived from each record), so a resume does not create duplicates.
+- Vulnerabilities resume from the saved delta link, so only changes since the last successful run are fetched.
+- Events resume from the offset stored in the configured Blob Storage account.
+
+The Vulnerabilities data stream applies an ILM policy that deletes data after 7 days (see [Data Retention and ILM Configuration](#data-retention-and-ilm-configuration)); the other data streams follow the default index lifecycle for their destination indices. This governs how long ingested data is kept in Elasticsearch and is separate from how far back the source APIs can backfill.
+
+### Rate limiting
+
+Repeated `429` responses mean the Microsoft Graph or Defender for Endpoint per-tenant throttling limit has been reached. The affected request fails and the integration retries on the next scheduled interval, so collection catches up once the limit resets. Persistent throttling for many tenants that share one Azure application registration can mean the application is over-subscribed; consider using a separate application registration per tenant.
+
+### Unhealthy transforms
+
+If the Microsoft Defender XDR transforms do not show **Healthy** (see [Validation](#validation)), open the transform to check its messages for the underlying error (for example, permissions or mapping conflicts). Resolve the error, then stop and restart the transform and confirm that it returns to **Healthy**.
 
 ### Vulnerability data stream: Fixed vulnerabilities appearing on the Findings page
 
