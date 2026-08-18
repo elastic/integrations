@@ -819,7 +819,7 @@ processors:
       tag: convert_file_size_to_long
       target_field: file.size
       type: long
-      if: ctx.sentinel_one?.threat_event?.file.size != ''
+      if: ctx.sentinel_one?.threat_event?.file?.size != ''
       ignore_missing: true
       on_failure:
         - append:
@@ -907,7 +907,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

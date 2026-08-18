@@ -13,16 +13,19 @@ This package has been tested with EDOT Android 1.5.0, EDOT Collector 9.2.0, and 
 ## What do I need to use this package?
 
 - An Android application instrumented with an OpenTelemetry SDK (such as [EDOT Android](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android)) sending data to the Elastic Stack.
-- Kibana 8.19.0 or later, or Kibana 9.1.0 or later.
+- Kibana 8.19.20 or later on the 8.19 release line; Kibana 9.3.9 or later on the 9.3 release line; Kibana 9.4.5 or later on the 9.4 release line; or Kibana 9.5.0 or later.
 - Telemetry data must include the following fields for full dashboard functionality:
   - `os.name` (set to `"Android"`)
   - `session.id`
   - `service.name` and `service.version` (which are the OpenTelemetry way to define a telemetry source, in this case your Android application's name and version)
   - `exception.stacktrace`, `exception.type`, and `exception.message` (for crash analysis)
+  - `app.build_id` (for matching an obfuscated stacktrace to its R8 mapping data)
   - `os.version` and `device.manufacturer` (for device breakdown charts)
   - `span.name` and `span.status.code` (for span analysis)
 
 EDOT Android populates all of these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
+
+Retracing an obfuscated stacktrace also requires the R8 mapping data for the corresponding `app.build_id` to be uploaded to the Elastic Stack. Follow the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for detailed mapping upload instructions.
 
 ### Try it out
 
@@ -55,7 +58,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 - **Top exception messages** — Most common messages associated with the exception, useful when stacktraces have variable message content.
 - **Top affected OS versions** — Donut chart of exception occurrences by Android OS version.
 - **Top affected manufacturers** — Donut chart of exception occurrences by device manufacturer.
-- **Full stacktrace** — The complete stacktrace for the selected exception.
+- **Stacktrace** — The complete stacktrace for the selected exception, with an action to retrace obfuscated Android stacktraces.
 
 ## Setting it up
 
@@ -93,11 +96,21 @@ Within the **[Android OTel] Application Overview** dashboard, scroll down to the
 
 ![View crash details](../img/drilldown-on-crash-details.png)
 
+### Deobfuscating stacktraces
+
+In the **[Android OTel] Exception Details** dashboard, scroll down to the "Stacktrace" panel. Click the menu for a stacktrace row, then select "Retrace stacktrace".
+
+![Retrace stacktrace action](../img/retrace-stacktrace-action.png)
+
+Kibana opens the Android Crash Retrace page with the deobfuscated class names, methods, source files, and line numbers.
+
+![Retraced Android stacktrace](../img/retraced-stacktrace.png)
+
 ## Troubleshooting
 
 If you can't see the trace waterfall UI in Discover, as shown above, make sure that:
 
-- Your Elastic Stack version is either 8.19.0 or above or 9.1.0 or above. 
+- Your Elastic Stack version is supported by this package.
 - Your Kibana space's "solution view" is set to "Observability". As explained [here](https://www.elastic.co/blog/elastic-redesigned-navigation-menu-kibana#editing-space-settings-).
 
 If you do not see data in the dashboards, make sure that:
@@ -106,5 +119,7 @@ If you do not see data in the dashboards, make sure that:
 - The `session.id` field is present in the telemetry data. If you are not using EDOT Android, you may need to configure session tracking manually.
 - The `service.name` field is set correctly so the application name filter works as expected.
 - The time range selected in Kibana covers the period when your application was sending telemetry. If the default time range doesn't show any data, try expanding it (for example, to "Last 7 days" or "Last 30 days") to confirm data has been ingested.
+
+If a stacktrace cannot be retraced, make sure that its crash event contains `app.build_id` and that the matching R8 mapping data has been uploaded to the Elastic Stack. See the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for mapping upload and troubleshooting guidance.
 
 For general help with the EDOT Android SDK, refer to [EDOT Android troubleshooting](https://www.elastic.co/docs/troubleshoot/ingest/opentelemetry/edot-sdks/android).
