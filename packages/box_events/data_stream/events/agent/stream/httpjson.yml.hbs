@@ -15,9 +15,22 @@ auth.oauth2:
 request.url: "{{api_url}}/2.0/events"
 request.method: "GET"
 request.transforms:
+  # If next_stream_position has scientific notation (from an earlier package
+  # version), convert it to a plain integer (with a margin to account for
+  # rounding errors). Otherwise use the stored string, or the default initial
+  # value.
   - set:
       target: url.params.stream_position
-      value: '[[if index .cursor "next_stream_position"]][[.cursor.next_stream_position]][[else]][["0"]][[end]]'
+      value: >-
+        [[- if index .cursor "next_stream_position" -]]
+          [[- if ne .cursor.next_stream_position (replaceAll "e+" "" .cursor.next_stream_position) -]]
+            [[- add (toInt .cursor.next_stream_position) -256 -]]
+          [[- else -]]
+            [[- .cursor.next_stream_position -]]
+          [[- end -]]
+        [[- else -]]
+          [[- "0" -]]
+        [[- end -]]
 {{#if stream_type}}
   - set:
       target: url.params.stream_type
@@ -32,14 +45,16 @@ response.split:
   type: array
   keep_parent: false
 response.pagination:
+  # The next_stream_position may be received as a string or number, but should
+  # be sent (or stored) as a string, without scientific notation.
   - set:
       target: url.params.stream_position
-      value: '[[ if and (index .last_response.body "next_stream_position") (ge (len .last_response.body.entries) {{limit}}) ]][[.last_response.body.next_stream_position]][[end]]'
+      value: '[[ if and (index .last_response.body "next_stream_position") (ge (len .last_response.body.entries) {{limit}}) ]][[.last_response.body.next_stream_position | toJSON | replaceAll "\"" ""]][[end]]'
       fail_on_template_error: true
       do_not_log_failure: true
 cursor:
   next_stream_position:
-    value: '[[.last_response.body.next_stream_position]]'
+    value: '[[if index .last_response.body "next_stream_position"]][[.last_response.body.next_stream_position | toJSON | replaceAll "\"" ""]][[end]]'
 tags:
 {{#if preserve_original_event}}
 - preserve_original_event
