@@ -43,6 +43,7 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_event_kind
       description: Set event.kind to event for syslog log records.
   - script:
       description: >-
@@ -52,7 +53,7 @@ processors:
         event.outcome is intentionally not set: a 'Stopped' line is identical
         for clean shutdowns and crashed units, so outcome cannot be derived
         from a single message.
-      tag: script-categorize-systemd-lifecycle
+      tag: script_categorize_systemd_lifecycle
       if: ctx.process?.name == 'systemd' && ctx.message != null
       lang: painless
       source: >-
