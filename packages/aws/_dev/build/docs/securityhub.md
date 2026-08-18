@@ -28,12 +28,15 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   1. For the current integration package, it is recommended to have interval in hours.
   2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
   3. Findings Full Posture data stream request all the historical findings every 24 hours.
+  4. The **Findings** and **Findings Full Posture** data streams collect from the `GetFindings` API using the CEL input with native AWS SigV4 signing (`auth.aws`). These two data streams require Elastic Agent `9.4.0`+ (or `8.19.18`+ on 8.x).
 
 ## Logs
 
 ### Findings
 
-This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
+This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream. Findings are collected incrementally using the finding's `UpdatedAt` timestamp, which the integration manages automatically.
+
+Use the **Findings Filters** setting to apply additional server-side [`AwsSecurityFindingFilters`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_RequestSyntax) so that only matching findings are collected (for example, to restrict collection by `SeverityLabel` or `RecordState`). Provide a YAML or JSON object using the AWS `AwsSecurityFindingFilters` shape; the `UpdatedAt` filter is reserved for incremental collection and takes precedence over any `UpdatedAt` supplied here.
 
 {{event "securityhub_findings"}}
 
@@ -45,7 +48,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Findings Full Posture
 
-This is the [`securityhub_findings_full_posture`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
+This is the [`securityhub_findings_full_posture`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream. It requests the full set of current findings every 24 hours rather than collecting incrementally.
+
+Use the **Findings Filters** setting to control which findings are collected via server-side [`AwsSecurityFindingFilters`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_RequestSyntax). The default excludes archived (`RecordState`) and suppressed (`WorkflowStatus`) findings to reflect the current security posture; editing or clearing this setting replaces those defaults.
 
 {{event "securityhub_findings_full_posture"}}
 

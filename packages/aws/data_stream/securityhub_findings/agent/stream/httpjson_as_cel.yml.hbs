@@ -1,0 +1,117 @@
+config_version: 2
+interval: {{interval}}
+run_as_cel: true
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+request.timeout: 2m
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.url: https://securityhub.{{aws_region}}.{{tld}}/findings
+auth.aws:
+{{#if access_key_id}}
+  access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+  secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+  session_token: {{session_token}}
+{{/if}}
+  service_name: securityhub
+  default_region: {{aws_region}}
+cel.max_executions: {{max_executions}}
+cel.state:
+  initial_interval: {{initial_interval}}
+  filters: {{filters}}
+cel.program: |-
+  (
+    // Pin the UpdatedAt window start once per collection interval. During
+    // pagination (want_more, or a next_page token is present) the window is
+    // preserved so it cannot drift between pages and invalidate NextToken -
+    // the failure mode of the previous httpjson implementation, which
+    // re-evaluated the request transforms (including now()) on every page.
+    (state.?want_more.orValue(false) || state.?next_token.orValue("") != "") ?
+      state
+    :
+      state.with(
+        {
+          "start": state.?cursor.last_execution_datetime.orValue(
+            (now - duration(state.initial_interval)).format("2006-01-02T15")
+          ),
+        }
+      )
+  ).as(state,
+    state.with(
+      request(
+        "POST",
+        state.url.trim_right("/"),
+        {
+          "MaxResults": 100,
+          "SortCriteria": [{"Field": "UpdatedAt", "SortOrder": "asc"}],
+          "Filters": state.?filters.orValue({}).with(
+            {
+              "UpdatedAt": [{"Start": state.start, "End": "2099-01-01T00"}],
+            }
+          ),
+        }.with(
+          (state.?next_token.orValue("") != "") ? {"NextToken": state.next_token} : {}
+        ).encode_json()
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          {
+            "events": body.?Findings.orValue([]).map(e, {"message": e.encode_json()}),
+            "next_token": body.?NextToken.orValue(""),
+            "want_more": body.?NextToken.orValue("") != "",
+            "cursor": {
+              "last_execution_datetime": (
+                (body.?NextToken.orValue("") == "" && size(body.?Findings.orValue([])) > 0) ?
+                  body.Findings[size(body.Findings) - 1].UpdatedAt
+                :
+                  state.?cursor.last_execution_datetime.orValue(state.start)
+              ),
+            },
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "POST " + state.url.trim_right("/") + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+  - run_as_cel
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
