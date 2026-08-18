@@ -41,6 +41,23 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 **Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
+#### AMQP-over-WebSockets
+
+By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443`.
+
+This option requires the Event Hub processor v2 (**Processor version** set to `v2`, which is the default) and Elastic Agent 8.19.10, 9.2.4, or later.
+
+#### Proxy support
+
+Proxy support is optional and requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**.
+
+To enable it:
+
+1. In the advanced options, set **Event Hubs transport protocol** to **AMQP-over-WebSockets**.
+2. Define the `HTTPS_PROXY` environment variable for the Elastic Agent process, for example `HTTPS_PROXY=http://proxy.example.com:8080`. Elastic Agent routes both Event Hubs and Storage Account traffic through the proxy.
+
+This requires processor v2 and Elastic Agent 8.19.10, 9.2.4, or later.
+
 #### Default Logging
 
 The Azure OpenAI provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.

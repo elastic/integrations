@@ -14,7 +14,7 @@ The Workday integration for Elastic collects `Activity` logs via the **Workday A
 ### How it works
 
 - **Activity**: This integration periodically queries the Workday API to retrieve Activity logs.
-- **Sign-on**: This integration periodically downloads a Workday Custom Report (for example, a Sign-on report that lists sign-on records along with their key attributes) and ingests each report row as a single event.
+- **Sign-on**: This integration periodically calls a Workday Custom Report (RaaS) JSON endpoint. On each poll it supplies the report's required **From Moment** / **To Moment** prompts (`From_Moment` / `To_Moment` query parameters), advances a collection cursor so the time window moves forward, and ingests each `Report_Entry` row as a single event. The first poll looks back by **Initial Interval**; later polls use **Interval**.
 - **User**: This integration periodically downloads a Workday Custom Report (for example, a Worker inventory report) over the Reports as a Service (RaaS) JSON endpoint. Each `Report_Entry` row is ingested as a user inventory document with `event.kind: asset` so Entity Analytics / the Entity Store can seed user entities. Core identity fields map to ECS (`user.id`, `user.name`, `user.email`, `user.roles`, `user.group.name`); remaining HR attributes land under `workday.user.*`.
 
 ## What data does this integration collect?
@@ -96,8 +96,9 @@ Activity Logging API |	https://HOST/ccx/api/privacy/v1/TENANT/activityLogging
 2. In the Workday search bar, search for **Create Custom Report**.
 3. Create an Advanced report on a data source that exposes sign-on activity (for example, `Signons and Attempted Signons`).
 4. Add the columns required for sign-on analytics (for example, `System Account`, `Session Start`, `Session End`, `Authentication Type for Signon`, `Failed Signon`, `Invalid Credentials`, `Account Locked, Disabled or Expired`, `Browser Type`, `Operating System`, `Device Type`, `Request Originator`, `SAML Identity Provider`).
-5. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
-6. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
+5. On the **Prompts** tab, add **From Moment** and **To Moment** prompts for the report's moment range, and mark both as **Required**. The integration supplies these values on each poll as `From_Moment` and `To_Moment` query parameters on the RaaS URL. Do not hard-code a static range in the Report URL — a fixed `To_Moment` stops collecting new events once that time has passed.
+6. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
+7. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
 
 ##### Create the Integration System User (ISU)
 
@@ -124,6 +125,8 @@ Where:
 - `TENANT` is your Workday tenant name.
 - `REPORT_OWNER` is the Workday account that owns the custom report.
 - `REPORT_NAME` is the name of the custom report you created above.
+
+Use this base URL (with `?format=json` only) as the **Report URL** in the integration. Do not append `From_Moment` or `To_Moment` yourself, the integration adds those on every poll from **Initial Interval** or the collection cursor and **Interval**.
 
 #### For the User data stream
 
@@ -201,9 +204,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect Workday Sign-on logs via Custom Report API**, you'll need to:
 
-        - Configure **Report URL** with the full Workday Custom Report (RaaS) URL noted above.
+        - Configure **Report URL** with the full Workday Custom Report (RaaS) URL noted above (include `?format=json`; do not add `From_Moment` / `To_Moment` to the URL — the integration adds them automatically).
         - Configure **Username** and **Password** for basic authentication against the Workday Custom Report API.
-        - Adjust the integration configuration parameters if required, including the **Interval** and **Preserve original event** etc. to enable data collection.
+        - Adjust the integration configuration parameters if required, including the **Interval**, **Initial Interval**, and **Preserve original event** etc. to enable data collection.
 
     * To **Collect Workday User inventory via Custom Report API**, you'll need to:
 
@@ -224,6 +227,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Sign-on: `Report parameter From Moment is required`
+
+If collection fails with a Workday **400** validation error that **From Moment** (or **To Moment**) is required:
+
+1. Confirm the custom report's **Prompts** tab defines **From Moment** and **To Moment** and that both are marked **Required** (see [Build the Sign-on custom report](#build-the-sign-on-custom-report)).
+2. Confirm the Fleet **Report URL** is only the RaaS URL with `?format=json` — without hardcoded `From_Moment` / `To_Moment` values. The integration must append those parameters on each poll.
+3. Confirm **Initial Interval** is set (default `24h`) so the first collection has a lookback window.
 
 ## Performance and scaling
 
@@ -419,6 +430,100 @@ An example event for `activity` looks as following:
 }
 ```
 
+#### Sign-on
+
+An example event for `sign_on` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-14T10:17:41.830Z",
+    "agent": {
+        "ephemeral_id": "ac7e12bf-8acc-4d21-83c5-1bef2dfc7399",
+        "id": "b458462c-8d38-4125-ac4d-d3a25bff477c",
+        "name": "elastic-agent-93505",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "workday.sign_on",
+        "namespace": "15969",
+        "type": "logs"
+    },
+    "device": {
+        "type": "Desktop"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "b458462c-8d38-4125-ac4d-d3a25bff477c",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "action": "user-signon",
+        "agent_id_status": "verified",
+        "category": [
+            "authentication",
+            "session"
+        ],
+        "dataset": "workday.sign_on",
+        "end": "2026-06-19T06:25:22.000Z",
+        "ingested": "2026-08-14T10:17:44Z",
+        "kind": "event",
+        "original": "{\"Account_Locked__Disabled_or_Expired\":\"0\",\"Active_Session\":\"0\",\"Authentication_Type_for_Signon\":\"SAML\",\"Browser_Type\":\"Chrome\",\"Device_Type\":\"Desktop\",\"Device_is_Trusted\":\"0\",\"Failed_Signon\":\"0\",\"Forgotten_Password_Reset_Request\":\"0\",\"Invalid_Credentials\":\"0\",\"Is_Device_Managed\":\"0\",\"Operating_System\":\"Mac OS X\",\"Password_Changed\":\"0\",\"Request_Originator\":\"UI\",\"SAML_Identity_Provider\":\"IdP_Acme\",\"Session_End\":\"2026-06-18T23:25:22-07:00\",\"Session_Start\":\"2026-06-18T16:59:32-07:00\",\"System_Account\":\"user534.acme / User 534\"}",
+        "outcome": "success",
+        "start": "2026-06-18T23:59:32.000Z",
+        "type": [
+            "start",
+            "end"
+        ]
+    },
+    "host": {
+        "entity": {
+            "attributes": {
+                "managed": false
+            },
+            "lifecycle": {
+                "last_activity": "2026-06-19T06:25:22.000Z"
+            }
+        },
+        "os": {
+            "name": "Mac OS X"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "workday-sign_on"
+    ],
+    "user_agent": {
+        "name": "Chrome"
+    },
+    "workday": {
+        "sign_on": {
+            "Account_Locked__Disabled_or_Expired": false,
+            "Active_Session": false,
+            "Authentication_Type": "SAML",
+            "Authentication_Type_for_Signon": "SAML",
+            "Browser_Type": "Chrome",
+            "Device_is_Trusted": false,
+            "Failed_Signon": false,
+            "Forgotten_Password_Reset_Request": false,
+            "Invalid_Credentials": false,
+            "Is_Device_Managed": false,
+            "Password_Changed": false,
+            "Request_Originator": "UI",
+            "SAML_Identity_Provider": "IdP_Acme",
+            "System_Account": "user534.acme / User 534"
+        }
+    }
+}
+```
+
 #### User
 
 An example event for `user` looks as following:
@@ -519,10 +624,10 @@ These inputs are used in the integration:
 This integration uses the following Workday APIs:
 
 - **Activity**: [Workday Activity API documentation](https://community.workday.com/sites/default/files/file-hosting/restapi/#privacy/v1/get-/activityLogging).
-- **Sign-on**: The Workday **Reports as a Service (RaaS)** JSON endpoint is used to fetch a user-defined Sign-on custom report:
+- **Sign-on**: The Workday **Reports as a Service (RaaS)** JSON endpoint is used to fetch a user-defined Sign-on custom report. On each poll the integration appends the report's required moment-range prompts:
 
 ```
-GET https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json
+GET https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json&From_Moment=...&To_Moment=...
 ```
 
 - **User**: The Workday **Reports as a Service (RaaS)** JSON endpoint is used to fetch a user-defined Worker custom report:
