@@ -13,7 +13,7 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "obs-ds-hosted-services"
+      team     = "security-service-integrations"
       project  = "integrations-aws-package"
     }
   }
