@@ -165,7 +165,7 @@ processors:
       field: stormshield.modsrc
       target_field: source.nat.ip
       type: ip
-      if: ctx.stormshield?.modsrc != null && ctx.stormshield?.modsrc != '' && ctx.stormshield?.modsrc != ctx.stormshield?.src
+      if: ctx.stormshield?.modsrc != null && ctx.stormshield?.modsrc != '' && ctx.stormshield?.modsrc != 'unknown' && ctx.stormshield?.modsrc != ctx.stormshield?.src
 
   - convert:
       tag: convert_stormshield_src_to_source_ip_73654510
@@ -216,13 +216,13 @@ processors:
       field: stormshield.dst
       target_field: destination.ip
       type: ip
-      if: ctx.stormshield?.origdst == null && ctx.stormshield?.dst != null && ctx.stormshield?.dst != '' && ctx.stormshield?.dst != 'unknown'
+      if: (ctx.stormshield?.origdst == null || ctx.stormshield?.origdst == 'unknown') && ctx.stormshield?.dst != null && ctx.stormshield?.dst != '' && ctx.stormshield?.dst != 'unknown'
   - convert:
       tag: convert_stormshield_dst_to_destination_nat_ip_d9516ee1
       field: stormshield.dst
       target_field: destination.nat.ip
       type: ip
-      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null && ctx.stormshield?.dst != '' && ctx.stormshield?.dst != 'unknown' && ctx.stormshield?.origdst != ctx.stormshield?.dst 
+      if: ctx.stormshield?.origdst != null && ctx.stormshield?.origdst != 'unknown' && ctx.stormshield?.dst != null && ctx.stormshield?.dst != '' && ctx.stormshield?.dst != 'unknown' && ctx.stormshield?.origdst != ctx.stormshield?.dst
   - remove:
       tag: remove_stormshield_dst_a0577a87
       field: stormshield.dst
