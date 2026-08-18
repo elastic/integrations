@@ -226,6 +226,13 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | azure.aadgraphactivitylogs.category | Azure Event Category. For Azure AD Graph Activity Logs, this is `AzureADGraphActivityLogs`. | keyword |
 | azure.aadgraphactivitylogs.operation_name | Operation name. For this category the value is always the literal string `AAD Graph Activity`; rely on the derived `event.action` (HTTP method + directory collection from `requestUri`) for detection. | keyword |
 | azure.aadgraphactivitylogs.properties.actor_type | Type of identity that issued the request, for example `User`, `ServicePrincipal`. | keyword |
