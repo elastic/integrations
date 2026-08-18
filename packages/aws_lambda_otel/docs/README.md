@@ -42,7 +42,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 | [AWS Lambda OTel] High concurrent executions | Alerts when peak concurrent executions approach capacity limits, predicting imminent throttling. |
 | [AWS Lambda OTel] High average duration | Alerts when average Lambda invocation duration exceeds a configurable threshold over a 15-minute window. |
 | [AWS Lambda OTel] High tail duration | Alerts when peak (Maximum) Lambda invocation duration exceeds a configurable threshold, indicating slow handler execution or downstream latency. |
-| [AWS Lambda OTel] High error rate | Alerts when a Lambda function exceeds a configurable error rate (Errors / Invocations) over a 15-minute window. Evaluates the top 10 functions by error rate. |
+| [AWS Lambda OTel] High error rate | Alerts when a Lambda function's error rate (Errors / Invocations) over the last 15 minutes is above an absolute floor AND materially above the function's own trailing 45-minute baseline (\>= 2x or +10 percentage points). Functions with no usable baseline fall back to the absolute floor. Evaluates the top 10 functions by error rate. |
 | [AWS Lambda OTel] High iterator age | Alerts when stream-based Lambda consumers show high IteratorAge, indicating the function is falling behind the record arrival rate. |
 | [AWS Lambda OTel] High throttle rate | Alerts when a Lambda function exceeds a configurable throttle rate (Throttles / (Invocations + Throttles)) over a 15-minute window. |
 
