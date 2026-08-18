@@ -143,6 +143,9 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
 | azure.frontdoor.access.backend_hostname | The host name in the request from client. If you enable custom domains and have wildcard domain (\*.contoso.com), hostname is a.contoso.com. if you use Azure Front Door domain (contoso.azurefd.net), hostname is contoso.azurefd.net. | keyword |
 | azure.frontdoor.access.cache_status | Provides the status code of how the request gets handled by the CDN service when it comes to caching. | keyword |
 | azure.frontdoor.access.error_info | This field provides detailed info of the error token for each response. | keyword |
@@ -171,6 +174,10 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
 | azure.frontdoor.tracking_reference | The unique reference string that identifies a request served by AFD, also sent as X-Azure-Ref header to the client. Required for searching details in the access logs for a specific request. | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
+| azure.sequence_number | Sequence number. | long |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -189,6 +196,9 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
 | azure.frontdoor.category | Azure frontdoor category name. | keyword |
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
@@ -212,6 +222,10 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.waf.identity_name | identity name | keyword |
 | azure.frontdoor.waf.policy | WAF policy name. | keyword |
 | azure.frontdoor.waf.policy_mode | WAF policy mode. | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
+| azure.sequence_number | Sequence number. | long |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -230,6 +244,9 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
 | azure.frontdoor.category | Azure Frontdoor category name. | keyword |
 | azure.frontdoor.health_probe.connection_latency_milliseconds | TCP connection latency of the health probe in milliseconds. | long |
 | azure.frontdoor.health_probe.dns_latency_microseconds | DNS resolution latency of the health probe in microseconds. | long |
@@ -240,6 +257,10 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.health_probe.total_latency_milliseconds | Total latency of the health probe in milliseconds. | long |
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
+| azure.sequence_number | Sequence number. | long |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

@@ -637,6 +637,13 @@ This is the `event` dataset.
 | Target.process.name | Process name. Sometimes called program name or similar. | keyword |
 | Target.process.name.text | Multi-field of `Target.process.name`. | text |
 | application.name | Name of the application. | keyword |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
+| azure.sequence_number | Sequence number. | long |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
