@@ -40,6 +40,7 @@ processors:
         JSON_PAYLOAD: '{"format":"elastic","version":"1.0",.*}'
       on_failure:
         - fail:
+            tag: fail_68fd596e
             message: "unexpected event format: {{{_ingest.on_failure_message}}}"
 
   - json:
@@ -48,6 +49,7 @@ processors:
       target_field: _tmp.json
       on_failure:
         - fail:
+            tag: fail_26133cea
             message: "malformed JSON event: {{{_ingest.on_failure_message}}}"
 
   - rename:
@@ -56,6 +58,7 @@ processors:
       target_field: cyberarkpas.monitor
       on_failure:
         - fail:
+            tag: fail_f1a58473
             message: "unexpected event structure: {{{_ingest.on_failure_message}}}"
 
   #
@@ -82,6 +85,7 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_7ed66c96
             field: error.message
             value: "failed to parse ISO timestamp field: {{{cyberarkpas.monitor.IsoTimestamp}}}: {{{_ingest.on_failure_message}}}"
 

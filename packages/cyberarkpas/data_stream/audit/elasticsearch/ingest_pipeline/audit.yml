@@ -40,6 +40,7 @@ processors:
         JSON_PAYLOAD: '{"format":"elastic","version":"1.0",.*}'
       on_failure:
         - fail:
+            tag: fail_68fd596e
             message: "unexpected event format: {{{_ingest.on_failure_message}}}"
 
   - json:
@@ -48,6 +49,7 @@ processors:
       target_field: _tmp.json
       on_failure:
         - fail:
+            tag: fail_26133cea
             message: "malformed JSON event: {{{_ingest.on_failure_message}}}"
 
   - rename:
@@ -56,6 +58,7 @@ processors:
       target_field: cyberarkpas.audit
       on_failure:
         - fail:
+            tag: fail_f599e646
             message: "unexpected event structure: {{{_ingest.on_failure_message}}}"
 
 
@@ -90,6 +93,7 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_bc0f5882
             field: error.message
             value: "failed to parse ISO timestamp field: {{{cyberarkpas.audit.IsoTimestamp}}}: {{{_ingest.on_failure_message}}}"
 
@@ -120,6 +124,7 @@ processors:
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
         - append:
+            tag: append_error_message_a2213dcb
             field: error.message
             value: "failed to parse timestamp field: {{{cyberarkpas.audit.Timestamp}}}: {{{_ingest.on_failure_message}}}"
 
@@ -150,6 +155,7 @@ processors:
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
         - append:
+            tag: append_error_message_0f0f5db6
             field: error.message
             value: "failed to parse legacy syslog timestamp: {{{_tmp.syslog_ts}}}: {{{_ingest.on_failure_message}}}"
 
@@ -181,6 +187,7 @@ processors:
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
         - append:
+            tag: append_error_message_ef930db5
             field: error.message
             value: "failed to parse legacy syslog timestamp: {{{_tmp.syslog_ts}}}: {{{_ingest.on_failure_message}}}"
 
@@ -234,6 +241,7 @@ processors:
           value: '{{{_ingest._value.Value}}}'
       on_failure:
         - append:
+            tag: append_error_message_95726527
             field: error.message
             value: "failed to process CAProperties array: {{{_ingest.on_failure_message}}}"
   - remove:
@@ -262,6 +270,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fb44b4f5
             field: error.message
             value: "failed to process ExtraDetails expression '{{{cyberarkpas.audit.ExtraDetails}}}': {{{_ingest.on_failure_message}}}"
   - remove:
@@ -1046,6 +1055,7 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_source_domain_1fade399
             field: source.domain
             copy_from: source.address
   - convert:
@@ -1056,6 +1066,7 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_destination_domain_770defe4
             field: destination.domain
             copy_from: destination.address
 
