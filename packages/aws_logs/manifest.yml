@@ -1,9 +1,9 @@
-format_version: "3.3.1"
+format_version: 3.6.4
 name: aws_logs
 title: Custom AWS Logs
 description: Collect raw logs from AWS S3 or CloudWatch with Elastic Agent.
 type: integration
-version: "1.8.3"
+version: "2.0.0"
 categories:
   - cloud
   - observability
@@ -11,17 +11,30 @@ categories:
   - aws
 conditions:
   kibana:
-    version: "^8.16.5 || ^9.0.0"
+    version: "^9.6.0"
   elastic:
     subscription: basic
+  # auth.aws.use_cloud_connectors (Identity Federation) requires Elastic Agent 9.6.0+.
+  agent:
+    version: "^9.6.0"
 policy_templates:
   - name: aws_logs
     title: Custom AWS Logs
     description: Collect raw logs from AWS S3 or CloudWatch with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-ds-hosted-services
     inputs:
       - type: aws-s3
         title: Collect Logs from S3 Bucket
         description: Collect raw logs from S3 bucket with Elastic Agent.
+        deployment_modes: ["default"]
       - type: aws-cloudwatch
         title: Collect Logs from CloudWatch
         description: Collect raw logs from CloudWatch with Elastic Agent.
@@ -69,6 +82,12 @@ vars:
     multi: false
     required: false
     show_user: false
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
   - name: endpoint
     type: text
     title: Endpoint
@@ -92,6 +111,33 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 owner:
   github: elastic/obs-ds-hosted-services
   type: elastic
