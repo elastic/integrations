@@ -39,6 +39,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -55,7 +56,7 @@ processors:
       value: host
   - append:
       field: event.category
-      tag: set_event_category_host
+      tag: append_event_category_412fe9cf
       value: configuration
   - append:
       field: event.type
@@ -129,6 +130,7 @@ processors:
       if: ctx.json?.dest_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_1a173394
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -161,6 +163,7 @@ processors:
       if: ctx.json?.dest_port != ''
       on_failure:
         - append:
+            tag: append_error_message_48dc2a48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -182,6 +185,7 @@ processors:
       if: ctx.json?.detection_time != null && ctx.json.detection_time != ''
       on_failure:
         - append:
+            tag: append_error_message_b617a124
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -222,6 +226,7 @@ processors:
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -231,6 +236,7 @@ processors:
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -322,6 +328,7 @@ processors:
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.device?.ip != null
   - geoip:
+      tag: geoip_host_ip_to_host_geo_d8a29594
       field: host.ip
       target_field: host.geo
       ignore_missing: true
@@ -351,6 +358,7 @@ processors:
       if: ctx.json?.source_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_739824dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -383,6 +391,7 @@ processors:
       if: ctx.json?.source_port != ''
       on_failure:
         - append:
+            tag: append_error_message_1f0b61f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -455,6 +464,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
