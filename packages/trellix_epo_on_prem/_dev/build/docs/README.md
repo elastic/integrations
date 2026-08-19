@@ -1,14 +1,14 @@
-# Trellix ePO On-Premises Integration for Elastic
+# Trellix ePO On-Prem Integration for Elastic
 
 ## Overview
 
-[Trellix ePolicy Orchestrator (ePO) On-Premises](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions across hybrid endpoint deployments — combining authentication, authorization, and detailed audit trails into a unified platform for **critical security infrastructure monitoring and compliance**.
+[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions across hybrid endpoint deployments — combining authentication, authorization, and detailed audit trails into a unified platform for **critical security infrastructure monitoring and compliance**.
 
-The Trellix ePO On-Premises integration for Elastic collects audit logs using the **REST API** via CEL input, and visualizes them in Kibana.
+The Trellix ePO On-Prem integration for Elastic collects audit logs using the **REST API** via CEL input, and visualizes them in Kibana.
 
 ### Compatibility
 
-The Trellix ePO On-Premises integration is compatible with **Trellix ePO On-Premises 5.10.0 and above** with REST API support enabled.
+The Trellix ePO On-Prem integration is compatible with **Trellix ePO On-Prem 5.10.0 and above** with REST API support enabled.
 
 ### How it works
 
@@ -16,7 +16,7 @@ This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST A
 
 ## What data does this integration collect?
 
-The Trellix ePO On-Premises integration collects the following types of data:
+The Trellix ePO On-Prem integration collects the following types of data:
 
 | Data stream | Description | Source |
 |---|---|---|
@@ -28,11 +28,11 @@ Integrating Trellix ePO with Elastic provides centralized visibility into system
 
 ## What do I need to use this integration?
 
-### From Trellix ePO On-Premises
+### From Trellix ePO On-Prem
 
 To collect data via the REST API, you need the following:
 
-1. **Trellix ePO server**: Trellix ePO On-Premises 5.10.0 or above with REST API enabled
+1. **Trellix ePO server**: Trellix ePO On-Prem 5.10.0 or above with REST API enabled
 2. **User account**: A Trellix ePO user account with:
    - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments)
    - Sufficient role permissions to execute queries via the Web API
@@ -59,9 +59,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 ### Configure
 
 1. In the top search bar in Kibana, search for **Integrations**.
-2. In the search bar, type **Trellix ePO On-Premises**.
-3. Select the **Trellix ePO On-Premises** integration from the search results.
-4. Select **Add Trellix ePO On-Premises** to add the integration.
+2. In the search bar, type **Trellix ePO On-Prem**.
+3. Select the **Trellix ePO On-Prem** integration from the search results.
+4. Select **Add Trellix ePO On-Prem** to add the integration.
 5. Enable and configure the **Collect audit logs using Trellix ePO REST API (CEL)** collection method.
 
     * Set the **URL** to the base URL of your Trellix ePO server (e.g., `https://epo.example.com:2400`)
@@ -89,8 +89,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 #### Dashboard populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **Trellix ePO On-Premises**, and verify the dashboard information is populated.
-3. Open the **[Logs Trellix ePO On-Premises] Audit Overview** dashboard to verify audit event data is being collected.
+2. In the search bar, type **Trellix ePO On-Prem**, and verify the dashboard information is populated.
+3. Open the **[Logs Trellix ePO On-Prem] Audit** dashboard to verify audit event data is being collected.
 
 ## Scaling
 
@@ -106,7 +106,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ### Audit
 
-The `audit` data stream provides Trellix ePO On-Premises audit logs collected from the REST API.
+The `audit` data stream provides Trellix ePO On-Prem audit logs collected from the REST API.
 
 #### Audit fields
 

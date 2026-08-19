@@ -22,6 +22,7 @@ auth.basic:
 state:
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
+  tz_offset: {{tz_offset}}
   columns: >-
     OrionAuditLog.AutoId OrionAuditLog.UserId OrionAuditLog.UserName
     OrionAuditLog.Priority OrionAuditLog.CmdName OrionAuditLog.Message
@@ -55,9 +56,14 @@ program: |
         resp.StatusCode == 200 ?
           string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
             // Advance the cursor using the wall-clock the API itself returned.
+            // The API's OrionAuditLog.StartTime comes back with a UTC offset (e.g.
+            // "+05:30"), but the API rejects that same offset when it's echoed back
+            // in the next page's where clause and instead interprets a bare
+            // timestamp as UTC — so the offset has to be subtracted here or every
+            // page transition silently skips tz_offset worth of records.
             (size(rows) > 0 ?
-              timestamp(
-                string(rows[size(rows) - 1]["OrionAuditLog.StartTime"])
+              (timestamp(string(rows[size(rows)-1]["OrionAuditLog.StartTime"])) -
+                state.tz_offset.split(":").as(tz, duration(tz[0] + "h" + tz[1] + "m"))
               ).format("2006-01-02T15:04:05")
             :
               state.start_time

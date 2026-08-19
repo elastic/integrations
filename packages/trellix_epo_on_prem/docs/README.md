@@ -1,14 +1,14 @@
-# Trellix ePO On-Premises Integration for Elastic
+# Trellix ePO On-Prem Integration for Elastic
 
 ## Overview
 
-[Trellix ePolicy Orchestrator (ePO) On-Premises](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions across hybrid endpoint deployments — combining authentication, authorization, and detailed audit trails into a unified platform for **critical security infrastructure monitoring and compliance**.
+[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions across hybrid endpoint deployments — combining authentication, authorization, and detailed audit trails into a unified platform for **critical security infrastructure monitoring and compliance**.
 
-The Trellix ePO On-Premises integration for Elastic collects audit logs using the **REST API** via CEL input, and visualizes them in Kibana.
+The Trellix ePO On-Prem integration for Elastic collects audit logs using the **REST API** via CEL input, and visualizes them in Kibana.
 
 ### Compatibility
 
-The Trellix ePO On-Premises integration is compatible with **Trellix ePO On-Premises 5.10.0 and above** with REST API support enabled.
+The Trellix ePO On-Prem integration is compatible with **Trellix ePO On-Prem 5.10.0 and above** with REST API support enabled.
 
 ### How it works
 
@@ -16,7 +16,7 @@ This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST A
 
 ## What data does this integration collect?
 
-The Trellix ePO On-Premises integration collects the following types of data:
+The Trellix ePO On-Prem integration collects the following types of data:
 
 | Data stream | Description | Source |
 |---|---|---|
@@ -28,11 +28,11 @@ Integrating Trellix ePO with Elastic provides centralized visibility into system
 
 ## What do I need to use this integration?
 
-### From Trellix ePO On-Premises
+### From Trellix ePO On-Prem
 
 To collect data via the REST API, you need the following:
 
-1. **Trellix ePO server**: Trellix ePO On-Premises 5.10.0 or above with REST API enabled
+1. **Trellix ePO server**: Trellix ePO On-Prem 5.10.0 or above with REST API enabled
 2. **User account**: A Trellix ePO user account with:
    - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments)
    - Sufficient role permissions to execute queries via the Web API
@@ -59,9 +59,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 ### Configure
 
 1. In the top search bar in Kibana, search for **Integrations**.
-2. In the search bar, type **Trellix ePO On-Premises**.
-3. Select the **Trellix ePO On-Premises** integration from the search results.
-4. Select **Add Trellix ePO On-Premises** to add the integration.
+2. In the search bar, type **Trellix ePO On-Prem**.
+3. Select the **Trellix ePO On-Prem** integration from the search results.
+4. Select **Add Trellix ePO On-Prem** to add the integration.
 5. Enable and configure the **Collect audit logs using Trellix ePO REST API (CEL)** collection method.
 
     * Set the **URL** to the base URL of your Trellix ePO server (e.g., `https://epo.example.com:2400`)
@@ -89,8 +89,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 #### Dashboard populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **Trellix ePO On-Premises**, and verify the dashboard information is populated.
-3. Open the **[Logs Trellix ePO On-Premises] Audit Overview** dashboard to verify audit event data is being collected.
+2. In the search bar, type **Trellix ePO On-Prem**, and verify the dashboard information is populated.
+3. Open the **[Logs Trellix ePO On-Prem] Audit** dashboard to verify audit event data is being collected.
 
 ## Scaling
 
@@ -106,7 +106,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ### Audit
 
-The `audit` data stream provides Trellix ePO On-Premises audit logs collected from the REST API.
+The `audit` data stream provides Trellix ePO On-Prem audit logs collected from the REST API.
 
 #### Audit fields
 
@@ -136,22 +136,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-16T13:45:04+05:30",
     "agent": {
-        "ephemeral_id": "76d2dec5-d870-4dcb-af16-2f3323e5c0b1",
-        "id": "e75a7138-b8af-4406-a67d-b2100dcd9d94",
-        "name": "elastic-agent-34387",
+        "ephemeral_id": "72fdf282-d4b1-4149-ae89-25d48bcb2a24",
+        "id": "525170d9-a573-4e56-9131-d4d51fa5e465",
+        "name": "elastic-agent-81415",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.audit",
-        "namespace": "51130",
+        "namespace": "80949",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "e75a7138-b8af-4406-a67d-b2100dcd9d94",
+        "id": "525170d9-a573-4e56-9131-d4d51fa5e465",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -164,7 +164,7 @@ An example event for `audit` looks as following:
         "dataset": "trellix_epo_on_prem.audit",
         "end": "2026-07-16T13:45:05+05:30",
         "id": "1943",
-        "ingested": "2026-08-14T11:22:53Z",
+        "ingested": "2026-08-19T10:36:44Z",
         "kind": "event",
         "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"tempuser\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
         "outcome": "success",
