@@ -2,6 +2,7 @@
 description: Pipeline for parsing cisco_duo administrator logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,28 +17,35 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_287f93e5
       field: event.original
       target_field: json
       on_failure:
         - set:
+            tag: set_event_kind_1ba30fcd
             field: event.kind
             value: pipeline_error
         - append:
+            tag: append_error_message_4a5082e0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_3d6db8e0
       if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
+      tag: fingerprint_a2286fac
       fields:
         - json.timestamp
         - json.action
@@ -47,134 +55,165 @@ processors:
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_timestamp_eab81b12
       field: json.timestamp
       if: ctx.json?.timestamp != null
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_15e8915f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_category_b35c2b37
       field: event.category
       value: [iam]
       if: ctx.json?.action instanceof String && ['admin_2fa_error','admin_account_switch','admin_activation_create','admin_activation_delete','admin_activate_duo_push','admin_create','admin_delete','admin_factor_restrictions_update','admin_login','admin_login_error','admin_reactivates_duo_push','admin_reset_password','admin_self_activate','admin_send_reset_password_email','admin_update','adminapi_request_ip_denied','bypass_create','bypass_delete','bypass_view','phone_associate','phone_create','phone_delete','phone_disassociate','phone_update','group_create','group_delete','group_update','user_bulk_activate','user_bulk_enroll','user_create','user_delete','user_import','user_pending_delete','user_restore','user_update'].contains(ctx.json.action)
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_1af271cd
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_2ea740b5
       field: event.outcome
       value: failure
       if: ctx.json?.action instanceof String && ['ad_sync_failed','admin_2fa_error','admin_login_error','azure_sync_fail','openldap_sync_failed'].contains(ctx.json.action)
   - append:
+      tag: append_event_type_0a4d5be5
       field: event.type
       value: admin
       if: ctx.json?.action instanceof String && ['activation_create_link','activation_delete_link','activation_send_link','admin_2fa_error','admin_account_switch','admin_activation_create','admin_activation_delete','admin_activate_duo_push','admin_create','admin_delete','admin_factor_restrictions_update','admin_login','admin_login_error','admin_reactivates_duo_push','admin_reset_password','admin_self_activate','admin_send_reset_password_email','admin_update','adminapi_request_ip_denied'].contains(ctx.json.action)
   - append:
+      tag: append_event_type_60412fc2
       field: event.type
       value: group
       if: ctx.json?.action instanceof String && ['group_create','group_delete','group_update','integration_group_policy_add','integration_group_policy_remove','policy_create','policy_delete','policy_update'].contains(ctx.json.action)
   - append:
+      tag: append_event_type_4ebe35ad
       field: event.type
       value: user
       if: ctx.json?.action instanceof String && ['ad_sync_by_user_begin','ad_sync_by_user_finish','azure_sync_by_user_begin','azure_sync_by_user_finish','bypass_create','bypass_delete','bypass_view','openldap_sync_begin','openldap_sync_by_user_begin','phone_associate','phone_create','phone_delete','phone_disassociate','phone_update','user_bulk_activate','user_bulk_enroll','user_create','user_delete','user_import','user_pending_delete','user_restore','user_update'].contains(ctx.json.action)
   - append:
+      tag: append_event_type_521c8f4c
       field: event.type
       value: info
       if: ctx.json?.action instanceof String && ['ad_sync_begin','ad_sync_failed','ad_sync_finish','azure_directory_create','azure_directory_update','azure_directory_delete','azure_sync_begin','azure_sync_finish','azure_sync_fail','create_child_customer','credits_update','customer_update','delete_child_customer','directory_create','directory_delete','directory_groups_update','directory_sync_pause','directory_sync_resume','directory_update','edition_update','feature_add','feature_delete','hardtoken_create','hardtoken_delete','hardtoken_resync','hardtoken_update','integration_create','integration_delete','integration_policy_assign','integration_policy_unassign','integration_skey_view','integration_update','openldap_sync_by_user_finish','openldap_sync_config_download','openldap_sync_failed','openldap_sync_finish','regen_mobile','regen_sms','resend_enroll_codes','send_enroll_code'].contains(ctx.json.action)
   - append:
+      tag: append_event_type_34d24b20
       field: event.type
       value: creation
       if: ctx.json?.action instanceof String && ctx.json.action.contains('create')
   - append:
+      tag: append_event_type_94680a1e
       field: event.type
       value: change
       if: ctx.json?.action instanceof String && ctx.json.action.contains('update')
   - append:
+      tag: append_event_type_176a755e
       field: event.type
       value: deletion
       if: ctx.json?.action instanceof String && ctx.json.action.contains('delete')
   - set:
+      tag: set_message_e9060da9
       field: message
       copy_from: json.description
       if: ctx.json?.description != null
       ignore_failure: true
   - json:
+      tag: json_json_description_to_cisco_duo_admin_flattened_b0daadb4
       field: json.description
       target_field: cisco_duo.admin.flattened
       if: ctx.json?.description != null
       ignore_failure: true
   - set:
+      tag: set_cisco_duo_admin_errors_43006088
       field: cisco_duo.admin.errors
       copy_from: cisco_duo.admin.flattened.Errors
       ignore_empty_value: true
   - set:
+      tag: set_cisco_duo_admin_status_b257ce32
       field: cisco_duo.admin.status
       copy_from: cisco_duo.admin.flattened.status
       ignore_empty_value: true
   - set:
+      tag: set_event_reason_42e34cd3
       field: event.reason
       value: '{{{message}}}'
   - set:
+      tag: set_event_action_40d02786
       field: event.action
       copy_from: json.action
       if: ctx.json?.action != null
       ignore_failure: true
   - set:
+      tag: set_user_name_88fdd76c
       field: user.name
       copy_from: json.username
       if: ctx.json?.username != null
       ignore_failure: true
   - set:
+      tag: set_user_email_7db65a60
       field: user.email
       copy_from: cisco_duo.admin.flattened.email
       if: ctx.event?.action == 'admin_self_activate'
       ignore_failure: true
   - set:
+      tag: set_user_changes_name_d36601c2
       field: user.changes.name
       copy_from: cisco_duo.admin.flattened.realname
       if: ctx.event?.action == 'user_update'
       ignore_failure: true
   - set:
+      tag: set_user_changes_email_7f7cbbe2
       field: user.changes.email
       copy_from: cisco_duo.admin.flattened.email
       if: ctx.event?.action == 'user_update'
       ignore_failure: true
   - set:
+      tag: set_user_target_name_eaa481dd
       field: user.target.name
       copy_from: json.object
       if: ctx.json?.object != null
       ignore_failure: true
   - rename:
+      tag: rename_json_action_to_cisco_duo_admin_action_f423c399
       field: json.action
       target_field: cisco_duo.admin.action
       ignore_missing: true
   - rename:
+      tag: rename_json_username_to_cisco_duo_admin_user_name_d67b39cb
       field: json.username
       target_field: cisco_duo.admin.user.name
       ignore_missing: true
   - rename:
+      tag: rename_json_object_to_cisco_duo_admin_action_performed_on_0a20b87d
       field: json.object
       target_field: cisco_duo.admin.action_performed_on
       if: ctx.json?.object != null
   - remove:
+      tag: remove_1e1c284e
       field:
         - message
         - event.reason
       if: ctx.cisco_duo?.admin?.flattened != null
       ignore_missing: true
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_json_5a3b44a7
       field: json
   - script:
+      tag: script_41f428ad
       description: Drops null/empty values recursively
       lang: painless
       source: |

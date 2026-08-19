@@ -2,6 +2,7 @@
 description: Pipeline for parsing cisco_duo authentication logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -16,40 +17,49 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_287f93e5
       field: event.original
       target_field: json
       on_failure:
         - set:
+            tag: set_event_kind_1ba30fcd
             field: event.kind
             value: pipeline_error
         - append:
+            tag: append_error_message_4a5082e0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_3d6db8e0
       if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
+      tag: fingerprint_9afd5450
       fields:
         - json.timestamp
         - json.txid
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_timestamp_eab81b12
       field: json.timestamp
       if: ctx.json?.timestamp != null
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_15e8915f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
@@ -61,32 +71,41 @@ processors:
       if: ctx.json?.isotimestamp != null && ctx.json.isotimestamp != ''
       on_failure:
         - remove:
+            tag: remove_json_isotimestamp_bf343d4a
             field: json.isotimestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_b502a1d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_category_e43d8992
       field: event.category
       value: [authentication]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_ac05edb6
       field: event.outcome
       value: failure
   - set:
+      tag: set_event_outcome_407d038a
       field: event.outcome
       value: success
       if: ctx.json?.result == 'success'
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_reason_b97d39fe
       field: event.reason
       copy_from: json.reason
       ignore_failure: true
   - grok:
+      tag: grok_json_access_device_ip_dcd77886
       field: json.access_device.ip
       patterns:
         - "^%{IPV4:json.access_device.ip}:%{PORT:json.access_device.port}$"
@@ -100,42 +119,53 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_access_device_ip_b0270dcf
       field: json.access_device.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_access_device_ip_d490328d
             field: json.access_device.ip
         - append:
+            tag: append_error_message_cb43a170
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_access_device_port_7abd622a
       field: json.access_device.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_access_device_port_119b44ee
             field: json.access_device.port
         - append:
+            tag: append_error_message_7af178b9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_access_device_ip_to_cisco_duo_auth_access_device_ip_9811f890
       field: json.access_device.ip
       target_field: cisco_duo.auth.access_device.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_access_device_port_to_cisco_duo_auth_access_device_port_250f96d8
       field: json.access_device.port
       target_field: cisco_duo.auth.access_device.port
       ignore_missing: true
   - geoip:
+      tag: geoip_cisco_duo_auth_access_device_ip_to_cisco_duo_auth_access_device_geo_a4a5aca7
       field: cisco_duo.auth.access_device.ip
       target_field: cisco_duo.auth.access_device.geo
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_96e44856
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_cisco_duo_auth_access_device_ip_to_cisco_duo_auth_access_device_as_11ec811e
       database_file: GeoLite2-ASN.mmdb
       field: cisco_duo.auth.access_device.ip
       target_field: cisco_duo.auth.access_device.as
@@ -145,37 +175,45 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9b397787
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_cisco_duo_auth_access_device_as_asn_to_cisco_duo_auth_access_device_as_number_adb09d79
       field: cisco_duo.auth.access_device.as.asn
       target_field: cisco_duo.auth.access_device.as.number
       ignore_missing: true
   - rename:
+      tag: rename_cisco_duo_auth_access_device_as_organization_name_to_cisco_duo_auth_access_device_as_organization_name_e9a97de3
       field: cisco_duo.auth.access_device.as.organization_name
       target_field: cisco_duo.auth.access_device.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_source_ip_a1c84f90
       field: source.ip
       copy_from: cisco_duo.auth.access_device.ip
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_source_port_7b9d82b0
       field: source.port
       copy_from: cisco_duo.auth.access_device.port
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_source_as_93e49438
       field: source.as
       copy_from: cisco_duo.auth.access_device.as
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_source_geo_45324f6c
       field: source.geo
       copy_from: cisco_duo.auth.access_device.geo
       ignore_failure: true
       ignore_empty_value: true
   - grok:
+      tag: grok_json_auth_device_ip_d05b84a2
       field: json.auth_device.ip
       patterns:
         - "^%{IPV4:json.auth_device.ip}:%{PORT:json.auth_device.port}$"
@@ -189,55 +227,69 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_auth_device_ip_0bf34e27
       field: json.auth_device.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_auth_device_ip_bbf6ad61
             field: json.auth_device.ip
         - append:
+            tag: append_error_message_fd87bf28
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_auth_device_port_6b360272
       field: json.auth_device.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_auth_device_port_780919fa
             field: json.auth_device.port
         - append:
+            tag: append_error_message_631eaac9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_address_87616572
       field: source.address
       copy_from: json.access_device.hostname
       if: ctx.json?.access_device?.hostname != null
       ignore_failure: true
   - set:
+      tag: set_source_user_email_ad1ab750
       field: source.user.email
       copy_from: json.email
       ignore_failure: true
   - set:
+      tag: set_source_user_id_5be79d11
       field: source.user.id
       copy_from: json.user.key
       ignore_failure: true
   - set:
+      tag: set_source_user_name_adb7d42b
       field: source.user.name
       copy_from: json.user.name
       ignore_failure: true
   - rename:
+      tag: rename_json_user_groups_to_source_user_group_name_05f9148d
       field: json.user.groups
       target_field: source.user.group.name
       ignore_missing: true
   - geoip:
+      tag: geoip_json_auth_device_ip_to_cisco_duo_auth_auth_device_geo_b00f4f2d
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.geo
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a93cd884
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_json_auth_device_ip_to_cisco_duo_auth_auth_device_as_7f6bcc38
       database_file: GeoLite2-ASN.mmdb
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.as
@@ -247,73 +299,91 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_535085e1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_cisco_duo_auth_auth_device_as_asn_to_cisco_duo_auth_auth_device_as_number_21c684b1
       field: cisco_duo.auth.auth_device.as.asn
       target_field: cisco_duo.auth.auth_device.as.number
       ignore_missing: true
   - rename:
+      tag: rename_cisco_duo_auth_auth_device_as_organization_name_to_cisco_duo_auth_auth_device_as_organization_name_e150804b
       field: cisco_duo.auth.auth_device.as.organization_name
       target_field: cisco_duo.auth.auth_device.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_user_email_b564faf9
       field: user.email
       copy_from: json.email
       ignore_failure: true
   - set:
+      tag: set_user_name_a606432c
       field: user.name
       copy_from: json.user.name
       ignore_failure: true
   - set:
+      tag: set_user_id_70dae602
       field: user.id
       copy_from: json.user.key
       ignore_failure: true
   - set:
+      tag: set_user_agent_name_5ce8958f
       field: user_agent.name
       copy_from: json.access_device.browser
       ignore_failure: true
   - set:
+      tag: set_user_agent_version_17f4ac73
       field: user_agent.version
       copy_from: json.access_device.browser_version
       ignore_failure: true
   - set:
+      tag: set_user_agent_os_name_1cd906fb
       field: user_agent.os.name
       copy_from: json.access_device.os
       ignore_failure: true
   - set:
+      tag: set_user_agent_os_version_9479e961
       field: user_agent.os.version
       copy_from: json.access_device.os_version
       ignore_failure: true
   - rename:
+      tag: rename_json_email_to_cisco_duo_auth_email_a35d850a
       field: json.email
       target_field: cisco_duo.auth.email
       ignore_missing: true
   - rename:
+      tag: rename_json_event_type_to_cisco_duo_auth_event_type_67961526
       field: json.event_type
       target_field: cisco_duo.auth.event_type
       ignore_missing: true
   - rename:
+      tag: rename_json_factor_to_cisco_duo_auth_factor_e0f5aa46
       field: json.factor
       target_field: cisco_duo.auth.factor
       ignore_missing: true
   - rename:
+      tag: rename_json_ood_software_to_cisco_duo_auth_ood_software_13640f9c
       field: json.ood_software
       target_field: cisco_duo.auth.ood_software
       ignore_missing: true
   - rename:
+      tag: rename_json_reason_to_cisco_duo_auth_reason_e33daaac
       field: json.reason
       target_field: cisco_duo.auth.reason
       ignore_missing: true
   - rename:
+      tag: rename_json_result_to_cisco_duo_auth_result_f6e737e6
       field: json.result
       target_field: cisco_duo.auth.result
       ignore_missing: true
   - rename:
+      tag: rename_json_txid_to_cisco_duo_auth_txid_eed810e6
       field: json.txid
       target_field: cisco_duo.auth.txid
       ignore_missing: true
   - rename:
+      tag: rename_json_alias_to_cisco_duo_auth_alias_06d0fdbe
       field: json.alias
       target_field: cisco_duo.auth.alias
       ignore_missing: true
@@ -323,57 +393,70 @@ processors:
       target_field: cisco_duo.auth.access_device.epkey
       ignore_missing: true
   - rename:
+      tag: rename_json_access_device_flash_version_to_cisco_duo_auth_access_device_flash_version_6c07e6fe
       field: json.access_device.flash_version
       target_field: cisco_duo.auth.access_device.flash_version
       ignore_missing: true
   - rename:
+      tag: rename_json_access_device_hostname_to_cisco_duo_auth_access_device_hostname_39b28466
       field: json.access_device.hostname
       target_field: cisco_duo.auth.access_device.hostname
       if: ctx.json?.access_device?.hostname != null
   - rename:
+      tag: rename_json_access_device_is_encryption_enabled_to_cisco_duo_auth_access_device_is_encryption_enabled_b7bad8a2
       field: json.access_device.is_encryption_enabled
       target_field: cisco_duo.auth.access_device.is_encryption_enabled
       ignore_missing: true
   - convert:
+      tag: convert_cisco_duo_auth_access_device_is_encryption_enabled_2a68e0b2
       field: cisco_duo.auth.access_device.is_encryption_enabled
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_access_device_is_firewall_enabled_to_cisco_duo_auth_access_device_is_firewall_enabled_01df1b02
       field: json.access_device.is_firewall_enabled
       target_field: cisco_duo.auth.access_device.is_firewall_enabled
       ignore_missing: true
   - convert:
+      tag: convert_cisco_duo_auth_access_device_is_firewall_enabled_b0b1d9b5
       field: cisco_duo.auth.access_device.is_firewall_enabled
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_access_device_is_password_set_to_cisco_duo_auth_access_device_is_password_set_e20d8ace
       field: json.access_device.is_password_set
       target_field: cisco_duo.auth.access_device.is_password_set
       ignore_missing: true
   - convert:
+      tag: convert_cisco_duo_auth_access_device_is_password_set_abd495a1
       field: cisco_duo.auth.access_device.is_password_set
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_access_device_java_version_to_cisco_duo_auth_access_device_java_version_643d7260
       field: json.access_device.java_version
       target_field: cisco_duo.auth.access_device.java_version
       ignore_missing: true
   - rename:
+      tag: rename_json_access_device_location_city_to_cisco_duo_auth_access_device_location_city_b458cb26
       field: json.access_device.location.city
       target_field: cisco_duo.auth.access_device.location.city
       ignore_missing: true
   - rename:
+      tag: rename_json_access_device_location_country_to_cisco_duo_auth_access_device_location_country_e529b274
       field: json.access_device.location.country
       target_field: cisco_duo.auth.access_device.location.country
       ignore_missing: true
   - rename:
+      tag: rename_json_access_device_location_state_to_cisco_duo_auth_access_device_location_state_60857416
       field: json.access_device.location.state
       target_field: cisco_duo.auth.access_device.location.state
       ignore_missing: true
   - remove:
+      tag: remove_json_access_device_security_agents_64be3795
       field: json.access_device.security_agents
       if: |-
         ctx.json?.access_device?.security_agents != null && (
@@ -382,6 +465,7 @@ processors:
           !(ctx.json.access_device.security_agents[0] instanceof Object)
         )
   - rename:
+      tag: rename_json_access_device_security_agents_to_cisco_duo_auth_access_device_security_agents_f07d008e
       field: json.access_device.security_agents
       target_field: cisco_duo.auth.access_device.security_agents
       ignore_missing: true
@@ -391,14 +475,17 @@ processors:
       target_field: cisco_duo.auth.application.destination_name
       ignore_missing: true
   - rename:
+      tag: rename_json_application_key_to_cisco_duo_auth_application_key_be9887a6
       field: json.application.key
       target_field: cisco_duo.auth.application.key
       ignore_missing: true
   - rename:
+      tag: rename_json_application_name_to_cisco_duo_auth_application_name_dfe795f2
       field: json.application.name
       target_field: cisco_duo.auth.application.name
       ignore_missing: true
   - rename:
+      tag: rename_json_auth_device_ip_to_cisco_duo_auth_auth_device_ip_d3700938
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.ip
       ignore_missing: true
@@ -408,26 +495,32 @@ processors:
       target_field: cisco_duo.auth.auth_device.key
       ignore_missing: true
   - rename:
+      tag: rename_json_auth_device_port_to_cisco_duo_auth_auth_device_port_8bb9fe30
       field: json.auth_device.port
       target_field: cisco_duo.auth.auth_device.port
       ignore_missing: true
   - rename:
+      tag: rename_json_auth_device_location_city_to_cisco_duo_auth_auth_device_location_city_0c9338e6
       field: json.auth_device.location.city
       target_field: cisco_duo.auth.auth_device.location.city
       ignore_missing: true
   - rename:
+      tag: rename_json_auth_device_location_country_to_cisco_duo_auth_auth_device_location_country_01b02d24
       field: json.auth_device.location.country
       target_field: cisco_duo.auth.auth_device.location.country
       ignore_missing: true
   - rename:
+      tag: rename_json_auth_device_location_state_to_cisco_duo_auth_auth_device_location_state_2ff84626
       field: json.auth_device.location.state
       target_field: cisco_duo.auth.auth_device.location.state
       ignore_missing: true
   - rename:
+      tag: rename_json_auth_device_name_to_cisco_duo_auth_auth_device_name_040116b0
       field: json.auth_device.name
       target_field: cisco_duo.auth.auth_device.name
       ignore_missing: true
   - rename:
+      tag: rename_json_trusted_endpoint_status_to_cisco_duo_auth_trusted_endpoint_status_8802243a
       field: json.trusted_endpoint_status
       target_field: cisco_duo.auth.trusted_endpoint_status
       ignore_missing: true
@@ -468,8 +561,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_cisco_duo_auth_adaptive_trust_assessments_more_secure_auth_policy_enabled_2a1b5de6
             field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.policy_enabled
         - append:
+            tag: append_error_message_b433e589
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -479,8 +574,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_cisco_duo_auth_adaptive_trust_assessments_remember_me_policy_enabled_e372a9ac
             field: cisco_duo.auth.adaptive_trust_assessments.remember_me.policy_enabled
         - append:
+            tag: append_error_message_e11116ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -490,8 +587,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_cisco_duo_auth_adaptive_trust_assessments_more_secure_auth_preview_mode_enabled_edcf3ba2
             field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.preview_mode_enabled
         - append:
+            tag: append_error_message_5e0dfac9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -501,8 +600,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_cisco_duo_auth_adaptive_trust_assessments_remember_me_preview_mode_enabled_ebeebc10
             field: cisco_duo.auth.adaptive_trust_assessments.remember_me.preview_mode_enabled
         - append:
+            tag: append_error_message_7458b25d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -517,8 +618,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_cisco_duo_auth_passport_assessment_is_supported_34c3b0a9
             field: cisco_duo.auth.passport_assessment.is_supported
         - append:
+            tag: append_error_message_83fa1e4b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -527,6 +630,7 @@ processors:
       target_field: cisco_duo.auth.rbfs_triggered_attacks
       ignore_missing: true
   - foreach:
+      tag: foreach_cisco_duo_auth_rbfs_triggered_attacks_c9ed6c7b
       field: cisco_duo.auth.rbfs_triggered_attacks
       if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
       processor:
@@ -542,6 +646,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_cisco_duo_auth_rbfs_triggered_attacks_6a8c938e
       field: cisco_duo.auth.rbfs_triggered_attacks
       if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
       processor:
@@ -557,6 +662,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_cisco_duo_auth_rbfs_triggered_attacks_8f62aa7a
       field: cisco_duo.auth.rbfs_triggered_attacks
       if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
       processor:
@@ -572,6 +678,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_cisco_duo_auth_rbfs_triggered_attacks_f8287e4f
       field: cisco_duo.auth.rbfs_triggered_attacks
       if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
       processor:
@@ -587,6 +694,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_cisco_duo_auth_rbfs_triggered_attacks_fd234a6c
       field: cisco_duo.auth.rbfs_triggered_attacks
       if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
       processor:
@@ -602,36 +710,42 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_5fac938c
       field: related.ip
       value: '{{{cisco_duo.auth.auth_device.ip}}}'
       if: ctx.cisco_duo?.auth?.auth_device?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_fb2b187b
       field: related.user
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_9d50f184
       field: related.hosts
       value: '{{{source.address}}}'
       if: ctx.source?.address != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_bb7a0c74
       field: related.hosts
       value: '{{{cisco_duo.auth.access_device.hostname}}}'
       if: ctx.cisco_duo?.auth?.access_device?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - script:
+      tag: script_41f428ad
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -649,6 +763,7 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:
