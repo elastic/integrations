@@ -119,31 +119,23 @@ inputs:
                                   }
                                 ),
                                 "want_more": has(body.?meta.next_cursor),
-                                "cursor": (
-                                  body.items.size() > 0 ?
-                                    optional.of(
-                                      (
-                                        has(state.?cursor.first_seen) ?
-                                          max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max())
-                                        :
-                                          body.items.map(ind, timestamp(ind.first_seen)).max()
-                                      ).format(time_layout.RFC3339)
-                                    )
-                                  :
-                                    state.?cursor.first_seen
-                                ).as(first_seen,
-                                  has(body.?meta.next_cursor) ?
-                                    {
-                                      "since": since,
-                                      "after": body.meta.next_cursor,
-                                      ?"first_seen": first_seen,
-                                    }
-                                  :
-                                    {
-                                      "since": since,
-                                      ?"first_seen": first_seen,
-                                    }
-                                ),
+                                "cursor": {
+                                  "since": since,
+                                  ?"after": has(body.?meta.next_cursor) ? optional.of(body.meta.next_cursor) : optional.none(),
+                                  ?"first_seen": (
+                                    body.items.size() > 0 ?
+                                      optional.of(
+                                        (
+                                          has(state.?cursor.first_seen) ?
+                                            max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max())
+                                          :
+                                            body.items.map(ind, timestamp(ind.first_seen)).max()
+                                        ).format(time_layout.RFC3339)
+                                      )
+                                    :
+                                      state.?cursor.first_seen
+                                  ),
+                                },
                                 "token": {
                                   "access_token": token.access_token,
                                   "expires": token.expires,
