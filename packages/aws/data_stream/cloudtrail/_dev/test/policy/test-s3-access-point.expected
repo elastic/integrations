@@ -5,9 +5,12 @@ inputs:
         package:
             agentVersion: ^9.6.0
             name: aws
-      name: test-s3-sqs-aws
+      name: test-s3-access-point-aws
       streams:
         - access_key_id: ${SECRET_0}
+          access_point_arn: arn:aws:s3:us-east-1:123456789012:accesspoint/cloudtrail-ap
+          bucket_list_interval: 1m
+          bucket_list_prefix: AWSLogs/123456789012/CloudTrail/
           content_type: application/json
           data_stream:
             dataset: aws.cloudtrail
@@ -23,10 +26,8 @@ inputs:
             - regex: /CloudTrail-Digest/
             - expand_event_list_from_field: Records
               regex: /CloudTrail-Insight/
-          max_number_of_messages: 5
           number_of_workers: 5
           publisher_pipeline.disable_host: true
-          queue_url: https://sqs.us-east-1.amazonaws.com/123456789012/cloudtrail-queue
           secret_access_key: ${SECRET_1}
           tags:
             - preserve_original_event
