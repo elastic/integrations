@@ -2,20 +2,24 @@
 description: Pipeline for Bravura Security Fabric events
 processors:
   - convert:
+      tag: convert_event_code_820f5e63
       field: event.code
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_19e6f89c
       field: event.original
       patterns:
         - '%{DATA:winlog.event_data.Message}\|%{GREEDYDATA:kvpairs}'
 
   - kv:
+      tag: kv_kvpairs_to_winlog_event_data_26464da7
       field: kvpairs
       field_split: '\|'
       value_split: '='
@@ -24,17 +28,20 @@ processors:
       ignore_failure: false
 
   - remove:
+      tag: remove_kvpairs_66e56aef
       field: kvpairs
       ignore_missing: true
       ignore_failure: true
 
   - split:
+      tag: split_winlog_event_data_ClientIPs_f19b06ae
       field: winlog.event_data.ClientIPs
       separator: ","
       preserve_trailing: true
       ignore_missing: true
 
   - split:
+      tag: split_winlog_event_data_FailedTargets_46e8bfec
       field: winlog.event_data.FailedTargets
       separator: ","
       preserve_trailing: true
@@ -319,40 +326,48 @@ processors:
         ctx.winlog.event_data.put("Description", t)
 
   - convert:
+      tag: convert_winlog_record_id_e96f501d
       field: winlog.record_id
       type: string
       ignore_missing: true
 
   - convert:
+      tag: convert_winlog_event_id_d9228ef0
       field: winlog.event_id
       type: string
       ignore_missing: true
 
   - convert:
+      tag: convert_winlog_event_data_DelayThreshold_a1a4112c
       field: winlog.event_data.DelayThreshold
       type: long
       ignore_missing: true
 
   - convert:
+      tag: convert_winlog_event_data_QueueDelay_06080ad4
       field: winlog.event_data.QueueDelay
       type: long
       ignore_missing: true
 
   - convert:
+      tag: convert_winlog_event_data_QueueSize_5057882e
       field: winlog.event_data.QueueSize
       type: long
       ignore_missing: true
 
   - convert:
+      tag: convert_winlog_event_data_Runtime_fd6f0ba4
       field: winlog.event_data.Runtime
       type: long
       ignore_missing: true
 
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
 
   - set:
+      tag: set_log_level_84eef42a
       field: log.level
       copy_from: winlog.level
       ignore_empty_value: true
@@ -360,6 +375,7 @@ processors:
       if: ctx?.winlog?.level != ""
 
   - date:
+      tag: date_winlog_time_created_48d6c533
       field: winlog.time_created
       formats:
         - ISO8601
@@ -367,6 +383,7 @@ processors:
       if: ctx?.winlog?.time_created != null
 
   - remove:
+      tag: remove_b1723c19
       ignore_missing: true
       field:
         - winlog.event_data.Value1
@@ -380,6 +397,7 @@ processors:
         - winlog.event_data.Value9
 
   - convert:
+      tag: convert_error_code_5bcb9be1
       field: error.code
       type: string
       ignore_missing: true

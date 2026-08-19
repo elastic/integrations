@@ -2,15 +2,18 @@
 description: Pipeline for parsing hid_bravura_monitor logs
 processors:
   - set:
+      tag: set_ecs_version_97177617
       field: ecs.version
       value: '8.17.0'
       description: Set ecs.version to 1.12.0
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_74bcf0b1
       field: event.original
       patterns:
         - >-
@@ -24,9 +27,11 @@ processors:
           )*
       description: Initial parse
   - drop:
+      tag: drop_70e03845
       if: ctx?.msg.contains('last message repeated')
       description: Drop repeated log message
   - grok:
+      tag: grok_event_original_24fd54dc
       field: event.original
       patterns:
         - >-
@@ -37,11 +42,13 @@ processors:
       if: ctx?.log?.level.contains('Perf')
       description: Parse Perf messages
   - set:
+      tag: set_log_level_3bd4ef40
       field: log.level
       value: Perf
       if: ctx?.log?.level.contains('Perf')
       description: Set log.level to Perf
   - kv:
+      tag: kv_kvpairs_to_hid_bravura_monitor_perf_8a3b7e36
       if: ctx?.log?.level.contains('Perf')
       trim_key: ' \r\n'
       trim_value: ' {}\r\n'
@@ -52,12 +59,14 @@ processors:
       field: kvpairs
       field_split: ' \| '
   - rename:
+      tag: rename_hid_bravura_monitor_perf_User_to_user_id_836f3e70
       if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfAjax'
       target_field: user.id
       field: hid_bravura_monitor.perf.User
       ignore_missing: true
       description: Rename hid_bravura_monitor.perf.User to user.id
   - script:
+      tag: script_0f46c998
       if: ctx?.log?.level.contains('Perf')
       source: >-
         Map m = new HashMap(); ctx['hid_bravura_monitor']['perf'].forEach((k,v)
@@ -67,16 +76,19 @@ processors:
         ctx['hid_bravura_monitor']['perf'][k] = v );
       description: lowercase perf fields
   - set:
+      tag: set_hid_bravura_monitor_perf_exe_602521d6
       if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfExe'
       field: hid_bravura_monitor.perf.exe
       copy_from: log.logger
       ignore_empty_value: true
       description: Copy log.logger to hid_bravura_monitor.perf.exe
   - remove:
+      tag: remove_kvpairs_378fa54a
       field: kvpairs
       ignore_missing: true
       description: Remove kvpairs
   - grok:
+      tag: grok_pslogid_41d2f2bd
       field: pslogid
       patterns:
         - >-
@@ -87,79 +99,95 @@ processors:
       ignore_failure: true
       description: Set requestid if batchid
   - rename:
+      tag: rename_pslogid_to_user_id_abbaabab
       target_field: user.id
       field: pslogid
       ignore_missing: true
       if: ctx.hid_bravura_monitor?.request?.id == null && ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax'
       description: Set userid if not a guid
   - remove:
+      tag: remove_pslogid_41aefafa
       field: pslogid
       ignore_missing: true
       description: Remove pslogid
   - date:
+      tag: date_logdate_b322725e
       field: logdate
       formats:
         - 'yyyy-MM-dd HH:mm:ss.SSS'
       timezone: '{{{event.timezone}}}'
       description: Convert logdate to @timestamp
   - rename:
+      tag: rename_msg_to_message_f320a99e
       target_field: message
       field: msg
       description: Override message
   - remove:
+      tag: remove_logdate_c9499831
       field: logdate
       description: Remove logdate
   - set:
+      tag: set_hid_bravura_monitor_node_9127b39a
       if: ctx?.hid_bravura_monitor?.node == '0.0.0.0'
       field: hid_bravura_monitor.node
       copy_from: host.name
       ignore_empty_value: true
       description: Copy host.name to hid_bravura_monitor.node if left as default
   - convert:
+      tag: convert_process_pid_f4791a88
       field: process.pid
       type: long
       ignore_missing: true
       description: process.pid to Long
   - convert:
+      tag: convert_process_thread_id_c525db90
       field: process.thread.id
       type: long
       ignore_missing: true
       description: process.thread.id to Long
   - convert:
+      tag: convert_hid_bravura_monitor_perf_duration_c51a2a20
       field: hid_bravura_monitor.perf.duration
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.duration to Long
   - convert:
+      tag: convert_hid_bravura_monitor_perf_kernel_5e5a2618
       field: hid_bravura_monitor.perf.kernel
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.kernel to Long
   - convert:
+      tag: convert_hid_bravura_monitor_perf_user_1c485f24
       field: hid_bravura_monitor.perf.user
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.user to Long
   - dot_expander:
+      tag: dot_expander_hid_bravura_monitor_perf_kind_9d42a02a
       field: hid_bravura_monitor.perf.kind
       ignore_failure: true
       description: move hid_bravura_monitor.perf.kind to object
   - convert:
+      tag: convert_hid_bravura_monitor_perf_line_ae2076c8
       field: hid_bravura_monitor.perf.line
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.line to Long
   - convert:
+      tag: convert_hid_bravura_monitor_perf_records_8436ba3c
       field: hid_bravura_monitor.perf.records
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.records to Long
   - convert:
+      tag: convert_hid_bravura_monitor_perf_result_6f54c1bc
       field: hid_bravura_monitor.perf.result
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.result to Long
   - script:
+      tag: script_fa6ab501
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
