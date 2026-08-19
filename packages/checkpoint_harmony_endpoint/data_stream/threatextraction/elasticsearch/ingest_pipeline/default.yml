@@ -5,42 +5,54 @@ processors:
 #################### Event ECS fields ##########################
 
   - set:
+      tag: set_event_module_27f33cd1
       field: event.module
       value: checkpoint_harmony_endpoint
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: "8.17.0"
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: ['info']
   - set:
+      tag: set_event_category_d051f5c3
       field: event.category
       value: ['malware']
   - set:
+      tag: set_event_dataset_3c66ff10
       field: event.dataset
       value: checkpoint_harmony_endpoint.threatextraction
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_691cf1d4
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_4295037f
       if: ctx.json?.event?.reason == 'polling'      
   - rename:
+      tag: rename_json_id_to_event_id_6438e920
       field: json.id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_json_action_to_event_action_6ebb0784
       field: json.action
       target_field: event.action
       ignore_missing: true
@@ -61,11 +73,13 @@ processors:
 #################### Related fields ############################
 
   - append:
+      tag: append_related_user_bfcb926b
       field: related.user
       value: '{{{json.src_user_name}}}'
       allow_duplicates: false
       if: ctx.json?.src_user_name instanceof String
   - foreach:
+      tag: foreach_json_src_user_name_62520e15
       field: json.src_user_name
       if: ctx.json?.src_user_name instanceof List
       processor:
@@ -75,36 +89,43 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
+      tag: append_related_user_2118c569
       field: related.user
       value: '{{{json.process_username}}}'
       allow_duplicates: false
       if: ctx.json?.process_username != null
   - append:
+      tag: append_related_ip_eb024e29
       field: related.ip
       value: '{{{json.src}}}'
       if: ctx.json?.src != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_d0d50939
       field: related.ip
       value: '{{{json.dst}}}'
       if: ctx.json?.dst != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_55d153d1
       field: related.ip
       value: '{{{json.proxy_src_ip}}}'
       if: ctx.json?.proxy_src_ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_2338302b
       field: related.hosts
       value: '{{{json.src_machine_name}}}'
       if: ctx.json?.src_machine_name != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_fb3abcf6
       field: related.hash
       value: '{{{json.file_md5}}}'
       if: ctx.json?.file_md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_e85198ba
       field: related.hash
       value: '{{{json.file_sha1}}}'
       if: ctx.json?.file_sha1 != null
@@ -113,39 +134,47 @@ processors:
 #################### ECS fields ################################
 
   - date:
+      tag: date_json_time_to_timestamp_e36cfac1
       field: json.time
       target_field: "@timestamp"
       formats:
         - strict_date_optional_time_nanos
   - rename:
+      tag: rename_json_host_type_to_host_type_121d1f37
       field: json.host_type
       target_field: host.type
       ignore_missing: true
   - append:
+      tag: append_host_ip_979fa5ec
       field: host.ip
       value: '{{{json.src}}}'
       if: ctx.json?.src != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_src_machine_name_to_host_hostname_811b24ed
       field: json.src_machine_name
       target_field: host.hostname
       override: true
       ignore_missing: true
   - set:
+      tag: set_host_name_a45237a9
       field: host.name
       copy_from: host.hostname
       ignore_empty_value: true
   - rename:
+      tag: rename_json_os_name_to_host_os_name_9d3176e2
       field: json.os_name
       target_field: host.os.name
       if: ctx.json?.os_name != null
       override: true
   - rename:
+      tag: rename_json_os_version_to_host_os_version_d08c3083
       field: json.os_version
       target_field: host.os.version
       if: ctx.json?.os_version != null
       override: true
   - script:
+      tag: script_c72ef584
       lang: painless
       if: ctx.host?.os?.name != null && ctx.host?.os?.version != null
       source: |-
@@ -154,72 +183,87 @@ processors:
         if (ctx.host.os.version instanceof List && ctx.host.os.version.size() == 1)
             ctx.host.os.version = ctx.host.os.version[0];
   - rename:
+      tag: rename_json_domain_to_user_domain_cb5b1073
       field: json.domain
       target_field: user.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_src_user_name_to_user_name_a42203a2
       field: json.src_user_name
       target_field: user.name
       ignore_missing: true
       if: ctx.json?.src_user_name != null
   - rename:
+      tag: rename_json_user_sid_to_user_id_03007874
       field: json.user_sid
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_file_type_to_file_type_a29aba28
       field: json.file_type
       target_field: file.type
       if: ctx.json?.file_type != null
       ignore_missing: true
   - rename:
+      tag: rename_json_file_name_to_file_name_30f05aaa
       field: json.file_name
       target_field: file.name
       if: ctx.json?.file_name != null
   - script:
+      tag: script_2cce73e6
       lang: painless
       if: ctx.file?.name != null
       source: |-
         if (ctx.file.name instanceof List && ctx.file.name.size() == 1)
             ctx.file.name = ctx.file.name[0];
   - remove:
+      tag: remove_file_name_785859b9
       field: file.name
       ignore_missing: true
       if: ctx.file?.name == " "
   - rename:
+      tag: rename_json_file_size_to_file_size_73c3a585
       field: json.file_size
       target_field: file.size
       ignore_missing: true
   - rename:
+      tag: rename_json_resource_to_file_path_af04c65c
       field: json.resource
       target_field: file.path
       if: ctx.json?.resource != null && !["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
   - script:
+      tag: script_44d02b3e
       lang: painless
       if: ctx.file?.path != null
       source: |-
         if (ctx.file.path instanceof List && ctx.file.path.size() == 1)
             ctx.file.path = ctx.file.path[0];
   - rename:
+      tag: rename_json_resource_to_url_original_e0220746
       field: json.resource
       target_field: url.original
       if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
   - script:
+      tag: script_3f358c63
       lang: painless
       if: ctx.url?.original != null
       source: |-
         if (ctx.url.original instanceof List && ctx.url.original.size() == 1)
             ctx.url.original = ctx.url.original[0];
   - rename:
+      tag: rename_json_file_md5_to_file_hash_md5_d5dd767a
       field: json.file_md5
       target_field: file.hash.md5
       if: ctx.json?.file_md5 != null
       ignore_missing: true
   - rename:
+      tag: rename_json_file_sha1_to_file_hash_sha1_0ca13923
       field: json.file_sha1
       target_field: file.hash.sha1
       if: ctx.json?.file_sha1 != null
       ignore_missing: true
   - rename:
+      tag: rename_json_protection_name_to_rule_name_1667101e
       field: json.protection_name
       target_field: rule.name
       ignore_missing: true
@@ -227,64 +271,78 @@ processors:
 #################### Threat Extraction Log fields ###############
 
   - rename:
+      tag: rename_json_to_checkpoint_harmony_endpoint_threatextraction_1e13a6da
       field: json
       target_field: checkpoint_harmony_endpoint.threatextraction
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_policy_date_to_checkpoint_harmony_endpoint_threatextraction_policy_date_6c2c0d05
       field: checkpoint_harmony_endpoint.threatextraction.policy_date
       target_field: checkpoint_harmony_endpoint.threatextraction.policy.date
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_policy_name_to_checkpoint_harmony_endpoint_threatextraction_policy_name_73d85239
       field: checkpoint_harmony_endpoint.threatextraction.policy_name
       target_field: checkpoint_harmony_endpoint.threatextraction.policy.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_policy_number_to_checkpoint_harmony_endpoint_threatextraction_policy_number_04069b05
       field: checkpoint_harmony_endpoint.threatextraction.policy_number
       target_field: checkpoint_harmony_endpoint.threatextraction.policy.number
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_malware_action_to_checkpoint_harmony_endpoint_threatextraction_malware_action_72aaa7dc
       field: checkpoint_harmony_endpoint.threatextraction.malware_action
       target_field: checkpoint_harmony_endpoint.threatextraction.malware.action
       if: ctx.checkpoint_harmony_endpoint.threatextraction?.malware_action != null
   - script:
+      tag: script_2e8e720e
       lang: painless
       if: ctx.checkpoint_harmony_endpoint?.threatextraction?.malware?.action != null
       source: |-
         if (ctx.checkpoint_harmony_endpoint.threatextraction.malware.action instanceof List && ctx.checkpoint_harmony_endpoint.threatextraction.malware.action.size() == 1)
             ctx.checkpoint_harmony_endpoint.threatextraction.malware.action = ctx.checkpoint_harmony_endpoint.threatextraction.malware.action[0];
   - remove:
+      tag: remove_checkpoint_harmony_endpoint_threatextraction_malware_action_c5e2b705
       field: checkpoint_harmony_endpoint.threatextraction.malware.action
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.threatextraction?.malware?.action == " "
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_client_name_to_checkpoint_harmony_endpoint_threatextraction_client_name_659805ad
       field: checkpoint_harmony_endpoint.threatextraction.client_name
       target_field: checkpoint_harmony_endpoint.threatextraction.client.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_client_version_to_checkpoint_harmony_endpoint_threatextraction_client_version_7bae7db4
       field: checkpoint_harmony_endpoint.threatextraction.client_version
       target_field: checkpoint_harmony_endpoint.threatextraction.client.version
       if: ctx.checkpoint_harmony_endpoint.threatextraction?.client_version != null
   - script:
+      tag: script_9356e4b4
       lang: painless
       if: ctx.checkpoint_harmony_endpoint?.threatextraction?.client?.version != null
       source: |-
         if (ctx.checkpoint_harmony_endpoint.threatextraction.client.version instanceof List && ctx.checkpoint_harmony_endpoint.threatextraction.client.version.size() == 1)
             ctx.checkpoint_harmony_endpoint.threatextraction.client.version = ctx.checkpoint_harmony_endpoint.threatextraction.client.version[0];
   - script:
+      tag: script_12a4f033
       lang: painless
       if: ctx.checkpoint_harmony_endpoint?.threatextraction?.web_client_type != null
       source: |-
         if (ctx.checkpoint_harmony_endpoint.threatextraction.web_client_type instanceof List && ctx.checkpoint_harmony_endpoint.threatextraction.web_client_type.size() == 1)
             ctx.checkpoint_harmony_endpoint.threatextraction.web_client_type = ctx.checkpoint_harmony_endpoint.threatextraction.web_client_type[0];
   - remove:
+      tag: remove_checkpoint_harmony_endpoint_threatextraction_web_client_type_e8f46036
       field: checkpoint_harmony_endpoint.threatextraction.web_client_type
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.threatextraction?.web_client_type == " "
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_product_to_checkpoint_harmony_endpoint_threatextraction_product_name_26b597a3
       field: checkpoint_harmony_endpoint.threatextraction.product
       target_field: checkpoint_harmony_endpoint.threatextraction.product.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_harmony_endpoint_threatextraction_product_family_to_checkpoint_harmony_endpoint_threatextraction_product_family_ac7ca267
       field: checkpoint_harmony_endpoint.threatextraction.product_family
       target_field: checkpoint_harmony_endpoint.threatextraction.product.family
       ignore_missing: true
