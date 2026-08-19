@@ -33,12 +33,14 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - grok:
+      tag: grok_event_original_30302277
       field: event.original
       patterns:
         - '%{DATA:ping_federate.admin.timestamp}\s\|\s%{WORD:ping_federate.admin.user}\s\|\s(%{DATA:ping_federate.admin.roles})?\s\|\s(%{IP:ping_federate.admin.ip})?\s\|\s(%{DATA:ping_federate.admin.event.detail_id})?\s\|\s(%{WORD:ping_federate.admin.component})\s\|\s(%{WORD:ping_federate.admin.event.type})?\s\|\s(%{GREEDYDATA:ping_federate.admin.message})?'
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_7de55181
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -147,8 +149,10 @@ processors:
       if: ctx.ping_federate?.admin?.timestamp != null && ctx.ping_federate.admin.timestamp != ''
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_timestamp_29eed34e
             field: ping_federate.admin.timestamp
         - append:
+            tag: append_error_message_9d38946c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # The timezone doesn't function as expected with custom date formats like yyyy-MM-dd HH:mm:ss,SSS,
@@ -164,11 +168,14 @@ processors:
       if: ctx.ping_federate?.admin?.timestamp != null && ctx.ping_federate.admin.timestamp != '' && ctx.event?.timezone != null
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_timestamp_edf239f6
             field: ping_federate.admin.timestamp
         - append:
+            tag: append_error_message_e5adb770
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_0a0f3bb7
       field: '@timestamp'
       copy_from: ping_federate.admin.timestamp
       ignore_empty_value: true
@@ -190,11 +197,14 @@ processors:
       separator: ','
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_roles_1f216fef
             field: ping_federate.admin.roles
         - append:
+            tag: append_error_message_ac809f1a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ping_federate_admin_roles_15a7950a
       field: ping_federate.admin.roles
       if: ctx.ping_federate?.admin?.roles instanceof List
       ignore_failure: true
@@ -238,8 +248,10 @@ processors:
       if: ctx.ping_federate?.admin?.ip != ''
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_ip_e3ad4d87
             field: ping_federate.admin.ip
         - append:
+            tag: append_error_message_08d0e5aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
