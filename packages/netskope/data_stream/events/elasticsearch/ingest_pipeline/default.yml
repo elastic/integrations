@@ -2,6 +2,7 @@
 description: Pipeline for Netskope events.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - json:
@@ -11,125 +12,156 @@ processors:
       add_to_root_conflict_strategy: replace
       on_failure:
         - append:
+            tag: append_error_message_e5154119
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - convert:
+      tag: convert_source_geo_location_lat_0625cb92
       field: source.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_geo_location_lat_75629d59
             field: source.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_eaad4fd5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_source_geo_location_lon_a17ca842
       field: source.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_geo_location_lon_6a22bc15
             field: source.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_b279d695
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_source_geo_location_a9885a63
       field: source.geo.location
       if: ctx.source?.geo?.location?.lat == null || ctx.source?.geo?.location?.lon == null || ctx.source?.geo?.location?.lat < -90.0 || ctx.source?.geo?.location?.lat > 90.0 || ctx.source?.geo?.location?.lon < -180.0 || ctx.source?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_destination_geo_location_lat_244b0b1e
       field: destination.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_geo_location_lat_6dc03fbc
             field: destination.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_1383debd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_destination_geo_location_lon_42965e62
       field: destination.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_geo_location_lon_7d018348
             field: destination.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_d8b02391
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_destination_geo_location_b32d7fc2
       field: destination.geo.location
       if: ctx.destination?.geo?.location?.lat == null || ctx.destination?.geo?.location?.lon == null || ctx.destination?.geo?.location?.lat < -90.0 || ctx.destination?.geo?.location?.lat > 90.0 || ctx.destination?.geo?.location?.lon < -180.0 || ctx.destination?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_netskope_events_slc_geo_location_lat_e0211d96
       field: netskope.events.slc.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_slc_geo_location_lat_36e8ffee
             field: netskope.events.slc.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_0742f5fd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_slc_geo_location_lon_fb1fb33a
       field: netskope.events.slc.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_slc_geo_location_lon_3a07588a
             field: netskope.events.slc.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_c640d711
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_netskope_events_slc_geo_location_4a8eaa8c
       field: netskope.events.slc.geo.location
       if: ctx.netskope?.events?.slc?.geo?.location?.lat == null || ctx.netskope?.events?.slc?.geo?.location?.lon == null || ctx.netskope?.events?.slc?.geo?.location?.lat < -90.0 || ctx.netskope?.events?.slc?.geo?.location?.lat > 90.0 || ctx.netskope?.events?.slc?.geo?.location?.lon < -180.0 || ctx.netskope?.events?.slc?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_netskope_events_user_geo_location_lat_ff800c36
       field: netskope.events.user.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_user_geo_location_lat_d1ba1b19
             field: netskope.events.user.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_a12c29d5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_user_geo_location_lon_997a79d6
       field: netskope.events.user.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_user_geo_location_lon_a05affcd
             field: netskope.events.user.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_1341704d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_netskope_events_user_geo_location_ee16056f
       field: netskope.events.user.geo.location
       if: ctx.netskope?.events?.user?.geo?.location?.lat == null || ctx.netskope?.events?.user?.geo?.location?.lon == null || ctx.netskope?.events?.user?.geo?.location?.lat < -90.0 || ctx.netskope?.events?.user?.geo?.location?.lat > 90.0 || ctx.netskope?.events?.user?.geo?.location?.lon < -180.0 || ctx.netskope?.events?.user?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - date:
+      tag: date_timestamp_6e4706a9
       field: '@timestamp'
       if: ctx['@timestamp'] != null && ctx['@timestamp'] != ''
       formats:
@@ -137,355 +169,437 @@ processors:
         - UNIX
       on_failure:
         - set:
+            tag: set_timestamp_8651ee11
             field: '@timestamp'
             value: "{{{_ingest.timestamp}}}"
         - append:
+            tag: append_error_message_5b2000bd
             field: error.message
             value: Unable to parse the value of Timestamp field, therefore setting the value of Timestamp field to current time.
   - convert:
+      tag: convert_destination_ip_20bdc587
       field: destination.ip
       if: ctx.destination?.ip != null && ctx.destination.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_ip_9fff1bb9
             field: destination.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_95b73462
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_user_ip_d4c05271
       field: netskope.events.user.ip
       if: ctx.netskope?.events?.user?.ip != null && ctx.netskope.events.user.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_user_ip_899f4658
             field: netskope.events.user.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_0ae49420
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_source_ip_0c94baef
       field: source.ip
       if: ctx.source?.ip != null && ctx.source.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_ip_6dd4b89a
             field: source.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_640132c2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_51dd17d0
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_167f4f4a
       field: related.ip
       value: '{{{netskope.events.user.ip}}}'
       if: ctx.netskope?.events?.user?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_d0d56b04
       field: related.hosts
       value: '{{{destination.domain}}}'
       if: ctx.destination?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - user_agent:
+      tag: user_agent_user_agent_original_6a886ea1
       field: user_agent.original
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_49e0d2f9
       field: source.ip
       if: ctx.source?.ip != null && ctx.source.ip != ''
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_bfcb4967
       field: destination.ip
       if: ctx.destination?.ip != null && ctx.destination.ip != ''
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_netskope_events_user_ip_to_netskope_events_user_geo_b1679ac7
       field: netskope.events.user.ip
       if: ctx.netskope?.events?.user?.ip != null && ctx.netskope.events.user.ip != ''
       target_field: netskope.events.user.geo
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_netskope_events_url_to_netskope_events_url_d46bf4b3
       field: netskope.events.url
       target_field: netskope.events.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_events_url_to_netskope_events_url_original_20bccfc1
             field: netskope.events.url
             target_field: netskope.events.url.original
             ignore_missing: true
   - uri_parts:
+      tag: uri_parts_netskope_events_web_url_to_netskope_events_web_url_fd4f5877
       field: netskope.events.web.url
       target_field: netskope.events.web.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_events_web_url_to_netskope_events_web_url_original_3a49a1dd
             field: netskope.events.web.url
             target_field: netskope.events.web.url.original
             ignore_missing: true
   - uri_parts:
+      tag: uri_parts_netskope_events_login_url_to_netskope_events_login_url_61f828db
       field: netskope.events.login.url
       target_field: netskope.events.login.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_events_login_url_to_netskope_events_login_url_original_adfe2a9f
             field: netskope.events.login.url
             target_field: netskope.events.login.url.original
             ignore_missing: true
   - json:
+      tag: json_netskope_events_site_d0d7e391
       field: netskope.events.site
       ignore_failure: true
   - json:
+      tag: json_netskope_events_app_name_e35c830c
       field: netskope.events.app.name
       ignore_failure: true
   - lowercase:
+      tag: lowercase_network_protocol_d249a697
       ignore_failure: true
       field: network.protocol
   - uri_parts:
+      tag: uri_parts_netskope_events_referer_to_netskope_events_referer_c44ab9ef
       field: netskope.events.referer
       target_field: netskope.events.referer
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_events_referer_to_netskope_events_referer_original_6673af25
             field: netskope.events.referer
             target_field: netskope.events.referer.original
             ignore_missing: true
   - set:
+      tag: set_netskope_events_managed_app_10059bfa
       field: netskope.events.managed_app
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.managed_app?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_managed_app_30252afc
       field: netskope.events.managed_app
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.managed_app?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_managed_app_afaa81a1
       field: netskope.events.managed_app
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_managed_app_b3e58501
             field: netskope.events.managed_app
             ignore_missing: true
         - append:
+            tag: append_error_message_033ebf08
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_is_bypass_traffic_743cb80a
       field: netskope.events.is_bypass_traffic
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.is_bypass_traffic?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_is_bypass_traffic_917a8510
       field: netskope.events.is_bypass_traffic
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.is_bypass_traffic?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_is_bypass_traffic_a389ca79
       field: netskope.events.is_bypass_traffic
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_is_bypass_traffic_82745077
             field: netskope.events.is_bypass_traffic
             ignore_missing: true
         - append:
+            tag: append_error_message_2d5598cc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_is_unique_count_07e81ac6
       field: netskope.events.is_unique_count
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.is_unique_count?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_is_unique_count_1c31c7ac
       field: netskope.events.is_unique_count
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.is_unique_count?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_is_unique_count_80261e17
       field: netskope.events.is_unique_count
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_is_unique_count_bc0e91fe
             field: netskope.events.is_unique_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e6a238da
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_user_is_aggregated_aded787f
       field: netskope.events.user.is_aggregated
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.user?.is_aggregated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_user_is_aggregated_9a726417
       field: netskope.events.user.is_aggregated
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.user?.is_aggregated?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_user_is_aggregated_a24a1cc7
       field: netskope.events.user.is_aggregated
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_user_is_aggregated_c2753d61
             field: netskope.events.user.is_aggregated
             ignore_missing: true
         - append:
+            tag: append_error_message_3674afda
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_alert_is_present_83a02513
       field: netskope.events.alert.is_present
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.alert?.is_present?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_alert_is_present_62329ecb
       field: netskope.events.alert.is_present
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.alert?.is_present?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_alert_is_present_00eb907f
       field: netskope.events.alert.is_present
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_alert_is_present_005bc676
             field: netskope.events.alert.is_present
             ignore_missing: true
         - append:
+            tag: append_error_message_cc7eff2a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_user_generated_04ef725f
       field: netskope.events.user.generated
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.user?.generated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_user_generated_76cb473f
       field: netskope.events.user.generated
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.user?.generated?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_user_generated_5521b8d7
       field: netskope.events.user.generated
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_user_generated_eb966ab2
             field: netskope.events.user.generated
             ignore_missing: true
         - append:
+            tag: append_error_message_85705aea
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_ack_75ce7fde
       field: netskope.events.ack
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.ack?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_ack_75b3b5b4
       field: netskope.events.ack
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.ack?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_ack_1b9188f5
       field: netskope.events.ack
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_ack_5f7f7171
             field: netskope.events.ack
             ignore_missing: true
         - append:
+            tag: append_error_message_bb1c2a20
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_is_malicious_0a13dadc
       field: netskope.events.is_malicious
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.is_malicious?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_is_malicious_a916e2b0
       field: netskope.events.is_malicious
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.is_malicious?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_is_malicious_0a63d6b7
       field: netskope.events.is_malicious
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_is_malicious_77954fb5
             field: netskope.events.is_malicious
             ignore_missing: true
         - append:
+            tag: append_error_message_89638fea
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_obfuscate_3728a416
       field: netskope.events.obfuscate
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.obfuscate?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_obfuscate_e161575c
       field: netskope.events.obfuscate
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.obfuscate?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_obfuscate_fdbca19f
       field: netskope.events.obfuscate
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_obfuscate_99e4a052
             field: netskope.events.obfuscate
             ignore_missing: true
         - append:
+            tag: append_error_message_44b06faa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_netskope_events_shared_is_shared_bb49cdd3
       field: netskope.events.shared.is_shared
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.events?.shared?.is_shared?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
+      tag: set_netskope_events_shared_is_shared_627eb4cb
       field: netskope.events.shared.is_shared
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.events?.shared?.is_shared?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
+      tag: convert_netskope_events_shared_is_shared_161378bb
       field: netskope.events.shared.is_shared
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_shared_is_shared_b9371fcb
             field: netskope.events.shared.is_shared
             ignore_missing: true
         - append:
+            tag: append_error_message_5a7a1976
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_netskope_events_modified_at_to_netskope_events_modified_at_1117922e
       field: netskope.events.modified_at
       if: ctx.netskope?.events?.modified_at != null && ctx.netskope.events.modified_at != ''
       target_field: netskope.events.modified_at
@@ -493,567 +607,721 @@ processors:
         - UNIX
       on_failure:
         - remove:
+            tag: remove_netskope_events_modified_at_c1ca2b8a
             field: netskope.events.modified_at
             ignore_missing: true
         - append:
+            tag: append_error_message_08750a7b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_client_bytes_dbc10287
       field: netskope.events.client.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_client_bytes_affa1ea6
             field: netskope.events.client.bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_0831cc08
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_client_packets_b4c00adb
       field: netskope.events.client.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_client_packets_465fda98
             field: netskope.events.client.packets
             ignore_missing: true
         - append:
+            tag: append_error_message_487f3cfc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_connection_duration_1b9655c3
       field: netskope.events.connection.duration
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_connection_duration_68bd67bc
             field: netskope.events.connection.duration
             ignore_missing: true
         - append:
+            tag: append_error_message_8d3201dc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_connection_end_time_c65820cd
       field: netskope.events.connection.end_time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_connection_end_time_2b1e938d
             field: netskope.events.connection.end_time
             ignore_missing: true
         - append:
+            tag: append_error_message_8e36e6fe
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_connection_start_time_3bdafe03
       field: netskope.events.connection.start_time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_connection_start_time_bc71d5c0
             field: netskope.events.connection.start_time
             ignore_missing: true
         - append:
+            tag: append_error_message_eba7203c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_count_0c131725
       field: netskope.events.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_count_461a575b
             field: netskope.events.count
             ignore_missing: true
         - append:
+            tag: append_error_message_d37a467a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_destination_geoip_source_ec6ae4ef
       field: netskope.events.destination.geoip.source
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_destination_geoip_source_277cda7d
             field: netskope.events.destination.geoip.source
             ignore_missing: true
         - append:
+            tag: append_error_message_c3c8f510
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_dlp_count_8786e619
       field: netskope.events.dlp.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_dlp_count_9fc09b8d
             field: netskope.events.dlp.count
             ignore_missing: true
         - append:
+            tag: append_error_message_0acf95fa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_dlp_fingerprint_score_2166833f
       field: netskope.events.dlp.fingerprint.score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_dlp_fingerprint_score_281bc4a8
             field: netskope.events.dlp.fingerprint.score
             ignore_missing: true
         - append:
+            tag: append_error_message_5674b4fc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_dlp_fv_f1f0db87
       field: netskope.events.dlp.fv
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_dlp_fv_de4b84a6
             field: netskope.events.dlp.fv
             ignore_missing: true
         - append:
+            tag: append_error_message_0dfbed00
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_dlp_score_e81bdd6b
       field: netskope.events.dlp.score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_dlp_score_cdd165fe
             field: netskope.events.dlp.score
             ignore_missing: true
         - append:
+            tag: append_error_message_7d22c3ec
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_dlp_unique_count_e534e92b
       field: netskope.events.dlp.unique_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_dlp_unique_count_1bb87a99
             field: netskope.events.dlp.unique_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2b8b50dc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_domain_shared_with_3ab8229b
       field: netskope.events.domain_shared_with
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_domain_shared_with_09fbc37d
             field: netskope.events.domain_shared_with
             ignore_missing: true
         - append:
+            tag: append_error_message_2f7b9754
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_external_collaborator_count_001d86fb
       field: netskope.events.external_collaborator_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_external_collaborator_count_141eeb66
             field: netskope.events.external_collaborator_count
             ignore_missing: true
         - append:
+            tag: append_error_message_3e1aa830
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_http_transaction_count_dd1417eb
       field: netskope.events.http_transaction_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_http_transaction_count_ae4d6b13
             field: netskope.events.http_transaction_count
             ignore_missing: true
         - append:
+            tag: append_error_message_68e750fc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_insertion_timestamp_a9701d81
       field: netskope.events.insertion.timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_insertion_timestamp_d6801a63
             field: netskope.events.insertion.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_60ab26b6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_internal_collaborator_count_e2c454a3
       field: netskope.events.internal_collaborator_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_internal_collaborator_count_3baf768c
             field: netskope.events.internal_collaborator_count
             ignore_missing: true
         - append:
+            tag: append_error_message_679e676c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_last_timestamp_11ee04ff
       field: netskope.events.last.timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_last_timestamp_2244d9be
             field: netskope.events.last.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_bdd12740
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_latency_max_86c7676b
       field: netskope.events.latency.max
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_latency_max_21abf760
             field: netskope.events.latency.max
             ignore_missing: true
         - append:
+            tag: append_error_message_af2817bc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_latency_min_2be437bb
       field: netskope.events.latency.min
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_latency_min_06159f9a
             field: netskope.events.latency.min
             ignore_missing: true
         - append:
+            tag: append_error_message_143dd570
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_latency_total_8139a1c7
       field: netskope.events.latency.total
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_latency_total_bdf6c79c
             field: netskope.events.latency.total
             ignore_missing: true
         - append:
+            tag: append_error_message_cd9e2fec
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_metric_value_0369fdb3
       field: netskope.events.metric_value
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_metric_value_8d610b5a
             field: netskope.events.metric_value
             ignore_missing: true
         - append:
+            tag: append_error_message_1302ff24
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_num_sessions_1e610c0b
       field: netskope.events.num_sessions
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_num_sessions_44a6e740
             field: netskope.events.num_sessions
             ignore_missing: true
         - append:
+            tag: append_error_message_7e158cec
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_numbytes_6afbc473
       field: netskope.events.numbytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_numbytes_0b202cbb
             field: netskope.events.numbytes
             ignore_missing: true
         - append:
+            tag: append_error_message_b9031ee4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_object_count_71c5b583
       field: netskope.events.object.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_object_count_da4db8e2
             field: netskope.events.object.count
             ignore_missing: true
         - append:
+            tag: append_error_message_1df4c59c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_path_id_d53a7519
       field: netskope.events.path_id
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_path_id_cce9ac51
             field: netskope.events.path_id
             ignore_missing: true
         - append:
+            tag: append_error_message_720c6d2e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_request_count_58b73d2b
       field: netskope.events.request.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_request_count_80b50c4e
             field: netskope.events.request.count
             ignore_missing: true
         - append:
+            tag: append_error_message_e32f7ea8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_response_content_length_2ef73bd3
       field: netskope.events.response.content.length
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_response_content_length_85e09e50
             field: netskope.events.response.content.length
             ignore_missing: true
         - append:
+            tag: append_error_message_1a369afc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_response_count_704ecd9f
       field: netskope.events.response.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_response_count_7cb11822
             field: netskope.events.response.count
             ignore_missing: true
         - append:
+            tag: append_error_message_26254018
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_run_id_b7c3f857
       field: netskope.events.run_id
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_run_id_1d534f33
             field: netskope.events.run_id
             ignore_missing: true
         - append:
+            tag: append_error_message_86200930
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_scan_time_ba5b10bb
       field: netskope.events.scan.time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_scan_time_2012235e
             field: netskope.events.scan.time
             ignore_missing: true
         - append:
+            tag: append_error_message_3a10b700
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_server_bytes_d75a44d7
       field: netskope.events.server.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_server_bytes_8df8f9ba
             field: netskope.events.server.bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_7203f490
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_server_packets_ab16283b
       field: netskope.events.server.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_server_packets_55fde8bc
             field: netskope.events.server.packets
             ignore_missing: true
         - append:
+            tag: append_error_message_ed5d8d5c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_session_packets_9a363e9d
       field: netskope.events.session.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_session_packets_a386cb5b
             field: netskope.events.session.packets
             ignore_missing: true
         - append:
+            tag: append_error_message_5d66f8ca
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_session_duration_473f6387
       field: netskope.events.session.duration
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_session_duration_963a7c1a
             field: netskope.events.session.duration
             ignore_missing: true
         - append:
+            tag: append_error_message_8eb24bf0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_source_geoip_src_034f7fcf
       field: netskope.events.source.geoip_src
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_source_geoip_src_a29326fe
             field: netskope.events.source.geoip_src
             ignore_missing: true
         - append:
+            tag: append_error_message_b7e39cc0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_suppression_end_time_75a388eb
       field: netskope.events.suppression.end_time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_suppression_end_time_e58befb0
             field: netskope.events.suppression.end_time
             ignore_missing: true
         - append:
+            tag: append_error_message_187f636c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_suppression_start_time_064ea487
       field: netskope.events.suppression.start_time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_suppression_start_time_e2479677
             field: netskope.events.suppression.start_time
             ignore_missing: true
         - append:
+            tag: append_error_message_fc710208
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_threshold_f8ab4945
       field: netskope.events.threshold
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_threshold_df2df4a7
             field: netskope.events.threshold
             ignore_missing: true
         - append:
+            tag: append_error_message_8dcf6da2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_total_packets_b6d996db
       field: netskope.events.total_packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_total_packets_9549859e
             field: netskope.events.total_packets
             ignore_missing: true
         - append:
+            tag: append_error_message_cefe26bc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_total_collaborator_count_fb04b07b
       field: netskope.events.total.collaborator_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_total_collaborator_count_00075b78
             field: netskope.events.total.collaborator_count
             ignore_missing: true
         - append:
+            tag: append_error_message_465a53bc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_netskope_events_tunnel_up_time_0bfd66d3
       field: netskope.events.tunnel.up_time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_events_tunnel_up_time_14484757
             field: netskope.events.tunnel.up_time
             ignore_missing: true
         - append:
+            tag: append_error_message_9bb68c64
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_client_bytes_ed7a9c03
       field: client.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_client_bytes_eaf55a98
             field: client.bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_a4b8bffc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_client_nat_ip_6236c74a
       field: client.nat.ip
       if: ctx.client?.nat?.ip != null && ctx.client.nat.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_client_nat_ip_f3c24518
             field: client.nat.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_bef37539
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_client_packets_ec6e5367
       field: client.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_client_packets_5f3bb63e
             field: client.packets
             ignore_missing: true
         - append:
+            tag: append_error_message_f8307af0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_destination_port_3b5fe1ff
       field: destination.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_port_7f9d7943
             field: destination.port
             ignore_missing: true
         - append:
+            tag: append_error_message_f0268ec8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_file_size_117b45b1
       field: file.size
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_file_size_b57452d7
             field: file.size
             ignore_missing: true
         - append:
+            tag: append_error_message_1769782e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_source_port_b70360cb
       field: source.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_port_ffa6dcfa
             field: source.port
             ignore_missing: true
         - append:
+            tag: append_error_message_8504b140
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_server_bytes_b70bee1b
       field: server.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_server_bytes_4eac3edc
             field: server.bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_1c69123c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_server_packets_9718528f
       field: server.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_server_packets_80ee9c92
             field: server.packets
             ignore_missing: true
         - append:
+            tag: append_error_message_79bf3ab8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_user_roles_3139b7d8
       field: user.roles
       value: ['{{{user.roles}}}']
       if: ctx.user?.roles instanceof String
   - script:
+      tag: script_32cda030
       if: ctx.file?.mime_type != null
       lang: painless
       source: >-
@@ -1100,9 +1368,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_01da083c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'    
   - script:
+      tag: script_c3eea815
       description: Drops null/empty values recursively
       lang: painless
       source: |

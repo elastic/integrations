@@ -21,6 +21,7 @@ processors:
       target_field: netskope.transaction
       on_failure:
         - append:
+            tag: append_error_message_cd9f41da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -61,6 +62,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_788a3d12
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -112,6 +114,7 @@ processors:
       if: ctx.event?.action != null && ctx.event.action != ''
       on_failure:
         - append:
+            tag: append_error_message_c3d192ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -121,6 +124,7 @@ processors:
       if: ctx.event?.action != null && ctx.event.action != ''
       on_failure:
         - append:
+            tag: append_error_message_372e475e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -155,8 +159,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_bytes_45496f5e
               field: netskope.transaction.bytes
           - append:
+              tag: append_error_message_bf2c3a5e
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -167,8 +173,10 @@ processors:
         if: ctx.netskope?.transaction?.c_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_c_ip_09a3cd8c
               field: netskope.transaction.c_ip
           - append:
+              tag: append_error_message_b6281b58
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -190,8 +198,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_cs_bytes_ee912925
               field: netskope.transaction.cs_bytes
           - append:
+              tag: append_error_message_12b3bfb8
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -211,8 +221,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_c_latitude_18081d47
             field: netskope.transaction.x_c_latitude
         - append:
+            tag: append_error_message_aa1c3093
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -222,8 +234,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_c_longitude_ae81b70d
             field: netskope.transaction.x_c_longitude
         - append:
+            tag: append_error_message_564fbe34
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -237,6 +251,7 @@ processors:
       copy_from: netskope.transaction.x_c_longitude
       ignore_empty_value: true
   - remove:
+      tag: remove_client_geo_location_f9d98cb1
       field: client.geo.location
       if: >-
         !(ctx.client?.geo?.location?.lat instanceof double)
@@ -274,8 +289,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_rs_status_4308cab7
               field: netskope.transaction.rs_status
           - append:
+              tag: append_error_message_2ecf7a72
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -292,8 +309,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_sc_status_313ad86c
               field: netskope.transaction.sc_status
           - append:
+              tag: append_error_message_52e6ded6
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -325,8 +344,10 @@ processors:
         if: ctx.netskope?.transaction?.s_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_s_ip_5714205a
               field: netskope.transaction.s_ip
           - append:
+              tag: append_error_message_e78d9956
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -348,8 +369,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_sc_bytes_1ee0bc45
               field: netskope.transaction.sc_bytes
           - append:
+              tag: append_error_message_c5672638
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -365,8 +388,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_app_cci_245e18f2
               field: netskope.transaction.x_cs_app_cci
           - append:
+              tag: append_error_message_7b22ca18
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -378,8 +403,10 @@ processors:
         if: ctx.netskope?.transaction?.x_cs_dst_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_dst_ip_264c1dd0
               field: netskope.transaction.x_cs_dst_ip
           - append:
+              tag: append_error_message_e6d403b2
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -401,8 +428,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_dst_port_0416ebea
               field: netskope.transaction.x_cs_dst_port
           - append:
+              tag: append_error_message_111f9e32
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -427,8 +456,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_s_latitude_0d215447
             field: netskope.transaction.x_s_latitude
         - append:
+            tag: append_error_message_ab698883
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -438,8 +469,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_s_longitude_b9c9ea4d
             field: netskope.transaction.x_s_longitude
         - append:
+            tag: append_error_message_47216f44
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -453,6 +486,7 @@ processors:
       copy_from: netskope.transaction.x_s_longitude
       ignore_empty_value: true
   - remove:
+      tag: remove_destination_geo_location_d08b068a
       field: destination.geo.location
       if: >-
         !(ctx.destination?.geo?.location?.lat instanceof double)
@@ -490,8 +524,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_cs_uri_port_4b7892d6
               field: netskope.transaction.cs_uri_port
           - append:
+              tag: append_error_message_d66e4efe
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -527,8 +563,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_ip_connect_xff_99571a7a
               field: netskope.transaction.x_cs_ip_connect_xff
           - append:
+              tag: append_error_message_917ffcb6
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -546,8 +584,10 @@ processors:
         if: ctx.netskope?.transaction?.x_cs_ip_xff != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_ip_xff_513d697c
               field: netskope.transaction.x_cs_ip_xff
           - append:
+              tag: append_error_message_fec026bd
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -565,8 +605,10 @@ processors:
         if: ctx.netskope?.transaction?.x_cs_src_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_src_ip_69a78540
               field: netskope.transaction.x_cs_src_ip
           - append:
+              tag: append_error_message_1a2f9e2d
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -589,8 +631,10 @@ processors:
         if: ctx.netskope?.transaction?.x_cs_src_ip_egress != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_src_ip_egress_5554287c
               field: netskope.transaction.x_cs_src_ip_egress
           - append:
+              tag: append_error_message_f40345dd
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -607,8 +651,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_src_port_353c64d5
               field: netskope.transaction.x_cs_src_port
           - append:
+              tag: append_error_message_72f9e4de
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -625,8 +671,10 @@ processors:
         if: ctx.netskope?.transaction?.x_cs_userip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_userip_fee1ac38
               field: netskope.transaction.x_cs_userip
           - append:
+              tag: append_error_message_407956dd
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -644,8 +692,10 @@ processors:
         if: ctx.netskope?.transaction?.x_sr_dst_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_sr_dst_ip_641115b4
               field: netskope.transaction.x_sr_dst_ip
           - append:
+              tag: append_error_message_32a3ef53
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -662,8 +712,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_sr_dst_port_60f488ff
               field: netskope.transaction.x_sr_dst_port
           - append:
+              tag: append_error_message_5164a9de
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -675,8 +727,10 @@ processors:
         if: ctx.netskope?.transaction?.x_sr_src_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_sr_src_ip_ecabdcd8
               field: netskope.transaction.x_sr_src_ip
           - append:
+              tag: append_error_message_25b96f90
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -693,8 +747,10 @@ processors:
         ignore_missing: true
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_sr_src_port_eb6c8eec
               field: netskope.transaction.x_sr_src_port
           - append:
+              tag: append_error_message_ffca8daa
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -706,8 +762,10 @@ processors:
         if: ctx.netskope?.transaction?.x_ssl_policy_dst_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_ssl_policy_dst_ip_c07896c4
               field: netskope.transaction.x_ssl_policy_dst_ip
           - append:
+              tag: append_error_message_fb8d769b
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -725,8 +783,10 @@ processors:
         if: ctx.netskope?.transaction?.x_ssl_policy_src_ip != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_ssl_policy_src_ip_74191b44
               field: netskope.transaction.x_ssl_policy_src_ip
           - append:
+              tag: append_error_message_a30c9f28
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -744,8 +804,10 @@ processors:
         if: ctx.netskope?.transaction?.date != null && ctx.netskope.transaction.date != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_date_5c40eb05
               field: netskope.transaction.date
           - append:
+              tag: append_error_message_a0e9eb12
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -757,8 +819,10 @@ processors:
         if: ctx.netskope?.transaction?.x_c_local_time != null && ctx.netskope.transaction.x_c_local_time != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_c_local_time_24182b17
               field: netskope.transaction.x_c_local_time
           - append:
+              tag: append_error_message_feae57d2
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -770,8 +834,10 @@ processors:
         if: ctx.netskope?.transaction?.x_cs_timestamp != null && ctx.netskope.transaction.x_cs_timestamp != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_cs_timestamp_62467d9f
               field: netskope.transaction.x_cs_timestamp
           - append:
+              tag: append_error_message_c2aafbce
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -788,8 +854,10 @@ processors:
         if: ctx.netskope?.transaction?.x_r_cert_enddate != null && ctx.netskope.transaction.x_r_cert_enddate != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_r_cert_enddate_a7ea4110
               field: netskope.transaction.x_r_cert_enddate
           - append:
+              tag: append_error_message_ee9df6a7
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -806,8 +874,10 @@ processors:
         if: ctx.netskope?.transaction?.x_r_cert_startdate != null && ctx.netskope.transaction.x_r_cert_startdate != ''
         on_failure:
           - remove:
+              tag: remove_netskope_transaction_x_r_cert_startdate_d8612aa3
               field: netskope.transaction.x_r_cert_startdate
           - append:
+              tag: append_error_message_7885a70f
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -816,6 +886,7 @@ processors:
       copy_from: netskope.transaction.x_r_cert_startdate
       ignore_empty_value: true
   - split:
+      tag: split_netskope_transaction_x_cs_app_tags_f698a278
       field: netskope.transaction.x_cs_app_tags
       separator: ","
       preserve_trailing: true
@@ -823,11 +894,14 @@ processors:
       if: ctx.netskope?.transaction?.x_cs_app_tags != ''
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_cs_app_tags_c67023c8
             field: netskope.transaction.x_cs_app_tags
         - append:
+            tag: append_error_message_8c9687f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
+      tag: split_netskope_transaction_x_ssl_policy_categories_c8e1708c
       field: netskope.transaction.x_ssl_policy_categories
       separator: ","
       preserve_trailing: true
@@ -835,11 +909,14 @@ processors:
       if: ctx.netskope?.transaction?.x_ssl_policy_categories != ''
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_ssl_policy_categories_c82cebec
             field: netskope.transaction.x_ssl_policy_categories
         - append:
+            tag: append_error_message_5f811fc2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
+      tag: split_netskope_transaction_x_sr_headers_name_4b98e578
       field: netskope.transaction.x_sr_headers_name
       separator: ","
       preserve_trailing: true
@@ -847,11 +924,14 @@ processors:
       if: ctx.netskope?.transaction?.x_sr_headers_name != ''
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_sr_headers_name_0e38381c
             field: netskope.transaction.x_sr_headers_name
         - append:
+            tag: append_error_message_dbfa2a3e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
+      tag: split_netskope_transaction_x_sr_headers_value_4ecb16ca
       field: netskope.transaction.x_sr_headers_value
       separator: ","
       preserve_trailing: true
@@ -859,8 +939,10 @@ processors:
       if: ctx.netskope?.transaction?.x_sr_headers_value != ''
       on_failure:
         - remove:
+            tag: remove_netskope_transaction_x_sr_headers_value_e7f71890
             field: netskope.transaction.x_sr_headers_value
         - append:
+            tag: append_error_message_a3e0141c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1010,6 +1092,7 @@ processors:
       tag: 'user_agent_processor'
       on_failure:
         - append:
+            tag: append_error_message_33848231
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -1072,7 +1155,7 @@ processors:
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_dbd65e1a
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -1102,6 +1185,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
