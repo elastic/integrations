@@ -15,6 +15,7 @@ processors:
       ignore_missing: true
       tag: rename-azure
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
@@ -105,6 +106,7 @@ processors:
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       on_failure:
         - append:
+            tag: append_error_message_49680638
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -126,6 +128,7 @@ processors:
             tag: rename-caller_ip_address
             on_failure:
             - append:
+                tag: append_error_message_adca0f13
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -144,6 +147,7 @@ processors:
             if: ctx.source?.address == null
             on_failure:
             - append:
+                tag: append_error_message_5a35154f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -255,6 +259,7 @@ processors:
       tag: convert-operation_name
       on_failure:
         - append:
+            tag: append_error_message_7fb22c2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -297,6 +302,7 @@ processors:
       tag: uri_parts-properties-request_uri
       on_failure:
         - append:
+            tag: append_error_message_deea897d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -321,6 +327,7 @@ processors:
       tag: split-properties_roles
       on_failure:
         - append:
+            tag: append_error_message_04111e88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
@@ -330,6 +337,7 @@ processors:
       tag: split-properties_scopes
       on_failure:
         - append:
+            tag: append_error_message_49da506e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
@@ -339,6 +347,7 @@ processors:
       tag: split-properties_wids
       on_failure:
         - append:
+            tag: append_error_message_bf16e90a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - user_agent:
@@ -347,6 +356,7 @@ processors:
       tag: user_agent-properties_user_agent
       on_failure:
         - append:
+            tag: append_error_message_1ffd98cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -362,7 +372,7 @@ processors:
   - set:
       field: client.user.id
       value: '{{user.id}}'
-      tag: set-client_ip
+      tag: set_client_user_id_3614e25d
       ignore_empty_value: true
   - append:
       field: related.user
@@ -387,6 +397,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9a69cfa9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -396,6 +407,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_34760aed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -416,6 +428,7 @@ processors:
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       on_failure:
         - append:
+            tag: append_error_message_73a8d8d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -488,18 +501,21 @@ processors:
   - set:
       field: cloud.service.name
       value: 'Microsoft Graph'
-      tag: set-cloud_region
+      tag: set_cloud_service_name_75844292
       ignore_empty_value: true
   - geoip:
+      tag: geoip_client_ip_to_client_geo_90831252
       field: client.ip
       target_field: client.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -508,6 +524,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -516,18 +533,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
@@ -555,6 +576,7 @@ processors:
       tag: set_pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
