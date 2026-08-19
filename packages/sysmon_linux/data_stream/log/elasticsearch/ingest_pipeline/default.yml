@@ -4,20 +4,24 @@ processors:
 ## ECS and Event fields.
 
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - script:
+      tag: script_9f489693
       description: Remove all empty values from event_data.
       lang: painless
       source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
       if: ctx.winlog?.event_data != null
   - rename:
+      tag: rename_winlog_level_to_log_level_98a5cd19
       field: winlog.level
       target_field: log.level
       ignore_missing: true
       ignore_failure: true
       if: ctx?.winlog?.level != ""
   - date:
+      tag: date_winlog_time_created_to_event_created_174eb50b
       field: winlog.time_created
       target_field: event.created
       formats:
@@ -25,6 +29,7 @@ processors:
       ignore_failure: true
       if: ctx?.winlog?.time_created != null
   - date:
+      tag: date_winlog_event_data_UtcTime_to_winlog_event_data_UtcTime_bd907d2a
       field: winlog.event_data.UtcTime
       target_field: 'winlog.event_data.UtcTime'
       formats:
@@ -43,35 +48,42 @@ processors:
   #     ignore_failure: true
   #     if: ctx?.winlog?.event_data?.UtcTime == null && ctx?.sysmon?.log?.timestamp != null
   - rename:
+      tag: rename_log_syslog_appname_to_process_name_33679407
       field: log.syslog.appname
       target_field: process.name
       ignore_missing: true
       ignore_failure: true
       if: ctx?.log?.syslog?.appname != null
   - rename:
+      tag: rename_log_syslog_hostname_to_host_hostname_4a80df80
       field: log.syslog.hostname
       target_field: host.hostname
       ignore_missing: true
       ignore_failure: true
       if: ctx?.log?.syslog?.hostname != null
   - convert:
+      tag: convert_log_syslog_procid_to_process_pid_2a9d2e10
       field: log.syslog.procid
       target_field: process.pid
       type: long
       ignore_failure: true
       ignore_missing: true
   - remove:
+      tag: remove_sysmon_log_6fcfe4c1
       description: Remove original date and unparsed message fields
       field: sysmon.log
       ignore_missing: true
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_code_4e4a3a91
       field: event.code
       value: '{{{winlog.event_id}}}'
   - set:
+      tag: set_event_action_c1399ada
       field: event.action
       value: "log"
 
@@ -197,12 +209,14 @@ processors:
         def hm = new HashMap(params[ctx.event.code]);
         hm.forEach((k, v) -> ctx.event[k] = v);
   - convert:
+      tag: convert_winlog_record_id_b6e33898
       field: winlog.record_id
       type: string
       ignore_failure: true 
       ignore_missing: true
 
   - rename:
+      tag: rename_winlog_event_data_ID_to_error_code_077920a1
       field: winlog.event_data.ID
       target_field: error.code
       ignore_failure: true
@@ -210,24 +224,28 @@ processors:
       if: ctx.event.code == "255"
 
   - rename:
+      tag: rename_winlog_event_data_RuleName_to_rule_name_a1ec63d8
       field: winlog.event_data.RuleName
       target_field: rule.name
       ignore_missing: true
       ignore_failure: true
 
   - rename:
+      tag: rename_winlog_event_data_provider_name_to_event_provider_679c876a
       field: winlog.event_data.provider_name
       target_field: event.provider
       ignore_missing: true
       ignore_failure: true
 
   - rename:
+      tag: rename_winlog_event_data_opcode_to_winlog_opcode_61075aa2
       field: winlog.event_data.opcode
       target_field: winlog.opcode
       ignore_missing: true
       ignore_failure: true
 
   - convert:
+      tag: convert_winlog_event_data_version_to_winlog_version_89a15277
       field: winlog.event_data.version
       target_field: winlog.version
       type: long
@@ -235,6 +253,7 @@ processors:
       ignore_missing: true
 
   - rename:
+      tag: rename_winlog_event_data_Type_to_message_c2d78a57
       field: winlog.event_data.Type
       target_field: message
       ignore_missing: true
@@ -242,11 +261,13 @@ processors:
       if: ctx.event.code == "25"
 
   - rename:
+      tag: rename_winlog_event_data_Hash_to_winlog_event_data_Hashes_b0d80625
       field: winlog.event_data.Hash
       target_field: winlog.event_data.Hashes
       ignore_missing: true
       ignore_failure: true
   - kv:
+      tag: kv_winlog_event_data_Hashes_to__temp_hashes_974a1054
       field: winlog.event_data.Hashes
       target_field: _temp.hashes
       field_split: ","
@@ -254,6 +275,7 @@ processors:
       ignore_failure: true
       if: ctx?.winlog?.event_data?.Hashes != null
   - script:
+      tag: script_354c69e5
       lang: painless
       if: ctx?._temp?.hashes != null
       source: |-
@@ -292,120 +314,142 @@ processors:
 ## Process fields
 
   - rename:
+      tag: rename__temp_hashes_to_process_hash_dea099b8
       field: _temp.hashes
       target_field: process.hash
       if: |-
         ctx?._temp?.hashes != null &&
         ["1", "23", "24", "25", "26"].contains(ctx.event.code)
   - rename:
+      tag: rename_process_hash_imphash_to_process_pe_imphash_b5a09a6c
       field: process.hash.imphash
       target_field: process.pe.imphash
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_ProcessGuid_to_process_entity_id_3cd8424e
       field: winlog.event_data.ProcessGuid
       target_field: process.entity_id
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_winlog_event_data_ProcessId_to_process_pid_2c8f9809
       field: winlog.event_data.ProcessId
       target_field: process.pid
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_Image_to_process_executable_e1725c70
       field: winlog.event_data.Image
       target_field: process.executable
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_SourceProcessGuid_to_process_entity_id_96c57351
       field: winlog.event_data.SourceProcessGuid
       target_field: process.entity_id
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_SourceProcessGUID_to_process_entity_id_3d7ae631
       field: winlog.event_data.SourceProcessGUID
       target_field: process.entity_id
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_winlog_event_data_SourceProcessId_to_process_pid_4f51322a
       field: winlog.event_data.SourceProcessId
       target_field: process.pid
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_winlog_event_data_SourceThreadId_to_process_thread_id_32601755
       field: winlog.event_data.SourceThreadId
       target_field: process.thread.id
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_SourceImage_to_process_executable_844051c5
       field: winlog.event_data.SourceImage
       target_field: process.executable
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_Destination_to_process_executable_9a8e9e0b
       field: winlog.event_data.Destination
       target_field: process.executable
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_CommandLine_to_process_command_line_8813dfc2
       field: winlog.event_data.CommandLine
       target_field: process.command_line
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_CurrentDirectory_to_process_working_directory_8207cac4
       field: winlog.event_data.CurrentDirectory
       target_field: process.working_directory
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_ParentProcessGuid_to_process_parent_entity_id_148ec92a
       field: winlog.event_data.ParentProcessGuid
       target_field: process.parent.entity_id
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_winlog_event_data_ParentProcessId_to_process_parent_pid_b6a10957
       field: winlog.event_data.ParentProcessId
       target_field: process.parent.pid
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_ParentImage_to_process_parent_executable_1164d21a
       field: winlog.event_data.ParentImage
       target_field: process.parent.executable
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_ParentCommandLine_to_process_parent_command_line_c3952ed0
       field: winlog.event_data.ParentCommandLine
       target_field: process.parent.command_line
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_OriginalFileName_to_process_pe_original_file_name_28756426
       field: winlog.event_data.OriginalFileName
       target_field: process.pe.original_file_name
       ignore_missing: true
       ignore_failure: true
       if: ctx.event.code != "7"
   - set:
+      tag: set_process_pe_company_c2816db7
       field: process.pe.company
       copy_from: winlog.event_data.Company
       ignore_empty_value: true
       ignore_failure: true
       if: ctx.event.code != "7"
   - set:
+      tag: set_process_pe_description_6e39d255
       field: process.pe.description
       copy_from: winlog.event_data.Description
       ignore_empty_value: true
       ignore_failure: true
       if: ctx.event.code != "7"
   - set:
+      tag: set_process_pe_file_version_7e75767a
       field: process.pe.file_version
       copy_from: winlog.event_data.FileVersion
       ignore_empty_value: true
       ignore_failure: true
       if: ctx.event.code != "7"
   - set:
+      tag: set_process_pe_product_3e168e1f
       field: process.pe.product
       copy_from: winlog.event_data.Product
       ignore_empty_value: true
@@ -413,6 +457,7 @@ processors:
       if: ctx.event.code != "7"
 
   - script:
+      tag: script_322b7379
       description: Implements Windows-like SplitCommandLine
       lang: painless
       if: |-
@@ -503,6 +548,7 @@ processors:
         }
 
   - script:
+      tag: script_d836c1bd
       description: Adds process name information.
       lang: painless
       if: |-
@@ -536,86 +582,102 @@ processors:
 ## File fields
 
   - rename:
+      tag: rename__temp_hashes_to_file_hash_fa5a01ed
       field: _temp.hashes
       target_field: file.hash
       if: |-
         ctx?._temp?.hashes != null &&
         ["6", "7", "15"].contains(ctx.event.code)
   - rename:
+      tag: rename_file_hash_imphash_to_file_pe_imphash_6baf0a60
       field: file.hash.imphash
       target_field: file.pe.imphash
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_TargetFilename_to_file_path_d0f070c9
       field: winlog.event_data.TargetFilename
       target_field: file.path
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_Device_to_file_path_48e095bf
       field: winlog.event_data.Device
       target_field: file.path
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_PipeName_to_file_name_a1171a72
       field: winlog.event_data.PipeName
       target_field: file.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_ImageLoaded_to_file_path_dd7cb4e9
       field: winlog.event_data.ImageLoaded
       target_field: file.path
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_file_code_signature_subject_name_cb55bafb
       field: file.code_signature.subject_name
       copy_from: winlog.event_data.Signature
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_file_code_signature_status_a66cac45
       field: file.code_signature.status
       copy_from: winlog.event_data.SignatureStatus
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_winlog_event_data_OriginalFileName_to_file_pe_original_file_name_0dfd2727
       field: winlog.event_data.OriginalFileName
       target_field: file.pe.original_file_name
       ignore_missing: true
       ignore_failure: true
       if: ctx.event.code == "7"
   - set:
+      tag: set_file_pe_company_56e8dab0
       field: file.pe.company
       copy_from: winlog.event_data.Company
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event.code == "7"
   - set:
+      tag: set_file_pe_description_b329982c
       field: file.pe.description
       copy_from: winlog.event_data.Description
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event.code == "7"
   - set:
+      tag: set_file_pe_file_version_36bcbf21
       field: file.pe.file_version
       copy_from: winlog.event_data.FileVersion
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event.code == "7"
   - set:
+      tag: set_file_pe_product_31604628
       field: file.pe.product
       copy_from: winlog.event_data.Product
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event.code == "7"
   - set:
+      tag: set_file_code_signature_signed_bd3b5b3e
       field: file.code_signature.signed
       value: true
       if: ctx?.winlog?.event_data?.Signed == true
   - set:
+      tag: set_file_code_signature_valid_21b9e560
       field: file.code_signature.valid
       value: true
       if: ctx?.winlog?.event_data?.SignatureStatus == "Valid"
 
   - script:
+      tag: script_92933fa5
       description: Adds file information.
       lang: painless
       if: ctx?.file?.path != null && ctx.file.path.length() > 1
@@ -638,82 +700,98 @@ processors:
 ## Network, Destination, and Source fields
 
   - rename:
+      tag: rename_winlog_event_data_Protocol_to_network_transport_1c2fb0e3
       field: winlog.event_data.Protocol
       target_field: network.transport
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_winlog_event_data_DestinationPortName_to_network_protocol_f26906fd
       field: winlog.event_data.DestinationPortName
       target_field: network.protocol
       ignore_missing: true
       ignore_failure: true
       if: ctx.event.code != "22"
   - rename:
+      tag: rename_winlog_event_data_SourcePortName_to_network_protocol_c5ee0572
       field: winlog.event_data.SourcePortName
       target_field: network.protocol
       ignore_missing: true
       ignore_failure: true
       if: ctx.event.code != "22"
   - set:
+      tag: set_network_protocol_3c708440
       field: network.protocol
       value: dns
       if: ctx.event.code == "22"
   - convert:
+      tag: convert_winlog_event_data_SourceIp_to_source_ip_fef32230
       field: winlog.event_data.SourceIp
       target_field: source.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_SourceHostname_to_source_domain_ed449073
       field: winlog.event_data.SourceHostname
       target_field: source.domain
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_winlog_event_data_SourcePort_to_source_port_a57edcbd
       field: winlog.event_data.SourcePort
       target_field: source.port
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_winlog_event_data_DestinationIp_to_destination_ip_35e03cc6
       field: winlog.event_data.DestinationIp
       target_field: destination.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_DestinationHostname_to_destination_domain_1277c5dd
       field: winlog.event_data.DestinationHostname
       target_field: destination.domain
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_winlog_event_data_DestinationPort_to_destination_port_7dba2d73
       field: winlog.event_data.DestinationPort
       target_field: destination.port
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_QueryName_to_dns_question_name_03c13f9b
       field: winlog.event_data.QueryName
       target_field: dns.question.name
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_network_direction_4e4bcdf9
       field: network.direction
       value: egress
       if: ctx?.winlog?.event_data?.Initiated == "true"
   - set:
+      tag: set_network_direction_0270705e
       field: network.direction
       value: ingress
       if: ctx?.winlog?.event_data?.Initiated == "false"
   - set:
+      tag: set_network_type_abb0f79c
       field: network.type
       value: ipv4
       if: ctx?.winlog?.event_data?.SourceIsIpv6 == "false"
   - set:
+      tag: set_network_type_3f32039f
       field: network.type
       value: ipv6
       if: ctx?.winlog?.event_data?.SourceIsIpv6 == "true"
   - script:
+      tag: script_0fe590aa
       description: |
         Splits the QueryResults field that contains the DNS responses.
         Example: "type:  5 f2.taboola.map.fastly.net;::ffff:151.101.66.2;::ffff:151.101.130.2;::ffff:151.101.194.2;::ffff:151.101.2.2;"
@@ -820,6 +898,7 @@ processors:
           ctx.related.hosts = relatedHosts;
         }
   - foreach:
+      tag: foreach_dns_answers_3b0b739d
       field: dns.answers
       if: ctx.dns?.answers instanceof List
       ignore_failure: true
@@ -829,6 +908,7 @@ processors:
           pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
           replacement: '$1'
   - foreach:
+      tag: foreach_dns_resolved_ip_0d1a1469
       field: dns.resolved_ip
       if: ctx.dns?.resolved_ip instanceof List
       ignore_failure: true
@@ -838,6 +918,7 @@ processors:
           pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
           replacement: '$1'
   - foreach:
+      tag: foreach_dns_resolved_ip_34ab3637
       field: dns.resolved_ip
       ignore_missing: true
       processor:
@@ -848,6 +929,7 @@ processors:
             - remove:
                 field: _ingest._value
   - script:
+      tag: script_2fd55f2b
       description: Convert V4MAPPED addresses.
       lang: painless
       if: ctx?.dns?.resolved_ip != null
@@ -873,21 +955,25 @@ processors:
           ]);
         }
   - registered_domain:
+      tag: registered_domain_dns_question_name_to_dns_question_24868ff9
       field: dns.question.name
       target_field: dns.question
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_related_hosts_c73cd8af
       field: related.hosts
       value: "{{{dns.question.name}}}"
       allow_duplicates: false
       if: ctx?.dns?.question?.name != null && ctx?.dns?.question?.name != ""
   - remove:
+      tag: remove_dns_question_domain_610dad76
       description: Remove dns.question.domain because it is not part of ECS and is redundant with dns.question.name.
       field: dns.question.domain
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_dns_resolved_ip_95f6f9d9
       field: dns.resolved_ip
       ignore_missing: true
       processor:
@@ -897,28 +983,33 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - community_id:
+      tag: community_id_9c2f7277
       ignore_failure: true
       ignore_missing: false
 
 ## User fields
 
   - set:
+      tag: set_user_id_0dabac40
       field: user.id
       copy_from: winlog.user.identifier
       ignore_empty_value: true
       ignore_failure: true
   - split:
+      tag: split_winlog_event_data_User_to__temp_user_parts_daf87b73
       field: winlog.event_data.User
       target_field: "_temp.user_parts"
       separator: '\\'
       if: ctx?.winlog?.event_data?.User != null
   - set:
+      tag: set_user_domain_3f218bb9
       field: user.domain
       value: "{{{_temp.user_parts.0}}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
+      tag: set_user_name_f2dc247d
       field: user.name
       value: "{{{_temp.user_parts.1}}}"
       ignore_failure: true
@@ -927,22 +1018,26 @@ processors:
   # Get user details from the translate_sid processor enrichment
   # if they are available and we don't already have them.
   - rename:
+      tag: rename_winlog_event_data__MemberUserName_to_user_name_46f9020b
       field: winlog.event_data._MemberUserName
       target_field: user.name
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data__MemberDomain_to_user_domain_650026e2
       field: winlog.event_data._MemberDomain
       target_field: user.domain
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_user_roles_63374eff
       value: '{{{winlog.event_data._MemberAccountType}}}'
       field: user.roles
       ignore_failure: true
       allow_duplicates: false
       if: ctx.winlog?.event_data?._MemberAccountType != null
   - remove:
+      tag: remove_winlog_event_data__MemberAccountType_e41d8d2a
       field: winlog.event_data._MemberAccountType
       ignore_missing: true
       ignore_failure: true
@@ -951,11 +1046,13 @@ processors:
 ## Sysmon fields
 
   - rename:
+      tag: rename_winlog_event_data_QueryStatus_to_sysmon_dns_status_bf1ee1c2
       field: winlog.event_data.QueryStatus
       target_field: sysmon.dns.status
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_2d0a907b
       description: Translate DNS Query status.
       lang: painless
       params:
@@ -1163,12 +1260,14 @@ processors:
           ctx.sysmon.dns.status = status;
         }
   - convert:
+      tag: convert_winlog_event_data_Archived_to_sysmon_file_archived_afff48f0
       field: winlog.event_data.Archived
       target_field: sysmon.file.archived
       type: boolean
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_winlog_event_data_IsExecutable_to_sysmon_file_is_executable_70b456e1
       field: winlog.event_data.IsExecutable
       target_field: sysmon.file.is_executable
       type: boolean
@@ -1178,18 +1277,21 @@ processors:
 ## Related fields
 
   - append:
+      tag: append_related_user_eba0f326
       field: related.user
       value: "{{{user.name}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx?.user?.name != null && ctx.user.name != ""
   - append:
+      tag: append_related_ip_0ece4618
       field: related.ip
       value: "{{{source.ip}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx?.source?.ip != null && ctx.source.ip != ""
   - append:
+      tag: append_related_ip_4af5ed3d
       field: related.ip
       value: "{{{destination.ip}}}"
       ignore_failure: true
@@ -1199,6 +1301,7 @@ processors:
 ## Registry fields
 
   - script:
+      tag: script_92827fca
       description: Set registry fields.
       lang: painless
       if: |-
@@ -1293,6 +1396,7 @@ processors:
 ## Cleanup
 
   - remove:
+      tag: remove_22240b83
       field:
         - _temp
         - log.syslog
@@ -1326,12 +1430,14 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - remove:
+      tag: remove_winlog_event_data_98734fa3
       description: Remove empty event data.
       field: winlog.event_data
       ignore_missing: true
       ignore_failure: true
       if: ctx?.winlog?.event_data != null && ctx.winlog.event_data.size() == 0
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
