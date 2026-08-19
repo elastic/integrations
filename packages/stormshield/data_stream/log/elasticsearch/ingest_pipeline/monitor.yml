@@ -87,9 +87,12 @@ processors:
           ctx.stormshield["metadata"] = [:];
         }
         ctx.stormshield.metadata.device_stats = result;
-        for (entry in specialCases.entrySet()) {
-          ctx.stormshield.metadata.device_stats[entry.getKey()] = entry.getValue();
-          ctx.stormshield.remove(entry.getKey());
+        if (specialCases.containsKey("CPU")) {
+          if (!ctx.stormshield.containsKey("monitor")) {
+            ctx.stormshield.monitor = [:];
+          }
+          ctx.stormshield.monitor.cpu = specialCases["CPU"];
+          ctx.stormshield.remove("CPU");
         }
   - script:
       tag: script_process_ethernet
