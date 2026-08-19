@@ -29,6 +29,11 @@ Log data streams collected by the System integration include application, system
 machines running Windows and auth and syslog events on machines running macOS or Linux.
 See more details in the [Logs reference](#logs-reference).
 
+New Fleet-managed policies use journald by default for auth and syslog collection on Ubuntu,
+RHEL, CentOS Stream, Oracle Linux, AlmaLinux, Rocky Linux, Debian 12 and 13, Amazon Linux 2023,
+and SLES 15 and 16. Other platforms continue to use traditional log files by default. Existing
+policies retain their configured input conditions when the System integration is upgraded.
+
 **Metrics** give you insight into the state of the machine.
 Metric data streams collected by the System integration include CPU usage, load statistics, memory usage,
 information on network behavior, and more.
