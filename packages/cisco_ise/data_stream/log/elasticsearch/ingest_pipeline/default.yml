@@ -19,6 +19,11 @@ processors:
         - '^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:host.hostname} %{DATA:cisco_ise.log.category.name} %{GREEDYDATA:_tmp.message}$'
         - '^%{TIMEONLYSTAMP_ISO8601:_tmp.timestamp}%{ISO8601_TIMEZONE:_tmp.timezone} %{DATA:host.hostname} %{DATA:cisco_ise.log.category.name} %{GREEDYDATA:_tmp.message}$'
         - '^%{DATA:cisco_ise.log.category.name} %{DATA:cisco_ise.log.message.id} %{NONNEGINT:cisco_ise.log.segment.total:long} %{NONNEGINT:cisco_ise.log.segment.number:long} %{GREEDYDATA:_tmp.message}$'
+        - '^Technical Support: %{GREEDYDATA}$'
+        - '^Copyright %{GREEDYDATA}$'
+        - '^Compiled %{DATA} by %{DATA}, %{GREEDYDATA:_tmp.message}$'
+        - '^#%{NONNEGINT} %{GREEDYDATA}$'
+        - '^%{DATA}, (?<_tmp.message>cisco-av-pair=.*)$'
       pattern_definitions:
         TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
       on_failure:
@@ -26,6 +31,28 @@ processors:
             tag: append_error_message_62c1fc01
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_device_sensor_fragment_flag
+      description: >-
+        ISE forwards device-sensor values verbatim, so a neighbor's multi-line
+        banner (lldpSystemDescription) arrives with its newlines intact, each
+        escaped as a trailing backslash. The inputs split on them, leaving
+        continuation lines that carry no ISE header, so no category name is
+        parsed. Flag them so the attributes they carry can be processed as the
+        tail of the preceding record.
+      field: _tmp.device_sensor_fragment
+      value: true
+      if: >-
+        ctx.cisco_ise?.log?.category?.name == null &&
+        ctx.event?.original instanceof String &&
+        (ctx.event.original.endsWith('\\') ||
+        ctx.event.original.trim().endsWith(','))
+  - append:
+      tag: append_tag_device_sensor_fragment
+      field: tags
+      value: cisco_ise.device_sensor_fragment
+      allow_duplicates: false
+      if: ctx._tmp?.device_sensor_fragment == true
   - grok:
       field: _tmp.message
       tag: grok_message_details
@@ -41,6 +68,14 @@ processors:
             tag: append_error_message_0a0a0ab3
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_message_from_event_original
+      description: >-
+        The device-sensor banner patterns match without capturing, so those
+        lines arrive here with no message. Keep their text searchable.
+      field: message
+      copy_from: event.original
+      if: ctx.message == null && ctx.event?.original != null
   - trim:
       tag: trim_message_c88e4c4f
       field: message
