@@ -29,9 +29,11 @@ processors:
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_faafcc6e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dot_expander:
+      tag: dot_expander_*_de55df6f
       field: "*"
       path: digital_guardian.arc
   - script:
@@ -148,7 +150,7 @@ processors:
       if: ctx.digital_guardian?.arc?.dg_processed_time != null
   - date:
       field: digital_guardian.arc.dg_local_timestamp
-      tag: date_dg_time
+      tag: date_digital_guardian_arc_dg_local_timestamp_to_digital_guardian_arc_dg_local_timestamp_ba153917
       target_field: digital_guardian.arc.dg_local_timestamp
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -166,7 +168,7 @@ processors:
       if: ctx.digital_guardian?.arc?.pi_fal != null
   - date:
       field: digital_guardian.arc.pi_fcl
-      tag: date_inc_mtime
+      tag: date_digital_guardian_arc_pi_fcl_to_digital_guardian_arc_pi_fcl_4837982a
       target_field: digital_guardian.arc.pi_fcl
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -175,7 +177,7 @@ processors:
       if: ctx.digital_guardian?.arc?.pi_fcl != null
   - date:
       field: digital_guardian.arc.pi_fml
-      tag: date_inc_mtime
+      tag: date_digital_guardian_arc_pi_fml_to_digital_guardian_arc_pi_fml_1d87d6bc
       target_field: digital_guardian.arc.pi_fml
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -184,7 +186,7 @@ processors:
       if: ctx.digital_guardian?.arc?.pi_fml != null
   - date:
       field: digital_guardian.arc.inc_mtime
-      tag: date_inc_mtime
+      tag: date_digital_guardian_arc_inc_mtime_to_digital_guardian_arc_inc_mtime_8064f978
       target_field: digital_guardian.arc.inc_mtime
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -245,11 +247,13 @@ processors:
 
 # ECS Related Fields
   - append:
+      tag: append_related_user_1ea4ed5c
       field: related.user
       value: '{{{digital_guardian.arc.inc_creator}}}'
       allow_duplicates: false
       if: ctx.digital_guardian?.arc?.inc_creator != null
   - append:
+      tag: append_related_user_c3ed125a
       field: related.user
       value: '{{{digital_guardian.arc.inc_assign}}}'
       allow_duplicates: false
@@ -294,6 +298,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
