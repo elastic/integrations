@@ -2,59 +2,73 @@
 description: Pipeline for processing self-hosted Atlassian Jira audit logs.
 processors:
 - set:
+    tag: set__tmp_timestamp_5b2e9ff8
     field: _tmp.timestamp
     copy_from: json.timestamp
     if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
 - set:
+    tag: set__tmp_timestamp_49d3953e
     field: _tmp.timestamp
     value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
     if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
 - rename:
+    tag: rename_json_author_id_to_user_id_cf7e3d88
     field: json.author.id
     target_field: user.id
     ignore_missing: true
 - rename:
+    tag: rename_json_author_name_to_user_name_630eea34
     field: json.author.name
     target_field: user.name
     ignore_missing: true
 - rename:
+    tag: rename_json_auditType_to_jira_audit_type_7f058fb8
     field: json.auditType
     target_field: jira.audit.type
     ignore_missing: true
 - rename:
+    tag: rename_json_type_to_jira_audit_type_1d6e66fd
     field: json.type
     target_field: jira.audit.type
     ignore_missing: true
 - rename:
+    tag: rename_json_method_to_jira_audit_method_c26de2ff
     field: json.method
     target_field: jira.audit.method
     ignore_missing: true
 - rename:
+    tag: rename_json_system_to_service_address_67c6f11c
     field: json.system
     target_field: service.address
     ignore_missing: true
 - uri_parts:
+    tag: uri_parts_service_address_to__tmp_service_9d835542
     field: service.address
     target_field: _tmp.service
     ignore_failure: true
     if: ctx.service?.address != null
 - rename:
+    tag: rename_json_extraAttributes_to_jira_audit_extra_attributes_1102d13e
     field: json.extraAttributes
     target_field: jira.audit.extra_attributes
     ignore_missing: true
 - rename:
+    tag: rename_json_changedValues_to_jira_audit_changed_values_38ca71f0
     field: json.changedValues
     target_field: jira.audit.changed_values
     ignore_missing: true
 - rename:
+    tag: rename_json_affectedObjects_to_jira_audit_affected_objects_26851bea
     field: json.affectedObjects
     target_field: jira.audit.affected_objects
     ignore_missing: true
 - set:
+    tag: set_event_action_2a98ce23
     field: event.action
     copy_from: jira.audit.type.actionI18nKey
     ignore_empty_value: true
 - append:
+    tag: append_related_hosts_95c097cc
     field: related.hosts
     value: '{{{_tmp.service.domain}}}'
     allow_duplicates: false
