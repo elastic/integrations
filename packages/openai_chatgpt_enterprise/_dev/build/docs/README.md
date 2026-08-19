@@ -2,7 +2,7 @@
 
 ## Overview
 
-[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including authentication activity such as user logins, token issuance, and logouts.
+[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including authentication activity such as user logins, token issuance, and logouts, and application authentication activity such as connecting (linking) and disconnecting (unlinking) apps and connectors.
 
 This integration for Elastic allows you to collect ChatGPT Enterprise compliance logs using the OpenAI Compliance Logs Platform API, then visualize the data in Kibana.
 
@@ -12,7 +12,7 @@ This integration collects data from the [OpenAI Compliance Logs Platform API](ht
 
 ### How it works
 
-This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
+This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication and application authentication logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
 
 1. The integration calls the list endpoint (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs`) with the `event_type`, and paginates forward using the `last_end_time` cursor and `has_more` flag returned by the API. This returns metadata for each available log file.
 2. For each listed file, the integration downloads its contents (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`). This endpoint redirects to a signed download URL that serves the log file as JSON Lines, and each line is ingested as a separate event.
@@ -23,15 +23,18 @@ On the first run, logs are pulled back as far as the configured initial interval
 
 ## What data does this integration collect?
 
-This integration collects log messages of the following type:
+This integration collects log messages of the following types:
 
 - `Authentication Log`: Collect ChatGPT Enterprise `AUTH_LOG` events, covering user authentication activity such as logins, token issuance, and logouts, along with the client and request context (IP, geo, user agent, and TLS fingerprints) associated with each action (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Application Authentication Log`: Collect ChatGPT Enterprise `APP_AUTH_LOG` events, covering application authentication activity such as linking and unlinking apps and connectors (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 
 ### Supported use cases
 
-Bringing ChatGPT Enterprise authentication activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in activity in one place instead of moving between separate tools.
+Bringing ChatGPT Enterprise authentication and application authentication activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in and app-connection activity in one place instead of moving between separate tools.
 
 The **Authentication Log** data stream provides visibility into who signed in, when, from where, and with what client, including the action outcome and source geolocation. Use it to monitor login, token issuance, and logout activity, detect sign-ins from unexpected locations, and surface anomalous or high-risk authentication behavior to support security oversight and auditing.
+
+The **Application Authentication Log** data stream provides visibility into which apps and connectors are linked or unlinked, who performed the action, and the client and request context associated with it. Use it to audit connector lifecycle changes, monitor app-authorization activity, and surface anomalous or high-risk link/unlink actions to support security oversight and auditing.
 
 ## What do I need to use this integration?
 
@@ -79,7 +82,7 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
         - Configure the **URL** (default `https://api.chatgpt.com`) and **Compliance API key**.
         - Set the **Scope** to `workspace` or `organization`.
         - Set the **Workspace / Organization ID** to the resource whose compliance logs are collected.
-        - Adjust the integration configuration parameters if required, including the Initial Interval, Interval, HTTP Client Timeout etc. to enable data collection.
+        - Adjust the integration configuration parameters if required, including the Initial Interval, Interval, HTTP Client Timeout and so on to enable data collection.
 
 6. Select **Save and continue** to save the integration.
 
@@ -114,6 +117,20 @@ The `auth_log` data stream captures ChatGPT Enterprise `AUTH_LOG` events (user a
 
 {{ event "auth_log" }}
 
+### App Auth Log
+
+The `app_auth_log` data stream captures ChatGPT Enterprise `APP_AUTH_LOG` events (application authentication activity such as linking and unlinking apps and connectors).
+
+#### App Auth Log fields
+
+{{ fields "app_auth_log" }}
+
+### Example event
+
+#### App Auth Log
+
+{{ event "app_auth_log" }}
+
 ### Inputs used
 
 {{ inputDocs }}
@@ -123,5 +140,8 @@ The `auth_log` data stream captures ChatGPT Enterprise `AUTH_LOG` events (user a
 These APIs are used with this integration:
 
 * Authentication Log:
+    * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
+    * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Application Authentication Log:
     * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
     * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
