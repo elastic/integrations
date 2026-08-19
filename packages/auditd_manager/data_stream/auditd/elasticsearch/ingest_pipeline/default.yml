@@ -2,22 +2,27 @@
 description: Pipeline for parsing Linux auditd logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_event_original_to_auditd_messages_5636b886
       field: event.original
       target_field: auditd.messages
       ignore_missing: true
   - join:
+      tag: join_auditd_messages_to_event_original_93dece6a
       field: auditd.messages
       separator: "\n"
       target_field: event.original
       if: ctx?.auditd?.messages != null && ctx.auditd.messages instanceof List
   - rename:
+      tag: rename_error_message_to_auditd_warnings_0099f891
       field: error.message
       target_field: auditd.warnings
       ignore_missing: true
   - join:
+      tag: join_auditd_warnings_to_error_message_06eccd4d
       field: auditd.warnings
       separator: "\n"
       target_field: error.message
@@ -26,6 +31,7 @@ processors:
         ctx.auditd.warnings instanceof List &&
         ctx.auditd.warnings.size() > 0
   - script:
+      tag: script_51b18ada
       lang: painless
       description: Standardize all field names.
       source: |
@@ -43,166 +49,204 @@ processors:
         }
         handleMap(ctx);
   - rename:
+      tag: rename_source_path_to_source_address_b129f140
       field: source.path
       target_field: source.address
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_destination_path_to_destination_address_86baf8b0
       field: destination.path
       target_field: destination.address
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_user_audit_to_auditd_user_audit_2dfbba6c
       field: user.audit
       target_field: auditd.user.audit
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_user_new_auid_to_auditd_user_new_auid_c7b5a88a
       field: user.new_auid
       target_field: auditd.user.new_auid
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_user_old_auid_to_auditd_user_old_auid_087e4d62
       field: user.old_auid
       target_field: auditd.user.old_auid
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_file_selinux_to_auditd_file_selinux_42e1b4cc
       field: file.selinux
       target_field: auditd.file.selinux
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_user_selinux_to_auditd_user_selinux_b95dd536
       field: user.selinux
       target_field: auditd.user.selinux
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_user_saved_to_auditd_user_saved_033490dc
       field: user.saved
       target_field: auditd.user.saved
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_user_filesystem_to_auditd_user_filesystem_9c66202e
       field: user.filesystem
       target_field: auditd.user.filesystem
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_outcome_c186ca64
       field: event.outcome
       value: failure
       if: ctx?.event?.outcome == "fail"
   - rename:
+      tag: rename_auditd_sequence_to_event_sequence_cda4d702
       field: auditd.sequence
       target_field: event.sequence
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_auditd_data_id_to_event_id_9b5257ac
       field: auditd.data.id
       target_field: event.id
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_auditd_data_removed_e9c5f6c2
       field: auditd.data.removed
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_items_cd98d00e
       field: auditd.data.items
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_lport_2626c83b
       field: auditd.data.lport
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_rport_804502f1
       field: auditd.data.rport
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_sport_215de050
       field: auditd.data.sport
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_dport_64077723
       field: auditd.data.dport
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_entries_a19b32aa
       field: auditd.data.entries
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_argc_d21df98b
       field: auditd.data.argc
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_seqno_39c28fca
       field: auditd.data.seqno
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_nargs_dcb4e13f
       field: auditd.data.nargs
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_socket_port_3e2c50e4
       field: auditd.data.socket.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_old_vcpu_2767aad2
       field: auditd.data.old_vcpu
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_new_vcpu_3b1a52f1
       field: auditd.data.new_vcpu
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_changed_47d87072
       field: auditd.data.changed
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_added_2ee2a8f8
       field: auditd.data.added
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_destination_port_39296f8c
       field: destination.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_source_port_138f39f1
       field: source.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_spid_e749e852
       field: auditd.data.spid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_opid_64ee9266
       field: auditd.data.opid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_nlnk_pid_d8aa6a35
       field: auditd.data.nlnk_pid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_vm_pid_07893a59
       field: auditd.data.vm_pid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_data_audit_pid_fbae9655
       field: auditd.data.audit_pid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_process_pid_df04a3d5
       field: process.pid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_process_exit_code_f906de8a
       field: process.exit_code
       type: long
       ignore_missing: true
   - remove:
+      tag: remove_auditd_messages_fe33c196
       field: auditd.messages
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
