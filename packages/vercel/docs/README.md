@@ -4,7 +4,7 @@ Vercel is a cloud platform for deploying and hosting frontend applications on a 
 
 This integration explains how to send Vercel logs, audit logs, Web Analytics, Speed Insights, and traces to Elastic using [Vercel Drains](https://vercel.com/docs/drains) and the Elastic Cloud [managed endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs). Elastic operates the endpoint, so there is nothing to deploy on your side: no Elastic Agent, no OpenTelemetry Collector, and no agent policy to configure. Follow the setup steps below in your Elastic Cloud project or deployment and in Vercel.
 
-Once data starts flowing, the **Vercel OpenTelemetry Assets** package provides assets for logs, audit logs, Web Analytics, and Speed Insights. Traces appear in `traces-generic.otel-*` and can be explored in Discover and in the [Services](https://www.elastic.co/docs/solutions/observability/apm/services) inventory.
+Once data starts flowing, the **[Vercel OpenTelemetry Assets](https://www.elastic.co/docs/reference/integrations/vercel_otel)** package provides assets for logs, audit logs, Web Analytics, and Speed Insights. Traces appear in `traces-generic.otel-*` and can be explored in Discover and in the [Services](https://www.elastic.co/docs/solutions/observability/apm/services) inventory.
 
 ## Compatibility
 
