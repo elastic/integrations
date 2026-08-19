@@ -3,21 +3,25 @@ description: Processes HTTP JSON events from BitDefender
 processors:
 
 - set:
+    tag: set_ecs_version_0f7334bb
     field: ecs.version
     value: '8.11.0'
 
 - json:
+    tag: json_message_to_bitdefender_event_07d69b72
     field: message
     target_field: bitdefender.event
     if: ctx.json == null && ctx.message != null && ctx.message != ""
 
 - rename:
+    tag: rename_json_to_bitdefender_event_d282257f
     description: "qradar/plain NDJSON parsed event"
     field: json
     target_field: bitdefender.event
     if: ctx.json != null && ctx.json.event == null
 
 - rename:
+    tag: rename_json_event_to_bitdefender_event_eff4d6cc
     description: "jsonRPC or Splunk HEC format parsed event"
     field: json.event
     target_field: bitdefender.event
@@ -25,26 +29,31 @@ processors:
 
 # Extract fields from jsonRPC message root
 - rename:
+    tag: rename_json_jsonrpc_version_to_bitdefender_event_jsonrpc_version_d591d339
     field: json.jsonrpc.version
     target_field: bitdefender.event.jsonrpc.version
     if: ctx.json?.jsonrpc?.version != null
 
 - rename:
+    tag: rename_json_jsonrpc_method_to_bitdefender_event_jsonrpc_method_061fa6e0
     field: json.jsonrpc.method
     target_field: bitdefender.event.jsonrpc.method
     if: ctx.json?.jsonrpc?.method != null
 
 - rename:
+    tag: rename_json_id_to_bitdefender_event_id_6bf93c40
     field: json.id
     target_field: bitdefender.event.id
     if: ctx.json?.id != null
 
 - rename:
+    tag: rename__tmp_bitdefender_id_to_bitdefender_id_c517cddf
     field: _tmp.bitdefender_id
     target_field: bitdefender.id
     if: ctx._tmp?.bitdefender_id != null && ctx._tmp.bitdefender_id != ""
 
 - rename:
+    tag: rename_message_to_event_original_56a77271
     field: message
     target_field: event.original
     ignore_missing: true
@@ -57,31 +66,37 @@ processors:
     if: ctx.event?.original != null
     description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - convert:
+    tag: convert_bitdefender_event_status_6e55cd84
     field: bitdefender.event.status
     type: string
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_main_action_33a0e9b6
     field: bitdefender.event.main_action
     type: string
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_detected_on_981e8b98
     field: bitdefender.event.detected_on
     type: string
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_detectionTime_7e611174
     field: bitdefender.event.detectionTime
     type: string
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_attack_entry_8c92e617
     field: bitdefender.event.attack_entry
     type: string
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_taskType_f0fa84d5
     field: bitdefender.event.taskType
     type: string
     ignore_missing: true
@@ -93,9 +108,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_auto_renew_period_ff766e02
           field: bitdefender.event.auto_renew_period
           ignore_missing: true
       - append:
+          tag: append_error_message_154f10b0
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -106,9 +123,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_blocked_96b1e74c
           field: bitdefender.event.blocked
           ignore_missing: true
       - append:
+          tag: append_error_message_45127b3f
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -119,9 +138,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_cleaned_aecbb99c
           field: bitdefender.event.cleaned
           ignore_missing: true
       - append:
+          tag: append_error_message_492c61e7
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -132,9 +153,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_deleted_77060626
           field: bitdefender.event.deleted
           ignore_missing: true
       - append:
+          tag: append_error_message_7ac4063a
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -145,9 +168,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_ignored_d87bafa0
           field: bitdefender.event.ignored
           ignore_missing: true
       - append:
+          tag: append_error_message_180360b9
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -158,9 +183,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_deviceClass_8a43afbb
           field: bitdefender.event.deviceClass
           ignore_missing: true
       - append:
+          tag: append_error_message_7e06cfee
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -171,9 +198,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_license_limit_02d981ca
           field: bitdefender.event.license_limit
           ignore_missing: true
       - append:
+          tag: append_error_message_0c1f2e90
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -184,9 +213,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_mailboxes_53907930
           field: bitdefender.event.mailboxes
           ignore_missing: true
       - append:
+          tag: append_error_message_c8e91c33
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -197,9 +228,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_minimal_commitment_usage_endpoints_1d2fd7e8
           field: bitdefender.event.minimal_commitment_usage_endpoints
           ignore_missing: true
       - append:
+          tag: append_error_message_070d5a17
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -210,9 +243,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_parent_process_id_b768f5ac
           field: bitdefender.event.parent_process_id
           ignore_missing: true
       - append:
+          tag: append_error_message_20a75485
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -223,9 +258,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_present_d5b49f4a
           field: bitdefender.event.present
           ignore_missing: true
       - append:
+          tag: append_error_message_d9e6165c
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -236,9 +273,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_productId_b2e139f4
           field: bitdefender.event.productId
           ignore_missing: true
       - append:
+          tag: append_error_message_83140435
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -249,9 +288,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_quarantined_f6cbe598
           field: bitdefender.event.quarantined
           ignore_missing: true
       - append:
+          tag: append_error_message_d306f1c3
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -262,9 +303,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_vendorId_344cb332
           field: bitdefender.event.vendorId
           ignore_missing: true
       - append:
+          tag: append_error_message_b609e60e
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -275,13 +318,16 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_bitdefender_event_storage_ip_a0e8e5c2
           field: bitdefender.event.storage_ip
           ignore_missing: true
       - append:
+          tag: append_error_message_c890e786
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 - date:
+    tag: date_bitdefender_event_lastAdReportDate_to_bitdefender_event_lastAdReportDate_08f6deda
     if: ctx.bitdefender?.event?.lastAdReportDate != null && ctx.bitdefender?.event?.lastAdReportDate != ""
     field: bitdefender.event.lastAdReportDate
     target_field: bitdefender.event.lastAdReportDate
@@ -293,6 +339,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_created_to_bitdefender_event_created_548ec412
     if: ctx.bitdefender?.event?.created != null && ctx.bitdefender?.event?.created != ""
     field: bitdefender.event.created
     target_field: bitdefender.event.created
@@ -304,6 +351,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_detectionTime_to_bitdefender_event_detectionTime_23f6aaa6
     if: ctx.bitdefender?.event?.detectionTime != null && ctx.bitdefender?.event?.detectionTime != ""
     field: bitdefender.event.detectionTime
     target_field: bitdefender.event.detectionTime
@@ -315,6 +363,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_detection_time_to_bitdefender_event_detection_time_574ccfae
     if: ctx.bitdefender?.event?.detection_time != null && ctx.bitdefender?.event?.detection_time != ""
     field: bitdefender.event.detection_time
     target_field: bitdefender.event.detection_time
@@ -326,6 +375,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_detected_on_to_bitdefender_event_detected_on_3633aaf2
     if: ctx.bitdefender?.event?.detected_on != null && ctx.bitdefender?.event?.detected_on != ""
     field: bitdefender.event.detected_on
     target_field: bitdefender.event.detected_on
@@ -337,6 +387,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_last_blocked_to_bitdefender_event_last_blocked_c9a660a2
     if: ctx.bitdefender?.event?.last_blocked != null && ctx.bitdefender?.event?.last_blocked != ""
     field: bitdefender.event.last_blocked
     target_field: bitdefender.event.last_blocked
@@ -348,6 +399,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_signature_update_to_bitdefender_event_signature_update_3095e498
     if: ctx.bitdefender?.event?.signature_update != null && ctx.bitdefender?.event?.signature_update != ""
     field: bitdefender.event.signature_update
     target_field: bitdefender.event.signature_update
@@ -359,6 +411,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_timestamp_to_bitdefender_event_timestamp_cf929a9a
     if: ctx.bitdefender?.event?.timestamp != null && ctx.bitdefender?.event?.timestamp != ""
     field: bitdefender.event.timestamp
     target_field: bitdefender.event.timestamp
@@ -370,6 +423,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_date_to_bitdefender_event_date_e8332354
     if: ctx.bitdefender?.event?.date != null && ctx.bitdefender?.event?.date != ""
     field: bitdefender.event.date
     target_field: bitdefender.event.date
@@ -381,6 +435,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_startDate_to_bitdefender_event_startDate_726fd7ea
     if: ctx.bitdefender?.event?.startDate != null && ctx.bitdefender?.event?.startDate != ""
     field: bitdefender.event.startDate
     target_field: bitdefender.event.startDate
@@ -392,6 +447,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_endDate_to_bitdefender_event_endDate_f26d99cc
     if: ctx.bitdefender?.event?.endDate != null && ctx.bitdefender?.event?.endDate != ""
     field: bitdefender.event.endDate
     target_field: bitdefender.event.endDate
@@ -403,6 +459,7 @@ processors:
       - UNIX
 
 - date:
+    tag: date_bitdefender_event_end_subscription_date_to_bitdefender_event_end_subscription_date_37a34b72
     if: ctx.bitdefender?.event?.end_subscription_date != null && ctx.bitdefender?.event?.end_subscription_date != ""
     field: bitdefender.event.end_subscription_date
     target_field: bitdefender.event.end_subscription_date
@@ -420,6 +477,7 @@ processors:
 ### organization fields
 
 - convert:
+    tag: convert_bitdefender_event_companyId_to_organization_id_ab5f7394
     description: Company ID provided by BitDefender is stored as ECS organization ID
     field: bitdefender.event.companyId
     target_field: organization.id
@@ -427,6 +485,7 @@ processors:
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_moved_company_id_to_organization_id_41c39cfb
     description: Company ID provided by BitDefender is stored as ECS organization ID
     field: bitdefender.event.moved_company_id
     target_field: organization.id
@@ -434,6 +493,7 @@ processors:
     ignore_missing: true
 
 - script:
+    tag: script_c3e4c8a5
     description: Map organization ID to organization name
     lang: painless
     if: 'ctx.organization?.id != null && ctx._tmp?.tenants != null'
@@ -445,6 +505,7 @@ processors:
       }
 
 - set: 
+    tag: set_organization_name_facb4dec
     field: organization.name
     copy_from: bitdefender.event.moved_company_name
     ignore_empty_value: true
@@ -453,18 +514,21 @@ processors:
 ### event fields
 
 - convert:
+    tag: convert_bitdefender_event_id_to_event_id_7248df38
     field: bitdefender.event.id
     target_field: event.id
     type: string
     ignore_missing: true
 
 - set:
+    tag: set_event_module_3d90d929
     copy_from: bitdefender.event.module
     field: event.module
     ignore_empty_value: true
 
 ### work out event.kind
 - script:
+    tag: script_8af05528
     lang: painless
     params:
       "adcloud": "event"
@@ -511,6 +575,7 @@ processors:
 
 # work out event.category
 - script:
+    tag: script_233482ea
     lang: painless
     params:
       "adcloud": ["database"]
@@ -557,6 +622,7 @@ processors:
 
 # work out event.type
 - script:
+    tag: script_b960eadf
     lang: painless
     params:
       "adcloud": ["info"]
@@ -603,6 +669,7 @@ processors:
 
 # translate module code to a useful description
 - script:
+    tag: script_eb1ef3f8
     lang: painless
     params:
       "adcloud": "Cloud AD Integration"
@@ -648,24 +715,28 @@ processors:
       }
 
 - set:
+    tag: set_event_severity_8a08fa51
     field: event.severity
     value: 21
     ignore_empty_value: true
     if: ctx.bitdefender?.event?.severity == "low"
 
 - set:
+    tag: set_event_severity_dc9cf5ee
     field: event.severity
     value: 47
     ignore_empty_value: true
     if: ctx.bitdefender?.event?.severity == "medium"
 
 - set:
+    tag: set_event_severity_8e93a68a
     field: event.severity
     value: 73
     ignore_empty_value: true
     if: ctx.bitdefender?.event?.severity == "high"
 
 - set:
+    tag: set_event_severity_b3140deb
     field: event.severity
     value: 99
     ignore_empty_value: true
@@ -674,6 +745,7 @@ processors:
 ### fallback to conversion of severity score as provided by BitDefender
 
 - convert:
+    tag: convert_bitdefender_event_severity_score_to_event_severity_8feb9d2d
     field: bitdefender.event.severity_score
     target_field: event.severity
     type: integer
@@ -681,6 +753,7 @@ processors:
     if: ctx.event?.severity == null
 
 - convert:
+    tag: convert_bitdefender_event_severityScore_to_event_severity_4ec4777e
     field: bitdefender.event.severityScore
     target_field: event.severity
     type: integer
@@ -690,6 +763,7 @@ processors:
 ### fallback to default severity of zero
 
 - set:
+    tag: set_event_severity_04ce2e82
     field: event.severity
     value: 0
     ignore_empty_value: true
@@ -698,35 +772,41 @@ processors:
 ### Determine event.action
 
 - set:
+    tag: set_event_action_c0a7a6de
     copy_from: bitdefender.event.final_status
     field: event.action
     ignore_empty_value: true
     if: ctx.event?.action == null
 
 - set:
+    tag: set_event_action_bc3ff6d9
     copy_from: bitdefender.event.status
     field: event.action
     ignore_empty_value: true
 
 - set:
+    tag: set_event_action_563d9ba5
     copy_from: bitdefender.event.main_action
     field: event.action
     ignore_empty_value: true
     if: ctx.event?.action == null
 
 - set:
+    tag: set_event_action_0d10e9ba
     copy_from: bitdefender.event.actionTaken
     field: event.action
     ignore_empty_value: true
     if: ctx.event?.action == null
 
 - set:
+    tag: set_event_action_a3638f95
     copy_from: bitdefender.event.malware.actionTaken
     field: event.action
     ignore_empty_value: true
     if: ctx.event?.action == null
 
 - set:
+    tag: set_event_action_1b327361
     copy_from: bitdefender.event.detection_action
     field: event.action
     ignore_empty_value: true
@@ -735,22 +815,26 @@ processors:
 ### host fields
 
 - set:
+    tag: set_host_hostname_0fcbd807
     copy_from: bitdefender.event.computer_fqdn
     field: host.hostname
     ignore_empty_value: true
 
 - set:
+    tag: set_host_id_e50c2f2d
     copy_from: bitdefender.event.computer_id
     field: host.id
     ignore_empty_value: true
 
 - set:
+    tag: set_host_id_daf1bd9b
     copy_from: bitdefender.event.endpointId
     field: host.id
     ignore_empty_value: true
     if: ctx.host?.id == null
 
 - split:
+    tag: split_bitdefender_event_computer_ip_to_host_ip_3e9a8741
     field: bitdefender.event.computer_ip
     separator: ",\\ *"
     target_field: host.ip
@@ -758,6 +842,7 @@ processors:
     if: "!(ctx.bitdefender?.event?.computer_ip instanceof List) && !(ctx.bitdefender?.event?.computer_ip == ctx.bitdefender?.event?.computer_name) && !(ctx.bitdefender?.event?.computer_ip == ctx.host?.name)"
 
 - foreach:
+    tag: foreach_bitdefender_event_computer_ip_754fc12b
     field: bitdefender.event.computer_ip
     if: ctx.bitdefender?.event?.computer_ip instanceof List
     processor:
@@ -767,6 +852,7 @@ processors:
         allow_duplicates: false
 
 - convert:
+    tag: convert_bitdefender_event_computerIp_to__tmp_host_ip_5012cb82
     field: bitdefender.event.computerIp
     type: ip
     target_field: _tmp.host_ip
@@ -774,6 +860,7 @@ processors:
     if: "!(ctx.bitdefender?.event?.computerIp instanceof List)"
 
 - append:
+    tag: append_host_ip_ffce6564
     field: host.ip
     value:
       - "{{{_tmp.host_ip}}}"
@@ -781,11 +868,13 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_host_name_bd1f2b15
     copy_from: bitdefender.event.computer_name
     field: host.name
     ignore_empty_value: true
 
 - append:
+    tag: append_related_hosts_26d06a18
     field: related.hosts
     value:
       - "{{{bitdefender.event.computer_name}}}"
@@ -793,12 +882,14 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_host_name_78fbd441
     copy_from: bitdefender.event.computerName
     field: host.name
     ignore_empty_value: true
     if: ctx.host?.name == null
 
 - append:
+    tag: append_related_hosts_14245bcd
     field: related.hosts
     value:
       - "{{{bitdefender.event.computerName}}}"
@@ -806,12 +897,14 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_host_name_98e61e99
     copy_from: bitdefender.event.host_name
     field: host.name
     ignore_empty_value: true
     if: ctx.host?.name == null
 
 - append:
+    tag: append_related_hosts_c8bc2b39
     field: related.hosts
     value:
       - "{{{bitdefender.event.host_name}}}"
@@ -819,12 +912,14 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_host_name_e8547883
     copy_from: bitdefender.event.serverName
     field: host.name
     ignore_empty_value: true
     if: ctx.host?.name == null
 
 - append:
+    tag: append_related_hosts_420fe90f
     field: related.hosts
     value:
       - "{{{bitdefender.event.serverName}}}"
@@ -834,6 +929,7 @@ processors:
 ### url
 
 - gsub:
+    tag: gsub_bitdefender_event_url_2f2d8b75
     if: ctx.bitdefender?.event?.url != null && ctx.bitdefender?.event?.url =~ /^(?![a-zA-Z0-9]+:\/\/)/
     field: bitdefender.event.url
     pattern: "^"
@@ -842,11 +938,13 @@ processors:
     description: Set leading protocol reference to https if protocol reference is missing
 
 - uri_parts:
+    tag: uri_parts_bitdefender_event_url_to_url_8e987932
     field: bitdefender.event.url
     target_field: url
     if: ctx.bitdefender?.event?.url != null && ctx.bitdefender?.event?.url != ""
 
 - registered_domain:
+    tag: registered_domain_url_domain_to_url_ca99c8cd
     field: url.domain
     target_field: url
     ignore_missing: true
@@ -854,12 +952,14 @@ processors:
 ### source
 
 - convert:
+    tag: convert_bitdefender_event_source_ip_to_source_ip_ec311517
     field: bitdefender.event.source_ip
     type: ip
     target_field: source.ip
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_attack_source_to_source_ip_356b0be8
     field: bitdefender.event.attack_source
     type: ip
     target_field: source.ip
@@ -868,6 +968,7 @@ processors:
 
 # IP Geolocation Lookup
 - geoip:
+    tag: geoip_source_ip_to_source_geo_0e79e8a4
     field: source.ip
     target_field: source.geo
     ignore_missing: true
@@ -875,6 +976,7 @@ processors:
 
 # IP Autonomous System (AS) Lookup
 - geoip:
+    tag: geoip_source_ip_to_source_as_06f11598
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -885,17 +987,20 @@ processors:
     if: ctx.source?.as == null
 
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 
 # IP Geolocation Lookup
 - geoip:
+    tag: geoip_source_nat_ip_to_source_nat_geo_61a5a2da
     field: source.nat.ip
     target_field: source.nat.geo
     ignore_missing: true
@@ -903,6 +1008,7 @@ processors:
 
 # IP Autonomous System (AS) Lookup
 - geoip:
+    tag: geoip_source_nat_ip_to_source_nat_as_dfc20ce6
     database_file: GeoLite2-ASN.mmdb
     field: source.nat.ip
     target_field: source.nat.as
@@ -913,11 +1019,13 @@ processors:
     if: ctx.source?.nat?.as == null
 
 - rename:
+    tag: rename_source_nat_as_asn_to_source_nat_as_number_e20171db
     field: source.nat.as.asn
     target_field: source.nat.as.number
     ignore_missing: true
 
 - rename:
+    tag: rename_source_nat_as_organization_name_to_source_nat_as_organization_name_db02bc7d
     field: source.nat.as.organization_name
     target_field: source.nat.as.organization.name
     ignore_missing: true
@@ -925,6 +1033,7 @@ processors:
 ### destination
 
 - convert:
+    tag: convert_bitdefender_event_computer_ip_to_destination_ip_b36a635f
     field: bitdefender.event.computer_ip
     type: ip
     target_field: destination.ip
@@ -933,6 +1042,7 @@ processors:
 
 # IP Geolocation Lookup
 - geoip:
+    tag: geoip_destination_ip_to_destination_geo_2f67bd6f
     field: destination.ip
     target_field: destination.geo
     ignore_missing: true
@@ -940,6 +1050,7 @@ processors:
 
 # IP Autonomous System (AS) Lookup
 - geoip:
+    tag: geoip_destination_ip_to_destination_as_e7a2d01f
     database_file: GeoLite2-ASN.mmdb
     field: destination.ip
     target_field: destination.as
@@ -950,16 +1061,19 @@ processors:
     if: ctx.destination?.as == null
 
 - rename:
+    tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
     field: destination.as.asn
     target_field: destination.as.number
     ignore_missing: true
 
 - rename:
+    tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
     field: destination.as.organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_victim_ip_to_destination_nat_ip_76631f9a
     field: bitdefender.event.victim_ip
     type: ip
     target_field: destination.nat.ip
@@ -967,6 +1081,7 @@ processors:
 
 # IP Geolocation Lookup
 - geoip:
+    tag: geoip_destination_nat_ip_to_destination_nat_geo_1dfdcba1
     field: destination.nat.ip
     target_field: destination.nat.geo
     ignore_missing: true
@@ -974,6 +1089,7 @@ processors:
 
 # IP Autonomous System (AS) Lookup
 - geoip:
+    tag: geoip_destination_nat_ip_to_destination_nat_as_f4201c7d
     database_file: GeoLite2-ASN.mmdb
     field: destination.nat.ip
     target_field: destination.nat.as
@@ -984,16 +1100,19 @@ processors:
     if: ctx.destination?.nat?.as == null
 
 - rename:
+    tag: rename_destination_nat_as_asn_to_destination_nat_as_number_2f8b83f9
     field: destination.nat.as.asn
     target_field: destination.nat.as.number
     ignore_missing: true
 
 - rename:
+    tag: rename_destination_nat_as_organization_name_to_destination_nat_as_organization_name_d0aecb29
     field: destination.nat.as.organization_name
     target_field: destination.nat.as.organization.name
     ignore_missing: true
 
 - convert:
+    tag: convert_bitdefender_event_local_port_to_destination_port_c67bd287
     field: bitdefender.event.local_port
     type: integer
     target_field: destination.port
@@ -1002,35 +1121,41 @@ processors:
 ### user related fields.
 
 - set:
+    tag: set_user_id_c7ade55b
     copy_from: bitdefender.event.user.id
     field: user.id
     ignore_empty_value: true
 
 - set:
+    tag: set_user_id_e47d9993
     copy_from: bitdefender.event.userId
     field: user.id
     ignore_empty_value: true
     if: ctx.user?.id == null
 
 - set:
+    tag: set_user_id_683f21d9
     copy_from: bitdefender.event.user.userSid
     field: user.id
     ignore_empty_value: true
     if: ctx.user?.id == null
 
 - set:
+    tag: set_user_id_dafa1abe
     copy_from: bitdefender.event.user.user_sid
     field: user.id
     ignore_empty_value: true
     if: ctx.user?.id == null
 
 - set:
+    tag: set_user_id_6a7da17a
     copy_from: bitdefender.event.user.sid
     field: user.id
     ignore_empty_value: true
     if: ctx.user?.id == null
 
 - grok:
+    tag: grok_bitdefender_event_user_userName_8df6db99
     field: bitdefender.event.user.userName
     patterns:
       - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
@@ -1041,11 +1166,13 @@ processors:
     if: ctx.bitdefender?.event?.user?.userName != null && ctx.bitdefender?.event?.user?.userName != ""
 
 - set:
+    tag: set_user_email_a8191acf
     field: user.email
     copy_from: bitdefender.event.user.userName
     if: ctx.user?.email == null && ctx.bitdefender?.event?.user?.userName != null && ctx.bitdefender.event.user.userName.indexOf("@") > 0
 
 - append:
+    tag: append_related_user_435c6bda
     field: related.user
     value:
       - "{{{bitdefender.event.user.userName}}}"
@@ -1053,6 +1180,7 @@ processors:
     allow_duplicates: false
 
 - grok:
+    tag: grok_bitdefender_event_user_name_e411a9f5
     field: bitdefender.event.user.name
     patterns:
       - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
@@ -1063,11 +1191,13 @@ processors:
     if: ctx.user?.name == null && ctx.bitdefender?.event?.user?.name != null && ctx.bitdefender?.event?.user?.name != ""
 
 - set:
+    tag: set_user_email_1157343e
     field: user.email
     copy_from: bitdefender.event.user.name
     if: ctx.user?.email == null && ctx.bitdefender?.event?.user?.name != null && ctx.bitdefender.event.user.name.indexOf("@") > 0
 
 - append:
+    tag: append_related_user_65f7bf57
     field: related.user
     value:
       - "{{{bitdefender.event.user.name}}}"
@@ -1075,6 +1205,7 @@ processors:
     allow_duplicates: false
 
 - grok:
+    tag: grok_bitdefender_event_username_3b1ba539
     field: bitdefender.event.username
     patterns:
       - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
@@ -1085,11 +1216,13 @@ processors:
     if: ctx.user?.name == null && ctx.bitdefender?.event?.username != null && ctx.bitdefender?.event?.username != ""
 
 - set:
+    tag: set_user_email_034c3acd
     field: user.email
     copy_from: bitdefender.event.username
     if: ctx.user?.email == null && ctx.bitdefender?.event?.username != null && ctx.bitdefender.event.username.indexOf("@") > 0
 
 - append:
+    tag: append_related_user_ed53bcc1
     field: related.user
     value:
       - "{{{bitdefender.event.username}}}"
@@ -1097,6 +1230,7 @@ processors:
     allow_duplicates: false
 
 - grok:
+    tag: grok_bitdefender_event_detection_username_47fc3065
     field: bitdefender.event.detection_username
     patterns:
       - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
@@ -1107,11 +1241,13 @@ processors:
     if: ctx.user?.name == null && ctx.bitdefender?.event?.detection_username != null && ctx.bitdefender?.event?.detection_username != ""
 
 - set:
+    tag: set_user_email_cafcee39
     field: user.email
     copy_from: bitdefender.event.detection_username
     if: ctx.user?.email == null && ctx.bitdefender?.event?.detection_username != null && ctx.bitdefender.event.detection_username.indexOf("@") > 0
 
 - append:
+    tag: append_related_user_62bd8365
     field: related.user
     value:
       - "{{{bitdefender.event.detection_username}}}"
@@ -1119,6 +1255,7 @@ processors:
     allow_duplicates: false
 
 - append:
+    tag: append_related_user_08bf186b
     field: related.user
     value:
       - "{{{user.name}}}"
@@ -1128,17 +1265,20 @@ processors:
 ### file related fields
 
 - set:
+    tag: set_file_hash_sha256_1abddc37
     copy_from: bitdefender.event.file_hash_sha256
     field: file.hash.sha256
     ignore_empty_value: true
 
 - set:
+    tag: set_file_hash_sha256_3a6fb592
     copy_from: bitdefender.event.file_hash
     field: file.hash.sha256
     ignore_empty_value: true
     override: false
 
 - append:
+    tag: append_related_hash_c65f834b
     field: related.hash
     value:
       - "{{{bitdefender.event.file_hash_sha256}}}"
@@ -1146,6 +1286,7 @@ processors:
     allow_duplicates: false
 
 - append:
+    tag: append_related_hash_538e49b5
     field: related.hash
     value:
       - "{{{bitdefender.event.file_hash}}}"
@@ -1153,11 +1294,13 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_file_hash_sha256_0e1d3108
     copy_from: bitdefender.event.hash
     field: file.hash.sha256
     ignore_empty_value: true
 
 - append:
+    tag: append_related_hash_fc63b5de
     field: related.hash
     value:
       - "{{{bitdefender.event.hash}}}"
@@ -1165,11 +1308,13 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_file_hash_md5_19ac0bb1
     copy_from: bitdefender.event.file_hash_md5
     field: file.hash.md5
     ignore_empty_value: true
 
 - append:
+    tag: append_related_hash_62b35bfa
     field: related.hash
     value:
       - "{{{bitdefender.event.file_hash_md5}}}"
@@ -1177,22 +1322,26 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_file_path_9e99ea32
     copy_from: bitdefender.event.file_path
     field: file.path
     ignore_empty_value: true
 
 - set:
+    tag: set_file_path_c05ece78
     copy_from: bitdefender.event.filePaths
     field: file.path
     ignore_empty_value: true
 
 - convert:
+    tag: convert_bitdefender_event_fileSizes_to_file_size_36e36bfa
     field: bitdefender.event.fileSizes
     type: integer
     target_field: file.size
     ignore_missing: true
 
 - set:
+    tag: set_file_name_99fa2dde
     copy_from: bitdefender.event.file_name
     field: file.name
     ignore_empty_value: true
@@ -1200,16 +1349,19 @@ processors:
 ### email related fields
 
 - set:
+    tag: set_email_to_address_269b8cec
     copy_from: bitdefender.event.recipients
     field: email.to.address
     ignore_empty_value: true
 
 - set:
+    tag: set_email_sender_address_c02aa899
     copy_from: bitdefender.event.sender
     field: email.sender.address
     ignore_empty_value: true
 
 - set:
+    tag: set_email_subject_62865ac9
     copy_from: bitdefender.event.subject
     field: email.subject
     ignore_empty_value: true
@@ -1217,36 +1369,43 @@ processors:
 ### process fields
 
 - set:
+    tag: set_process_parent_executable_10a6ad98
     copy_from: bitdefender.event.parent_process_path
     field: process.parent.executable
     ignore_empty_value: true
 
 - set:
+    tag: set_process_parent_pid_8b74aa1d
     copy_from: bitdefender.event.parent_process_pid
     field: process.parent.pid
     ignore_empty_value: true
 
 - set:
+    tag: set_process_parent_pid_c62d0865
     copy_from: bitdefender.event.parent_process_id
     field: process.parent.pid
     ignore_empty_value: true
 
 - set:
+    tag: set_process_command_line_3660dd16
     copy_from: bitdefender.event.process_command_line
     field: process.command_line
     ignore_empty_value: true
 
 - set:
+    tag: set_process_command_line_a68f5ca5
     copy_from: bitdefender.event.process_info_command_line
     field: process.command_line
     ignore_empty_value: true
 
 - set:
+    tag: set_process_pid_2b35200c
     copy_from: bitdefender.event.process_pid
     field: process.pid
     ignore_empty_value: true
 
 - set:
+    tag: set_process_executable_a5544a12
     copy_from: bitdefender.event.process_info_path
     field: process.executable
     ignore_empty_value: true
@@ -1257,12 +1416,14 @@ processors:
 # detection_name
 
 - set:
+    tag: set_threat_software_name_a8d7fa99
     copy_from: bitdefender.event.detection_name
     field: threat.software.name
     ignore_empty_value: true
     if: ctx.threat?.software?.name == null
 
 - set:
+    tag: set_process_executable_3f5ae68c
     copy_from: bitdefender.event.process_path
     field: process.executable
     ignore_empty_value: true
@@ -1271,12 +1432,14 @@ processors:
 ### malware fields
 
 - set:
+    tag: set_threat_software_name_9b5068d5
     copy_from: bitdefender.event.malware_name
     field: threat.software.name
     ignore_empty_value: true
     if: ctx.threat?.software?.name == null
 
 - set:
+    tag: set_threat_software_name_5d265cc4
     copy_from: bitdefender.event.malwareName
     field: threat.software.name
     ignore_empty_value: true
@@ -1292,12 +1455,14 @@ processors:
 ### exploit fields
 
 - set:
+    tag: set_process_executable_403bc22a
     copy_from: bitdefender.event.exploit_path
     field: process.executable
     ignore_empty_value: true
     if: ctx.process?.executable == null
 
 - set:
+    tag: set_threat_software_name_dc57ebd6
     copy_from: bitdefender.event.exploit_type
     field: threat.software.name
     ignore_empty_value: true
@@ -1322,40 +1487,47 @@ processors:
 # detection_action
 
 - set:
+    tag: set_vulnerability_id_bba55c93
     copy_from: bitdefender.event.detection_cve
     field: vulnerability.id
     ignore_empty_value: true
     if: ctx.bitdefender?.event?.detection_cve != "cve string"
 
 - set:
+    tag: set_process_parent_executable_919cc88b
     copy_from: bitdefender.event.detection_parentPath
     field: process.parent.executable
     ignore_empty_value: true
 
 - convert:
+    tag: convert_bitdefender_event_detection_parentPid_to_process_parent_pid_9cc98656
     field: bitdefender.event.detection_parentPid
     target_field: process.parent.pid
     type: integer
     ignore_missing: true
 
 - set:
+    tag: set_process_executable_2891aa9f
     copy_from: bitdefender.event.detection_path
     field: process.executable
     ignore_empty_value: true
 
 - convert:
+    tag: convert_bitdefender_event_detection_pid_to_process_pid_dc5882a2
     field: bitdefender.event.detection_pid
     target_field: process.pid
     type: integer
     ignore_missing: true
 
 - set:
+    tag: set_threat_software_name_af5df4e5
     copy_from: bitdefender.event.detection_threatName
     field: threat.software.name
     ignore_empty_value: true
     if: ctx.threat?.software?.name == null
 
 - set:
+    tag: set_threat_software_name_10b7f365
     copy_from: bitdefender.event.detection_exploitTechnique
     field: threat.software.name
     ignore_empty_value: true
@@ -1364,11 +1536,13 @@ processors:
 ### attack fields
 
 - set:
+    tag: set_threat_technique_name_371b41f8
     copy_from: bitdefender.event.attack_types
     field: threat.technique.name
     ignore_empty_value: true
 
 - append:
+    tag: append_threat_technique_name_2c706a66
     value:
       - "{{{bitdefender.event.detection_attackTechnique}}}"
     field: threat.technique.name
@@ -1376,6 +1550,7 @@ processors:
     allow_duplicates: false
 
 - set:
+    tag: set_threat_technique_id_13494400
     copy_from: bitdefender.event.att_ck_id
     field: threat.technique.id
     ignore_empty_value: true
@@ -1383,11 +1558,13 @@ processors:
 ### device fields
 
 - set:
+    tag: set_device_id_b7cc1663
     copy_from: bitdefender.event.deviceId
     field: device.id
     ignore_empty_value: true
 
 - set:
+    tag: set_device_model_name_f79b6b1c
     copy_from: bitdefender.event.deviceName
     field: device.model.name
     ignore_empty_value: true
@@ -1395,6 +1572,7 @@ processors:
 ### related IP's
 
 - foreach:
+    tag: foreach_host_ip_232e838f
     field: host.ip
     if: ctx.host?.ip instanceof List
     processor:
@@ -1404,6 +1582,7 @@ processors:
         allow_duplicates: false
 
 - append:
+    tag: append_related_ip_976e77c1
     field: related.ip
     value:
       - "{{{source.ip}}}"
@@ -1411,6 +1590,7 @@ processors:
     allow_duplicates: false
 
 - append:
+    tag: append_related_ip_fdc245f6
     field: related.ip
     value:
       - "{{{source.nat.ip}}}"
@@ -1418,6 +1598,7 @@ processors:
     allow_duplicates: false
 
 - append:
+    tag: append_related_ip_f4f43dba
     field: related.ip
     value:
       - "{{{destination.ip}}}"
@@ -1425,6 +1606,7 @@ processors:
     allow_duplicates: false
 
 - append:
+    tag: append_related_ip_800f32eb
     field: related.ip
     value:
       - "{{{destination.nat.ip}}}"
@@ -1435,6 +1617,7 @@ processors:
 ### Create message if it doesn't exist.
 
 - set:
+    tag: set_message_586fddb1
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.bitdefender?.event?.malware_name != null && ctx.bitdefender?.event?.malware_name != ""
@@ -1442,6 +1625,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_498e4fd3
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.event?.module == "exchange-malware"
@@ -1449,6 +1633,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_86d8811e
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.bitdefender?.event?.detection_threatName != null && ctx.bitdefender?.event?.detection_threatName != ""
@@ -1456,6 +1641,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_f8ef538e
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.bitdefender?.event?.detection_exploitTechnique != null && ctx.bitdefender?.event?.detection_exploitTechnique != ""
@@ -1463,6 +1649,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_0a5c4f1e
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.event?.module == "sva-load"
@@ -1470,6 +1657,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_9aa022a2
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.event?.module == "ransomware-mitigation"
@@ -1477,6 +1665,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_3ac009fa
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.event?.module == "hd" && ctx.bitdefender?.event?.malware_type == "file"
@@ -1484,6 +1673,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_140e06d3
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.event?.module == "hd"
@@ -1491,6 +1681,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_5b1734f5
     field: message
     ignore_empty_value: true
     if: ctx.message == null && ctx.event?.module == "uc"
@@ -1498,6 +1689,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_56fac362
     field: message
     value: "{{{bitdefender.event.status}}}, aph type: {{{bitdefender.event.aph_type}}}"
     ignore_empty_value: true
@@ -1505,6 +1697,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_c469eecb
     field: message
     value: "{{{bitdefender.event.status}}}, blocking rule: {{{bitdefender.event.blocking_rule_name}}}"
     ignore_empty_value: true
@@ -1512,6 +1705,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_6e7ffa41
     field: message
     value: "{{{bitdefender.event.status}}}, exploit type: {{{bitdefender.event.exploit_type}}}"
     ignore_empty_value: true
@@ -1519,6 +1713,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_522f7fde
     field: message
     value: "{{{bitdefender.event.status}}}, source ip: {{{bitdefender.event.source_ip}}}"
     ignore_empty_value: true
@@ -1526,6 +1721,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_853e58eb
     field: message
     value: "ERROR: On-demand scan task could not start on the target Exchange server due to invalid user credentials"
     ignore_empty_value: true
@@ -1533,6 +1729,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_12c8c52c
     field: message
     value: "{{{bitdefender.event.detection_name}}}"
     ignore_empty_value: true
@@ -1540,6 +1737,7 @@ processors:
     media_type: text/plain
 
 - set:
+    tag: set_message_325b3f03
     field: message
     value: "{{{bitdefender.event.threatType}}}"
     ignore_empty_value: true
@@ -1549,6 +1747,7 @@ processors:
 ### cleanup
 
 - script:
+    tag: script_e4fcb8ee
     description: Drops null/empty values recursively.
     lang: painless
     source: |
@@ -1574,6 +1773,7 @@ processors:
       dropEmptyFields(ctx);
 
 - remove:
+    tag: remove_fdefcf3d
     field:
       - _tmp
     ignore_failure: true
@@ -1582,6 +1782,7 @@ processors:
 ### TODO - actually clean out the bitdefender fields properly from those we can be certain are ECS mapped
 
 - remove:
+    tag: remove_9028662e
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
     field:
       - bitdefender.event.id
