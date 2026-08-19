@@ -1,0 +1,259 @@
+{{- generatedHeader }}
+# SOCRadar Integration
+
+## Overview
+
+The SOCRadar integration collects security alarms from the [SOCRadar](https://socradar.io) platform via its REST API and ingests them into Elasticsearch. Each alarm is stored as a log event in the `logs-socradar_alert.incidents-*` data stream.
+
+The integration also ships a Detection Rule (`SOCRadar - Alarm Detection`) that automatically creates Kibana Security Alerts for every incoming alarm, and can optionally sync alert status changes made in Kibana back to SOCRadar.
+
+### Compatibility
+
+This integration is compatible with **SOCRadar API v4**.
+
+### How it works
+
+The integration uses the **CEL input** to poll the SOCRadar REST API at a configurable interval. On first run, it fetches alarms from a configurable lookback period. On subsequent runs, it fetches only alarms created since the last successful poll. Alarm data is normalized via an ingest pipeline and stored in the `incidents` data stream.
+
+## What data does this integration collect?
+
+The SOCRadar integration collects security alarm events from the following endpoint:
+
+- `GET /api/company/{company_id}/incidents/v4`
+
+Each event represents a single SOCRadar alarm and includes details such as risk level, alarm type, status, affected assets, and related entities.
+
+### Supported use cases
+
+- **Centralized alarm visibility** — View all SOCRadar alarms in Kibana Discover and the included dashboard.
+- **Security alerting** — Automatically create Kibana Security Alerts for every alarm using the included Detection Rule.
+- **Status sync to SOCRadar** — Optionally sync alert status changes made in Kibana back to SOCRadar using an Elasticsearch Watcher.
+
+## What do I need to use this integration?
+
+- A valid **SOCRadar API Key**
+- Your **SOCRadar Company ID**
+- Elastic Agent installed on a host with network access to `https://platform.socradar.com`
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+### Onboard / configure
+
+1. In Kibana, go to **Fleet → Integrations** and search for **SOCRadar**.
+2. Click **Add SOCRadar**.
+3. Fill in the required fields:
+   - **API Key** — Your SOCRadar API key.
+   - **Company ID** — Your SOCRadar company ID (e.g., `330`).
+   - **API URL** — SOCRadar API base URL (default: `https://platform.socradar.com`).
+   - **Initial Lookback Period** — How far back to fetch alarms on first run (e.g., `72h`, `720h` for 30 days).
+   - **Polling Interval** — How often to poll for new alarms (default: `5m`).
+4. Click **Save and continue**.
+
+### Validation
+
+After installation, open **Kibana → Discover** and filter by index `logs-socradar_alert.incidents-*`. Alarms should appear within one polling interval.
+
+You can also open the **SOCRadar dashboard** from **Kibana → Dashboards** to verify data is flowing correctly.
+
+## Alert status sync (optional)
+
+This step is optional. Follow it if you want status changes made in **Kibana → Security → Alerts** to be reflected back in SOCRadar automatically.
+
+### How status sync works
+
+1. The included Detection Rule (`SOCRadar - Alarm Detection`) creates a Kibana Security Alert for every incoming alarm.
+2. An Elasticsearch Watcher runs every minute and calls the SOCRadar API whenever it detects a status change on any SOCRadar alert within the last 2 minutes.
+
+### Prerequisites
+
+- Elasticsearch Watcher must be enabled (included in Basic license and above on self-hosted; included in all Elastic Cloud tiers).
+
+Confirm Watcher is available by running the following in **Kibana → Dev Tools**:
+
+```json
+GET _watcher/stats
+```
+
+If the response contains `"watcher_state"`, Watcher is available.
+
+### Step 1 — Enable the Detection Rule
+
+1. Go to **Kibana → Security → Rules → Detection rules (SIEM)**.
+2. Search for `SOCRadar - Alarm Detection`.
+3. If the rule is disabled, click the toggle to enable it.
+
+Once enabled, the rule runs every 5 minutes and creates a Security Alert for each new alarm ingested since the previous run.
+
+To create alerts for alarms that were ingested **before** the rule was enabled, run a one-time manual backfill from **Security → Rules → SOCRadar - Alarm Detection → ⋯ → Manual run** and select the time range to cover (for example the last 90 days).
+
+### Step 2 — Install the Watcher
+
+Open **Kibana → Dev Tools** and run the following, replacing `<your-api-key>` with your SOCRadar API key:
+
+> **Security note:** The API key is stored in clear text inside the watch definition (in the `.watches` index, a restricted system index). To limit exposure, use a dedicated SOCRadar API key scoped to only the status-change endpoint — rather than a general key with access to all SOCRadar APIs — so that even if the key is exposed, its access stays limited to that single endpoint. Restrict access to the `.watches` index and to Dev Tools, and rotate the key regularly.
+
+```json
+PUT _watcher/watch/socradar_alarm_status_sync
+{
+  "trigger": { "schedule": { "interval": "1m" } },
+  "input": {
+    "search": {
+      "request": {
+        "indices": [".alerts-security.alerts-*"],
+        "body": {
+          "size": 100,
+          "_source": ["kibana.alert.workflow_status", "socradar_alert.alarm_id", "socradar_alert.company_id"],
+          "query": {
+            "bool": {
+              "must": [{ "term": { "kibana.alert.rule.rule_id": "socradar_alert-alarm-detection-rule" } }],
+              "filter": [{ "range": { "kibana.alert.workflow_status_updated_at": { "gte": "now-2m" } } }]
+            }
+          },
+          "sort": [{ "kibana.alert.workflow_status_updated_at": { "order": "desc" } }]
+        }
+      }
+    }
+  },
+  "condition": {
+    "script": {
+      "lang": "painless",
+      "source": "return ctx.payload.hits.total.value > 0;"
+    }
+  },
+  "transform": {
+    "script": {
+      "lang": "painless",
+      "source": "Map statusMap = new HashMap(); statusMap.put('acknowledged', 'INVESTIGATING'); statusMap.put('in-progress', 'INVESTIGATING'); statusMap.put('investigating', 'INVESTIGATING'); statusMap.put('pending_info', 'PENDING_INFO'); statusMap.put('legal_review', 'LEGAL_REVIEW'); statusMap.put('vendor_assessment', 'VENDOR_ASSESSMENT'); statusMap.put('closed', 'RESOLVED'); statusMap.put('resolved', 'RESOLVED'); statusMap.put('false-positive', 'FALSE_POSITIVE'); statusMap.put('duplicate', 'DUPLICATE'); statusMap.put('processed_internally', 'PROCESSED_INTERNALLY'); statusMap.put('mitigated', 'MITIGATED'); statusMap.put('not_applicable', 'NOT_APPLICABLE'); def hits = ctx.payload.hits.hits; def newest = hits[0]._source; def targetElastic = newest.get('kibana.alert.workflow_status'); def targetStatus = statusMap.containsKey(targetElastic) ? statusMap.get(targetElastic) : 'OPEN'; def companyId = newest.get('socradar_alert').get('company_id').toString(); def ids = new ArrayList(); for (def h : hits) { def src = h._source; def es = src.get('kibana.alert.workflow_status'); def mapped = statusMap.containsKey(es) ? statusMap.get(es) : 'OPEN'; if (mapped == targetStatus) { ids.add(src.get('socradar_alert').get('alarm_id').toString()); } } def sb = new StringBuilder(); sb.append('{\"alarm_ids\":['); for (int i = 0; i < ids.size(); i++) { if (i > 0) { sb.append(','); } sb.append('\"').append(ids.get(i)).append('\"'); } sb.append('],\"company_id\":').append(companyId).append(',\"status\":\"').append(targetStatus).append('\"}'); return ['body': sb.toString()];"
+    }
+  },
+  "actions": {
+    "notify_socradar": {
+      "webhook": {
+        "method": "POST",
+        "url": "https://platform.socradar.com/api/company/alarms/status/change",
+        "headers": {
+          "Content-Type": "application/json",
+          "Api-Key": "<your-api-key>"
+        },
+        "body": "{{ "{{{" }}ctx.payload.body{{ "}}}" }}"
+      }
+    }
+  }
+}
+```
+
+### Step 3 — Verify the Watcher is active
+
+```json
+GET _watcher/watch/socradar_alarm_status_sync
+```
+
+Confirm `"state": "active"` appears under `"watch_status"`.
+
+To manually trigger a test run:
+
+```json
+POST _watcher/watch/socradar_alarm_status_sync/_execute
+{ "record_execution": true }
+```
+
+### Changing alert status
+
+1. Go to **Kibana → Security → Alerts**.
+2. Select one or more alerts using the checkbox on the left.
+3. Click **Change status** in the toolbar and select the new status.
+4. SOCRadar will be notified within 1 minute.
+
+> **Note:** Each Watcher run batches every alert that shares the most recent status change, so selecting several alerts and changing them to the same status syncs them to SOCRadar in a single request.
+
+### Supported status mappings
+
+| Kibana status | SOCRadar status |
+| --- | --- |
+| `acknowledged` / `investigating` | `INVESTIGATING` |
+| `closed` / `resolved` | `RESOLVED` |
+| `false-positive` | `FALSE_POSITIVE` |
+| `duplicate` | `DUPLICATE` |
+| `processed_internally` | `PROCESSED_INTERNALLY` |
+| `mitigated` | `MITIGATED` |
+| `not_applicable` | `NOT_APPLICABLE` |
+| `pending_info` | `PENDING_INFO` |
+| `legal_review` | `LEGAL_REVIEW` |
+| `vendor_assessment` | `VENDOR_ASSESSMENT` |
+
+### Removing the Watcher
+
+```json
+DELETE _watcher/watch/socradar_alarm_status_sync
+```
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### No data in Discover after installation
+
+- Confirm the Elastic Agent is running and has network access to `https://platform.socradar.com`.
+- Check the agent logs in **Fleet → Agents**.
+- Verify your API Key and Company ID are correct.
+
+### No alerts in Security → Alerts after enabling the rule
+
+- Check rule execution logs under **Security → Rules → SOCRadar - Alarm Detection → Execution results**.
+- Confirm data exists in **Discover** with index filter `logs-socradar_alert.incidents-*`.
+- The rule runs every 5 minutes — wait at least one full cycle after enabling.
+
+### `GET _watcher/stats` returns an error
+
+- Watcher is not available on your license. Contact your Elastic administrator.
+
+### Watcher is active but SOCRadar is not updating
+
+- Change an alert status in **Security → Alerts**, wait 1 minute, then check the latest Watcher execution:
+
+```json
+GET .watcher-history-*/_search
+{
+  "sort": [{ "result.execution_time": { "order": "desc" } }],
+  "size": 1
+}
+```
+
+- Confirm your API key is correct and re-run the `PUT _watcher/watch/...` command with the correct key if needed.
+
+## Performance and scaling
+
+The integration polls the SOCRadar alarms endpoint once per **Polling Interval** (default `5m`) and pages through the results using **Records per page** (default `100`) until it reaches the last page.
+
+- The first collection replays the whole **Initial Lookback Period** (default `72h`, configurable up to `8760h`). A large lookback issues many paged requests in a single cycle, so start with a smaller window if you are close to your SOCRadar API quota.
+- Each alarm is indexed under a document ID derived from its alarm ID, so an alarm that is re-fetched (for example when a mid-pagination retry replays an earlier page) is rejected as a duplicate rather than indexed twice.
+- Lower the polling interval only if your alarm volume justifies it; every collection cycle costs at least one API request.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### Incidents
+
+The `incidents` data stream collects alarm events from the SOCRadar API.
+
+{{event "incidents"}}
+
+#### Incidents fields
+
+{{ fields "incidents" }}
+
+### Inputs used
+
+{{ inputDocs }}
+
+### API usage
+
+These APIs are used with this integration:
+
+- `GET /api/company/{company_id}/incidents/v4` — Fetches paginated alarm events. Supports `start_date`, `page`, `limit`, and `include_alarm_details` query parameters.
+- `POST /api/company/alarms/status/change` — Updates alarm status in SOCRadar (used by the optional Watcher, not by the integration itself).
