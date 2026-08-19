@@ -2,9 +2,11 @@
 description: Pipeline for processing User logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,18 +18,23 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_kind_871e09cf
       field: event.kind
       value: state
   - set:
+      tag: set_event_category_ee497bfd
       field: event.category
       value: [iam]
   - set:
+      tag: set_event_type_1e7550ed
       field: event.type
       value: [user]
   - date:
+      tag: date_json_created_to_lastpass_user_created_142795a3
       field: json.created
       target_field: lastpass.user.created
       formats:
@@ -38,41 +45,51 @@ processors:
       if: ctx.json?.created != null && ctx.json.created != ''
       on_failure:
         - append:
+            tag: append_error_message_a4505198
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_id_to_lastpass_user_id_3ecd1792
       field: json.id
       target_field: lastpass.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_8cbe6cb8
       field: user.id
       copy_from: lastpass.user.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_username_to_lastpass_user_user_name_84381b37
       field: json.username
       target_field: lastpass.user.user_name
       ignore_missing: true
   - set:
+      tag: set_user_email_d4cf99fd
       field: user.email
       copy_from: lastpass.user.user_name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_fullname_to_lastpass_user_full_name_fd80e1c7
       field: json.fullname
       target_field: lastpass.user.full_name
       ignore_missing: true
   - set:
+      tag: set_user_full_name_986324d0
       field: user.full_name
       copy_from: lastpass.user.full_name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_groups_to_lastpass_user_group_bf511ea7
       field: json.groups
       target_field: lastpass.user.group
       ignore_missing: true
   - set:
+      tag: set_user_group_name_1d46c847
       field: user.group.name
       copy_from: lastpass.user.group
       ignore_empty_value: true
   - convert:
+      tag: convert_json_applications_to_lastpass_user_application_884c6fa5
       field: json.applications
       target_field: lastpass.user.application
       if: ctx.json?.applications != ''
@@ -80,9 +97,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_41700d2a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_attachments_to_lastpass_user_attachment_3d283ffc
       field: json.attachments
       target_field: lastpass.user.attachment
       if: ctx.json?.attachments != ''
@@ -90,9 +109,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_73fb6dc1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_disabled_to_lastpass_user_disabled_b13aba95
       field: json.disabled
       target_field: lastpass.user.disabled
       if: ctx.json?.disabled != ''
@@ -100,13 +121,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_58328b4e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_duousername_to_lastpass_user_duo_user_name_f494576f
       field: json.duousername
       target_field: lastpass.user.duo.user_name
       ignore_missing: true
   - convert:
+      tag: convert_json_formfills_to_lastpass_user_form_fill_e8dde37f
       field: json.formfills
       target_field: lastpass.user.form_fill
       if: ctx.json?.formfills != ''
@@ -114,9 +138,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e96e1e04
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_login_to_lastpass_user_last_login_5b86a90f
       field: json.last_login
       target_field: lastpass.user.last_login
       formats:
@@ -127,9 +153,11 @@ processors:
       if: ctx.json?.last_login != null && ctx.json.last_login != ''
       on_failure:
         - append:
+            tag: append_error_message_c5b017a0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_pw_change_to_lastpass_user_last_password_change_6dd9fdbb
       field: json.last_pw_change
       target_field: lastpass.user.last_password_change
       formats:
@@ -140,13 +168,16 @@ processors:
       if: ctx.json?.last_pw_change != null && ctx.json.last_pw_change != ''
       on_failure:
         - append:
+            tag: append_error_message_3505bd80
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_linked_to_lastpass_user_linked_f90b3362
       field: json.linked
       target_field: lastpass.user.linked
       ignore_missing: true
   - convert:
+      tag: convert_json_mpstrength_to_lastpass_user_master_password_strength_f38a4fab
       field: json.mpstrength
       target_field: lastpass.user.master_password_strength
       if: ctx.json?.mpstrength != ''
@@ -154,9 +185,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d166e6ae
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_neverloggedin_to_lastpass_user_never_logged_in_a9aa2c92
       field: json.neverloggedin
       target_field: lastpass.user.never_logged_in
       if: ctx.json?.neverloggedin != ''
@@ -164,9 +197,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ec83f86f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_notes_to_lastpass_user_note_30b2e6f9
       field: json.notes
       target_field: lastpass.user.note
       if: ctx.json?.notes != ''
@@ -174,9 +209,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e45556f8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_password_reset_required_to_lastpass_user_password_reset_required_0534caf8
       field: json.password_reset_required
       target_field: lastpass.user.password_reset_required
       if: ctx.json?.password_reset_required != ''
@@ -184,13 +221,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_59601159
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_sites_to_lastpass_user_sites_daf7f770
       field: json.sites
       target_field: lastpass.user.sites
       ignore_missing: true
   - convert:
+      tag: convert_json_totalscore_to_lastpass_user_total_score_87e2fdfb
       field: json.totalscore
       target_field: lastpass.user.total_score
       if: ctx.json?.totalscore != ''
@@ -198,9 +238,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1b093480
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_ba7b5c4b
       field: related.user
       value:
         - '{{{user.email}}}'
@@ -208,10 +250,12 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_815d31bb
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - lastpass.user.id
@@ -221,6 +265,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_e2ccbdd7
         description: Drops null/empty values recursively.
         lang: painless
         source: |
