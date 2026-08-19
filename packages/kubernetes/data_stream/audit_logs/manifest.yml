@@ -141,6 +141,12 @@ streams:
         required: false
         show_user: false
         description: ARN of the IAM role to assume when collecting logs
+      - name: supports_identity_federation
+        type: bool
+        title: Supports Identity Federation
+        multi: false
+        required: false
+        show_user: false
       - name: default_region
         type: text
         title: Default AWS Region
@@ -189,6 +195,33 @@ streams:
         type: bool
         multi: false
         default: false
+    var_groups:
+      - name: credential_type
+        required: true
+        title: Setup Access
+        selector_title: Preferred method
+        options:
+          - name: identity_federation
+            title: Identity Federation
+            vars: [role_arn, supports_identity_federation]
+            hide_in_deployment_modes: [default]
+            provider: aws
+            iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+          - name: direct_access_key
+            title: Direct Access Keys
+            vars: [access_key_id, secret_access_key]
+          - name: temporary_access_key
+            title: Temporary Access Keys
+            vars: [access_key_id, secret_access_key, session_token]
+            hide_in_deployment_modes: [agentless]
+          - name: assume_role
+            title: Assume Role
+            vars: [role_arn]
+            hide_in_deployment_modes: [agentless]
+          - name: shared_credentials
+            title: Shared Credentials
+            vars: [shared_credential_file, credential_profile_name]
+            hide_in_deployment_modes: [agentless]
   - input: azure-eventhub
     enabled: false
     title: Kubernetes audit logs via Azure Event Hub

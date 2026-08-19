@@ -1,7 +1,7 @@
-format_version: 3.1.2
+format_version: 3.6.4
 name: kubernetes
 title: Kubernetes
-version: 1.85.3
+version: "2.0.0"
 description: Collect logs and metrics from Kubernetes clusters with Elastic Agent.
 type: integration
 categories:
@@ -10,7 +10,10 @@ categories:
   - kubernetes
 conditions:
   kibana:
-    version: "~9.1.10 || ~9.2.4 || ^9.3.0"
+    version: "^9.6.0"
+  # auth.aws.use_cloud_connectors (Identity Federation) requires Elastic Agent 9.6.0+.
+  agent:
+    version: "^9.6.0"
 screenshots:
   - src: /img/metricbeat_kubernetes_overview.png
     title: Metricbeat Kubernetes Overview
@@ -250,21 +253,33 @@ policy_templates:
   - name: audit-logs
     title: Kubernetes Audit Logs
     description: Collect audit logs from Kubernetes nodes with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-ds-hosted-services
     data_streams:
       - audit_logs
     inputs:
       - type: filestream
         title: Collect Kubernetes audit logs from local files
         description: Collect Kubernetes audit logs from local nodes with Elastic Agent.
+        deployment_modes: ["default"]
       - type: aws-cloudwatch
         title: Collect Kubernetes audit logs from AWS CloudWatch
         description: Collect Kubernetes audit logs from AWS EKS with Elastic Agent.
       - type: azure-eventhub
         title: Collect Kubernetes audit logs from Azure Event Hub
         description: Collect Kubernetes audit logs from Azure AKS withElastic Agent.
+        deployment_modes: ["default"]
       - type: gcp-pubsub
         title: Collect Kubernetes audit logs from Google Cloud Pub/Sub
         description: Collecting Kubernetes audit logs from Google Cloud GKE with Elastic Agent.
+        deployment_modes: ["default"]
     icons:
       - src: /img/logo_kubernetes.svg
         title: Logo Kubernetes
