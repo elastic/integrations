@@ -718,6 +718,13 @@ processors:
         - MMM dd HH:mm:ss yyyy 'GMT'
       if: ctx?.certificate?.not_before != null
       on_failure:
+        - remove:
+            tag: remove_failed_certificate_not_before_fields
+            field:
+              - certificate.not_before
+              - x509.not_before
+              - tychon.certificate_leaf_details.validity.not_before
+            ignore_missing: true
         - append:
             tag: append_error_pipeline
             field: error.pipeline
@@ -735,6 +742,13 @@ processors:
         - MMM dd HH:mm:ss yyyy 'GMT'
       if: ctx?.certificate?.not_after != null
       on_failure:
+        - remove:
+            tag: remove_failed_certificate_not_after_fields
+            field:
+              - certificate.not_after
+              - x509.not_after
+              - tychon.certificate_leaf_details.validity.not_after
+            ignore_missing: true
         - append:
             tag: append_error_pipeline_2
             field: error.pipeline
@@ -750,6 +764,12 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
       if: ctx?.cipher?.last_seen != null
       on_failure:
+        - remove:
+            tag: remove_failed_cipher_last_seen_fields
+            field:
+              - cipher.last_seen
+              - tychon.cipher_negotiation.last_seen
+            ignore_missing: true
         - append:
             tag: append_error_pipeline_3
             field: error.pipeline
@@ -879,14 +899,30 @@ processors:
       field: tychon.application.port
       type: long
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - remove:
+            tag: remove_failed_tychon_application_port
+            field: tychon.application.port
+            ignore_missing: true
+        - append:
+            tag: append_error_pipeline_4
+            field: error.pipeline
+            value: "Failed to convert tychon.application.port: {{{_ingest.on_failure_message}}}"
 
   - convert:
       tag: convert_tychon_application_port_quantum_grade_score
       field: tychon.application.port_quantum_grade.score
       type: float
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - remove:
+            tag: remove_failed_tychon_application_port_quantum_grade_score
+            field: tychon.application.port_quantum_grade.score
+            ignore_missing: true
+        - append:
+            tag: append_error_pipeline_5
+            field: error.pipeline
+            value: "Failed to convert tychon.application.port_quantum_grade.score: {{{_ingest.on_failure_message}}}"
 
   - remove:
       tag: remove_message
