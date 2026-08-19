@@ -57,6 +57,7 @@ processors:
     timezone: UTC
     target_field: "@timestamp"
 - set:
+    tag: set_event_start_c5e4284b
     field: event.start
     copy_from: "@timestamp"
     ignore_empty_value: true
@@ -81,11 +82,13 @@ processors:
       ctx.event.duration = ChronoUnit.NANOS.between(start, end);
 # TLS Fields
 - rename:
+    tag: rename_json_ClientSSLProtocol_to_cloudflare_client_ssl_protocol_078fa74f
     field: json.ClientSSLProtocol
     target_field: cloudflare.client.ssl.protocol
     ignore_missing: true
     if: ctx?.json?.ClientSSLProtocol.toLowerCase() != 'none'
 - rename:
+    tag: rename_json_ClientSSLCipher_to_tls_cipher_89359e8f
     field: json.ClientSSLCipher
     target_field: tls.cipher
     ignore_missing: true
@@ -97,6 +100,7 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - lowercase:
+    tag: lowercase_tls_version_protocol_b840a1f9
     field: tls.version_protocol
     ignore_missing: true
 # URL Fields
@@ -106,26 +110,31 @@ processors:
     ignore_failure: true
     if: ctx?.json?.ClientRequestURI != null
 - set:
+    tag: set_url_domain_85b2a6d2
     field: url.domain
     copy_from: json.ClientRequestHost
     ignore_empty_value: true
     if: ctx?.url?.domain == null
 - set:
+    tag: set_url_path_74e95aa7
     field: url.path
     copy_from: json.ClientRequestPath
     ignore_empty_value: true
     if: ctx?.url?.path == null
 - set:
+    tag: set_url_scheme_15a3d42b
     field: url.scheme
     copy_from: json.ClientRequestScheme
     ignore_empty_value: true
     if: ctx?.url?.scheme == null
 - set:
+    tag: set_url_scheme_0366be50
     field: url.scheme
     value: https
     ignore_empty_value: true
     if: ctx?.url?.scheme == null && ctx?.cloudflare?.client?.ssl?.protocol != null
 - set:
+    tag: set_url_scheme_a533bf85
     field: url.scheme
     value: http
     ignore_empty_value: true
@@ -153,11 +162,13 @@ processors:
         }
 # User Agent Fields
 - user_agent:
+    tag: user_agent_json_ClientRequestUserAgent_to_user_agent_1ee441f2
     field: json.ClientRequestUserAgent
     target_field: user_agent
     ignore_missing: true
 # Observer Fields
 - append:
+    tag: append_observer_ip_e6ba6ab7
     field: observer.ip
     value: '{{{json.EdgeServerIP}}}'
     if: ctx?.json?.EdgeServerIP != ''
@@ -176,6 +187,7 @@ processors:
     ignore_missing: true
     on_failure:
         - append:
+            tag: append_error_message_6a70a925
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 - rename:
@@ -185,10 +197,12 @@ processors:
     ignore_missing: true
 # Cloudflare Cache Fields
 - rename:
+    tag: rename_json_CacheCacheStatus_to_cloudflare_cache_status_2468c6df
     field: json.CacheCacheStatus
     target_field: cloudflare.cache.status
     ignore_missing: true
 - rename:
+    tag: rename_json_CacheTieredFill_to_cloudflare_cache_tiered_fill_34b89004
     field: json.CacheTieredFill
     target_field: cloudflare.cache.tiered_fill
     ignore_missing: true
@@ -208,34 +222,42 @@ processors:
     if: ctx?.json?.CacheResponseStatus != 0
 # Cloudflare Edge Fields
 - rename:
+    tag: rename_json_EdgeColoCode_to_cloudflare_edge_colo_code_33674f3b
     field: json.EdgeColoCode
     target_field: cloudflare.edge.colo.code
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeColoID_to_cloudflare_edge_colo_id_942d31cf
     field: json.EdgeColoID
     target_field: cloudflare.edge.colo.id
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgePathingOp_to_cloudflare_edge_pathing_op_221b7849
     field: json.EdgePathingOp
     target_field: cloudflare.edge.pathing.op
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgePathingSrc_to_cloudflare_edge_pathing_src_5d2ebbe5
     field: json.EdgePathingSrc
     target_field: cloudflare.edge.pathing.src
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgePathingStatus_to_cloudflare_edge_pathing_status_1cebb919
     field: json.EdgePathingStatus
     target_field: cloudflare.edge.pathing.status
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeRateLimitAction_to_cloudflare_edge_rate_limit_action_c3fb46da
     field: json.EdgeRateLimitAction
     target_field: cloudflare.edge.rate_limit.action
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeRateLimitID_to_cloudflare_edge_rate_limit_id_5d3108d4
     field: json.EdgeRateLimitID
     target_field: cloudflare.edge.rate_limit.id
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeRequestHost_to_cloudflare_edge_request_host_a2515499
     field: json.EdgeRequestHost
     target_field: cloudflare.edge.request.host
     ignore_missing: true
@@ -246,14 +268,17 @@ processors:
     type: long
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeResponseStatus_to_cloudflare_edge_response_status_code_15193a93
     field: json.EdgeResponseStatus
     target_field: cloudflare.edge.response.status_code
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeResponseCompressionRatio_to_cloudflare_edge_response_compression_ratio_5c43d23e
     field: json.EdgeResponseCompressionRatio
     target_field: cloudflare.edge.response.compression_ratio
     ignore_missing: true
 - rename:
+    tag: rename_json_EdgeResponseContentType_to_cloudflare_edge_response_content_type_4d430c6c
     field: json.EdgeResponseContentType
     target_field: cloudflare.edge.response.content_type
     ignore_missing: true
@@ -265,63 +290,77 @@ processors:
     ignore_missing: true
 # Cloudflare Firewall Fields
 - rename:
+    tag: rename_json_FirewallMatchesActions_to_cloudflare_firewall_actions_bd334964
     field: json.FirewallMatchesActions
     target_field: cloudflare.firewall.actions
     ignore_missing: true
 - rename:
+    tag: rename_json_FirewallMatchesSources_to_cloudflare_firewall_sources_59d48d1a
     field: json.FirewallMatchesSources
     target_field: cloudflare.firewall.sources
     ignore_missing: true
 - rename:
+    tag: rename_json_FirewallMatchesRuleIDs_to_cloudflare_firewall_rule_ids_5266115b
     field: json.FirewallMatchesRuleIDs
     target_field: cloudflare.firewall.rule_ids
     ignore_missing: true
 # Cloudflare WAF Fields
 - rename:
+    tag: rename_json_WAFAction_to_cloudflare_waf_action_8b5389c3
     field: json.WAFAction
     target_field: cloudflare.waf.action
     ignore_missing: true
 - rename:
+    tag: rename_json_WAFFlags_to_cloudflare_waf_flags_f5617a6f
     field: json.WAFFlags
     target_field: cloudflare.waf.flags
     ignore_missing: true
 - rename:
+    tag: rename_json_WAFMatchedVar_to_cloudflare_waf_matched_var_3f4014e4
     field: json.WAFMatchedVar
     target_field: cloudflare.waf.matched_var
     ignore_missing: true
 - rename:
+    tag: rename_json_WAFProfile_to_cloudflare_waf_profile_96035587
     field: json.WAFProfile
     target_field: cloudflare.waf.profile
     ignore_missing: true
 - rename:
+    tag: rename_json_WAFRuleID_to_cloudflare_waf_rule_id_f3158d13
     field: json.WAFRuleID
     target_field: cloudflare.waf.rule.id
     ignore_missing: true
 - rename:
+    tag: rename_json_WAFRuleMessage_to_cloudflare_waf_rule_message_f82e4979
     field: json.WAFRuleMessage
     target_field: cloudflare.waf.rule.message
     ignore_missing: true
 # CLoudflare Worker Fields
 - convert:
+    tag: convert_json_WorkerCPUTime_to_cloudflare_worker_cpu_time_be19d99d
     field: json.WorkerCPUTime
     target_field: cloudflare.worker.cpu_time
     type: long
     ignore_missing: true
 - rename:
+    tag: rename_json_WorkerStatus_to_cloudflare_worker_status_75eb28d3
     field: json.WorkerStatus
     target_field: cloudflare.worker.status
     ignore_missing: true
 - rename:
+    tag: rename_json_WorkerSubrequest_to_cloudflare_worker_subrequest_c7c4ece7
     field: json.WorkerSubrequest
     target_field: cloudflare.worker.subrequest
     ignore_missing: true
 - convert:
+    tag: convert_json_WorkerSubrequestCount_to_cloudflare_worker_subrequest_count_a03babcd
     field: json.WorkerSubrequestCount
     target_field: cloudflare.worker.subrequest_count
     type: long
     ignore_missing: true
 # Cloudflare Origin Fields
 - rename:
+    tag: rename_json_OriginResponseBytes_to_cloudflare_origin_response_bytes_3e67b9c9
     field: json.OriginResponseBytes
     target_field: cloudflare.origin.response.bytes
     ignore_missing: true
@@ -344,6 +383,7 @@ processors:
     if: ctx?.json?.OriginResponseHTTPLastModified != null
     ignore_failure: true
 - rename:
+    tag: rename_json_OriginResponseStatus_to_cloudflare_origin_response_status_code_f288b87d
     field: json.OriginResponseStatus
     target_field: cloudflare.origin.response.status_code
     ignore_missing: true
@@ -354,32 +394,39 @@ processors:
     type: long
     ignore_missing: true
 - rename:
+    tag: rename_json_OriginSSLProtocol_to_cloudflare_origin_ssl_protocol_d9551907
     field: json.OriginSSLProtocol
     target_field: cloudflare.origin.ssl.protocol
     ignore_missing: true
 # Cloudflare RayID Fields
 - rename:
+    tag: rename_json_ParentRayID_to_cloudflare_parent_ray_id_19fb630e
     field: json.ParentRayID
     target_field: cloudflare.parent.ray_id
     ignore_missing: true
 - rename:
+    tag: rename_json_RayID_to_cloudflare_ray_id_c7a94234
     field: json.RayID
     target_field: cloudflare.ray_id
     ignore_missing: true
 # Cloudflare Other Fields
 - rename:
+    tag: rename_json_ZoneID_to_cloudflare_zone_id_748f8bc7
     field: json.ZoneID
     target_field: cloudflare.zone.id
     ignore_missing: true
 - rename:
+    tag: rename_json_ZoneName_to_cloudflare_zone_name_e57ff5c3
     field: json.ZoneName
     target_field: cloudflare.zone.name
     ignore_missing: true
 - rename:
+    tag: rename_json_SecurityLevel_to_cloudflare_security_level_69b1e7e0
     field: json.SecurityLevel
     target_field: cloudflare.security_level
     ignore_missing: true
 - rename:
+    tag: rename_json_ClientDeviceType_to_cloudflare_device_type_b6cd22fb
     field: json.ClientDeviceType
     target_field: cloudflare.device_type
     ignore_missing: true
@@ -390,10 +437,12 @@ processors:
     pattern: "%{network.protocol}/%{http.version}"
     ignore_failure: true
 - set:
+    tag: set_http_response_bytes_464b605f
     field: http.response.bytes
     copy_from: cloudflare.edge.response.bytes
     ignore_empty_value: true
 - set:
+    tag: set_http_response_body_bytes_bbf2877f
     field: http.response.body.bytes
     copy_from: cloudflare.edge.response.body.bytes
     ignore_empty_value: true
@@ -404,24 +453,29 @@ processors:
     type: long
     ignore_missing: true
 - rename:
+    tag: rename_json_ClientRequestMethod_to_http_request_method_1dfebe37
     field: json.ClientRequestMethod
     target_field: http.request.method
     ignore_missing: true
 - rename:
+    tag: rename_json_ClientRequestReferer_to_http_request_referrer_41b9047f
     field: json.ClientRequestReferer
     target_field: http.request.referrer
     ignore_missing: true
 - set:
+    tag: set_http_response_status_code_ab63691b
     field: http.response.status_code
     copy_from: cloudflare.edge.response.status_code
     ignore_empty_value: true
 - set:
+    tag: set_http_response_status_code_85051536
     field: http.response.status_code
     copy_from: cloudflare.origin.response.status_code
     ignore_empty_value: true
     if: ctx?.http?.response?.status_code == null && ctx?.cloudflare?.origin?.response?.status_code != 0
 # Source Fields
 - rename:
+    tag: rename_json_ClientIP_to_source_address_72bf611d
     field: json.ClientIP
     target_field: source.address
     ignore_missing: true
@@ -438,6 +492,7 @@ processors:
     target_field: source.geo
     ignore_missing: true
 - rename:
+    tag: rename_json_ClientCountry_to_source_geo_country_iso_code_05cf24cb
     field: json.ClientCountry
     target_field: source.geo.country_iso_code
     ignore_missing: true
@@ -452,19 +507,23 @@ processors:
     - organization_name
     ignore_missing: true
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_json_ClientASN_to_source_as_number_ca8c111f
     field: json.ClientASN
     target_field: source.as.number
     ignore_missing: true
     if: ctx?.source?.as?.number == null
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 - set:
+    tag: set_source_bytes_4be3df05
     field: source.bytes
     copy_from: http.request.bytes
     ignore_empty_value: true
@@ -476,14 +535,17 @@ processors:
     ignore_missing: true
 # Client Fields
 - set:
+    tag: set_client_10dffeb7
     field: client
     copy_from: source
 - rename:
+    tag: rename_json_ClientIPClass_to_cloudflare_client_ip_class_21c08086
     field: json.ClientIPClass
     target_field: cloudflare.client.ip_class
     ignore_missing: true
 # Destination Fields
 - rename:
+    tag: rename_json_OriginIP_to_destination_address_e8cf1063
     field: json.OriginIP
     target_field: destination.address
     ignore_missing: true
@@ -495,38 +557,47 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_destination_bytes_5749e9d0
     field: destination.bytes
     copy_from: cloudflare.edge.response.bytes
     ignore_empty_value: true
 # Server Fields
 - set:
+    tag: set_server_c902af60
     field: server
     copy_from: destination
 - append:
+    tag: append_event_category_7afdca3c
     field: event.category
     value: network
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - append:
+    tag: append_event_type_f492a3bf
     field: event.type
     value: denied
     allow_duplicates: false
     if: ctx.cloudflare?.firewall?.actions != null && ctx.cloudflare?.firewall?.actions.contains('block')
 - append:
+    tag: append_event_type_c39109e7
     field: event.type
     value: denied
     allow_duplicates: false
     if: ctx.cloudflare?.firewall?.actions != null && ctx.cloudflare?.firewall?.actions.contains('allow')
 - set:
+    tag: set_event_action_648682c8
     field: event.action
     copy_from: cloudflare.firewall.actions
     if: ctx.cloudflare?.firewall?.actions != null
 # Network Fields
 - lowercase:
+    tag: lowercase_network_protocol_49872259
     field: network.protocol
     ignore_missing: true
 - set:
+    tag: set_network_transport_be847bd4
     field: network.transport
     value: tcp
     if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
@@ -537,6 +608,7 @@ processors:
     if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
     ignore_failure: true
 - remove:
+    tag: remove_8ffa7ac1
     field:
       - json.EdgeServerIP
     ignore_missing: true
