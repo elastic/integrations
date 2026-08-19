@@ -4173,22 +4173,22 @@ An example event for `gmail_reports` looks as following:
 {
     "@timestamp": "2026-08-11T03:04:01.312Z",
     "agent": {
-        "ephemeral_id": "7868640f-2962-4c5d-bfb8-af30860a331b",
-        "id": "6b991a21-f912-4e3c-b128-46b73875538b",
-        "name": "elastic-agent-73378",
+        "ephemeral_id": "955b7aba-e735-44e2-93dc-dfc847c16b76",
+        "id": "559ba064-2811-46a5-be0f-f1d6c1e284a8",
+        "name": "elastic-agent-95846",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.gmail_reports",
-        "namespace": "63612",
+        "namespace": "83725",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "6b991a21-f912-4e3c-b128-46b73875538b",
+        "id": "559ba064-2811-46a5-be0f-f1d6c1e284a8",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -4210,7 +4210,7 @@ An example event for `gmail_reports` looks as following:
         "dataset": "google_workspace.gmail_reports",
         "duration": 1645948000,
         "id": "1193008247809429026",
-        "ingested": "2026-08-17T11:18:57Z",
+        "ingested": "2026-08-19T09:38:52Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"user1@example.com\",\"profileId\":\"109107487136189420589\"},\"etag\":\"\\\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\\\"\",\"events\":{\"name\":\"delivery\",\"parameters\":[{\"messageValue\":{\"parameter\":[{\"intValue\":\"1786417441312628\",\"name\":\"timestamp_usec\"},{\"intValue\":\"1645948\",\"name\":\"elapsed_time_usec\"},{\"boolValue\":true,\"name\":\"success\"},{\"intValue\":\"2\",\"name\":\"mail_event_type\"}]},\"name\":\"event_info\"},{\"messageValue\":{\"parameter\":[{\"intValue\":\"3\",\"name\":\"action_type\"},{\"name\":\"rfc2822_message_id\",\"value\":\"\\u003c000000000000f8bdf50658bcb834@mail.example.com\\u003e\"},{\"name\":\"subject\",\"value\":\"[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456\"},{\"intValue\":\"12179\",\"name\":\"payload_size\"},{\"name\":\"flattened_destinations\",\"value\":\"gmail-ui::user1@example.com\"},{\"name\":\"description\",\"value\":\"\"},{\"boolValue\":false,\"name\":\"is_spam\"},{\"boolValue\":false,\"name\":\"is_policy_check_for_sender\"},{\"intValue\":\"0\",\"name\":\"num_message_attachments\"},{\"intValue\":\"0\",\"name\":\"smime_content_type\"},{\"multiValue\":[\"example.com\",\"example.net\"],\"name\":\"link_domain\"}]},\"name\":\"message_info\"}],\"type\":\"delivery_type\"},\"id\":{\"applicationName\":\"gmail\",\"customerId\":\"C00yte8g0\",\"time\":\"2026-08-11T03:04:01.312Z\",\"uniqueQualifier\":\"1193008247809429026\"},\"ipAddress\":\"81.2.69.142\",\"isAgenticAction\":false,\"kind\":\"admin#reports#activity\",\"networkInfo\":{\"ipAsn\":[0,15169],\"regionCode\":\"US\",\"subdivisionCode\":\"\"},\"resourceDetails\":[{\"id\":\"\\u003c000000000000f8bdf50658bcb834@mail.example.com\\u003e\",\"ownerDetails\":{\"ownerIdentity\":[{\"userIdentity\":{\"id\":\"0z337ya2lr9by9\",\"userEmail\":\"user1@example.com\"}}],\"ownerType\":\"USER\"},\"relation\":\"GMAIL_PRIMARY\",\"title\":\"[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456\",\"type\":\"EMAIL\"}],\"resourceIds\":[\"\\u003c000000000000f8bdf50658bcb834@mail.example.com\\u003e\"]}",
         "outcome": "success",
