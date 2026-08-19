@@ -2,18 +2,22 @@
 description: Pipeline for Beelzebub logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
 
   - append:
+      tag: append_event_category_7afdca3c
       field: event.category
       value: network
 
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
 
@@ -26,6 +30,7 @@ processors:
       tag: rename_message_to_event_original
 
   - remove:
+      tag: remove_message_76fa2a57
       if: ctx.event?.original != null
       description: "Remove unnecessary message field if event.original exists"
       field: message
@@ -71,18 +76,21 @@ processors:
       tag: parse_json_time
 
   - set:
+      tag: set_event_id_5b2ab158
       description: "ECS mapping json.event.ID -> event.id"
       field: event.id
       copy_from: json.event.ID
       ignore_empty_value: true
 
   - set:
+      tag: set_event_reason_7a06d67b
       description: "ECS mapping json.event.Msg -> event.reason, this is likely to be more detailed than json.msg"
       field: event.reason
       copy_from: json.event.Msg
       ignore_empty_value: true
 
   - set:
+      tag: set_event_reason_cb7ba171
       description: "ECS mapping json.msg -> event.reason, only if json.event.Msg does not exist"
       field: event.reason
       copy_from: json.msg
@@ -114,12 +122,14 @@ processors:
       tag: convert_json_event_sourceport
 
   - geoip:
+      tag: geoip_source_ip_to_source_geo_5b302835
       description: "Enrich event with source IP GeoIP data"
       field: source.ip
       target_field: source.geo
       ignore_missing: true
 
   - geoip:
+      tag: geoip_source_ip_to_source_as_9e053401
       description: "Enrich event with source IP GeoIP ASN contextual data"
       field: source.ip
       target_field: source.as
@@ -130,40 +140,47 @@ processors:
       ignore_missing: true
 
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
 
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - set:
+      tag: set_http_request_method_5a4aac7e
       description: "ECS mapping json.event.HTTPMethod -> http.request.method"
       field: http.request.method
       copy_from: json.event.HTTPMethod
       ignore_empty_value: true
 
   - set:
+      tag: set_http_request_body_content_bded6c72
       description: "ECS mapping json.event.Body -> http.request.body.content"
       field: http.request.body.content
       copy_from: json.event.Body
       ignore_empty_value: true
 
   - script:
+      tag: script_ba747eae
       description: "Count body length so we have can search based on size of body strings"
       if: ctx.http?.request?.body?.content != null && (ctx.http?.request?.body?.content instanceof String)
       lang: painless
       source: ctx.http.request.body.bytes = ctx.http.request.body.content.length();
 
   - uri_parts:
+      tag: uri_parts_json_event_RequestURI_b533cfa0
       if: ctx.json?.event?.RequestURI != null && ctx.json?.event?.RequestURI != ""
       description: "ECS extraction/mapping json.event.RequestURI -> uri.*"
       field: json.event.RequestURI
       ignore_missing: true
 
   - user_agent:
+      tag: user_agent_json_event_UserAgent_901b805c
       if: ctx.json?.event?.UserAgent != null && ctx.json?.event?.UserAgent != ""
       description: "ECS extraction/mapping json.event.UserAgent -> user_agent.*"
       field: json.event.UserAgent
@@ -177,11 +194,13 @@ processors:
 #   header values to search with.
 
   - remove:
+      tag: remove_json_event_Headers_245aa1dc
       if: ctx.json?.event?.Headers == ""
       description: "Remove json.event.Headers if it an empty string so that we can skip some of processors"
       field: json.event.Headers
 
   - rename:
+      tag: rename_json_event_Headers_to_json_event_HeadersText_4b94e14d
       if: ctx.json?.event?.Headers instanceof String
       description: "Rename json.event.Headers to json.event.HeadersText to maintain backwards compatibility with indexed data"
       field: json.event.Headers
@@ -189,6 +208,7 @@ processors:
       ignore_missing: true
 
   - rename:
+      tag: rename_json_event_HeadersMap_to_json_event_Headers_e4525aaf
       if: ctx.json?.event?.Headers == null && ctx.json?.event?.HeadersMap instanceof Map
       description: "Rename json.event.HeadersMap to json.event.Headers as this is a pre-made object so we can skip gsub/kv based extractions"
       field: json.event.HeadersMap
@@ -197,6 +217,7 @@ processors:
       ignore_missing: true
 
   - gsub:
+      tag: gsub_json_event_HeadersText_to__tmp_HeadersText_678901f8
       if: ctx.json?.event?.Headers == null
       description: "Replace leading and trailing syntax to support KVP extraction, put result in _tmp.HeadersText so additional processors will apply if it exists"
       field: json.event.HeadersText
@@ -206,6 +227,7 @@ processors:
       replacement: ''
 
   - gsub:
+      tag: gsub__tmp_HeadersText_14182aa2
       if: ctx.json?.event?.Headers == null
       description: "Fix field separator to support KVP extraction"
       field: _tmp.HeadersText
@@ -214,6 +236,7 @@ processors:
       replacement: ',##'
 
   - kv:
+      tag: kv__tmp_HeadersText_to_json_event_Headers_8b2cb767
       if: ctx.json?.event?.Headers == null
       description: "Extract headers as key value pairs."
       field: _tmp.HeadersText
@@ -291,18 +314,21 @@ processors:
       tag: convert_url_domain
 
   - set:
+      tag: set_destination_port_0500e88f
       description: "Use url.port as destination.port if already extracted"
       field: destination.port
       copy_from: url.port
       ignore_empty_value: true
 
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_46a31e70
       description: "Enrich event with destination IP GeoIP data"
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
 
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_08af3990
       description: "Enrich event with destination IP GeoIP ASN contextual data"
       field: destination.ip
       target_field: destination.as
@@ -313,11 +339,13 @@ processors:
       ignore_missing: true
 
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
 
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -337,10 +365,12 @@ processors:
       tag: append_user_name_to_related_user
 
   - rename:
+      tag: rename_json_to_beelzebub_e13ea439
       field: json
       target_field: beelzebub
 
   - script:
+      tag: script_44cc395e
       description: "Drops null/empty values recursively to minimise event size"
       lang: painless
       source: |
@@ -359,6 +389,7 @@ processors:
           dropEmptyFields(ctx);
 
   - remove:
+      tag: remove_3504a80c
       description: "Remove temporary and other unnecessary fields"
       field:
         - _tmp
@@ -366,6 +397,7 @@ processors:
       ignore_missing: true
 
   - remove:
+      tag: remove_d4353bcd
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       description: "Remove ECS mapped fields"
       field:
@@ -390,6 +422,7 @@ processors:
       if: ctx.error?.message != null
 
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
