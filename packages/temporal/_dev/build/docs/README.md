@@ -4,7 +4,7 @@ Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) us
 
 ## Overview
 
-This integration scrapes Temporal Cloud OpenMetrics using the [Proemtheus (OTel) Input Package](https://www.elastic.co/docs/reference/integrations/prometheus_input_otel) into the **Cloud Metrics** data stream (`temporal.cloud_metrics.otel`): workflow lifecycle, task queues and polling, service latency and errors, namespace limits and throttles, schedules, and replication lag.
+This integration scrapes Temporal Cloud OpenMetrics using the [Prometheus (OTel) Input Package](https://www.elastic.co/docs/reference/integrations/prometheus_input_otel) into the **Cloud Metrics** data stream (`temporal.cloud_metrics.otel`): workflow lifecycle, task queues and polling, service latency and errors, namespace limits and throttles, schedules, and replication lag.
 
 Metrics are stored with native OTel schema — no field renaming or custom mapping is applied.
 
