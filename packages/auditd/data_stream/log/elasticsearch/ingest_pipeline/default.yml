@@ -2,15 +2,18 @@
 description: Pipeline for parsing Linux auditd logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_86cdcc50
       field: message
       target_field: event.original
       ignore_failure: true
       ignore_missing: true
       if: ctx.event?.original == null
   - pipeline:
+      tag: pipeline_17c0b5e8
       if: ctx.auditd?.log?.record_type == null
       name: '{{ IngestPipeline "raw" }}'
   - script:
@@ -175,38 +178,47 @@ processors:
           - success
           - key_enforce
   - convert:
+      tag: convert_auditd_log_sequence_f9852c7b
       field: auditd.log.sequence
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_lport_87e4f6d7
       field: auditd.log.lport
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_rport_16b749a5
       field: auditd.log.rport
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_entries_79e5f8de
       field: auditd.log.entries
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_dst_prefixlen_c8bc5cb7
       field: auditd.log.dst_prefixlen
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_ksize_1d6def4e
       field: auditd.log.ksize
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_size_56d3b95f
       field: auditd.log.size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_auditd_log_src_prefixlen_58298054
       field: auditd.log.src_prefixlen
       type: long
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - script:
@@ -2041,6 +2053,7 @@ processors:
           }
         }
   - foreach:
+      tag: foreach_auditd_log_copy_b58be7b3
       field: auditd.log.copy
       ignore_missing: true
       processor:
@@ -2048,56 +2061,69 @@ processors:
           field: "{{{_ingest._value.target}}}"
           value: "{{{_ingest._value.value}}}"
   - set:
+      tag: set_event_category_e7f75641
       if: "ctx.auditd.log?.record_type == 'SYSTEM_BOOT' || ctx.auditd.log?.record_type == 'SYSTEM_SHUTDOWN'"
       field: event.category
       value: host
   - set:
+      tag: set_event_type_73fe2fcb
       if: "ctx.auditd.log?.record_type == 'SYSTEM_BOOT' || ctx.auditd.log?.record_type == 'SYSTEM_SHUTDOWN'"
       field: event.type
       value: info
   - set:
+      tag: set_event_category_c965a468
       if: "ctx.auditd.log?.record_type == 'SYSCALL' && ctx.auditd.log?.syscall == 'execve'"
       field: event.category
       value: process
   - set:
+      tag: set_event_type_243e4811
       if: "ctx.auditd.log?.record_type == 'SYSCALL' && ctx.auditd.log?.syscall == 'execve'"
       field: event.type
       value: info
   - set:
+      tag: set_event_category_16c2d8b9
       if: "ctx.auditd.log?.record_type == 'VIRT_CONTROL' || ctx.auditd.log?.record_type == 'VIRT_MACHINE_ID'"
       field: event.category
       value: host
   - set:
+      tag: set_event_type_a5432969
       if: "ctx.auditd.log?.record_type == 'VIRT_CONTROL' && ctx.auditd.log?.op == 'start'"
       field: event.type
       value: start
   - set:
+      tag: set_event_type_7597ba98
       if: "ctx.auditd.log?.record_type == 'VIRT_CONTROL' && ctx.auditd.log?.op == 'stop'"
       field: event.type
       value: end
   - set:
+      tag: set_event_type_cbcde01a
       if: "ctx.auditd.log?.record_type == 'VIRT_CONTROL' && ctx.auditd.log?.op == 'create'"
       field: event.type
       value: creation
   - set:
+      tag: set_event_type_0781a546
       if: "ctx.auditd.log?.record_type == 'VIRT_CONTROL' && ctx.auditd.log?.op == 'delete'"
       field: event.type
       value: deletion
   - set:
+      tag: set_event_type_75e85d42
       if: "ctx.auditd.log?.record_type == 'VIRT_MACHINE_ID'"
       field: event.type
       value: creation
   - set:
+      tag: set_container_name_cf80f76f
       if: "ctx.auditd.log?.record_type == 'VIRT_MACHINE_ID'"
       field: container.name
       value: "{{{ auditd.log.vm }}}"
       ignore_empty_value: true
   - set:
+      tag: set_container_runtime_b042d150
       if: "ctx.auditd.log?.record_type == 'VIRT_MACHINE_ID'"
       field: container.runtime
       value: "{{{ auditd.log.virt }}}"
       ignore_empty_value: true
   - set:
+      tag: set_network_direction_b60a7bb6
       if: >
         ctx.auditd.log?.record_type == 'SYSCALL' && (
         ctx.auditd.log?.syscall == 'accept' || ctx.auditd.log?.syscall == '43' ||
@@ -2107,6 +2133,7 @@ processors:
       field: network.direction
       value: ingress
   - set:
+      tag: set_network_direction_198ac450
       if: >
         ctx.auditd.log?.record_type == 'SYSCALL' && (
         ctx.auditd.log?.syscall == 'connect' || ctx.auditd.log?.syscall == '42' ||
@@ -2115,172 +2142,208 @@ processors:
       field: network.direction
       value: egress
   - set:
+      tag: set_host_architecture_25159842
       copy_from: auditd.log.arch
       field: host.architecture
       if: ctx.auditd.log?.arch != null
   - rename:
+      tag: rename_auditd_log_acct_to_user_name_4486a0e6
       ignore_failure: true
       field: auditd.log.acct
       target_field: user.name
   - rename:
+      tag: rename_auditd_log_user_to_user_name_4b9edcaa
       ignore_failure: true
       field: auditd.log.user
       target_field: user.name
   - rename:
+      tag: rename_auditd_log_uid_to_user_id_bd707239
       ignore_failure: true
       field: auditd.log.uid
       target_field: user.id
   - rename:
+      tag: rename_auditd_log_gid_to_user_group_id_4c92b41a
       ignore_failure: true
       field: auditd.log.gid
       target_field: user.group.id
   - rename:
+      tag: rename_auditd_log_agid_to_user_audit_group_id_156eaf06
       ignore_failure: true
       field: auditd.log.agid
       target_field: user.audit.group.id
   - rename:
+      tag: rename_auditd_log_auid_to_user_audit_id_c6313d75
       ignore_failure: true
       field: auditd.log.auid
       target_field: user.audit.id
   - rename:
+      tag: rename_auditd_log_fsgid_to_user_filesystem_group_id_e73cb9b4
       ignore_failure: true
       field: auditd.log.fsgid
       target_field: user.filesystem.group.id
   - rename:
+      tag: rename_auditd_log_fsuid_to_user_filesystem_id_cb6ecd03
       ignore_failure: true
       field: auditd.log.fsuid
       target_field: user.filesystem.id
   - rename:
+      tag: rename_auditd_log_egid_to_user_effective_group_id_243fae94
       ignore_failure: true
       field: auditd.log.egid
       target_field: user.effective.group.id
   - rename:
+      tag: rename_auditd_log_euid_to_user_effective_id_0531a903
       ignore_failure: true
       field: auditd.log.euid
       target_field: user.effective.id
   - rename:
+      tag: rename_auditd_log_sgid_to_user_saved_group_id_02a0ea10
       ignore_failure: true
       field: auditd.log.sgid
       target_field: user.saved.group.id
   - rename:
+      tag: rename_auditd_log_suid_to_user_saved_id_27441983
       ignore_failure: true
       field: auditd.log.suid
       target_field: user.saved.id
   - rename:
+      tag: rename_auditd_log_ogid_to_user_owner_group_id_722fece4
       ignore_failure: true
       field: auditd.log.ogid
       target_field: user.owner.group.id
   - rename:
+      tag: rename_auditd_log_ouid_to_user_owner_id_5cf0422f
       ignore_failure: true
       field: auditd.log.ouid
       target_field: user.owner.id
   # Map ENRICHED format username/group fields (UID="root", EUID=..., etc.) to ECS.
   # Only set when the target is unset, and skip placeholder values like "unset" / "?".
   - set:
+      tag: set_user_name_df2fdd5a
       field: user.name
       copy_from: auditd.log.UID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.UID != null && !['?', 'unset'].contains(ctx.auditd.log.UID)
   - set:
+      tag: set_user_group_name_da854e93
       field: user.group.name
       copy_from: auditd.log.GID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.GID != null && !['?', 'unset'].contains(ctx.auditd.log.GID)
   - set:
+      tag: set_user_audit_name_63c34072
       field: user.audit.name
       copy_from: auditd.log.AUID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.AUID != null && !['?', 'unset'].contains(ctx.auditd.log.AUID)
   - set:
+      tag: set_user_audit_group_name_d23c13ff
       field: user.audit.group.name
       copy_from: auditd.log.AGID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.AGID != null && !['?', 'unset'].contains(ctx.auditd.log.AGID)
   - set:
+      tag: set_user_effective_name_77e27b70
       field: user.effective.name
       copy_from: auditd.log.EUID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.EUID != null && !['?', 'unset'].contains(ctx.auditd.log.EUID)
   - set:
+      tag: set_user_effective_group_name_8cebe5a5
       field: user.effective.group.name
       copy_from: auditd.log.EGID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.EGID != null && !['?', 'unset'].contains(ctx.auditd.log.EGID)
   - set:
+      tag: set_user_filesystem_name_dbc6d416
       field: user.filesystem.name
       copy_from: auditd.log.FSUID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.FSUID != null && !['?', 'unset'].contains(ctx.auditd.log.FSUID)
   - set:
+      tag: set_user_filesystem_group_name_2b8eae13
       field: user.filesystem.group.name
       copy_from: auditd.log.FSGID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.FSGID != null && !['?', 'unset'].contains(ctx.auditd.log.FSGID)
   - set:
+      tag: set_user_saved_name_fecc3548
       field: user.saved.name
       copy_from: auditd.log.SUID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.SUID != null && !['?', 'unset'].contains(ctx.auditd.log.SUID)
   - set:
+      tag: set_user_saved_group_name_3d47d279
       field: user.saved.group.name
       copy_from: auditd.log.SGID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.SGID != null && !['?', 'unset'].contains(ctx.auditd.log.SGID)
   - set:
+      tag: set_user_owner_name_b2f4ab58
       field: user.owner.name
       copy_from: auditd.log.OUID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.OUID != null && !['?', 'unset'].contains(ctx.auditd.log.OUID)
   - set:
+      tag: set_user_owner_group_name_1e994be9
       field: user.owner.group.name
       copy_from: auditd.log.OGID
       override: false
       ignore_empty_value: true
       if: ctx.auditd?.log?.OGID != null && !['?', 'unset'].contains(ctx.auditd.log.OGID)
   - rename:
+      tag: rename_auditd_log_comm_to_process_name_585e31d1
       ignore_failure: true
       field: auditd.log.comm
       target_field: process.name
   - rename:
+      tag: rename_auditd_log_exe_to_process_executable_7697c80c
       ignore_failure: true
       field: auditd.log.exe
       target_field: process.executable
   - rename:
+      tag: rename_auditd_log_pid_to_process_pid_36056ac6
       ignore_failure: true
       field: auditd.log.pid
       target_field: process.pid
   - rename:
+      tag: rename_auditd_log_ppid_to_process_parent_pid_d53b0cd6
       ignore_failure: true
       field: auditd.log.ppid
       target_field: process.parent.pid
   - convert:
+      tag: convert_process_pid_df04a3d5
       ignore_missing: true
       field: process.pid
       type: long
   - convert:
+      tag: convert_process_parent_pid_1315c9e1
       ignore_missing: true
       field: process.parent.pid
       type: long
   - rename:
+      tag: rename_auditd_log_cmd_to_process_args_9545285b
       ignore_failure: true
       field: auditd.log.cmd
       target_field: process.args
   - split:
+      tag: split_process_args_67627167
       ignore_failure: true
       field: process.args
       separator: "\\s+"
   - rename:
+      tag: rename_auditd_log_argc_to_process_args_count_9264bf14
       ignore_failure: true
       field: auditd.log.argc
       target_field: process.args_count
@@ -2293,68 +2356,83 @@ processors:
           ctx.process.args_count = ctx.process.args.length;
         }
   - convert:
+      tag: convert_process_args_count_a31f2c67
       ignore_missing: true
       field: process.args_count
       type: long
   - rename:
+      tag: rename_auditd_log_exit_to_process_exit_code_b37f1c2c
       ignore_failure: true
       field: auditd.log.exit
       target_field: process.exit_code
   - convert:
+      tag: convert_process_exit_code_f906de8a
       ignore_missing: true
       field: process.exit_code
       type: long
   - rename:
+      tag: rename_auditd_log_cwd_to_process_working_directory_66b0c4a9
       ignore_missing: true
       field: auditd.log.cwd
       target_field: process.working_directory
   - rename:
+      tag: rename_auditd_log_terminal_to_user_terminal_84af5238
       ignore_failure: true
       field: auditd.log.terminal
       target_field: user.terminal
   - rename:
+      tag: rename_auditd_log_msg_to_message_4a2d7081
       ignore_failure: true
       field: auditd.log.msg
       target_field: message
   - set:
+      tag: set_event_outcome_7c62e9da
       if: (ctx?.auditd?.log?.res != null && ["1", "success"].contains(ctx.auditd.log.res))
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_3154da18
       if: (ctx?.auditd?.log?.res != null && ["0", "failed"].contains(ctx.auditd.log.res))
       field: event.outcome
       value: "failure"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_06d65ff5
       if: (ctx?.auditd?.log?.res != null && !["0", "1", "success", "failed"].contains(ctx.auditd.log.res))
       field: event.outcome
       value: "unknown"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_f9bedd14
       if: (ctx?.event?.outcome == null && ctx?.auditd?.log?.result != null && ["1", "success"].contains(ctx.auditd.log.result))
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_cf6aa916
       if: (ctx?.event?.outcome == null && ctx?.auditd?.log?.result != null && ["0", "failed"].contains(ctx.auditd.log.result))
       field: event.outcome
       value: "failure"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_c2dcb3c3
       if: (ctx?.event?.outcome == null && ctx?.auditd?.log?.result != null && !["0", "1", "success", "failed"].contains(ctx.auditd.log.result))
       field: event.outcome
       value: "unknown"
       ignore_failure: true
   - set:
+      tag: set_event_outcome_a6ad99f0
       field: event.outcome
       value: unknown
       if: ctx.auditd?.log?.avc?.action != null && ctx.event?.outcome == null
   - set:
+      tag: set_event_outcome_7d1df43a
       field: event.outcome
       value: success
       if: ctx.auditd?.log?.avc?.action == 'granted'
   - set:
+      tag: set_event_outcome_5455ec75
       field: event.outcome
       value: failure
       if: ctx.auditd?.log?.avc?.action == 'denied'
@@ -2405,38 +2483,47 @@ processors:
          }
       on_failure:
         - append:
+            tag: append_error_message_4a05b81a
             field: error.message
             value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_action_960acfd7
       field: event.action
       copy_from: auditd.log.record_type
       override: false
   - lowercase:
+      tag: lowercase_event_action_0a05ce67
       ignore_failure: true
       field: event.action
   - rename:
+      tag: rename_auditd_log_src_to_source_address_236e4de4
       ignore_failure: true
       field: auditd.log.src
       target_field: source.address
   - rename:
+      tag: rename_auditd_log_addr_to_source_address_752a75af
       ignore_failure: true
       field: auditd.log.addr
       target_field: source.address
       if: ctx?.source?.address == null
   - rename:
+      tag: rename_auditd_log_dst_to_destination_address_8c19ae38
       ignore_failure: true
       field: auditd.log.dst
       target_field: destination.address
   - grok:
+      tag: grok_source_address_146128d9
       field: source.address
       patterns:
         - "^%{IP:source.ip}$"
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_d3a09038
       field: source.ip
       target_field: source.geo
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -2445,49 +2532,59 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_user_8736e1ba
       field: related.user
       value: "{{{ user.name }}}"
       allow_duplicates: false
       if: ctx.user?.name != null && ctx.user.name != ''
   - append:
+      tag: append_related_user_d803e208
       field: related.user
       value: "{{{ user.audit.name }}}"
       allow_duplicates: false
       if: ctx.user?.audit?.name != null && ctx.user.audit.name != ''
   - append:
+      tag: append_related_user_4009612e
       field: related.user
       value: "{{{ user.effective.name }}}"
       allow_duplicates: false
       if: ctx.user?.effective?.name != null && ctx.user.effective.name != ''
   - append:
+      tag: append_related_user_5e00dab6
       field: related.user
       value: "{{{ user.filesystem.name }}}"
       allow_duplicates: false
       if: ctx.user?.filesystem?.name != null && ctx.user.filesystem.name != ''
   - append:
+      tag: append_related_user_bd0d5a6c
       field: related.user
       value: "{{{ user.saved.name }}}"
       allow_duplicates: false
       if: ctx.user?.saved?.name != null && ctx.user.saved.name != ''
   - append:
+      tag: append_related_user_f7c2daac
       field: related.user
       value: "{{{ user.owner.name }}}"
       allow_duplicates: false
       if: ctx.user?.owner?.name != null && ctx.user.owner.name != ''
   - append:
+      tag: append_related_user_eb8c0e28
       field: related.user
       value: "{{{ user.target.name }}}"
       allow_duplicates: false
       if: ctx.user?.target?.name != null && ctx.user.target.name != ''
   - remove:
+      tag: remove_0b1a4f5a
       field:
         - auditd.log.kv
         - auditd.log.sub_kv

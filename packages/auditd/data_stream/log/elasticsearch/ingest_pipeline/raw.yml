@@ -55,49 +55,58 @@ processors:
         - '%{AUDIT_PREFIX}\s*$'
         - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES}'
   - gsub:
+      tag: gsub_auditd_log_sub_kv_49a54c05
       field: auditd.log.sub_kv
       pattern: '(res=[a-z]+)([A-Z][A-Za-z_]+=)'
       replacement: '$1 $2'
       ignore_missing: true
       ignore_failure: true
   - gsub:
+      tag: gsub_auditd_log_kv_9cabda36
       field: auditd.log.kv
       pattern: '(res=[a-z]+)([A-Z][A-Za-z_]+=)'
       replacement: '$1 $2'
       ignore_missing: true
       ignore_failure: true
   - kv:
+      tag: kv_auditd_log_kv_to_auditd_log_99867408
       if: ctx.auditd?.log?.kv != null
       field: auditd.log.kv
       field_split: '(?:\s+|\x1d)(?=[^\s\x1d]+=)'
       value_split: '(?<!\\)='
       target_field: auditd.log
   - kv:
+      tag: kv_auditd_log_sub_kv_to_auditd_log_c3ca50df
       field: auditd.log.sub_kv
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - kv:
+      tag: kv_auditd_log_sub_kv_enriched_to_auditd_log_710d6e30
       field: auditd.log.sub_kv_enriched
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - date:
+      tag: date_auditd_log_epoch_to_timestamp_c00ae8bc
       field: auditd.log.epoch
       target_field: "@timestamp"
       formats:
         - UNIX
       ignore_failure: true
   - lowercase:
+      tag: lowercase_auditd_log_original_field_b059d0ca
       field: auditd.log.original_field
       ignore_missing: true
   - rename:
+      tag: rename_auditd_log_old-auid_to_auditd_log_old_auid_1459dfe2
       ignore_failure: true
       field: auditd.log.old-auid
       target_field: auditd.log.old_auid
   - rename:
+      tag: rename_auditd_log_old-ses_to_auditd_log_old_ses_246d9968
       ignore_failure: true
       field: auditd.log.old-ses
       target_field: auditd.log.old_ses
