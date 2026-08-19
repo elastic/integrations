@@ -2,6 +2,7 @@
 description: Pipeline for processing dhcpv4 traffic
 processors:
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 
@@ -26,8 +27,9 @@ processors:
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
-    tag: gsub_dhcpv4_client_mac
+    tag: gsub_dhcpv4_client_mac_99e1fde8
 - uppercase:
+    tag: uppercase_dhcpv4_client_mac_bc3fd002
     field: dhcpv4.client_mac
     ignore_missing: true
 - gsub:
@@ -41,11 +43,13 @@ processors:
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
-    tag: gsub_host_mac
+    tag: gsub_host_mac_ec7c39d0
 - uppercase:
+    tag: uppercase_host_mac_73cd4413
     field: host.mac
     ignore_missing: true
 - append:
+    tag: append_related_hosts_4cf05a40
     field: related.hosts
     value: "{{{observer.hostname}}}"
     if: ctx.observer?.hostname != null && ctx.observer?.hostname != ''
@@ -60,6 +64,7 @@ processors:
         value: '{{{_ingest._value}}}'
         allow_duplicates: false
 - remove:
+    tag: remove_host_bd0ad419
     if: ctx.host != null && ctx.tags != null && ctx.tags.contains('forwarded')
     field: host
 
@@ -68,6 +73,7 @@ processors:
     name: '{{ IngestPipeline "geoip" }}'
     tag: pipeline_processor
 - remove:
+    tag: remove__conf_8e93c735
     field: _conf
     ignore_missing: true
 

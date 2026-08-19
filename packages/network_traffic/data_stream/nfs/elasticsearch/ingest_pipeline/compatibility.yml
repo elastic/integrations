@@ -2,26 +2,33 @@
 description: ECS compatibility layer pipeline.
 processors:
   - rename:
+      tag: rename_nfs_to_network_traffic_nfs_36225176
       field: nfs
       target_field: network_traffic.nfs
       ignore_missing: true
   - rename:
+      tag: rename_method_to_network_traffic_nfs_method_3ec78635
       field: method
       target_field: network_traffic.nfs.method
       ignore_missing: true
   - rename:
+      tag: rename_query_to_network_traffic_nfs_query_3b0c9d3d
       field: query
       target_field: network_traffic.nfs.query
       ignore_missing: true
   - rename:
+      tag: rename_rpc_to_network_traffic_nfs_rpc_4ae5c433
       field: rpc
       target_field: network_traffic.nfs.rpc
       ignore_missing: true
   - dot_expander:
+      tag: dot_expander_group_id_200a5dc6
       field: group.id
   - dot_expander:
+      tag: dot_expander_user_id_fd616346
       field: user.id
   - script:
+      tag: script_74cc9b62
       description: dot_expander with a destination path for host.hostname
       lang: painless
       source: |
@@ -40,24 +47,29 @@ processors:
         ctx.network_traffic.nfs.host['hostname'] = ctx['host.hostname'];
         ctx.remove('host.hostname');
   - append:
+      tag: append_related_hosts_a28f0178
       field: related.hosts
       value: "{{{network_traffic.nfs.host.hostname}}}"
       if: ctx.network_traffic?.nfs?.host?.hostname != null && ctx.network_traffic.nfs.host.hostname != ''
       allow_duplicates: false
   - rename:
+      tag: rename_status_to_network_traffic_status_651b762e
       # Retained for legacy dashboard behaviour.
       field: status
       target_field: network_traffic.status
       ignore_missing: true
   - rename:
+      tag: rename_process_ppid_to_process_parent_pid_efedbd92
       field: process.ppid
       target_field: process.parent.pid
       ignore_missing: true
   # Remove packetbeat fields that are handled by agent or fleet.
   - remove:
+      tag: remove_type_ca899d72
       field: type
       ignore_missing: true
   - remove:
+      tag: remove_event_dataset_2bc3044a
       field: event.dataset
       ignore_missing: true
 
