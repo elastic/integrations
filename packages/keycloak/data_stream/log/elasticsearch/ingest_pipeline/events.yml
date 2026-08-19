@@ -10,88 +10,108 @@ processors:
     ignore_missing: true
     tag: kv_message
 - rename:
+    tag: rename_json_type_to_keycloak_login_type_57d819de
     field: json.type
     target_field: keycloak.login.type
     ignore_missing: true
 - set:
+    tag: set_event_outcome_49ff15b2
     field: event.outcome
     value: success
     if: ctx.keycloak?.login?.type != null && ctx.keycloak.login.type.equalsIgnoreCase('login')
 - set:
+    tag: set_event_outcome_2daf08fa
     field: event.outcome
     value: failure
     if: ctx.keycloak?.login?.type != null && ctx.keycloak.login.type.equalsIgnoreCase('login_error')
 - set:
+    tag: set_event_outcome_6f947b7c
     field: event.outcome
     value: unknown
     if: ctx.event?.outcome == null
 - rename:
+    tag: rename_json_operationType_to_keycloak_admin_operation_2841a942
     field: json.operationType
     target_field: keycloak.admin.operation
     ignore_missing: true
 - rename:
+    tag: rename_json_resourceType_to_keycloak_admin_resource_type_e5182722
     field: json.resourceType
     target_field: keycloak.admin.resource.type
     ignore_missing: true
 - rename:
+    tag: rename_json_resourcePath_to_keycloak_admin_resource_path_e55d3ece
     field: json.resourcePath
     target_field: keycloak.admin.resource.path
     ignore_missing: true
 - set:
+    tag: set_keycloak_event_type_a3def70f
     field: keycloak.event_type
     value: login
     if: ctx.keycloak?.login != null
 - set:
+    tag: set_keycloak_event_type_0b9ffb43
     field: keycloak.event_type
     value: admin
     if: ctx.keycloak?.admin != null
 - set:
+    tag: set_event_code_44eb2ca7
     field: event.code
     value: "{{{keycloak.admin.operation}}}-{{{keycloak.admin.resource.type}}}"
     if: ctx.keycloak?.admin != null
 - set:
+    tag: set_event_action_211ad612
     field: event.action
     copy_from: event.code
     ignore_empty_value: true
     if: ctx.keycloak?.admin != null
 - rename:
+    tag: rename_json_error_to_event_code_84b48bf7
     field: json.error
     target_field: event.code
     ignore_missing: true
     if: ctx.keycloak?.login != null && ctx.event?.code == null
 - set:
+    tag: set_event_action_e881cd2d
     field: event.action
     copy_from: keycloak.login.type
     ignore_empty_value: true
 - rename:
+    tag: rename_json_realmId_to_keycloak_realm_id_8b4ca0b7
     field: json.realmId
     target_field: keycloak.realm.id
     ignore_missing: true
 - rename:
+    tag: rename_json_clientId_to_keycloak_client_id_5ee27ce7
     field: json.clientId
     target_field: keycloak.client.id
     ignore_missing: true
     if: ctx.json?.clientId != "null"
 - rename:
+    tag: rename_json_userId_to_user_id_e1c26f9a
     field: json.userId
     target_field: user.id
     ignore_missing: true
     if: ctx.json?.userId != "null"
 - rename:
+    tag: rename_json_ipAddress_to_source_address_013aabe4
     field: json.ipAddress
     target_field: source.address
     ignore_missing: true
 - convert:
+    tag: convert_source_address_to_source_ip_f5632a20
     field: source.address
     target_field: source.ip
     type: ip
     ignore_failure: true
     ignore_missing: true
 - geoip:
+    tag: geoip_source_ip_to_source_geo_da2e41b2
     field: source.ip
     target_field: source.geo
     ignore_missing: true
 - geoip:
+    tag: geoip_source_ip_to_source_as_28d69883
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -100,55 +120,68 @@ processors:
     - organization_name
     ignore_missing: true
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 - rename:
+    tag: rename_json_redirect_uri_to_keycloak_login_redirect_uri_044bc454
     field: json.redirect_uri
     target_field: keycloak.login.redirect_uri
     ignore_missing: true
 - uri_parts:
+    tag: uri_parts_keycloak_login_redirect_uri_b7f273c6
     field: keycloak.login.redirect_uri
     ignore_failure: true
 - rename:
+    tag: rename_json_auth_method_to_keycloak_login_auth_method_f81f9bc4
     field: json.auth_method
     target_field: keycloak.login.auth_method
     ignore_missing: true
 - rename:
+    tag: rename_json_auth_type_to_keycloak_login_auth_type_83580590
     field: json.auth_type
     target_field: keycloak.login.auth_type
     ignore_missing: true
 - rename:
+    tag: rename_json_code_id_to_keycloak_login_code_id_b9c73768
     field: json.code_id
     target_field: keycloak.login.code_id
     ignore_missing: true
 - rename:
+    tag: rename_json_username_to_user_name_c9e5d2a6
     field: json.username
     target_field: user.name
     ignore_missing: true
 - rename:
+    tag: rename_json_authSessionParentId_to_keycloak_login_auth_session_parent_id_64031e91
     field: json.authSessionParentId
     target_field: keycloak.login.auth_session_parent_id
     ignore_missing: true
 - rename:
+    tag: rename_json_authSessionTabId_to_keycloak_login_auth_session_tab_id_7497766f
     field: json.authSessionTabId
     target_field: keycloak.login.auth_session_tab_id
     ignore_missing: true
 - rename:
+    tag: rename_json_impersonator_realm_to_keycloak_impersonator_realm_7eef9d92
     field: json.impersonator_realm
     target_field: keycloak.impersonator_realm
     ignore_missing: true
     if: ctx.json?.impersonator_realm != "null"
 - rename:
+    tag: rename_json_impersonator_to_keycloak_impersonator_936d013a
     field: json.impersonator
     target_field: keycloak.impersonator
     ignore_missing: true
     if: ctx.json?.impersonator != "null"
 - rename:
+    tag: rename_json_sessionId_to_keycloak_session_id_2f9f5e46
     field: json.sessionId
     target_field: keycloak.session.id
     ignore_missing: true
@@ -162,75 +195,91 @@ processors:
     ignore_missing: true
     tag: grok_admin_resource_path
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_c8bca37c
     field: event.category
     value:
       - authentication
     if: ctx.keycloak?.login != null 
 - append:
+    tag: append_event_type_8b66b73a
     field: event.type
     value:
       - info
 - append:
+    tag: append_event_type_13c23515
     field: event.type
     value:
       - start
     if: ctx.keycloak?.login?.type == 'LOGIN' 
 - append:
+    tag: append_event_type_f79c585b
     field: event.type
     value:
       - end
     if: ctx.keycloak?.login?.type == 'LOGOUT' 
 - append:
+    tag: append_event_category_a5b13e35
     field: event.category
     value:
       - iam
     if: ctx.keycloak?.admin != null 
 - append:
+    tag: append_event_type_d66c1ef3
     field: event.type
     value:
       - admin
     if: ctx.keycloak?.admin != null 
 - append:
+    tag: append_event_type_a9ec476c
     field: event.type
     value:
       - creation
     if: ctx.keycloak?.admin?.operation == "CREATE"
 - append:
+    tag: append_event_type_71f8f290
     field: event.type
     value:
       - change
     if: ctx.keycloak?.admin?.operation == "UPDATE"
 - append:
+    tag: append_event_type_81dc02f0
     field: event.type
     value:
       - deletion
     if: ctx.keycloak?.admin?.operation == "DELETE"
 - append:
+    tag: append_event_type_c1a6ca94
     field: event.type
     value:
       - group
     if: ctx.keycloak?.admin?.resource == "GROUP"
 - append:
+    tag: append_event_type_e62fcfce
     field: event.type
     value:
       - user
     if: ctx.keycloak?.admin?.resource == "USER"
 - append:
+    tag: append_related_ip_86933b04
     field: related.ip
     value: "{{{source.ip}}}"
     if: ctx.source?.ip != null
 - append:
+    tag: append_related_user_505d83e6
     field: related.user
     value: "{{{user.id}}}"
     if: ctx.user?.id != null
 - append:
+    tag: append_related_user_0bb97893
     field: related.user
     value: "{{{user.target.id}}}"
     if: ctx.user?.target?.id != null
 - append:
+    tag: append_related_hosts_12369daa
     field: related.hosts
     value: "{{{url.domain}}}"
     if: ctx.url?.domain != null
