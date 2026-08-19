@@ -78,8 +78,8 @@ streams:
         show_user: false
         description: >
           A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See [include_matches](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
-          The logs are already filtered by the following syslog facilities: 4, 10, so any filter added here will be added to this existing
-          filter.
+          The logs are already filtered by syslog facilities 4 and 10 via `SYSLOG_FACILITY` matches. Expressions added here are appended
+          to that filter: matches on the same journal field are ORed, matches on different fields are ANDed (journalctl semantics).
 
       - name: processors
         type: yaml
