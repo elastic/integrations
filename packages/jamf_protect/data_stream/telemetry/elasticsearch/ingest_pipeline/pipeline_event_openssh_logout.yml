@@ -6,37 +6,46 @@ processors:
 ## ECS Event Specific ##
 ##########################
     - set:
+        tag: set_event_reason_d06cf2c4
         field: event.reason
         value: A user has logged out of an OpenSSH session
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - append:
+        tag: append_event_category_109b4d72
         field: event.category
         value: authentication
     - append:
+        tag: append_event_category_d21db9a2
         field: event.category
         value: session  
     - convert:
+        tag: convert_jamf_protect_telemetry_event_openssh_logout_graphical_session_id_to_jamf_protect_telemetry_graphical_authentication_username_2604be48
         field: jamf_protect.telemetry.event.openssh_logout.graphical_session_id
         target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_openssh_logout_username_to_user_name_2e98da9e
         field: jamf_protect.telemetry.event.openssh_logout.username
         target_field: user.name
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_openssh_logout_uid_to_user_id_5f81e66a
         field: jamf_protect.telemetry.event.openssh_logout.uid
         target_field: user.id
         type: string
         ignore_missing: true
         
     - rename:
+        tag: rename_jamf_protect_telemetry_event_openssh_logout_source_address_to_source_ip_8f4d330c
         field: jamf_protect.telemetry.event.openssh_logout.source_address
         target_field: source.ip
         ignore_missing: true
     - script:
+        tag: script_464af674
         lang: painless
         params:
             itemTypeMap:
@@ -56,4 +65,5 @@ processors:
 ## ECS Process ##
 ##########################  
     - pipeline:
+        tag: pipeline_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -6,15 +6,19 @@ processors:
 ## ECS Event Specific ##
 ##########################
     - set:
+        tag: set_event_reason_b314cc48
         field: event.reason
         value: A screen sharing session has attached to a graphical session
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - append:
+        tag: append_event_category_d21db9a2
         field: event.category
         value: session  
     - script:
+        tag: script_c23eceb5
         lang: painless
         source: |
             ctx.event = ctx.event != null ? ctx.event : new HashMap();
@@ -29,27 +33,32 @@ processors:
               ctx.event.outcome = 'unknown';
             }
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_existing_session_to_jamf_protect_telemetry_existing_session_cbd355a4
         field: jamf_protect.telemetry.event.screensharing_attach.existing_session
         target_field: jamf_protect.telemetry.existing_session
         type: boolean
         ignore_missing: true
         ignore_failure: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_graphical_session_id_to_jamf_protect_telemetry_graphical_authentication_username_34566dc5
         field: jamf_protect.telemetry.event.screensharing_attach.graphical_session_id
         target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_authentication_username_to_jamf_protect_telemetry_graphical_authentication_username_b616f5da
         field: jamf_protect.telemetry.event.screensharing_attach.authentication_username
         target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_session_username_to_jamf_protect_telemetry_session_username_6910c1d2
         field: jamf_protect.telemetry.event.screensharing_attach.session_username
         target_field: jamf_protect.telemetry.session_username
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_viewer_appleid_to_jamf_protect_viewer_appleid_6a19672f
         field: jamf_protect.telemetry.event.screensharing_attach.viewer_appleid
         target_field: jamf_protect.viewer_appleid
         type: string
@@ -57,30 +66,36 @@ processors:
         ignore_missing: true
         ignore_failure: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_authentication_type_to_jamf_protect_telemetry_authentication_type_c8697154
         field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
         target_field: jamf_protect.telemetry.authentication_type
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_attach_authentication_type_to_jamf_protect_telemetry_authentication_type_c8697154
         field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
         target_field: jamf_protect.telemetry.authentication_type
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_screensharing_attach_source_address_to_source_ip_d8349a03
         field: jamf_protect.telemetry.event.screensharing_attach.source_address
         target_field: source.ip
         ignore_missing: true
     - append:
+        tag: append_related_user_220df46c
         field: related.user
         value: '{{{jamf_protect.telemetry.session_username}}}'
         if: ctx.jamf_protect?.session_username != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_7c102396
         field: related.user
         value: '{{{jamf_protect.telemetry.graphical_authentication_username}}}'
         if: ctx.jamf_protect?.graphical_authentication_username != null
         allow_duplicates: false
     - script:
+        tag: script_aaf6e222
         lang: painless
         params:
             itemTypeMap:
@@ -99,4 +114,5 @@ processors:
 ## ECS Process ##
 ##########################
     - pipeline:
+        tag: pipeline_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -2,22 +2,27 @@
 description: Pipeline for parsing Jamf Protect Alert and Unified Logging logs
 processors:
     - set:
+        tag: set_ecs_version_f5923549
         field: ecs.version
         value: '8.17.0'
     - rename:
+        tag: rename_message_to_event_original_56a77271
         field: message
         target_field: event.original
         ignore_missing: true
         if: ctx.event?.original == null
     - rename:
+        tag: rename_json_to_jamf_protect_alerts_673b9841
         field: json
         target_field: jamf_protect.alerts
         if: ctx.json != null
     - json:
+        tag: json_event_original_to_jamf_protect_alerts_f25b40ec
         field: event.original
         target_field: jamf_protect.alerts
         if: ctx.event?.original != null && ctx.jamf_protect?.alerts == null
     - script:
+        tag: script_e808a1cd
         # This should almost never be needed and will not allow preservation of events in the case
         # of ingest pipeline errors unless preserve_original_event was already set, in which case
         # it would already have been retained.
@@ -32,37 +37,46 @@ processors:
 ## ECS Event Mapping ##
 #######################
     - set:
+        tag: set_event_kind_39295792
         field: event.kind
         value: alert
     - set:
+        tag: set_event_provider_7e881320
         field: event.provider
         value: Jamf Protect
     - date:
+        tag: date_jamf_protect_alerts_input_match_event_timestamp_to_event_start_3fedf98b
         field: jamf_protect.alerts.input.match.event.timestamp
         target_field: event.start
         formats: 
         - UNIX
         if: ctx.jamf_protect?.alerts?.input?.match?.event?.timestamp != null
     - append:
+        tag: append_event_category_3fa422a0
         field: event.category
         value: host
     - append:
+        tag: append_event_category_710d494c
         field: event.category
         value: malware
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPThreatMatchExecEvent'
     - append:
+        tag: append_event_category_95ad9341
         field: event.category
         value: process
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent'
     - append:
+        tag: append_event_category_6092eab4
         field: event.category
         value: file
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent'
     - append:
+        tag: append_event_category_074137cb
         field: event.category
         value: file
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPDownloadEvent'
     - script:
+        tag: script_e17bb3af
         if: >-
           ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
           ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
@@ -74,6 +88,7 @@ processors:
           }
           ctx.rule.name = ctx.jamf_protect.alerts.input.match.facts[0].name
     - script:
+        tag: script_b91cc6c8
         if: >-
           ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
           ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
@@ -85,6 +100,7 @@ processors:
           }
           ctx.rule.description = ctx.jamf_protect.alerts.input.match.facts[0].human
     - script:
+        tag: script_c801a44a
         description: Populates event.action with the name of the event
         lang: painless
         if: >-
@@ -95,6 +111,7 @@ processors:
             ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
         ignore_failure: true
     - script:
+        tag: script_54f25306
         description: Populates event.reason with the name of the event
         lang: painless
         if: >-
@@ -105,6 +122,7 @@ processors:
           ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
         ignore_failure: true
     - script:
+        tag: script_e319e75b
         description: Populates event.tags with tags from the event
         lang: painless
         if: >-
@@ -123,25 +141,30 @@ processors:
           ctx.tags = tags;
         ignore_failure: true
     - rename:
+        tag: rename_jamf_protect_alerts_input_match_uuid_to_event_id_aafa2940
         field: jamf_protect.alerts.input.match.uuid
         target_field: event.id
         ignore_missing: true
         if: ctx.jamf_protect?.alerts?.input?.match?.uuid != null
     - rename:
+        tag: rename_jamf_protect_alerts_input_match_severity_to_event_severity_7a73efba
         field: jamf_protect.alerts.input.match.severity
         target_field: event.severity
         ignore_missing: true
         if: ctx.jamf_protect?.alerts?.input?.match?.severity != null
 
     - set:
+        tag: set_event_outcome_6069b54e
         field: event.outcome
         value: failure
         if: ctx.jamf_protect?.alerts?.input?.match?.actions[0]?.name == "Prevented"
     - set:
+        tag: set_event_outcome_8119fc76
         field: event.outcome
         value: success
         if: ctx.jamf_protect?.alerts?.input?.match?.actions[0]?.name == "Report"
     - set:
+        tag: set_event_outcome_fcc5ce88
         field: event.outcome
         value: unknown
         if: ctx.jamf_protect?.alerts?.input?.match?.actions[0]?.name == null
@@ -150,26 +173,31 @@ processors:
 ## ECS Host Mapping ##
 #######################
     - rename:
+        tag: rename_jamf_protect_alerts_input_host_hostname_to_host_hostname_9ef39274
         field: jamf_protect.alerts.input.host.hostname
         target_field: host.hostname
         ignore_missing: true
         if: ctx.jamf_protect?.alerts?.input?.host?.hostname != null
     - rename:
+        tag: rename_jamf_protect_alerts_input_host_provisioningUDID_to_host_id_145e70c0
         field: jamf_protect.alerts.input.host.provisioningUDID
         target_field: host.id
         ignore_missing: true
         if: ctx.jamf_protect?.alerts?.input?.host?.provisioningUDID != null
     - rename:
+        tag: rename_jamf_protect_alerts_input_host_ips_to_host_ip_453ddc96
         field: jamf_protect.alerts.input.host.ips
         target_field: host.ip
         ignore_missing: true
         if: ctx.jamf_protect?.alerts?.input?.host?.ips != null && ctx.jamf_protect?.alerts?.input?.host?.ips != ""
     - rename:
+        tag: rename_jamf_protect_alerts_input_host_os_to_host_os_full_7815df94
         field: jamf_protect.alerts.input.host.os
         target_field: host.os.full
         if: ctx.jamf_protect?.alerts?.input?.host?.os != null
         ignore_missing: true
     - set:
+        tag: set_host_os_family_9d799ed3
         field: host.os.family
         value: macos
 
@@ -177,6 +205,7 @@ processors:
 ## ECS Source Mapping ##
 ########################
     - script:
+        tag: script_91332bee
         description: Script processor to capture user names from related.users array
         lang: painless
         source: |
@@ -198,27 +227,33 @@ processors:
 # ECS File Mapping ##
 ########################
     - append:
+        tag: append_event_type_3eec881b
         field: event.type
         value: creation
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 0
     - append:
+        tag: append_event_type_0fc7c535
         field: event.type
         value: deletion
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 1
     - append:
+        tag: append_event_type_c7489f41
         field: event.type
         value: change
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 3
     - append:
+        tag: append_event_type_844c6f30
         field: event.type
         value: change
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 4
     - append:
+        tag: append_event_type_a196cbfa
         field: event.type
         value: creation
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 7
 
     - script:
+        tag: script_15c65249
         description: One scripting processor to capture all the related file information for the related file.
         lang: painless
         if: ctx.jamf_protect?.alerts?.input?.related?.files != null && ctx.jamf_protect?.alerts?.input?.related?.files.size() > 0
@@ -249,15 +284,18 @@ processors:
 ## ECS Process Mapping ##
 ######################
     - append:
+        tag: append_event_type_2b3de0c7
         field: event.type
         value:
         - start
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 1
     - append:
+        tag: append_event_type_b636d97d
         field: event.type
         value: end
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 2
     - script:
+        tag: script_85a08675
         description: One scripting processor to capture all the related process information for the current process.
         lang: painless
         if: ctx.jamf_protect?.alerts?.input?.related?.processes != null && ctx.jamf_protect?.alerts?.input?.related?.processes.size() > 0
@@ -396,6 +434,7 @@ processors:
 ## ECS Group Mapping ##
 ######################
     - script:
+        tag: script_7a636f11
         description: One scripting processor to capture all the related group information for the event.
         lang: painless
         source: >
@@ -412,10 +451,12 @@ processors:
 # ECS Threat Mapping ##
 ########################
     - set:
+        tag: set_threat_framework_dd0ef9f4
         field: threat.framework
         value: "MITRE ATT&CK"
         if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
     - set:
+        tag: set_threat_software_platforms_310c4a3d
         field: threat.software.platforms
         value: [macOS]
         if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
@@ -424,11 +465,13 @@ processors:
 # ECS Related Mapping ##
 ########################
     - append:
+        tag: append_related_hosts_ca1f0453
         field: related.hosts
         value: "{{{ host.name }}}"
         if: ctx.host?.name != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_981c7fa7
         field: related.user
         value: "{{{ user.name }}}"
         if: ctx.user?.name != null
@@ -439,6 +482,7 @@ processors:
     #     if: ctx.host?.ip != null
     #     allow_duplicates: false
     - foreach:
+        tag: foreach_host_ip_232e838f
         field: host.ip
         if: ctx.host?.ip instanceof List
         processor:
@@ -447,21 +491,25 @@ processors:
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
     - append:
+        tag: append_related_hash_3777cc13
         field: related.hash
         value: "{{{ file.hash.sha1 }}}"
         if: ctx.file?.hash?.sha1 != null
         allow_duplicates: false
     - append:
+        tag: append_related_hash_cdcd36b7
         field: related.hash
         value: "{{{ file.hash.sha256 }}}"
         if: ctx.file?.hash?.sha256 != null
         allow_duplicates: false
     - append:
+        tag: append_related_hash_e3395a5f
         field: related.hash
         value: "{{{ process.hash.sha1 }}}"
         if: ctx.process?.hash?.sha1 != null
         allow_duplicates: false
     - append:
+        tag: append_related_hash_412c6cb3
         field: related.hash
         value: "{{{ process.hash.sha256 }}}"
         if: ctx.process?.hash?.sha256 != null
@@ -472,9 +520,11 @@ processors:
 ## ECS pipelines ##
 #######################
     - pipeline:
+        tag: pipeline_49b9aa36
         name: '{{ IngestPipeline "gpusbevent" }}'
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent"
     - pipeline:
+        tag: pipeline_7380978e
         name: '{{ IngestPipeline "gpunifiedlogevent" }}'
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent"
 
@@ -483,6 +533,7 @@ processors:
 ## Cleanup ##
 #############
     - remove:
+        tag: remove_21ac4b10
         field:
         - jamf_protect.alerts
         - jamf_protect
@@ -490,6 +541,7 @@ processors:
         - json
         ignore_missing: true
     - script:
+        tag: script_258616c7
         description: Drops null/empty values recursively.
         lang: painless
         source: |

@@ -2,78 +2,97 @@
 description: Pipeline for Jamf Protect Telemetry event logs.
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_jamf_protect_telemetry_dataset_dcc391db
       field: jamf_protect.telemetry.dataset
       value: event
   - append:
+      tag: append_event_category_8a525c81
       field: event.category
       value: process
   - set:
+      tag: set_host_os_type_074dd92b
       field: host.os.type
       value: macos
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - convert:
+      tag: convert_json__event_score_to_jamf_protect_telemetry_event_score_a944a062
       field: json._event_score
       target_field: jamf_protect.telemetry.event_score
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6e3c497b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_header_event_name_to_event_action_99289c09
       field: json.header.event_name
       target_field: event.action
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - date:
+      tag: date_json_header_time_seconds_epoch_726cfcbc
       field: json.header.time_seconds_epoch
       if: ctx.json?.header?.time_seconds_epoch != 0
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_3be7c1d1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_host_info_host_name_to_host_hostname_b155f2aa
       field: json.host_info.host_name
       target_field: host.hostname
       ignore_missing: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_host_info_host_uuid_to_jamf_protect_telemetry_host_info_host_uuid_b38624a6
       field: json.host_info.host_uuid
       target_field: jamf_protect.telemetry.host_info.host.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_host_info_osversion_to_host_os_version_d3d10e97
       field: json.host_info.osversion
       target_field: host.os.version
       ignore_missing: true
   - append:
+      tag: append_host_mac_ddef4d66
       field: host.mac
       value: '{{{json.host_info.primary_mac_address}}}'
       if: ctx.json?.host_info?.primary_mac_address != null
       allow_duplicates: false
       ignore_failure: true
   - gsub:
+      tag: gsub_host_mac_d1faae6a
       field: host.mac
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_host_mac_73cd4413
       field: host.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_host_info_serial_number_to_host_id_02030592
       field: json.host_info.serial_number
       target_field: host.id
       ignore_missing: true

@@ -6,15 +6,19 @@ processors:
 ## ECS Event Specific ##
 ##########################
     - set:
+        tag: set_event_reason_5f73a905
         field: event.reason
         value: A user attempted to log in using /usr/bin/login
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - append:
+        tag: append_event_category_109b4d72
         field: event.category
         value: authentication 
     - script:
+        tag: script_859f908d
         lang: painless
         source: >
             ctx.event = ctx.event != null ? ctx.event : new HashMap();
@@ -29,10 +33,12 @@ processors:
               ctx.event.outcome = 'unknown';
             }
     - rename:
+        tag: rename_jamf_protect_telemetry_event_login_login_username_to_user_name_091a3af8
         field: jamf_protect.telemetry.event.login_login.username
         target_field: user.name
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_login_login_uid_to_user_id_741c8aae
         field: jamf_protect.telemetry.event.login_login.uid
         target_field: user.id
         type: string
@@ -41,4 +47,5 @@ processors:
 ## ECS Process ##
 ########################## 
     - pipeline:
+        tag: pipeline_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

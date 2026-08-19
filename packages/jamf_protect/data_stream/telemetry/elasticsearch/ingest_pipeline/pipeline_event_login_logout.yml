@@ -6,19 +6,24 @@ processors:
 ## ECS Event Specific ##
 ##########################
     - set:
+        tag: set_event_reason_f2c95969
         field: event.reason
         value: A user logged out from /usr/bin/login
     - append:
+        tag: append_event_type_90fe2b35
         field: event.type
         value: end
     - append:
+        tag: append_event_category_109b4d72
         field: event.category
         value: authentication  
     - rename:
+        tag: rename_jamf_protect_telemetry_event_login_logout_username_to_user_name_a2cc0791
         field: jamf_protect.telemetry.event.login_logout.username
         target_field: user.name
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_login_logout_uid_to_user_id_8f3f384b
         field: jamf_protect.telemetry.event.login_logout.uid
         target_field: user.id
         type: string
@@ -27,4 +32,5 @@ processors:
 ## ECS Process ##
 ##########################
     - pipeline:
+        tag: pipeline_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

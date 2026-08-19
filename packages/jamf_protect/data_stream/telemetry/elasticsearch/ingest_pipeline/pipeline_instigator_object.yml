@@ -5,67 +5,81 @@ processors:
 ## ECS Process ##
 ##########################
   - rename:
+      tag: rename_jamf_protect_telemetry_process_start_time_to_process_start_b14fb885
       field: jamf_protect.telemetry.process.start_time
       target_field: process.start
       ignore_missing: true
   - convert:
+      tag: convert_jamf_protect_telemetry_process_audit_token_egid_to_jamf_protect_telemetry_process_audit_token_egid_9112d1eb
       field: jamf_protect.telemetry.process.audit_token.egid
       target_field: jamf_protect.telemetry.process.audit_token.egid
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_jamf_protect_telemetry_process_audit_token_euid_to_jamf_protect_telemetry_process_audit_token_euid_920d2257
       field: jamf_protect.telemetry.process.audit_token.euid
       target_field: jamf_protect.telemetry.process.audit_token.euid
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_effective_id_7b6ab2ef
       field: user.effective.id
       value: '{{{jamf_protect.telemetry.process.audit_token.euid}}}'
       if: ctx.jamf_protect.telemetry?.process?.audit_token?.euid != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_jamf_protect_telemetry_process_executable_sha1_to_process_hash_sha1_e7ef4185
       field: jamf_protect.telemetry.process.executable.sha1
       target_field: process.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_jamf_protect_telemetry_process_executable_sha256_to_process_hash_sha256_6f5330fd
       field: jamf_protect.telemetry.process.executable.sha256
       target_field: process.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_jamf_protect_telemetry_custom_tty_path_to_jamf_protect_telemetry_tty_63e85edc
       field: jamf_protect.telemetry.custom.tty.path
       target_field: jamf_protect.telemetry.tty
       ignore_missing: true
   - set:
+      tag: set_process_interactive_638b3399
       field: process.interactive
       value: true
       if: ctx.jamf_protect.telemetry?.process?.tty != null
   - append:
+      tag: append_related_hash_4075cce6
       field: related.hash
       value: '{{{jamf_protect.telemetry.process.executable.sha1}}}'
       if: ctx.jamf_protect.telemetry?.process?.instigator?.executable?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_jamf_protect_telemetry_process_audit_token_pid_to_process_pid_e7122b56
       field: jamf_protect.telemetry.process.audit_token.pid
       target_field: process.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_eb9e5c4f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_jamf_protect_telemetry_process_audit_token_uuid_to_process_entity_id_a9a0aecc
       field: jamf_protect.telemetry.process.audit_token.uuid
       target_field: process.entity_id
       ignore_missing: true
   - rename:
+      tag: rename_jamf_protect_telemetry_process_executable_path_to_process_executable_c80a04f6
       field: jamf_protect.telemetry.process.executable.path
       target_field: process.executable
       ignore_missing: true
   - rename:
+      tag: rename_jamf_protect_telemetry_thread_thread_id_to_process_thread_id_3987a29f
       field: jamf_protect.telemetry.thread.thread_id
       target_field: process.thread.id
       ignore_missing: true
@@ -76,6 +90,7 @@ processors:
 ##########################
 
   - rename:
+      tag: rename_jamf_protect_telemetry_process_signing_id_to_process_code_signature_signing_id_9eefc109
       field: jamf_protect.telemetry.process.signing_id
       target_field: process.code_signature.signing_id
       ignore_missing: true
