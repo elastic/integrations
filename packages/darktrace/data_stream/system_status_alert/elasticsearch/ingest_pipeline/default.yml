@@ -2,15 +2,18 @@
 description: Pipeline for processing System Status Alert logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - grok:
+      tag: grok_message_eed680aa
       field: message
       patterns:
         - "^%{FIELD:log.syslog.appname}\\s*%{GREEDYDATA:message}$"
       pattern_definitions:
         FIELD: "[a-zA-Z]*"
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -22,9 +25,11 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - fingerprint:
+      tag: fingerprint_e999d27e
       fields:
         - json.uuid
         - json.last_updated
@@ -33,16 +38,20 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_kind_7902b2e6
       field: event.kind
       value: alert
       if: (['active','resolved'].contains(ctx.json?.status?.toLowerCase()))
   - date:
+      tag: date_json_last_updated_to_darktrace_system_status_alert_last_updated_05251305
       field: json.last_updated
       target_field: darktrace.system_status_alert.last_updated
       formats:
@@ -53,129 +62,160 @@ processors:
       if: ctx.json?.last_updated != null
       on_failure:
         - remove:
+            tag: remove_json_last_updated_646e1aae
             field: json.last_updated
             ignore_missing: true
         - append:
+            tag: append_error_message_c46bb1ca
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_a6e1fc12
       field: '@timestamp'
       copy_from: darktrace.system_status_alert.last_updated
       ignore_failure: true
   - rename:
+      tag: rename_json_uuid_to_darktrace_system_status_alert_uuid_258b6346
       field: json.uuid
       target_field: darktrace.system_status_alert.uuid
       ignore_missing: true
   - set:
+      tag: set_event_id_9545b238
       field: event.id
       copy_from: darktrace.system_status_alert.uuid
       ignore_failure: true
   - rename:
+      tag: rename_json_message_to_darktrace_system_status_alert_message_2d0964c6
       field: json.message
       target_field: darktrace.system_status_alert.message
       ignore_missing: true
   - set:
+      tag: set_event_reason_20dba5b1
       field: event.reason
       copy_from: darktrace.system_status_alert.message
       ignore_failure: true
   - convert:
+      tag: convert_json_priority_to_darktrace_system_status_alert_priority_33d9fe37
       field: json.priority
       target_field: darktrace.system_status_alert.priority
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_priority_c8a8c5a1
             field: json.priority
         - append:
+            tag: append_error_message_67e47208
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_risk_score_4b8e7be2
       field: event.risk_score
       copy_from: darktrace.system_status_alert.priority
       ignore_failure: true
   - set:
+      tag: set_event_risk_score_norm_10113779
       field: event.risk_score_norm
       copy_from: darktrace.system_status_alert.priority
       ignore_failure: true
   - uri_parts:
+      tag: uri_parts_json_url_to_darktrace_system_status_alert_url_94873750
       field: json.url
       target_field: darktrace.system_status_alert.url
       if: ctx.json?.url != null
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_url_d17d1653
             field: json.url
         - append:
+            tag: append_error_message_fe8a8491
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_url_c1c84893
       field: event.url
       copy_from: darktrace.system_status_alert.url.original
       ignore_failure: true
   - rename:
+      tag: rename_json_hostname_to_darktrace_system_status_alert_hostname_db697e06
       field: json.hostname
       target_field: darktrace.system_status_alert.hostname
       ignore_missing: true
   - convert:
+      tag: convert_darktrace_system_status_alert_hostname_to_darktrace_system_status_alert__temp__hostname_ip_3344b527
       field: darktrace.system_status_alert.hostname
       target_field: darktrace.system_status_alert._temp_.hostname_ip
       type: ip
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_host_hostname_a2e4353a
             field: host.hostname
             copy_from: darktrace.system_status_alert.hostname
             ignore_failure: true
   - append:
+      tag: append_related_ip_e5669cc3
       field: related.ip
       value: '{{{darktrace.system_status_alert._temp_.hostname_ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_10e4eab1
       field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_ip_address_to_darktrace_system_status_alert__temp__ip_address_afae3eec
       field: json.ip_address
       target_field: darktrace.system_status_alert._temp_.ip_address
       type: ip
       ignore_failure: true
   - append:
+      tag: append_host_ip_68c755bd
       field: host.ip
       value: '{{{darktrace.system_status_alert._temp_.ip_address}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_3a8464f0
       field: related.ip
       value: '{{{darktrace.system_status_alert._temp_.ip_address}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_ip_address_to_darktrace_system_status_alert_ip_address_9a9c2d52
       field: json.ip_address
       target_field: darktrace.system_status_alert.ip_address
       ignore_missing: true
   - remove:
+      tag: remove_darktrace_system_status_alert__temp__0e9cf87e
       field: darktrace.system_status_alert._temp_
       ignore_missing: true
   - rename:
+      tag: rename_json_acknowledge_timeout_to_darktrace_system_status_alert_acknowledge_timeout_100f6a18
       field: json.acknowledge_timeout
       target_field: darktrace.system_status_alert.acknowledge_timeout
       ignore_missing: true
   - rename:
+      tag: rename_json_alert_name_to_darktrace_system_status_alert_alert_name_55745626
       field: json.alert_name
       target_field: darktrace.system_status_alert.alert_name
       ignore_missing: true
   - convert:
+      tag: convert_json_child_id_to_darktrace_system_status_alert_child_id_ee993358
       field: json.child_id
       target_field: darktrace.system_status_alert.child_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4036f99d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_updated_status_to_darktrace_system_status_alert_last_updated_status_b5f47bf5
       field: json.last_updated_status
       target_field: darktrace.system_status_alert.last_updated_status
       formats:
@@ -186,27 +226,34 @@ processors:
       if: ctx.json?.last_updated_status != null
       on_failure:
         - remove:
+            tag: remove_json_last_updated_status_932a739b
             field: json.last_updated_status
             ignore_missing: true
         - append:
+            tag: append_error_message_b0ef9906
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_name_to_darktrace_system_status_alert_name_af184f0a
       field: json.name
       target_field: darktrace.system_status_alert.name
       ignore_missing: true
   - rename:
+      tag: rename_json_priority_level_to_darktrace_system_status_alert_priority_level_1f9544d6
       field: json.priority_level
       target_field: darktrace.system_status_alert.priority_level
       ignore_missing: true
   - lowercase:
+      tag: lowercase_json_status_to_darktrace_system_status_alert_status_6ccc8f9f
       field: json.status
       target_field: darktrace.system_status_alert.status
       ignore_failure: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_286a583f
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - darktrace.system_status_alert.last_updated
@@ -216,6 +263,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
