@@ -23,6 +23,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
@@ -33,6 +34,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_f3d9ca7e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -181,6 +183,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ffc907fd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -206,6 +209,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_36faf9cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -216,6 +220,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_314f72a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -246,9 +251,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_prisma_cloud_misconfiguration_scanned_policy_passed_8375f4d5
             field: prisma_cloud.misconfiguration.scanned_policy.passed
             ignore_missing: true
         - append:
+            tag: append_error_message_fd48fbf9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -270,6 +277,7 @@ processors:
       if: ctx.result?.evaluation == null
       ignore_empty_value: true
   - script:
+      tag: script_9bce9b3b
       lang: painless
       if: ctx.prisma_cloud?.misconfiguration?.scanned_policy?.severity instanceof String && ctx.prisma_cloud.misconfiguration.scanned_policy.severity != ''
       source: |-
@@ -369,6 +377,7 @@ processors:
       if: ctx.result?.evaluation == 'unknown'
       ignore_empty_value: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
@@ -386,6 +395,7 @@ processors:
         - prisma_cloud.misconfiguration.scanned_policy.id
         - prisma_cloud.misconfiguration.unified_asset_id
   - script:
+      tag: script_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -403,10 +413,12 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
