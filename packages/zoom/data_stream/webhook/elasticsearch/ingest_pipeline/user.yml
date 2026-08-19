@@ -2,26 +2,32 @@
 description: Pipeline for parsing Zoom user webhooks
 processors:
 - append:
+    tag: append_event_category_0fb434aa
     field: event.category
     value: configuration
     if: ctx.event?.action == 'user.settings_updated'
 - append:
+    tag: append_event_category_9901a145
     field: event.category
     value: iam
     if: "!['user.signed_in', 'user.signed_out'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_category_5cd9ec75
     field: event.category
     value: authentication
     if: "['user.signed_in', 'user.signed_out'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_e1f3297e
     field: event.type
     value: creation
     if: ctx.event?.action == 'user.created'
 - append:
+    tag: append_event_type_c6898e8a
     field: event.type
     value: deletion
     if: ctx.event?.action == 'user.deleted'
 - append:
+    tag: append_event_type_fb004345
     field: event.type
     value: change
     if: >-
@@ -35,18 +41,22 @@ processors:
         'user.personal_notes_updated'
       ].contains(ctx.event?.action)
 - append:
+    tag: append_event_type_369bef50
     field: event.type
     value: start
     if: ctx.event?.action == 'user.signed_in'
 - append:
+    tag: append_event_type_96518db0
     field: event.type
     value: end
     if: ctx.event?.action == 'user.signed_out'
 - rename:
+    tag: rename_zoom_object_to_zoom_user_99b9cac2
     field: zoom.object
     target_field: zoom.user
     ignore_missing: true
 - date:
+    tag: date_zoom_time_stamp_to_timestamp_0449832e
     field: zoom.time_stamp
     target_field: '@timestamp'
     formats:
@@ -54,6 +64,7 @@ processors:
     if: "['user.updated', 'user.settings_updated'].contains(ctx.event?.action)"
     ignore_failure: true
 - date:
+    tag: date_zoom_user_date_time_to_timestamp_4fdd1c42
     field: zoom.user.date_time
     target_field: '@timestamp'
     formats:
@@ -67,10 +78,12 @@ processors:
       ].contains(ctx.event?.action)
     ignore_failure: true
 - append:
+    tag: append_related_user_8fd606e8
     field: related.user
     value: "{{{zoom.user.id}}}"
     if: ctx.zoom?.user?.id != null
 - remove:
+    tag: remove_a4904bcb
     field:
     - zoom.time_stamp
     - zoom.user.date_time
@@ -80,15 +93,18 @@ processors:
 # set user.* from operator.
 #
 - set:
+    tag: set_user_id_890e17cd
     field: user.id
     value: '{{{zoom.operator_id}}}'
     ignore_empty_value: true
 - set:
+    tag: set_user_email_0b0c1563
     field: user.email
     value: '{{{zoom.operator}}}'
     ignore_empty_value: true
     if: ctx.zoom?.operator instanceof String && ctx.zoom.operator.contains('@')
 - set:
+    tag: set_user_email_b5735ea4
     field: user.email
     copy_from: zoom.user.email
     ignore_empty_value: true
@@ -98,16 +114,19 @@ processors:
 # set user.* from user object when there's no operator.
 #
 - set:
+    tag: set_user_id_aeb03ccb
     field: user.id
     value: '{{{zoom.user.id}}}'
     ignore_empty_value: true
     if: ctx.zoom?.operator == null && ctx.zoom?.operator_id == null
 - set:
+    tag: set_user_email_69cb6bdb
     field: user.email
     value: '{{{zoom.user.email}}}'
     ignore_empty_value: true
     if: ctx.zoom?.operator == null && ctx.zoom?.operator_id == null
 - set:
+    tag: set_user_full_name_29ac4ca3
     field: user.full_name
     value: '{{{zoom.user.first_name}}} {{{zoom.user.last_name}}}'
     ignore_empty_value: true
@@ -117,22 +136,17 @@ processors:
 # set user.target.* from old_values
 #
 - set:
+    tag: set_user_target_id_81c7e592
     field: user.target.id
     value: '{{{zoom.old_values.id}}}'
     ignore_empty_value: true
 - set:
-    field: user.target.id
-    value: '{{{zoom.old_values.id}}}'
-    ignore_empty_value: true
-- set:
+    tag: set_user_target_email_1703e9c9
     field: user.target.email
     value: '{{{zoom.old_values.email}}}'
     ignore_empty_value: true
 - set:
-    field: user.target.email
-    value: '{{{zoom.old_values.email}}}'
-    ignore_empty_value: true
-- set:
+    tag: set_user_target_full_name_1e30850d
     field: user.target.full_name
     value: '{{{zoom.old_values.first_name}}} {{{zoom.old_values.last_name}}}'
     if: ctx.zoom?.old_values?.first_name != null
@@ -142,30 +156,28 @@ processors:
 # This is necessary because some fields doesn't exist in old_values.
 #
 - set:
+    tag: set_user_target_id_16140c59
     field: user.target.id
     value: '{{{zoom.user.id}}}'
     ignore_empty_value: true
     override: false
     if: ctx.zoom?.old_values != null || ctx.zoom?.operator != null || ctx.zoom?.operator_id != null
 - set:
-    field: user.target.id
-    value: '{{{zoom.user.id}}}'
-    ignore_empty_value: true
-    override: false
-    if: ctx.zoom?.old_values != null || ctx.zoom?.operator != null || ctx.zoom?.operator_id != null
-- set:
+    tag: set_user_target_email_89f22fa9
     field: user.target.email
     value: '{{{zoom.user.email}}}'
     ignore_empty_value: true
     override: false
     if: ctx.zoom?.old_values != null || ctx.zoom?.operator != null || ctx.zoom?.operator_id != null
 - set:
+    tag: set_user_target_email_9f6bec41
     field: user.target.email
     value: '{{{zoom.user.email}}}'
     ignore_empty_value: true
     override: false
     if: ctx.zoom?.old_values != null
 - set:
+    tag: set_user_target_full_name_56da8249
     field: user.target.full_name
     value: '{{{zoom.user.first_name}}} {{{zoom.user.last_name}}}'
     if: '(ctx.zoom?.old_values != null || ctx.zoom?.operator != null || ctx.zoom?.operator_id != null) && ctx.zoom?.user?.first_name != null'
@@ -175,16 +187,19 @@ processors:
 # set user.changes.* from user object when there's old_values
 #
 - set:
+    tag: set_user_changes_id_06bcd941
     field: user.changes.id
     value: '{{{zoom.user.id}}}'
     ignore_empty_value: true
     if: ctx.zoom?.old_values?.id != null && ctx.zoom?.old_values?.id != ctx.zoom?.user?.id
 - set:
+    tag: set_user_changes_email_8229815e
     field: user.changes.email
     value: '{{{zoom.user.email}}}'
     ignore_empty_value: true
     if: ctx.zoom?.old_values?.email != null && ctx.zoom?.old_values?.email != ctx.zoom?.user?.email
 - set:
+    tag: set_user_changes_full_name_3cc5b999
     field: user.changes.full_name
     value: '{{{zoom.user.first_name}}} {{{zoom.user.last_name}}}'
     ignore_empty_value: true
@@ -194,11 +209,13 @@ processors:
 # append to related.user
 #
 - append:
+    tag: append_related_user_10b71c55
     field: related.user
     value: "{{{zoom.user.id}}}"
     allow_duplicates: false
     if: ctx.zoom?.user?.id != null
 - append:
+    tag: append_related_user_df846d72
     field: related.user
     value: "{{{zoom.old_values.id}}}"
     allow_duplicates: false
@@ -206,8 +223,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

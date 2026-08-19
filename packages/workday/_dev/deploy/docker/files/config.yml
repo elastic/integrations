@@ -151,3 +151,101 @@ rules:
             ]
           }
           `}}
+  - path: /ccx/service/customreport2/tenant/report_owner/report_name
+    methods: ['GET']
+    query_params:
+      format: ['json']
+      From_Moment: ['{From_Moment:.*}']
+      To_Moment: ['{To_Moment:.*}']
+    responses:
+      # First evaluation (initial_interval window).
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {{ minify_json `
+          {
+            "Report_Entry": [
+              {
+                "Account_Locked__Disabled_or_Expired": "0",
+                "Active_Session": "0",
+                "Authentication_Type_for_Signon": "SAML",
+                "Browser_Type": "Chrome",
+                "Device_Type": "Desktop",
+                "Device_is_Trusted": "0",
+                "Failed_Signon": "0",
+                "Forgotten_Password_Reset_Request": "0",
+                "Invalid_Credentials": "0",
+                "Is_Device_Managed": "0",
+                "Operating_System": "Mac OS X",
+                "Password_Changed": "0",
+                "Request_Originator": "UI",
+                "SAML_Identity_Provider": "IdP_Acme",
+                "Session_End": "2026-06-18T23:25:22-07:00",
+                "Session_Start": "2026-06-18T16:59:32-07:00",
+                "System_Account": "user534.acme / User 534"
+              },
+              {
+                "Account_Locked__Disabled_or_Expired": "0",
+                "Active_Session": "0",
+                "Authentication_Type_for_Signon": "OAuth 2.0",
+                "Device_is_Trusted": "0",
+                "Failed_Signon": "0",
+                "Forgotten_Password_Reset_Request": "0",
+                "Invalid_Credentials": "0",
+                "Is_Device_Managed": "0",
+                "Password_Changed": "0",
+                "Request_Originator": "Internal",
+                "Session_End": "2026-06-18T22:55:34-07:00",
+                "Session_Start": "2026-06-18T16:55:34-07:00",
+                "System_Account": "ISU_Integration_049"
+              }
+            ]
+          }
+          `}}
+      # Second evaluation after cursor advances (new From_Moment/To_Moment window).
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {{ minify_json `
+          {
+            "Report_Entry": [
+              {
+                "Account_Locked__Disabled_or_Expired": "0",
+                "Active_Session": "0",
+                "Authentication_Type_for_Signon": "SAML",
+                "Browser_Type": "Workday Phone App",
+                "Device_Type": "Phone",
+                "Device_is_Trusted": "0",
+                "Failed_Signon": "0",
+                "Forgotten_Password_Reset_Request": "0",
+                "Invalid_Credentials": "0",
+                "Is_Device_Managed": "0",
+                "Operating_System": "iOS",
+                "Password_Changed": "0",
+                "Request_Originator": "UI",
+                "SAML_Identity_Provider": "IdP_Acme",
+                "Session_End": "2026-06-18T22:59:33-07:00",
+                "Session_Start": "2026-06-18T16:57:04-07:00",
+                "System_Account": "user179.acme / User 179"
+              },
+              {
+                "Account_Locked__Disabled_or_Expired": "0",
+                "Active_Session": "1",
+                "Authentication_Type_for_Signon": "User Name Password",
+                "Device_is_Trusted": "0",
+                "Failed_Signon": "0",
+                "Forgotten_Password_Reset_Request": "0",
+                "Invalid_Credentials": "0",
+                "Is_Device_Managed": "0",
+                "Password_Changed": "0",
+                "Request_Originator": "Web Services",
+                "Session_Start": "2026-06-18T13:18:51-07:00",
+                "System_Account": "ISU_Integration_001"
+              }
+            ]
+          }
+          `}}
