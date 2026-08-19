@@ -4,9 +4,11 @@ processors:
   ## ECS and Event fields.
 
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_log_level_b08eee5f
       field: log.level
       copy_from: winlog.level
       ignore_empty_value: true
@@ -20,69 +22,87 @@ processors:
       if: ctx.winlog?.time_created != null
       on_failure:
         - remove:
+            tag: remove_winlog_time_created_1a30788f
             field: winlog.time_created
             ignore_failure: true
         - append:
+            tag: append_error_message_c5501840
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_d347c61f
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
+      tag: convert_error_code_5bcb9be1
       field: error.code
       type: string
       ignore_missing: true
   - set:
+      tag: set_event_code_cdc75ed7
       field: event.code
       value: '{{winlog.event_id}}'
   - set:
+      tag: set_event_action_a656118f
       field: event.action
       value: antivirus-configuration-changed
       if: ctx.event?.code == "5007"
   - set:
+      tag: set_event_action_7a491a35
       field: event.action
       value: antivirus-updated
       if: ctx.event?.code == "2000"
   - set:
+      tag: set_event_action_4196c86c
       field: event.action
       value: file-uploaded
       if: ctx.event?.code == "2050"
   - set:
+      tag: set_event_action_914b2038
       field: event.action
       value: malware-detected
       if: ctx.event?.code == "1116" || ctx.event?.code == "1117"
   - set:
+      tag: set_event_action_13cab4fe
       field: event.action
       value: malware-quarantined
       if: ctx.event?.code == "1117" && ctx.winlog?.event_data?.Action_Name == "Quarantine"
   - set:
+      tag: set_event_category_0c3e8220
       field: event.category
       value: ["configuration"]
       if: ctx.event?.code == "5007"
   - set:
+      tag: set_event_category_fc038899
       field: event.category
       value: ["file"]
       if: ctx.event?.code == "2050"
   - set:
+      tag: set_event_category_b1393edb
       field: event.category
       value: ["malware"]
       if: ctx.event?.code == "1116" || ctx.event?.code == "1117"
   - set:
+      tag: set_event_category_ce8f0c9c
       field: event.category
       value: ["process"]
       override: false
       if: ctx.event?.category == null  
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_b8d5f939
       field: event.outcome
       value: success
       if: ctx.winlog?.event_data?.Error_Description == "The operation completed successfully. "
   - set:
+      tag: set_event_reference_97ca7590
       field: event.reference
       ignore_empty_value: true
       copy_from: winlog.event_data.FWLink
   - script:
+      tag: script_5e7000ea
       description: Set Event Types
       lang: painless
       source: |
@@ -111,11 +131,13 @@ processors:
           }
         }
   - set:
+      tag: set_destination_domain_d1cb382f
       field: destination.domain
       override: false
       ignore_empty_value: true
       copy_from: winlog.event_data.Destination
   - convert:
+      tag: convert_winlog_record_id_b6e33898
       field: winlog.record_id
       type: string
       ignore_failure: true
@@ -125,32 +147,38 @@ processors:
   ## User fields.
 
   - split:
+      tag: split_winlog_event_data_Detection_User_to__temp_user_parts_955276ec
       field: winlog.event_data.Detection_User
       separator: '\\'
       target_field: "_temp.user_parts"
       ignore_missing: true
   - split:
+      tag: split_winlog_event_data_User_to__temp_user_parts_56cb506e
       field: winlog.event_data.User
       target_field: "_temp.user_parts"
       separator: '\\'
       if: ctx.winlog?.event_data?.User != null
   - set:
+      tag: set_user_domain_6839aa32
       field: user.domain
       value: "{{_temp.user_parts.0}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
+      tag: set_user_name_60c775be
       field: user.name
       value: "{{_temp.user_parts.1}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - remove:
+      tag: remove__temp_58530347
       field: _temp
       ignore_missing: true
       if: ctx._temp != null
   - remove:
+      tag: remove_winlog_message_1ce338fe
       field: winlog.message
       ignore_missing: true
       if: ctx.winlog?.message != null
@@ -158,62 +186,73 @@ processors:
     ## File Fields
 
   - grok:
+      tag: grok_winlog_event_data_Path_835e508d
       field: winlog.event_data.Path
       patterns:
         - "file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
         - "(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
       ignore_missing: true
   - split:
+      tag: split_winlog_event_data_Path_to_windows_defender_evidence_paths_31c6bfbc
       field: winlog.event_data.Path
       separator: ";"
       target_field: windows_defender.evidence_paths
       ignore_missing: true
       ignore_failure: true
   - trim:
+      tag: trim_windows_defender_evidence_paths_eb8ae3e8
       field: windows_defender.evidence_paths
       ignore_missing: true
       ignore_failure: true
   - gsub:
+      tag: gsub_windows_defender_evidence_paths_51ac9626
       field: windows_defender.evidence_paths
       pattern: "file:_"
       replacement: ""
       ignore_missing: true
       ignore_failure: true
   - gsub:
+      tag: gsub_windows_defender_evidence_paths_fd0fa843
       field: windows_defender.evidence_paths
       pattern: "process:_"
       replacement: ""
       ignore_missing: true
       ignore_failure: true
   - grok:
+      tag: grok_winlog_event_data_FileName_019ace8f
       field: winlog.event_data.FileName
       patterns:
         - 'file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
         - '(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
       ignore_missing: true
   - set:
+      tag: set_file_path_f240f3f5
       field: "file.path"
       copy_from: "winlog.event_data.Path"
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_file_path_9b8f50a7
       field: "file.path"
       override: false
       ignore_empty_value: true
       copy_from: "winlog.event_data.Filename"
   - grok:
+      tag: grok_file_path_2900363a
       field: file.path
       patterns:
         - '(?<file.name>([^\\\\]*$))'
       ignore_missing: true
       if: ctx.file?.name == null
   - grok:
+      tag: grok_file_name_7392b5d0
       field: file.name
       patterns:
         - '\.%{GREEDYDATA:file.extension}$'
       ignore_missing: true
       if: ctx.file?.name != null && ctx.file.name.contains('.')
   - set:
+      tag: set_file_hash_sha256_5793ac6c
       field: file.hash.sha256
       copy_from: winlog.event_data.Sha256
       override: false
@@ -223,24 +262,29 @@ processors:
       ## Process Fields
 
   - rename:
+      tag: rename_winlog_event_data_Target_Commandline_to_process_command_line_41ef4d7d
       field: winlog.event_data.Target_Commandline
       target_field: process.command_line
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_Parent_Commandline_to_process_parent_command_line_2e253974
       field: winlog.event_data.Parent_Commandline
       target_field: process.parent.command_line
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data_Process_Name_to_process_executable_77c10411
       field: winlog.event_data.Process_Name
       target_field: process.executable
       ignore_missing: true
       if: ctx.process?.executable == null && ctx.event?.code != "1126"
   - rename:
+      tag: rename_winlog_event_data_Process_Name_to_process_name_10ea39af
       field: winlog.event_data.Process_Name
       target_field: process.name
       ignore_missing: true
       if: ctx.process?.name == null && ctx.event?.code == "1126"
   - grok:
+      tag: grok_process_executable_7381e630
       field: process.executable
       patterns:
         - '(?<process.name>([^\\]*$))'
@@ -249,6 +293,7 @@ processors:
 
       ## URL Fields
   - set:
+      tag: set_destination_domain_d1cb382f
       field: destination.domain
       override: false
       ignore_empty_value: true

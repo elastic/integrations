@@ -2,18 +2,22 @@
 description: Pipeline for Security events
 processors:
   - convert:
+      tag: convert_event_code_820f5e63
       field: event.code
       type: string
       ignore_missing: true
   - script:
+      tag: script_9f489693
       description: Remove all empty values from event_data.
       lang: painless
       source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
       if: ctx.winlog?.event_data != null
   - pipeline:
+      tag: pipeline_6a0d1b33
       name: '{{ IngestPipeline "security_standard" }}'
       if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - pipeline:
+      tag: pipeline_3c8bb3a2
       name: '{{ IngestPipeline "security_scheduled_task" }}'
       if: >-
         ctx.winlog != null &&
@@ -31,15 +35,18 @@ processors:
           )
         )
   - remove:
+      tag: remove_winlog__tmp_scheduled_task_a9d51742
       field: winlog._tmp.scheduled_task
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_winlog__tmp_025d04d5
       field: winlog._tmp
       ignore_missing: true
       ignore_failure: true
       if: ctx.winlog?._tmp instanceof Map && ctx.winlog._tmp.size() == 0
   - set:
+      tag: set_winlog_scheduled_task_name_59b64408
       field: winlog.scheduled_task.name
       copy_from: winlog.event_data.TaskName
       ignore_empty_value: true
@@ -50,15 +57,18 @@ processors:
         ctx.event?.code != null &&
         ['4698', '4699', '4700', '4701', '4702'].contains(ctx.event.code)
   - gsub:
+      tag: gsub_source_ip_8a374ea7
       field: source.ip
       pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
       replacement: '$1'
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -67,14 +77,17 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_ip_244ba6b1
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
@@ -82,17 +95,21 @@ processors:
         ctx.source?.ip != null &&
         ctx.source.ip != "-"
   - convert:
+      tag: convert_winlog_record_id_e96f501d
       field: winlog.record_id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_winlog_event_id_d9228ef0
       field: winlog.event_id
       type: string
       ignore_missing: true
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_log_level_b08eee5f
       field: log.level
       copy_from: winlog.level
       ignore_empty_value: true
@@ -106,18 +123,23 @@ processors:
       if: ctx.winlog?.time_created != null
       on_failure:
         - remove:
+            tag: remove_winlog_time_created_1a30788f
             field: winlog.time_created
             ignore_failure: true
         - append:
+            tag: append_error_message_c5501840
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_d347c61f
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
+      tag: convert_error_code_5bcb9be1
       field: error.code
       type: string
       ignore_missing: true
   - remove:
+      tag: remove_winlog_event_data_af8c8256
       description: Remove empty event data.
       field: winlog.event_data
       ignore_missing: true

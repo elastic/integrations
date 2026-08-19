@@ -2,23 +2,29 @@
 description: Pipeline for Windows forwarded Event Logs
 processors:
   - pipeline:
+      tag: pipeline_6579f6a3
       name: '{{ IngestPipeline "security_default" }}'
       if: ctx.winlog?.channel instanceof String && ctx.winlog.channel.toLowerCase() == "security" && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog?.provider_name)
   - pipeline:
+      tag: pipeline_1bf6252d
       name: '{{ IngestPipeline "powershell" }}'
       if: ctx.winlog?.channel instanceof String && ctx.winlog.channel.toLowerCase() == "windows powershell"
   - pipeline:
+      tag: pipeline_037aaa55
       name: '{{ IngestPipeline "powershell_operational" }}'
       if: ctx.winlog?.channel instanceof String && ctx.winlog.channel.toLowerCase() == "microsoft-windows-powershell/operational"
   - pipeline:
+      tag: pipeline_c9abb819
       name: '{{ IngestPipeline "sysmon_operational" }}'
       if: ctx.winlog?.channel instanceof String && ctx.winlog.channel.toLowerCase() == "microsoft-windows-sysmon/operational"
 
   - set:
+      tag: set_host_os_type_ab71bfd4
       field: host.os.type
       value: windows
       override: false
   - set:
+      tag: set_host_os_family_3ead466c
       field: host.os.family
       value: windows
       override: false
@@ -26,28 +32,33 @@ processors:
   # Get user details from the translate_sid processor enrichment
   # if they are available and we don't already have them.
   - rename:
+      tag: rename_winlog_event_data__MemberUserName_to_user_name_46f9020b
       field: winlog.event_data._MemberUserName
       target_field: user.name
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_winlog_event_data__MemberDomain_to_user_domain_650026e2
       field: winlog.event_data._MemberDomain
       target_field: user.domain
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_user_roles_63374eff
       value: '{{{winlog.event_data._MemberAccountType}}}'
       field: user.roles
       ignore_failure: true
       allow_duplicates: false
       if: ctx.winlog?.event_data?._MemberAccountType != null
   - remove:
+      tag: remove_winlog_event_data__MemberAccountType_e41d8d2a
       field: winlog.event_data._MemberAccountType
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.roles != null && ctx.winlog?.event_data?._MemberAccountType != null && ctx.user.roles.contains(ctx.winlog.event_data._MemberAccountType)
 
   - convert:
+      tag: convert_error_code_5bcb9be1
       field: error.code
       type: string
       ignore_missing: true
