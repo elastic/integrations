@@ -14,7 +14,7 @@ The Workday integration for Elastic collects `Activity` logs via the **Workday A
 ### How it works
 
 - **Activity**: This integration periodically queries the Workday API to retrieve Activity logs.
-- **Sign-on**: This integration periodically downloads a Workday Custom Report (for example, a Sign-on report that lists sign-on records along with their key attributes) and ingests each report row as a single event.
+- **Sign-on**: This integration periodically calls a Workday Custom Report (RaaS) JSON endpoint. On each poll it supplies the report's required **From Moment** / **To Moment** prompts (`From_Moment` / `To_Moment` query parameters), advances a collection cursor so the time window moves forward, and ingests each `Report_Entry` row as a single event. The first poll looks back by **Initial Interval**; later polls use **Interval**.
 
 ## What data does this integration collect?
 
@@ -92,8 +92,9 @@ Activity Logging API |	https://HOST/ccx/api/privacy/v1/TENANT/activityLogging
 2. In the Workday search bar, search for **Create Custom Report**.
 3. Create an Advanced report on a data source that exposes sign-on activity (for example, `Signons and Attempted Signons`).
 4. Add the columns required for sign-on analytics (for example, `System Account`, `Session Start`, `Session End`, `Authentication Type for Signon`, `Failed Signon`, `Invalid Credentials`, `Account Locked, Disabled or Expired`, `Browser Type`, `Operating System`, `Device Type`, `Request Originator`, `SAML Identity Provider`).
-5. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
-6. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
+5. On the **Prompts** tab, add **From Moment** and **To Moment** prompts for the report's moment range, and mark both as **Required**. The integration supplies these values on each poll as `From_Moment` and `To_Moment` query parameters on the RaaS URL. Do not hard-code a static range in the Report URL — a fixed `To_Moment` stops collecting new events once that time has passed.
+6. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
+7. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
 
 ##### Create the Integration System User (ISU)
 
@@ -120,6 +121,8 @@ Where:
 - `TENANT` is your Workday tenant name.
 - `REPORT_OWNER` is the Workday account that owns the custom report.
 - `REPORT_NAME` is the name of the custom report you created above.
+
+Use this base URL (with `?format=json` only) as the **Report URL** in the integration. Do not append `From_Moment` or `To_Moment` yourself, the integration adds those on every poll from **Initial Interval** or the collection cursor and **Interval**.
 
 ## How do I deploy this integration?
 
@@ -154,9 +157,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect Workday Sign-on logs via Custom Report API**, you'll need to:
 
-        - Configure **Report URL** with the full Workday Custom Report (RaaS) URL noted above.
+        - Configure **Report URL** with the full Workday Custom Report (RaaS) URL noted above (include `?format=json`; do not add `From_Moment` / `To_Moment` to the URL — the integration adds them automatically).
         - Configure **Username** and **Password** for basic authentication against the Workday Custom Report API.
-        - Adjust the integration configuration parameters if required, including the **Interval** and **Preserve original event** etc. to enable data collection.
+        - Adjust the integration configuration parameters if required, including the **Interval**, **Initial Interval**, and **Preserve original event** etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
 
@@ -171,6 +174,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Sign-on: `Report parameter From Moment is required`
+
+If collection fails with a Workday **400** validation error that **From Moment** (or **To Moment**) is required:
+
+1. Confirm the custom report's **Prompts** tab defines **From Moment** and **To Moment** and that both are marked **Required** (see [Build the Sign-on custom report](#build-the-sign-on-custom-report)).
+2. Confirm the Fleet **Report URL** is only the RaaS URL with `?format=json` — without hardcoded `From_Moment` / `To_Moment` values. The integration must append those parameters on each poll.
+3. Confirm **Initial Interval** is set (default `24h`) so the first collection has a lookback window.
 
 ## Performance and scaling
 
@@ -194,6 +205,10 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "activity"}}
 
+#### Sign-on
+
+{{event "sign_on"}}
+
 ### Inputs used
 
 These inputs are used in the integration:
@@ -205,8 +220,8 @@ These inputs are used in the integration:
 This integration uses the following Workday APIs:
 
 - **Activity**: [Workday Activity API documentation](https://community.workday.com/sites/default/files/file-hosting/restapi/#privacy/v1/get-/activityLogging).
-- **Sign-on**: The Workday **Reports as a Service (RaaS)** JSON endpoint is used to fetch a user-defined Sign-on custom report:
+- **Sign-on**: The Workday **Reports as a Service (RaaS)** JSON endpoint is used to fetch a user-defined Sign-on custom report. On each poll the integration appends the report's required moment-range prompts:
 
 ```
-GET https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json
+GET https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json&From_Moment=...&To_Moment=...
 ```

@@ -3,33 +3,37 @@ description: Pipeline for processing kernel object.
 processors:
   - convert:
       field: ses.kernel.is_system
-      tag: convert_kernel_is_system_to_boolean
+      tag: convert_kernel_is_system_to_boolean_31234608
       type: boolean
       if: ctx.ses?.kernel?.is_system != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8db85ee2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_kernel_is_system_1606b1d8
             field: ses.kernel.is_system
             ignore_missing: true
   - convert:
       field: ses.kernel.type_id
-      tag: convert_kernel_type_id_to_string
+      tag: convert_kernel_type_id_to_string_38c10366
       type: string
       if: ctx.ses?.kernel?.type_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3d6365ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_kernel_type_id_90b18acd
             field: ses.kernel.type_id
             ignore_missing: true
   - script:
       description: Add value for kernel type based on kernel type id.
-      tag: script_to_add_kernel_type_value
+      tag: script_to_add_kernel_type_value_8ed32088
       if: ctx.ses?.kernel?.type_id != null
       params:
         '0': Unknown
@@ -46,13 +50,20 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_97cdbb12
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
