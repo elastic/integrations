@@ -2,21 +2,26 @@
 description: Pipeline for processing Registry Event logs.
 processors:
   - set:
+      tag: set_event_category_43fe0db5
       field: event.category
       value: [registry]
   - set:
+      tag: set_event_type_2eec8b9a
       field: event.type
       value: [creation]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('create')
   - set:
+      tag: set_event_type_7e4897f1
       field: event.type
       value: [deletion]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('delet')
   - set:
+      tag: set_event_type_ef142c4d
       field: event.type
       value: [change]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
   - set:
+      tag: set_event_action_95f90b81
       field: event.action
       value: [creation]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null &&
@@ -25,10 +30,12 @@ processors:
             ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regkeycreate')
           )
   - set:
+      tag: set_event_action_5609fac7
       field: event.action
       value: [modification]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluemodified')
   - set:
+      tag: set_event_action_6c79fe12
       field: event.action
       value: [deletion]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null &&
@@ -37,14 +44,17 @@ processors:
             ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regkeydelete')
           )
   - rename:
+      tag: rename_json_registry_keyPath_to_sentinel_one_cloud_funnel_event_registry_key_path_143e00d4
       field: json.registry.keyPath
       target_field: sentinel_one_cloud_funnel.event.registry.key.path
       ignore_missing: true
   - set:
+      tag: set_registry_path_c320dc78
       field: registry.path
       copy_from: sentinel_one_cloud_funnel.event.registry.key.path
       ignore_empty_value: true
   - script:
+      tag: script_4ee2dd33
       lang: painless
       if: ctx.registry?.path instanceof String && ctx.registry.path != ""
       source: |-
@@ -54,26 +64,32 @@ processors:
           ctx.registry.value = ctx.registry.path.substring(idx+1);
         }
   - rename:
+      tag: rename_json_registry_value_to_sentinel_one_cloud_funnel_event_registry_val_a63421c6
       field: json.registry.value
       target_field: sentinel_one_cloud_funnel.event.registry.val
       ignore_missing: true
   - set:
+      tag: set_registry_data_strings_75eee7cc
       field: registry.data.strings
       copy_from: sentinel_one_cloud_funnel.event.registry.val
       ignore_empty_value: true
   - rename:
+      tag: rename_json_registry_valueType_to_sentinel_one_cloud_funnel_event_registry_value_type_9815fbc6
       field: json.registry.valueType
       target_field: sentinel_one_cloud_funnel.event.registry.value.type
       ignore_missing: true
   - set:
+      tag: set_registry_data_type_fe6e4ae0
       field: registry.data.type
       copy_from: sentinel_one_cloud_funnel.event.registry.value.type
       ignore_empty_value: true
   - rename:
+      tag: rename_json_registry_keyUid_to_sentinel_one_cloud_funnel_event_registry_key_uid_f0cff858
       field: json.registry.keyUid
       target_field: sentinel_one_cloud_funnel.event.registry.key.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_registry_oldValue_to_sentinel_one_cloud_funnel_event_registry_old_value_detail_c2d817f8
       field: json.registry.oldValue
       target_field: sentinel_one_cloud_funnel.event.registry.old_value.detail
       ignore_missing: true
@@ -86,6 +102,7 @@ processors:
       if: ctx.json?.registry?.oldValueFullSize != ''
       on_failure:
         - append:
+            tag: append_error_message_d5adbeb1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -97,9 +114,11 @@ processors:
       if: ctx.json?.registry?.oldValueIsComplete != ''
       on_failure:
         - append:
+            tag: append_error_message_bcb5b4af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_registry_oldValueType_to_sentinel_one_cloud_funnel_event_registry_old_value_type_0df81887
       field: json.registry.oldValueType
       target_field: sentinel_one_cloud_funnel.event.registry.old_value.type
       ignore_missing: true
@@ -112,6 +131,7 @@ processors:
       if: ctx.json?.registry?.valueFullSize != ''
       on_failure:
         - append:
+            tag: append_error_message_48d701f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -123,9 +143,11 @@ processors:
       if: ctx.json?.registry?.valueIsComplete != ''
       on_failure:
         - append:
+            tag: append_error_message_7de8a374
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_registry_valueType_to_sentinel_one_cloud_funnel_event_registry_value_type_9815fbc6
       field: json.registry.valueType
       target_field: sentinel_one_cloud_funnel.event.registry.value.type
       ignore_missing: true

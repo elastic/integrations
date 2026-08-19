@@ -2,29 +2,36 @@
 description: Pipeline for processing Login Event logs.
 processors:
   - set:
+      tag: set_event_category_e43d8992
       field: event.category
       value: [authentication]
   - set:
+      tag: set_event_type_3752c517
       field: event.type
       value: [start]
       if: ctx.sentinel_one_cloud_funnel?.event?.type == 'Login'
   - set:
+      tag: set_event_type_14da41ed
       field: event.type
       value: [end]
       if: ctx.sentinel_one_cloud_funnel?.event?.type == 'Logout'
   - set:
+      tag: set_event_type_f96f1f47
       field: event.type
       value: [info]
       override: false
   - rename:
+      tag: rename_json_event_login_userName_to_sentinel_one_cloud_funnel_event_login_user_name_9c1af717
       field: json.event.login.userName
       target_field: sentinel_one_cloud_funnel.event.login.user_name
       ignore_missing: true
   - set:
+      tag: set_user_name_e2f9cbbd
       field: user.name
       copy_from: sentinel_one_cloud_funnel.event.login.user_name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
@@ -38,40 +45,49 @@ processors:
       if: ctx.json?.src?.endpoint?.ip?.address != ''
       on_failure:
         - append:
+            tag: append_error_message_436aaa5c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_2bb46597
       field: related.ip
       value: '{{{sentinel_one_cloud_funnel.event.src.endpoint_ip_address}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.endpoint_ip_address != null
   - append:
+      tag: append_host_ip_0a2e6a3e
       field: host.ip
       value: '{{{sentinel_one_cloud_funnel.event.src.endpoint_ip_address}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.endpoint_ip_address != null
   - append:
+      tag: append_related_hosts_80060767
       field: related.hosts
       value: '{{{sentinel_one_cloud_funnel.event.src.endpoint_ip_address}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.endpoint_ip_address != null
   - rename:
+      tag: rename_json_event_login_accountDomain_to_sentinel_one_cloud_funnel_event_login_account_domain_429768e2
       field: json.event.login.accountDomain
       target_field: sentinel_one_cloud_funnel.event.login.account.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_event_login_accountName_to_sentinel_one_cloud_funnel_event_login_account_name_bff34912
       field: json.event.login.accountName
       target_field: sentinel_one_cloud_funnel.event.login.account.name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_login_accountSid_to_sentinel_one_cloud_funnel_event_login_account_sid_c41685d8
       field: json.event.login.accountSid
       target_field: sentinel_one_cloud_funnel.event.login.account.sid
       ignore_missing: true
   - rename:
+      tag: rename_json_event_login_baseType_to_sentinel_one_cloud_funnel_event_login_base_type_33e5ba79
       field: json.event.login.baseType
       target_field: sentinel_one_cloud_funnel.event.login.base_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_login_failureReason_to_sentinel_one_cloud_funnel_event_login_failure_reason_dbb7daa1
       field: json.event.login.failureReason
       target_field: sentinel_one_cloud_funnel.event.login.failure_reason
       ignore_missing: true
@@ -84,6 +100,7 @@ processors:
       if: ctx.json?.event?.login?.isAdministratorEquivalent != ''
       on_failure:
         - append:
+            tag: append_error_message_724a8d6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -95,6 +112,7 @@ processors:
       if: ctx.json?.event?.login?.loginIsSuccessful != ''
       on_failure:
         - append:
+            tag: append_error_message_31499749
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -106,9 +124,11 @@ processors:
       if: ctx.json?.event?.login?.sessionId != ''
       on_failure:
         - append:
+            tag: append_error_message_9cd484f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_login_type_to_sentinel_one_cloud_funnel_event_login_type_b4089f96
       field: json.event.login.type
       target_field: sentinel_one_cloud_funnel.event.login.type
       ignore_missing: true

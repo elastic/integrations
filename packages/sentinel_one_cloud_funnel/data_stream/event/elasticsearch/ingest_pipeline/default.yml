@@ -2,21 +2,26 @@
 description: Pipeline for processing Event logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - gsub:
+      tag: gsub_message_9e16a0bd
       field: message
       pattern: '\\\\\\\\'
       replacement: '\\\\'
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b5b074f8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -27,6 +32,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_a6e0e953
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -39,6 +45,7 @@ processors:
         ctx.json.remove('k8sCluster.containerImage');
       on_failure:
         - append:
+            tag: append_error_message_2f5f3f4d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dot_expander:
@@ -47,6 +54,7 @@ processors:
       path: json
       on_failure:
         - append:
+            tag: append_error_message_8702f43e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -74,6 +82,7 @@ processors:
         double_quote: "\""
       on_failure:
         - append:
+            tag: append_error_message_7050d87d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -86,6 +95,7 @@ processors:
       if: ctx.json?.event?.time != null && ctx.json.event.time != ''
       on_failure:
         - append:
+            tag: append_error_message_86f53aaf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -97,109 +107,135 @@ processors:
       if: ctx.json?.event?.time != null && ctx.json.event.time != ''
       on_failure:
         - append:
+            tag: append_error_message_1aa3e3c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_logout_tgt_user_name_to_sentinel_one_cloud_funnel_event_logout_tgt_user_name_aebc319e
       field: json.event.logout.tgt.user.name
       target_field: sentinel_one_cloud_funnel.event.logout.tgt.user.name
       ignore_missing: true
   - set:
+      tag: set_destination_user_name_b7e906fe
       field: destination.user.name
       copy_from: sentinel_one_cloud_funnel.event.logout.tgt.user.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_event_login_tgt_domainName_to_sentinel_one_cloud_funnel_event_login_tgt_domain_name_67294137
       field: json.event.login.tgt.domainName
       target_field: sentinel_one_cloud_funnel.event.login.tgt.domain_name
       ignore_missing: true
   - set:
+      tag: set_destination_user_domain_5b45dfba
       field: destination.user.domain
       copy_from: sentinel_one_cloud_funnel.event.login.tgt.domain_name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_event_logout_tgt_domainName_to_sentinel_one_cloud_funnel_event_logout_tgt_domain_name_883c0f09
       field: json.event.logout.tgt.domainName
       target_field: sentinel_one_cloud_funnel.event.logout.tgt.domain_name
       ignore_missing: true
   - set:
+      tag: set_destination_user_domain_c9f05585
       field: destination.user.domain
       copy_from: sentinel_one_cloud_funnel.event.logout.tgt.domain_name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_event_login_tgt_user_name_to_sentinel_one_cloud_funnel_event_login_tgt_user_name_36f0d258
       field: json.event.login.tgt.user.name
       target_field: sentinel_one_cloud_funnel.event.login.tgt.user.name
       ignore_missing: true
   - set:
+      tag: set_destination_user_name_741dcc2d
       field: destination.user.name
       copy_from: sentinel_one_cloud_funnel.event.login.tgt.user.name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_8f37bc82
       field: related.user
       value: '{{{destination.user.name}}}'
       allow_duplicates: false
       if: ctx.destination?.user?.name != null
   - append:
+      tag: append_related_user_edf75b08
       field: related.user
       value: '{{{destination.user.domain}}}'
       allow_duplicates: false
       if: ctx.destination?.user?.domain != null
   - rename:
+      tag: rename_json_event_id_to_sentinel_one_cloud_funnel_event_id_49f27aee
       field: json.event.id
       target_field: sentinel_one_cloud_funnel.event.id
       ignore_missing: true
   - set:
+      tag: set_event_id_f088bfd1
       field: event.id
       copy_from: sentinel_one_cloud_funnel.event.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tgt_file_name_to_sentinel_one_cloud_funnel_event_tgt_file_name_76a95ef2
       field: json.tgt.file.name
       target_field: sentinel_one_cloud_funnel.event.tgt.file.name
       ignore_missing: true
   - set:
+      tag: set_file_name_f3025986
       field: file.name
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_group_id_to_sentinel_one_cloud_funnel_event_group_id_1ee2530c
       field: json.group.id
       target_field: sentinel_one_cloud_funnel.event.group.id
       ignore_missing: true
   - set:
+      tag: set_group_id_766b0a15
       field: group.id
       copy_from: sentinel_one_cloud_funnel.event.group.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_endpoint_name_to_sentinel_one_cloud_funnel_event_endpoint_name_f4761db6
       field: json.endpoint.name
       target_field: sentinel_one_cloud_funnel.event.endpoint.name
       ignore_missing: true
   - set:
+      tag: set_host_hostname_c6e353d8
       field: host.hostname
       copy_from: sentinel_one_cloud_funnel.event.endpoint.name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_7117c4ab
       field: related.hosts
       value: '{{{sentinel_one_cloud_funnel.event.endpoint.name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.endpoint?.name != null
   - rename:
+      tag: rename_json_os_name_to_sentinel_one_cloud_funnel_event_os_name_e8764d45
       field: json.os.name
       target_field: sentinel_one_cloud_funnel.event.os_name
       ignore_missing: true
   - set:
+      tag: set_host_os_name_2c4279a2
       field: host.os.name
       copy_from: sentinel_one_cloud_funnel.event.os_name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_4a2794c4
       field: related.hosts
       value: '{{{sentinel_one_cloud_funnel.event.os_name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os?.name != null
   - rename:
+      tag: rename_json_endpoint_os_to_sentinel_one_cloud_funnel_event_endpoint_os_e533f6fc
       field: json.endpoint.os
       target_field: sentinel_one_cloud_funnel.event.endpoint.os
       ignore_missing: true
   - set:
+      tag: set_host_os_platform_51c08359
       field: host.os.platform
       copy_from: sentinel_one_cloud_funnel.event.endpoint.os
       ignore_empty_value: true
   - set:
+      tag: set_host_os_type_dfa90718
       field: host.os.type
       copy_from: sentinel_one_cloud_funnel.event.endpoint.os
       if: >-
@@ -211,142 +247,175 @@ processors:
           'android'
         ].contains(ctx.sentinel_one_cloud_funnel?.event?.endpoint?.os)
   - append:
+      tag: append_related_hosts_83ecc0d5
       field: related.hosts
       value: '{{{sentinel_one_cloud_funnel.event.endpoint.os}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.endpoint?.os != null
   - rename:
+      tag: rename_json_endpoint_type_to_sentinel_one_cloud_funnel_event_endpoint_type_a0e5e900
       field: json.endpoint.type
       target_field: sentinel_one_cloud_funnel.event.endpoint.type
       ignore_missing: true
   - set:
+      tag: set_host_type_9931fba6
       field: host.type
       copy_from: sentinel_one_cloud_funnel.event.endpoint.type
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_65db4409
       field: related.hosts
       value: '{{{sentinel_one_cloud_funnel.event.endpoint.type}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.endpoint?.type != null
   - rename:
+      tag: rename_json_src_process_cmdline_to_sentinel_one_cloud_funnel_event_src_process_cmd_line_dc98de1b
       field: json.src.process.cmdline
       target_field: sentinel_one_cloud_funnel.event.src.process.cmd_line
       ignore_missing: true
   - set:
+      tag: set_process_command_line_7c0f42d8
       field: process.command_line
       copy_from: sentinel_one_cloud_funnel.event.src.process.cmd_line
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_image_path_to_sentinel_one_cloud_funnel_event_src_process_image_path_f55502a0
       field: json.src.process.image.path
       target_field: sentinel_one_cloud_funnel.event.src.process.image.path
       ignore_missing: true
   - set:
+      tag: set_process_executable_fbba412d
       field: process.executable
       copy_from: sentinel_one_cloud_funnel.event.src.process.image.path
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_image_md5_to_sentinel_one_cloud_funnel_event_src_process_image_md5_efac9ac6
       field: json.src.process.image.md5
       target_field: sentinel_one_cloud_funnel.event.src.process.image.md5
       ignore_missing: true
   - set:
+      tag: set_process_hash_md5_62bdc746
       field: process.hash.md5
       copy_from: sentinel_one_cloud_funnel.event.src.process.image.md5
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_e71b2329
       field: related.hash
       value: '{{{process.hash.md5}}}'
       allow_duplicates: false
       if: ctx.process?.hash?.md5 != null
   - rename:
+      tag: rename_json_src_process_image_sha1_to_sentinel_one_cloud_funnel_event_src_process_image_sha1_ae2e1be4
       field: json.src.process.image.sha1
       target_field: sentinel_one_cloud_funnel.event.src.process.image.sha1
       ignore_missing: true
   - set:
+      tag: set_process_hash_sha1_036722c8
       field: process.hash.sha1
       copy_from: sentinel_one_cloud_funnel.event.src.process.image.sha1
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_96df867f
       field: related.hash
       value: '{{{process.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.process?.hash?.sha1 != null
   - rename:
+      tag: rename_json_src_process_image_sha256_to_sentinel_one_cloud_funnel_event_src_process_image_sha256_eae2f320
       field: json.src.process.image.sha256
       target_field: sentinel_one_cloud_funnel.event.src.process.image.sha256
       ignore_missing: true
   - set:
+      tag: set_process_hash_sha256_d04ec2e0
       field: process.hash.sha256
       copy_from: sentinel_one_cloud_funnel.event.src.process.image.sha256
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_239dcc07
       field: related.hash
       value: '{{{process.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.process?.hash?.sha256 != null
   - rename:
+      tag: rename_json_src_process_name_to_sentinel_one_cloud_funnel_event_src_process_name_59a076d8
       field: json.src.process.name
       target_field: sentinel_one_cloud_funnel.event.src.process.name
       ignore_missing: true
   - set:
+      tag: set_process_name_79888b19
       field: process.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_parent_cmdline_to_sentinel_one_cloud_funnel_event_src_process_parent_cmd_line_af3c5aff
       field: json.src.process.parent.cmdline
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.cmd_line
       ignore_missing: true
   - set:
+      tag: set_process_parent_command_line_c479889c
       field: process.parent.command_line
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.cmd_line
       ignore_empty_value: true
   - rename:
+      tag: rename_json_osSrc_process_parent_image_path_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_path_85727fd4
       field: json.osSrc.process.parent.image.path
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.path
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_image_md5_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_md5_61fe55e2
       field: json.osSrc.process.parent.image.md5
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.md5
       ignore_missing: true
   - set:
+      tag: set_process_parent_hash_md5_fce0d50c
       field: process.parent.hash.md5
       copy_from: sentinel_one_cloud_funnel.event.os_src_process.parent.image.md5
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_badcbdc2
       field: related.hash
       value: '{{{process.parent.hash.md5}}}'
       allow_duplicates: false
       if: ctx.process?.parent?.hash?.md5 != null
   - rename:
+      tag: rename_json_src_process_parent_image_sha1_to_sentinel_one_cloud_funnel_event_src_process_parent_image_sha1_ef8f05a0
       field: json.src.process.parent.image.sha1
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.sha1
       ignore_missing: true
   - set:
+      tag: set_process_parent_hash_sha1_7224cbba
       field: process.parent.hash.sha1
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.image.sha1
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_156429a2
       field: related.hash
       value: '{{{process.parent.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.process?.parent?.hash?.sha1 != null
   - rename:
+      tag: rename_json_src_process_parent_image_sha256_to_sentinel_one_cloud_funnel_event_src_process_parent_image_sha256_9bb74564
       field: json.src.process.parent.image.sha256
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.sha256
       ignore_missing: true
   - set:
+      tag: set_process_parent_hash_sha256_6d0c65ca
       field: process.parent.hash.sha256
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.image.sha256
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_fd8e170a
       field: related.hash
       value: '{{{process.parent.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.process?.parent?.hash?.sha256 != null
   - rename:
+      tag: rename_json_src_process_parent_name_to_sentinel_one_cloud_funnel_event_src_process_parent_name_351c0d3a
       field: json.src.process.parent.name
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.name
       ignore_missing: true
   - set:
+      tag: set_process_parent_name_faf2b5ed
       field: process.parent.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.name
       ignore_empty_value: true
@@ -359,9 +428,11 @@ processors:
       if: ctx.json?.src?.process?.parent?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_c2b8e219
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_parent_pid_ae677049
       field: process.parent.pid
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.pid
       ignore_empty_value: true
@@ -374,26 +445,32 @@ processors:
       if: ctx.json?.src?.process?.parent?.rUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_51e20803
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_parent_real_user_id_f65779a2
       field: process.parent.real_user.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.r_user.uid
       ignore_empty_value: true
   - append:
+      tag: append_related_user_c9d74ecb
       field: related.user
       value: '{{{process.parent.real_user.id}}}'
       allow_duplicates: false
       if: ctx.process?.parent?.real_user?.id != null
   - rename:
+      tag: rename_json_src_process_parent_rUserName_to_sentinel_one_cloud_funnel_event_src_process_parent_r_user_name_716f78e9
       field: json.src.process.parent.rUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.r_user.name
       ignore_missing: true
   - set:
+      tag: set_process_parent_real_user_name_7ae564db
       field: process.parent.real_user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.r_user.name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_420c0b03
       field: related.user
       value: '{{{process.parent.real_user.name}}}'
       allow_duplicates: false
@@ -408,17 +485,21 @@ processors:
       if: ctx.json?.src?.process?.parent?.startTime != null && ctx.json.src.process.parent.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_6f0d636d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_parent_start_01360443
       field: process.parent.start
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.start_time
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_parent_displayName_to_sentinel_one_cloud_funnel_event_src_process_parent_display_name_ae8a9029
       field: json.src.process.parent.displayName
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.display_name
       ignore_missing: true
   - set:
+      tag: set_process_parent_title_42369759
       field: process.parent.title
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.display_name
       ignore_empty_value: true
@@ -431,34 +512,42 @@ processors:
       if: ctx.json?.src?.process?.parent?.eUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_da873315
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_parent_user_id_a204e136
       field: process.parent.user.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.e_user.uid
       ignore_empty_value: true
   - append:
+      tag: append_related_user_2ec538c1
       field: related.user
       value: '{{{process.parent.user.id}}}'
       allow_duplicates: false
       if: ctx.process?.parent?.user?.id != null
   - rename:
+      tag: rename_json_src_process_parent_eUserName_to_sentinel_one_cloud_funnel_event_src_process_parent_e_user_name_a2f166f5
       field: json.src.process.parent.eUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.e_user.name
       ignore_missing: true
   - set:
+      tag: set_process_parent_user_name_785c2f4f
       field: process.parent.user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.e_user.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_parent_user_to_sentinel_one_cloud_funnel_event_src_process_parent_user_name_0e62ecf1
       field: json.src.process.parent.user
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.user.name
       ignore_missing: true
   - set:
+      tag: set_process_parent_user_name_fc9cf78f
       field: process.parent.user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.user.name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_e212dfed
       field: related.user
       value: '{{{process.parent.user.name}}}'
       allow_duplicates: false
@@ -472,9 +561,11 @@ processors:
       if: ctx.json?.src?.process?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_b3654d53
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_pid_78e452ed
       field: process.pid
       copy_from: sentinel_one_cloud_funnel.event.src.process.pid
       ignore_empty_value: true
@@ -487,6 +578,7 @@ processors:
       if: ctx.json?.tgt?.process?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_1dd51f92
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -498,26 +590,32 @@ processors:
       if: ctx.json?.src?.process?.rUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_9b581fe7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_real_user_id_e27c2984
       field: process.real_user.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.r_user.uid
       ignore_empty_value: true
   - append:
+      tag: append_related_user_eb470bac
       field: related.user
       value: '{{{process.real_user.id}}}'
       allow_duplicates: false
       if: ctx.process?.real_user?.id != null
   - rename:
+      tag: rename_json_src_process_rUserName_to_sentinel_one_cloud_funnel_event_src_process_r_user_name_fc26ab95
       field: json.src.process.rUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.r_user.name
       ignore_missing: true
   - set:
+      tag: set_process_real_user_name_9f3b170f
       field: process.real_user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.r_user.name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_3747b694
       field: related.user
       value: '{{{process.real_user.name}}}'
       allow_duplicates: false
@@ -532,17 +630,21 @@ processors:
       if: ctx.json?.src?.process?.startTime != null && ctx.json.src.process.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_359e1c90
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_start_19fc6e65
       field: process.start
       copy_from: sentinel_one_cloud_funnel.event.src.process.start_time
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_displayName_to_sentinel_one_cloud_funnel_event_src_process_display_name_523145c7
       field: json.src.process.displayName
       target_field: sentinel_one_cloud_funnel.event.src.process.display_name
       ignore_missing: true
   - set:
+      tag: set_process_title_3c22e4cb
       field: process.title
       copy_from: sentinel_one_cloud_funnel.event.src.process.display_name
       ignore_empty_value: true
@@ -555,87 +657,108 @@ processors:
       if: ctx.json?.src?.process?.eUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_e2526033
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_user_id_4990e1a6
       field: process.user.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.e_user.uid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_user_to_sentinel_one_cloud_funnel_event_src_process_user_name_3763cb43
       field: json.src.process.user
       target_field: sentinel_one_cloud_funnel.event.src.process.user.name
       ignore_missing: true
   - set:
+      tag: set_process_user_name_c5438569
       field: process.user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.user.name
       ignore_empty_value: true
   - set:
+      tag: set_user_name_aced8732
       field: user.name
       copy_from: process.user.name
       ignore_empty_value: true
   - set:
+      tag: set_user_domain_cbe01d27
       field: user.domain
       copy_from: process.user.name
       ignore_empty_value: true
   - dissect:
+      tag: dissect_process_user_name_4225fe10
       field: process.user.name
       pattern: '%{user.domain}\%{user.name}'
       if: ctx.process?.user?.name?.contains('\\') == true
       description: "Split user and domain"
   - rename:
+      tag: rename_json_src_process_eUserName_to_sentinel_one_cloud_funnel_event_src_process_e_user_name_728bc313
       field: json.src.process.eUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.e_user.name
       ignore_missing: true
   - set:
+      tag: set_process_user_name_20a920fd
       field: process.user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.e_user.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tiIndicator_description_to_sentinel_one_cloud_funnel_event_ti_indicator_description_bef33971
       field: json.tiIndicator.description
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.description
       ignore_missing: true
   - set:
+      tag: set_threat_indicator_description_dc84c691
       field: threat.indicator.description
       copy_from: sentinel_one_cloud_funnel.event.ti_indicator.description
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tiIndicator_references_to_sentinel_one_cloud_funnel_event_ti_indicator_references_ae424c65
       field: json.tiIndicator.references
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.references
       ignore_missing: true
   - set:
+      tag: set_threat_indicator_reference_b10de2b8
       field: threat.indicator.reference
       copy_from: sentinel_one_cloud_funnel.event.ti_indicator.references
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tiIndicator_mitreTactics_to_sentinel_one_cloud_funnel_event_ti_indicator_mitre_tactics_203a2fd8
       field: json.tiIndicator.mitreTactics
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.mitre_tactics
       ignore_missing: true
   - append:
+      tag: append_threat_tactic_name_9a061c62
       field: threat.tactic.name
       value: '{{{sentinel_one_cloud_funnel.event.ti_indicator.mitre_tactics}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.ti_indicator?.mitre_tactics != null
   - rename:
+      tag: rename_json_account_id_to_sentinel_one_cloud_funnel_event_account_id_e5884045
       field: json.account.id
       target_field: sentinel_one_cloud_funnel.event.account_id
       ignore_missing: true
   - rename:
+      tag: rename_json_agent_uuid_to_sentinel_one_cloud_funnel_event_agent_uuid_d07ef584
       field: json.agent.uuid
       target_field: sentinel_one_cloud_funnel.event.agent.uuid
       ignore_missing: true
   - set:
+      tag: set_host_id_c11022a6
       field: host.id
       copy_from: sentinel_one_cloud_funnel.event.agent.uuid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_agent_version_to_sentinel_one_cloud_funnel_event_agent_version_9eaa44e4
       field: json.agent.version
       target_field: sentinel_one_cloud_funnel.event.agent.version
       ignore_missing: true
   - rename:
+      tag: rename_json_dataSource_name_to_sentinel_one_cloud_funnel_event_data_source_name_c309dd4f
       field: json.dataSource.name
       target_field: sentinel_one_cloud_funnel.event.data_source.name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_category_to_sentinel_one_cloud_funnel_event_category_337784b2
       field: json.event.category
       target_field: sentinel_one_cloud_funnel.event.category
       ignore_missing: true
@@ -648,45 +771,56 @@ processors:
       if: ctx.json?.event?.repetitionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_0cff8f50
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_type_to_sentinel_one_cloud_funnel_event_type_7099f006
       field: json.event.type
       target_field: sentinel_one_cloud_funnel.event.type
       ignore_missing: true
   - rename:
+      tag: rename_json_i_scheme_to_sentinel_one_cloud_funnel_event_i_scheme_cfa7bb10
       field: json.i.scheme
       target_field: sentinel_one_cloud_funnel.event.i.scheme
       ignore_missing: true
   - rename:
+      tag: rename_json_i_version_to_sentinel_one_cloud_funnel_event_i_version_26581e90
       field: json.i.version
       target_field: sentinel_one_cloud_funnel.event.i.version
       ignore_missing: true
   - rename:
+      tag: rename_json_meta_event_name_to_sentinel_one_cloud_funnel_event_meta_event_name_c3ef4b96
       field: json.meta.event.name
       target_field: sentinel_one_cloud_funnel.event.meta_event_name
       ignore_missing: true
   - rename:
+      tag: rename_json_mgmt_url_to_sentinel_one_cloud_funnel_event_mgmt_url_d92a68b4
       field: json.mgmt.url
       target_field: sentinel_one_cloud_funnel.event.mgmt.url
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_activeContent_hash_to_sentinel_one_cloud_funnel_event_os_src_process_active_content_hash_654c3063
       field: json.osSrc.process.activeContent.hash
       target_field: sentinel_one_cloud_funnel.event.os_src_process.active_content.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_activeContent_id_to_sentinel_one_cloud_funnel_event_os_src_process_active_content_id_5892f61b
       field: json.osSrc.process.activeContent.id
       target_field: sentinel_one_cloud_funnel.event.os_src_process.active_content.id
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_activeContent_path_to_sentinel_one_cloud_funnel_event_os_src_process_active_content_path_94f812b3
       field: json.osSrc.process.activeContent.path
       target_field: sentinel_one_cloud_funnel.event.os_src_process.active_content.path
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_activeContent_signedStatus_to_sentinel_one_cloud_funnel_event_os_src_process_active_content_signed_status_441f81f6
       field: json.osSrc.process.activeContent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.os_src_process.active_content.signed_status
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_activeContentType_to_sentinel_one_cloud_funnel_event_os_src_process_active_content_type_ae46b6e3
       field: json.osSrc.process.activeContentType
       target_field: sentinel_one_cloud_funnel.event.os_src_process.active_content.type
       ignore_missing: true
@@ -699,9 +833,11 @@ processors:
       if: ctx.json?.osSrc?.process?.childProcCount != ''
       on_failure:
         - append:
+            tag: append_error_message_33130feb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_cmdline_to_sentinel_one_cloud_funnel_event_os_src_process_cmd_line_e43262ab
       field: json.osSrc.process.cmdline
       target_field: sentinel_one_cloud_funnel.event.os_src_process.cmd_line
       ignore_missing: true
@@ -714,6 +850,7 @@ processors:
       if: ctx.json?.osSrc?.process?.crossProcessCount != ''
       on_failure:
         - append:
+            tag: append_error_message_24900294
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -725,6 +862,7 @@ processors:
       if: ctx.json?.osSrc?.process?.crossProcessDupRemoteProcessHandleCount != ''
       on_failure:
         - append:
+            tag: append_error_message_1019465f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -736,6 +874,7 @@ processors:
       if: ctx.json?.osSrc?.process?.crossProcessDupThreadHandleCount != ''
       on_failure:
         - append:
+            tag: append_error_message_a5047704
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -747,6 +886,7 @@ processors:
       if: ctx.json?.osSrc?.process?.crossProcessOpenProcessCount != ''
       on_failure:
         - append:
+            tag: append_error_message_0dd3aed4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -758,6 +898,7 @@ processors:
       if: ctx.json?.osSrc?.process?.crossProcessOutOfStorylineCount != ''
       on_failure:
         - append:
+            tag: append_error_message_47dae6eb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -769,9 +910,11 @@ processors:
       if: ctx.json?.osSrc?.process?.crossProcessThreadCreateCount != ''
       on_failure:
         - append:
+            tag: append_error_message_fe3450ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_displayName_to_sentinel_one_cloud_funnel_event_os_src_process_display_name_079bf379
       field: json.osSrc.process.displayName
       target_field: sentinel_one_cloud_funnel.event.os_src_process.display_name
       ignore_missing: true
@@ -784,6 +927,7 @@ processors:
       if: ctx.json?.osSrc?.process?.dnsCount != ''
       on_failure:
         - append:
+            tag: append_error_message_e1ac18f3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -795,35 +939,43 @@ processors:
       if: ctx.json?.osSrc?.process?.image?.binaryIsExecutable != ''
       on_failure:
         - append:
+            tag: append_error_message_fe408cf1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_image_md5_to_sentinel_one_cloud_funnel_event_os_src_process_image_md5_345656d0
       field: json.osSrc.process.image.md5
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_ef72b7b9
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.image.md5}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.image?.md5!= null
   - rename:
+      tag: rename_json_osSrc_process_image_path_to_sentinel_one_cloud_funnel_event_os_src_process_image_path_4371ef3c
       field: json.osSrc.process.image.path
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.path
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_image_sha1_to_sentinel_one_cloud_funnel_event_os_src_process_image_sha1_92d6200c
       field: json.osSrc.process.image.sha1
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_ead1fad3
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.image.sha1}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.image?.sha1 != null
   - rename:
+      tag: rename_json_osSrc_process_image_sha256_to_sentinel_one_cloud_funnel_event_os_src_process_image_sha256_f2c85f30
       field: json.osSrc.process.image.sha256
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_3e12afb7
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.image.sha256}}}'
       allow_duplicates: false
@@ -837,6 +989,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorBootConfigurationUpdateCount != ''
       on_failure:
         - append:
+            tag: append_error_message_4a91a4b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -848,6 +1001,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorEvasionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_0636873a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -859,6 +1013,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorExploitationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_ac8f33b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -870,6 +1025,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorGeneral?.count != ''
       on_failure:
         - append:
+            tag: append_error_message_fdafaf1a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -881,6 +1037,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorInfostealerCount != ''
       on_failure:
         - append:
+            tag: append_error_message_ce870086
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -892,6 +1049,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorInjectionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_6a4add8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -903,6 +1061,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorPersistenceCount != ''
       on_failure:
         - append:
+            tag: append_error_message_1fe8aa26
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -914,6 +1073,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorPostExploitationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_00b8aa2f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -925,6 +1085,7 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorRansomwareCount != ''
       on_failure:
         - append:
+            tag: append_error_message_18374ebc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -936,9 +1097,11 @@ processors:
       if: ctx.json?.osSrc?.process?.indicatorReconnaissanceCount != ''
       on_failure:
         - append:
+            tag: append_error_message_e58820bc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_integrityLevel_to_sentinel_one_cloud_funnel_event_os_src_process_integrity_level_d358c9c7
       field: json.osSrc.process.integrityLevel
       target_field: sentinel_one_cloud_funnel.event.os_src_process.integrity_level
       ignore_missing: true
@@ -951,6 +1114,7 @@ processors:
       if: ctx.json?.osSrc?.process?.isNative64Bit != ''
       on_failure:
         - append:
+            tag: append_error_message_f6c481fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -962,6 +1126,7 @@ processors:
       if: ctx.json?.osSrc?.process?.isRedirectCmdProcessor != ''
       on_failure:
         - append:
+            tag: append_error_message_0ad45c90
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -973,6 +1138,7 @@ processors:
       if: ctx.json?.osSrc?.process?.isStorylineRoot != ''
       on_failure:
         - append:
+            tag: append_error_message_066ea83d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -984,9 +1150,11 @@ processors:
       if: ctx.json?.osSrc?.process?.moduleCount != ''
       on_failure:
         - append:
+            tag: append_error_message_03ab8d8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_name_to_sentinel_one_cloud_funnel_event_os_src_process_name_6be35882
       field: json.osSrc.process.name
       target_field: sentinel_one_cloud_funnel.event.os_src_process.name
       ignore_missing: true
@@ -999,6 +1167,7 @@ processors:
       if: ctx.json?.osSrc?.process?.netConnCount != ''
       on_failure:
         - append:
+            tag: append_error_message_299abb6a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1010,6 +1179,7 @@ processors:
       if: ctx.json?.osSrc?.process?.netConnInCount != ''
       on_failure:
         - append:
+            tag: append_error_message_41348bab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1021,55 +1191,68 @@ processors:
       if: ctx.json?.osSrc?.process?.netConnOutCount != ''
       on_failure:
         - append:
+            tag: append_error_message_1e47b481
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_activeContent_hash_to_sentinel_one_cloud_funnel_event_os_src_process_parent_active_content_hash_519d4bad
       field: json.osSrc.process.parent.activeContent.hash
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_activeContent_id_to_sentinel_one_cloud_funnel_event_os_src_process_parent_active_content_id_dca022ff
       field: json.osSrc.process.parent.activeContent.id
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.id
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_activeContent_path_to_sentinel_one_cloud_funnel_event_os_src_process_parent_active_content_path_61d5a0bf
       field: json.osSrc.process.parent.activeContent.path
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.path
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_activeContent_signedStatus_to_sentinel_one_cloud_funnel_event_os_src_process_parent_active_content_signed_status_df71e278
       field: json.osSrc.process.parent.activeContent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.signed_status
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_activeContentType_to_sentinel_one_cloud_funnel_event_os_src_process_parent_active_content_type_fb196e25
       field: json.osSrc.process.parent.activeContentType
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.type
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_cmdline_to_sentinel_one_cloud_funnel_event_os_src_process_parent_cmd_line_1f7506cf
       field: json.osSrc.process.parent.cmdline
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.cmd_line
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_displayName_to_sentinel_one_cloud_funnel_event_os_src_process_parent_display_name_2a79afdb
       field: json.osSrc.process.parent.displayName
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.display_name
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_image_sha1_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_sha1_c7052b90
       field: json.osSrc.process.parent.image.sha1
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_50373d02
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha1}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.parent?.image?.sha1 != null
   - rename:
+      tag: rename_json_osSrc_process_parent_image_sha256_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_sha256_b14fbef4
       field: json.osSrc.process.parent.image.sha256
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_e29dcdce
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.parent?.image?.sha256 != null
   - rename:
+      tag: rename_json_osSrc_process_parent_integrityLevel_to_sentinel_one_cloud_funnel_event_os_src_process_parent_integrity_level_9f018fc1
       field: json.osSrc.process.parent.integrityLevel
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.integrity_level
       ignore_missing: true
@@ -1082,6 +1265,7 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.isNative64Bit != ''
       on_failure:
         - append:
+            tag: append_error_message_2d7d3e8a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1093,6 +1277,7 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.isRedirectCmdProcessor != ''
       on_failure:
         - append:
+            tag: append_error_message_c0e88dca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1104,9 +1289,11 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.isStorylineRoot != ''
       on_failure:
         - append:
+            tag: append_error_message_a548f83b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_name_to_sentinel_one_cloud_funnel_event_os_src_process_parent_name_7e83fae4
       field: json.osSrc.process.parent.name
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.name
       ignore_missing: true
@@ -1119,13 +1306,16 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_9bfc19b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_publisher_to_sentinel_one_cloud_funnel_event_os_src_process_parent_publisher_e487e63c
       field: json.osSrc.process.parent.publisher
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_reasonSignatureInvalid_to_sentinel_one_cloud_funnel_event_os_src_process_parent_reason_signature_invalid_91dfccbc
       field: json.osSrc.process.parent.reasonSignatureInvalid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.reason_signature_invalid
       ignore_missing: true
@@ -1138,9 +1328,11 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.sessionId != ''
       on_failure:
         - append:
+            tag: append_error_message_4db5df8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_signedStatus_to_sentinel_one_cloud_funnel_event_os_src_process_parent_signed_status_f052af77
       field: json.osSrc.process.parent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.signed_status
       ignore_missing: true
@@ -1154,21 +1346,26 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.startTime != null && ctx.json.osSrc.process.parent.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_6606ce35
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_storyline_id_to_sentinel_one_cloud_funnel_event_os_src_process_parent_storyline_id_5abcd889
       field: json.osSrc.process.parent.storyline.id
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.storyline_id
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_uid_to_sentinel_one_cloud_funnel_event_os_src_process_parent_uid_7d15cf0c
       field: json.osSrc.process.parent.uid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_user_to_sentinel_one_cloud_funnel_event_os_src_process_parent_user_name_a2786fb7
       field: json.osSrc.process.parent.user
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_2934354d
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.parent.user.name}}}'
       allow_duplicates: false
@@ -1182,13 +1379,16 @@ processors:
       if: ctx.json?.osSrc?.process?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_65265912
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_publisher_to_sentinel_one_cloud_funnel_event_os_src_process_publisher_96b223dc
       field: json.osSrc.process.publisher
       target_field: sentinel_one_cloud_funnel.event.os_src_process.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_reasonSignatureInvalid_to_sentinel_one_cloud_funnel_event_os_src_process_reason_signature_invalid_37ea609a
       field: json.osSrc.process.reasonSignatureInvalid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.reason_signature_invalid
       ignore_missing: true
@@ -1201,6 +1401,7 @@ processors:
       if: ctx.json?.osSrc?.process?.registryChangeCount != ''
       on_failure:
         - append:
+            tag: append_error_message_ed6bbfef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1212,9 +1413,11 @@ processors:
       if: ctx.json?.osSrc?.process?.sessionId != ''
       on_failure:
         - append:
+            tag: append_error_message_499af721
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_signedStatus_to_sentinel_one_cloud_funnel_event_os_src_process_signed_status_2e4be41b
       field: json.osSrc.process.signedStatus
       target_field: sentinel_one_cloud_funnel.event.os_src_process.signed_status
       ignore_missing: true
@@ -1228,13 +1431,16 @@ processors:
       if: ctx.json?.osSrc?.process?.startTime != null && ctx.json.osSrc.process.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_b9f33a8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_storyline_id_to_sentinel_one_cloud_funnel_event_os_src_process_storyline_id_f579c25d
       field: json.osSrc.process.storyline.id
       target_field: sentinel_one_cloud_funnel.event.os_src_process.storyline_id
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_subsystem_to_sentinel_one_cloud_funnel_event_os_src_process_subsystem_04548168
       field: json.osSrc.process.subsystem
       target_field: sentinel_one_cloud_funnel.event.os_src_process.subsystem
       ignore_missing: true
@@ -1247,6 +1453,7 @@ processors:
       if: ctx.json?.osSrc?.process?.tgtFileCreationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_3705fcdb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1258,6 +1465,7 @@ processors:
       if: ctx.json?.osSrc?.process?.tgtFileDeletionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_adcc78d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1269,22 +1477,27 @@ processors:
       if: ctx.json?.osSrc?.process?.tgtFileModificationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_2deb8d6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_uid_to_sentinel_one_cloud_funnel_event_os_src_process_uid_1ba8c838
       field: json.osSrc.process.uid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_user_to_sentinel_one_cloud_funnel_event_os_src_process_user_name_0406abf9
       field: json.osSrc.process.user
       target_field: sentinel_one_cloud_funnel.event.os_src_process.user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_6f913a82
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.user.name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.user?.name != null
   - rename:
+      tag: rename_json_osSrc_process_verifiedStatus_to_sentinel_one_cloud_funnel_event_os_src_process_verified_status_4b19d273
       field: json.osSrc.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.os_src_process.verified_status
       ignore_missing: true
@@ -1298,33 +1511,41 @@ processors:
       if: ctx.json != null && ctx.json['sca:atlantisIngestTime'] != null && ctx.json['sca:atlantisIngestTime'] != ''
       on_failure:
         - append:
+            tag: append_error_message_0a33048c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_site_id_to_sentinel_one_cloud_funnel_event_site_id_45a0ad1e
       field: json.site.id
       target_field: sentinel_one_cloud_funnel.event.site.id
       ignore_missing: true
   - rename:
+      tag: rename_json_site_name_to_sentinel_one_cloud_funnel_event_site_name_b98f15e6
       field: json.site.name
       target_field: sentinel_one_cloud_funnel.event.site.name
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_activeContent_hash_to_sentinel_one_cloud_funnel_event_src_process_active_content_hash_1fb5acb1
       field: json.src.process.activeContent.hash
       target_field: sentinel_one_cloud_funnel.event.src.process.active_content.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_activeContent_id_to_sentinel_one_cloud_funnel_event_src_process_active_content_id_c22f443b
       field: json.src.process.activeContent.id
       target_field: sentinel_one_cloud_funnel.event.src.process.active_content.id
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_activeContent_path_to_sentinel_one_cloud_funnel_event_src_process_active_content_path_7bca1543
       field: json.src.process.activeContent.path
       target_field: sentinel_one_cloud_funnel.event.src.process.active_content.path
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_activeContent_signedStatus_to_sentinel_one_cloud_funnel_event_src_process_active_content_signed_status_bdf13cd4
       field: json.src.process.activeContent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.active_content.signed_status
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_activeContentType_to_sentinel_one_cloud_funnel_event_src_process_active_content_type_d627bae9
       field: json.src.process.activeContentType
       target_field: sentinel_one_cloud_funnel.event.src.process.active_content.type
       ignore_missing: true
@@ -1337,6 +1558,7 @@ processors:
       if: ctx.json?.src?.process?.childProcCount != ''
       on_failure:
         - append:
+            tag: append_error_message_2b5fc00f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1348,6 +1570,7 @@ processors:
       if: ctx.json?.src?.process?.crossProcessDupRemoteProcessHandleCount != ''
       on_failure:
         - append:
+            tag: append_error_message_15c1a8cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1359,6 +1582,7 @@ processors:
       if: ctx.json?.src?.process?.crossProcessOpenProcessCount != ''
       on_failure:
         - append:
+            tag: append_error_message_3d119178
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1370,6 +1594,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorExploitationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_53877b26
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1381,6 +1606,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorInjectionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_0bbe1012
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1392,6 +1618,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorRansomwareCount != ''
       on_failure:
         - append:
+            tag: append_error_message_dae80fe0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1403,17 +1630,21 @@ processors:
       if: ctx.json?.src?.process?.indicatorReconnaissanceCount != ''
       on_failure:
         - append:
+            tag: append_error_message_a17af302
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_integrityLevel_to_sentinel_one_cloud_funnel_event_src_process_integrity_level_942358f5
       field: json.src.process.integrityLevel
       target_field: sentinel_one_cloud_funnel.event.src.process.integrity_level
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_lUserName_to_sentinel_one_cloud_funnel_event_src_process_l_user_name_b2c094b5
       field: json.src.process.lUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.l_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_6b894131
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.src.process.l_user.name}}}'
       allow_duplicates: false
@@ -1427,9 +1658,11 @@ processors:
       if: ctx.json?.src?.process?.lUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_c1c67e8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_c782b557
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.src.process.l_user.uid}}}'
       allow_duplicates: false
@@ -1443,6 +1676,7 @@ processors:
       if: ctx.json?.src?.process?.moduleCount != ''
       on_failure:
         - append:
+            tag: append_error_message_25fb87ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1454,46 +1688,57 @@ processors:
       if: ctx.json?.src?.process?.netConnInCount != ''
       on_failure:
         - append:
+            tag: append_error_message_fe4efb8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_activeContent_hash_to_sentinel_one_cloud_funnel_event_src_process_parent_active_content_hash_4fc0076b
       field: json.src.process.parent.activeContent.hash
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.active_content.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_activeContent_id_to_sentinel_one_cloud_funnel_event_src_process_parent_active_content_id_01479e37
       field: json.src.process.parent.activeContent.id
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.active_content.id
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_activeContent_path_to_sentinel_one_cloud_funnel_event_src_process_parent_active_content_path_92fca66f
       field: json.src.process.parent.activeContent.path
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.active_content.path
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_activeContent_signedStatus_to_sentinel_one_cloud_funnel_event_src_process_parent_active_content_signed_status_8d329f26
       field: json.src.process.parent.activeContent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.active_content.signed_status
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_activeContentType_to_sentinel_one_cloud_funnel_event_src_process_parent_active_content_type_7aadf53b
       field: json.src.process.parent.activeContentType
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.active_content.type
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_image_md5_to_sentinel_one_cloud_funnel_event_src_process_parent_image_md5_9cfe85f8
       field: json.src.process.parent.image.md5
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_aa10452f
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.src.process.parent.image.md5}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.parent?.image?.md5 != null
   - rename:
+      tag: rename_json_src_process_parent_image_path_to_sentinel_one_cloud_funnel_event_src_process_parent_image_path_d038e848
       field: json.src.process.parent.image.path
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.path
       ignore_missing: true
   - set:
+      tag: set_process_parent_executable_ca714543
       field: process.parent.executable
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.image.path
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_parent_integrityLevel_to_sentinel_one_cloud_funnel_event_src_process_parent_integrity_level_d96f7bbf
       field: json.src.process.parent.integrityLevel
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.integrity_level
       ignore_missing: true
@@ -1506,6 +1751,7 @@ processors:
       if: ctx.json?.src?.process?.parent?.isNative64Bit != ''
       on_failure:
         - append:
+            tag: append_error_message_b687e9b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1517,6 +1763,7 @@ processors:
       if: ctx.json?.src?.process?.parent?.isRedirectCmdProcessor != ''
       on_failure:
         - append:
+            tag: append_error_message_88d91c20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1528,13 +1775,16 @@ processors:
       if: ctx.json?.src?.process?.parent?.isStorylineRoot != ''
       on_failure:
         - append:
+            tag: append_error_message_154afb8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_lUserName_to_sentinel_one_cloud_funnel_event_src_process_parent_l_user_name_b9ea45d5
       field: json.src.process.parent.lUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.l_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_420cce14
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.src.process.parent.l_user.name}}}'
       allow_duplicates: false
@@ -1548,18 +1798,22 @@ processors:
       if: ctx.json?.src?.process?.parent?.lUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_bbfcbd73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_15a4a06c
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.src.process.parent.l_user.uid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.parent?.l_user?.uid != null
   - rename:
+      tag: rename_json_src_process_parent_publisher_to_sentinel_one_cloud_funnel_event_src_process_parent_publisher_817e96a0
       field: json.src.process.parent.publisher
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_reasonSignatureInvalid_to_sentinel_one_cloud_funnel_event_src_process_parent_reason_signature_invalid_3a0c5d6a
       field: json.src.process.parent.reasonSignatureInvalid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.reason_signature_invalid
       ignore_missing: true
@@ -1572,38 +1826,47 @@ processors:
       if: ctx.json?.src?.process?.parent?.sessionId != ''
       on_failure:
         - append:
+            tag: append_error_message_f7133fa7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_signedStatus_to_sentinel_one_cloud_funnel_event_src_process_parent_signed_status_05be8757
       field: json.src.process.parent.signedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.signed_status
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_storyline_id_to_sentinel_one_cloud_funnel_event_src_process_parent_storyline_id_7f089789
       field: json.src.process.parent.storyline.id
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.storyline_id
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_uid_to_sentinel_one_cloud_funnel_event_src_process_parent_uid_606a28e4
       field: json.src.process.parent.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.uid
       ignore_missing: true
   - set:
+      tag: set_process_parent_entity_id_61c5c0de
       field: process.parent.entity_id
       copy_from: sentinel_one_cloud_funnel.event.src.process.parent.uid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_parent_userSid_to_sentinel_one_cloud_funnel_event_src_process_parent_user_sid_0443a94a
       field: json.src.process.parent.userSid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_0ddaaeec
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.src.process.parent.user.sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.parent?.user?.sid != null
   - rename:
+      tag: rename_json_src_process_storyline_id_to_sentinel_one_cloud_funnel_event_src_process_storyline_id_81831145
       field: json.src.process.storyline.id
       target_field: sentinel_one_cloud_funnel.event.src.process.storyline_id
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_subsystem_to_sentinel_one_cloud_funnel_event_src_process_subsystem_b1655bce
       field: json.src.process.subsystem
       target_field: sentinel_one_cloud_funnel.event.src.process.subsystem
       ignore_missing: true
@@ -1616,17 +1879,21 @@ processors:
       if: ctx.json?.src?.process?.tgtFileCreationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_295c0ca7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_file_isSigned_to_sentinel_one_cloud_funnel_event_tgt_file_is_signed_093a7793
       field: json.tgt.file.isSigned
       target_field: sentinel_one_cloud_funnel.event.tgt.file.is_signed
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_eUserName_to_sentinel_one_cloud_funnel_event_tgt_process_e_user_name_f5d59305
       field: json.tgt.process.eUserName
       target_field: sentinel_one_cloud_funnel.event.tgt.process.e_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_f64876e5
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.e_user.name}}}'
       allow_duplicates: false
@@ -1640,18 +1907,22 @@ processors:
       if: ctx.json?.tgt?.process?.eUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_5652219b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_3bee7c6f
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.e_user.uid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.e_user?.uid != null
   - rename:
+      tag: rename_json_tgt_process_lUserName_to_sentinel_one_cloud_funnel_event_tgt_process_l_user_name_00afd15f
       field: json.tgt.process.lUserName
       target_field: sentinel_one_cloud_funnel.event.tgt.process.l_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_3d7736a5
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.l_user.name}}}'
       allow_duplicates: false
@@ -1665,18 +1936,22 @@ processors:
       if: ctx.json?.tgt?.process?.lUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_5016ef83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_6c3e5bcd
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.l_user.uid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.l_user?.uid != null
   - rename:
+      tag: rename_json_tgt_process_rUserName_to_sentinel_one_cloud_funnel_event_tgt_process_r_user_name_901383cf
       field: json.tgt.process.rUserName
       target_field: sentinel_one_cloud_funnel.event.tgt.process.r_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_472b3c8d
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.r_user.name}}}'
       allow_duplicates: false
@@ -1690,9 +1965,11 @@ processors:
       if: ctx.json?.tgt?.process?.rUserUid != ''
       on_failure:
         - append:
+            tag: append_error_message_aad8ba87
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_741d6399
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.r_user.uid}}}'
       allow_duplicates: false
@@ -1706,9 +1983,11 @@ processors:
       if: ctx.json?.src?.process?.tid != ''
       on_failure:
         - append:
+            tag: append_error_message_114b3353
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_thread_id_95a0158f
       field: process.thread.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.tid
       ignore_empty_value: true
@@ -1723,21 +2002,26 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_ab89ef75
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_dataSource_category_to_sentinel_one_cloud_funnel_event_data_source_category_c32e9aff
       field: json.dataSource.category
       target_field: sentinel_one_cloud_funnel.event.data_source.category
       ignore_missing: true
   - rename:
+      tag: rename_json_mgmt_id_to_sentinel_one_cloud_funnel_event_mgmt_id_d639682a
       field: json.mgmt.id
       target_field: sentinel_one_cloud_funnel.event.mgmt.id
       ignore_missing: true
   - rename:
+      tag: rename_json_mgmt_osRevision_to_sentinel_one_cloud_funnel_event_mgmt_os_revision_55a7a193
       field: json.mgmt.osRevision
       target_field: sentinel_one_cloud_funnel.event.mgmt.os_revision
       ignore_missing: true
   - rename:
+      tag: rename_json_process_unique_key_to_sentinel_one_cloud_funnel_event_process_unique_key_f9eeee32
       field: json.process.unique.key
       target_field: sentinel_one_cloud_funnel.event.process_unique_key
       ignore_missing: true
@@ -1751,6 +2035,7 @@ processors:
       if: ctx.json != null && ctx.json['sca:ingestTime'] != null && ctx.json['sca:ingestTime'] != ''
       on_failure:
         - append:
+            tag: append_error_message_e6281510
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1762,6 +2047,7 @@ processors:
       if: ctx.json?.src?.process?.crossProcessDupThreadHandleCount != ''
       on_failure:
         - append:
+            tag: append_error_message_2b90af30
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1773,6 +2059,7 @@ processors:
       if: ctx.json?.src?.process?.dnsCount != ''
       on_failure:
         - append:
+            tag: append_error_message_dabf3440
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1784,6 +2071,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorBootConfigurationUpdateCount != ''
       on_failure:
         - append:
+            tag: append_error_message_10b0dc56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1795,6 +2083,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorEvasionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_1f963a9e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1806,6 +2095,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorGeneralCount != ''
       on_failure:
         - append:
+            tag: append_error_message_a685513c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1817,6 +2107,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorInfostealerCount != ''
       on_failure:
         - append:
+            tag: append_error_message_e85af115
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1828,6 +2119,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorPersistenceCount != ''
       on_failure:
         - append:
+            tag: append_error_message_e8e7d17a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1839,6 +2131,7 @@ processors:
       if: ctx.json?.src?.process?.isNative64Bit != ''
       on_failure:
         - append:
+            tag: append_error_message_02f8842c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1850,6 +2143,7 @@ processors:
       if: ctx.json?.src?.process?.isRedirectCmdProcessor != ''
       on_failure:
         - append:
+            tag: append_error_message_69e5868e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1861,6 +2155,7 @@ processors:
       if: ctx.json?.src?.process?.netConnCount != ''
       on_failure:
         - append:
+            tag: append_error_message_0d231d08
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1872,9 +2167,11 @@ processors:
       if: ctx.json?.src?.process?.netConnOutCount != ''
       on_failure:
         - append:
+            tag: append_error_message_aa0dc0bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_subsystem_to_sentinel_one_cloud_funnel_event_src_process_parent_subsystem_54cb1e10
       field: json.src.process.parent.subsystem
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.subsystem
       ignore_missing: true
@@ -1887,6 +2184,7 @@ processors:
       if: ctx.json?.src?.process?.registryChangeCount != ''
       on_failure:
         - append:
+            tag: append_error_message_da1f3b29
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1898,17 +2196,21 @@ processors:
       if: ctx.json?.src?.process?.sessionId != ''
       on_failure:
         - append:
+            tag: append_error_message_8723148d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_signedStatus_to_sentinel_one_cloud_funnel_event_src_process_signed_status_c3b42fa3
       field: json.src.process.signedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.signed_status
       ignore_missing: true
   - set:
+      tag: set_process_code_signature_exists_22576671
       field: process.code_signature.exists
       value: true
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.signed_status == 'signed'
   - set:
+      tag: set_process_code_signature_exists_35a12473
       field: process.code_signature.exists
       value: false
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.signed_status == 'unsigned'
@@ -1921,6 +2223,7 @@ processors:
       if: ctx.json?.src?.process?.tgtFileDeletionCount != ''
       on_failure:
         - append:
+            tag: append_error_message_e114773b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1932,21 +2235,26 @@ processors:
       if: ctx.json?.src?.process?.tgtFileModificationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_4fc02d6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_uid_to_sentinel_one_cloud_funnel_event_src_process_uid_bc3170b8
       field: json.src.process.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.uid
       ignore_missing: true
   - set:
+      tag: set_process_entity_id_1c307620
       field: process.entity_id
       copy_from: sentinel_one_cloud_funnel.event.src.process.uid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_packet_id_to_sentinel_one_cloud_funnel_event_packet_id_06ce1e05
       field: json.packet.id
       target_field: sentinel_one_cloud_funnel.event.packet_id
       ignore_missing: true
   - rename:
+      tag: rename_json_trace_id_to_sentinel_one_cloud_funnel_event_trace_id_a786e2c9
       field: json.trace.id
       target_field: sentinel_one_cloud_funnel.event.trace_id
       ignore_missing: true
@@ -1959,6 +2267,7 @@ processors:
       if: ctx.json?.src?.process?.crossProcessCount != ''
       on_failure:
         - append:
+            tag: append_error_message_6e501c82
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1970,6 +2279,7 @@ processors:
       if: ctx.json?.src?.process?.crossProcessOutOfStorylineCount != ''
       on_failure:
         - append:
+            tag: append_error_message_359e14ad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1981,6 +2291,7 @@ processors:
       if: ctx.json?.src?.process?.crossProcessThreadCreateCount != ''
       on_failure:
         - append:
+            tag: append_error_message_68af7fb8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1992,6 +2303,7 @@ processors:
       if: ctx.json?.src?.process?.image?.binaryIsExecutable != ''
       on_failure:
         - append:
+            tag: append_error_message_daf0310f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2003,6 +2315,7 @@ processors:
       if: ctx.json?.src?.process?.indicatorPostExploitationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_fe805505
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2014,30 +2327,37 @@ processors:
       if: ctx.json?.src?.process?.isStorylineRoot != ''
       on_failure:
         - append:
+            tag: append_error_message_8c922bb9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_publisher_to_sentinel_one_cloud_funnel_event_src_process_publisher_d84f6a90
       field: json.src.process.publisher
       target_field: sentinel_one_cloud_funnel.event.src.process.publisher
       ignore_missing: true
   - set:
+      tag: set_process_code_signature_subject_name_43fc49bd
       field: process.code_signature.subject_name
       copy_from: sentinel_one_cloud_funnel.event.src.process.publisher
       ignore_empty_value: true
   - rename:
+      tag: rename_json_src_process_verifiedStatus_to_sentinel_one_cloud_funnel_event_src_process_verified_status_be70825b
       field: json.src.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.verified_status
       ignore_missing: true
   - set:
+      tag: set_process_code_signature_trusted_8834435b
       field: process.code_signature.trusted
       value: true
       if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.verified_status?.contains('verified') == true
   - set:
+      tag: set_process_code_signature_trusted_88027e8b
       field: process.code_signature.trusted
       value: false
       override: false
       if: ctx.process?.code_signature?.exists == true
   - rename:
+      tag: rename_json_driver_certificate_thumbprint_to_sentinel_one_cloud_funnel_event_driver_certificate_thumbprint_value_65098dd7
       field: json.driver.certificate.thumbprint
       target_field: sentinel_one_cloud_funnel.event.driver.certificate.thumbprint.value
       ignore_missing: true
@@ -2050,6 +2370,7 @@ processors:
       if: ctx.json?.driver?.certificate?.thumbprintAlgorithm != ''
       on_failure:
         - append:
+            tag: append_error_message_262c8b33
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2061,57 +2382,70 @@ processors:
       if: ctx.json?.driver?.isLoadedBeforeMonitor != ''
       on_failure:
         - append:
+            tag: append_error_message_a5d4759a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_driver_loadVerdict_to_sentinel_one_cloud_funnel_event_driver_load_verdict_4e18b567
       field: json.driver.loadVerdict
       target_field: sentinel_one_cloud_funnel.event.driver.load_verdict
       ignore_missing: true
   - rename:
+      tag: rename_json_driver_peSha1_to_sentinel_one_cloud_funnel_event_driver_pe_sha1_b7d01d1a
       field: json.driver.peSha1
       target_field: sentinel_one_cloud_funnel.event.driver.pe.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_b8deff85
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.driver.pe.sha1}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.driver?.pe?.sha1 != null
   - rename:
+      tag: rename_json_driver_peSha256_to_sentinel_one_cloud_funnel_event_driver_pe_sha256_a31194ce
       field: json.driver.peSha256
       target_field: sentinel_one_cloud_funnel.event.driver.pe.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_abdd3959
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.driver.pe.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.driver?.pe?.sha256 != null
   - rename:
+      tag: rename_json_driver_startType_to_sentinel_one_cloud_funnel_event_driver_start_type_9a8e8703
       field: json.driver.startType
       target_field: sentinel_one_cloud_funnel.event.driver.start_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_dns_status_to_sentinel_one_cloud_funnel_event_dns_status_aa21af52
       field: json.event.dns.status
       target_field: sentinel_one_cloud_funnel.event.dns.status
       ignore_missing: true
   - rename:
+      tag: rename_json_event_login_tgt_userSid_to_sentinel_one_cloud_funnel_event_login_tgt_user_sid_9cef4990
       field: json.event.login.tgt.userSid
       target_field: sentinel_one_cloud_funnel.event.login.tgt.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_e5b8f6cf
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.login.tgt.user.sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.login?.tgt?.user?.sid != null
   - rename:
+      tag: rename_json_event_logout_tgt_userSid_to_sentinel_one_cloud_funnel_event_logout_tgt_user_sid_02b01034
       field: json.event.logout.tgt.userSid
       target_field: sentinel_one_cloud_funnel.event.logout.tgt.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_e5748945
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.logout.tgt.user.sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.logout?.tgt?.user?.sid != null
   - rename:
+      tag: rename_json_event_logout_type_to_sentinel_one_cloud_funnel_event_logout_type_244b24f4
       field: json.event.logout.type
       target_field: sentinel_one_cloud_funnel.event.logout.type
       ignore_missing: true
@@ -2124,29 +2458,36 @@ processors:
       if: ctx.json?.event?.processtermination?.exitCode != ''
       on_failure:
         - append:
+            tag: append_error_message_c71eb01c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_processtermination_signal_to_sentinel_one_cloud_funnel_event_process_termination_signal_fcdae261
       field: json.event.processtermination.signal
       target_field: sentinel_one_cloud_funnel.event.process_termination.signal
       ignore_missing: true
   - rename:
+      tag: rename_json_event_url_source_to_sentinel_one_cloud_funnel_event_url_source_e91f6cc6
       field: json.event.url.source
       target_field: sentinel_one_cloud_funnel.event.url.source
       ignore_missing: true
   - rename:
+      tag: rename_json_group_type_to_sentinel_one_cloud_funnel_event_group_type_e2040140
       field: json.group.type
       target_field: sentinel_one_cloud_funnel.event.group.type
       ignore_missing: true
   - rename:
+      tag: rename_json_indicator_identifier_to_sentinel_one_cloud_funnel_event_indicator_identifier_82cfff90
       field: json.indicator.identifier
       target_field: sentinel_one_cloud_funnel.event.indicator.identifier
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_accessMode_to_sentinel_one_cloud_funnel_event_named_pipe_access_mode_bbdc0958
       field: json.namedPipe.accessMode
       target_field: sentinel_one_cloud_funnel.event.named_pipe.access_mode
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_connectionType_to_sentinel_one_cloud_funnel_event_named_pipe_connection_type_32be061c
       field: json.namedPipe.connectionType
       target_field: sentinel_one_cloud_funnel.event.named_pipe.connection_type
       ignore_missing: true
@@ -2159,6 +2500,7 @@ processors:
       if: ctx.json?.namedPipe?.isFirstInstance != ''
       on_failure:
         - append:
+            tag: append_error_message_0ed51ecc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2170,6 +2512,7 @@ processors:
       if: ctx.json?.namedPipe?.isOverlapped != ''
       on_failure:
         - append:
+            tag: append_error_message_6dbd80c7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2181,6 +2524,7 @@ processors:
       if: ctx.json?.namedPipe?.isWriteThrough != ''
       on_failure:
         - append:
+            tag: append_error_message_8693e07c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2192,41 +2536,51 @@ processors:
       if: ctx.json?.namedPipe?.maxInstances != ''
       on_failure:
         - append:
+            tag: append_error_message_8307e425
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_namedPipe_name_to_sentinel_one_cloud_funnel_event_named_pipe_name_b5d50f3b
       field: json.namedPipe.name
       target_field: sentinel_one_cloud_funnel.event.named_pipe.name
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_readMode_to_sentinel_one_cloud_funnel_event_named_pipe_read_mode_48bea7a4
       field: json.namedPipe.readMode
       target_field: sentinel_one_cloud_funnel.event.named_pipe.read_mode
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_remoteClients_to_sentinel_one_cloud_funnel_event_named_pipe_remote_clients_ddcb4268
       field: json.namedPipe.remoteClients
       target_field: sentinel_one_cloud_funnel.event.named_pipe.remote_clients
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_securityGroups_to_sentinel_one_cloud_funnel_event_named_pipe_security_groups_e002bd65
       field: json.namedPipe.securityGroups
       target_field: sentinel_one_cloud_funnel.event.named_pipe.security.groups
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_securityOwner_to_sentinel_one_cloud_funnel_event_named_pipe_security_owner_2ef45689
       field: json.namedPipe.securityOwner
       target_field: sentinel_one_cloud_funnel.event.named_pipe.security.owner
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_typeMode_to_sentinel_one_cloud_funnel_event_named_pipe_type_mode_166759f4
       field: json.namedPipe.typeMode
       target_field: sentinel_one_cloud_funnel.event.named_pipe.type_mode
       ignore_missing: true
   - rename:
+      tag: rename_json_namedPipe_waitMode_to_sentinel_one_cloud_funnel_event_named_pipe_wait_mode_5ba6365e
       field: json.namedPipe.waitMode
       target_field: sentinel_one_cloud_funnel.event.named_pipe.wait_mode
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_image_extension_to_sentinel_one_cloud_funnel_event_os_src_process_image_extension_e77bec80
       field: json.osSrc.process.image.extension
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.extension
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_image_location_to_sentinel_one_cloud_funnel_event_os_src_process_image_location_dda518ec
       field: json.osSrc.process.image.location
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.location
       ignore_missing: true
@@ -2239,6 +2593,7 @@ processors:
       if: ctx.json?.osSrc?.process?.image?.signature?.isValid != ''
       on_failure:
         - append:
+            tag: append_error_message_19ee9553
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2250,13 +2605,16 @@ processors:
       if: ctx.json?.osSrc?.process?.image?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_06a989a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_image_type_to_sentinel_one_cloud_funnel_event_os_src_process_image_type_966170ca
       field: json.osSrc.process.image.type
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.type
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_image_uid_to_sentinel_one_cloud_funnel_event_os_src_process_image_uid_bb9dbe38
       field: json.osSrc.process.image.uid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.image.uid
       ignore_missing: true
@@ -2269,13 +2627,16 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.image?.binaryIsExecutable != ''
       on_failure:
         - append:
+            tag: append_error_message_f3e4f443
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_image_extension_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_extension_3333db14
       field: json.osSrc.process.parent.image.extension
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.extension
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_image_location_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_location_d453aab4
       field: json.osSrc.process.parent.image.location
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.location
       ignore_missing: true
@@ -2288,6 +2649,7 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.image?.signature?.isValid != ''
       on_failure:
         - append:
+            tag: append_error_message_0b480ed5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2299,60 +2661,74 @@ processors:
       if: ctx.json?.osSrc?.process?.parent?.image?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_077f8251
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_osSrc_process_parent_image_type_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_type_2dcf4dfc
       field: json.osSrc.process.parent.image.type
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.type
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_image_uid_to_sentinel_one_cloud_funnel_event_os_src_process_parent_image_uid_a453fe12
       field: json.osSrc.process.parent.image.uid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.image.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_subsystem_to_sentinel_one_cloud_funnel_event_os_src_process_parent_subsystem_990462da
       field: json.osSrc.process.parent.subsystem
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.subsystem
       ignore_missing: true
   - rename:
+      tag: rename_json_osSrc_process_parent_userSid_to_sentinel_one_cloud_funnel_event_os_src_process_parent_user_sid_e402684c
       field: json.osSrc.process.parent.userSid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.parent.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_ffdaad55
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.parent.user.sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.parent?.user?.sid != null
   - rename:
+      tag: rename_json_osSrc_process_userSid_to_sentinel_one_cloud_funnel_event_os_src_process_user_sid_03a6b37a
       field: json.osSrc.process.userSid
       target_field: sentinel_one_cloud_funnel.event.os_src_process.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_1abe6994
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.os_src_process.user.sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.os_src_process?.user?.sid != null
   - rename:
+      tag: rename_json_registry_export_path_to_sentinel_one_cloud_funnel_event_registry_export_path_7f97d62d
       field: json.registry.export.path
       target_field: sentinel_one_cloud_funnel.event.registry.export_path
       ignore_missing: true
   - rename:
+      tag: rename_json_registry_import_path_to_sentinel_one_cloud_funnel_event_registry_import_path_e2da7c39
       field: json.registry.import.path
       target_field: sentinel_one_cloud_funnel.event.registry.import_path
       ignore_missing: true
   - rename:
+      tag: rename_json_registry_owner_user_to_sentinel_one_cloud_funnel_event_registry_owner_user_name_1fe204e3
       field: json.registry.owner.user
       target_field: sentinel_one_cloud_funnel.event.registry.owner.user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_74d1f3ad
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.registry.owner.user.name}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.registry?.owner?.user?.name != null
   - rename:
+      tag: rename_json_registry_owner_userSid_to_sentinel_one_cloud_funnel_event_registry_owner_user_sid_c3137356
       field: json.registry.owner.userSid
       target_field: sentinel_one_cloud_funnel.event.registry.owner.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_4aeaf4dd
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.registry.owner.user.sid}}}'
       allow_duplicates: false
@@ -2366,6 +2742,7 @@ processors:
       if: ctx.json?.registry?.security?.info != ''
       on_failure:
         - append:
+            tag: append_error_message_c1ee9dc6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2377,33 +2754,41 @@ processors:
       if: ctx.json?.src?.process?.exeModificationCount != ''
       on_failure:
         - append:
+            tag: append_error_message_3ddae393
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_image_description_to_sentinel_one_cloud_funnel_event_src_process_image_description_1ed88dee
       field: json.src.process.image.description
       target_field: sentinel_one_cloud_funnel.event.src.process.image.description
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_extension_to_sentinel_one_cloud_funnel_event_src_process_image_extension_d743d350
       field: json.src.process.image.extension
       target_field: sentinel_one_cloud_funnel.event.src.process.image.extension
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_internalName_to_sentinel_one_cloud_funnel_event_src_process_image_internal_name_bf178241
       field: json.src.process.image.internalName
       target_field: sentinel_one_cloud_funnel.event.src.process.image.internal_name
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_location_to_sentinel_one_cloud_funnel_event_src_process_image_location_2220bbc0
       field: json.src.process.image.location
       target_field: sentinel_one_cloud_funnel.event.src.process.image.location
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_originalFileName_to_sentinel_one_cloud_funnel_event_src_process_image_original_file_name_0e5464a6
       field: json.src.process.image.originalFileName
       target_field: sentinel_one_cloud_funnel.event.src.process.image.original_file_name
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_productName_to_sentinel_one_cloud_funnel_event_src_process_image_product_name_10598526
       field: json.src.process.image.productName
       target_field: sentinel_one_cloud_funnel.event.src.process.image.product.name
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_productVersion_to_sentinel_one_cloud_funnel_event_src_process_image_product_version_44bff972
       field: json.src.process.image.productVersion
       target_field: sentinel_one_cloud_funnel.event.src.process.image.product.version
       ignore_missing: true
@@ -2416,13 +2801,16 @@ processors:
       if: ctx.json?.src?.process?.image?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_cf981559
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_image_type_to_sentinel_one_cloud_funnel_event_src_process_image_type_693687c8
       field: json.src.process.image.type
       target_field: sentinel_one_cloud_funnel.event.src.process.image.type
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_image_uid_to_sentinel_one_cloud_funnel_event_src_process_image_uid_f5d9231e
       field: json.src.process.image.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.image.uid
       ignore_missing: true
@@ -2435,6 +2823,7 @@ processors:
       if: ctx.json?.src?.process?.modelChildProcessCount != ''
       on_failure:
         - append:
+            tag: append_error_message_5096b1c0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2446,13 +2835,16 @@ processors:
       if: ctx.json?.src?.process?.parent?.image?.binaryIsExecutable != ''
       on_failure:
         - append:
+            tag: append_error_message_5868d159
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_image_extension_to_sentinel_one_cloud_funnel_event_src_process_parent_image_extension_3c074d2c
       field: json.src.process.parent.image.extension
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.extension
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_image_location_to_sentinel_one_cloud_funnel_event_src_process_parent_image_location_3d7298a8
       field: json.src.process.parent.image.location
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.location
       ignore_missing: true
@@ -2465,6 +2857,7 @@ processors:
       if: ctx.json?.src?.process?.parent?.image?.signature?.isValid != ''
       on_failure:
         - append:
+            tag: append_error_message_50c01091
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2476,21 +2869,26 @@ processors:
       if: ctx.json?.src?.process?.parent?.image?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_2f18484f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_image_type_to_sentinel_one_cloud_funnel_event_src_process_parent_image_type_5fc8b4fa
       field: json.src.process.parent.image.type
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.type
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_parent_image_uid_to_sentinel_one_cloud_funnel_event_src_process_parent_image_uid_bb289ea8
       field: json.src.process.parent.image.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_userSid_to_sentinel_one_cloud_funnel_event_src_process_user_sid_492102d8
       field: json.src.process.userSid
       target_field: sentinel_one_cloud_funnel.event.src.process.user.sid
       ignore_missing: true
   - append:
+      tag: append_related_user_3da4603d
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.src.process.user.sid}}}'
       allow_duplicates: false
@@ -2504,6 +2902,7 @@ processors:
       if: ctx.json?.task?.triggerType != ''
       on_failure:
         - append:
+            tag: append_error_message_e40f4dfe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2515,6 +2914,7 @@ processors:
       if: ctx.json?.tgt?.file?.isDirectory != ''
       on_failure:
         - append:
+            tag: append_error_message_05e729a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -2526,34 +2926,42 @@ processors:
       if: ctx.json?.tgt?.file?.isKernelModule != ''
       on_failure:
         - append:
+            tag: append_error_message_45ea2e81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_file_originalFileName_to_sentinel_one_cloud_funnel_event_tgt_file_original_file_name_03990ff2
       field: json.tgt.file.originalFileName
       target_field: sentinel_one_cloud_funnel.event.tgt.file.original_file_name
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_owner_name_to_sentinel_one_cloud_funnel_event_tgt_file_owner_name_caf1ecb8
       field: json.tgt.file.owner.name
       target_field: sentinel_one_cloud_funnel.event.tgt.file.owner.name
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_owner_userSid_to_sentinel_one_cloud_funnel_event_tgt_file_owner_user_sid_80636bb9
       field: json.tgt.file.owner.userSid
       target_field: sentinel_one_cloud_funnel.event.tgt.file.owner.user_sid
       ignore_missing: true
   - append:
+      tag: append_related_user_fa079c7b
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.file.owner.user_sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.owner?.user_sid != null
   - rename:
+      tag: rename_json_tgt_file_productName_to_sentinel_one_cloud_funnel_event_tgt_file_product_name_24dea404
       field: json.tgt.file.productName
       target_field: sentinel_one_cloud_funnel.event.tgt.file.product.name
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_productVersion_to_sentinel_one_cloud_funnel_event_tgt_file_product_version_7d7fa924
       field: json.tgt.file.productVersion
       target_field: sentinel_one_cloud_funnel.event.tgt.file.product.version
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_publisher_to_sentinel_one_cloud_funnel_event_tgt_file_publisher_3a6f1ed8
       field: json.tgt.file.publisher
       target_field: sentinel_one_cloud_funnel.event.tgt.file.publisher
       ignore_missing: true
@@ -2566,9 +2974,11 @@ processors:
       if: ctx.json?.tgt?.file?.signature?.isValid != ''
       on_failure:
         - append:
+            tag: append_error_message_a2405f9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_file_signatureInvalidReason_to_sentinel_one_cloud_funnel_event_tgt_file_signature_invalid_reason_70315ea1
       field: json.tgt.file.signatureInvalidReason
       target_field: sentinel_one_cloud_funnel.event.tgt.file.signature.invalid_reason
       ignore_missing: true
@@ -2581,9 +2991,11 @@ processors:
       if: ctx.json?.tgt?.process?.completeness?.hints != ''
       on_failure:
         - append:
+            tag: append_error_message_e925f864
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_image_extension_to_sentinel_one_cloud_funnel_event_tgt_process_image_extension_e8621916
       field: json.tgt.process.image.extension
       target_field: sentinel_one_cloud_funnel.event.tgt.process.image.extension
       ignore_missing: true
@@ -2596,34 +3008,42 @@ processors:
       if: ctx.json?.tgt?.process?.image?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_8994c5c1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_process_image_uid_to_sentinel_one_cloud_funnel_event_tgt_process_image_uid_399089ac
       field: json.tgt.process.image.uid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.image.uid
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_parent_image_location_to_sentinel_one_cloud_funnel_event_tgt_process_parent_image_location_2b271d56
       field: json.tgt.process.parent.image.location
       target_field: sentinel_one_cloud_funnel.event.tgt.process.parent.image.location
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_parent_image_type_to_sentinel_one_cloud_funnel_event_tgt_process_parent_image_type_f5a5a810
       field: json.tgt.process.parent.image.type
       target_field: sentinel_one_cloud_funnel.event.tgt.process.parent.image.type
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_userSid_to_sentinel_one_cloud_funnel_event_tgt_process_user_sid_959e1a22
       field: json.tgt.process.userSid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.user.sid
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_process_uid_to_sentinel_one_cloud_funnel_event_tgt_process_uid_d0b00836
       field: json.tgt.process.uid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_missing: true
   - append:
+      tag: append_related_user_07c6cfa3
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.sid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.user?.sid != null
   - rename:
+      tag: rename_json_tiIndicator_categories_to_sentinel_one_cloud_funnel_event_ti_indicator_categories_1aa2fb4d
       field: json.tiIndicator.categories
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.categories
       ignore_missing: true
@@ -2637,21 +3057,26 @@ processors:
       if: ctx.json?.tiIndicator?.creationTime != null && ctx.json.tiIndicator.creationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_30209428
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tiIndicator_externalId_to_sentinel_one_cloud_funnel_event_ti_indicator_external_id_2b43cee2
       field: json.tiIndicator.externalId
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.external_id
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_intrusionSets_to_sentinel_one_cloud_funnel_event_ti_indicator_intrusion_sets_14729c36
       field: json.tiIndicator.intrusionSets
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.intrusion_sets
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_metadata_to_sentinel_one_cloud_funnel_event_ti_indicator_metadata_6f2b443b
       field: json.tiIndicator.metadata
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.metadata
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_threatActors_to_sentinel_one_cloud_funnel_event_ti_indicator_threat_actors_89d96830
       field: json.tiIndicator.threatActors
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.threat_actors
       ignore_missing: true
@@ -2661,6 +3086,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('command')
       on_failure:
         - append:
+            tag: append_error_message_80a82c6e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2669,6 +3095,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('cross')
       on_failure:
         - append:
+            tag: append_error_message_c07c8943
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2677,6 +3104,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('dns')
       on_failure:
         - append:
+            tag: append_error_message_8560412e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2685,6 +3113,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('file')
       on_failure:
         - append:
+            tag: append_error_message_6e56ff53
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2693,6 +3122,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('indicator') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('threat'))
       on_failure:
         - append:
+            tag: append_error_message_232e2c88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2701,6 +3131,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('login')
       on_failure:
         - append:
+            tag: append_error_message_8a60f0c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2709,6 +3140,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('module')
       on_failure:
         - append:
+            tag: append_error_message_f149392d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2717,6 +3149,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('ip') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('command'))
       on_failure:
         - append:
+            tag: append_error_message_c265e6dd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2725,6 +3158,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('process') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('cross'))
       on_failure:
         - append:
+            tag: append_error_message_0c665c40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2733,6 +3167,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('registry')
       on_failure:
         - append:
+            tag: append_error_message_b953bf4e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2741,6 +3176,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('schedule')
       on_failure:
         - append:
+            tag: append_error_message_bc229970
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2749,6 +3185,7 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('threat')
       on_failure:
         - append:
+            tag: append_error_message_898689d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -2757,9 +3194,11 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('url')
       on_failure:
         - append:
+            tag: append_error_message_772950ec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_7c2a3c3b
       # This must happen after the pipelines since the process pipeline also touches process.command_line.
       description: Implements Windows-like SplitCommandLine
       lang: painless
@@ -2854,9 +3293,11 @@ processors:
           ctx.process.parent.args_count = ctx.process.parent.args.length;
         }
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_9782d7f7
       field:
         - sentinel_one_cloud_funnel.event.dst.ip_address
         - sentinel_one_cloud_funnel.event.dst.port_number
@@ -2928,6 +3369,7 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:
+      tag: script_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -2945,14 +3387,17 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - set:
+      tag: set_sentinel_one_cloud_funnel_event_rerouted_d02e579e
       field: sentinel_one_cloud_funnel.event.rerouted
       value: true
       if: ctx._conf?.reroute?.contains(ctx.sentinel_one_cloud_funnel?.event?.category?.toLowerCase()) == true
   - remove:
+      tag: remove__conf_8e93c735
       field: _conf
       ignore_missing: true
   - set:
@@ -2961,6 +3406,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
