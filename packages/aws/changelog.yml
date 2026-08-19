@@ -1,5 +1,5 @@
 # newer versions go on top
-- version: "7.2.0"
+- version: "7.3.0"
   changes:
     - description: |
         The changes below apply to the CloudTrail data stream only.
@@ -18,6 +18,14 @@
         Fix `aws.cloudtrail.service_event_details` surviving `retain: flattened` and `retain: none`. It is now governed like the other payload fields.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/20403
+- version: "7.2.0"
+  changes:
+    - description: Remove the external_id variable, its stream template rendering, and the Assume Role with External ID credential option. The CloudFormation trust policy no longer uses an sts:ExternalId condition; Identity Federation now requires only a Role ARN.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20527
+    - description: Enable Identity Federation for Config, Inspector, aws-cloudwatch log streams, and all aws/metrics streams. Migrates Config (CEL) and Inspector (HTTPJSON) from hand-rolled SigV4 signing to the input's auth.aws configuration, adding Cloud Connectors support and fixing silent session-token breakage. Adds use_cloud_connectors to aws-cloudwatch and aws/metrics stream templates.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20527
 - version: "7.1.1"
   changes:
     - description: Add `data_stream.namespace` to the Amazon Inspector vulnerability latest transform's unique key so findings are tracked per namespace, preventing findings ingested into non-default namespaces from being dropped or conflated in the latest index. Bump transform's destination suffix to `-v2`.

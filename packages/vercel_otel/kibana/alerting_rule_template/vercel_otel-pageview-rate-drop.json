@@ -1,0 +1,53 @@
+{
+    "id": "vercel_otel-pageview-rate-drop",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when Web Analytics page view volume drops by more than 50% in the most recent 15 minutes compared to the preceding 15 minutes, per project. Complements the server-side request-rate-drop rule with a client-side/user-facing engagement view.",
+        "name": "[Vercel OTel] Page view rate drop",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "traffic"
+        ],
+        "schedule": {
+            "interval": "10m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-web-analytics"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Page View Rate Drop\n\n### Triage Steps\n1. Confirm the drop with the Web Analytics dashboard, filtered to the affected `vercel.project.id`.\n2. Check whether the `@vercel/analytics` client SDK is still loading correctly \u2014 a bad deployment can silently strip the tracking script (this would show as a pageview drop with no corresponding server-side request drop).\n3. Cross-check the server-side request-rate-drop rule \u2014 if both fired together, the issue is likely upstream (DNS, CDN, outage) rather than analytics-specific.\n4. If only page views dropped (server requests look normal), suspect an ad-blocker-adjacent change, a Content-Security-Policy regression blocking the analytics script, or a consent-management change preventing the SDK from firing.\n\n### Note\nWeb Analytics events are recorded client-side after page load, so this signal reflects real user-facing impact more directly than server request counts, but it is also more susceptible to browser/extension blocking as an unrelated confound.\n\n### Escalation\nIf the drop is corroborated by the request-rate-drop rule or persists beyond one hour, escalate to the on-call engineer."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.analytics.v2.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND vercel.analytics.event.type == \"pageview\"\n// Split the window in half: \"recent\" (last 15m) vs \"baseline\" (previous 15m) to detect a drop within a single evaluation\n| EVAL is_recent = CASE(@timestamp >= NOW() - 15 minutes, 1, 0)\n| STATS\n    recent = SUM(is_recent),\n    baseline = SUM(1 - is_recent)\n  BY vercel.project.id\n// Minimum baseline volume to avoid flagging naturally quiet/low-traffic projects\n| WHERE baseline > 5\n| EVAL drop_pct = ROUND(100.0 - (TO_DOUBLE(recent) / baseline * 100.0), 2)\n// Alert threshold: tune based on expected traffic variance for your project\n| WHERE drop_pct > 50.0\n| SORT drop_pct DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 30,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vercel.project.id",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

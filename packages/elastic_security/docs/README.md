@@ -141,7 +141,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "elastic_security.alert",
-        "namespace": "59901",
+        "namespace": "26200",
         "type": "logs"
     },
     "ecs": {
@@ -153,9 +153,9 @@ An example event for `alert` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "a99b9d4d-01aa-4fee-b044-d3e25555d1e6",
+        "id": "28870b7e-2a76-4fb1-a0de-0297b760c364",
         "snapshot": false,
-        "version": "9.1.1"
+        "version": "9.4.0"
     },
     "event": {
         "action": "rule_detection",
@@ -168,7 +168,7 @@ An example event for `alert` looks as following:
         "created": "2024-06-09T13:52:07.402Z",
         "dataset": "elastic_security.alert",
         "id": "Na7UF0/g6Q++++3Y96",
-        "ingested": "2026-01-12T11:31:45Z",
+        "ingested": "2026-07-14T10:42:47Z",
         "kind": "alert",
         "module": "elastic_security",
         "outcome": "success",
