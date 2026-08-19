@@ -61,31 +61,40 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 # workaround required due to current elastic-package limitations outlined at:
 # https://github.com/elastic/elastic-package/issues/3452
 #
-# The object key MUST contain "/CloudTrail/" so it matches a file_selectors entry
-# rendered by data_stream/cloudtrail/agent/stream/aws-s3.yml.hbs. A key matching no
-# selector is silently skipped and the benchmark reports zero documents. The key
-# shape below mirrors a real CloudTrail delivery path.
+# The object key MUST contain "/CloudTrail/" so it matches a file_selectors
+# entry rendered by data_stream/cloudtrail/agent/stream/aws-s3.yml.hbs. A key
+# matching no selector is silently skipped and the benchmark reports zero
+# documents. The key shape below mirrors a real CloudTrail delivery path,
+# including the .json.gz suffix.
 #
-# files/cloudtrail-corpus.log is newline-delimited JSON -- one bare CloudTrail event
-# per line, NOT a {"Records":[...]} wrapper. The input reads these objects line by
-# line and `expand_event_list_from_field: Records` was observed not to fire, so a
-# Records-wrapped file is ingested as one opaque document per object instead of one
-# document per event. Keep one event per line.
+# Each object is a gzip-compressed {"Records":[...]} envelope with
+# Content-Type application/json, which is the production CloudTrail reader
+# path (JSON decoder + expand_event_list_from_field: Records). files/
+# cloudtrail-corpus.log stays newline-delimited so the fixture is reviewable;
+# Terraform wraps and gzips it at apply time.
 #
-# The .log extension matches the repo convention for newline-delimited fixtures and
-# keeps editors from validating the file as a single JSON document.
-#
-# depends_on is required: objects created before the notification exists produce no
-# SQS message, so the agent never learns about them.
+# depends_on is required: objects created before the notification exists
+# produce no SQS message, so the agent never learns about them.
+locals {
+  corpus_events = [
+    for line in split("\n", file("${path.module}/files/cloudtrail-corpus.log")) :
+    jsondecode(line)
+    if trimspace(line) != ""
+  ]
+  corpus_gzip_base64 = base64gzip(jsonencode({ Records = local.corpus_events }))
+}
+
 resource "aws_s3_object" "corpus" {
   count = var.object_count
 
   bucket = aws_s3_bucket.bucket.id
   key = format(
-    "AWSLogs/123456789012/CloudTrail/us-east-1/2026/07/26/123456789012_CloudTrail_us-east-1_20260726T2350Z_%05d.json",
+    "AWSLogs/123456789012/CloudTrail/us-east-1/2026/07/26/123456789012_CloudTrail_us-east-1_20260726T2350Z_%05d.json.gz",
     count.index,
   )
-  source = "${path.module}/files/cloudtrail-corpus.log"
+  content_base64   = local.corpus_gzip_base64
+  content_encoding = "gzip"
+  content_type     = "application/json"
 
   depends_on = [aws_s3_bucket_notification.bucket_notification]
 }

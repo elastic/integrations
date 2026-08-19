@@ -1,10 +1,10 @@
 ---
-description: Benchmark 1000 aws.cloudtrail events ingested
+description: Benchmark 20000 aws.cloudtrail events ingested
 input: aws-s3
 deployer: tf
 policy_template: cloudtrail
 wait_for_data_timeout: 20m
-warmup_time_period: 2s
+warmup_time_period: 0s
 data_stream:
   name: cloudtrail
   vars:
@@ -23,7 +23,7 @@ data_stream:
       access_key_id: {{AWS_ACCESS_KEY_ID}}
       secret_access_key: {{AWS_SECRET_ACCESS_KEY}}
       session_token: {{AWS_SESSION_TOKEN}}
-      region: us-east-1
+      region: {{AWS_REGION}}
 corpora:
   # Required to make the runner deploy anything from deploy/tf/ at all. Without this
   # block no service is provisioned, so {{TF_OUTPUT_queue_url}} resolves to "" and
@@ -33,16 +33,17 @@ corpora:
   # NOTE: the generated corpus does NOT reach Elasticsearch for this benchmark.
   # elastic-package cannot inject a generated corpus into a Terraform-managed S3
   # bucket (elastic-package#3452), so the data actually ingested comes from the
-  # static file at deploy/tf/files/cloudtrail-corpus.log, uploaded `object_count`
-  # times by deploy/tf/main.tf. Real volume = corpus lines x object_count
-  # (1000 x 1 = 1000 with the committed defaults).
+  # static file at deploy/tf/files/cloudtrail-corpus.log, wrapped as a gzipped
+  # CloudTrail Records envelope and uploaded `object_count` times by
+  # deploy/tf/main.tf. Real volume = corpus lines x object_count
+  # (1000 x 20 = 20000 with the committed defaults).
   #
   # This block is present because `elastic-package check` rejects a `corpora`
   # section without it ("field corpora: generator is required"). total_events is
   # set to match what the static corpus delivers so the reported parameter is not
   # misleading. To change volume, edit the corpus file or var.object_count.
   generator:
-    total_events: 1000
+    total_events: 20000
     template:
       path: ./cloudtrail-benchmark/template.ndjson
       type: gotext
