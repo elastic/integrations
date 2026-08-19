@@ -28,6 +28,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -49,7 +50,7 @@ processors:
       value: threat
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_8b9a0900
       value: email
   - append:
       field: event.type
@@ -57,7 +58,7 @@ processors:
       value: indicator
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_a955b9cc
       value: info
   - set:
       field: observer.vendor
@@ -107,6 +108,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_29880f70
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -115,6 +117,7 @@ processors:
       target_field: abnormal_security.threat.attachment_names
       ignore_missing: true
   - foreach:
+      tag: foreach_json_attachments_ac986f09
       field: json.attachments
       if: ctx.json.attachments instanceof List
       ignore_missing: true
@@ -145,6 +148,7 @@ processors:
         ctx.email.attachments = attachmentList;
       on_failure:
         - append:
+            tag: append_error_message_6e43eb1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -192,6 +196,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_87070e2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -205,6 +210,7 @@ processors:
       copy_from: abnormal_security.threat.cc_emails
       ignore_empty_value: true
   - foreach:
+      tag: foreach_abnormal_security_threat_cc_emails_1eeb5ed3
       field: abnormal_security.threat.cc_emails
       if: ctx.abnormal_security?.threat?.cc_emails instanceof List
       processor:
@@ -290,6 +296,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aa42cedc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -300,6 +307,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c0c0fa02
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -311,6 +319,7 @@ processors:
       if: ctx.json?.receivedTime != null && ctx.json.receivedTime != ''
       on_failure:
         - append:
+            tag: append_error_message_44f992b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -348,6 +357,7 @@ processors:
       if: ctx.json?.remediationTimestamp != null && ctx.json.remediationTimestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_2c121320
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -361,6 +371,7 @@ processors:
       copy_from: abnormal_security.threat.reply_to_emails
       ignore_empty_value: true
   - foreach:
+      tag: foreach_abnormal_security_threat_reply_to_emails_96663d79
       field: abnormal_security.threat.reply_to_emails
       if: ctx.abnormal_security?.threat?.reply_to_emails instanceof List
       processor:
@@ -405,6 +416,7 @@ processors:
       if: ctx.json?.senderIpAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_06fbb13c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -432,6 +444,7 @@ processors:
       if: ctx.json?.sentTime != null && ctx.json.sentTime != ''
       on_failure:
         - append:
+            tag: append_error_message_5d8c9f78
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -463,6 +476,7 @@ processors:
       if: ctx.json?.toAddresses instanceof String
       on_failure:
         - append:
+            tag: append_error_message_d2ebce64
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -477,6 +491,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_87b04529
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -485,6 +500,7 @@ processors:
       copy_from: abnormal_security.threat.to_addresses
       ignore_empty_value: true
   - foreach:
+      tag: foreach_abnormal_security_threat_to_addresses_c40492fe
       field: abnormal_security.threat.to_addresses
       if: ctx.abnormal_security?.threat?.to_addresses instanceof List
       processor:
@@ -501,6 +517,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1ab71bc4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -557,6 +574,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
