@@ -1,4 +1,10 @@
 # later versions go on top
+- version: "3.0.0"
+  changes:
+    - description: >-
+        The auth data stream no longer writes the affected account to `user.name`/`user.id` for useradd account creation, usermod group membership, userdel deletion, and PAM password change events. Since system 2.22.0 the affected account is available in `user.target.name` (and `user.target.id` for useradd), and `user.name` on these events is reserved for the acting user, matching ECS semantics. This completes the deprecation announced in 2.22.0. Before upgrading, update detection rules, saved searches, dashboards, and other content that reads the affected account from `user.name`/`user.id` on these events to use `user.target.*` instead — content still keyed on `user.name` will stop matching these events after this upgrade. The bundled New users and groups dashboard already uses `user.target.*` as of 2.23.0.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/issues/20105
 - version: "2.22.4"
   changes:
     - description: Replace the journald `facilities` option with equivalent `SYSLOG_FACILITY` matches in the auth and syslog streams, fixing silent collection failure on hosts with journalctl older than 245 (e.g. RHEL 8), where `journalctl --facility` is not supported.
