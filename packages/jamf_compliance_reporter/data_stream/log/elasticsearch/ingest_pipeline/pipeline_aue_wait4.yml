@@ -2,15 +2,18 @@
 description: Pipeline for Jamf Compliance Reporter aue_wait4 audit logs.
 processors:
   - convert:
+      tag: convert_json_arguments_pid_to_process_pid_bd6d088b
       field: json.arguments.pid
       target_field: process.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5c0cdd9e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:

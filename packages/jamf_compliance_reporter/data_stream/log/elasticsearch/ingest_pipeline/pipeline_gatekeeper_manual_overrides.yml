@@ -2,6 +2,7 @@
 description: Pipeline for Jamf Compliance Reporter gatekeeper manual overrides event logs.
 processors:
   - foreach:
+      tag: foreach_json_event_attributes_attributes_f28d3ed4
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -18,6 +19,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_event_attributes_attributes_6c662502
       field: json.event_attributes.attributes
       if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
@@ -34,10 +36,12 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_attributes_to_jamf_compliance_reporter_log_event_attributes_attributes_12fda942
       field: json.event_attributes.attributes
       target_field: jamf_compliance_reporter.log.event_attributes.attributes
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_path_to_jamf_compliance_reporter_log_event_attributes_path_f06dbbf2
       field: json.event_attributes.path
       target_field: jamf_compliance_reporter.log.event_attributes.path
       ignore_missing: true

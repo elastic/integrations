@@ -2,56 +2,68 @@
 description: Pipeline for Jamf Compliance Reporter preference list event logs.
 processors:
   - rename:
+      tag: rename_json_event_attributes_AuditEventExcludedProcesses_to_jamf_compliance_reporter_log_event_attributes_audit_event_excluded_processes_5db654ce
       field: json.event_attributes.AuditEventExcludedProcesses
       target_field: jamf_compliance_reporter.log.event_attributes.audit_event.excluded_processes
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_AuditEventExcludedUsers_to_jamf_compliance_reporter_log_event_attributes_audit_event_excluded_users_7f00e1f6
       field: json.event_attributes.AuditEventExcludedUsers
       target_field: jamf_compliance_reporter.log.event_attributes.audit_event.excluded_users
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_AuditEventLogVerboseMessages_to_jamf_compliance_reporter_log_event_attributes_audit_event_log_verbose_messages_80be1edd
       field: json.event_attributes.AuditEventLogVerboseMessages
       target_field: jamf_compliance_reporter.log.event_attributes.audit_event_log_verbose_messages
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_event_attributes_AuditLevel_to_jamf_compliance_reporter_log_event_attributes_audit_level_d73b32a5
       field: json.event_attributes.AuditLevel
       target_field: jamf_compliance_reporter.log.event_attributes.audit_level
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6dece8a8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_FileEventExclusionPaths_to_jamf_compliance_reporter_log_event_attributes_file_event_exclusion_paths_91a1d1e2
       field: json.event_attributes.FileEventExclusionPaths
       target_field: jamf_compliance_reporter.log.event_attributes.file_event.exclusion_paths
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_FileEventInclusionPaths_to_jamf_compliance_reporter_log_event_attributes_file_event_inclusion_paths_28bcb772
       field: json.event_attributes.FileEventInclusionPaths
       target_field: jamf_compliance_reporter.log.event_attributes.file_event.inclusion_paths
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_FileEventUseFuzzyMatch_to_jamf_compliance_reporter_log_event_attributes_file_event_use_fuzzy_match_313a8a91
       field: json.event_attributes.FileEventUseFuzzyMatch
       target_field: jamf_compliance_reporter.log.event_attributes.file_event.use_fuzzy_match
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aa345a1e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_FileLicenseInfo_LicenseEmail_to_user_email_cecfad41
       field: json.event_attributes.FileLicenseInfo.LicenseEmail
       target_field: user.email
       ignore_missing: true
   - append:
+      tag: append_related_user_36d4b55a
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - date:
+      tag: date_json_event_attributes_FileLicenseInfo_LicenseExpirationDate_to_jamf_compliance_reporter_log_event_attributes_file_license_info_license_expiration_date_c1e20f36
       field: json.event_attributes.FileLicenseInfo.LicenseExpirationDate
       target_field: jamf_compliance_reporter.log.event_attributes.file_license_info.license_expiration_date
       if: ctx.json?.event_attributes?.FileLicenseInfo?.LicenseExpirationDate != '0'
@@ -59,83 +71,103 @@ processors:
         - dd/MM/yyyy
       on_failure:
         - append:
+            tag: append_error_message_d75047b7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_FileLicenseInfo_LicenseKey_to_jamf_compliance_reporter_log_event_attributes_file_license_info_license_key_f6197f8b
       field: json.event_attributes.FileLicenseInfo.LicenseKey
       target_field: jamf_compliance_reporter.log.event_attributes.file_license_info.license_key
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_FileLicenseInfo_LicenseType_to_jamf_compliance_reporter_log_event_attributes_file_license_info_license_type_03c1afcd
       field: json.event_attributes.FileLicenseInfo.LicenseType
       target_field: jamf_compliance_reporter.log.event_attributes.file_license_info.license_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_FileLicenseInfo_LicenseVersion_to_jamf_compliance_reporter_log_event_attributes_file_license_info_license_version_d374c275
       field: json.event_attributes.FileLicenseInfo.LicenseVersion
       target_field: jamf_compliance_reporter.log.event_attributes.file_license_info.license_version
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogFileLocation_to_jamf_compliance_reporter_log_event_attributes_log_file_location_fc5fcc6a
       field: json.event_attributes.LogFileLocation
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.location
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_LogFileMaxNumberBackups_to_jamf_compliance_reporter_log_event_attributes_log_file_max_number_backups_1356e702
       field: json.event_attributes.LogFileMaxNumberBackups
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.max_number_backups
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cd6394f5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_event_attributes_LogFileMaxSizeMegaBytes_to_jamf_compliance_reporter_log_event_attributes_log_file_max_size_mega_bytes_ee65d645
       field: json.event_attributes.LogFileMaxSizeMegaBytes
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.max_size_mega_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a97b47b8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_LogFileOwnership_to_jamf_compliance_reporter_log_event_attributes_log_file_ownership_352e7e8a
       field: json.event_attributes.LogFileOwnership
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.ownership
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogFilePermission_to_jamf_compliance_reporter_log_event_attributes_log_file_permission_e9387f6a
       field: json.event_attributes.LogFilePermission
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.permission
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointEnabled_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_enabled_bdc31d6c
       field: json.event_attributes.LogRemoteEndpointEnabled
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_enabled
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointType_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_type_ba7fb706
       field: json.event_attributes.LogRemoteEndpointType
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointTypeAWSKinesis_AccessKeyId_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_type_awskinesis_access_key_id_dbd8cde9
       field: json.event_attributes.LogRemoteEndpointTypeAWSKinesis.AccessKeyId
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_type_awskinesis.access_key_id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointTypeAWSKinesis_Region_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_type_awskinesis_region_abc8338f
       field: json.event_attributes.LogRemoteEndpointTypeAWSKinesis.Region
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_type_awskinesis.region
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointTypeAWSKinesis_SecretKey_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_type_awskinesis_secret_key_b81f0970
       field: json.event_attributes.LogRemoteEndpointTypeAWSKinesis.SecretKey
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_type_awskinesis.secret_key
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointTypeAWSKinesis_StreamName_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_type_awskinesis_stream_name_8a4bd90c
       field: json.event_attributes.LogRemoteEndpointTypeAWSKinesis.StreamName
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_type_awskinesis.stream_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_LogRemoteEndpointURL_to_jamf_compliance_reporter_log_event_attributes_log_remote_endpoint_url_fdc49950
       field: json.event_attributes.LogRemoteEndpointURL
       target_field: jamf_compliance_reporter.log.event_attributes.log.remote_endpoint_url
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_UnifiedLogPredicates_to_jamf_compliance_reporter_log_event_attributes_unified_log_predicates_49395012
       field: json.event_attributes.UnifiedLogPredicates
       target_field: jamf_compliance_reporter.log.event_attributes.unified_log_predicates
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_Version_to_jamf_compliance_reporter_log_event_attributes_version_383e1db0
       field: json.event_attributes.Version
       target_field: jamf_compliance_reporter.log.event_attributes.version
       ignore_missing: true

@@ -2,6 +2,7 @@
 description: Pipeline for Jamf Compliance Reporter print information event logs.
 processors:
   - date:
+      tag: date_json_event_attributes_job_completed_time_to_jamf_compliance_reporter_log_event_attributes_job_completed_time_26abacc1
       field: json.event_attributes.job_completed_time
       target_field: jamf_compliance_reporter.log.event_attributes.job.completed_time
       if: ctx.json?.event_attributes?.job_completed_time != null && ctx.json.event_attributes.job_completed_time != 0
@@ -9,9 +10,11 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_3111d624
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_event_attributes_job_creation_time_to_jamf_compliance_reporter_log_event_attributes_job_creation_time_5e043b2d
       field: json.event_attributes.job_creation_time
       target_field: jamf_compliance_reporter.log.event_attributes.job.creation_time
       if: ctx.json?.event_attributes?.job_creation_time != null && ctx.json.event_attributes.job_creation_time != 0
@@ -19,23 +22,28 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_1a83db84
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_job_destination_to_jamf_compliance_reporter_log_event_attributes_job_destination_3029a517
       field: json.event_attributes.job_destination
       target_field: jamf_compliance_reporter.log.event_attributes.job.destination
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_job_format_to_jamf_compliance_reporter_log_event_attributes_job_format_03a90183
       field: json.event_attributes.job_format
       target_field: jamf_compliance_reporter.log.event_attributes.job.format
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_job_id_to_jamf_compliance_reporter_log_event_attributes_job_id_659f6918
       field: json.event_attributes.job_id
       target_field: jamf_compliance_reporter.log.event_attributes.job.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - date:
+      tag: date_json_event_attributes_job_processing_time_to_jamf_compliance_reporter_log_event_attributes_job_processing_time_2d03e949
       field: json.event_attributes.job_processing_time
       target_field: jamf_compliance_reporter.log.event_attributes.job.processing_time
       if: ctx.json?.event_attributes?.job_processing_time != null && ctx.json.event_attributes.job_processing_time != 0
@@ -43,25 +51,31 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_99f9646c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_job_size_to_jamf_compliance_reporter_log_event_attributes_job_size_25fa88e7
       field: json.event_attributes.job_size
       target_field: jamf_compliance_reporter.log.event_attributes.job.size
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_job_state_to_jamf_compliance_reporter_log_event_attributes_job_state_a6a6d749
       field: json.event_attributes.job_state
       target_field: jamf_compliance_reporter.log.event_attributes.job.state
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_job_title_to_jamf_compliance_reporter_log_event_attributes_job_title_2141454b
       field: json.event_attributes.job_title
       target_field: jamf_compliance_reporter.log.event_attributes.job.title
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_job_user_to_jamf_compliance_reporter_log_event_attributes_job_user_057ba2cb
       field: json.event_attributes.job_user
       target_field: jamf_compliance_reporter.log.event_attributes.job.user
       ignore_missing: true
   - append:
+      tag: append_related_user_2c4b76af
       field: related.user
       value: '{{{jamf_compliance_reporter.log.event_attributes.job.user}}}'
       if: ctx.jamf_compliance_reporter?.log?.event_attributes?.job?.user != null

@@ -2,27 +2,32 @@
 description: Pipeline for Jamf Compliance Reporter aue_tasknameforpid audit logs.
 processors:
   - convert:
+      tag: convert_json_arguments_process_to_jamf_compliance_reporter_log_arguments_process_ee3dbde9
       field: json.arguments.process
       target_field: jamf_compliance_reporter.log.arguments.process
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_target_port_to_jamf_compliance_reporter_log_arguments_target_port_cc0dcd91
       field: json.arguments.target_port
       target_field: jamf_compliance_reporter.log.arguments.target.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_64d1e576
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_arguments_task_port_to_jamf_compliance_reporter_log_arguments_task_port_2fe271c9
       field: json.arguments.task_port
       target_field: jamf_compliance_reporter.log.arguments.task.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ddba9a56
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 on_failure:

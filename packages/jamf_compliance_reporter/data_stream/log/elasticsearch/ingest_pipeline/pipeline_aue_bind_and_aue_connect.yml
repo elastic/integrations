@@ -2,57 +2,68 @@
 description: Pipeline for Jamf Compliance Reporter aue_bind and aue_connect audit logs.
 processors:
   - convert:
+      tag: convert_json_socket_inet_addr_to_jamf_compliance_reporter_log_socket_inet_addr_073bdb7c
       field: json.socket_inet.addr
       target_field: jamf_compliance_reporter.log.socket.inet.addr
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_fd_to_jamf_compliance_reporter_log_arguments_fd_5367d19d
       field: json.arguments.fd
       target_field: jamf_compliance_reporter.log.arguments.fd
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_socket_inet_family_to_json_inet_family_da3c0fb0
       field: json.socket_inet.family
       target_field: json.inet_family
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_socket_inet_id_to_jamf_compliance_reporter_log_socket_inet_id_1d335ca8
       field: json.socket_inet.id
       target_field: jamf_compliance_reporter.log.socket.inet.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_socket_inet_ip_address_to_server_ip_b5e6ed72
       field: json.socket_inet.ip_address
       target_field: server.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_socket_inet_ip_address_f04d008f
             field: json.socket_inet.ip_address
             ignore_missing: true
         - append:
+            tag: append_error_message_106415f7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_3ed00a18
       field: related.ip
       value: '{{{server.ip}}}'
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_socket_inet_port_to_server_port_91beb58f
       field: json.socket_inet.port
       target_field: server.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6c7bb514
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_4643c989
       description: Dynamically map Socket Address Families.
       lang: painless
       if: ctx.json?.inet_family != null
@@ -88,6 +99,7 @@ processors:
         map.put('25', 'pseudo_AF_PIP');
         ctx.jamf_compliance_reporter.log.socket.inet.family = map.get(ctx.json.inet_family);
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:

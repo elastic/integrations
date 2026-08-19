@@ -2,23 +2,28 @@
 description: Pipeline for Jamf Compliance Reporter aue_setpriority audit logs.
 processors:
   - pipeline:
+      tag: pipeline_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - convert:
+      tag: convert_json_arguments_priority_to_jamf_compliance_reporter_log_arguments_priority_1076537e
       field: json.arguments.priority
       target_field: jamf_compliance_reporter.log.arguments.priority
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_99c855b1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_arguments_which_to_jamf_compliance_reporter_log_arguments_which_4be357b5
       field: json.arguments.which
       target_field: jamf_compliance_reporter.log.arguments.which
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_who_to_jamf_compliance_reporter_log_arguments_who_d04fef91
       field: json.arguments.who
       target_field: jamf_compliance_reporter.log.arguments.who
       type: string

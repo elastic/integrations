@@ -2,19 +2,23 @@
 description: Pipeline for Jamf Compliance Reporter exec_chain_child_object audit logs.
 processors:
   - rename:
+      tag: rename_json_exec_chain_child_parent_path_to_jamf_compliance_reporter_log_exec_chain_child_parent_path_4347ae49
       field: json.exec_chain_child.parent_path
       target_field: jamf_compliance_reporter.log.exec_chain_child.parent.path
       ignore_missing: true
   - convert:
+      tag: convert_json_exec_chain_child_parent_pid_to_process_parent_pid_409cd750
       field: json.exec_chain_child.parent_pid
       target_field: process.parent.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ea707b8b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_exec_chain_child_parent_uuid_to_jamf_compliance_reporter_log_exec_chain_child_parent_uuid_b1d29201
       field: json.exec_chain_child.parent_uuid
       target_field: jamf_compliance_reporter.log.exec_chain_child.parent.uuid
       ignore_missing: true
