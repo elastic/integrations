@@ -2,22 +2,27 @@
 description: Pipeline for processing Admin By Request EPM Audit logs
 processors:
   - drop:
+      tag: drop_fc75cf8c
       if: ctx?.error?.statuscode != null
 
   - json:
+      tag: json_message_to_admin_by_request_epm_auditlog_0a374b33
       field: message
       target_field: admin_by_request_epm.auditlog
       on_failure:
         - append:
+            tag: append_error_message_b9deb84d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - fingerprint:
+      tag: fingerprint_1d1c9553
       fields:
         - admin_by_request_epm.auditlog
       target_field: "_id"
       on_failure:
         - append:
+            tag: append_error_message_4c20f055
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -25,6 +30,7 @@ processors:
 # Scripts for processing input #
 ####################
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -81,89 +87,107 @@ processors:
 # ECS Fields #
 ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
 
   - append:
+      tag: append_event_category_1c667e2c
       field: event.category
       value: configuration
 
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
 
   - set:
+      tag: set_event_dataset_980ab77f
       field: event.dataset
       value: admin_by_request_epm.auditlog
 
   - set:
+      tag: set_event_module_d7192282
       field: event.module
       value: admin_by_request_epm
 
   - set:
+      tag: set_user_full_name_d9acbbe2
       field: user.full_name
       copy_from: admin_by_request_epm.auditlog.user.full_name
       ignore_empty_value: true
 
   - append:
+      tag: append_related_user_0fb0989a
       field: related.user
       value: '{{{admin_by_request_epm.auditlog.user.full_name}}}'
       allow_duplicates: false
       if: ctx.admin_by_request_epm.auditlog.user.full_name != null
 
   - set:
+      tag: set_user_email_0a390e58
       field: user.email
       copy_from: admin_by_request_epm.auditlog.user.email
       ignore_empty_value: true
 
   - append:
+      tag: append_related_user_2a8c39f2
       field: related.user
       value: '{{{admin_by_request_epm.auditlog.user.email}}}'
       allow_duplicates: false
       if: ctx.admin_by_request_epm.auditlog.user.email != null
 
   - set:
+      tag: set_host_hostname_6432a233
       field: host.hostname
       copy_from: admin_by_request_epm.auditlog.computer.name
       ignore_empty_value: true
 
   - append:
+      tag: append_related_hosts_bf335f60
       field: related.hosts
       value: '{{{admin_by_request_epm.auditlog.computer.name}}}'
       allow_duplicates: false
       if: ctx.admin_by_request_epm.auditlog.computer.name != null
 
   - set:
+      tag: set_os_platform_80cd7915
       field: os.platform
       copy_from: admin_by_request_epm.auditlog.computer.platform
       ignore_empty_value: true
 
   - set:
+      tag: set_file_name_2233ec0d
       field: file.name
       copy_from: admin_by_request_epm.auditlog.application.file
       ignore_empty_value: true
 
   - set:
+      tag: set_file_path_0060bdfa
       field: file.path
       copy_from: admin_by_request_epm.auditlog.application.path
       ignore_empty_value: true
 
   - set:
+      tag: set_hash_sha256_0eb1f394
       field: hash.sha256
       copy_from: admin_by_request_epm.auditlog.application.sha256
       ignore_empty_value: true
 
   - append:
+      tag: append_related_hash_743a7bf2
       field: related.hash
       value: '{{{admin_by_request_epm.auditlog.application.sha256}}}'
       allow_duplicates: false
       if: ctx.admin_by_request_epm.auditlog.application?.sha256 != null
 
   - set:
+      tag: set_timestamp_d72fa390
       field: "@timestamp"
       copy_from: admin_by_request_epm.auditlog.request_time_utc
 
@@ -172,6 +196,7 @@ processors:
 ####################
   # convert response time into a numeric field
   - grok:
+      tag: grok_admin_by_request_epm_auditlog_response_time_dd5175a2
       field: admin_by_request_epm.auditlog.response_time
       if: ctx.admin_by_request_epm.auditlog.response_time != null
       patterns: ["%{HOUR:hours}:%{MINUTE:minutes}:%{SECOND:seconds}.%{NANOSECOND:nanoseconds}"]
@@ -179,6 +204,7 @@ processors:
         NANOSECOND: \d{7}
 
   - script:
+      tag: script_4fbc04b0
       lang: painless
       description: Creating new field response_time_in_seconds from hours, minutes, seconds and nanoseconds
       if: ctx.admin_by_request_epm.auditlog.response_time != null
@@ -189,6 +215,7 @@ processors:
                               (Integer.parseInt(ctx.nanoseconds) / 10000000.0);
 
   - remove:
+      tag: remove_b168cafe
       field:
         - admin_by_request_epm.auditlog.request_time
         - admin_by_request_epm.auditlog.start_time
