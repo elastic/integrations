@@ -14,6 +14,10 @@ processors:
       tag: set_observer_vendor_ccce1c0c
       field: observer.vendor
       value: Stormshield
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: SNS
 
   #
   # Extract the key=value pairs into nested objects
@@ -526,6 +530,23 @@ processors:
       field: url.domain
       copy_from: destination.domain
       if: ctx.stormshield?.logtype == 'web' && ctx.destination?.domain != null
+  # On web logs, op is the HTTP method and result the HTTP server return code;
+  # on other families (ftp, plugin) they carry protocol-specific codes and are
+  # not promoted. Like the other promotions, these are copies: the vendor
+  # fields remain available under stormshield.metadata.
+  - set:
+      tag: set_http_request_method_from_op
+      field: http.request.method
+      copy_from: stormshield.op
+      ignore_empty_value: true
+      if: ctx.stormshield?.logtype == 'web' && ctx.stormshield.op != null
+  - convert:
+      tag: convert_web_result_to_http_response_status_code
+      field: stormshield.result
+      target_field: http.response.status_code
+      type: long
+      if: ctx.stormshield?.logtype == 'web' && ctx.stormshield.result != null && ctx.stormshield.result != ''
+      ignore_failure: true
 
   - append:
       tag: append_related_hosts_srcname
@@ -534,6 +555,35 @@ processors:
       if: ctx.stormshield?.srcname != null && ctx.stormshield.srcname != ''
       allow_duplicates: false
 
+  # Promote identity and process fields.
+  - set:
+      tag: set_user_domain_from_domain
+      field: user.domain
+      copy_from: stormshield.domain
+      ignore_empty_value: true
+      if: ctx.stormshield?.domain != null
+  - set:
+      tag: set_user_group_name_from_usergroup
+      field: user.group.name
+      copy_from: stormshield.usergroup
+      ignore_empty_value: true
+      if: ctx.stormshield?.usergroup != null
+  # The usergroup field carries comma-separated values on SNS 5.x.
+  - split:
+      tag: split_user_group_name
+      field: user.group.name
+      separator: ","
+      if: ctx.user?.group?.name != null
+  # On pvm logs, service is the vulnerable product detected on a scanned host,
+  # not a module of the appliance, so the copy is restricted to the families
+  # where the field names the module that executed an action.
+  - set:
+      tag: set_process_name_from_service
+      field: process.name
+      copy_from: stormshield.service
+      ignore_empty_value: true
+      if: ctx.stormshield?.service != null && ['system', 'sandboxing', 'routing'].contains(ctx.stormshield.logtype)
+
   - script:
       tag: script_move_things
       lang: painless
@@ -541,6 +591,7 @@ processors:
       params:
         names:
             - Pvm
+            - UI
             - address
             - alarmid
             - arg
@@ -551,65 +602,32 @@ processors:
             - authsslvpn
             - authtotp
             - authwebadmin
-            - cat_site
-            - class
-            - classification
-            - clientappid
-            - confid
-            - contentpolicy
-            - cookie_i
-            - cookie_r
             - datechange
             - domain
             - dstcontinent
             - dstcountry
             - dstportname
             - error
-            - filename
-            - filetype
-            - groupid
-            - icmpcode
-            - icmptype
             - id
-            - ikev
-            - localnet
             - mem
-            - method
             - modsrc
             - modsrcport
             - op
-            - phase
+            - peername
             - pri
             - rcvd
-            - remoteid
-            - remotenet
-            - repeat
             - result
             - risk
             - ruletype
-            - sandboxing
-            - sandboxinglevel
             - security
-            - sensible
             - sent
-            - serverappid
-            - sessionid
-            - side
-            - slotlevel
-            - slotname
-            - spamlevel
-            - spi_in
-            - spi_out
             - srccontinent
             - srccountry
             - srcname
             - srcportname
-            - target
-            - totp
-            - urlruleid
+            - unit_id
             - usergroup
             - version
-            - virus
       source: >-
         if (!ctx.stormshield.containsKey("metadata")) {
             ctx.stormshield.metadata = [:];
@@ -636,6 +654,118 @@ processors:
       ignore_missing: true
 
   # ------------------------------------------------------------
+  # Typed vendor fields. The numeric keys documented by the vendor are converted
+  # so they stay aggregatable instead of landing in the flattened metadata object.
+  - convert:
+      tag: convert_stormshield_classification
+      field: stormshield.classification
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_repeat
+      field: stormshield.repeat
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_sensible
+      field: stormshield.sensible
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_icmptype
+      field: stormshield.icmptype
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_icmpcode
+      field: stormshield.icmpcode
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_pktlen
+      field: stormshield.pktlen
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_pktdumplen
+      field: stormshield.pktdumplen
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_srchostrep
+      field: stormshield.srchostrep
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_dsthostrep
+      field: stormshield.dsthostrep
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_agentid
+      field: stormshield.agentid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_sessionid
+      field: stormshield.sessionid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_slotlevel
+      field: stormshield.slotlevel
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_phase
+      field: stormshield.phase
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_ikev
+      field: stormshield.ikev
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_unitid
+      field: stormshield.unitid
+      type: long
+      ignore_missing: true
+  # The IP reputation keys carry comma-separated categories.
+  - split:
+      tag: split_stormshield_srciprep
+      field: stormshield.srciprep
+      separator: ","
+      if: ctx.stormshield?.srciprep != null
+  - split:
+      tag: split_stormshield_dstiprep
+      field: stormshield.dstiprep
+      separator: ","
+      if: ctx.stormshield?.dstiprep != null
+  - convert:
+      tag: convert_stormshield_urlruleid
+      field: stormshield.urlruleid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_groupid
+      field: stormshield.groupid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_sandboxinglevel
+      field: stormshield.sandboxinglevel
+      type: long
+      ignore_missing: true
+  # The vendor writes the URL filtering category between curly braces, cat_site="{news}".
+  - gsub:
+      tag: gsub_stormshield_cat_site_braces
+      field: stormshield.cat_site
+      pattern: '^\{|\}$'
+      replacement: ''
+      if: ctx.stormshield?.cat_site != null
+
+  # ------------------------------------------------------------
   # ECS categorization
   - remove:
       tag: remove_empty_event_action
@@ -653,7 +783,7 @@ processors:
   - script:
       tag: script_ecs_categorization
       lang: painless
-      description: Set the ECS categorization fields from the log family and the rule action.
+      description: Set the ECS categorization fields from the log family, the rule action and the error code.
       if: ctx.error == null
       params:
         logtypes:
@@ -696,6 +826,10 @@ processors:
           - smtp
           - ssl
           - web
+        outcome_logtypes:
+          - auth
+          - server
+          - xvpn
       source: >-
         def logtype = ctx.stormshield?.logtype;
         def entry = params.logtypes[logtype];
@@ -714,6 +848,10 @@ processors:
                     ctx.event.type.add(mapped);
                 }
             }
+        }
+        def err = ctx.stormshield?.metadata?.error;
+        if (params.outcome_logtypes.contains(logtype) && err instanceof String && err != '') {
+            ctx.event.outcome = err == '0' ? 'success' : 'failure';
         }
 
   # ------------------------------------------------------------
