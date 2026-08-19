@@ -2,14 +2,18 @@
 description: Pipeline for processing Exchange Server SMTP Logs
 processors:
 - drop:
+    tag: drop_f8092d50
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 - set:
+    tag: set_event_original_b9758751
     field: event.original
     copy_from: message
 - csv:
+    tag: csv_event_original_0cf4cbd0
     field: event.original
     ignore_failure: true
     ignore_missing: true
@@ -24,22 +28,26 @@ processors:
     - microsoft.exchange.data
     - microsoft.exchange.context
 - set:
+    tag: set_microsoft_exchange_logtype_25014336
     field: microsoft.exchange.logtype
     if: ctx.log?.file?.path =~ /SmtpSend/
     value: smtpsend
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_microsoft_exchange_logtype_2c130cd6
     field: microsoft.exchange.logtype
     if: ctx.log?.file?.path =~ /SmtpReceive/
     value: smtpreceive
     ignore_empty_value: true
     ignore_failure: true
 - convert:
+    tag: convert_microsoft_exchange_sequencenumber_0cc491c0
     field: microsoft.exchange.sequencenumber
     type: long
     ignore_failure: true
 - set:
+    tag: set_event_ingested_34f37e6e
     field: event.ingested
     copy_from: _ingest.timestamp
     ignore_failure: true

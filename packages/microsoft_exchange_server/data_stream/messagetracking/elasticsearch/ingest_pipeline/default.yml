@@ -2,14 +2,18 @@
 description: Pipeline for processing Exchange Server Messagetracking logs
 processors:
 - drop:
+    tag: drop_f8092d50
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 - set:
+    tag: set_event_original_b9758751
     field: event.original
     copy_from: message
 - csv:
+    tag: csv_event_original_65063d09
     field: event.original
     ignore_failure: true
     ignore_missing: true
@@ -46,50 +50,61 @@ processors:
     - microsoft.exchange.schemaversion
     if: ctx.message =~ /^\d/
 - split:
+    tag: split_email_to_address_9f08191f
     field: email.to.address
     separator: ";"
     preserve_trailing: true
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_email_local_id_d88b10e7
     field: email.local_id
     copy_from: microsoft.exchange.networkmessageid
     ignore_empty_value: true
 - append:
+    tag: append_email_sender_address_975c7060
     field: email.sender.address
     value: "{{{microsoft.exchange.senderaddress}}}"
     ignore_failure: true
 - dissect:
+    tag: dissect_microsoft_exchange_customdata_a8ae4bfd
     field: microsoft.exchange.customdata
     pattern: "%{}S:OriginalFromAddress=%{_tmp.email.from.address};"
     ignore_failure: true
 - append:
+    tag: append_email_from_address_07c5150b
     field: email.from.address
     value: "{{{_tmp.email.from.address}}}"
     if: ctx._tmp?.email?.from?.address != null && ctx._tmp.email.from.address != "<>"
 - append:
+    tag: append_email_from_address_07702e8d
     field: email.from.address
     value: "{{{microsoft.exchange.senderaddress}}}"
     if: ctx.microsoft?.exchange?.senderaddress != null && ctx.microsoft.exchange.senderaddress != ""
     ignore_failure: true
 - remove:
+    tag: remove_microsoft_exchange_senderaddress_00d5f1b0
     field: microsoft.exchange.senderaddress
     ignore_missing: true
 - convert:
+    tag: convert_microsoft_exchange_recipientcount_fb276195
     field: "microsoft.exchange.recipientcount"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_network_bytes_0331925b
     field: "network.bytes"
     type: long
     ignore_failure: true
     ignore_missing: true
 - set:
+    tag: set_event_ingested_34f37e6e
     field: event.ingested 
     copy_from: _ingest.timestamp
     ignore_failure: true
 - remove:
+    tag: remove__tmp_cc7d8d90
     field: _tmp
     ignore_missing: true
 on_failure:

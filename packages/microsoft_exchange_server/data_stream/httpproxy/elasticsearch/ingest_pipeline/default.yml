@@ -2,14 +2,18 @@
 description: Pipeline for processing Exchange Server HTTPProxy Logs
 processors:
 - drop:
+    tag: drop_f8092d50
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 - set:
+    tag: set_event_original_b9758751
     field: event.original
     copy_from: message
 - csv:
+    tag: csv_event_original_4f365f67
     field: event.original
     ignore_failure: true
     ignore_missing: true
@@ -89,193 +93,231 @@ processors:
     - microsoft.exchange.partitionendpointlookuplatency
     - microsoft.exchange.routingstatus
 - set:
+    tag: set_microsoft_exchange_logtype_4562c52c
     field: microsoft.exchange.logtype
     value: httpproxy
     ignore_empty_value: true
     ignore_failure: true
 - grok:
+    tag: grok_microsoft_exchange_authenticateduser_1471679f
     field: microsoft.exchange.authenticateduser
     patterns:
     - "%{DATA}\\\\%{NOTSPACE:user.name}"
     ignore_failure: true
     ignore_missing: true
 - grok:
+    tag: grok_microsoft_exchange_clientipaddress_b40c60e9
     field: microsoft.exchange.clientipaddress
     patterns:
     - "^%{IP:microsoft.exchange.clientipaddress_external}%{SPACE}%{IP:microsoft.exchange.clientipaddress_internal}$"
     ignore_failure: true
     ignore_missing: true
 - split:
+    tag: split_microsoft_exchange_clientipaddress_b002aac7
     field: microsoft.exchange.clientipaddress
     separator: "  "
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_http_request_bytes_89b58d38
     field: "http.request.bytes"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_http_response_bytes_8f476fc2
     field: "http.response.bytes"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_http_response_status_code_8dc17bc1
     field: "http.response.status_code"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_adlatency_e75e619e
     field: "microsoft.exchange.adlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_backendprocessinglatency_f9a1672a
     field: "microsoft.exchange.backendprocessinglatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_backendreqinitlatency_475aabfd
     field: "microsoft.exchange.backendreqinitlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_backendreqstreamlatency_3f6bf787
     field: "microsoft.exchange.backendreqstreamlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_backendrespinitlatency_295212ed
     field: "microsoft.exchange.backendrespinitlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_backendrespstreamlatency_1da6a877
     field: "microsoft.exchange.backendrespstreamlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_backendstatus_e4b6b733
     field: "microsoft.exchange.backendstatus"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_buildversion_06738723
     field: "microsoft.exchange.buildversion"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_calculatetargetbackendlatency_544547f0
     field: "microsoft.exchange.calculatetargetbackendlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_clientreqstreamlatency_6b4a3810
     field: "microsoft.exchange.clientreqstreamlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_clientrespstreamlatency_2518d56e
     field: "microsoft.exchange.clientrespstreamlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_corelatency_1cc3fa64
     field: "microsoft.exchange.corelatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_handlercompletionlatency_69d4491f
     field: "microsoft.exchange.handlercompletionlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_handlertomoduleswitchinglatency_157d464c
     field: "microsoft.exchange.handlertomoduleswitchinglatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_httppipelinelatency_b0a548e1
     field: "microsoft.exchange.httppipelinelatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_kerberosauthheaderlatency_91f69075
     field: "microsoft.exchange.kerberosauthheaderlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_majorversion_34de86e6
     field: "microsoft.exchange.majorversion"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_minorversion_977575c2
     field: "microsoft.exchange.minorversion"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_moduletohandlerswitchinglatency_8387a6de
     field: "microsoft.exchange.moduletohandlerswitchinglatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_requesthandlerlatency_2563c20c
     field: "microsoft.exchange.requesthandlerlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_revisionversion_f9f814d0
     field: "microsoft.exchange.revisionversion"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_routinglatency_cbc77913
     field: "microsoft.exchange.routinglatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_totalaccountforestlatency_cf1c7907
     field: "microsoft.exchange.totalaccountforestlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_totalglslatency_96cd3efd
     field: "microsoft.exchange.totalglslatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_totalrequesttime_345963e5
     field: "microsoft.exchange.totalrequesttime"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_totalresourceforestlatency_9ae238c2
     field: "microsoft.exchange.totalresourceforestlatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_totalsharedcachelatency_b9fd9ad4
     field: "microsoft.exchange.totalsharedcachelatency"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_activitycontextlifetime_c21515e0
     field: "microsoft.exchange.activitycontextlifetime"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_httpproxyoverhead_f8875585
     field: "microsoft.exchange.httpproxyoverhead"
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert: 
+    tag: convert_microsoft_exchange_proxytime_5d70ce9e
     field: "microsoft.exchange.proxytime"
     type: long
     ignore_failure: true
     ignore_missing: true
 - set:
+    tag: set_event_ingested_34f37e6e
     field: event.ingested
     copy_from: _ingest.timestamp
     ignore_failure: true

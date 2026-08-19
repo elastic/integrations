@@ -2,14 +2,18 @@
 description: Pipeline for processing sample logs
 processors:
 - drop:
+    tag: drop_f8092d50
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 - set:
+    tag: set_event_original_b9758751
     field: event.original
     copy_from: message
 - csv:
+    tag: csv_event_original_9daf4442
     field: event.original
     ignore_failure: true
     ignore_missing: true
@@ -28,6 +32,7 @@ processors:
     - microsoft.exchange.context
     - microsoft.exchange.puid
 - grok:
+    tag: grok_microsoft_exchange_cip_0202c2dc
     field: microsoft.exchange.cip
     patterns:
     - "%{NOTSPACE:source.ip}:%{NUMBER}"
@@ -35,34 +40,41 @@ processors:
     if: ctx.microsoft?.exchange?.cip != null
     ignore_failure: true
 - set:
+    tag: set_microsoft_exchange_logtype_a27831e6
     field: microsoft.exchange.logtype
     if: ctx.log?.file?.path =~ /Imap4/
     value: imap4
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_microsoft_exchange_logtype_ae0e9cf6
     field: microsoft.exchange.logtype
     if: ctx.log?.file?.path =~ /Pop3/
     value: pop3
     ignore_empty_value: true
     ignore_failure: true
 - convert: 
+    tag: convert_microsoft_exchange_duration_ba25d348
     field: microsoft.exchange.duration
     type: long
     ignore_failure: true
 - convert:
+    tag: convert_microsoft_exchange_rpsize_a7fd58c9
     field: microsoft.exchange.rpsize
     type: long
     ignore_failure: true
 - convert:
+    tag: convert_microsoft_exchange_rqsize_b35507c8
     field: microsoft.exchange.rqsize
     type: long
     ignore_failure: true
 - convert:
+    tag: convert_microsoft_exchange_seqnumber_fd5883d8
     field: microsoft.exchange.seqnumber
     type: long
     ignore_failure: true
 - set:
+    tag: set_event_ingested_34f37e6e
     field: event.ingested
     copy_from: _ingest.timestamp
     ignore_failure: true
