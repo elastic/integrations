@@ -104,6 +104,14 @@ If you must use polling mode, configure these advanced options to limit which S3
 
 - **Ignore Older Timespan** (`ignore_older`): Skip S3 objects older than the specified duration (for example, `48h`, `30d`).
 - **Start Timestamp** (`start_timestamp`): Only process objects newer than the specified time (`YYYY-MM-DDTHH:MM:SSZ`).
+- **Non-AWS Bucket Name** (`non_aws_bucket_name`): Poll a third-party S3-compatible source (for example MinIO). Requires `endpoint` and `region`. Do not set this together with `bucket_arn` or `access_point_arn`.
+- **Path Style** (`path_style`): Use path-style addressing for third-party S3 providers (also allowed with SQS/`queue_url`). Do not enable with AWS `bucket_arn` / `access_point_arn` polling.
+- **Backup Bucket ARN** (`backup_to_bucket_arn`): ARN of an AWS S3 bucket that fully processed objects are copied to. Use with an AWS source (`bucket_arn` / `access_point_arn`) or with SQS notifications for AWS objects. Requires `s3:PutObject` on the backup bucket.
+- **Non-AWS Backup Bucket Name** (`non_aws_backup_to_bucket_name`): Name of a third-party S3-compatible backup bucket. Use with `non_aws_bucket_name` as the source (not with `backup_to_bucket_arn`).
+- **Backup Bucket Prefix** (`backup_to_bucket_prefix`): Prefix prepended to the object key in the backup bucket. Include a trailing `/` to back up into a subdirectory.
+- **Delete After Backup** (`delete_after_backup`): Permanently deletes each source object once it has been backed up. Only valid together with `backup_to_bucket_arn` or `non_aws_backup_to_bucket_name`, and requires delete permission on the source bucket.
+
+Backup and delete options apply to both SQS notification and S3 bucket polling collection.
 
 If you experience timeouts (`ListObjectsV2, context canceled`), also consider increasing `bucket_list_interval` to reduce listing frequency.
 
