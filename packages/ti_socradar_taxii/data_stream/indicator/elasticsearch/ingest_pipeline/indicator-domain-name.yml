@@ -3,7 +3,7 @@ description: Pipeline for processing domain-name STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_domain-name_pattern
+      tag: grok_domain-name_pattern_c545c5f0
       patterns:
         - "^\\[?domain-name:value%{SPACE}=%{SPACE}'%{DATA:_tmp.url}'\\]?$"
         - "^\\[?domain-name:resolves_to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?$"
@@ -16,38 +16,46 @@ processors:
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
+      tag: append_threat_indicator_url_domain_0962cb40
       field: threat.indicator.url.domain
       value: '{{{ _tmp.url }}}'
       if: ctx._tmp?.url != null
       allow_duplicates: false
   - append:
+      tag: append_threat_indicator_ip_d948c816
       field: threat.indicator.ip
       value: '{{{ _tmp.ip }}}'
       if: ctx._tmp?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_ccb4aece
       field: related.ip
       value: '{{{ _tmp.ip }}}'
       if: ctx._tmp?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_ee5b969d
       field: related.hosts
       value: '{{{ _tmp.url }}}'
       if: ctx._tmp?.url != null
       allow_duplicates: false
   - remove:
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
