@@ -6,6 +6,7 @@ processors:
     tag: set_ecs_version
     value: 8.11.0
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - rename:
@@ -20,6 +21,7 @@ processors:
     tag: remove_message
     if: ctx.event?.original != null
 - drop: 
+    tag: drop_3b0973c1
     if: ctx.event.original.startsWith('#')
     description: Drop if logline contains header(s), which startswith `#`.
 - json:
@@ -27,24 +29,30 @@ processors:
     tag: json_original
     target_field: gitlab.production
 - rename:
+    tag: rename_gitlab_production_method_to_http_request_method_c3d58fbd
     field: gitlab.production.method
     target_field: http.request.method
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_path_to_url_path_1f2bb67d
     field: gitlab.production.path
     target_field: url.path
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_location_to_url_full_c6ab42a3
     field: gitlab.production.location
     target_field: url.full
     ignore_missing: true
 - dot_expander:
+    tag: dot_expander_meta_caller_id_2dbed491
     path: gitlab.production
     field: meta.caller_id
 - dot_expander:
+    tag: dot_expander_meta_client_id_733814cd
     path: gitlab.production
     field: meta.client_id
 - dot_expander:
+    tag: dot_expander_meta_feature_category_c6043395
     path: gitlab.production
     field: meta.feature_category
 - dot_expander:
@@ -52,91 +60,113 @@ processors:
     tag: dot_expander_meta_gl_organization_id
     field: meta.organization_id
 - dot_expander:
+    tag: dot_expander_meta_remote_ip_9ccf505e
     path: gitlab.production
     field: meta.remote_ip
 - convert:
+    tag: convert_gitlab_production_meta_remote_ip_9972b4e2
     field: gitlab.production.meta.remote_ip
     type: ip
     ignore_missing: true
     on_failure:
         - remove:
+            tag: remove_gitlab_production_meta_remote_ip_3b197ff0
             field: gitlab.production.meta.remote_ip
             ignore_missing: true
         - append:
+            tag: append_error_message_9b833db1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 - dot_expander:
+    tag: dot_expander_meta_user_b421f699
     path: gitlab.production
     field: meta.user
 - dot_expander:
+    tag: dot_expander_meta_user_id_ed6d2d19
     path: gitlab.production
     field: meta.user_id
 - dot_expander:
+    tag: dot_expander_meta_search_page_ed76c2f5
     path: gitlab.production
     field: meta.search.page
 - rename:
+    tag: rename_gitlab_production_action_to_event_action_85fc0548
     field: gitlab.production.action
     target_field: event.action
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_meta_caller_id_to_event_provider_7abb1121
     field: gitlab.production.meta.caller_id
     target_field: event.provider
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_status_to_http_response_status_code_2457bda3
     field: gitlab.production.status
     target_field: http.response.status_code
     ignore_missing: true
 - date:
+    tag: date_gitlab_production_time_to_timestamp_358364ab
     field: gitlab.production.time
     target_field: '@timestamp'
     formats:
     - yyyy-MM-dd'T'HH:mm:ss.SSSX
     if: ctx.gitlab.production.time != null
 - rename:
+    tag: rename_gitlab_production_pid_to_process_pid_e60d390f
     field: gitlab.production.pid
     target_field: process.pid
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_worker_id_to_process_name_d53c09e4
     field: gitlab.production.worker_id
     target_field: process.name
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_correlation_id_to_event_id_bbbd6bef
     field: gitlab.production.correlation_id
     target_field: event.id
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_duration_s_to_event_duration_e5b4f00e
     field: gitlab.production.duration_s
     target_field: event.duration
     ignore_missing: true
 - script:
+    tag: script_c2805a97
     description: Convert event.duration from seconds to nanoseconds.
     if: ctx.event?.duration != null
     lang: painless
     source: |
       ctx.event['duration'] = ctx.event.duration * 1e9;
 - convert:
+    tag: convert_gitlab_production_remote_ip_to_source_ip_26fae183
     target_field: source.ip
     field: gitlab.production.remote_ip
     type: ip
     ignore_missing: true
     ignore_failure: true
 - remove:
+    tag: remove_gitlab_production_remote_ip_7d0f8841
     field: gitlab.production.remote_ip
     ignore_failure: true
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_user_id_to_user_id_0868b653
     field: gitlab.production.user_id
     target_field: user.id
     ignore_missing: true
 - convert:
+    tag: convert_user_id_c132c028
     field: user.id
     type: string
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_username_to_user_name_2072279a
     field: gitlab.production.username
     target_field: user.name
     ignore_missing: true
 - rename:
+    tag: rename_gitlab_production_ua_to_user_agent_original_ac9d5476
     field: gitlab.production.ua
     target_field: user_agent.original
     ignore_missing: true
@@ -236,47 +266,55 @@ processors:
     target_field: destination.as.organization.name
     ignore_missing: true
 - append:
+    tag: append_event_type_6adea021
     field: event.type
     value:
     - info
     allow_duplicates: false
 - append:
+    tag: append_event_category_b9496563
     field: event.category
     value:
     - database
     allow_duplicates: false
     if: ctx.url?.path == '/-/metrics'
 - append:
+    tag: append_event_category_d7694812
     field: event.category
     value:
     - database
     allow_duplicates: false
     if: ctx.url?.path == '/dashboard/activity'
 - append:
+    tag: append_event_category_8f9cdd7e
     field: event.category
     value:
     - database
     allow_duplicates: false
     if: ctx.url?.path == '/api/graphql'
 - append:
+    tag: append_event_category_e705a42c
     field: event.category
     value:
     - web
     allow_duplicates: false
     if: ctx.url?.path == '/-/manifest.json'
 - append:
+    tag: append_event_category_7dd0bed7
     field: event.category
     value:
     - authentication
     allow_duplicates: false
     if: ctx.url?.path == '/users/sign_in'
 - append:
+    tag: append_event_category_fa9d3f80
     field: event.category
     value:
     - web
     allow_duplicates: false
     if: ctx.url?.path != null && ctx.url.path.contains("/search/")
 - append:
+    tag: append_event_category_d9fbfc11
     field: event.category
     value:
     - database
@@ -289,9 +327,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_path_traversal_check_duration_s_4198423c
           field: gitlab.production.path_traversal_check_duration_s 
           ignore_missing: true
       - append:
+          tag: append_error_message_590a670f
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -301,9 +341,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_ci_replica_txn_max_duration_s_776059d0
           field: gitlab.production.db_ci_replica_txn_max_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_5e3679e2
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -313,9 +355,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_ci_replica_write_count_8443faea
           field: gitlab.production.db_ci_replica_write_count
           ignore_missing: true
       - append:
+          tag: append_error_message_7ccbefa7
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -325,9 +369,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_ci_txn_max_duration_s_79a515a2
           field: gitlab.production.db_ci_txn_max_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_837ba9f9
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -337,9 +383,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_ci_write_count_15f9ea80
           field: gitlab.production.db_ci_write_count
           ignore_missing: true
       - append:
+          tag: append_error_message_9235d8f8
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -349,9 +397,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_main_replica_txn_max_duration_s_462dfd02
           field: gitlab.production.db_main_replica_txn_max_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_c6ea7497
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -361,9 +411,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_main_replica_write_count_eaf4e6cc
           field: gitlab.production.db_main_replica_write_count
           ignore_missing: true
       - append:
+          tag: append_error_message_b7060e6e
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -373,9 +425,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_main_txn_max_duration_s_4f28bc54
           field: gitlab.production.db_main_txn_max_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_2c441b58
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -385,9 +439,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_main_write_count_745dc0a2
           field: gitlab.production.db_main_write_count
           ignore_missing: true
       - append:
+          tag: append_error_message_620e14cd
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -397,9 +453,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_primary_txn_max_duration_s_c2fd25a2
           field: gitlab.production.db_primary_txn_max_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_76cc54e1
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -409,9 +467,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_primary_write_count_508c54d0
           field: gitlab.production.db_primary_write_count
           ignore_missing: true
       - append:
+          tag: append_error_message_f28f94d6
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -421,9 +481,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_replica_txn_max_duration_s_eb5f85ea
           field: gitlab.production.db_replica_txn_max_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_b6825d17
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -433,9 +495,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_db_replica_write_count_b6ee7350
           field: gitlab.production.db_replica_write_count
           ignore_missing: true
       - append:
+          tag: append_error_message_2c1a4a94
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -445,9 +509,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_production_duration_s_dc7cf01a
           field: gitlab.production.duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_012c2395
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -457,9 +523,11 @@ processors:
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_gitlab_api_path_traversal_check_duration_s_a51d5f27
           field: gitlab.api.path_traversal_check_duration_s
           ignore_missing: true
       - append:
+          tag: append_error_message_6b592b0b
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -473,6 +541,7 @@ processors:
     copy_from: gitlab.production.meta.organization_id
     ignore_empty_value: true
 - script:
+    tag: script_a3eb5add
     description: Drops null/empty values recursively.
     lang: painless
     source: |

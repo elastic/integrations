@@ -2,9 +2,11 @@
 description: Pipeline for processing application logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
@@ -19,6 +21,7 @@ processors:
       tag: remove_message
       if: ctx.event?.original != null
   - drop: 
+      tag: drop_3b0973c1
       if: ctx.event.original.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - json:
@@ -34,10 +37,12 @@ processors:
       tag: date_event_created_time_epoch
       on_failure:
         - append:
+            tag: append_error_message_3d2919b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.gitlab?.application?.time != null
   - remove:
+      tag: remove_gitlab_application_time_6a62da82
       field: gitlab.application.time
       ignore_missing: true
   - set:
@@ -71,13 +76,16 @@ processors:
       if: ctx.gitlab?.application?.severity == 'UNKNOWN'
       tag: set_severity_5
   - remove:
+      tag: remove_gitlab_application_severity_45806750
       field: gitlab.application.severity
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_application_correlation_id_to_event_id_ef19d222
       field: gitlab.application.correlation_id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_application_pid_to_process_pid_7bf152a6
       field: gitlab.application.pid
       target_field: process.pid
       ignore_missing: true
@@ -101,6 +109,7 @@ processors:
           }
         }
   - dot_expander:
+      tag: dot_expander_*_57c81ca6
       field: "*"
       path: gitlab.application
   - script:
@@ -123,16 +132,20 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_application_namespace_id_8505a1fa
             field: gitlab.application.namespace_id
             ignore_missing: true
         - append:
+            tag: append_error_message_1689da49
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'   
   - rename:
+      tag: rename_gitlab_application_meta_user_to_user_name_e32fe3a7
       field: gitlab.application.meta.user
       target_field: user.name
       ignore_missing: true
   - convert:
+      tag: convert_gitlab_application_meta_user_id_02a37dc9
       field: gitlab.application.meta.user_id
       type: string
       ignore_missing: true
@@ -143,30 +156,37 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_application_user_id_b9ad7fa2
             field: gitlab.application.user_id
             ignore_missing: true
         - append:
+            tag: append_error_message_98b04b27
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_gitlab_application_meta_user_id_to_user_id_4e8782c5
       field: gitlab.application.meta.user_id
       target_field: user.id
       ignore_missing: true
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - rename:
+      tag: rename_gitlab_application_mergeability_merge_request_id_to_gitlab_application_mergeability_merge_request_id_a345e139
       field: gitlab.application.mergeability_merge_request_id
       target_field: gitlab.application.mergeability.merge_request_id
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_application_mergeability_project_id_to_gitlab_application_mergeability_project_id_bcaa0d2d
       field: gitlab.application.mergeability_project_id
       target_field: gitlab.application.mergeability.project_id
       ignore_missing: true
@@ -177,9 +197,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_application_duration_s_9a177787
             field: gitlab.application.duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_01b61563
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -232,20 +254,25 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0ca09779
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_gitlab_application_meta_remote_ip_5ce7515f
       field: gitlab.application.meta.remote_ip
       type: ip
       ignore_missing: true
       on_failure:
           - remove:
+              tag: remove_gitlab_application_meta_remote_ip_a722d4d4
               field: gitlab.application.meta.remote_ip
               ignore_missing: true
           - append:
+              tag: append_error_message_b2bb4bbd
               field: error.message
               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_gitlab_application_meta_remote_ip_to_client_ip_f714f91e
       field: gitlab.application.meta.remote_ip
       target_field: client.ip
       ignore_missing: true
@@ -274,14 +301,17 @@ processors:
       target_field: client.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_client_address_7c2df43a
       field: client.address
       copy_from: client.ip
       if: ctx.client?.ip != null
   - set:
+      tag: set_source_f7fb1ee5
       field: source
       copy_from: client
       if: ctx.client?.ip != null
   - append:
+      tag: append_related_ip_3726c45d
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
@@ -303,18 +333,22 @@ processors:
       tag: 'append_iam_into_event_category'
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains('Group')
   - set:
+      tag: set_event_outcome_75402cb0
       field: event.outcome
       value: failure
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Failed Login:")
   - set:
+      tag: set_event_outcome_2f7cca02
       field: event.outcome
       value: success
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Successful Login:")
   - append:
+      tag: append_event_type_eb764948
       field: event.type
       value: creation
       if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("created a new project") || ctx.gitlab.application.message.contains(" was created"))'
   - append:
+      tag: append_event_type_a048f3f4
       field: event.type
       value: deletion
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains(" was deleted")
@@ -323,10 +357,12 @@ processors:
       field: event.type
       value: info
   - append:
+      tag: append_event_category_8aaf2294
       field: event.category
       value: configuration
       if: ' ctx.gitlab?.application?.message != null && !(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -344,10 +380,12 @@ processors:
         }
         dropEmptyFields(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
