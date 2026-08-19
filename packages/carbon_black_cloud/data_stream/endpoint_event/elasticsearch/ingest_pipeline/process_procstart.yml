@@ -3,45 +3,55 @@ description: Pipeline for parsing Carbon Black Cloud Endpoint Events.
 processors:
   # grandparent
   - rename:
+      tag: rename_json_parent_cmdline_to_carbon_black_cloud_endpoint_event_process_grandparent_command_line_cc16caa5
       field: json.parent_cmdline
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.command_line
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_path_to_carbon_black_cloud_endpoint_event_process_grandparent_executable_fccda8ea
       field: json.parent_path
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.executable
       ignore_missing: true
   - convert:
+      tag: convert_json_parent_pid_to_carbon_black_cloud_endpoint_event_process_grandparent_pid_906be61d
       field: json.parent_pid
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_83670042
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_parent_guid_to_carbon_black_cloud_endpoint_event_process_grandparent_entity_id_d2859b6f
       field: json.parent_guid
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.entity_id
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_reputation_to_carbon_black_cloud_endpoint_event_process_grandparent_reputation_e1e492eb
       field: json.parent_reputation
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.reputation
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_hash_md5_to_carbon_black_cloud_endpoint_event_process_grandparent_hash_md5_284572a0
       field: json.parent_hash_md5
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_hash_sha256_to_carbon_black_cloud_endpoint_event_process_grandparent_hash_sha256_20d05970
       field: json.parent_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.process.grandparent.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_21b6ad12
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.process.grandparent.hash.md5}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.process.grandparent?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hash_0f944650
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.process.grandparent.hash.sha256}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.process.grandparent?.hash?.sha256 != null
@@ -50,35 +60,43 @@ processors:
 
   # parent
   - rename:
+      tag: rename_json_process_cmdline_to_process_parent_command_line_7d10d9ff
       field: json.process_cmdline
       target_field: process.parent.command_line
       ignore_missing: true
   - rename:
+      tag: rename_json_process_path_to_process_parent_executable_e4591784
       field: json.process_path
       target_field: process.parent.executable
       ignore_missing: true
   - convert:
+      tag: convert_json_process_pid_to_process_parent_pid_2affa2df
       field: json.process_pid
       target_field: process.parent.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6b5d3970
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_process_guid_to_process_parent_entity_id_3cf3e3a5
       field: json.process_guid
       target_field: process.parent.entity_id
       ignore_missing: true
   - rename:
+      tag: rename_json_process_username_to_carbon_black_cloud_endpoint_event_process_parent_username_bb5116ce
       field: json.process_username
       target_field: carbon_black_cloud.endpoint_event.process.parent.username
       ignore_missing: true
   - rename:
+      tag: rename_json_process_reputation_to_carbon_black_cloud_endpoint_event_process_parent_reputation_9804b850
       field: json.process_reputation
       target_field: carbon_black_cloud.endpoint_event.process.parent.reputation
       ignore_missing: true
   - foreach:
+      tag: foreach_json_process_publisher_4b5be1a3
       field: json.process_publisher
       processor:
         split:
@@ -88,36 +106,44 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_process_publisher_to_carbon_black_cloud_endpoint_event_process_parent_publisher_7dc82398
       field: json.process_publisher
       target_field: carbon_black_cloud.endpoint_event.process.parent.publisher
       ignore_missing: true
   - convert:
+      tag: convert_json_process_duration_to_carbon_black_cloud_endpoint_event_process_parent_duration_be26d230
       field: json.process_duration
       target_field: carbon_black_cloud.endpoint_event.process.parent.duration
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1316741f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_process_terminated_to_carbon_black_cloud_endpoint_event_process_parent_terminated_de64f154
       field: json.process_terminated
       target_field: carbon_black_cloud.endpoint_event.process.parent.terminated
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f19bc849
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_process_hash_md5_to_process_parent_hash_md5_55ee610a
       field: json.process_hash_md5
       target_field: process.parent.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_json_process_hash_sha256_to_process_parent_hash_sha256_9936827a
       field: json.process_hash_sha256
       target_field: process.parent.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_user_9cf80ddd
       field: related.user
       value: '{{{carbon_black_cloud.endpoint_event.process.parent.username}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.process?.parent?.username != null
@@ -126,27 +152,33 @@ processors:
 
   # process
   - rename:
+      tag: rename_json_childproc_name_to_process_executable_6326e191
       field: json.childproc_name
       target_field: process.executable
       ignore_missing: true
   - rename:
+      tag: rename_json_childproc_username_to_process_user_name_25a862cc
       field: json.childproc_username
       target_field: process.user.name
       ignore_missing: true
   - convert:
+      tag: convert_json_childproc_pid_to_process_pid_c907f0fe
       field: json.childproc_pid
       target_field: process.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3e6b049f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_childproc_guid_to_process_entity_id_ec352d2a
       field: json.childproc_guid
       target_field: process.entity_id
       ignore_missing: true
   - foreach:
+      tag: foreach_json_childproc_publisher_0a6979ec
       field: json.childproc_publisher
       processor:
         split:
@@ -156,18 +188,22 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_childproc_publisher_to_carbon_black_cloud_endpoint_event_process_publisher_4aa7bead
       field: json.childproc_publisher
       target_field: carbon_black_cloud.endpoint_event.process.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_childproc_reputation_to_carbon_black_cloud_endpoint_event_process_reputation_e1172f6b
       field: json.childproc_reputation
       target_field: carbon_black_cloud.endpoint_event.process.reputation
       ignore_missing: true
   - rename:
+      tag: rename_json_childproc_hash_md5_to_process_hash_md5_9e71c94f
       field: json.childproc_hash_md5
       target_field: process.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_json_childproc_hash_sha256_to_process_hash_sha256_a719afd5
       field: json.childproc_hash_sha256
       target_field: process.hash.sha256
       ignore_missing: true
