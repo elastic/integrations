@@ -3,6 +3,7 @@ description: Pipeline for processing Mimecast message_release_logs.
 processors:
   # Generic event/ecs fields we always want to populate.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -34,6 +35,7 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
@@ -48,6 +50,7 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
         - yyyy-MM-dd'T'HH:mm:ssZZZZZ
   - fingerprint:
+      tag: fingerprint_8a071f71
       fields:
         - mimecast.id
         - '@timestamp'
@@ -55,16 +58,19 @@ processors:
       ignore_missing: true
 
   - append:
+      tag: append_email_from_address_455ce224
       field: email.from.address
       value: '{{{mimecast.fromEnv.emailAddress}}}'
       if: ctx.mimecast?.fromEnv?.emailAddress != null
       allow_duplicates: false
   - append:
+      tag: append_email_from_address_67cf7828
       field: email.from.address
       value: '{{{mimecast.fromHdr.emailAddress}}}'
       if: ctx.mimecast?.fromHdr?.emailAddress != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_mimecast_to_6747f41e
       field: mimecast.to
       if: ctx.mimecast?.to instanceof List
       processor:
@@ -73,33 +79,40 @@ processors:
           value: '{{{_ingest._value.emailAddress}}}'
           allow_duplicates: false
   - set:
+      tag: set_email_direction_262ca9a0
       field: email.direction
       copy_from: mimecast.route
       ignore_empty_value: true
   - set:
+      tag: set_email_local_id_6e6f096a
       field: email.local_id
       copy_from: mimecast.id
       ignore_empty_value: true
   - set:
+      tag: set_email_subject_016ce77c
       field: email.subject
       copy_from: mimecast.subject
       ignore_empty_value: true
 
   - set:
+      tag: set_user_email_5e868477
       field: user.email
       copy_from: email.from.address
       ignore_empty_value: true
       if: ctx.email.direction == 'outbound'
   - append:
+      tag: append_user_full_name_19316996
       field: user.full_name
       value: '{{{mimecast.fromEnv.displayableName}}}'
       if: ctx.email.direction == 'outbound' && ctx.mimecast?.fromEnv?.emailAddress != null
   - set:
+      tag: set_user_email_7e7fdd9b
       field: user.email
       copy_from: email.to.address
       ignore_empty_value: true
       if: ctx.email.direction == 'inbound'
   - foreach:
+      tag: foreach_mimecast_to_5061dc77
       field: mimecast.to
       if: ctx.email.direction == 'inbound' && ctx.mimecast?.to instanceof List
       processor:
@@ -109,6 +122,7 @@ processors:
           allow_duplicates: false
 
   - script:
+      tag: script_b998598b
       description: Populate related.* fields.
       lang: painless
       ignore_failure: true
@@ -191,37 +205,46 @@ processors:
           }
         }
   - rename:
+      tag: rename_mimecast_spamProcessingDetail_verdict_to_mimecast_spamProcessingDetail_spamVerdict_3a02e636
       description: Move spamProcessingDetail.verdict to legacy location.
       field: mimecast.spamProcessingDetail.verdict
       target_field: mimecast.spamProcessingDetail.spamVerdict
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_action_bdd2d6e4
       field: event.action
       copy_from: mimecast.status
       ignore_empty_value: true
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
   - set:
+      tag: set_event_id_cd8b3bb6
       field: event.id
       copy_from: mimecast.id
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_kind_e5a50a31
       field: event.kind
       value: alert
       if: ctx.mimecast?.rejectReason != null && ctx.mimecast.rejectReason != ''
   - set:
+      tag: set_event_reason_eacf524b
       field: event.reason
       copy_from: mimecast.rejectReason
       ignore_empty_value: true
   - set:
+      tag: set_event_risk_score_8cff072f
       field: event.risk_score
       copy_from: mimecast.spamScore
       ignore_empty_value: true
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
 

@@ -2,10 +2,12 @@
 description: Pipeline for processing Mimecast cloud_integrated_logs.
 processors:
   - drop:
+      tag: drop_d6785451
       description: Ignore want_more placeholder message.
       if: ctx.message == "want_more"
 
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -33,16 +35,20 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
   - drop:
+      tag: drop_6459310c
       if: ctx?.mimecast?.datetime == null && ctx?.mimecast?.timestamp == null
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
 
   - date:
+      tag: date_mimecast_timestamp_2f9b8186
       description: Use 'mimecast.timestamp' as the '@timestamp'
       field: mimecast.timestamp
       if: ctx.mimecast?.timestamp != null
@@ -50,16 +56,19 @@ processors:
       formats:
         - UNIX_MS
   - set:
+      tag: set_event_created_3b69f632
       field: event.created
       copy_from: '@timestamp'
       if: ctx['@timestamp'] != null
   - set:
+      tag: set_event_kind_6ef68e78
       field: event.kind
       value: alert
       if: ctx.mimecast?.tags instanceof List && ctx.mimecast.tags.length != 0
 
   ### NOTE LOG TYPE
   - rename:
+      tag: rename_mimecast_type_to_mimecast_log_type_8751ca79
       field: mimecast.type
       target_field: mimecast.log_type
       ignore_missing: true
@@ -72,6 +81,7 @@ processors:
       if: ctx.tags?.contains('preserve_duplicate_custom_fields') == true
 
   - fingerprint:
+      tag: fingerprint_5cae5d9e
       fields:
         - mimecast.messageId
         - mimecast.processingId
@@ -86,6 +96,7 @@ processors:
 
   ### Common
   - foreach:
+      tag: foreach_mimecast_recipients_9bfe67b6
       if: ctx.mimecast?.recipients instanceof List
       field: mimecast.recipients
       processor:
@@ -94,6 +105,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
+      tag: append_email_to_address_0cfb7a4a
       field: email.to.address
       value: '{{{mimecast.recipients}}}'
       allow_duplicates: false
@@ -101,39 +113,48 @@ processors:
 
   ### ENTITIES
   - rename:
+      tag: rename_mimecast_senderIp_to_source_ip_e17dfbc5
       field: mimecast.senderIp
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_messageId_to_email_message_id_a8ab0b64
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
   - append:
+      tag: append_email_from_address_0cbef6e5
       field: email.from.address
       value: '{{{mimecast.senderHeader}}}'
       allow_duplicates: false
       if: ctx.mimecast?.senderHeader != null
   - append:
+      tag: append_email_from_address_3477ed67
       field: email.from.address
       value: '{{{mimecast.senderEnvelope}}}'
       allow_duplicates: false
       if: ctx.mimecast?.senderEnvelope != null
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_3c7206f3
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_direction_to_email_direction_624c8c4d
       field: mimecast.direction
       target_field: email.direction
       ignore_missing: true
   - lowercase:
+      tag: lowercase_email_direction_569c0270
       field: email.direction
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_attachments_to_email_attachments_file_name_e8d63fdc
       field: mimecast.attachments
       target_field: email.attachments.file.name
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_action_to_mimecast_threatState_99481815
       field: mimecast.action
       target_field: mimecast.threatState
       ignore_missing: true
@@ -143,33 +164,40 @@ processors:
 
   ### URL LOGS
   - rename:
+      tag: rename_mimecast_action_to_event_action_75b859cd
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_sourceIp_to_source_ip_a8821cb9
       field: mimecast.sourceIp
       target_field: source.ip
       ignore_missing: true
 
   - convert:
+      tag: convert_source_ip_51566224
       field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_35cc2af9
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
         - remove:
+            tag: remove_source_ip_07943d1d
             field: source.ip
             ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -178,15 +206,18 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - foreach:
+      tag: foreach_email_from_address_bd2fca99
       field: email.from.address
       if: ctx.email?.from?.address instanceof List
       ignore_failure: true
@@ -197,13 +228,14 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_email_to_address_5d15e64f
       field: email.to.address
       if: ctx.email?.to?.address instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_email_from_address_list_to_related_user
+          tag: append_email_from_address_list_to_related_user_2d165006
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
@@ -248,11 +280,13 @@ processors:
 
   # Cleanup
   - rename:
+      tag: rename_original_to_mimecast_5b6791aa
       field: original
       target_field: mimecast
       override: true
       ignore_missing: true
   - remove:
+      tag: remove_0a5321eb
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast._offset
