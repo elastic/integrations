@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+env:
+  SETUP_GVM_VERSION: "v0.6.0"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+  YQ_VERSION: 'v4.35.2'
+  GH_CLI_VERSION: "2.29.0"
+  NOTIFY_TO: "ecosystem-team@elastic.co"
+
+steps:
+  - label: ":ballot_box_with_check: Backports inventory validation"
+    key: "check-backports-inventory"
+    command: ".buildkite/scripts/check_backports_inventory.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    if_changed:
+      - ".backports.yml"
+      - ".buildkite/scripts/run_dev_scripts_tests.sh"
+      - "dev/scripts/**.sh"
+      - "dev/backports/**"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') == "false" && build.branch == "main"
+
+  - label: ":git: Create backport branches for new entries"
+    key: "trigger-backport-create"
+    command: ".buildkite/scripts/trigger_backport.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-backports-inventory"
+        allow_failure: false
+    if_changed:
+      - ".backports.yml"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') == "false" &&
+      build.branch == "main" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations-backport-dispatch"
+
+notify:
+  - email: "$NOTIFY_TO"
+    if: "build.state == 'failed' && build.env('BUILDKITE_PULL_REQUEST') == 'false'"
