@@ -2,12 +2,15 @@
 description: Pipeline for parsing MySQL Enterprise Audit logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_original_b9758751
       field: event.original
       copy_from: message
   - script:
+      tag: script_f5ada2aa
       description: Trim trailing commas.
       # MySQL sends audit logs as parts of a single infinite JSON array
       # rather than as a JSON stream, and so has comma separators. We
@@ -17,62 +20,78 @@ processors:
         ctx.message = ctx.message.substring(0, ctx.message.length() - 1);
       if: ctx.message instanceof String && ctx.message.endsWith(',')
   - json:
+      tag: json_message_to_mysqlenterprise_audit_c50d88cc
       field: message
       target_field: mysqlenterprise.audit
   - remove:
+      tag: remove_message_884e8cdd
       field: message
       ignore_missing: true
   - remove:
+      tag: remove_timestamp_370e1674
       field: "@timestamp"
       ignore_missing: true
       if: ctx?.mysqlenterprise?.audit?.timestamp != null
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_f4543241
       field: event.category
       value: database
   - append:
+      tag: append_event_category_f51a3a7f
       field: event.category
       value: network
       if: ctx?.mysqlenterprise?.audit?.class == 'connection'
   - append:
+      tag: append_event_category_5b40a0c5
       field: event.category
       value: iam
       if: '["create_user", "delete_user", "drop_user", "grant", "flush_privileges"].contains(ctx.mysqlenterprise.audit?.general_data?.sql_command)'
   - append:
+      tag: append_event_type_187ffbaa
       field: event.type
       value: access
       if: ctx?.mysqlenterprise?.audit?.class != 'audit'
   - append:
+      tag: append_event_type_cce5617f
       field: event.type
       value: connection
       if: ctx?.mysqlenterprise?.audit?.class == 'connection'
   - append:
+      tag: append_event_type_192bce71
       field: event.type
       value: start
       if: ctx?.mysqlenterprise?.audit?.event == 'connect'
   - append:
+      tag: append_event_type_b18c6444
       field: event.type
       value: end
       if: ctx?.mysqlenterprise?.audit?.event == 'disconnect'
   - set:
+      tag: set_event_outcome_daf51dfc
       field: event.outcome
       value: success
       if: ctx?.mysqlenterprise?.audit?.connection_data?.status != null && ctx?.mysqlenterprise?.audit?.connection_data?.status == 0 || ctx?.mysqlenterprise?.audit?.general_data?.status != null && ctx?.mysqlenterprise?.audit?.general_data?.status == 0
   - set:
+      tag: set_event_outcome_3e789809
       field: event.outcome
       value: failure
       if: ctx?.mysqlenterprise?.audit?.connection_data?.status != null && ctx?.mysqlenterprise?.audit?.connection_data?.status > 0 || ctx?.mysqlenterprise?.audit?.general_data?.status != null && ctx?.mysqlenterprise?.audit?.general_data?.status > 0
   - set:
+      tag: set_event_outcome_46e49ef3
       field: event.outcome
       value: unknown
       if: ctx?.event?.outcome == null
   - set:
+      tag: set_event_action_da0260a5
       field: event.action
       value: mysql-{{ mysqlenterprise.audit.event }}
       if: ctx?.mysqlenterprise?.audit?.event != null
   - script:
+      tag: script_9002e254
       lang: painless
       if: ctx?.mysqlenterprise?.audit != null
       source: |
@@ -97,46 +116,57 @@ processors:
         }
         handleMap(ctx);
   - rename:
+      tag: rename_mysqlenterprise_audit_account_user_to_server_user_name_d57b1625
       field: mysqlenterprise.audit.account.user
       target_field: server.user.name
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_account_host_to_client_domain_4b178c36
       field: mysqlenterprise.audit.account.host
       target_field: client.domain
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_login_os_to_client_user_name_2a5df408
       field: mysqlenterprise.audit.login.os
       target_field: client.user.name
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_login_ip_to_client_ip_b8fb88f0
       field: mysqlenterprise.audit.login.ip
       target_field: client.ip
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_startup_data_os_version_to_host_os_full_7ce464ac
       field: mysqlenterprise.audit.startup_data.os_version
       target_field: host.os.full
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_startup_data_mysql_version_to_service_version_50179380
       field: mysqlenterprise.audit.startup_data.mysql_version
       target_field: service.version
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_startup_data_server_id_to_service_id_633ffb3f
       field: mysqlenterprise.audit.startup_data.server_id
       target_field: service.id
       ignore_missing: true
   - rename:
+      tag: rename_mysqlenterprise_audit_startup_data_args_to_process_args_afa1f53b
       field: mysqlenterprise.audit.startup_data.args
       target_field: process.args
       ignore_missing: true
   - set:
+      tag: set_process_name_c87f3c40
       field: process.name
       value: mysqld
   - join:
+      tag: join_process_args_to_process_command_line_3bd8ac18
       field: process.args
       target_field: process.command_line
       separator: " "
       ignore_failure: true
   - script:
+      tag: script_e5ccc2a8
       lang: painless
       if: ctx?.process?.args != null
       source: |
@@ -146,6 +176,7 @@ processors:
         }
   # Query parsing
   - grok:
+      tag: grok_mysqlenterprise_audit_general_data_query_1eff7b8a
       field: mysqlenterprise.audit.general_data.query
       if: '["create_user", "delete_user", "drop_user"].contains(ctx.mysqlenterprise?.audit?.general_data?.sql_command)'
       ignore_failure: true
@@ -157,20 +188,24 @@ processors:
         END_QUOTE: (?:\k<__quote>)
         UNQUOTED: (?:[^\s@;]*+)
   - remove:
+      tag: remove___quote_21cc6d3a
       field: __quote
       ignore_missing: true
   - set:
+      tag: set_user_name_b78f12b9
       field: user.name
       value: "{{{server.user.name}}}"
       ignore_empty_value: true
       if: "ctx.user?.target != null"
   - append:
+      tag: append_event_type_a077d586
       field: event.type
       value:
         - user
         - creation
       if: 'ctx.mysqlenterprise?.audit?.general_data?.sql_command == "create_user"'
   - append:
+      tag: append_event_type_6d4780ac
       field: event.type
       value:
         - user
@@ -179,58 +214,70 @@ processors:
 
   # Attributes starting with _ is only supported by MySQL 8.0.19 and above.
   - convert:
+      tag: convert_mysqlenterprise_audit_connection_data_connection_attributes__pid_to_process_pid_da3fd088
       field: mysqlenterprise.audit.connection_data.connection_attributes._pid
       target_field: process.pid
       type: long
       ignore_missing: true
   # Converting some fields to its correct value
   - convert:
+      tag: convert_mysqlenterprise_audit_connection_id_35e8bea8
       field: mysqlenterprise.audit.connection_id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_mysqlenterprise_audit_id_1e0fefb7
       field: mysqlenterprise.audit.id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_mysqlenterprise_audit_shutdown_data_server_id_0d6f7e0c
       field: mysqlenterprise.audit.shutdown_data.server_id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_service_id_0222a9f8
       field: service.id
       type: string
       ignore_missing: true
   - append:
+      tag: append_related_user_0399d34f
       field: related.user
       value: "{{{server.user.name}}}"
       allow_duplicates: false
       if: ctx?.server?.user?.name != null
   - append:
+      tag: append_related_user_08908b27
       field: related.user
       value: "{{{client.user.name}}}"
       allow_duplicates: false
       if: ctx?.client?.user?.name != null
   - append:
+      tag: append_related_user_5fca28ff
       field: related.user
       value: "{{{user.target.name}}}"
       allow_duplicates: false
       if: ctx?.user?.target?.name != null
   - append:
+      tag: append_related_ip_bec8ccf4
       field: related.ip
       value: "{{{client.ip}}}"
       allow_duplicates: false
       if: ctx?.client?.ip != null
   - append:
+      tag: append_related_hosts_29572a32
       field: related.hosts
       value: "{{{client.domain}}}"
       allow_duplicates: false
       if: ctx?.client?.domain != null
   - date:
+      tag: date_mysqlenterprise_audit_timestamp_ac41f577
       field: mysqlenterprise.audit.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss
       if: ctx?.mysqlenterprise?.audit?.timestamp != null
   - remove:
+      tag: remove_4b5686b1
       field:
         - mysqlenterprise.audit.event
         - mysqlenterprise.audit.timestamp
