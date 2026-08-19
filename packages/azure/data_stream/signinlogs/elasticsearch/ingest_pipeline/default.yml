@@ -21,7 +21,7 @@ processors:
       target_field: azure.signinlogs
   - script:
       description: Convert Azure JSON keys to snake case.
-      tag: azure-json-keys-to-snake-case_ffb87af5
+      tag: azure_json_keys_to_snake_case_ffb87af5
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -228,7 +228,16 @@ processors:
   - script:
       tag: script_build_message_field_using_combination_ee25521c
       description: Build message field using a combination of failure reason and additional details
-      source: "String reason = ctx?.azure?.signinlogs?.properties?.status?.failure_reason; String details = ctx?.azure?.signinlogs?.properties?.status?.additional_details; if (reason != null && details != null) { ctx['message'] = reason + ' (' + details + ')'; } else if (reason != null) { ctx['message'] = reason; } else if (details != null) { ctx['message'] = details; }"
+      source: |-
+        String reason = ctx?.azure?.signinlogs?.properties?.status?.failure_reason;
+        String details = ctx?.azure?.signinlogs?.properties?.status?.additional_details;
+        if (reason != null && details != null) {
+          ctx['message'] = reason + ' (' + details + ')';
+        } else if (reason != null) {
+          ctx['message'] = reason;
+        } else if (details != null) {
+          ctx['message'] = details;
+        }
 
   - remove:
       tag: remove_azure_signinlogs_properties_status_failure_reason_172a2fd8

@@ -770,7 +770,12 @@ processors:
       ignore_failure: true
       params:
         NANOS_IN_A_MILLI_SECOND: 1000000
-      source: def duration = new ArrayList(); for (event in ctx.json.periods) { duration.add((event?.end - event?.start) * params.NANOS_IN_A_MILLI_SECOND); } ctx.event.duration = duration;
+      source: |-
+        def duration = new ArrayList();
+        for (event in ctx.json.periods) {
+          duration.add((event?.end - event?.start) * params.NANOS_IN_A_MILLI_SECOND);
+        }
+        ctx.event.duration = duration;
   - foreach:
       tag: foreach_json_periods_9de45bc0
       field: json.periods

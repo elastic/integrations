@@ -62,7 +62,16 @@ processors:
       lang: painless
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
-      source: for (component in ctx.json.triggeredComponents) { if (component?.metric?.label?.toLowerCase().contains('connection')) { ctx.event?.type?.add('connection'); if (ctx.event.category == null) { ctx.event.category = new ArrayList(); } ctx.event.category.add('network'); } }
+      source: |-
+        for (component in ctx.json.triggeredComponents) {
+          if (component?.metric?.label?.toLowerCase().contains('connection')) {
+            ctx.event?.type?.add('connection');
+            if (ctx.event.category == null) {
+              ctx.event.category = new ArrayList();
+            }
+            ctx.event.category.add('network');
+          }
+        }
   - foreach:
       tag: foreach_json_aianalystData_2927adf8
       field: json.aianalystData
@@ -1006,7 +1015,16 @@ processors:
       params:
         componentList: data_component_list
         weightedComponentList: data_weighted_component_list
-      source: def data = ctx.json.model.logic.data; if (ctx.json.model.logic?.type != null) { if (['componentList', 'weightedComponentList'].contains(ctx.json.model.logic?.type)) { ctx["json"]["model"]["logic"][params.get(ctx.json.model.logic?.type)] = data; } else { ctx["json"]["model"]["logic"]["data_" + ctx.json.model.logic?.type] = data; } } ctx.json.model.logic.remove("data");
+      source: |-
+        def data = ctx.json.model.logic.data;
+        if (ctx.json.model.logic?.type != null) {
+          if (['componentList', 'weightedComponentList'].contains(ctx.json.model.logic?.type)) {
+            ctx["json"]["model"]["logic"][params.get(ctx.json.model.logic?.type)] = data;
+          } else {
+            ctx["json"]["model"]["logic"]["data_" + ctx.json.model.logic?.type] = data;
+          }
+        }
+        ctx.json.model.logic.remove("data");
   - convert:
       tag: convert_json_model_logic_data_component_list_1aed19b2
       field: json.model.logic.data_component_list
@@ -1441,7 +1459,10 @@ processors:
       lang: painless
       if: ctx.json?.triggeredComponents instanceof List
       ignore_failure: true
-      source: for (component in ctx.json.triggeredComponents) { component.logic.data = component?.logic?.data.toString(); }
+      source: |-
+        for (component in ctx.json.triggeredComponents) {
+          component.logic.data = component?.logic?.data.toString();
+        }
   - foreach:
       tag: foreach_json_triggeredComponents_b1dd0192
       field: json.triggeredComponents
