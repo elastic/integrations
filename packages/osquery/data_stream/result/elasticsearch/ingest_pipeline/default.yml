@@ -2,26 +2,32 @@
 description: Pipeline for parsing osquery result logs
 processors:
   - json:
+      tag: json_message_to_json_beeea2b2
       field: "message"
       target_field: "json"
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - rename:
+      tag: rename_timestamp_to_event_created_b33a354b
       field: "@timestamp"
       target_field: event.created
   - date:
+      tag: date_json_unixTime_to_timestamp_7cd4722f
       field: json.unixTime
       target_field: "@timestamp"
       formats:
         - UNIX
       ignore_failure: true
   - script:
+      tag: script_a982665f
       lang: painless
       source: |
         def dict = ['result': new HashMap()]; 
@@ -31,6 +37,7 @@ processors:
         ctx['osquery'] = dict; 
         ctx.remove('json');
   - script:
+      tag: script_6378394a
       lang: painless
       params:
         keys: [columns, decorations]
@@ -50,28 +57,35 @@ processors:
         }
       if: ctx?.osquery?.result != null
   - rename:
+      tag: rename_osquery_result_hostIdentifier_to_osquery_result_host_identifier_255258fb
       field: osquery.result.hostIdentifier
       target_field: osquery.result.host_identifier
       ignore_missing: true
   - rename:
+      tag: rename_osquery_result_unixTime_to_osquery_result_unix_time_bfdd35f3
       field: osquery.result.unixTime
       target_field: osquery.result.unix_time
       ignore_missing: true
   - rename:
+      tag: rename_osquery_result_calendarTime_to_osquery_result_calendar_time_c4c50adb
       field: osquery.result.calendarTime
       target_field: osquery.result.calendar_time
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_action_dd8bd081
       field: event.action
       value: "{{{osquery.result.action}}}"
       ignore_empty_value: true
   - date:
+      tag: date_osquery_result_columns_atime_to_file_accessed_1cb1ee34
       field: osquery.result.columns.atime
       target_field: file.accessed
       formats:
@@ -79,6 +93,7 @@ processors:
       ignore_failure: true
       if: ctx?.osquery?.result?.columns?.atime != null
   - date:
+      tag: date_osquery_result_columns_ctime_to_file_created_4e818e23
       field: osquery.result.columns.ctime
       target_field: file.created
       formats:
@@ -86,6 +101,7 @@ processors:
       ignore_failure: true
       if: ctx?.osquery?.result?.columns?.ctime != null
   - date:
+      tag: date_osquery_result_columns_mtime_to_file_mtime_c488156d
       field: osquery.result.columns.mtime
       target_field: file.mtime
       formats:
@@ -93,76 +109,94 @@ processors:
       ignore_failure: true
       if: ctx?.osquery?.result?.columns?.mtime != null
   - set:
+      tag: set_file_directory_19b65ade
       field: file.directory
       value: "{{{osquery.result.columns.directory}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_name_5b893256
       field: file.name
       value: "{{{osquery.result.columns.filename}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_gid_0ee1a25a
       field: file.gid
       value: "{{{osquery.result.columns.gid}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_inode_9e91fd3e
       field: file.inode
       value: "{{{osquery.result.columns.inode}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_mode_0995279c
       field: file.mode
       value: "{{{osquery.result.columns.mode}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_path_d1e6978c
       field: file.path
       value: "{{{osquery.result.columns.path}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_size_5cb32c38
       field: file.size
       value: "{{{osquery.result.columns.size}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_type_56d3c2da
       field: file.type
       value: "{{{osquery.result.columns.type}}}"
       ignore_empty_value: true
   - set:
+      tag: set_file_uid_4a08d5ea
       field: file.uid
       value: "{{{osquery.result.columns.uid}}}"
       ignore_empty_value: true
   - set:
+      tag: set_user_name_03b4b28a
       field: user.name
       value: "{{{osquery.result.decorations.username}}}"
       ignore_empty_value: true
   - append:
+      tag: append_related_user_6ab25889
       field: related.user
       value: "{{{user.name}}}"
       if: ctx?.user?.name != null
   - set:
+      tag: set_host_hostname_48ec5504
       field: host.hostname
       value: "{{{osquery.result.host_identifier}}}"
       ignore_empty_value: true
   - set:
+      tag: set_host_id_789fe571
       field: host.id
       value: "{{{osquery.result.decorations.host_uuid}}}"
       ignore_empty_value: true
   - set:
+      tag: set_process_name_d6fdb5f1
       field: process.name
       value: "{{{osquery.result.columns.process}}}"
       ignore_empty_value: true
   - set:
+      tag: set_url_full_612bb25f
       field: url.full
       value: "{{{osquery.result.columns.source_url}}}"
       if: ctx?.osquery?.result?.columns?.source_url != 'null'
       ignore_empty_value: true
   - set:
+      tag: set_rule_name_45cd24c7
       field: rule.name
       value: "{{{osquery.result.name}}}"
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_1533a139
       field: related.hosts
       value: "{{{host.hostname}}}"
       if: ctx?.host?.hostname != null && ctx.host?.hostname != ''
       allow_duplicates: false
   - convert:
+      tag: convert_file_size_02653c50
       field: file.size
       type: long
       ignore_missing: true
