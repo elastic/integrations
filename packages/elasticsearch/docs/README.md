@@ -6,6 +6,14 @@ The `elasticsearch` package collects metrics and logs of Elasticsearch.
 
 The `elasticsearch` package can monitor Elasticsearch 8.5.0 and later.
 
+## Prerequisites
+
+Install this package on the *monitoring cluster* (the cluster that stores monitoring data, transforms, and dashboards).
+
+- Monitoring cluster: Kibana and Elasticsearch **9.2.0** or later. This matches the features used there, including Fleet package install, the `index_pivot` transform, ingest pipelines, and the usage dashboards.
+- Collecting agents: Metricbeat **8.19** or later to populate `elasticsearch.index.mode` and `elasticsearch.index.codec` ([beats#49237](https://github.com/elastic/beats/pull/49237)). When those fields are absent, ingest pipelines set them to `standard` and `default`.
+- Monitored Elasticsearch: **8.5.0** or later for metrics and logs. Security stats require **9.2.0** or later. Query logs require **9.4** or later.
+
 ## Logs
 
 NOTE: Configure the `var.paths` setting to point to JSON logs.
