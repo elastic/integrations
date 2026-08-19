@@ -2,42 +2,53 @@
 description: Pipeline for processing Lumos Activity Logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - json:
+      tag: json_message_to_lumos_activity_logs_b4945de5
       field: message
       target_field: lumos.activity_logs
   - rename:
+      tag: rename_lumos_activity_logs_event_hash_to_event_id_a4abd2af
       field: lumos.activity_logs.event_hash
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_lumos_activity_logs_event_type_to_event_action_121254c6
       field: lumos.activity_logs.event_type
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_lumos_activity_logs_outcome_to_event_outcome_00c05161
       field: lumos.activity_logs.outcome
       target_field: event.outcome
       ignore_missing: true
   - set:
+      tag: set_event_outcome_59b22e55
       field: event.outcome
       value: unknown
       if: (ctx.event.outcome != "Failed") && (ctx.event.outcome != "Succeeded")
   - set:
+      tag: set_event_outcome_7fa84f25
       field: event.outcome
       value: failure
       if: ctx.event.outcome == "Failed"
   - set:
+      tag: set_event_outcome_bade9e08
       field: event.outcome
       value: success
       if: ctx.event.outcome == "Succeeded"
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - script:
+      tag: script_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
