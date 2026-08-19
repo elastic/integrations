@@ -2,17 +2,21 @@
 description: Pipeline for processing Pleasant Password Server logs.
 processors:
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: "8.17.0"
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - grok:
+      tag: grok_event_original_82d228ac
       field: event.original
       patterns:
         - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}@%{DATA:user.domain}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
@@ -20,6 +24,7 @@ processors:
         - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.domain}\s%{DATA}:%{IP:client.ip}%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
         - '^%{GREEDYDATA:message}$'
   - grok:
+      tag: grok_message_4012bce1
       field: message
       ignore_failure: true
       ignore_missing: true
@@ -35,6 +40,7 @@ processors:
       - notification\s.*>\s(?:from|to)\s<%{DATA:pps.entry.path}>$
       - updated\sentry\s<%{DATA:pps.entry.path}>\schanging\sthe\sname\sfrom\s<%{DATA:pps.entry.name}>\sto\s<%{DATA:pps.entry.target.name}>
   - grok:
+      tag: grok_message_0dedc2fb
       field: message
       ignore_failure: true
       ignore_missing: true
@@ -42,25 +48,30 @@ processors:
       - \schanging\sthe\susername\sfrom\s<%{DATA:pps.entry.username}>\sto\s<%{DATA:pps.entry.target.username}>
   # Set the Event Outcome to Lower Case to be ECS Compliant
   - lowercase:
+      tag: lowercase_event_outcome_2beacace
       field: event.outcome
       if: ctx.event?.outcome != null
   # Set the Event Outcome to failure if the event.outcome is error
   - set:
+      tag: set_event_outcome_f2eb6d5d
       field: event.outcome
       value: "failure"
       if: ctx.event?.outcome == 'error'
   # Set the Event Outcome to unknown if neither error nor success is present
   - set:
+      tag: set_event_outcome_01487e44
       field: event.outcome
       value: "unknown"
       if: ctx.event?.outcome != 'success' && ctx.event?.outcome != 'failure'
   - rename:
+      tag: rename__conf_tz_offset_to_event_timezone_fb30f3b5
       field: _conf.tz_offset
       target_field: event.timezone
       if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
       ignore_missing: true
       ignore_failure: true
   - date:
+      tag: date_event_created_to_event_created_0f0de83e
       field: event.created
       target_field: "event.created"
       formats:
@@ -69,12 +80,15 @@ processors:
       if: ctx.event?.timezone != null && ctx.event?.created != null
       on_failure:
         - remove:
+            tag: remove_event_created_9d2e6185
             field: event.created
             ignore_missing: true
         - append:
+            tag: append_error_message_d24defef
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - date:
+      tag: date_event_created_to_event_created_c53b74d6
       field: event.created
       target_field: "event.created"
       formats:
@@ -82,22 +96,27 @@ processors:
       if: ctx.event?.timezone == null && ctx.event?.created != null
       on_failure:
         - remove:
+            tag: remove_event_created_11d88a85
             field: event.created
             ignore_missing: true
         - append:
+            tag: append_error_message_83f9004b
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
   - set:
+      tag: set_timestamp_e8302ea8
       field: "@timestamp"
       value: "{{{event.created}}}"
       if: "ctx.event?.created != null"
       override: true
   - set:
+      tag: set_user_email_1ed63164
       field: "user.email"
       value: "{{{user.name}}}@{{{user.domain}}}"
       if: ctx.user?.name != null && ctx.user?.domain != null
   - remove:
+      tag: remove_e16fd958
       field:
         - _conf
         - _tmp
