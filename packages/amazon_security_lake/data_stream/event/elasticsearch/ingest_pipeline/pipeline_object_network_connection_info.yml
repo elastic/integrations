@@ -30,9 +30,11 @@ processors:
       if: ctx.ocsf?.connection_info?.tcp_flags != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_connection_info_tcp_flags_0b325b73
             field: ocsf.connection_info.tcp_flags
             ignore_missing: true
         - append:
+            tag: append_error_message_2564975d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
@@ -43,9 +45,11 @@ processors:
       if: ctx.ocsf?.connection_info?.protocol_ver != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_connection_info_protocol_ver_4307a25d
             field: ocsf.connection_info.protocol_ver
             ignore_missing: true
         - append:
+            tag: append_error_message_072909e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
@@ -56,9 +60,11 @@ processors:
       if: ctx.ocsf?.connection_info?.protocol_name != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_connection_info_protocol_name_4f1c5212
             field: ocsf.connection_info.protocol_name
             ignore_missing: true
         - append:
+            tag: append_error_message_013ec46b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -74,7 +80,7 @@ processors:
       if: ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'Internal'
   - append:
       field: network.direction
-      tag: append_connection_info_boundary_into_network_direction
+      tag: append_network_direction_b450ec7f
       value: external
       allow_duplicates: false
       if: ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'External'
@@ -86,7 +92,7 @@ processors:
       if: ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Inbound'
   - append:
       field: network.direction
-      tag: append_connection_info_direction_into_network_direction
+      tag: append_network_direction_faa9869c
       value: outbound
       allow_duplicates: false
       if: ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Outbound'
