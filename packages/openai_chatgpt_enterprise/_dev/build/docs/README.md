@@ -2,27 +2,42 @@
 
 ## Overview
 
-[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) provides enterprise-grade access to ChatGPT along with a Compliance Logs Platform that exports a tamper-evident record of workspace and organization activity. Application Logs (`APP_LOG`) capture in-app connector activity — the requests ChatGPT sends to connected apps and connectors (for example Google Drive, Slack, or MCP servers) and the responses returned — together with the acting user, the app involved, and the conversation in which the app was invoked.
+[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including authentication activity such as user logins, token issuance, and logouts; application authentication activity such as connecting (linking) and disconnecting (unlinking) apps and connectors; and application (connector) activity such as in-app requests and responses to connected apps.
 
-This integration for Elastic allows you to collect Application Logs using the OpenAI Compliance Logs Platform API, then visualize and investigate the data in Kibana.
+This integration for Elastic allows you to collect ChatGPT Enterprise compliance logs using the OpenAI Compliance Logs Platform API, then visualize the data in Kibana.
 
 ### Compatibility
 
-This integration collects data from the [OpenAI Compliance Logs Platform API](https://help.openai.com/en/articles/9261474-compliance-api-for-enterprise-customers), available to ChatGPT Enterprise customers with the Compliance Logs Platform enabled.
+This integration collects data from the [OpenAI Compliance Logs Platform API](https://help.openai.com/en/articles/9261474-compliance-api-for-enterprise-customers) and requires a ChatGPT Enterprise plan with the Compliance Logs Platform enabled.
 
 ### How it works
 
-This integration periodically queries the Compliance Logs Platform API for `APP_LOG` events. Collection uses a two-step chain call: it first lists available log files for the configured workspace or organization, then downloads each file's JSON Lines content and emits one event per line. Pagination advances using the `last_end_time` cursor returned by the listing call, so subsequent runs resume without gaps or duplication.
+This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, and application (connector) logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
+
+1. The integration calls the list endpoint (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs`) with the `event_type`, and paginates forward using the `last_end_time` cursor and `has_more` flag returned by the API. This returns metadata for each available log file.
+2. For each listed file, the integration downloads its contents (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`). This endpoint redirects to a signed download URL that serves the log file as JSON Lines, and each line is ingested as a separate event.
+
+On the first run, logs are pulled back as far as the configured initial interval. From the second collection onward, each run resumes from the `last_end_time` cursor returned by the previous request, so events are collected without gaps or duplication.
+
+> Note: OpenAI retains compliance logs for a limited window (up to 30 days). Configure the initial interval accordingly when first enabling the integration.
 
 ## What data does this integration collect?
 
-This integration collects log messages of the following type:
+This integration collects log messages of the following types:
 
-- `Application Log`: Collects ChatGPT Enterprise `APP_LOG` events — in-app connector requests and responses, including the app/connector identity and type, the acting user, the conversation, the request input, any returned result items, and client context such as user agent and source geolocation (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs` with `event_type=APP_LOG`, followed by `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Authentication Log`: Collect ChatGPT Enterprise `AUTH_LOG` events, covering user authentication activity such as logins, token issuance, and logouts, along with the client and request context (IP, geo, user agent, and TLS fingerprints) associated with each action (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Application Authentication Log`: Collect ChatGPT Enterprise `APP_AUTH_LOG` events, covering application authentication activity such as linking and unlinking apps and connectors (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Application Log`: Collects ChatGPT Enterprise `APP_LOG` events — in-app connector requests and responses, including the app/connector identity and type, the acting user, the conversation, the request input, any returned result items, and client context such as user agent and source geolocation (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 
 ### Supported use cases
 
-Bringing OpenAI ChatGPT Enterprise Application Logs into Elastic lets security and governance teams see how connected apps and connectors are used inside ChatGPT Enterprise. Use it to monitor which apps users invoke and how often, review the requests sent to connectors and the responses returned, attribute connector activity to specific users and conversations, and add source geolocation and user-agent context to investigations. Bundled dashboards summarize connector usage and top apps, users, and actions for day-to-day monitoring and auditing.
+Bringing ChatGPT Enterprise authentication, application authentication, and application (connector) activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, and in-app connector activity in one place instead of moving between separate tools.
+
+The **Authentication Log** data stream provides visibility into who signed in, when, from where, and with what client, including the action outcome and source geolocation. Use it to monitor login, token issuance, and logout activity, detect sign-ins from unexpected locations, and surface anomalous or high-risk authentication behavior to support security oversight and auditing.
+
+The **Application Authentication Log** data stream provides visibility into which apps and connectors are linked or unlinked, who performed the action, and the client and request context associated with it. Use it to audit connector lifecycle changes, monitor app-authorization activity, and surface anomalous or high-risk link/unlink actions to support security oversight and auditing.
+
+The **Application Log** data stream provides visibility into how connected apps and connectors are used inside ChatGPT Enterprise. Use it to monitor which apps users invoke and how often, review the requests sent to connectors and the responses returned, attribute connector activity to specific users and conversations, and add source geolocation and user-agent context to investigations.
 
 ## What do I need to use this integration?
 
@@ -30,13 +45,18 @@ Bringing OpenAI ChatGPT Enterprise Application Logs into Elastic lets security a
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-### From OpenAI ChatGPT Enterprise
+### From OpenAI
 
-To collect data through the OpenAI Compliance Logs Platform API, you need:
+To collect data through the OpenAI Compliance Logs Platform API, you need to provide the **Compliance API key** and the **workspace or organization ID** whose logs you want to collect. Authentication is handled using the Compliance API key, which serves as the required credential.
 
-- A ChatGPT Enterprise plan with the Compliance Logs Platform enabled.
-- A **Compliance API key** authorized for enterprise logs (scope `chatgpt.enterprise.compliance_export.read`). Request the key from OpenAI and, if required, contact OpenAI support to grant the scope. See [Compliance API for enterprise customers](https://help.openai.com/en/articles/9261474-compliance-api-for-enterprise-customers) for details.
-- The **workspace ID** or **organization ID** whose compliance logs you want to collect.
+#### Retrieve the Compliance API key and resource ID:
+
+1. Ensure your organization has a **ChatGPT Enterprise** plan with the **Compliance Logs Platform** enabled.
+2. Request a **Compliance API key** from OpenAI and ensure it is authorized for enterprise logs (contact OpenAI support to grant the key the `chatgpt.enterprise.compliance_export.read` scope).
+3. Identify the **workspace ID** or **organization ID** whose compliance logs you want to collect.
+4. Copy both the **Compliance API key** and the **resource ID** and store them securely for use in the integration configuration.
+
+See [Compliance API for enterprise customers](https://help.openai.com/en/articles/9261474-compliance-api-for-enterprise-customers) for more details.
 
 ## How do I deploy this integration?
 
@@ -45,8 +65,6 @@ This integration supports both Elastic Agentless-based and Agent-based installat
 ### Agent-based deployment
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
-
-Elastic Agent is required to stream data from the OpenAI Compliance Logs Platform API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Agentless deployment
 
@@ -60,13 +78,14 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 2. In the search bar, type **OpenAI ChatGPT Enterprise**.
 3. Select the **OpenAI ChatGPT Enterprise** integration from the search results.
 4. Select **Add OpenAI ChatGPT Enterprise** to add the integration.
-5. Configure the data collection method by providing:
+5. Configure the integration:
 
-    - **URL** — the base URL of the Compliance Logs Platform API (default `https://api.chatgpt.com`).
-    - **Compliance API key** — the enterprise-authorized compliance API key.
-    - **Scope** — collect at the `workspace` or `organization` level.
-    - **Workspace / Organization ID** — the resource ID whose compliance logs are collected.
-    - Adjust the integration configuration parameters if required, including the Initial Interval and Interval, to enable data collection.
+    * To **Collect ChatGPT Enterprise compliance logs**, you'll need to:
+
+        - Configure the **URL** (default `https://api.chatgpt.com`) and **Compliance API key**.
+        - Set the **Scope** to `workspace` or `organization`.
+        - Set the **Workspace / Organization ID** to the resource whose compliance logs are collected.
+        - Adjust the integration configuration parameters if required, including the Initial Interval, Interval, HTTP Client Timeout and so on to enable data collection.
 
 6. Select **Save and continue** to save the integration.
 
@@ -81,13 +100,39 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-> Note: OpenAI retains compliance logs for a limited window (up to 30 days). Configure the initial interval accordingly when first enabling the integration; values beyond the retention window will not return older data.
-
 ## Scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
+
+### Auth Log
+
+The `auth_log` data stream captures ChatGPT Enterprise `AUTH_LOG` events (user authentication activity such as logins, token issuance, and logouts, including client and request context).
+
+#### Auth Log fields
+
+{{ fields "auth_log" }}
+
+### Example event
+
+#### Auth Log
+
+{{ event "auth_log" }}
+
+### App Auth Log
+
+The `app_auth_log` data stream captures ChatGPT Enterprise `APP_AUTH_LOG` events (application authentication activity such as linking and unlinking apps and connectors).
+
+#### App Auth Log fields
+
+{{ fields "app_auth_log" }}
+
+### Example event
+
+#### App Auth Log
+
+{{ event "app_auth_log" }}
 
 ### App Log
 
@@ -95,21 +140,28 @@ The `app_log` data stream captures ChatGPT Enterprise `APP_LOG` events (in-app c
 
 #### App Log fields
 
-{{fields "app_log"}}
+{{ fields "app_log" }}
 
 ### Example event
 
 #### App Log
 
-{{event "app_log"}}
+{{ event "app_log" }}
 
 ### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
+
 {{ inputDocs }}
 
 ### API usage
 
 These APIs are used with this integration:
 
-- List Application Log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs` with `event_type=APP_LOG`).
-- Download an Application Log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+* Authentication Log:
+    * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
+    * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Application Authentication Log:
+    * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
+    * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Application Log:
+    * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
+    * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
