@@ -25,7 +25,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      value: state
+      value: asset
   - set:
       field: event.category
       tag: set_event_category
@@ -198,6 +198,12 @@ processors:
       allow_duplicates: false
       if: ctx.user?.name != null
       tag: append_related_user
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+      tag: append_related_user_email
 
   ## Clean up
   - script:
