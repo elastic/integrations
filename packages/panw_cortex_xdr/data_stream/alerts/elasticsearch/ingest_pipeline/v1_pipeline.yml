@@ -2,6 +2,7 @@
 description: Pipeline for Palo Alto Cortext XDR Alerts v1 API.
 processors:
   - fingerprint:
+      tag: fingerprint_9f0eb322
       fields:
         - panw_cortex.xdr.events.event_timestamp
         - panw_cortex.xdr.events.event_id
@@ -10,155 +11,186 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - date:
+      tag: date_panw_cortex_xdr_events_event_timestamp_a2c59f96
       field: panw_cortex.xdr.events.event_timestamp
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.events?.event_timestamp != null
   - date:
+      tag: date_panw_cortex_xdr_events_agent_host_boot_time_to_panw_cortex_xdr_events_agent_host_boot_time_8d10f812
       field: panw_cortex.xdr.events.agent_host_boot_time
       target_field: panw_cortex.xdr.events.agent_host_boot_time
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.events?.agent_host_boot_time != null
   - date:
+      tag: date_panw_cortex_xdr_detection_timestamp_to_event_created_78ac6df9
       field: panw_cortex.xdr.detection_timestamp
       target_field: event.created
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.detection_timestamp != null
   - date:
+      tag: date_panw_cortex_xdr_end_match_attempt_ts_to_panw_cortex_xdr_end_match_attempt_ts_964a05e8
       field: panw_cortex.xdr.end_match_attempt_ts
       target_field: panw_cortex.xdr.end_match_attempt_ts
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.end_match_attempt_ts != null
   - date:
+      tag: date_panw_cortex_xdr_local_insert_ts_to_panw_cortex_xdr_local_insert_ts_3f6359ea
       field: panw_cortex.xdr.local_insert_ts
       target_field: panw_cortex.xdr.local_insert_ts
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.local_insert_ts != null
   - rename:
+      tag: rename_panw_cortex_xdr_name_to_message_2d8d51d6
       field: panw_cortex.xdr.name
       target_field: message
       ignore_missing: true
       override: true
   - set:
+      tag: set_event_severity_8fa551aa
       field: event.severity
       value: 0
       if: ctx.panw_cortex?.xdr?.severity == "unknown"
   - set:
+      tag: set_event_severity_dc82f1ca
       field: event.severity
       value: 1
       if: ctx.panw_cortex?.xdr?.severity == "informational"
   - set:
+      tag: set_event_severity_4987ec40
       field: event.severity
       value: 2
       if: ctx.panw_cortex?.xdr?.severity == "low"
   - set:
+      tag: set_event_severity_337f7362
       field: event.severity
       value: 3
       if: ctx.panw_cortex?.xdr?.severity == "medium"
   - set:
+      tag: set_event_severity_a870e6fa
       field: event.severity
       value: 4
       if: ctx.panw_cortex?.xdr?.severity == "high"
   - rename:
+      tag: rename_panw_cortex_xdr_external_id_to_event_id_c86f2ab4
       field: panw_cortex.xdr.external_id
       target_field: event.id
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_action_to_event_action_42c157a6
       field: panw_cortex.xdr.action
       target_field: event.action
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_description_to_event_reason_91664e45
       field: panw_cortex.xdr.description
       target_field: event.reason
       ignore_missing: true
       if: ctx.panw_cortex?.xdr?.description instanceof String
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_description_to_panw_cortex_xdr_bioc_description_e00626c5
       field: panw_cortex.xdr.description
       target_field: panw_cortex.xdr.bioc_description
       ignore_missing: true
       if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description instanceof List
       override: true
   - set:
+      tag: set_event_reason_fd9a9809
       field: event.reason
       value: Bioc Event
       if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null
   - rename:
+      tag: rename_panw_cortex_xdr_agent_device_domain_to_host_domain_54c9210f
       field: panw_cortex.xdr.agent_device_domain
       target_field: host.domain
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_agent_fqdn_to_host_hostname_d1325b5e
       field: panw_cortex.xdr.agent_fqdn
       target_field: host.hostname
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_host_name_to_host_hostname_b3c2856a
       field: panw_cortex.xdr.host_name
       target_field: host.hostname
       ignore_missing: true
       if: ctx.host?.hostname == null
       override: true
   - lowercase:
+      tag: lowercase_host_hostname_to_host_name_39c0d2d1
       target_field: host.name
       field: host.hostname
       if: ctx.host?.hostname != null
   - rename:
+      tag: rename_panw_cortex_xdr_agent_os_type_to_host_os_name_2a107338
       field: panw_cortex.xdr.agent_os_type
       target_field: host.os.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_agent_os_sub_type_to_host_os_version_09b35710
       field: panw_cortex.xdr.agent_os_sub_type
       target_field: host.os.version
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_mac_addresses_to_host_mac_71ef9ecf
       field: panw_cortex.xdr.mac_addresses
       target_field: host.mac
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_host_ip_to_host_ip_727babf7
       field: panw_cortex.xdr.host_ip
       target_field: host.ip
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_endpoint_id_to_host_id_0ddf3a76
       field: panw_cortex.xdr.endpoint_id
       target_field: host.id
       ignore_missing: true
       override: true
   - split:
+      tag: split_panw_cortex_xdr_mac_to_host_mac_25564f0c
       field: panw_cortex.xdr.mac
       target_field: host.mac
       separator: ","
       ignore_missing: true
       if: ctx.host?.mac == null
   - remove:
+      tag: remove_c40d8f42
       field:
         - panw_cortex.xdr.mac
       ignore_missing: true
       if: ctx.host?.mac != null
   - gsub:
+      tag: gsub_host_mac_327602f7
       field: host.mac
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
   - uppercase:
+      tag: uppercase_host_mac_73cd4413
       field: host.mac
       ignore_missing: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_dns_query_name_to_dns_question_name_ac90fe5d
       field: panw_cortex.xdr.events.dns_query_name
       target_field: dns.question.name
       ignore_missing: true
       override: true
   - script:
+      tag: script_ad7409b5
       if: ctx.panw_cortex?.xdr?.mitre_technique_id_and_name != null
       lang: painless
       description: "Extract Mitre Techniques and append it to Threat ECS fields"
@@ -187,6 +219,7 @@ processors:
           addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
         }
   - script:
+      tag: script_45d60717
       if: ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name != null
       lang: painless
       description: "Extract Mitre Tactics and append it to Threat ECS fields"
@@ -215,204 +248,243 @@ processors:
           addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
         }
   - set:
+      tag: set_threat_framework_5b18ca5e
       field: threat.framework
       value: "MITRE ATT&CK"
       if: ctx.threat?.technique != null || ctx.threat?.tactic != null
   #The Action actor is an an activity that took place and was recorded by the agent.
   - convert:
+      tag: convert_panw_cortex_xdr_events_action_remote_ip_to_destination_ip_5df66cda
       field: panw_cortex.xdr.events.action_remote_ip
       target_field: destination.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_panw_cortex_xdr_events_action_remote_port_to_destination_port_907e1efe
       field: panw_cortex.xdr.events.action_remote_port
       target_field: destination.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_panw_cortex_xdr_events_action_local_ip_to_source_ip_51931217
       field: panw_cortex.xdr.events.action_local_ip
       target_field: source.ip
       type: ip
       ignore_missing: true
   - convert:
+      tag: convert_panw_cortex_xdr_events_action_local_port_to_source_port_6b2c0f42
       field: panw_cortex.xdr.events.action_local_port
       target_field: source.port
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_process_image_sha256_to_process_hash_sha256_f8e3b3f5
       field: panw_cortex.xdr.events.action_process_image_sha256
       target_field: process.hash.sha256
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_process_image_command_line_to_process_command_line_986cd85b
       field: panw_cortex.xdr.events.action_process_image_command_line
       target_field: process.command_line
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_process_image_name_to_process_name_c279881b
       field: panw_cortex.xdr.events.action_process_image_name
       target_field: process.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_process_signature_vendor_to_process_code_signature_subject_name_0bb860be
       field: panw_cortex.xdr.events.action_process_signature_vendor
       target_field: process.code_signature.subject_name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_process_signature_status_to_process_code_signature_status_3604825e
       field: panw_cortex.xdr.events.action_process_signature_status
       target_field: process.code_signature.status
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_process_instance_id_to_process_entity_id_9ad604bb
       field: panw_cortex.xdr.events.action_process_instance_id
       target_field: process.entity_id
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_file_path_to_file_path_ffc488c7
       field: panw_cortex.xdr.events.action_file_path
       target_field: file.path
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_file_name_to_file_name_7201d1e7
       field: panw_cortex.xdr.events.action_file_name
       target_field: file.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_file_md5_to_file_hash_md5_3b34151f
       field: panw_cortex.xdr.events.action_file_md5
       target_field: file.hash.md5
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_file_sha256_to_file_hash_sha256_abc0c211
       field: panw_cortex.xdr.events.action_file_sha256
       target_field: file.hash.sha256
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_registry_key_name_to_registry_key_1b911741
       field: panw_cortex.xdr.events.action_registry_key_name
       target_field: registry.key
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_registry_value_name_to_registry_value_ee5d0075
       field: panw_cortex.xdr.events.action_registry_value_name
       target_field: registry.value
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_registry_full_key_to_registry_path_36834cff
       field: panw_cortex.xdr.events.action_registry_full_key
       target_field: registry.path
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_action_registry_data_to_registry_data_strings_827a315b
       field: panw_cortex.xdr.events.action_registry_data
       target_field: registry.data.strings
       ignore_missing: true
       override: true
   - set:
+      tag: set_registry_data_strings_9dc338e0
       field: registry.data.strings
       value: ['{{{registry.data.strings}}}']
       if: ctx.registry?.data?.strings instanceof String
   #The Actor actor is the process that performed the action.
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_os_pid_to_process_pid_02069895
       field: panw_cortex.xdr.events.actor_process_os_pid
       target_field: process.pid
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_instance_id_to_process_entity_id_187391c0
       field: panw_cortex.xdr.events.actor_process_instance_id
       target_field: process.entity_id
       ignore_missing: true
       if: ctx.process?.entity_id == null
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_image_path_to_process_executable_e160d5f1
       field: panw_cortex.xdr.events.actor_process_image_path
       target_field: process.executable
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_command_line_to_process_command_line_0cadc0e1
       field: panw_cortex.xdr.events.actor_process_command_line
       target_field: process.command_line
       ignore_missing: true
       if: ctx.process?.command_line == null
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_image_name_to_process_name_f35d7b6c
       field: panw_cortex.xdr.events.actor_process_image_name
       target_field: process.name
       ignore_missing: true
       if: ctx.process?.name == null
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_signature_vendor_to_process_code_signature_subject_name_fc687cab
       field: panw_cortex.xdr.events.actor_process_signature_vendor
       target_field: process.code_signature.subject_name
       ignore_missing: true
       if: ctx.process?.code_signature?.subject_name == null
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_image_sha256_to_process_hash_sha256_6ffeeef9
       field: panw_cortex.xdr.events.actor_process_image_sha256
       target_field: process.hash.sha256
       ignore_missing: true
       if: ctx.process?.hash?.sha256 == null
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_process_image_md5_to_process_hash_md5_ba7c4c5e
       field: panw_cortex.xdr.events.actor_process_image_md5
       target_field: process.hash.md5
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_actor_thread_thread_id_to_process_thread_id_861318f6
       field: panw_cortex.xdr.events.actor_thread_thread_id
       target_field: process.thread.id
       ignore_missing: true
       override: true
   #The Causality actor—also referred to as the causality group owner (CGO)—is the parent process in the execution chain that the Cortex XDR agent identified as being responsible for initiating the process tree.
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_image_name_to_process_parent_name_c50d3c44
       field: panw_cortex.xdr.events.causality_actor_process_image_name
       target_field: process.parent.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_image_path_to_process_parent_executable_ddda3f75
       field: panw_cortex.xdr.events.causality_actor_process_image_path
       target_field: process.parent.executable
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_image_md5_to_process_parent_hash_md5_16780578
       field: panw_cortex.xdr.events.causality_actor_process_image_md5
       target_field: process.parent.hash.md5
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_image_sha256_to_process_parent_hash_sha256_0ecdc3c8
       field: panw_cortex.xdr.events.causality_actor_process_image_sha256
       target_field: process.parent.hash.sha256
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_causality_id_to_process_parent_entity_id_c6e298da
       field: panw_cortex.xdr.events.causality_actor_causality_id
       target_field: process.parent.entity_id
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_signature_vendor_to_process_parent_code_signature_subject_name_37549a0f
       field: panw_cortex.xdr.events.causality_actor_process_signature_vendor
       target_field: process.parent.code_signature.subject_name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_signature_status_to_process_parent_code_signature_status_5187943f
       field: panw_cortex.xdr.events.causality_actor_process_signature_status
       target_field: process.parent.code_signature.status
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_command_line_to_process_parent_command_line_f5f09928
       field: panw_cortex.xdr.events.causality_actor_process_command_line
       target_field: process.parent.command_line
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_causality_actor_process_execution_time_to_process_parent_uptime_839d5b56
       field: panw_cortex.xdr.events.causality_actor_process_execution_time
       target_field: process.parent.uptime
       ignore_missing: true
       override: true
       # Parse user.domain from user.name
   - grok:
+      tag: grok_panw_cortex_xdr_events_user_name_474a7106
       field: panw_cortex.xdr.events.user_name
       ignore_missing: true
       patterns:
@@ -422,62 +494,76 @@ processors:
         - '^%{DATA:user.name}$'
       if: ctx.panw_cortex?.xdr?.events?.user_name != null
   - set:
+      tag: set_user_email_51aa4ed6
       field: user.email
       copy_from: panw_cortex.xdr.events.user_name
       if: ctx.panw_cortex?.xdr?.events?.user_name instanceof String && ctx.panw_cortex.xdr.events.user_name.contains('@') && ctx.panw_cortex.xdr.events.user_name.contains('.')
   - set:
+      tag: set_user_id_782efceb
       field: user.id
       copy_from: panw_cortex.xdr.events.user_name
       if: ctx.panw_cortex?.xdr?.events?.user_name instanceof String && ctx.panw_cortex.xdr.events.user_name.contains('@') && ctx.panw_cortex.xdr.events.user_name.contains('.')
   - remove:
+      tag: remove_panw_cortex_xdr_events_user_name_8cafe04c
       field: panw_cortex.xdr.events.user_name
       ignore_missing: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_fw_rule_to_rule_name_1b830c24
       field: panw_cortex.xdr.events.fw_rule
       target_field: rule.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_fw_rule_id_to_rule_id_1c501182
       field: panw_cortex.xdr.events.fw_rule_id
       target_field: rule.id
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_fw_interface_from_to_observer_ingress_interface_name_2d165142
       field: panw_cortex.xdr.events.fw_interface_from
       target_field: observer.ingress.interface.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_fw_interface_to_to_observer_egress_interface_name_ae325773
       field: panw_cortex.xdr.events.fw_interface_to
       target_field: observer.egress.interface.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_panw_cortex_xdr_events_fw_serial_number_to_observer_serial_number_f889a9e9
       field: panw_cortex.xdr.events.fw_serial_number
       target_field: observer.serial_number
       ignore_missing: true
       override: true
   - set:
+      tag: set_email_subject_44ae94ee
       field: email.subject
       copy_from: panw_cortex.xdr.events.fw_email_subject
       if: ctx.panw_cortex.xdr?.events?.fw_email_subject != null
   - append:
+      tag: append_email_from_address_9e710573
       field: email.from.address
       value: "{{{panw_cortex.xdr.events.fw_email_sender}}}"
       if: ctx.panw_cortex.xdr?.events?.fw_email_sender != null
   - append:
+      tag: append_email_to_address_4999ea3a
       field: email.to.address
       value: "{{{panw_cortex.xdr.events.fw_email_recipient}}}"
       if: ctx.panw_cortex.xdr?.events?.fw_email_recipient != null
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -486,6 +572,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -494,61 +581,73 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_e314b953
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_86ec1065
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_5217ce8f
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
       override: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_13979e17
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
       override: true
   - append:
+      tag: append_related_hash_badcbdc2
       field: related.hash
       value: "{{{process.parent.hash.md5}}}"
       allow_duplicates: false
       if: ctx.process?.parent?.hash?.md5 != null
   - append:
+      tag: append_related_hash_fd8e170a
       field: related.hash
       value: "{{{process.parent.hash.sha256}}}"
       allow_duplicates: false
       if: ctx.process?.parent?.hash?.sha256 != null
   - append:
+      tag: append_related_hash_e71b2329
       field: related.hash
       value: "{{{process.hash.md5}}}"
       allow_duplicates: false
       if: ctx.process?.hash?.md5 != null
   - append:
+      tag: append_related_hash_239dcc07
       field: related.hash
       value: "{{{process.hash.sha256}}}"
       allow_duplicates: false
       if: ctx.process?.hash?.sha256 != null
   - append:
+      tag: append_related_hash_017aef51
       field: related.hash
       value: "{{{file.hash.sha256}}}"
       allow_duplicates: false
       if: ctx.file?.hash?.sha256 != null
   - append:
+      tag: append_related_hash_6af42da3
       field: related.hash
       value: "{{{file.hash.md5}}}"
       allow_duplicates: false
       if: ctx.file?.hash?.md5 != null
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - foreach:
+      tag: foreach_panw_cortex_xdr_tags_071d6bfe
       field: panw_cortex.xdr.tags
       if: ctx.panw_cortex?.xdr?.tags != null
       processor:
@@ -557,6 +656,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
+      tag: remove_70fa3a05
       field:
         - panw_cortex.xdr.host_name
         - panw_cortex.xdr.detection_timestamp
