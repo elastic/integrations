@@ -2,6 +2,7 @@
 description: Pipeline for processing BeyondTrust Password Safe Sessions.
 processors:
   - set:
+      tag: set_ecs_version_c157feff
       field: ecs.version
       value: '9.1.0'
   - terminate:
@@ -9,6 +10,7 @@ processors:
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      tag: fingerprint_a315eca5
       description: >-
         This API does does not have a cursor.
         The integration collects all sessions on each execution.
@@ -88,47 +90,58 @@ processors:
         }
         ctx.beyondinsight_password_safe.session = renamedFields;
   - date:
+      tag: date_beyondinsight_password_safe_session_start_time_to_beyondinsight_password_safe_session_start_time_7d33a2c0
       if: ctx.beyondinsight_password_safe.session?.start_time != null
       field: beyondinsight_password_safe.session.start_time
       target_field: beyondinsight_password_safe.session.start_time
       formats:
         - ISO8601
   - date:
+      tag: date_beyondinsight_password_safe_session_end_time_to_beyondinsight_password_safe_session_end_time_42aa099f
       if: ctx.beyondinsight_password_safe.session?.end_time != null
       field: beyondinsight_password_safe.session.end_time
       target_field: beyondinsight_password_safe.session.end_time
       formats:
         - ISO8601
   - set:
+      tag: set_event_start_ffd2ffcf
       if: ctx.beyondinsight_password_safe.session?.start_time != null
       field: event.start
       copy_from: beyondinsight_password_safe.session.start_time
   - set:
+      tag: set_event_end_12c61ac8
       if: ctx.beyondinsight_password_safe.session?.end_time != null
       field: event.end
       copy_from: beyondinsight_password_safe.session.end_time
   - set:
+      tag: set_timestamp_7170917b
       if: ctx.event?.end != null
       field: '@timestamp'
       copy_from: event.end
   - set:
+      tag: set_timestamp_a8fc8485
       if: ctx.event?.end == null && ctx.event?.start != null
       field: '@timestamp'
       copy_from: event.start
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_d21db9a2
       field: event.category
       value: session
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_event_duration_a1c77736
       field: event.duration
       copy_from: beyondinsight_password_safe.session.duration
       ignore_empty_value: true
   - script:
+      tag: script_e6225214
       description: Convert event.duration from seconds to nanoseconds to align with ECS.
       lang: painless
       if: ctx.event?.duration != null
@@ -202,32 +215,39 @@ processors:
           ctx.beyondinsight_password_safe.session.session_type = description;
         }
   - set:
+      tag: set_network_protocol_fc6ab79c
       field: network.protocol
       copy_from: beyondinsight_password_safe.session.protocol
       ignore_empty_value: true
   - set:
+      tag: set_event_id_00885d55
       field: event.id
       copy_from: beyondinsight_password_safe.session.session_id
       ignore_empty_value: true
   - set:
+      tag: set_user_id_95e55eb5
       field: user.id
       copy_from: beyondinsight_password_safe.session.user_id
       ignore_empty_value: true
   - set:
+      tag: set_user_name_52510af3
       field: user.name
       copy_from: beyondinsight_password_safe.session.managed_account_name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_915c0516
       if: ctx.beyondinsight_password_safe?.session?.asset_name != null
       field: related.hosts
       value: "{{{beyondinsight_password_safe.session.asset_name}}}"
       allow_duplicates: false
   - append:
+      tag: append_related_user_9d9e6238
       if: ctx.beyondinsight_password_safe?.session?.managed_account_name != null
       field: related.user
       value: "{{{beyondinsight_password_safe.session.managed_account_name}}}"
       allow_duplicates: false
   - append:
+      tag: append_related_user_9e96fd82
       if: ctx.beyondinsight_password_safe?.session?.user_id != null
       field: related.user
       value: "{{{beyondinsight_password_safe.session.user_id}}}"

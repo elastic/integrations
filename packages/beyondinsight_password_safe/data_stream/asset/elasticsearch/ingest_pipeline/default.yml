@@ -2,6 +2,7 @@
 description: Pipeline for processing BeyondInsight Workgroup Assets.
 processors:
   - set:
+      tag: set_ecs_version_c157feff
       field: ecs.version
       value: '9.1.0'
   - terminate:
@@ -9,6 +10,7 @@ processors:
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      tag: fingerprint_b6cca44d
       description: >-
         This API does does not have a cursor.
         The integration collects all assets on each execution.
@@ -21,6 +23,7 @@ processors:
       tag: json_event_original
       target_field: beyondinsight_password_safe.asset
   - script:
+      tag: script_69fcb8e3
       description: Remove null values and empty strings from beyondinsight_password_safe.asset.
       lang: painless
       source: |
@@ -72,21 +75,26 @@ processors:
         }
         ctx.beyondinsight_password_safe.asset = renamedFields;
   - date:
+      tag: date_beyondinsight_password_safe_asset_last_update_date_to_timestamp_18c49c68
       if: ctx.beyondinsight_password_safe?.asset?.last_update_date != null
       field: beyondinsight_password_safe.asset.last_update_date
       target_field: "@timestamp"
       formats:
         - ISO8601
   - set:
+      tag: set_event_kind_18c57bf4
       field: event.kind
       value: asset
   - append:
+      tag: append_event_category_3fa422a0
       field: event.category
       value: host
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_host_name_a33dce1f
       field: host.name
       copy_from: beyondinsight_password_safe.asset.asset_name
       ignore_empty_value: true
@@ -97,59 +105,72 @@ processors:
       replacement: '-'
       tag: gsub_mac_address
   - uppercase:
+      tag: uppercase_beyondinsight_password_safe_asset_mac_address_6daad50f
       field: beyondinsight_password_safe.asset.mac_address
       ignore_missing: true
   - append:
+      tag: append_host_mac_1d4125e8
       if: ctx.beyondinsight_password_safe?.asset?.mac_address != null
       field: host.mac
       value: '{{{beyondinsight_password_safe.asset.mac_address}}}'
   - set:
+      tag: set_host_os_full_1bf9fb31
       if: ctx.beyondinsight_password_safe?.asset?.operating_system != null
       field: host.os.full
       copy_from: beyondinsight_password_safe.asset.operating_system
   - set:
+      tag: set_host_domain_35027086
       if: ctx.beyondinsight_password_safe?.asset?.domain_name != null
       field: host.domain
       copy_from: beyondinsight_password_safe.asset.domain_name
   - gsub:
+      tag: gsub_beyondinsight_password_safe_asset_ip_address_90b04f2c
       if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
       description: Remove leading zeros from IP address octets.
       field: beyondinsight_password_safe.asset.ip_address
       pattern: "\\b0+(\\d)"
       replacement: "$1"
   - convert:
+      tag: convert_beyondinsight_password_safe_asset_ip_address_235eb9d1
       if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
       field: beyondinsight_password_safe.asset.ip_address
       type: ip
       on_failure:
         - remove:
+            tag: remove_beyondinsight_password_safe_asset_ip_address_61920b7c
             field: beyondinsight_password_safe.asset.ip_address
   - append:
+      tag: append_host_ip_0cebc425
       if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
       field: host.ip
       value: "{{{beyondinsight_password_safe.asset.ip_address}}}"
       allow_duplicates: false
   - geoip:
+      tag: geoip_host_ip_to_host_geo_b6f95445
       field: host.ip
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_hosts_0d7db6fe
       if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.asset.ip_address}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_3dd34fae
       if: ctx.beyondinsight_password_safe?.asset?.asset_name != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.asset.asset_name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_cdb59436
       if: ctx.beyondinsight_password_safe?.asset?.dns_name != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.asset.dns_name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8eff38ee
       if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
       field: related.ip
       value: '{{{beyondinsight_password_safe.asset.ip_address}}}'
