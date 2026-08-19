@@ -3,6 +3,7 @@
 description: Pipeline for processing Microsoft DHCP Server logs.
 processors:
   - csv:
+      tag: csv_event_original_bb6c7170
       field: event.original
       target_fields:
         - event.code
@@ -26,16 +27,20 @@ processors:
         - microsoft.dhcp.dns_error_code
       ignore_failure: true
   - lowercase:
+      tag: lowercase_source_address_65c78eda
       field: source.address
       if: "ctx.source?.address != null"
   - set:
+      tag: set_source_domain_1e38fd4a
       field: source.domain
       if: "ctx.source?.address != null"
       copy_from: source.address
   - set:
+      tag: set__tmp__timestamp_0c3703ce
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
   - date:
+      tag: date__tmp__timestamp_d2dd36d6
       field: _tmp_.timestamp
       formats:
         - "MM/dd/yy HH:mm:ss"
@@ -389,22 +394,27 @@ processors:
         }
         ctx.microsoft.dhcp['result_description'] = desc; 
   - set:
+      tag: set_event_outcome_d8aaefc7
       field: event.outcome
       value: success
       if: ctx.event?.outcome == null
   - set:
+      tag: set_event_reason_bdf19041
       field: event.reason
       value: '{{{event.reason}}}'
       if: ctx.event?.reasson != null
   - uppercase:
+      tag: uppercase__tmp__source_mac_58e5826b
       field: _tmp_.source.mac
       ignore_missing: true
   - gsub:
+      tag: gsub__tmp__source_mac_75d3c132
       field: _tmp_.source.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - set:
+      tag: set_source_mac_16bcbd58
       if: ctx._tmp_?.source?.mac != null
       field: source.mac
       copy_from: _tmp_.source.mac

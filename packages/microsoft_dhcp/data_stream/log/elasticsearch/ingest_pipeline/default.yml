@@ -2,32 +2,40 @@
 description: Pipeline for processing Microsoft DHCP Server logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_timezone_9e69f396
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
       if: "ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - pipeline:
+      tag: pipeline_b25acb54
       name: '{{ IngestPipeline "dhcp" }}'
       if: "ctx.log?.file?.path != null && !ctx.log.file.path.contains('V6')"
   - pipeline:
+      tag: pipeline_78ecd551
       name: '{{ IngestPipeline "dhcpv6" }}'
       if: "ctx.log?.file?.path != null && ctx.log.file.path.contains('V6')"
   - set:
+      tag: set_host_ip_a2b2a2c8
       field: host.ip
       override: false
       copy_from: observer.ip
       ignore_empty_value: true
   - foreach:
+      tag: foreach_observer_mac_b8b0d2dc
       field: observer.mac
       ignore_missing: true
       processor:
@@ -36,22 +44,26 @@ processors:
           pattern: '[:]'
           replacement: '-'
   - foreach:
+      tag: foreach_observer_mac_35a22fcc
       field: observer.mac
       ignore_missing: true
       processor:
         uppercase:
           field: _ingest._value
   - set:
+      tag: set_host_mac_a0304462
       field: host.mac
       override: false
       copy_from: observer.mac
       ignore_empty_value: true
   - set:
+      tag: set_host_name_cdf0840f
       field: host.name
       override: false
       copy_from: agent.name
       ignore_empty_value: true
   - grok:
+      tag: grok_host_name_4d9b0a88
       field: host.name
       if: 'ctx.host?.name != null && ctx.host.name.contains(".")'
       patterns:
@@ -60,11 +72,13 @@ processors:
         "HOSTNAME": "[^.]+"
       ignore_failure: true
   - set:
+      tag: set_host_hostname_a722953b
       field: host.hostname
       override: false
       copy_from: agent.hostname
       ignore_empty_value: true
   - remove:
+      tag: remove_4c33e48e
       field:
         - _tmp_
         - _conf

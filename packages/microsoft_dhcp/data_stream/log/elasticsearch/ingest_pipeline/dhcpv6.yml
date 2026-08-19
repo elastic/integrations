@@ -2,6 +2,7 @@
 description: Pipeline for processing Microsoft DHCPv6 Server logs.
 processors:
   - csv:
+      tag: csv_event_original_032f73f4
       field: event.original
       target_fields:
         - event.code
@@ -18,16 +19,20 @@ processors:
         - microsoft.dhcp.subnet_prefix
       ignore_failure: true
   - lowercase:
+      tag: lowercase_source_address_65c78eda
       field: source.address
       if: "ctx.source?.address != null"
   - set:
+      tag: set_source_domain_1e38fd4a
       field: source.domain
       if: "ctx.source?.address != null"
       copy_from: source.address
   - set:
+      tag: set__tmp__timestamp_0c3703ce
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
   - date:
+      tag: date__tmp__timestamp_d2dd36d6
       field: _tmp_.timestamp
       formats:
         - "MM/dd/yy HH:mm:ss"
@@ -241,6 +246,7 @@ processors:
         def hm = new HashMap(params[ctx.event.code]);
         hm.forEach((k, v) -> ctx.event[k] = v);
   - set:
+      tag: set_event_outcome_e318b31c
       field: event.outcome
       value: success
       if: ctx?.event?.outcome == null
