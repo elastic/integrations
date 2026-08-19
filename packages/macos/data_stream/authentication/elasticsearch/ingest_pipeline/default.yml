@@ -22,30 +22,36 @@ processors:
         - '^-\[%{WORD} %{WORD}\] \|(?:%{SPACE}shortUsername = %{WORD:user.name},)?(?:%{SPACE}userID = %{NUMBER:user.id},)?(?:%{SPACE}groupID = %{NUMBER:group.id})'
         - '%{GREEDYDATA:macos.event.message.original}'
   - gsub:
+      tag: gsub_user_group_id_918150fa
       field: user.group.id
       pattern: '\"'
       replacement: ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a9e1ab64
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
+      tag: gsub_user_name_fa41b749
       field: user.name
       pattern: '\"'
       replacement: ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0b9de707
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
+      tag: gsub_user_full_name_e42d011d
       field: user.full_name
       pattern: '\"'
       replacement: ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d78e5307
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
