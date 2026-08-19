@@ -2,6 +2,7 @@
 description: Pipeline for parsing Akamai logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - terminate:
@@ -22,17 +23,22 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_8524ccf2
       if: ctx.json.offset != null
   - set:
+      tag: set_observer_vendor_90a02218
       field: observer.vendor
       value: akamai
   - set:
+      tag: set_observer_type_5da7be42
       field: observer.type
       value: proxy
   - date:
+      tag: date_json_httpMessage_start_to_timestamp_67157db0
       field: json.httpMessage.start
       formats:
         - UNIX
@@ -41,34 +47,42 @@ processors:
       # 500s do not include a timestamp.
       if: ctx.json.httpMessage?.start != null
   - set:
+      tag: set_event_start_c5e4284b
       field: "event.start"
       copy_from: "@timestamp"
       ignore_empty_value: true
   - rename:
+      tag: rename_json_httpMessage_status_to_http_response_status_code_4b68002c
       field: json.httpMessage.status
       target_field: http.response.status_code
       ignore_missing: true
   - convert:
+      tag: convert_http_response_status_code_3f4ab290
       field: http.response.status_code
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_json_httpMessage_bytes_to_http_response_bytes_d2395452
       field: json.httpMessage.bytes
       target_field: http.response.bytes
       ignore_missing: true
   - convert:
+      tag: convert_http_response_bytes_4e4d07d3
       field: http.response.bytes
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_json_httpMessage_requestId_to_http_request_id_6a1031f3
       field: json.httpMessage.requestId
       target_field: http.request.id
       ignore_missing: true
   - set:
+      tag: set_event_id_958971ee
       field: event.id
       copy_from: http.request.id
       ignore_empty_value: true
   - fingerprint:
+      tag: fingerprint_1181e134
       description: >
         Fingerprint the event.original value in attempt to prevent the same
         event from being indexed more than once under connection failures or
@@ -78,6 +92,7 @@ processors:
         - event.original
       target_field: _id
   - set:
+      tag: set__id_389e5547
       description: >
         Prefix the _id with the start time because identifiers that generally
         increase over time based on sorting order generally result in better
@@ -86,10 +101,12 @@ processors:
       field: _id
       value: '{{{json.httpMessage.start}}}-{{{_id}}}'
   - rename:
+      tag: rename_json_httpMessage_method_to_http_request_method_00fa6162
       field: json.httpMessage.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_json_httpMessage_host_to_url_domain_8d4704d2
       field: json.httpMessage.host
       target_field: url.domain
       ignore_missing: true
@@ -101,6 +118,7 @@ processors:
       on_failure:
         # We see some illegal character, if we can't decode, at least give the data that exists.
         - set:
+            tag: set_url_path_7c6eefc6
             field: url.path
             copy_from: json.httpMessage.path
   - urldecode:
@@ -111,14 +129,17 @@ processors:
       on_failure:
         # Assume a failure is due to the query already being decoded.
         - rename:
+            tag: rename_json_httpMessage_query_to_url_query_8a8b037b
             field: json.httpMessage.query
             target_field: url.query
             ignore_failure: true
   - rename:
+      tag: rename_json_httpMessage_port_to_url_port_ce428d10
       field: json.httpMessage.port
       target_field: url.port
       ignore_missing: true
   - convert:
+      tag: convert_url_port_537f953d
       field: url.port
       type: long
       ignore_missing: true
@@ -176,6 +197,7 @@ processors:
       trim_key: ' '
       trim_value: ' '
   - script:
+      tag: script_65de2be3
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
       source: |
@@ -199,54 +221,66 @@ processors:
           ctx.url.full = full
         }
   - dissect:
+      tag: dissect_json_httpMessage_protocol_02def43f
       field: json.httpMessage.protocol
       pattern: "%{network.protocol}/%{http.version}"
       ignore_failure: true
   - lowercase:
+      tag: lowercase_network_protocol_49872259
       field: network.protocol
       ignore_missing: true
   - set:
+      tag: set_network_transport_42994165
       field: network.transport
       value: tcp
       if: ctx.network?.protocol != null && ctx.network.protocol == 'http'
   - dissect:
+      tag: dissect_json_httpMessage_tls_2d17fab1
       field: json.httpMessage.tls
       pattern: "%{tls.version_protocol}v%{tls.version}"
       ignore_failure: true
       ignore_missing: true
   - lowercase:
+      tag: lowercase_tls_version_protocol_b840a1f9
       field: tls.version_protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_attackData_clientIP_to_source_address_e0c859c1
       field: json.attackData.clientIP
       target_field: source.address
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_f5632a20
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - rename:
+      tag: rename_json_geo_country_to_source_geo_country_iso_code_66520e30
       field: json.geo.country
       target_field: source.geo.country_iso_code
       ignore_missing: true
       if: ctx.source?.geo?.country_iso_code == null
   - set:
+      tag: set_source_geo_region_iso_code_3a81fa3d
       field: source.geo.region_iso_code
       value: "{{{json.geo.country}}}-{{{json.geo.regionCode}}}"
       ignore_empty_value: true
       if: ctx.source?.geo?.region_iso_code == null
   - rename:
+      tag: rename_json_geo_city_to_source_geo_city_name_b38d8cc7
       field: json.geo.city
       target_field: source.geo.city_name
       ignore_missing: true
       if: ctx.source?.geo?.city_name == null
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -255,6 +289,7 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
@@ -266,6 +301,7 @@ processors:
       if: ctx.json.geo?.asn != '' && ctx.source?.as?.number == null
       tag: convert_source_as_number
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -276,6 +312,7 @@ processors:
       target_field: json.attackData.ruleActions
       ignore_missing: true
   - split:
+      tag: split_json_attackData_ruleActions_to_json_attackData_ruleActions_583ffb49
       field: json.attackData.ruleActions
       target_field: json.attackData.ruleActions
       separator: ';'
@@ -287,6 +324,7 @@ processors:
       target_field: json.attackData.ruleData
       ignore_missing: true
   - split:
+      tag: split_json_attackData_ruleData_to_json_attackData_ruleData_340c053d
       field: json.attackData.ruleData
       target_field: json.attackData.ruleData
       separator: ';'
@@ -298,6 +336,7 @@ processors:
       target_field: json.attackData.ruleMessages
       ignore_missing: true
   - split:
+      tag: split_json_attackData_ruleMessages_to_json_attackData_ruleMessages_23761d9d
       field: json.attackData.ruleMessages
       target_field: json.attackData.ruleMessages
       separator: ';'
@@ -309,6 +348,7 @@ processors:
       target_field: json.attackData.ruleSelectors
       ignore_missing: true
   - split:
+      tag: split_json_attackData_ruleSelectors_to_json_attackData_ruleSelectors_c7cba11d
       field: json.attackData.ruleSelectors
       target_field: json.attackData.ruleSelectors
       separator: ';'
@@ -320,6 +360,7 @@ processors:
       target_field: json.attackData.ruleTags
       ignore_missing: true
   - split:
+      tag: split_json_attackData_ruleTags_to_json_attackData_ruleTags_605a02a7
       field: json.attackData.ruleTags
       target_field: json.attackData.ruleTags
       separator: ';'
@@ -331,6 +372,7 @@ processors:
       target_field: json.attackData.ruleVersions
       ignore_missing: true
   - split:
+      tag: split_json_attackData_ruleVersions_to_json_attackData_ruleVersions_c3dd7757
       field: json.attackData.ruleVersions
       target_field: json.attackData.ruleVersions
       separator: ';'
@@ -342,6 +384,7 @@ processors:
       target_field: json.attackData.rules
       ignore_missing: true
   - split:
+      tag: split_json_attackData_rules_to_json_attackData_rules_d86b5561
       field: json.attackData.rules
       target_field: json.attackData.rules
       separator: ';'
@@ -398,6 +441,7 @@ processors:
         ctx._rule_actions = rule_actions;
         ctx._rule_tags = rule_tags;
   - foreach:
+      tag: foreach__rule_actions_8dcb88da
       field: _rule_actions
       ignore_missing: true
       processor:
@@ -406,10 +450,12 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
+      tag: remove__rule_actions_37643fd0
       field: _rule_actions
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach__rule_tags_a1fe9442
       field: _rule_tags
       ignore_missing: true
       processor:
@@ -418,22 +464,27 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
+      tag: remove__rule_tags_6a724da0
       field: _rule_tags
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attackData_configId_to_akamai_siem_config_id_d8612bfd
       field: json.attackData.configId
       target_field: akamai.siem.config_id
       ignore_missing: true
   - rename:
+      tag: rename_json_attackData_policyId_to_akamai_siem_policy_id_e5d50d55
       field: json.attackData.policyId
       target_field: akamai.siem.policy_id
       ignore_missing: true
   - rename:
+      tag: rename_json_attackData_policyId_to_akamai_siem_policy_id_ba21f864
       field: json.attackData.policyId
       target_field: akamai.siem.policy_id
       ignore_missing: true
   - rename:
+      tag: rename_json_attackData_slowPostAction_to_akamai_siem_slow_post_action_da1156fa
       field: json.attackData.slowPostAction
       target_field: akamai.siem.slow_post_action
       ignore_missing: true
@@ -445,10 +496,12 @@ processors:
       if: ctx.json.attackData?.slowPostRate != ''
       tag: convert_slow_post_rate
   - rename:
+      tag: rename_json_attackData_clientReputation_to_akamai_siem_client_reputation_252c450d
       field: json.attackData.clientReputation
       target_field: akamai.siem.client_reputation
       ignore_missing: true
   - rename:
+      tag: rename_json_attackData_clientReputation_to_akamai_siem_client_reputation_d80d918a
       field: json.attackData.clientReputation
       target_field: akamai.siem.client_reputation
       ignore_missing: true
@@ -469,10 +522,12 @@ processors:
       tag: convert_bot_response_segment
   ## Client Data
   - rename:
+      tag: rename_json_clientData_appBundleId_to_akamai_siem_client_data_app_bundle_id_df9d956d
       field: json.clientData.appBundleId
       target_field: akamai.siem.client_data.app_bundle_id
       ignore_missing: true
   - rename:
+      tag: rename_json_clientData_appVersion_to_akamai_siem_client_data_app_version_1fc76556
       field: json.clientData.appVersion
       target_field: akamai.siem.client_data.app_version
       ignore_missing: true
@@ -484,6 +539,7 @@ processors:
       if: ctx.json.clientData?.telemetryType != ''
       tag: convert_telemetry_type
   - rename:
+      tag: rename_json_clientData_sdkVersion_to_akamai_siem_client_data_sdk_version_0ff91826
       field: json.clientData.sdkVersion
       target_field: akamai.siem.client_data.sdk_version
       ignore_missing: true
@@ -505,6 +561,7 @@ processors:
       ignore_missing: true
   ## User Risk Data
   - rename:
+      tag: rename_json_userRiskData_uuid_to_akamai_siem_user_risk_uuid_44cec5b1
       field: json.userRiskData.uuid
       target_field: akamai.siem.user_risk.uuid
       ignore_missing: true
@@ -582,24 +639,30 @@ processors:
         }
   ##
   - append:
+      tag: append_related_ip_feeba47d
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
   - set:
+      tag: set_client_10dffeb7
       field: client
       copy_from: source
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - remove:
+      tag: remove_a849b846
       field:
         - json
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
