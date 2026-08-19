@@ -1,4 +1,4 @@
-format_version: 3.3.2
+format_version: 3.7.0
 name: cloud_security_posture
 title: "Security Posture Management"
 version: "3.5.0"
@@ -99,6 +99,30 @@ policy_templates:
       - type: cloudbeat/cis_eks
         title: Amazon EKS Benchmark
         description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
+        provider_permissions:
+          - provider: aws
+            description: >
+              Read-only access to EKS and supporting AWS services required to run the CIS Amazon EKS Benchmark.
+            permissions:
+              - name: eks:DescribeCluster
+                description: Read EKS cluster configuration for benchmark checks.
+              - name: eks:ListClusters
+                description: Enumerate EKS clusters in the account.
+              - name: ec2:DescribeInstances
+                description: Read EC2 instance attributes for node-level checks.
+              - name: ec2:DescribeSecurityGroups
+                description: Verify node security group configuration.
+              - name: ec2:DescribeSubnets
+                description: Verify node subnet configuration.
+              - name: iam:GetRole
+                description: Read IAM roles attached to EKS node groups.
+              - name: iam:ListAttachedRolePolicies
+                description: Enumerate policies attached to EKS node IAM roles.
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-eks.cloudformation.patches.json
+            title: EKS benchmark federated identity role
   - name: cspm
     title: Cloud Security Posture Management (CSPM)
     description: Identify & remediate configuration risks in the Cloud services you leverage
@@ -130,6 +154,32 @@ policy_templates:
       - type: cloudbeat/cis_aws
         title: Amazon Web Services
         description: CIS Benchmark for Amazon Web Services Foundations
+        provider_permissions:
+          - provider: aws
+            description: >
+              Read-only access to AWS services required to run CIS AWS Foundations Benchmark checks.
+              The SecurityAudit managed policy covers most checks; the inline permissions below cover
+              services added after the policy was last updated.
+            roles:
+              - name: SecurityAudit
+                id: arn:aws:iam::aws:policy/SecurityAudit
+                description: AWS-managed read-only policy covering the majority of CIS AWS checks.
+            permissions:
+              - name: access-analyzer:ListAnalyzers
+                description: Check whether IAM Access Analyzer is enabled (CIS 1.21).
+              - name: organizations:DescribeOrganization
+                description: Identify multi-account organization structure for org-wide scans.
+              - name: organizations:ListAccounts
+                description: Enumerate member accounts for organization-level benchmark scope.
+              - name: organizations:ListDelegatedAdministrators
+                description: Verify Security Hub / Config aggregation delegation (CIS 2.6).
+              - name: account:GetAlternateContact
+                description: Verify security contact information is set (CIS 1.2).
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account.cloudformation.patches.json
+            title: CSPM federated identity role with SecurityAudit access
         vars:
           - name: cloud_formation_template
             type: text
@@ -229,6 +279,49 @@ policy_templates:
       - type: cloudbeat/vuln_mgmt_aws
         title: Amazon Web Services Vulnerability Management
         description: Vulnerability scan over running resources
+        provider_permissions:
+          - provider: aws
+            description: >
+              Permissions required to scan EC2 instances and container images for vulnerabilities
+              using AWS Inspector2 and EC2 snapshot-based scanning.
+            permissions:
+              - name: ec2:DescribeInstances
+                description: Enumerate EC2 instances to scan.
+              - name: ec2:DescribeImages
+                description: Read AMI metadata for image vulnerability scanning.
+              - name: ec2:DescribeSnapshots
+                description: Enumerate EBS snapshots used during scanning.
+              - name: ec2:CreateSnapshot
+                description: Create EBS snapshots of instance volumes for vulnerability scanning.
+              - name: ec2:DeleteSnapshot
+                description: Clean up temporary snapshots after scanning completes.
+              - name: ec2:DescribeAvailabilityZones
+                description: Discover availability zones for scanner placement.
+              - name: ec2:DescribeRegions
+                description: Enumerate regions for multi-region scanning.
+              - name: ec2:DescribeInstanceTypes
+                description: Read instance type information for scanner sizing.
+              - name: ec2:RunInstances
+                description: Launch scanner instances to perform vulnerability analysis.
+              - name: ec2:TerminateInstances
+                description: Terminate scanner instances after analysis completes.
+              - name: ec2:CreateTags
+                description: Tag scanner instances and snapshots for lifecycle management.
+              - name: ec2:DescribeTags
+                description: Read tags on instances and snapshots.
+              - name: iam:PassRole
+                description: Pass the scanner IAM role to launched EC2 instances.
+              - name: inspector2:Enable
+                description: Enable Inspector2 for vulnerability scanning in the account.
+              - name: inspector2:ListFindings
+                description: Retrieve vulnerability findings from Inspector2.
+              - name: inspector2:BatchGetAccountStatus
+                description: Check Inspector2 enablement status across accounts.
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cnvm.cloudformation.patches.json
+            title: CNVM federated identity role with EC2 and Inspector2 access
         vars:
           - name: cloud_formation_template
             type: text
