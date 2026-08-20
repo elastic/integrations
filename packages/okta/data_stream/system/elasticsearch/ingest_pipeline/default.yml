@@ -15,7 +15,7 @@ processors:
   - set:
       tag: set_version
       field: ecs.version
-      value: '8.11.0'
+      value: '9.4.0'
   # Keep message as event.original.
   # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
   - append:
@@ -75,11 +75,35 @@ processors:
       field: event.kind
       value: event
   - rename:
+      tag: rename_severity
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_severity
+      field: log.level
+      ignore_missing: true
+      ignore_failure: true
+      description: >-
+        Okta emits severity uppercase as DEBUG, INFO, WARN or ERROR. Normalized to
+        match how log.level reads across integrations.
+  - rename:
       tag: rename_displayMessage
       field: json.displayMessage
       target_field: okta.display_message
       ignore_missing: true
       ignore_failure: true
+  - set:
+      tag: set_message
+      field: message
+      copy_from: okta.display_message
+      ignore_empty_value: true
+      description: >-
+        Copied rather than renamed with the vendor field left as an alias, because ECS
+        types message as match_only_text. Aliasing would make okta.display_message
+        non-aggregatable and silently break terms aggregations and sorts on it. The raw
+        event is kept separately in event.original.
   - rename:
       tag: rename_eventType
       field: json.eventType
@@ -268,6 +292,18 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_device_id
+      field: json.device.id
+      target_field: device.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_device_model_identifier
+      field: json.device.name
+      target_field: device.model.identifier
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
       tag: rename_device
       field: json.client.device
       target_field: okta.client.device
@@ -344,10 +380,19 @@ processors:
       target_field: okta.client.zone
       ignore_missing: true
       ignore_failure: true
+  - set:
+      tag: set_network_name
+      field: network.name
+      copy_from: okta.client.zone
+      ignore_empty_value: true
+      if: ctx.okta?.client?.zone != "null"
+      description: >-
+        The Okta network zone the client request matched. Requests matching no
+        configured zone report the literal string "null", which is not copied.
   - rename:
       tag: rename_reason
       field: json.outcome.reason
-      target_field: okta.outcome.reason
+      target_field: event.reason
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -356,6 +401,67 @@ processors:
       target_field: okta.outcome.result
       ignore_missing: true
       ignore_failure: true
+  - foreach:
+      tag: foreach_entity_target_id
+      field: json.target
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_entity_target_id
+          field: entity.target.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_entity_target_display_name
+      field: json.target
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_entity_target_display_name
+          field: entity.target.display_name
+          value: '{{{_ingest._value.displayName}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_entity_target_sub_type
+      field: json.target
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_entity_target_sub_type
+          field: entity.target.sub_type
+          value: '{{{_ingest._value.type}}}'
+          allow_duplicates: false
+      description: >-
+        Okta target types such as PolicyEntity and AppInstance are provider-specific,
+        which ECS models as sub_type rather than the standardized entity.type. The
+        vendor field is left in place.
+  - script:
+      tag: script_prune_entity_target
+      lang: painless
+      ignore_failure: true
+      description: >-
+        Drops the empty strings the appends above produce for targets that carry no
+        id, displayName or type, and removes any list left empty.
+      source: |-
+        def target = ctx.entity?.target;
+        if (target == null) {
+          return;
+        }
+        for (def key : ['id', 'display_name', 'sub_type']) {
+          def values = target[key];
+          if (values instanceof List) {
+            values.removeIf(value -> value == null || value == '');
+            if (values.isEmpty()) {
+              target.remove(key);
+            }
+          }
+        }
+        if (target.isEmpty()) {
+          ctx.entity.remove('target');
+          if (ctx.entity.isEmpty()) {
+            ctx.remove('entity');
+          }
+        }
   - rename:
       tag: rename_target
       field: json.target
@@ -393,6 +499,16 @@ processors:
       tag: pipeline_authenticationProvider
       if: ctx._conf?.remove_flattened_debug == true
       name: '{{ IngestPipeline "no_use_flattened_debug" }}'
+  - set:
+      tag: set_url_original
+      field: url.original
+      copy_from: okta.debug_context.debug_data.url
+      ignore_empty_value: true
+      description: >-
+        Copied rather than renamed with the vendor field left as an alias, because
+        okta.debug_context.debug_data.url has a text multi-field and aliases cannot
+        carry multi-fields. Aliasing it would silently break queries on
+        okta.debug_context.debug_data.url.text.
   - rename:
       tag: rename_authenticationProvider
       field: json.authenticationContext.authenticationProvider
@@ -524,6 +640,14 @@ processors:
       target_field: client.as.organization.name
       type: string
       ignore_failure: true
+  - set:
+      tag: set_client_as_number
+      field: client.as.number
+      copy_from: okta.security_context.as.number
+      ignore_empty_value: true
+      description: >-
+        Paired with client.as.organization.name above, from the same securityContext
+        object, so both halves of the autonomous system always come from one source.
   - convert:
       tag: convert_domain
       field: okta.security_context.domain
@@ -654,6 +778,32 @@ processors:
         - okta_target_user
         - okta_target_group
       ignore_missing: true
+  - foreach:
+      tag: foreach_remove_target_id
+      field: okta.target
+      ignore_missing: true
+      processor:
+        remove:
+          tag: remove_target_id
+          field: _ingest._value.id
+          ignore_missing: true
+          ignore_failure: true
+      description: >-
+        Removed only after user.target.id and user.target.group.id have copied it,
+        so the vendor name can be an alias to entity.target.id.
+  - foreach:
+      tag: foreach_remove_target_display_name
+      field: okta.target
+      ignore_missing: true
+      processor:
+        remove:
+          tag: remove_target_display_name
+          field: _ingest._value.display_name
+          ignore_missing: true
+          ignore_failure: true
+      description: >-
+        Removed only after user.target.full_name and user.target.group.name have
+        copied it, so the vendor name can be an alias to entity.target.display_name.
   - set:
       tag: set_id_3
       field: client.user.id
@@ -666,6 +816,20 @@ processors:
       value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
       if: ctx.okta?.actor?.id != null
+  - set:
+      tag: set_id_5
+      field: user.id
+      value: "{{{okta.actor.id}}}"
+      ignore_empty_value: true
+      if: ctx.okta?.actor?.id != null
+  - remove:
+      tag: remove_actor_id
+      field: okta.actor.id
+      ignore_missing: true
+      description: >-
+        okta.actor.id is written to the ECS fields above rather than renamed,
+        because client.user.id and source.user.id read it. Removed here, after the
+        last read, so the vendor name can be an alias to user.id.
   - set:
       tag: set_full_name_2
       field: client.user.full_name
@@ -770,6 +934,26 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  - set:
+      tag: set_source_as_from_security_context
+      field: source.as
+      copy_from: okta.security_context.as
+      ignore_empty_value: true
+      if: ctx.source?.as == null
+      description: >-
+        Okta reports the client's autonomous system in securityContext, which describes
+        source.ip. Applied only when the GeoLite2-ASN lookup returned nothing, because
+        the two sources can disagree and the number must stay paired with the
+        organization name it came from. The whole object is copied for that reason.
+  - remove:
+      tag: remove_security_context_as
+      field: okta.security_context.as
+      ignore_missing: true
+      description: >-
+        Removed only after the reads above, so the vendor names can become aliases to
+        client.as.number and client.as.organization.name. Written and then removed
+        rather than renamed, because client.as and the source.as fallback both read
+        this object.
   - remove:
       tag: remove_conf
       field: _conf

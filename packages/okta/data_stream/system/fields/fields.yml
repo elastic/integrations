@@ -11,20 +11,30 @@
   description: |
     The version of the LogEvent.
 - name: okta.severity
-  type: keyword
+  type: alias
+  path: log.level
   description: |
-    The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR.
+    Okta's own assessment of how important the event is. One of "DEBUG", "INFO",
+    "WARN" or "ERROR". Okta emits it uppercase; it is lowercased when written to
+    `log.level`.
+    Deprecated. Use the ECS `log.level` field.
 - name: okta.display_message
   type: keyword
   description: |
-    The display message of the LogEvent.
+    The human-readable summary of the event shown in the Okta System Log UI.
+    Also available as `message`.
 - name: okta.actor
   type: group
   fields:
     - name: id
-      type: keyword
+      type: alias
+      path: user.id
       description: |
-        Identifier of the actor.
+        Identifier of the actor that performed the action. For a human actor this is
+        the Okta user ID. Events triggered by Okta itself carry the ID of a system
+        principal instead, so read it together with `okta.actor.type` to tell the two
+        apart.
+        Deprecated. Use the ECS `user.id` field.
     - name: type
       type: keyword
       description: |
@@ -70,7 +80,11 @@
     - name: zone
       type: keyword
       description: |
-        The zone information of the client.
+        The Okta network zone the client request matched, as configured under
+        Security > Networks. Requests that match no configured zone carry the literal
+        string "null" rather than omitting the field, so filter on that value rather
+        than on the field's absence. Also available as `network.name`, which omits the
+        "null" sentinel.
     - name: device
       type: keyword
       description: |
@@ -89,25 +103,37 @@
       description: |
         The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME".
     - name: id
-      type: keyword
+      type: alias
+      path: device.id
       description: |
-        Identifier of the device.
+        Identifier assigned by Okta when the device was registered with the org.
+        Only present on events that carry device context, so it is absent from most
+        events.
+        Deprecated. Use the ECS `device.id` field.
     - name: managed
       type: boolean
       description: |
-        Whether the device is managed.
+        Whether the device is enrolled in the organization's device management. Only
+        present on events that carry device context, so it is absent from most events.
     - name: name
-      type: keyword
+      type: alias
+      path: device.model.identifier
       description: |
-        The name of the device.
+        The device's self-reported name, which in practice is the hardware model
+        identifier rather than a name a user chose.
+        Deprecated. Use the ECS `device.model.identifier` field.
     - name: os_platform
       type: keyword
       description: |
-        The OS of the device.
+        The operating system family of the end user's device, reported by Okta in
+        uppercase. Only present on events that carry device context, so it is absent
+        from most events.
     - name: os_version
       type: keyword
       description: |
-        The device's OS version.
+        The operating system version of the end user's device. The format is whatever
+        the platform reports and is not normalized by Okta, so it is not reliably
+        comparable across platforms.
     - name: registered
       type: boolean
       description: |
@@ -126,9 +152,13 @@
   type: group
   fields:
     - name: reason
-      type: keyword
+      type: alias
+      path: event.reason
       description: |
-        The reason of the outcome.
+        Human-readable explanation of why the event ended with the result recorded in
+        `okta.outcome.result`. Free text that varies by event type and Okta wording,
+        so it is useful for investigation but not a stable value to match rules on.
+        Deprecated. Use the ECS `event.reason` field.
     - name: result
       type: keyword
       description: |
@@ -153,14 +183,27 @@
       object_type: keyword
       object_type_mapping_type: "*"
     - name: display_name
-      type: keyword
-      description: The display name of the target.
+      type: alias
+      path: entity.target.display_name
+      description: |
+        Human-readable name of an object the event acted on. One event can act on
+        several objects, so this holds the names of all of them. Targets that do not
+        carry a name are skipped and repeated names are collapsed, so positions do
+        not line up with `okta.target.id` or `okta.target.type`.
+        Deprecated. Use the ECS `entity.target.display_name` field.
     - name: id
-      type: keyword
-      description: The ID of the target.
+      type: alias
+      path: entity.target.id
+      description: |
+        Okta identifier of an object the event acted on, such as a user, group,
+        application or policy.
+        Deprecated. Use the ECS `entity.target.id` field.
     - name: type
       type: keyword
-      description: The type of target.
+      description: |
+        The kind of object the event acted on, such as "User", "AppInstance",
+        "PolicyEntity", "PolicyRule" or "UDDevice". Okta-specific rather than a
+        normalized vocabulary, and also available as `entity.target.sub_type`.
 - name: okta.transaction
   type: group
   fields:
@@ -216,9 +259,13 @@
       description: |
         The identifier of the request.
     - name: debug_data.request_uri
-      type: keyword
+      type: alias
+      path: url.path
       description: |
-        The request URI.
+        Path of the Okta API or admin console request that produced the event. Path
+        only; the query string is carried separately in
+        `okta.debug_context.debug_data.url`.
+        Deprecated. Use the ECS `url.path` field.
     - name: debug_data.threat_suspected
       type: keyword
       description: |
@@ -366,16 +413,25 @@
       type: group
       fields:
         - name: number
-          type: integer
+          type: alias
+          path: client.as.number
           description: |
-            The AS number.
+            Number of the autonomous system that announces the client IP address.
+            Resolved by Okta rather than by the Elastic GeoIP processor, so it can
+            differ from an ASN derived from `source.ip`.
+            Deprecated. Use the ECS `client.as.number` field.
         - name: organization
           type: group
           fields:
             - name: name
-              type: keyword
+              type: alias
+              path: client.as.organization.name
               description: |
-                The organization name.
+                Name of the organization that owns the autonomous system announcing
+                the client IP. Okta lowercases it and does not normalize it, so
+                punctuation and length vary widely between providers and some values
+                are a full sentence.
+                Deprecated. Use the ECS `client.as.organization.name` field.
     - name: isp
       type: keyword
       description: |
