@@ -34,7 +34,7 @@ processors:
       formats:
         - ISO8601
   - script:
-      tag: remove-nulls
+      tag: remove-nulls_411582a9
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -63,7 +63,7 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
-      tag: script_append_related_entity
+      tag: script_append_related_entity_31dc3369
       if: ctx.json?.eventName != null && ctx.tags != null && ctx.tags.contains('actor_target_mapping')
       params:
         # Static resource type classifications (evaluated once at pipeline compilation)
@@ -1026,17 +1026,17 @@ processors:
       field: json.userIdentity.type
       target_field: aws.cloudtrail.user_identity.type
       ignore_missing: true
-      tag: rename_user_identity_type
+      tag: rename_user_identity_type_122d0a3c
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
       ignore_missing: true
-      tag: rename_user_identity_user_name_iam_user
+      tag: rename_user_identity_user_name_iam_user_c30a296d
   - rename:
       field: json.userIdentity.principalId
       target_field: user.id
       ignore_missing: true
-      tag: rename_user_identity_principal_id
+      tag: rename_user_identity_principal_id_1f790b6f
   - rename:
       tag: rename_json_userIdentity_arn_to_aws_cloudtrail_user_identity_arn_02745565
       field: json.userIdentity.arn
@@ -1076,7 +1076,7 @@ processors:
       ignore_missing: true
       override: true
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser'
-      tag: rename_user_name_assumed_role
+      tag: rename_user_name_assumed_role_b771e356
   - rename:
       tag: rename_json_userIdentity_sessionContext_sessionIssuer_principalId_to_aws_cloudtrail_user_identity_session_context_session_issuer_principal_id_9cb05993
       field: json.userIdentity.sessionContext.sessionIssuer.principalId
@@ -1096,28 +1096,28 @@ processors:
         - "arn:(aws|aws-us-gov):sts:.*/%{GREEDYDATA:_tmp.session_name}$"
       ignore_missing: true
       if: (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser') && ctx.aws?.cloudtrail?.user_identity?.arn != null
-      tag: extract_session_name_from_arn
+      tag: extract_session_name_from_arn_7fe1c175
   - append:
-      tag: append_related_user_session_name
+      tag: append_related_user_session_name_ad00fb8e
       field: related.user
       value: '{{{_tmp.session_name}}}'
       if: ctx._tmp?.session_name != null
       allow_duplicates: false
       ignore_failure: true
   - dissect:
-      tag: extract_session_name_email_prefix
+      tag: extract_session_name_email_prefix_453956b3
       field: _tmp.session_name
       pattern: '%{_tmp.session_name_prefix}@%{}'
       if: ctx._tmp?.session_name != null && ctx._tmp.session_name.contains('@')
   - append:
-      tag: append_related_user_session_name_prefix
+      tag: append_related_user_session_name_prefix_b21bdeb0
       field: related.user
       value: '{{{_tmp.session_name_prefix}}}'
       if: ctx._tmp?.session_name_prefix != null
       allow_duplicates: false
       ignore_failure: true
   - set:
-      tag: set_user_email_from_session_name
+      tag: set_user_email_from_session_name_39bbd1e6
       field: user.email
       copy_from: _tmp.session_name
       if: ctx.user?.email == null && ctx._tmp?.session_name_prefix != null
@@ -1127,7 +1127,7 @@ processors:
       target_field: user.id
       ignore_missing: true
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'IdentityCenterUser' && ctx.user?.id == null
-      tag: rename_user_id_identity_center_user
+      tag: rename_user_id_identity_center_user_a2cfa5f2
   - rename:
       tag: rename_json_userIdentity_sessionContext_sessionIssuer_arn_to_aws_cloudtrail_user_identity_session_context_session_issuer_arn_7ea9b97b
       field: json.userIdentity.sessionContext.sessionIssuer.arn
@@ -1167,7 +1167,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.additionalEventData.UserName
-      tag: rename_additionalEventData_UserName_to_username
+      tag: rename_additionalEventData_UserName_to_username_552c89e0
       target_field: user.name
       if: ctx.event?.action == 'UserAuthentication' && ctx.user?.name == null && ctx.json?.additionalEventData?.UserName != null
   - set:
@@ -1233,7 +1233,7 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      tag: script_cache_flattened_duplicates_configuration
+      tag: script_cache_flattened_duplicates_configuration_85bf9eae
       source: |-
         ctx._conf = ctx._conf ?: [:];
         ctx._conf.keep_flattened_duplicates = ctx._conf.retain == null ||
@@ -1251,7 +1251,7 @@ processors:
         sub-fields of these field MUST NEVER be renamed or otherwise mutated, that is, they
         MUST NEVER be an LHS in any processor.
       lang: painless
-      tag: script_duplicate_rules_fields
+      tag: script_duplicate_rules_fields_16f5d247
       source: |-
         if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail?.flattened == null) {
           ctx.aws.cloudtrail.flattened = [:];
@@ -1409,7 +1409,7 @@ processors:
         }
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_a185f07a
       params:
         AddUserToGroup:
           category:
@@ -2095,7 +2095,7 @@ processors:
   - set:
       field: user.email
       copy_from: user.name
-      tag: set_user_email
+      tag: set_user_email_d6b77481
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   # Don't dissect the user email into <user.name>@<user.domain>
   # as the parts are meaningless on their own
@@ -2128,7 +2128,7 @@ processors:
   # in the following two processors.
   - script:
       if: ctx._conf?.retain == 'minimal' && ctx.aws?.cloudtrail?.flattened != null
-      tag: script_retain_minimal_flattened
+      tag: script_retain_minimal_flattened_3d24add8
       params:
         # This list of fields is determined by enumerating all fields containing
         # the string "cloudtrail.flattened" that are in .attributes.required_fields of the
@@ -2180,7 +2180,7 @@ processors:
         - _tmp
       ignore_missing: true
   - script:
-      tag: remove_nulls
+      tag: remove_nulls_79ba5723
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null/empty values.
       source: |
@@ -2208,17 +2208,25 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_14080786
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
+      tag: remove_9b3e9d0c
       field:
         - json
         - _conf
         - _tmp
       ignore_missing: true
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
