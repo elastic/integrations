@@ -29,6 +29,74 @@ screenshots:
     title: AWS Security Hub Findings Overview Dashboard
     size: 600x600
     type: image/png
+vars:
+  - name: shared_credential_file
+    type: text
+    title: Shared Credential File
+    multi: false
+    required: false
+    show_user: false
+    description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - `Secret Access Key` and `Access Key ID`.
+  - name: credential_profile_name
+    type: text
+    title: Credential Profile Name
+    multi: false
+    required: false
+    show_user: false
+    description: Profile name in shared credentials file.
+  - name: access_key_id
+    type: password
+    title: Access Key ID
+    secret: true
+    multi: false
+    required: false
+    show_user: false
+    description: First part of access key. This parameter along with the `Secret Access Key` parameter is required if we are not providing `Shared Credential File`.
+  - name: secret_access_key
+    type: password
+    title: Secret Access Key
+    secret: true
+    multi: false
+    required: false
+    show_user: false
+    description: Second part of access key. This parameter along with the `Access Key ID` parameter is required if we are not providing `Shared Credential File`.
+  - name: session_token
+    type: password
+    title: Session Token
+    secret: true
+    multi: false
+    required: false
+    show_user: false
+    description: Required when using temporary security credentials.
+  - name: role_arn
+    type: text
+    title: Role ARN
+    multi: false
+    required: false
+    show_user: false
+    description: AWS IAM Role to assume.
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
+  - name: assume_role_duration
+    type: duration
+    title: Assume Role Duration
+    multi: false
+    required: false
+    show_user: false
+    max_duration: 12h
+    min_duration: 15m
+    description: Specifies the duration of the credentials retrieved by the IAM assume-role. It is optional and can be used when `Role ARN` is configured.
+  - name: assume_role_expiry_window
+    type: duration
+    title: Assume Role Expiry Window
+    multi: false
+    required: false
+    show_user: false
+    description: Specifies the credentials retrieved by the IAM assume-role to trigger refreshing prior to the credentials actually expiring. It is optional and can be used when `Role ARN` is configured.
 var_groups:
   - name: credential_type
     required: true
@@ -81,73 +149,6 @@ policy_templates:
               # the Action element of an IAM policy statement (AWS API reference).
               - name: securityhub:GetFindings
         vars:
-          - name: access_key_id
-            type: password
-            title: Access Key ID
-            multi: false
-            required: false
-            show_user: true
-            description: First part of access key. This parameter along with the `Secret Access Key` parameter is required if we are not providing `Shared Credential File`.
-            secret: true
-          - name: secret_access_key
-            type: password
-            title: Secret Access Key
-            multi: false
-            required: false
-            show_user: true
-            description: Second part of access key. This parameter along with the `Access Key ID` parameter is required if we are not providing `Shared Credential File`.
-            secret: true
-          - name: session_token
-            type: password
-            title: Session Token
-            multi: false
-            required: false
-            show_user: true
-            description: Required when using temporary security credentials.
-            secret: true
-          - name: shared_credential_file
-            type: text
-            title: Shared Credential File
-            multi: false
-            required: false
-            show_user: false
-            description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - `Secret Access Key` and `Access Key ID`.
-          - name: credential_profile_name
-            type: text
-            title: Credential Profile Name
-            multi: false
-            required: false
-            show_user: false
-            description: Profile name in shared credentials file.
-          - name: role_arn
-            type: text
-            title: Role ARN
-            multi: false
-            required: false
-            show_user: false
-            description: AWS IAM Role to assume.
-          - name: assume_role_duration
-            type: duration
-            title: Assume Role Duration
-            multi: false
-            required: false
-            show_user: false
-            max_duration: 12h
-            min_duration: 15m
-            description: Specifies the duration of the credentials retrieved by the IAM assume-role. It is optional and can be used when `Role ARN` is configured.
-          - name: assume_role_expiry_window
-            type: duration
-            title: Assume Role Expiry Window
-            multi: false
-            required: false
-            show_user: false
-            description: Specifies the credentials retrieved by the IAM assume-role to trigger refreshing prior to the credentials actually expiring. It is optional and can be used when `Role ARN` is configured.
-          - name: supports_identity_federation
-            type: bool
-            title: Supports Identity Federation
-            multi: false
-            required: false
-            show_user: false
           - name: proxy_url
             type: text
             title: Proxy URL
