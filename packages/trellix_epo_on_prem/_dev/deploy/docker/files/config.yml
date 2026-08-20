@@ -2,6 +2,37 @@ rules:
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
+      target: 'OrionAuditLog'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "OrionAuditLog.AutoId": 1943,
+              "OrionAuditLog.CmdName": "Delete user",
+              "OrionAuditLog.EndTime": "2026-07-16T13:45:05+05:30",
+              "OrionAuditLog.Message": "User \"tempuser\" deleted from system",
+              "OrionAuditLog.Priority": 3,
+              "OrionAuditLog.StartTime": "2026-07-16T13:45:04+05:30",
+              "OrionAuditLog.Success": true,
+              "OrionAuditLog.UserId": 1,
+              "OrionAuditLog.UserName": "admin"
+            }
+          ]
+
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
       target: 'WP_EventInfo'
       select: "{select:.*}"
       where: "{where:.*}"
@@ -9,7 +40,7 @@ rules:
       ':output': 'json'
     request_headers:
       Authorization:
-        - "Basic eHh4eDp4eHh4"
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
     responses:
       - status_code: 200
         headers:
