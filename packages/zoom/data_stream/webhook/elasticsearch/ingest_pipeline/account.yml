@@ -2,20 +2,25 @@
 description: Pipeline for parsing Zoom account webhooks
 processors:
 - append:
+    tag: append_event_category_0eb47497
     field: event.category
     value: iam
 - append:
+    tag: append_event_category_c0f845b4
     field: event.category
     value: configuration
     if: ctx.event?.action == 'account.settings_updated'
 - append:
+    tag: append_event_type_652dad8f
     field: event.type
     value: user
 - append:
+    tag: append_event_type_25d311a8
     field: event.type
     value: creation
     if: ctx.event?.action == 'account.created'
 - append:
+    tag: append_event_type_5877a3bf
     field: event.type
     value: change
     if: >-
@@ -25,14 +30,17 @@ processors:
         'account.disassociated'
       ].contains(ctx.event?.action)
 - rename:
+    tag: rename_zoom_account_id_to_zoom_master_account_id_dba29a41
     field: zoom.account_id
     target_field: zoom.master_account_id
     ignore_missing: true
 - rename:
+    tag: rename_zoom_object_id_to_zoom_sub_account_id_340ed50d
     field: zoom.object.id
     target_field: zoom.sub_account_id
     ignore_missing: true
 - date:
+    tag: date_zoom_time_stamp_to_timestamp_1cdd712e
     field: zoom.time_stamp
     target_field: '@timestamp'
     formats:
@@ -40,6 +48,7 @@ processors:
     if: ctx.zoom?.time_stamp != null
     ignore_failure: true
 - rename:
+    tag: rename_zoom_object_to_zoom_account_012c06e9
     field: zoom.object
     target_field: zoom.account
     ignore_missing: true
@@ -47,10 +56,12 @@ processors:
 # set user.target from account.owner_* fields (create / delete account).
 #
 - set:
+    tag: set_user_target_id_45754d57
     field: user.target.id
     value: '{{{zoom.account.owner_id}}}'
     ignore_empty_value: true
 - set:
+    tag: set_user_target_email_e50d888b
     field: user.target.email
     value: '{{{zoom.account.owner_email}}}'
     ignore_empty_value: true
@@ -59,18 +70,22 @@ processors:
 # set user.target from old_values.account_* fields (updated account).
 #
 - set:
+    tag: set_user_target_id_19090190
     field: user.target.id
     value: '{{{zoom.old_values.id}}}'
     if: ctx.zoom?.old_values?.id != null
 - set:
+    tag: set_user_target_email_6d7582f1
     field: user.target.email
     value: '{{{zoom.old_values.account_email}}}'
     if: ctx.zoom?.old_values?.account_email != null
 - set:
+    tag: set_user_target_full_name_895e5218
     field: user.target.full_name
     value: '{{{zoom.old_values.account_name}}}'
     if: ctx.zoom?.old_values?.account_name != null
 - set:
+    tag: set_user_target_name_06d6761e
     field: user.target.name
     value: '{{{zoom.old_values.account_alias}}}'
     if: ctx.zoom?.old_values?.account_alias != null
@@ -79,18 +94,22 @@ processors:
 # set user.changes from account.account_* fields (updated account).
 #
 - set:
+    tag: set_user_changes_id_f4813950
     field: user.changes.id
     value: '{{{zoom.account.id}}}'
     if: ctx.zoom?.account?.id != null && ctx.zoom?.old_values?.id != ctx.zoom?.account?.id
 - set:
+    tag: set_user_changes_email_0497f9c0
     field: user.changes.email
     value: '{{{zoom.account.account_email}}}'
     if: ctx.zoom?.account?.account_email != null && ctx.zoom?.old_values?.account_email != ctx.zoom?.account?.account_email
 - set:
+    tag: set_user_changes_full_name_7bf4e995
     field: user.changes.full_name
     value: '{{{zoom.account.account_name}}}'
     if: ctx.zoom?.account?.account_name != null && ctx.zoom?.old_values?.account_name != ctx.zoom?.account?.account_name
 - set:
+    tag: set_user_changes_name_e41dcd5a
     field: user.changes.name
     value: '{{{zoom.account.account_alias}}}'
     if: ctx.zoom?.account?.account_alias != null && ctx.zoom?.old_values?.account_alias != ctx.zoom?.account?.account_alias
@@ -99,16 +118,19 @@ processors:
 # Append to related.user array
 #
 - append:
+    tag: append_related_user_8156db43
     field: related.user
     value: "{{{zoom.account.owner_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.account?.owner_id != null
 - append:
+    tag: append_related_user_410a320f
     field: related.user
     value: "{{{user.target.id}}}"
     allow_duplicates: false
     if: ctx.user?.target?.id != null
 - append:
+    tag: append_related_user_b44b0559
     field: related.user
     value: "{{{user.changes.id}}}"
     allow_duplicates: false
@@ -118,15 +140,20 @@ processors:
 # Cleanup
 #
 - remove:
+    tag: remove_zoom_time_stamp_9076c187
     field: zoom.time_stamp
     ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

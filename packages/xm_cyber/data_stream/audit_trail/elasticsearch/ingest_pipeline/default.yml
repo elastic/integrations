@@ -2,23 +2,23 @@
 description: Pipeline for processing XM Cyber Audit Trail logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_8c2c9474
       field: ecs.version
       value: 9.4.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_f2e4d3c3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # drop CEL informational refresh-token messages
   - drop:
       description: Drops CEL retry messages from the ingest stream.
-      tag: drop_cel_retry_message
+      tag: drop_cel_retry_message_012ad4e9
       if: ctx.message == 'retry'
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -29,36 +29,36 @@ processors:
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a4b0426e
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_662e8126
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
-      tag: json_event_original_into_xm_cyber_audit_trail
+      tag: json_event_original_into_xm_cyber_audit_trail_a0756eab
       if: ctx.event?.original != null
       field: event.original
       target_field: xm_cyber.audit_trail
 
   # Set event.* fields
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - fingerprint:
-      tag: fingerprint_with_id
+      tag: fingerprint_with_id_687cc46e
       fields:
         - xm_cyber.audit_trail._id
       target_field: _id
       ignore_missing: true
   - date:
-      tag: date_audit_trail_timestamp
+      tag: date_audit_trail_timestamp_1b82e076
       if: ctx.xm_cyber?.audit_trail?.timestamp != null && ctx.xm_cyber.audit_trail.timestamp != ''
       field: xm_cyber.audit_trail.timestamp
       target_field: xm_cyber.audit_trail.timestamp
@@ -66,41 +66,41 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_audit_trail_timestamp_on_failure
+            tag: remove_audit_trail_timestamp_on_failure_42126404
             field: xm_cyber.audit_trail.timestamp
             ignore_missing: true
         - append:
-            tag: append_error_message_timestamp
+            tag: append_error_message_timestamp_cd8f68c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_at_timestamp_from_audit_trail_timestamp
+      tag: set_at_timestamp_from_audit_trail_timestamp_36b5ec10
       field: '@timestamp'
       copy_from: xm_cyber.audit_trail.timestamp
       ignore_empty_value: true
 
   - convert:
-      tag: convert_source_ip_to_ip_type
+      tag: convert_source_ip_to_ip_type_c155c662
       field: xm_cyber.audit_trail.terminalId.ip
       type: ip
       ignore_missing: true
       on_failure:
         - rename:
-            tag: rename_source_ip_to_source_ip_string
+            tag: rename_source_ip_to_source_ip_string_f74214d1
             field: xm_cyber.audit_trail.terminalId.ip
             target_field: xm_cyber.audit_trail.terminalId.ip_string
             ignore_missing: true
   - set:
-      tag: set_event_id_from_audit_id
+      tag: set_event_id_from_audit_id_8be9ee94
       field: event.id
       copy_from: xm_cyber.audit_trail._id
       ignore_empty_value: true
   - lowercase:
-      tag: lowercase_event_type
+      tag: lowercase_event_type_8f038b05
       field: xm_cyber.audit_trail.eventType
       ignore_missing: true
   - append:
-      tag: append_event_type_to_event_type
+      tag: append_event_type_to_event_type_98687d30
       field: event.type
       value: '{{{xm_cyber.audit_trail.eventType}}}'
       allow_duplicates: false
@@ -109,69 +109,69 @@ processors:
         && ctx.xm_cyber.audit_trail.eventType != ''
         && ["access","admin","allowed","change","connection","creation","deletion","denied","device","end","error","group","indicator","info","installation","protocol","start","user"].contains(ctx.xm_cyber.audit_trail.eventType)
   - set:
-      tag: set_event_action_from_audit_event_sub_type
+      tag: set_event_action_from_audit_event_sub_type_88801f53
       field: event.action
       copy_from: xm_cyber.audit_trail.eventSubType
       ignore_empty_value: true
   - lowercase:
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       field: event.action
       ignore_missing: true
   - split:
-      tag: split_event_action
+      tag: split_event_action_65c629bc
       field: event.action
       separator: '[\s_]+'
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
-            tag: append_error_message_split_event_action
+            tag: append_error_message_split_event_action_5afcb9d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       field: event.action
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
-            tag: append_error_message_join_event_action
+            tag: append_error_message_join_event_action_fc7b1230
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Map vendor fields to ECS user.* / source.*
   - set:
-      tag: set_user_name_from_audit_user_name
+      tag: set_user_name_from_audit_user_name_7ab239b1
       field: user.name
       copy_from: xm_cyber.audit_trail.userId.name
       ignore_empty_value: true
   - set:
-      tag: set_message_from_audit_details
+      tag: set_message_from_audit_details_714a54e8
       field: message
       copy_from: xm_cyber.audit_trail.details
       ignore_empty_value: true
   - set:
-      tag: set_user_email_from_audit_user_email
+      tag: set_user_email_from_audit_user_email_e0866676
       field: user.email
       copy_from: xm_cyber.audit_trail.userId.email
       ignore_empty_value: true
   - dissect:
-      tag: dissect_user_email_into_user_domain
+      tag: dissect_user_email_into_user_domain_de5a4be5
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
       pattern: '%{}@%{user.domain}'
       on_failure:
         - append:
-            tag: append_error_message_dissect_user_email
+            tag: append_error_message_dissect_user_email_ff108ac4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_source_domain_from_audit_terminal_hostname
+      tag: set_source_domain_from_audit_terminal_hostname_58c29437
       field: source.domain
       copy_from: xm_cyber.audit_trail.terminalId.hostname
       ignore_empty_value: true
   - set:
-      tag: set_source_ip_from_audit_terminal_ip
+      tag: set_source_ip_from_audit_terminal_ip_3330e19f
       field: source.ip
       copy_from: xm_cyber.audit_trail.terminalId.ip
       ignore_empty_value: true
@@ -181,7 +181,7 @@ processors:
         Convert field names from camelCase to snake_case recursively.
         NOTE: This processor reassigns the normalized output back to
         ctx.xm_cyber.audit_trail.
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_4ae89dcb
       lang: painless
       source: |-
         // Helper function to convert camelCase to snake_case
@@ -226,13 +226,13 @@ processors:
 
   # GeoIP enrichment for source.ip
   - geoip:
-      tag: geoip_source_ip_location
+      tag: geoip_source_ip_location_9ca557a4
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
-      tag: geoip_source_ip_asn
+      tag: geoip_source_ip_asn_460d234d
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.as
@@ -242,44 +242,44 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
-      tag: rename_source_as_asn_to_source_as_number
+      tag: rename_source_as_asn_to_source_as_number_168bbbaf
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
-      tag: rename_source_as_organization_name
+      tag: rename_source_as_organization_name_aa06a00b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   # Populate related.* for cross-event correlation
   - append:
-      tag: append_source_ip_to_related_ip
+      tag: append_source_ip_to_related_ip_a2ab3b40
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_ca4b5429
       if: ctx.user?.name != null
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
   - append:
-      tag: append_user_email_to_related_user
+      tag: append_user_email_to_related_user_d656e854
       if: ctx.user?.email != null
       field: related.user
       value: '{{{user.email}}}'
       allow_duplicates: false
   - append:
-      tag: append_source_domain_to_related_hosts
+      tag: append_source_domain_to_related_hosts_2788ce47
       if: ctx.source?.domain != null
       field: related.hosts
       value: '{{{source.domain}}}'
       allow_duplicates: false
 
   - remove:
-      tag: remove_fields_mapped_to_ecs
+      tag: remove_fields_mapped_to_ecs_4b59970e
       field:
         - xm_cyber.audit_trail._id
         - xm_cyber.audit_trail.timestamp
@@ -291,7 +291,7 @@ processors:
 
   # Drop null/empty values from the document
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_68df5c53
       description: This script processor iterates over the whole document to remove fields with null values.
       lang: painless
       source: |-
@@ -318,29 +318,30 @@ processors:
         handleMap(ctx);
 
   - set:
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_preserve_original_event_on_error
+      tag: append_preserve_original_event_on_error_26fd6ca5
       if: ctx.error?.message != null
       field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
-      value: >-
+      value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

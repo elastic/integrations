@@ -2,6 +2,7 @@
 description: Pipeline for Snyk issues logs
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -11,35 +12,42 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_snyk_issues_ef500852
       field: event.original
       target_field: snyk.issues
   - set:
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_72d8868d
       field: event.kind
       value: [alert]
   - date:
+      tag: date_snyk_issues_attributes_updated_at_to_timestamp_58d9ed79
       field: snyk.issues.attributes.updated_at
       target_field: "@timestamp"
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss[.SSS][.SS][.S]'Z'"
   - fingerprint:
+      tag: fingerprint_to_id_d6318e95
       description: >-
         This fingerprint is making the primary key for documents be the
         following set of fields. They are chosen to be the minimal set
@@ -52,20 +60,25 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_vulnerability_scanner_vendor_663f7cda
       field: vulnerability.scanner.vendor
       value: Snyk
   - set:
+      tag: set_organization_id_5bb82a73
       field: organization.id
       copy_from: snyk.issues.relationships.organization.data.id
       ignore_empty_value: true
   - set:
+      tag: set_vulnerability_severity_c55c812b
       field: vulnerability.severity
       copy_from: snyk.issues.attributes.effective_severity_level
       ignore_empty_value: true
   - foreach:
+      tag: foreach_snyk_issues_attributes_classes_ae7c3803
       field: snyk.issues.attributes.classes
       processor:
         append:
+          tag: append_vulnerability_enumeration_376c5c9d
           field: vulnerability.enumeration
           value: '{{{ _ingest._value.source }}}'
           allow_duplicates: false
@@ -73,9 +86,11 @@ processors:
       ignore_failure: true
       if: ctx.snyk?.issues?.attributes?.classes != null
   - foreach:
+      tag: foreach_snyk_issues_attributes_problems_88fd7bbe
       field: snyk.issues.attributes.problems
       processor:
         append:
+          tag: append_vulnerability_id_6f889710
           field: vulnerability.id
           value: '{{{ _ingest._value.id }}}'
           allow_duplicates: false
@@ -83,9 +98,11 @@ processors:
       ignore_failure: true
       if: ctx.snyk?.issues?.attributes?.problems != null
   - foreach:
+      tag: foreach_snyk_issues_attributes_problems_b0e6f65d
       field: snyk.issues.attributes.problems
       processor:
         append:
+          tag: append_vulnerability_enumeration_da921294
           field: vulnerability.enumeration
           value: '{{{ _ingest._value.source }}}'
           allow_duplicates: false
@@ -93,9 +110,11 @@ processors:
       ignore_failure: true
       if: ctx.snyk?.issues?.attributes?.problems != null
   - foreach:
+      tag: foreach_snyk_issues_attributes_problems_da811e3d
       field: snyk.issues.attributes.problems
       processor:
         append:
+          tag: append_vulnerability_reference_ef4f60c5
           field: vulnerability.reference
           value: '{{{ _ingest._value.url }}}'
           allow_duplicates: false
@@ -103,6 +122,7 @@ processors:
       ignore_failure: true
       if: ctx.snyk?.issues?.attributes?.problems != null
   - script:
+      tag: script_processor_iterates_over_whole_document_a0a1a21a
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -128,6 +148,7 @@ processors:
         }
         handleMap(ctx);
   - script:
+      tag: script_restructure_scan_item_tags_dc250d89
       lang: painless
       description: Restructure scan item tags
       if: ctx.snyk?.issues?.relationships?.scan_item?.data?.attributes?.tags instanceof List
@@ -142,6 +163,7 @@ processors:
         }
         ctx.snyk.issues.relationships.scan_item.data.attributes.tags = result;
   - append:
+      tag: append_error_message_7894b210
       field: error.message
       value: '{{{ snyk.issues.relationships.scan_item.data._enrich_error_message }}}'
       if: ctx.snyk.issues.relationships.scan_item.data._enrich_error_message instanceof String
@@ -149,23 +171,28 @@ processors:
 
   # Fixup mappings that do not match the published API spec.
   - rename:
+      tag: rename_snyk_issues_relationships_scan_item_data_relationships_importer_links_related_to_snyk_issues_relationships_scan_item_data_relationships_importer_links_related_href_e39b2f7f
       if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.importer?.links?.related instanceof String
       field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related
       target_field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related.href
   - rename:
+      tag: rename_snyk_issues_relationships_scan_item_data_relationships_organization_links_related_to_snyk_issues_relationships_scan_item_data_relationships_organization_links_related_href_805f5ddb
       if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.organization?.links?.related instanceof String
       field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related
       target_field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related.href
   - rename:
+      tag: rename_snyk_issues_relationships_scan_item_data_relationships_owner_links_related_related_to_snyk_issues_relationships_scan_item_data_relationships_owner_links_related_related_href_2873c1bb
       if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.owner?.links?.related?.related instanceof String
       field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related
       target_field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related.href
   - rename:
+      tag: rename_snyk_issues_relationships_scan_item_data_relationships_target_links_related_to_snyk_issues_relationships_scan_item_data_relationships_target_links_related_href_ee537d80
       if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.target?.links?.related instanceof String
       field: snyk.issues.relationships.scan_item.data.relationships.target.links.related
       target_field: snyk.issues.relationships.scan_item.data.relationships.target.links.related.href
 
   - remove:
+      tag: remove_56d20d3e
       field:
         - message
         - snyk.issues.cvssScore
@@ -174,15 +201,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -2,42 +2,52 @@
 description: Pipeline for processing IOCs.
 processors:
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: ["indicator"]
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: ["threat"]
   - set:
+      tag: set_event_module_a8a69217
       field: event.module
       value: ti_rapid7_threat_command
   - json:
+      tag: json_event_original_to_json_93ceb325
       field: event.original
       target_field: json
       ignore_failure: true
   - drop:
+      tag: drop_6f9c8237
       if: ctx.json?.content != null && ctx.json.content.isEmpty()
   - rename:
+      tag: rename_json_lastUpdateDate_to_json_last_update_date_32ab9ee5
       field: json.lastUpdateDate
       target_field: json.last_update_date
       ignore_missing: true
   - date:
+      tag: date_json_last_update_date_to_threat_indicator_modified_at_15d6e7c9
       field: json.last_update_date
       target_field: threat.indicator.modified_at
       if: ctx.json?.last_update_date != null
@@ -45,38 +55,47 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_d7381b9a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_json_last_update_date_07ce99b0
             field: json.last_update_date
   - set:
+      tag: set_timestamp_22a44f7a
       field: '@timestamp'
       copy_from: threat.indicator.modified_at
       on_failure:
         - set:
+            tag: set_timestamp_7586a659
             field: '@timestamp'
             copy_from: _ingest.timestamp
   - uri_parts:
+      tag: uri_parts_json_value_to_threat_indicator_url_8b07aff7
       field: json.value
       target_field: threat.indicator.url
       if: ctx.json?.type == 'Urls'
       on_failure:
         - set:
+            tag: set_threat_indicator_url_original_a2400e0f
             field: threat.indicator.url.original
             value: '{{{json.value}}}'
             ignore_empty_value: true
             if: ctx.json?.type == 'Urls' && !ctx.containsKey('threat.indicator.url')
             ignore_failure: true
   - set:
+      tag: set_threat_indicator_url_full_98c9ef97
       field: threat.indicator.url.full
       value: '{{{threat.indicator.url.original}}}'
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_threat_indicator_type_5a0dfef3
       field: threat.indicator.type
       value: url
       if: ctx.json?.type == 'Urls'
   - script:
+      tag: script_maps_ioc_type_field_faaad58c
       lang: painless
       if: ctx.json?.type != null
       description: Maps ioc type field to Rapid7 values (threat.indicator.type).
@@ -114,41 +133,50 @@ processors:
         set(ctx, mapping.target, value);
       on_failure:
         - append:
+            tag: append_error_message_a41cf1aa
             field: error.message
             value: >-
               Unable to determine indicator type from "{{{json.type}}}": {{{_ingest.on_failure_message}}}
   - convert:
+      tag: convert_threat_indicator_ip_6cc198bf
       field: threat.indicator.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a69fca3b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_509530f1
             field:
               - threat.indicator.ip
               - json.value
   - set:
+      tag: set_threat_indicator_type_04c9f7ab
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.threat?.indicator?.type == 'ipv4-addr' && ctx.json?.value != null && ctx.json.value.contains(":")
   - append:
+      tag: append_related_ip_404cef03
       field: related.ip
       value: '{{{threat.indicator.ip}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_hash_e51f8f2c
       field: related.hash
       value: '{{{json.file.hash}}}'
       ignore_failure: true
       allow_duplicates: false
   - geoip:
+      tag: geoip_threat_indicator_ip_to_threat_indicator_geo_0574277f
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
       ignore_failure: true
   - geoip:
+      tag: geoip_threat_indicator_ip_to_threat_indicator_as_27f634a8
       field: threat.indicator.ip
       target_field: threat.indicator.as
       database_file: GeoLite2-ASN.mmdb
@@ -158,84 +186,104 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_threat_indicator_as_asn_to_threat_indicator_as_number_f5473d8b
       field: threat.indicator.as.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
   - rename:
+      tag: rename_threat_indicator_as_organization_name_to_threat_indicator_as_organization_name_831a25ce
       field: threat.indicator.as.organization_name
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_firstSeen_to_json_first_seen_57ac1097
       field: json.firstSeen
       target_field: json.first_seen
       ignore_missing: true
   - rename:
+      tag: rename_json_lastSeen_to_json_last_seen_4189428d
       field: json.lastSeen
       target_field: json.last_seen
       ignore_missing: true
   - rename:
+      tag: rename_json_relatedMalware_to_json_related_malware_cbd9d56c
       field: json.relatedMalware
       target_field: json.related.malware
       ignore_missing: true
   - rename:
+      tag: rename_json_relatedCampaigns_to_json_related_campaigns_4599d467
       field: json.relatedCampaigns
       target_field: json.related.campaigns
       ignore_missing: true
   - rename:
+      tag: rename_json_relatedThreatActors_to_json_related_threat_actors_8c745100
       field: json.relatedThreatActors
       target_field: json.related.threat_actors
       ignore_missing: true
   - rename:
+      tag: rename_json_reportedFeeds_to_json_reported_feeds_14487d91
       field: json.reportedFeeds
       target_field: json.reported_feeds
       ignore_missing: true
   - rename:
+      tag: rename_json_file_hash_to_threat_indicator_file_hash_md5_4549770d
       field: json.file.hash
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
       if: ctx.json?.file?.hash?.length() == 32
   - rename:
+      tag: rename_json_file_hash_to_threat_indicator_file_hash_sha1_8a5aba8d
       field: json.file.hash
       target_field: threat.indicator.file.hash.sha1
       ignore_missing: true
       if: ctx.json?.file?.hash?.length() == 40
   - rename:
+      tag: rename_json_file_hash_to_threat_indicator_file_hash_sha256_f4e67cc3
       field: json.file.hash
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
       if: ctx.json?.file?.hash?.length() == 64
   - rename:
+      tag: rename_json_file_hash_to_threat_indicator_file_hash_sha384_ed83fb12
       field: json.file.hash
       target_field: threat.indicator.file.hash.sha384
       ignore_missing: true
       if: ctx.json?.file?.hash?.length() == 96
   - rename:
+      tag: rename_json_file_hash_to_threat_indicator_file_hash_sha512_0adfb402
       field: json.file.hash
       target_field: threat.indicator.file.hash.sha512
       ignore_missing: true
       if: ctx.json?.file?.hash?.length() == 128
   - convert:
+      tag: convert_json_score_to_event_risk_score_effffba8
       field: json.score
       target_field: event.risk_score
       ignore_missing: true
       type: float
       on_failure:
         - append:
+            tag: append_error_message_ede5b835
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_json_score_defac187
             field: json.score
   - convert:
+      tag: convert_json_whitelisted_d32de468
       field: json.whitelisted
       ignore_missing: true
       type: string
       on_failure:
         - append:
+            tag: append_error_message_7981d15d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_json_whitelisted_ffcab413
             field: json.whitelisted
   - date:
+      tag: date_json_last_seen_to_threat_indicator_last_seen_74c92fde
       field: json.last_seen
       target_field: threat.indicator.last_seen
       if: ctx.json?.last_seen != null
@@ -243,11 +291,14 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_842ae581
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_json_last_seen_1a4b1316
             field: json.last_seen
   - date:
+      tag: date_json_first_seen_to_threat_indicator_first_seen_d2699903
       field: json.first_seen
       target_field: threat.indicator.first_seen
       if: ctx.json?.first_seen != null
@@ -255,32 +306,39 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_8eb940b0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_json_first_seen_9b3b31b0
             field: json.first_seen
   - set:
+      tag: set_threat_indicator_confidence_220350aa
       field: threat.indicator.confidence
       copy_from: json.score
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_threat_indicator_geo_country_iso_code_ef6ac525
       field: threat.indicator.geo.country_iso_code
       copy_from: json.geolocation
       ignore_empty_value: true
       if: ctx.threat?.indicator?.geo?.country_iso_code == null
       ignore_failure: true
   - set:
+      tag: set_threat_indicator_name_c6476633
       field: threat.indicator.name
       copy_from: threat.indicator.url.original
       ignore_empty_value: true
       if: ctx.threat?.indicator?.url?.original != null && ctx.threat.indicator.type == 'url'
   - set:
+      tag: set_threat_indicator_name_8e37f7ff
       field: threat.indicator.name
       copy_from: threat.indicator.url.domain
       ignore_empty_value: true
       if: ctx.threat?.indicator?.url?.domain != null && ctx.threat.indicator.type == 'domain-name'
   - set:
+      tag: set_threat_indicator_name_6742aa37
       field: threat.indicator.name
       copy_from: threat.indicator.ip
       ignore_empty_value: true
@@ -290,50 +348,62 @@ processors:
           ctx.threat.indicator.type == 'ipv6-addr'
         )
   - set:
+      tag: set_threat_indicator_name_32b9a530
       field: threat.indicator.name
       copy_from: threat.indicator.email.address
       ignore_empty_value: true
       if: ctx.threat?.indicator?.email?.address == 'email-addr'
   - set:
+      tag: set_threat_indicator_name_b88e0528
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.md5
       ignore_empty_value: true
   - set:
+      tag: set_threat_indicator_name_97c665a0
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.sha1
       ignore_empty_value: true
   - set:
+      tag: set_threat_indicator_name_3df46eac
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.sha256
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_reported_feeds_14ace644
       field: json.reported_feeds
       processor:
         rename:
+          tag: rename_ingest_value_confidenceLevel_to_ingest_value_confidence_4ccdd3e3
           field: _ingest._value.confidenceLevel
           target_field: _ingest._value.confidence
       ignore_failure: true
   - foreach:
+      tag: foreach_json_reported_feeds_b2f990b2
       field: json.reported_feeds
       processor:
         append:
+          tag: append_threat_indicator_provider_59403a8b
           field: threat.indicator.provider
           value: '{{{_ingest._value.name}}}'
       ignore_failure: true
   - foreach:
+      tag: foreach_json_tags_ecbf53e6
       field: json.tags
       processor:
         append:
+          tag: append_tags_b2a1be12
           field: tags
           value: '{{{_ingest._value}}}'
       if: ctx.json?.tags != null
       ignore_failure: true
   - rename:
+      tag: rename_json_to_rapid7_tc_ioc_682e96ba
       field: json
       target_field: rapid7.tc.ioc
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_normalize_confidence_level_6a68f620
       lang: painless
       if: ctx.threat?.indicator?.confidence != null
       description: Normalize confidence level.
@@ -355,7 +425,7 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      tag: script-default-deleted_at
+      tag: script-default-deleted_at_c004e49f
       if: ctx.rapid7?.tc?.ioc?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
       description: Indicator Expiration is done after `_conf.ioc_expiration_duration` (default 90d) since its creation time. This script adds a default `rapid7.tc.ioc.deleted_at` field to allow indicator expiration.
       source: >
@@ -394,25 +464,28 @@ processors:
         ctx.rapid7.tc.ioc.deleted_at = _tmp_deleted_at;
       on_failure:
         - append:
+            tag: append_error_message_8ec72e3a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: rapid7.tc.ioc.deleted_at
-      tag: date_deleted_at
+      tag: date_deleted_at_e0ae6abe
       target_field: rapid7.tc.ioc.deleted_at
       formats:
         - ISO8601
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_fef9fb81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _conf.ioc_expiration_duration
-      tag: rename_conf_ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration_91bdca10
       target_field: rapid7.tc.ioc.expiration_duration
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_99ba6cdb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: >
@@ -431,6 +504,7 @@ processors:
         drop(ctx);
       ignore_failure: true
   - fingerprint:
+      tag: fingerprint_to_id_a405bacb
       fields:
         - rapid7.tc.ioc.last_update_date
         - rapid7.tc.ioc.value
@@ -439,26 +513,28 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_event_kind_acc297e3
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: '{{{ _ingest.on_failure_message }}}'

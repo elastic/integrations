@@ -2,29 +2,36 @@
 description: Pipeline for parsing Zoom phone webhooks
 processors:
 - append:
+    tag: append_event_type_5eab37e6
     field: event.type
     value: info
 - append:
+    tag: append_event_type_fccc16e6
     field: event.type
     value: creation
     if: "['phone.caller_ringing', 'phone.callee_ringing'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_cfcb21f1
     field: event.type
     value: start
     if: "['phone.callee_answered', 'phone.caller_connected'].contains(ctx.event?.action)"
 - append:
+    tag: append_event_type_aadb1966
     field: event.type
     value: end
     if: "['phone.callee_missed', 'phone.callee_ended', 'phone.caller_ended'].contains(ctx.event?.action)"
 - rename:
+    tag: rename_zoom_object_to_zoom_phone_fd0874e8
     field: zoom.object
     target_field: zoom.phone
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_download_url_to_url_full_0040a6f4
     field: zoom.phone.download_url
     target_field: url.full
     ignore_missing: true
 - date:
+    tag: date_zoom_phone_ringing_start_time_to_timestamp_2261c070
     field: zoom.phone.ringing_start_time
     target_field: '@timestamp'
     formats:
@@ -32,6 +39,7 @@ processors:
     if: "['phone.callee_ringing', 'phone.caller_ringing', 'phone.caller_ended'].contains(ctx.event?.action)"
     ignore_failure: true
 - date:
+    tag: date_zoom_phone_connected_start_time_to_timestamp_5643fe9c
     field: zoom.phone.connected_start_time
     target_field: '@timestamp'
     formats:
@@ -39,6 +47,7 @@ processors:
     if: ctx.event?.action == 'phone.caller_connected'
     ignore_failure: true
 - date:
+    tag: date_zoom_phone_answer_start_time_to_timestamp_fc04725b
     field: zoom.phone.answer_start_time
     target_field: '@timestamp'
     formats:
@@ -46,6 +55,7 @@ processors:
     if: ctx.zoom?.phone?.answer_start_time != null && ctx.event?.action == 'phone.callee_answered'
     ignore_failure: true
 - date:
+    tag: date_zoom_phone_call_end_time_to_timestamp_3a90c574
     field: zoom.phone.call_end_time
     target_field: '@timestamp'
     formats:
@@ -59,6 +69,7 @@ processors:
       ].contains(ctx.event?.action)
     ignore_failure: true
 - date:
+    tag: date_zoom_phone_date_time_to_timestamp_5ebff6e5
     field: zoom.phone.date_time
     target_field: '@timestamp'
     formats:
@@ -66,11 +77,13 @@ processors:
     if: ctx.event?.action == 'phone.voicemail_received'
     ignore_failure: true
 - convert:
+    tag: convert_zoom_phone_duration_d861f303
     field: zoom.phone.duration
     type: long
     ignore_failure: true
 # Calculates duration when duration is unknown but start and end time is known (with ringing_start_time)
 - script:
+    tag: script_calculates_duration_when_duration_unknown_1a1b6215
     lang: painless
     if: ctx.zoom?.phone?.ringing_start_time != null && ctx.zoom?.phone?.answer_start_time == null && ctx.zoom?.phone?.call_end_time != null && ctx.zoom?.phone?.duration == null
     source: >-
@@ -79,9 +92,9 @@ processors:
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
       ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
       ctx.event.duration = ChronoUnit.NANOS.between(start, end);
-
 # Calculates duration when duration is unknown but start and end time is known (with answer_start_time)
 - script:
+    tag: script_calculates_duration_when_duration_unknown_66785215
     lang: painless
     if: ctx.zoom?.phone?.ringing_start_time == null && ctx.zoom?.phone?.answer_start_time != null && ctx.zoom?.phone?.call_end_time != null && ctx.zoom?.phone?.duration == null
     source: >-
@@ -90,9 +103,9 @@ processors:
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
       ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
       ctx.event.duration = ChronoUnit.NANOS.between(start, end);
-
 # Duration is in minutes, so multiply by seconds and then multiply again to convert seconds to nano
 - script:
+    tag: script_duration_minutes_so_multiply_seconds_af403fe1
     lang: painless
     if: ctx.zoom?.duration != null
     source: >-
@@ -101,87 +114,99 @@ processors:
 # Moving all voicemail related fields to their proper nested fields
 # that already exists for all other phone webhooks
 - rename:
+    tag: rename_zoom_phone_callee_user_id_to_zoom_phone_callee_user_id_e4303390
     field: zoom.phone.callee_user_id
     target_field: zoom.phone.callee.user_id
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_callee_extension_type_to_zoom_phone_callee_extension_type_4ebd5d23
     field: zoom.phone.callee_extension_type
     target_field: zoom.phone.callee.extension_type
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_callee_id_to_zoom_phone_callee_id_2de18b8a
     field: zoom.phone.callee_id
     target_field: zoom.phone.callee.id
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_callee_name_to_zoom_phone_callee_name_8528f8dd
     field: zoom.phone.callee_name
     target_field: zoom.phone.callee.name
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_callee_number_to_zoom_phone_callee_phone_number_03935a34
     field: zoom.phone.callee_number
     target_field: zoom.phone.callee.phone_number
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_callee_number_type_to_zoom_phone_callee_number_type_5f94314f
     field: zoom.phone.callee_number_type
     target_field: zoom.phone.callee.number_type
     ignore_missing: true
 - rename:
-    field: zoom.phone.callee_user_id
-    target_field: zoom.phone.callee.user_id
-    ignore_missing: true
-- rename:
-    field: zoom.phone.callee_extension_type
-    target_field: zoom.phone.callee.extension_type
-    ignore_missing: true
-- rename:
+    tag: rename_zoom_phone_caller_id_to_zoom_phone_caller_id_170c48d7
     field: zoom.phone.caller_id
     target_field: zoom.phone.caller.id
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_caller_name_to_zoom_phone_caller_name_93178b19
     field: zoom.phone.caller_name
     target_field: zoom.phone.caller.name
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_caller_number_to_zoom_phone_caller_phone_number_c0f802aa
     field: zoom.phone.caller_number
     target_field: zoom.phone.caller.phone_number
     ignore_missing: true
 - rename:
+    tag: rename_zoom_phone_caller_number_type_to_zoom_phone_caller_number_type_e9ca06ab
     field: zoom.phone.caller_number_type
     target_field: zoom.phone.caller.number_type
     ignore_missing: true
 - append:
+    tag: append_related_user_bb5d50e4
     field: related.user
     value: "{{{zoom.phone.callee.user_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.phone?.callee?.user_id != null
 - append:
+    tag: append_related_user_23d9117f
     field: related.user
     value: "{{{zoom.phone.callee_user_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.phone?.callee_user_id != null
 - append:
+    tag: append_related_user_8b278591
     field: related.user
     value: "{{{zoom.phone.caller.user_id}}}"
     allow_duplicates: false
     if: ctx.zoom?.phone?.caller?.user_id != null
 - remove:
+    tag: remove_zoom_phone_date_time_0bf0f6f3
     field: zoom.phone.date_time
     ignore_missing: true
     if: ctx.event?.action == 'phone.voicemail_received'
 - set:
+    tag: set_source_user_id_1d938b4f
     field: source.user.id
     value: '{{{zoom.phone.caller.user_id}}}'
     ignore_empty_value: true
 - set:
+    tag: set_destination_user_id_81f9ae41
     field: destination.user.id
     value: '{{{zoom.phone.callee.user_id}}}'
     ignore_empty_value: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,6 +2,7 @@
 description: Pipeline for Snyk Audit logs
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: 8.11.0
   - remove:
@@ -11,33 +12,39 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_74d23cc2
       field: event.original
       target_field: json
-# Cleanup equivalent names
+  # Cleanup equivalent names
   - rename:
+      tag: rename_json_groupId_to_json_group_id_47cd76ac
       field: json.groupId
       target_field: json.group_id
       ignore_missing: true
   - rename:
+      tag: rename_json_orgId_to_json_org_id_addfa634
       field: json.orgId
       target_field: json.org_id
       ignore_missing: true
   - fingerprint:
+      tag: fingerprint_to_id_64b3d1e7
       fields:
         - json.org_id
         - json.group_id
@@ -46,104 +53,125 @@ processors:
       target_field: _id
       ignore_missing: true
   - rename:
+      tag: rename_json_to_snyk_audit_logs_1a87ae7a
       field: json
       target_field: snyk.audit_logs
       ignore_missing: true
   - rename:
+      tag: rename_snyk_audit_logs_group_id_to_user_group_id_6d2395a4
       field: snyk.audit_logs.group_id
       target_field: user.group.id
       ignore_missing: true
   - set:
+      tag: set_organization_id_c3e9ef5d
       field: organization.id
       copy_from: snyk.audit_logs.org_id
       ignore_empty_value: true
   - rename:
+      tag: rename_snyk_audit_logs_projectId_to_snyk_audit_logs_project_id_3ff14569
       field: snyk.audit_logs.projectId
       target_field: snyk.audit_logs.project_id
       ignore_missing: true
   - set:
+      tag: set_user_id_5a54874b
       field: user.id
       copy_from: snyk.audit_logs.user_id
       ignore_empty_value: true
   - rename:
+      tag: rename_snyk_audit_logs_event_to_event_action_d02eec89
       field: snyk.audit_logs.event
       target_field: event.action
       ignore_missing: true
   - append:
+      tag: append_event_type_2981ad6a
       field: event.type
       value: user
       if: ctx.event?.action != null && ctx.event.action =~ /\buser\b/
       allow_duplicates: false
   - append:
+      tag: append_event_type_f0672a67
       field: event.type
       value: creation
       if: ctx.event?.action != null && ctx.event.action =~ /\b(?:add|create)\b/
       allow_duplicates: false
   - append:
+      tag: append_event_type_14eada14
       field: event.type
       value: change
       if: ctx.event?.action != null && ctx.event.action =~ /\bedit\b/
       allow_duplicates: false
   - append:
+      tag: append_event_type_5404e3ba
       field: event.type
       value: access
       if: ctx.event?.action != null && ctx.event.action =~ /\baccess\b/
       allow_duplicates: false
   - append:
+      tag: append_event_type_a2c2d4f4
       field: event.type
       value: deletion
       if: ctx.event?.action != null && ctx.event.action =~ /\b(?:remove|delete)\b/
       allow_duplicates: false
   - append:
+      tag: append_event_category_3102a457
       field: event.category
       value: configuration
       if: ctx.event?.action != null && ctx.event.action =~ /\bsettings\b/
       allow_duplicates: false
   - append:
+      tag: append_event_category_e5a272d5
       field: event.category
       value: file
       if: ctx.event?.action != null && ctx.event.action =~ /\bfiles\b/
       allow_duplicates: false
   - append:
+      tag: append_event_category_a873aeb8
       field: event.category
       value: iam
       if: ctx.event?.action != null && ctx.event.action =~ /\buser\b/
       allow_duplicates: false
   - set:
+      tag: set_event_type_15e651da
       field: event.type
       value: [info]
       if: ctx.event?.type == null
   - date:
+      tag: date_snyk_audit_logs_created_to_timestamp_d52e257a
       field: snyk.audit_logs.created
       target_field: "@timestamp"
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
   - append:
+      tag: append_related_user_7df976e5
       field: related.user
       value: '{{{snyk.audit_logs.user_id}}}'
       if: ctx.snyk?.audit_logs?.user_id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_8b5aafb1
       field: related.user
       value: '{{{snyk.audit_logs.content.email}}}'
       if: ctx.snyk?.audit_logs?.content?.email != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_381c0221
       field: related.user
       value: '{{{snyk.audit_logs.content.userPublicId}}}'
       if: ctx.snyk?.audit_logs?.content?.userPublicId != null
       allow_duplicates: false
   - uri_parts:
+      tag: uri_parts_snyk_audit_logs_content_url_to_url_8921f355
       field: snyk.audit_logs.content.url
       target_field: url
       if: ctx.snyk?.audit_logs?.content?.url != null
       on_failure:
       - append:
+          tag: append_error_message_be5eecdd
           field: error.message
           value: '{{{ _ingest.on_failure_message }}}'
   - script:
       lang: painless
-      tag: rename_blank_notSupported
+      tag: rename_blank_notSupported_228b4068
       if: ctx.snyk?.audit_logs?.content?.notSupported instanceof Map
       source: |-
         def blank = ctx.snyk.audit_logs.content.notSupported[''];
@@ -153,6 +181,7 @@ processors:
         ctx.snyk.audit_logs.content.notSupported.no_extension = ctx.snyk.audit_logs.content.notSupported[''];
         ctx.snyk.audit_logs.content.notSupported.remove('');
   - script:
+      tag: script_processor_iterates_over_whole_document_a0a1a21a
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -178,6 +207,7 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_7db0e2d0
       field:
         - snyk.audit_logs.created
         - message
@@ -185,15 +215,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: '{{{ _ingest.on_failure_message }}}'
