@@ -15,7 +15,7 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
 | **Temporal Cloud** | Account with permission to create a Service Account |
 | **API key role** | Service Account with **Metrics Read-Only** account-level role |
 | **Elastic Stack** | 9.5.0+ |
-| **Input package** | `prometheus_input_otel` 0.2.0+ (installed automatically as a dependency) |
+| **Input package** | `prometheus_input_otel` (installed automatically as a dependency) |
 
 ## Setup
 
