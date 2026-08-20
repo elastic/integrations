@@ -3,12 +3,19 @@ description: Pipeline for Log Inspection events
 processors:
   - set:
       field: trendmicro.deep_security.event_category
-      tag: set_deep_security_event_category
+      tag: set_deep_security_event_category_e5b60a49
       value: log-inspection-event
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
