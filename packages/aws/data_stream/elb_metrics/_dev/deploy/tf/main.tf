@@ -57,10 +57,30 @@ data "aws_ami" "latest_amzn" {
   most_recent = true
   owners      = ["amazon"]
 
+  # Standard AL2023 only. al2023-ami-*-x86_64 also matches
+  # al2023-ami-minimal-*, which does not ship python3 or curl.
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["al2023-ami-2023.*-x86_64"]
   }
+}
+
+data "aws_subnet" "target" {
+  for_each = toset(data.aws_subnets.target.ids)
+  id       = each.value
+}
+
+locals {
+  # One subnet per AZ. Default VPCs can have multiple subnets in the
+  # same AZ, so slicing sorted IDs does not satisfy ALB's ≥2-AZ rule.
+  target_subnet_ids_by_az = {
+    for id, subnet in data.aws_subnet.target :
+    subnet.availability_zone => id...
+  }
+  alb_subnet_ids = [
+    for az in sort(keys(local.target_subnet_ids_by_az)) :
+    sort(local.target_subnet_ids_by_az[az])[0]
+  ]
 }
 
 resource "aws_security_group" "alb" {
@@ -131,7 +151,7 @@ resource "aws_security_group" "client" {
 resource "aws_instance" "target" {
   ami                         = data.aws_ami.latest_amzn.id
   instance_type               = "t3.micro"
-  subnet_id                   = sort(data.aws_subnets.target.ids)[0]
+  subnet_id                   = local.alb_subnet_ids[0]
   vpc_security_group_ids      = [aws_security_group.target.id]
   associate_public_ip_address = true
 
@@ -215,15 +235,13 @@ resource "aws_lb" "alb" {
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  # Use the same AZ-qualified subnet set as the target so the ALB always spans
-  # the target's Availability Zone when regions do not offer t3.micro
-  # everywhere.
-  subnets = slice(sort(data.aws_subnets.target.ids), 0, 2)
+  # Same AZ-qualified set as the target, one subnet per distinct AZ.
+  subnets = slice(local.alb_subnet_ids, 0, 2)
 
   lifecycle {
     precondition {
-      condition     = length(data.aws_subnets.target.ids) >= 2
-      error_message = "ALB system test needs at least 2 subnets in different AZs that offer t3.micro (AWS requires ≥2 AZs for Application Load Balancers)."
+      condition     = length(local.alb_subnet_ids) >= 2
+      error_message = "ALB system test needs at least 2 AZs that offer t3.micro (AWS requires ≥2 AZs for Application Load Balancers)."
     }
   }
 
@@ -248,7 +266,7 @@ resource "aws_lb_listener" "http" {
 resource "aws_instance" "client" {
   ami                         = data.aws_ami.latest_amzn.id
   instance_type               = "t3.micro"
-  subnet_id                   = sort(data.aws_subnets.target.ids)[0]
+  subnet_id                   = local.alb_subnet_ids[0]
   vpc_security_group_ids      = [aws_security_group.client.id]
   associate_public_ip_address = true
   depends_on                  = [aws_lb_listener.http, aws_lb_target_group_attachment.tg_attachment]
