@@ -245,11 +245,19 @@ processors:
       ignore_missing: true
       
 on_failure:
+  - append:
+      tag: append_error_message_2304b6c8
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       tag: set_event_kind_f51b77ad
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message_a797062a
-      field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
