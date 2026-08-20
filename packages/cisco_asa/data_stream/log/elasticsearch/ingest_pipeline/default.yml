@@ -698,8 +698,9 @@ processors:
         - 'SSH session from (?:%{IP:source.ip} )?on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
         - 'SSH session from (?:%{IP:source.ip} )?on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
       pattern_definitions:
-        NOTQUOTE: '[^"]*?'
-        CISCO_USER: '(?:\"(?:\*{5}|(?<source.user.name>[^\"]+))\"|(?:\*{5}|%{NOTQUOTE:source.user.name}))'
+        USERNAME: "[a-zA-Z0-9._'-]+"
+        QUOTEDUSER: '[^"]*'
+        CISCO_USER: '(?:"(?:\*{5}|%{QUOTEDUSER:source.user.name})"|\*{5}|%{USERNAME:source.user.name})'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '322001'"
       tag: parse_322001
