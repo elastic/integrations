@@ -359,16 +359,13 @@ rules:
           `}}
 
 
-  # =========================================================================
   # APP_LOG data stream mock rules (file IDs eclf_al1/al2 to avoid colliding
   # with AUTH_LOG eclf_a1/b2/c3 and APP_AUTH_LOG eclf_aa1/ab2/ac3).
-  # =========================================================================
-# =========================================================================
+
   # PHASE 1 — list Application Log files (paginated with `after`).
   # The specific page-2 rule (after = page-1 last_end_time) must come first so
   # it wins over the general page-1 rule; page 2 returns an empty page with
   # has_more=false, which terminates collection.
-  # =========================================================================
 
   # --- list page 2 (after cursor from page 1) -> empty, terminates ---
   - path: /v1/compliance/workspaces/ws-example-001/logs
@@ -403,9 +400,7 @@ rules:
         body: |-
           {"data": [{"id": "eclf_al1", "event_type": "APP_LOG", "end_time": "2026-07-15T15:39:18.792578Z", "file_name": "APP_LOG_2026-07-15T15:39:18.792578+00:00.jsonl", "file_size": 640, "file_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"}, {"id": "eclf_al2", "event_type": "APP_LOG", "end_time": "2026-07-15T16:02:11.114000Z", "file_name": "APP_LOG_2026-07-15T16:02:11.114000+00:00.jsonl", "file_size": 512, "file_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"}], "has_more": true, "last_end_time": "2026-07-15T16:02:11.114000Z"}
 
-  # =========================================================================
   # PHASE 2 — download each log file (JSON Lines, one event per line).
-  # =========================================================================
 
   # --- download file eclf_al1 (2 events) ---
   - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_al1

@@ -402,22 +402,22 @@ An example event for `app_log` looks as following:
 {
     "@timestamp": "2026-07-15T15:39:18.154Z",
     "agent": {
-        "ephemeral_id": "a79eeb0b-33aa-404b-b524-2b398de5b050",
-        "id": "a1a199f5-5f47-42e0-becd-903f4428b276",
-        "name": "elastic-agent-45821",
+        "ephemeral_id": "77bab2c8-ece5-4806-b34b-46c332d0f096",
+        "id": "b424493d-5436-465f-b101-70cd421d2532",
+        "name": "elastic-agent-94135",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.app_log",
-        "namespace": "76185",
+        "namespace": "57924",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a1a199f5-5f47-42e0-becd-903f4428b276",
+        "id": "b424493d-5436-465f-b101-70cd421d2532",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -428,7 +428,7 @@ An example event for `app_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.app_log",
         "id": "3f1a9c02-1111-4a11-8b11-000000000001",
-        "ingested": "2026-08-19T07:30:14Z",
+        "ingested": "2026-08-19T11:33:17Z",
         "kind": "event",
         "original": "{\"event_id\":\"3f1a9c02-1111-4a11-8b11-000000000001\",\"type\":\"APP_LOG\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"timestamp\":\"2026-07-15T15:39:18.154524Z\",\"app_id\":\"asdk_app_1111111111111111aaaa\",\"app_name\":\"Slack\",\"app_type\":\"MCP\",\"conversation_id\":\"c-1111-aaaa-2222-bbbb\",\"log_type\":\"request\",\"input\":{\"query\":\"in:general after:2026-07-14\",\"limit\":20,\"include_bots\":true,\"sort\":\"timestamp\",\"sort_dir\":\"desc\",\"response_format\":\"concise\",\"_meta\":{\"openai/userAgent\":\"ChatGPT/1.2026.183 (Mac OS X 26.5.2; arm64; build 1783607847)\",\"openai/locale\":\"en-GB\",\"openai/userLocation\":{\"city\":\"London\",\"region\":\"England\",\"country\":\"GB\",\"timezone\":\"Europe/London\",\"latitude\":\"51.50853\",\"longitude\":\"-0.12574\"},\"timezone\":\"Europe/London\",\"openai/subject\":\"v1/mock-subject-aaaaaaaaaaaaaaaa\",\"openai/session\":\"v1/mock-session-aaaaaaaaaaaaaaaa\",\"openai/organization\":\"v1/mock-org-aaaaaaaaaaaaaaaa\"}}}",
         "type": [
