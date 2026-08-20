@@ -2,16 +2,20 @@
 description: Pipeline for parsing azure activity logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - pipeline:
+      tag: pipeline_0749b8eb
       if: "ctx?.tags != null && ctx.tags.contains('parse_message')"
       name: '{{ IngestPipeline "parsed-message" }}'
 on_failure:

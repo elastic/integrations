@@ -2,36 +2,44 @@
 description: Pipeline for parsing azure activity logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - script:
+      tag: script_b08e84a2
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_azure_activitylogs_01d823eb
       field: event.original
       target_field: azure.activitylogs
   - date:
+      tag: date_azure_activitylogs_time_to_timestamp_a7b510b2
       field: azure.activitylogs.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -47,45 +55,55 @@ processors:
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
+      tag: remove_azure_activitylogs_time_c3687f88
       field: azure.activitylogs.time
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_resourceId_to_azure_resource_id_60da6e05
       field: azure.activitylogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - convert:
+        tag: convert_azure_activitylogs_callerIpAddress_to_source_ip_f53e3855
         field: azure.activitylogs.callerIpAddress
         target_field: source.ip
         type: ip
         ignore_missing: true
         on_failure:
         - rename: 
+            tag: rename_azure_activitylogs_callerIpAddress_to_source_address_b8ade1fb
             field: azure.activitylogs.callerIpAddress
             target_field: source.address
             ignore_missing: true 
             ignore_failure: true
   - remove:
+      tag: remove_azure_activitylogs_callerIpAddress_c5bca581
       field: azure.activitylogs.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - set:
+      tag: set_client_ip_b6d15cbc
       field: client.ip
       value: '{{source.ip}}'
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_d7aecc5f
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
   - rename:
+      tag: rename_azure_activitylogs_level_to_log_level_5438ab8b
       field: azure.activitylogs.level
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_durationMs_to_event_duration_d99d8e2b
       field: azure.activitylogs.durationMs
       target_field: event.duration
       ignore_missing: true
   - script:
+      tag: script_7f8b9902
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
         * params.param_nano;}
@@ -93,31 +111,38 @@ processors:
         param_nano: 1000000
       ignore_failure: true
   - rename:
+      tag: rename_azure_activitylogs_location_to_geo_name_328edfb6
       field: azure.activitylogs.location
       target_field: geo.name
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_to_azure_activitylogs_identity_name_9a14a504
       field: azure.activitylogs.identity
       if: "ctx.azure?.activitylogs?.identity instanceof String"
       target_field: azure.activitylogs.identity_name
       ignore_missing: true
   - json:
+      tag: json_azure_activitylogs_identity_b5c40657
       field: azure.activitylogs.identity
       if: "ctx.azure?.activitylogs?.identity instanceof String"
       ignore_failure: true
   - json:
+      tag: json_azure_activitylogs_properties_695ad309
       field: azure.activitylogs.properties
       if: "ctx.azure?.activitylogs?.properties instanceof String"
       ignore_failure: true
   - json:
+      tag: json_azure_activitylogs_properties_responseBody_2bfda71c
       field: azure.activitylogs.properties.responseBody
       if: "ctx.azure?.activitylogs?.properties?.responseBody instanceof String"
       ignore_failure: true
   - json:
+      tag: json_azure_activitylogs_properties_requestBody_e0a404ec
       field: azure.activitylogs.properties.requestBody
       if: "ctx.azure?.activitylogs?.properties?.requestBody instanceof String"
       ignore_failure: true
   - script:
+      tag: script_80667b57
       lang: painless
       source: >-
         if (ctx?.azure?.activitylogs?.properties?.eventCategory != null) {
@@ -131,93 +156,115 @@ processors:
         }
       ignore_failure: true
   - remove:
+      tag: remove_azure_activitylogs_properties_eventCategory_9308b07f
       field: azure.activitylogs.properties.eventCategory
       if: 'ctx.azure.activitylogs.event_category != null'
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_resultType_to_azure_activitylogs_result_type_b2d1b555
       field: azure.activitylogs.resultType
       target_field: azure.activitylogs.result_type
       ignore_missing: true
   - convert:
+      tag: convert_azure_activitylogs_result_type_to_event_outcome_60078132
       field: azure.activitylogs.result_type
       target_field: event.outcome
       type: string
       if: "ctx?.azure?.activitylogs?.result_type != null && ctx.azure.activitylogs.result_type instanceof String && (ctx.azure.activitylogs.result_type.toLowerCase() == 'success' || ctx.azure.activitylogs.result_type.toLowerCase() == 'failure')"
   - convert:
+      tag: convert_azure_activitylogs_properties_result_to_event_outcome_3d5faff9
       field: azure.activitylogs.properties.result
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.activitylogs?.properties?.result != null && ctx?.azure?.activitylogs?.properties?.result instanceof String && ['success', 'failure', 'unknown'].contains(ctx.azure?.activitylogs?.properties?.result)"
   - rename:
+      tag: rename_azure_activitylogs_operationName_to_azure_activitylogs_operation_name_d731d319
       field: azure.activitylogs.operationName
       target_field: azure.activitylogs.operation_name
       ignore_missing: true
   - convert:
+      tag: convert_azure_activitylogs_operation_name_to_event_action_a29f8cb2
       field: azure.activitylogs.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_operationVersion_to_azure_activitylogs_operation_version_ff7df9b7
       field: azure.activitylogs.operationVersion
       target_field: azure.activitylogs.operation_version
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_tenantId_to_azure_activitylogs_tenant_id_fa01d4db
       field: azure.activitylogs.tenantId
       target_field: azure.activitylogs.tenant_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_Level_to_azure_activitylogs_level_e67f7944
       field: azure.activitylogs.Level
       target_field: azure.activitylogs.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_resultSignature_to_azure_activitylogs_result_signature_d44c8465
       field: azure.activitylogs.resultSignature
       target_field: azure.activitylogs.result_signature
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_authorization_evidence_roleAssignmentScope_to_azure_activitylogs_identity_authorization_evidence_role_assignment_scope_3106d3dc
       field: azure.activitylogs.identity.authorization.evidence.roleAssignmentScope
       target_field: azure.activitylogs.identity.authorization.evidence.role_assignment_scope
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_authorization_evidence_roleDefinitionId_to_azure_activitylogs_identity_authorization_evidence_role_definition_id_5eb29cf8
       field: azure.activitylogs.identity.authorization.evidence.roleDefinitionId
       target_field: azure.activitylogs.identity.authorization.evidence.role_definition_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_authorization_evidence_roleAssignmentId_to_azure_activitylogs_identity_authorization_evidence_role_assignment_id_58e1dee0
       field: azure.activitylogs.identity.authorization.evidence.roleAssignmentId
       target_field: azure.activitylogs.identity.authorization.evidence.role_assignment_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_authorization_evidence_principalId_to_azure_activitylogs_identity_authorization_evidence_principal_id_962616bd
       field: azure.activitylogs.identity.authorization.evidence.principalId
       target_field: azure.activitylogs.identity.authorization.evidence.principal_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_authorization_evidence_principalType_to_azure_activitylogs_identity_authorization_evidence_principal_type_82bb2063
       field: azure.activitylogs.identity.authorization.evidence.principalType
       target_field: azure.activitylogs.identity.authorization.evidence.principal_type
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_correlationId_to_azure_correlation_id_df42f28f
       field: azure.activitylogs.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_properties_serviceRequestId_to_azure_activitylogs_properties_service_request_id_bb48077e
       field: azure.activitylogs.properties.serviceRequestId
       target_field: azure.activitylogs.properties.service_request_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_properties_statusMessage_to_message_c67b8138
       field: azure.activitylogs.properties.statusMessage
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_properties_statusCode_to_azure_activitylogs_properties_status_code_7eedd159
       field: azure.activitylogs.properties.statusCode
       target_field: azure.activitylogs.properties.status_code
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_geo_d0a7dae7
       field: source.ip
       target_field: geo
       ignore_missing: true
   - rename:
+      tag: rename_azure_activitylogs_identity_claims_name_to_azure_activitylogs_identity_claims_initiated_by_user_fullname_d983b993
       field: azure.activitylogs.identity.claims.name
       target_field: azure.activitylogs.identity.claims_initiated_by_user.fullname
       ignore_missing: true
   - script:
+      tag: script_f9f6c34e
       lang: painless
       source: >-
         if (ctx.azure.activitylogs.identity.claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] != null) {
@@ -225,6 +272,7 @@ processors:
         }
       ignore_failure: true
   - script:
+      tag: script_5f5a5750
       lang: painless
       source: >-
         if (ctx.azure.activitylogs.identity.claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] != null) {
@@ -232,6 +280,7 @@ processors:
         }
       ignore_failure: true
   - script:
+      tag: script_857c6efd
       lang: painless
       source: >-
         if (ctx.azure.activitylogs.identity.claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] != null) {
@@ -239,6 +288,7 @@ processors:
         }
       ignore_failure: true
   - set:
+      tag: set_azure_activitylogs_identity_claims_initiated_by_user_schema_5bc27e7b
       if: ctx.azure.activitylogs.identity!= null && ctx.azure.activitylogs.identity.claims_initiated_by_user
         != null && ctx.azure.activitylogs.identity.claims_initiated_by_user.name !=
         null
@@ -246,6 +296,7 @@ processors:
       value: http://schemas.xmlsoap.org/ws/2005/05/identity/claims
       ignore_failure: true
   - script:
+      tag: script_4f43ce80
       lang: painless
       source: >-
         if (ctx.azure.activitylogs.identity.claims != null) {
@@ -257,6 +308,7 @@ processors:
         }
       ignore_failure: true
   - script:
+      tag: script_bbdee4a8
       lang: painless
       params:
         "write":
@@ -282,10 +334,12 @@ processors:
         def hm = new HashMap(params.get(category));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -294,14 +348,17 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - grok:
+      tag: grok_azure_activitylogs_identity_claims_initiated_by_user_name_9dbee0ba
       field: azure.activitylogs.identity.claims_initiated_by_user.name
       patterns:
         - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -310,6 +367,7 @@ processors:
 
   # set user.email to the original name if the above grok succeeded.
   - set:
+      tag: set_user_email_c985de3e
       field: user.email
       value: '{{azure.activitylogs.identity.claims_initiated_by_user.name}}'
       ignore_empty_value: true
@@ -317,29 +375,35 @@ processors:
 
   # set user.name to the original name if the above grok failed (name format is not an email).
   - set:
+      tag: set_user_name_6055ed4f
       field: user.name
       value: '{{azure.activitylogs.identity.claims_initiated_by_user.name}}'
       ignore_empty_value: true
       if: 'ctx.user?.name == null'
   - append:
+      tag: append_related_user_1b18802d
       field: related.user
       value: '{{user.name}}'
       allow_duplicates: false
       if: 'ctx.user?.name != null'
   - convert:
+      tag: convert_azure_activitylogs_identity_claims_initiated_by_user_fullname_to_user_full_name_adfc2434
       field: azure.activitylogs.identity.claims_initiated_by_user.fullname
       target_field: user.full_name
       type: string
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_related_entity_8a62107d
       field: related.entity
       value: '{{{ azure.resource_id }}}'
       allow_duplicates: false
       if: ctx.azure?.resource_id != null && ctx.azure.resource_id != ''
   - append:
+      tag: append_related_entity_4a8087ed
       field: related.entity
       value: '{{{ azure.activitylogs.identity.authorization.evidence.principal_id }}}'
       allow_duplicates: false
@@ -347,6 +411,7 @@ processors:
         ctx.azure?.activitylogs?.identity?.authorization?.evidence?.principal_id != null &&
         ctx.azure.activitylogs.identity.authorization.evidence.principal_id != ''
   - pipeline:
+      tag: pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
   - set:

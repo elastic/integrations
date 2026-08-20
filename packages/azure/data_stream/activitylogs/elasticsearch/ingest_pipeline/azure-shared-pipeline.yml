@@ -2,9 +2,11 @@
 description: Pipeline for parsing Azure shared log fields.
 processors:
   - set:
+      tag: set_cloud_provider_136a398d
       field: cloud.provider
       value: azure
   - grok:
+      tag: grok_azure_resource_id_9a248d6b
       field: azure.resource_id
       patterns:
       - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}/NAMESPACES/%{NAMESPACE:azure.resource.namespace}/AUTHORIZATIONRULES/%{RULE:azure.resource.authorization_rule}
@@ -17,6 +19,7 @@ processors:
         RULE: .+
       ignore_failure: true
   - grok:
+      tag: grok_azure_resource_id_c9d49140
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -29,6 +32,7 @@ processors:
         NAME: ((?!AUTHORIZATIONRULES).)*$
       ignore_failure: true
   - grok:
+      tag: grok_azure_resource_id_e1f25412
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -41,6 +45,7 @@ processors:
         NAME: .+
       ignore_failure: true
   - grok:
+      tag: grok_azure_resource_id_fde2ca9e
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -50,6 +55,7 @@ processors:
         PROVIDER: .+
       ignore_failure: true
   - grok:
+      tag: grok_azure_resource_id_05b993a9
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -60,6 +66,7 @@ processors:
         PROVIDERNAME: ([A-Za-z])\w+.([A-Za-z])\w+\/([A-Za-z][^\/])\w+
       ignore_failure: true
   - grok:
+      tag: grok_azure_resource_id_99076ce7
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -70,6 +77,7 @@ processors:
         GROUPID: .+
       ignore_failure: true
   - grok:
+      tag: grok_azure_resource_id_b769de94
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -79,10 +87,12 @@ processors:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
       ignore_failure: true
   - rename:
+      tag: rename_azure_resource_id_to_azure_resource_id_4a05dbed
       field: azure.resource_id
       target_field: azure.resource.id
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_outcome_eb9dfc47
       field: event.outcome
       ignore_missing: true
 on_failure:
