@@ -403,8 +403,7 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.databucket.owner.name | The name of the bucket owner. | keyword |
 | aws_securityhub.finding.databucket.owner.uid | The unique identifier of the bucket owner. | keyword |
 | aws_securityhub.finding.databucket.region | The cloud region of the bucket. | keyword |
-| aws_securityhub.finding.databucket.tags.name | The tag name. | keyword |
-| aws_securityhub.finding.databucket.tags.value | The tag value. | keyword |
+| aws_securityhub.finding.databucket.tags.\* | The list of tags associated with the bucket. | object |
 | aws_securityhub.finding.databucket.type | The type of the bucket. | keyword |
 | aws_securityhub.finding.databucket.type_id | The normalized identifier of the bucket type. | keyword |
 | aws_securityhub.finding.databucket.uid | The unique identifier of the bucket. | keyword |

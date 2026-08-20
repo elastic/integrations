@@ -150,51 +150,39 @@ processors:
       lang: painless
       if: ctx.aws_securityhub?.finding?.evidences instanceof List
       source: |
+        void normalize(def owner, def key, DateTimeFormatter spaceFmt) {
+          def v = owner[key];
+          if (v == null || (v instanceof String && v == '')) { return; }
+          try {
+            def zdt;
+            if (v instanceof Number) {
+              zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number)v).longValue()), ZoneOffset.UTC);
+            } else {
+              try { zdt = ZonedDateTime.parse((String)v); }
+              catch (Exception e) { zdt = ZonedDateTime.parse((String)v, spaceFmt); }
+            }
+            owner[key] = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          } catch (Exception e) {
+            owner.remove(key);
+          }
+        }
         def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
         for (def ev : ctx.aws_securityhub.finding.evidences) {
-          if (ev == null || !(ev.actor instanceof Map)) {
-            continue;
+          if (ev == null || !(ev.actor instanceof Map)) { continue; }
+          if (ev.actor.process instanceof Map) {
+            normalize(ev.actor.process, 'terminated_time_dt', spaceFmt);
+            normalize(ev.actor.process, 'terminated_time', spaceFmt);
           }
-          def actor = ev.actor;
-          if (actor.process instanceof Map) {
-            def proc = actor.process;
-            if (proc.terminated_time_dt instanceof String && proc.terminated_time_dt != '') {
-              def zdt;
-              try { zdt = ZonedDateTime.parse(proc.terminated_time_dt); }
-              catch (Exception e) { zdt = ZonedDateTime.parse(proc.terminated_time_dt, spaceFmt); }
-              proc.terminated_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            }
-            if (proc.terminated_time != null) {
-              def terminatedMs = ((Number)proc.terminated_time).longValue();
-              proc.terminated_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(terminatedMs), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            }
-          }
-          if (actor.session instanceof Map) {
-            def sess = actor.session;
-            if (sess.created_time_dt instanceof String && sess.created_time_dt != '') {
-              def zdt;
-              try { zdt = ZonedDateTime.parse(sess.created_time_dt); }
-              catch (Exception e) { zdt = ZonedDateTime.parse(sess.created_time_dt, spaceFmt); }
-              sess.created_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            }
-            if (sess.created_time != null) {
-              def createdMs = ((Number)sess.created_time).longValue();
-              sess.created_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(createdMs), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            }
-            if (sess.expiration_time_dt instanceof String && sess.expiration_time_dt != '') {
-              def zdt;
-              try { zdt = ZonedDateTime.parse(sess.expiration_time_dt); }
-              catch (Exception e) { zdt = ZonedDateTime.parse(sess.expiration_time_dt, spaceFmt); }
-              sess.expiration_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            }
-            if (sess.expiration_time != null) {
-              def expirationMs = ((Number)sess.expiration_time).longValue();
-              sess.expiration_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(expirationMs), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            }
+          if (ev.actor.session instanceof Map) {
+            normalize(ev.actor.session, 'created_time_dt', spaceFmt);
+            normalize(ev.actor.session, 'created_time', spaceFmt);
+            normalize(ev.actor.session, 'expiration_time_dt', spaceFmt);
+            normalize(ev.actor.session, 'expiration_time', spaceFmt);
           }
         }
       on_failure:
         - append:
+            tag: append_error_message_date_evidences_actor_time_fields
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -671,25 +659,31 @@ processors:
       lang: painless
       if: ctx.aws_securityhub?.finding?.evidences instanceof List
       source: |
+        void normalize(def owner, def key, DateTimeFormatter spaceFmt) {
+          def v = owner[key];
+          if (v == null || (v instanceof String && v == '')) { return; }
+          try {
+            def zdt;
+            if (v instanceof Number) {
+              zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number)v).longValue()), ZoneOffset.UTC);
+            } else {
+              try { zdt = ZonedDateTime.parse((String)v); }
+              catch (Exception e) { zdt = ZonedDateTime.parse((String)v, spaceFmt); }
+            }
+            owner[key] = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          } catch (Exception e) {
+            owner.remove(key);
+          }
+        }
         def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
         for (def ev : ctx.aws_securityhub.finding.evidences) {
-          if (ev == null || !(ev.process instanceof Map)) {
-            continue;
-          }
-          def proc = ev.process;
-          if (proc.terminated_time_dt instanceof String && proc.terminated_time_dt != '') {
-            def zdt;
-            try { zdt = ZonedDateTime.parse(proc.terminated_time_dt); }
-            catch (Exception e) { zdt = ZonedDateTime.parse(proc.terminated_time_dt, spaceFmt); }
-            proc.terminated_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (proc.terminated_time != null) {
-            def terminatedMs = ((Number)proc.terminated_time).longValue();
-            proc.terminated_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(terminatedMs), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
+          if (ev == null || !(ev.process instanceof Map)) { continue; }
+          normalize(ev.process, 'terminated_time_dt', spaceFmt);
+          normalize(ev.process, 'terminated_time', spaceFmt);
         }
       on_failure:
         - append:
+            tag: append_error_message_date_evidences_process_terminated_time_fields
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:

@@ -1215,9 +1215,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.databucket?.created_time_dt != null && ctx.aws_securityhub.finding.databucket.created_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_finding_databucket_created_time_dt
             field: aws_securityhub.finding.databucket.created_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_finding_databucket_created_time_dt
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1229,9 +1231,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.databucket?.created_time != null && ctx.aws_securityhub.finding.databucket.created_time != ''
       on_failure:
         - remove:
+            tag: remove_finding_databucket_created_time
             field: aws_securityhub.finding.databucket.created_time
             ignore_missing: true
         - append:
+            tag: append_error_message_finding_databucket_created_time
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1245,9 +1249,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.databucket?.file?.modified_time_dt != null && ctx.aws_securityhub.finding.databucket.file.modified_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_finding_databucket_file_modified_time_dt
             field: aws_securityhub.finding.databucket.file.modified_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_finding_databucket_file_modified_time_dt
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1259,9 +1265,27 @@ processors:
       if: ctx.aws_securityhub?.finding?.databucket?.file?.modified_time != null && ctx.aws_securityhub.finding.databucket.file.modified_time != ''
       on_failure:
         - remove:
+            tag: remove_finding_databucket_file_modified_time
             field: aws_securityhub.finding.databucket.file.modified_time
             ignore_missing: true
         - append:
+            tag: append_error_message_finding_databucket_file_modified_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert key:value finding.databucket tags into an object for better searchability.
+      tag: script_convert_finding_databucket_tags_to_object
+      lang: painless
+      if: ctx.aws_securityhub?.finding?.databucket?.tags instanceof List
+      source: |-
+        def tags = [:];
+        for (def tag: ctx.aws_securityhub.finding.databucket.tags) {
+          tags[tag.name] = tag.value;
+        }
+        ctx.aws_securityhub.finding.databucket.tags = tags;
+      on_failure:
+        - append:
+            tag: append_error_message_finding_databucket_tags
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
