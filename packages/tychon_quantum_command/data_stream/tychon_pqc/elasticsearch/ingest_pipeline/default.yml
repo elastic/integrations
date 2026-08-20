@@ -118,7 +118,21 @@ processors:
           ctx.remove('event.action');
         }
         if (ctx.event.type == null && ctx.containsKey('event.type')) {
-          ctx.event.type = ctx['event.type'];
+          def eventType = ctx['event.type'];
+          if (eventType instanceof List) {
+            ctx.event.type = eventType;
+          } else if (eventType instanceof String && eventType.contains(',')) {
+            List eventTypes = new ArrayList();
+            for (String item : eventType.splitOnToken(',')) {
+              String trimmed = item.trim();
+              if (trimmed.length() > 0) {
+                eventTypes.add(trimmed);
+              }
+            }
+            ctx.event.type = eventTypes;
+          } else {
+            ctx.event.type = [eventType];
+          }
           ctx.remove('event.type');
         }
         if (ctx.event.category == null && ctx.containsKey('event.category')) {
@@ -138,6 +152,12 @@ processors:
             ctx.event.category = [category];
           }
           ctx.remove('event.category');
+        }
+        if (ctx.event.category instanceof List && ctx.event.category.contains('library') && ctx.event.type instanceof List && ctx.event.type.contains('info')) {
+          ctx.event.type.removeIf(v -> v == 'info');
+          if (!ctx.event.type.contains('start')) {
+            ctx.event.type.add('start');
+          }
         }
         if (ctx.containsKey('id') && ctx.id != null) {
           ctx.tychon.record.id = ctx.id;
@@ -961,7 +981,19 @@ processors:
       if: ctx.event != null && ctx.event.original != null
 
 on_failure:
-  - set:
-      tag: set_error_message
+  - append:
+      tag: append_error_message
       field: error.message
-      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
