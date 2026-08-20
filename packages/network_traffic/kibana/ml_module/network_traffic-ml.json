@@ -1,0 +1,471 @@
+{
+    "attributes": {
+        "id": "network_traffic-ml",
+        "title": "Network Packet Capture",
+        "description": "Detect unusual DNS activity in Network Packet Capture data.",
+        "type": "Network Packet Capture",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "agent.type": "packetbeat"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "packetbeat_dns_tunneling_ea",
+                "config": {
+                    "groups": [
+                        "security",
+                        "packetbeat",
+                        "dns"
+                    ],
+                    "description": "Security: Packetbeat - Looks for unusual DNS activity that could indicate command-and-control or data exfiltration activity.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Detects high info content of DNS questions over a population of TLDs.",
+                                "function": "high_info_content",
+                                "field_name": "dns.question.name",
+                                "over_field_name": "dns_question_etld",
+                                "custom_rules": [
+                                    {
+                                        "actions": [
+                                            "skip_result"
+                                        ],
+                                        "conditions": [
+                                            {
+                                                "applies_to": "actual",
+                                                "operator": "lt",
+                                                "value": 350
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                        "influencers": [
+                            "destination.ip",
+                            "host.name",
+                            "dns_question_etld"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-network_traffic",
+                        "security_app_display_name": "DNS Tunneling",
+                        "managed": true
+                    }
+                }
+            },
+            {
+                "id": "packetbeat_rare_dns_question_ea",
+                "config": {
+                    "groups": [
+                        "security",
+                        "packetbeat",
+                        "dns"
+                    ],
+                    "description": "Security: Packetbeat - Looks for unusual DNS activity that could indicate command-and-control activity.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Detects rare DNS question names.",
+                                "function": "rare",
+                                "by_field_name": "dns.question.name"
+                            }
+                        ],
+                        "influencers": [
+                            "host.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-network_traffic",
+                        "security_app_display_name": "Unusual DNS Activity",
+                        "managed": true
+                    }
+                }
+            },
+            {
+                "id": "packetbeat_rare_server_domain_ea",
+                "config": {
+                    "groups": [
+                        "security",
+                        "packetbeat"
+                    ],
+                    "description": "Security: Packetbeat - Looks for unusual HTTP or TLS destination domain activity that could indicate execution, persistence, command-and-control or data exfiltration activity.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Detects rare server domains.",
+                                "function": "rare",
+                                "by_field_name": "server.domain"
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "destination.ip",
+                            "source.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-network_traffic",
+                        "security_app_display_name": "Unusual Network Destination Domain Name",
+                        "managed": true
+                    }
+                }
+            },
+            {
+                "id": "packetbeat_rare_urls_ea",
+                "config": {
+                    "groups": [
+                        "security",
+                        "packetbeat"
+                    ],
+                    "description": "Security: Packetbeat - Looks for unusual web browsing URL activity that could indicate execution, persistence, command-and-control or data exfiltration activity.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Detects rare URLs.",
+                                "function": "rare",
+                                "by_field_name": "url.full"
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-network_traffic",
+                        "security_app_display_name": "Unusual Web Request",
+                        "managed": true
+                    }
+                }
+            },
+            {
+                "id": "packetbeat_rare_user_agent_ea",
+                "config": {
+                    "groups": [
+                        "security",
+                        "packetbeat"
+                    ],
+                    "description": "Security: Packetbeat - Looks for unusual HTTP user agent activity that could indicate execution, persistence, command-and-control or data exfiltration activity.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Detects rare web user agents.",
+                                "function": "rare",
+                                "by_field_name": "user_agent.original"
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-network_traffic",
+                        "security_app_display_name": "Unusual Web User Agent",
+                        "managed": true
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-packetbeat_dns_tunneling_ea",
+                "job_id": "packetbeat_dns_tunneling_ea",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "packetbeat_dns_tunneling_ea",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "agent.type": "packetbeat"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "network_traffic.dns"
+                                    }
+                                }
+                            ],
+                            "must_not": [
+                                {
+                                    "term": {
+                                        "destination.ip": "169.254.169.254"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "elastic-agent.exe",
+                                            "elastic-agent",
+                                            "metricbeat.exe",
+                                            "metricbeat",
+                                            "filebeat.exe",
+                                            "filebeat",
+                                            "packetbeat.exe",
+                                            "packetbeat",
+                                            "winlogbeat.exe",
+                                            "winlogbeat"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "dns_question_etld": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if(!doc.containsKey('network_traffic.dns.question.etld_plus_one') || doc['network_traffic.dns.question.etld_plus_one'].size() == 0)\n{\n  if(doc.containsKey('dns.question.registered_domain') && doc['dns.question.registered_domain'].size() != 0)\n  { emit(doc['dns.question.registered_domain'].value); }\n  else { emit('None'); }\n}\nelse { emit(doc['network_traffic.dns.question.etld_plus_one'].value); }"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-packetbeat_rare_dns_question_ea",
+                "job_id": "packetbeat_rare_dns_question_ea",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "packetbeat_rare_dns_question_ea",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "agent.type": "packetbeat"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "network_traffic.dns"
+                                    }
+                                }
+                            ],
+                            "must_not": [
+                                {
+                                    "term": {
+                                        "dns.question.type": "PTR"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "elastic-agent.exe",
+                                            "elastic-agent",
+                                            "metricbeat.exe",
+                                            "metricbeat",
+                                            "filebeat.exe",
+                                            "filebeat",
+                                            "packetbeat.exe",
+                                            "packetbeat",
+                                            "winlogbeat.exe",
+                                            "winlogbeat"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-packetbeat_rare_server_domain_ea",
+                "job_id": "packetbeat_rare_server_domain_ea",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "packetbeat_rare_server_domain_ea",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "agent.type": "packetbeat"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "server.domain"
+                                    }
+                                }
+                            ],
+                            "must_not": {
+                                "terms": {
+                                    "process.name": [
+                                        "elastic-agent.exe",
+                                        "elastic-agent",
+                                        "metricbeat.exe",
+                                        "metricbeat",
+                                        "filebeat.exe",
+                                        "filebeat",
+                                        "packetbeat.exe",
+                                        "packetbeat",
+                                        "winlogbeat.exe",
+                                        "winlogbeat"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-packetbeat_rare_urls_ea",
+                "job_id": "packetbeat_rare_urls_ea",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "packetbeat_rare_urls_ea",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "agent.type": "packetbeat"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "url.full"
+                                    }
+                                }
+                            ],
+                            "must_not": [
+                                {
+                                    "term": {
+                                        "destination.ip": "169.254.169.254"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "elastic-agent.exe",
+                                            "elastic-agent",
+                                            "metricbeat.exe",
+                                            "metricbeat",
+                                            "filebeat.exe",
+                                            "filebeat",
+                                            "packetbeat.exe",
+                                            "packetbeat",
+                                            "winlogbeat.exe",
+                                            "winlogbeat"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-packetbeat_rare_user_agent_ea",
+                "job_id": "packetbeat_rare_user_agent_ea",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "packetbeat_rare_user_agent_ea",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "agent.type": "packetbeat"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "network_traffic.http"
+                                    }
+                                }
+                            ],
+                            "must_not": [
+                                {
+                                    "wildcard": {
+                                        "user_agent.original": {
+                                            "value": "Mozilla*"
+                                        }
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "elastic-agent.exe",
+                                            "elastic-agent",
+                                            "metricbeat.exe",
+                                            "metricbeat",
+                                            "filebeat.exe",
+                                            "filebeat",
+                                            "packetbeat.exe",
+                                            "packetbeat",
+                                            "winlogbeat.exe",
+                                            "winlogbeat"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "id": "network_traffic-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}
