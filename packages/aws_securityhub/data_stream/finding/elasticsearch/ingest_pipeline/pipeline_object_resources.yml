@@ -384,39 +384,36 @@ processors:
       lang: painless
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       source: |
+        void normalize(def owner, def key, DateTimeFormatter spaceFmt) {
+          def v = owner[key];
+          if (v == null || (v instanceof String && v == '')) { return; }
+          try {
+            def zdt;
+            if (v instanceof Number) {
+              zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number)v).longValue()), ZoneOffset.UTC);
+            } else {
+              try { zdt = ZonedDateTime.parse((String)v); }
+              catch (Exception e) { zdt = ZonedDateTime.parse((String)v, spaceFmt); }
+            }
+            owner[key] = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          } catch (Exception e) {
+            owner.remove(key);
+          }
+        }
         def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
         for (def res : ctx.aws_securityhub.finding.resources) {
-          if (res == null || !(res.databucket instanceof Map)) {
-            continue;
-          }
+          if (res == null || !(res.databucket instanceof Map)) { continue; }
           def db = res.databucket;
-          if (db.created_time_dt instanceof String && db.created_time_dt != '') {
-            def zdt;
-            try { zdt = ZonedDateTime.parse(db.created_time_dt); }
-            catch (Exception e) { zdt = ZonedDateTime.parse(db.created_time_dt, spaceFmt); }
-            db.created_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (db.created_time != null) {
-            def ms = ((Number)db.created_time).longValue();
-            db.created_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (!(db.file instanceof Map)) {
-            continue;
-          }
-          def f = db.file;
-          if (f.modified_time_dt instanceof String && f.modified_time_dt != '') {
-            def zdt;
-            try { zdt = ZonedDateTime.parse(f.modified_time_dt); }
-            catch (Exception e) { zdt = ZonedDateTime.parse(f.modified_time_dt, spaceFmt); }
-            f.modified_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (f.modified_time != null) {
-            def ms = ((Number)f.modified_time).longValue();
-            f.modified_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          normalize(db, 'created_time_dt', spaceFmt);
+          normalize(db, 'created_time', spaceFmt);
+          if (db.file instanceof Map) {
+            normalize(db.file, 'modified_time_dt', spaceFmt);
+            normalize(db.file, 'modified_time', spaceFmt);
           }
         }
       on_failure:
         - append:
+            tag: append_error_message_date_resources_databucket_time_fields
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -424,35 +421,34 @@ processors:
       lang: painless
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       source: |
+        void normalize(def owner, def key, DateTimeFormatter spaceFmt) {
+          def v = owner[key];
+          if (v == null || (v instanceof String && v == '')) { return; }
+          try {
+            def zdt;
+            if (v instanceof Number) {
+              zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number)v).longValue()), ZoneOffset.UTC);
+            } else {
+              try { zdt = ZonedDateTime.parse((String)v); }
+              catch (Exception e) { zdt = ZonedDateTime.parse((String)v, spaceFmt); }
+            }
+            owner[key] = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          } catch (Exception e) {
+            owner.remove(key);
+          }
+        }
         def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
         for (def res : ctx.aws_securityhub.finding.resources) {
-          if (res == null || !(res.image instanceof Map)) {
-            continue;
-          }
+          if (res == null || !(res.image instanceof Map)) { continue; }
           def img = res.image;
-          if (img.created_time_dt instanceof String && img.created_time_dt != '') {
-            def zdt;
-            try { zdt = ZonedDateTime.parse(img.created_time_dt); }
-            catch (Exception e) { zdt = ZonedDateTime.parse(img.created_time_dt, spaceFmt); }
-            img.created_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (img.created_time != null) {
-            def ms = ((Number)img.created_time).longValue();
-            img.created_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (img.modified_time_dt instanceof String && img.modified_time_dt != '') {
-            def zdt;
-            try { zdt = ZonedDateTime.parse(img.modified_time_dt); }
-            catch (Exception e) { zdt = ZonedDateTime.parse(img.modified_time_dt, spaceFmt); }
-            img.modified_time_dt = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
-          if (img.modified_time != null) {
-            def ms = ((Number)img.modified_time).longValue();
-            img.modified_time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-          }
+          normalize(img, 'created_time_dt', spaceFmt);
+          normalize(img, 'created_time', spaceFmt);
+          normalize(img, 'modified_time_dt', spaceFmt);
+          normalize(img, 'modified_time', spaceFmt);
         }
       on_failure:
         - append:
+            tag: append_error_message_date_resources_image_time_fields
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
