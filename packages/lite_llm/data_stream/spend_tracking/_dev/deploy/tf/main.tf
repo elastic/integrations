@@ -11,7 +11,7 @@ provider "aws" {
       division = "engineering"
       org      = "obs"
       team     = "security-service-integrations" # owner.github in manifest.yml
-      project  = "integrations-netskope-package" # name in manifest.yml
+      project  = "integrations-lite_llm-package" # name in manifest.yml
     }
   }
 }
