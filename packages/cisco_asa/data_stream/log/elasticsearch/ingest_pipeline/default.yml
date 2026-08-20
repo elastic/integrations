@@ -599,7 +599,39 @@ processors:
       field: "message"
       description: "302020"
       patterns:
-        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{MAPPEDSRC}|%{NOTCOLON}:%{MAPPEDSRC})/%{NUMBER} laddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for %{GREEDYDATA:_temp_.var_302020}"
+  # For message 302020, if inbound is specified in `network.direction`, the connection was initiated
+  # from the foreign host: faddr is the source and laddr the destination, with gaddr being the
+  # mapped (NAT) address of the local destination host.
+  # https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/asa-syslog/syslog-messages-302003-to-342008.html#con_4770808
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: parse_302020_inbound
+      field: "_temp_.var_302020"
+      description: "inbound: 302020"
+      patterns:
+        - "^faddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?gaddr (?:%{MAPPEDDST}|%{NOTCOLON}:%{MAPPEDDST})/%{NUMBER} laddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.destination_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+      pattern_definitions:
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        NOTCOLON: "[^:]*"
+        ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
+        ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
+        MAPPEDDST: "(?:%{DATA:_temp_.natdstip}|%{HOSTNAME})"
+        USERNAME: "[a-zA-Z0-9._'-]+"
+        CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
+        CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
+  # For outbound, the connection was initiated from the local host: laddr is the source and
+  # faddr the destination, with gaddr being the mapped (NAT) address of the local source host.
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: parse_302020_outbound
+      field: "_temp_.var_302020"
+      description: "outbound: 302020"
+      patterns:
+        - "^faddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{MAPPEDSRC}|%{NOTCOLON}:%{MAPPEDSRC})/%{NUMBER} laddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
