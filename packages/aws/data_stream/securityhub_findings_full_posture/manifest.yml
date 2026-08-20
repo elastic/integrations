@@ -4,7 +4,7 @@ streams:
   - input: httpjson
     title: Collect AWS Security Hub CSPM Findings Full Posture from AWS
     description: Collect AWS Security Hub CSPM Findings Full Posture from AWS.
-    template_path: httpjson.yml.hbs
+    template_path: httpjson_as_cel.yml.hbs
     vars:
       - name: enable_request_tracer
         type: bool
@@ -13,6 +13,30 @@ streams:
         required: false
         show_user: false
         description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+      - name: max_executions
+        type: integer
+        title: Maximum Executions
+        description: >-
+          Maximum number of CEL program re-evaluations per collection interval. Each paginated response page consumes one execution, so large backlogs may need a higher budget than the input default of 1000. Set to 0 for unlimited.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: filters
+        type: yaml
+        title: Findings Filters
+        description: >-
+          [AwsSecurityFindingFilters](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_RequestSyntax) applied server-side to the `GetFindings` request, so only matching findings are collected. Provide a YAML/JSON object using the AWS `AwsSecurityFindingFilters` shape. The default excludes archived and suppressed findings to reflect the current security posture; clearing or editing this replaces those defaults.
+        default: |-
+          RecordState:
+            - Comparison: NOT_EQUALS
+              Value: ARCHIVED
+          WorkflowStatus:
+            - Comparison: NOT_EQUALS
+              Value: SUPPRESSED
+        multi: false
+        required: false
+        show_user: true
       - name: tags
         type: text
         title: Tags

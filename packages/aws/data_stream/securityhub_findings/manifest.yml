@@ -4,7 +4,7 @@ streams:
   - input: httpjson
     title: Collect AWS Security Hub CSPM Findings from AWS
     description: Collect AWS Security Hub CSPM Findings from AWS.
-    template_path: httpjson.yml.hbs
+    template_path: httpjson_as_cel.yml.hbs
     vars:
       - name: interval
         type: text
@@ -28,6 +28,24 @@ streams:
         default: 24h
         multi: false
         required: true
+        show_user: true
+      - name: max_executions
+        type: integer
+        title: Maximum Executions
+        description: >-
+          Maximum number of CEL program re-evaluations per collection interval. Each paginated response page consumes one execution, so large backlogs may need a higher budget than the input default of 1000. Set to 0 for unlimited.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: filters
+        type: yaml
+        title: Findings Filters
+        description: >-
+          Additional [AwsSecurityFindingFilters](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_RequestSyntax) applied server-side to the `GetFindings` request, so only matching findings are collected. Provide a YAML/JSON object using the AWS `AwsSecurityFindingFilters` shape (for example, restrict by `SeverityLabel` or `RecordState`). The `UpdatedAt` filter is managed by the integration for incremental collection and takes precedence over any `UpdatedAt` set here.
+        default: "{}"
+        multi: false
+        required: false
         show_user: true
       - name: tags
         type: text
