@@ -1,6 +1,7 @@
 # Deliberately overrides the `tags` from test-common-config.yml with a set that does NOT contain
-# preserve_original_event, so this fixture covers the remove_event_original branch: the copy of the
-# raw payload is dropped when the user leaves the Preserve Original Event setting off.
+# preserve_original_event. The pipeline must still keep `event.original`: dropping it for storage
+# optimisation is the job of the final pipeline outside the integration, which reads the same tag.
+# This fixture guards against the deprecated in-package removal processor being re-introduced.
 dynamic_fields:
   "@timestamp": "^[0-9]{4}(-[0-9]{2}){2}T[0-9]{2}(:[0-9]{2}){2}\\.[0-9]{3}"
 fields:

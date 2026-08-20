@@ -298,14 +298,6 @@ processors:
       tag: fallback_message_from_original
       copy_from: event.original
       if: ctx.message == null && ctx.event?.original != null
-  # Runs last, so the `message` fallback above and the unparsed-envelope tag are both applied first:
-  # a line whose envelope did not parse keeps its raw copy regardless of the user's setting.
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      ignore_missing: true
-      description: Removes the copy of the original message unless the user opted in to preserve it.
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
 on_failure:
   - append:
       field: error.message

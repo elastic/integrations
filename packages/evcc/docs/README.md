@@ -123,24 +123,24 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-08T14:24:46.134803198Z",
+    "@timestamp": "2026-08-19T21:45:34.017760136Z",
     "agent": {
-        "ephemeral_id": "05596c2a-5ae4-44a7-a864-ef9ef0ca045b",
-        "id": "62d70a67-b9ae-4a39-8ae7-252db2dbf069",
-        "name": "elastic-agent-86569",
+        "ephemeral_id": "7834a9e3-9456-4c5f-99a5-c4246dc4e5e1",
+        "id": "58ff1645-8122-475a-bf70-b860cc4d00df",
+        "name": "elastic-agent-55025",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "33313",
+        "namespace": "35129",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "62d70a67-b9ae-4a39-8ae7-252db2dbf069",
+        "id": "58ff1645-8122-475a-bf70-b860cc4d00df",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -195,7 +195,7 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-08-08T14:24:46Z",
+        "ingested": "2026-08-19T21:45:34Z",
         "kind": "metric",
         "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521.3,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
@@ -229,7 +229,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.charge.energy | Energy charged during the current charging session, in Wh. | double |  | gauge |
 | evcc.loadpoint.charge.power | Current charging power at the loadpoint, in watts. | double |  | gauge |
 | evcc.loadpoint.charge.remaining_duration.sec | Estimated remaining duration until the charging target is reached, in seconds. | double |  | gauge |
-| evcc.loadpoint.charge.remaining_energy | Estimated remaining energy required to reach the charging target, in kWh. | double |  | gauge |
+| evcc.loadpoint.charge.remaining_energy | Estimated remaining energy required to reach the charging target, in Wh. | double |  | gauge |
 | evcc.loadpoint.charger_status_reason | Reason reported by the charger for its current status. | keyword |  |  |
 | evcc.loadpoint.charging | Whether the loadpoint is currently charging. | boolean |  |  |
 | evcc.loadpoint.connected | Whether a vehicle is currently connected to the loadpoint. | boolean |  |  |
@@ -261,24 +261,24 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-08T14:23:06.872840503Z",
+    "@timestamp": "2026-08-19T21:43:58.965560547Z",
     "agent": {
-        "ephemeral_id": "ac7d40a4-cea0-4f4a-bb3e-7140488f0749",
-        "id": "2e132ad2-c2bc-44e2-a449-4458b9a9b217",
-        "name": "elastic-agent-70686",
+        "ephemeral_id": "e5bf66d4-c65f-4fa8-903e-f6fe008e1819",
+        "id": "b899a929-a2a1-4eab-abeb-753b1a8a4a3c",
+        "name": "elastic-agent-31037",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "81647",
+        "namespace": "71086",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "2e132ad2-c2bc-44e2-a449-4458b9a9b217",
+        "id": "b899a929-a2a1-4eab-abeb-753b1a8a4a3c",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -293,7 +293,7 @@ An example event for `loadpoint` looks as following:
                 "remaining_duration": {
                     "sec": 41739
                 },
-                "remaining_energy": 40
+                "remaining_energy": 40000
             },
             "charger_status_reason": "unknown",
             "charging": true,
@@ -325,9 +325,9 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-08-08T14:23:06Z",
+        "ingested": "2026-08-19T21:43:58Z",
         "kind": "metric",
-        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
+        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
     "input": {
         "type": "cel"
@@ -438,22 +438,22 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-07-23T11:48:23.601Z",
     "agent": {
-        "ephemeral_id": "3df235eb-3bb6-4dbd-a681-c5e4a08310c6",
-        "id": "be434754-9a47-4d5d-9ef5-5aa982c62ccf",
-        "name": "elastic-agent-23980",
+        "ephemeral_id": "b274e443-01f3-489a-b8d8-75da3e23c37f",
+        "id": "ad68b7a2-2ac4-4570-9486-b2f6eec51f50",
+        "name": "elastic-agent-22642",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.log",
-        "namespace": "95998",
+        "namespace": "77948",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "be434754-9a47-4d5d-9ef5-5aa982c62ccf",
+        "id": "ad68b7a2-2ac4-4570-9486-b2f6eec51f50",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -464,9 +464,9 @@ An example event for `log` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2026-08-08T14:23:54.235Z",
+        "created": "2026-08-19T21:44:43.498Z",
         "dataset": "evcc.log",
-        "ingested": "2026-08-08T14:23:57Z",
+        "ingested": "2026-08-19T21:44:46Z",
         "kind": "event",
         "module": "evcc"
     },
@@ -481,7 +481,7 @@ An example event for `log` looks as following:
         "custom": {
             "runtime_scope": "system",
             "seqnum": "1",
-            "seqnum_id": "04c7baf40fb44a9a83de6ad8d2a32778",
+            "seqnum_id": "c8375dcadb2f41719a7eb2e07623ded5",
             "stream_id": "aa1bb2cc3dd4ee5ff607a8b9c0d1e2f3"
         },
         "gid": 111,
