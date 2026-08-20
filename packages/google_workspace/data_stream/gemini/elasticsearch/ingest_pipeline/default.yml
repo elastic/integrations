@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.16.0
+      value: 9.5.0
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -166,6 +166,17 @@ processors:
       tag: set_observer_product
       value: Gemini in Workspace Apps
 
+  # gen_ai.*
+  - set:
+      field: gen_ai.provider.name
+      tag: set_gen_ai_provider_name
+      value: google
+  - set:
+      field: gen_ai.operation.name
+      tag: set_gen_ai_operation_name
+      copy_from: google_workspace.gemini.action
+      ignore_empty_value: true
+
   # event.*
   - set:
       field: event.kind
@@ -174,101 +185,166 @@ processors:
   - script:
       lang: painless
       tag: set_ecs_categorization_from_action
-      description: Map Gemini action to ECS event.category and event.type when known.
+      description: >-
+        Map Gemini action and app_name to ECS event.category and event.type.
+        Composite action|app_name keys disambiguate multi-app actions; action-only
+        keys cover app-specific actions; app_name is the final fallback.
       if: ctx.google_workspace?.gemini?.action != null
       params:
-        add_to_calendar:
-          category: [configuration]
-          type: [change]
-        classic_use_case_generate_presentation:
-          category: [file]
-          type: [creation]
-        classic_use_case_meet_studio_lighting:
-          category: [configuration]
-          type: [change]
-        classic_use_case_meet_studio_look:
-          category: [configuration]
-          type: [change]
-        classic_use_case_meet_studio_sound:
-          category: [configuration]
-          type: [change]
-        classic_use_case_meet_take_notes_for_me_session:
-          category: [file]
-          type: [creation]
-        classic_use_case_sheets_turbofill:
-          category: [file]
-          type: [change]
-        condense:
-          category: [email]
-          type: [info]
-        elaborate:
-          category: [email]
-          type: [info]
-        formalize:
-          category: [email]
-          type: [info]
-        generate_avatar_video:
-          category: [file]
-          type: [creation]
-        generate_document:
-          category: [file]
-          type: [creation]
-        generate_image_for_current_page:
-          category: [file]
-          type: [creation]
-        generate_images_in_product:
-          category: [file]
-          type: [creation]
-        generate_table_name:
-          category: [file]
-          type: [change]
-        generate_text:
-          category: [email]
-          type: [info]
-        generate_videos_in_product:
-          category: [file]
-          type: [creation]
-        live_generate_document:
-          category: [file]
-          type: [creation]
-        outpaint:
-          category: [file]
-          type: [creation]
-        paraphrase:
-          category: [file]
-          type: [change]
-        proofread:
-          category: [email]
-          type: [info]
-        remove_background:
-          category: [file]
-          type: [change]
-        replace_background:
-          category: [file]
-          type: [change]
-        suggest_time:
-          category: [configuration]
-          type: [info]
-        summarize_document_comment_thread:
-          category: [file]
-          type: [info]
-        summarize_drive_homepage_doclist_files:
-          category: [file]
-          type: [info]
-        summarize_drive_homepage_doclist_files_long:
-          category: [file]
-          type: [info]
-        summarize_file:
-          category: [file]
-          type: [info]
-        summarize_proactive:
-          category: [file]
-          type: [info]
-        summarize_proactive_short:
-          category: [file]
-          type: [info]
+        composite:
+          condense|gmail:
+            category: [email]
+            type: [info]
+          condense|slides:
+            category: [file]
+            type: [change]
+          formalize|gmail:
+            category: [email]
+            type: [info]
+          formalize|slides:
+            category: [file]
+            type: [change]
+          proofread|gmail:
+            category: [email]
+            type: [info]
+          proofread|docs:
+            category: [file]
+            type: [change]
+          proofread|slides:
+            category: [file]
+            type: [change]
+          proofread|sheets:
+            category: [file]
+            type: [change]
+        actions:
+          add_to_calendar:
+            category: [configuration]
+            type: [change]
+          classic_use_case_generate_presentation:
+            category: [file]
+            type: [creation]
+          classic_use_case_meet_studio_lighting:
+            category: [configuration]
+            type: [change]
+          classic_use_case_meet_studio_look:
+            category: [configuration]
+            type: [change]
+          classic_use_case_meet_studio_sound:
+            category: [configuration]
+            type: [change]
+          classic_use_case_meet_take_notes_for_me_session:
+            category: [file]
+            type: [creation]
+          classic_use_case_sheets_turbofill:
+            category: [file]
+            type: [change]
+          elaborate:
+            category: [email]
+            type: [info]
+          generate_avatar_video:
+            category: [file]
+            type: [creation]
+          generate_document:
+            category: [file]
+            type: [creation]
+          generate_image_for_current_page:
+            category: [file]
+            type: [creation]
+          generate_images_in_product:
+            category: [file]
+            type: [creation]
+          generate_table_name:
+            category: [file]
+            type: [change]
+          generate_text:
+            category: [email]
+            type: [info]
+          generate_videos_in_product:
+            category: [file]
+            type: [creation]
+          live_generate_document:
+            category: [file]
+            type: [creation]
+          outpaint:
+            category: [file]
+            type: [creation]
+          paraphrase:
+            category: [file]
+            type: [change]
+          remove_background:
+            category: [file]
+            type: [change]
+          replace_background:
+            category: [file]
+            type: [change]
+          suggest_time:
+            category: [configuration]
+            type: [info]
+          summarize_document_comment_thread:
+            category: [file]
+            type: [info]
+          summarize_drive_homepage_doclist_files:
+            category: [file]
+            type: [info]
+          summarize_drive_homepage_doclist_files_long:
+            category: [file]
+            type: [info]
+          summarize_file:
+            category: [file]
+            type: [info]
+          summarize_proactive:
+            category: [file]
+            type: [info]
+          summarize_proactive_short:
+            category: [file]
+            type: [info]
+        apps:
+          chat:
+            category: [configuration]
+            type: [info]
+          classroom:
+            category: [configuration]
+            type: [info]
+          docs:
+            category: [file]
+            type: [info]
+          drive:
+            category: [file]
+            type: [info]
+          gemini_app:
+            category: [configuration]
+            type: [info]
+          gmail:
+            category: [email]
+            type: [info]
+          keep:
+            category: [file]
+            type: [info]
+          meet:
+            category: [configuration]
+            type: [info]
+          sheets:
+            category: [file]
+            type: [info]
+          slides:
+            category: [file]
+            type: [info]
+          vids:
+            category: [file]
+            type: [info]
       source: |-
-        def mapping = params[ctx.google_workspace.gemini.action];
+        def action = ctx.google_workspace.gemini.action;
+        def appName = ctx.google_workspace.gemini.app_name;
+        def mapping = null;
+        if (appName != null) {
+          mapping = params.composite[action + '|' + appName];
+        }
+        if (mapping == null) {
+          mapping = params.actions[action];
+        }
+        if (mapping == null && appName != null) {
+          mapping = params.apps[appName];
+        }
         if (mapping == null) {
           return;
         }
@@ -441,7 +517,6 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
-      tag: append_preserve_original_event_on_error
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null

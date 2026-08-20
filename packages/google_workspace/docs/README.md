@@ -3188,7 +3188,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.query | The field contains the entire query string, excluding the leading `?` character, such as "q=elasticsearch". If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 
 
 ### Data Studio
@@ -4171,41 +4171,55 @@ An example event for `gemini` looks as following:
 {
     "@timestamp": "2026-06-01T14:23:11.000Z",
     "agent": {
-        "ephemeral_id": "c07ec152-0fef-4721-b886-d47c6065c217",
-        "id": "e23792cd-a0ff-43fc-a4f9-f9f6476bb42d",
-        "name": "elastic-agent-74096",
+        "ephemeral_id": "21e3ef33-fd81-4a7d-886e-0265b923849d",
+        "id": "28b4806e-6959-48c0-aa4e-f4548eb08622",
+        "name": "elastic-agent-20423",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.gemini",
-        "namespace": "44465",
+        "namespace": "13043",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "e23792cd-a0ff-43fc-a4f9-f9f6476bb42d",
+        "id": "28b4806e-6959-48c0-aa4e-f4548eb08622",
         "snapshot": false,
         "version": "8.19.4"
     },
     "event": {
         "action": "feature-utilization",
         "agent_id_status": "verified",
+        "category": [
+            "file"
+        ],
         "dataset": "google_workspace.gemini",
         "id": "1",
-        "ingested": "2026-08-06T08:39:40Z",
+        "ingested": "2026-08-20T12:37:33Z",
         "kind": "event",
-        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@example.com\",\"profileId\":\"1\"},\"events\":{\"name\":\"feature_utilization\",\"parameters\":[{\"name\":\"app_name\",\"value\":\"docs\"},{\"name\":\"action\",\"value\":\"summarize\"},{\"name\":\"feature_source\",\"value\":\"side_panel\"},{\"name\":\"event_category\",\"value\":\"active_summarize\"}],\"type\":\"ai_usage_event\"},\"id\":{\"applicationName\":\"gemini_in_workspace_apps\",\"customerId\":\"1\",\"time\":\"2026-06-01T14:23:11.000Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"81.2.69.142\",\"kind\":\"admin#reports#activity\"}",
-        "provider": "gemini_in_workspace_apps"
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@example.com\",\"profileId\":\"1\"},\"events\":{\"name\":\"feature_utilization\",\"parameters\":[{\"name\":\"app_name\",\"value\":\"docs\"},{\"name\":\"action\",\"value\":\"summarize_file\"},{\"name\":\"feature_source\",\"value\":\"side_panel\"},{\"name\":\"event_category\",\"value\":\"active_summarize\"}],\"type\":\"ai_usage_event\"},\"id\":{\"applicationName\":\"gemini_in_workspace_apps\",\"customerId\":\"1\",\"time\":\"2026-06-01T14:23:11.000Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"81.2.69.142\",\"kind\":\"admin#reports#activity\"}",
+        "provider": "gemini_in_workspace_apps",
+        "type": [
+            "info"
+        ]
+    },
+    "gen_ai": {
+        "operation": {
+            "name": "summarize_file"
+        },
+        "provider": {
+            "name": "google"
+        }
     },
     "google_workspace": {
         "actor": {
             "caller_type": "USER"
         },
         "gemini": {
-            "action": "summarize",
+            "action": "summarize_file",
             "app_name": "docs",
             "event_category": "active_summarize",
             "feature_source": "side_panel",
