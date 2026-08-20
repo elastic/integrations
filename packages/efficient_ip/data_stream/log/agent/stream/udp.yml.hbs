@@ -1,0 +1,34 @@
+host: {{listen_address}}:{{listen_port}}
+{{#if max_message_size}}
+max_message_size: {{max_message_size}}
+{{/if}}
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+- preserve_original_event
+{{/if}}
+{{/if}}
+
+fields_under_root: true
+fields:
+  _conf:
+{{#if tz_offset}}
+    tz_offset: {{tz_offset}}
+{{/if}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
