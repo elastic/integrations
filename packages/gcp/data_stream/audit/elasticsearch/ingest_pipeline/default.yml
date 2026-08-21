@@ -143,11 +143,14 @@ processors:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
       on_failure:
-        - set:
-            tag: set_error_message_679c76c6
-            description: Adds error reason to the document
+        - append:
+            tag: append_error_message_bd55f3fe
             field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
       source: |
         void addValue(Set entities, def value) {
           if (value != null && value != "") {
@@ -262,11 +265,14 @@ processors:
       description: Classify actor and target entities into type-specific fields
       lang: painless
       on_failure:
-        - set:
-            tag: set_error_message_f032c8ea
-            description: Adds error reason to the document
+        - append:
+            tag: append_error_message_47a05ef0
             field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
       source: |
         void addNestedValue(def currentCtx, String path, def value) {
           if (value == null || value == "") {
@@ -574,7 +580,7 @@ processors:
   - script:
       lang: painless
       description: set event.category and type for long running operation
-      tag: set-event-type-for-long-operations_9e495b64
+      tag: set_event_type_for_long_operations_9e495b64
       if: ctx.json?.operation != null
       source: |
         def first = (ctx.json.operation.first == null) ? false : ctx.json.operation.first;
