@@ -2,8 +2,17 @@ paths:
 {{#each paths as |path i|}}
   - {{path}}
 {{/each}}
-parsers:
-  - ndjson:
-      target: ""
-      add_error_key: true
-      overwrite_keys: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

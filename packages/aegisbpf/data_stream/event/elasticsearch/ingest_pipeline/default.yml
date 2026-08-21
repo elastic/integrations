@@ -1,159 +1,216 @@
 ---
 description: Pipeline for parsing AegisBPF OCSF events.
 processors:
+  # Preserve the raw line as event.original, then decode the (still top-level)
+  # message into the document root. add_to_root only works on a top-level field,
+  # so the copy must happen before the decode consumes message.
+  - set:
+      field: event.original
+      copy_from: message
+      ignore_empty_value: true
+      tag: set_event_original
+      if: ctx.event?.original == null
+  - json:
+      field: message
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+      allow_duplicate_keys: true
+      tag: json_decode_message
   - set:
       field: ecs.version
       value: '8.11.0'
+      tag: set_ecs_version
   - set:
       field: event.kind
       value: event
+      tag: set_event_kind
   - set:
       field: event.provider
       value: aegisbpf
+      tag: set_event_provider
   - set:
       field: observer.vendor
       value: AegisBPF
+      tag: set_observer_vendor
   - set:
       field: observer.product
       value: AegisBPF
+      tag: set_observer_product
   - date:
       field: time
       target_field: '@timestamp'
       formats:
         - UNIX_MS
+      tag: date_time_to_timestamp
       if: ctx.time != null
       on_failure:
         - append:
             field: error.message
             value: 'failed to parse time: {{{ _ingest.on_failure_message }}}'
-  - set:
-      field: event.id
-      copy_from: metadata.uid
-      if: ctx.metadata?.uid != null
-  - set:
+            tag: append_time_parse_error
+  - rename:
+      field: metadata.uid
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_metadata_uid_to_event_id
+  # event.category and event.type are ECS array fields: append (never set).
+  - append:
       field: event.category
-      value:
-        - file
+      value: file
+      allow_duplicates: false
+      tag: append_event_category_file
       if: ctx.class_uid == 1001
-  - set:
+  - append:
       field: event.category
-      value:
-        - network
+      value: network
+      allow_duplicates: false
+      tag: append_event_category_network
+      if: ctx.class_uid == 4001
+  # event.type must be an operation valid for the category:
+  # file -> access, network -> connection.
+  - append:
+      field: event.type
+      value: access
+      allow_duplicates: false
+      tag: append_event_type_access
+      if: ctx.class_uid == 1001
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      tag: append_event_type_connection
       if: ctx.class_uid == 4001
   # The enforcement decision (denied/allowed) is the action AegisBPF took.
   - set:
       field: event.action
       value: denied
+      tag: set_event_action_denied
       if: ctx.action_id == 2
   - set:
       field: event.action
       value: allowed
+      tag: set_event_action_allowed
       if: ctx.action_id == 1
-  # event.type must be an ECS operation type valid for the event.category:
-  # file -> access, network -> connection ("denied" is not valid for file).
-  - set:
-      field: event.type
-      value:
-        - access
-      if: ctx.class_uid == 1001
-  - set:
-      field: event.type
-      value:
-        - connection
-      if: ctx.class_uid == 4001
   # Preserve the original OCSF operation name (e.g. "Open") under aegisbpf.*.
   - set:
       field: aegisbpf.activity
       copy_from: activity_name
-      if: ctx.activity_name != null
       ignore_empty_value: true
+      tag: set_aegisbpf_activity
+      if: ctx.activity_name != null
   - set:
       field: event.outcome
       value: success
+      tag: set_event_outcome_success
       if: ctx.status_id == 1
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_event_outcome_failure
+      if: ctx.status_id == 2
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set_event_outcome_unknown
+      if: ctx.status_id != null && ctx.status_id != 1 && ctx.status_id != 2
   - set:
       field: event.severity
       copy_from: severity_id
+      tag: set_event_severity
       if: ctx.severity_id != null
-  - set:
-      field: process.pid
-      copy_from: actor.process.pid
-      if: ctx.actor?.process?.pid != null
-  - set:
-      field: process.name
-      copy_from: actor.process.name
-      if: ctx.actor?.process?.name != null
-      ignore_empty_value: true
-  - set:
-      field: process.parent.pid
-      copy_from: actor.process.parent_process.pid
-      if: ctx.actor?.process?.parent_process?.pid != null
-  - set:
-      field: host.name
-      copy_from: device.hostname
-      if: ctx.device?.hostname != null
-      ignore_empty_value: true
-  - set:
-      field: file.path
-      copy_from: file.path
-      if: ctx.file?.path != null
-      ignore_empty_value: true
-  - set:
-      field: file.name
-      copy_from: file.name
-      if: ctx.file?.name != null
-      ignore_empty_value: true
-  - set:
-      field: file.directory
-      copy_from: file.parent_folder
-      if: ctx.file?.parent_folder != null
-      ignore_empty_value: true
+  # Subject: OCSF actor.process.* -> ECS process.*
+  - rename:
+      field: actor.process.pid
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_pid
+  - rename:
+      field: actor.process.name
+      target_field: process.name
+      ignore_missing: true
+      tag: rename_process_name
+  - rename:
+      field: actor.process.parent_process.pid
+      target_field: process.parent.pid
+      ignore_missing: true
+      tag: rename_process_parent_pid
+  - rename:
+      field: device.hostname
+      target_field: host.name
+      ignore_missing: true
+      tag: rename_host_name
+  # File: OCSF file.path/file.name already match ECS; only directory moves.
+  - rename:
+      field: file.parent_folder
+      target_field: file.directory
+      ignore_missing: true
+      tag: rename_file_directory
   - set:
       field: file.inode
       value: '{{{unmapped.aegis_inode}}}'
+      tag: set_file_inode
       if: ctx.unmapped?.aegis_inode != null
-  # Drop the OCSF-only file sub-fields (type_id/type/parent_folder) now that the
-  # ECS file.* fields (name/path/directory/inode) are populated.
   - remove:
       field:
         - file.type_id
         - file.type
-        - file.parent_folder
       ignore_missing: true
-  - set:
-      field: source.ip
-      copy_from: src_endpoint.ip
-      if: ctx.src_endpoint?.ip != null
-  - set:
-      field: destination.ip
-      copy_from: dst_endpoint.ip
-      if: ctx.dst_endpoint?.ip != null
+      tag: remove_ocsf_file_subfields
+  # Network endpoints -> ECS source/destination + related.ip for pivoting.
+  - rename:
+      field: src_endpoint.ip
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - rename:
+      field: dst_endpoint.ip
+      target_field: destination.ip
+      ignore_missing: true
+      tag: rename_destination_ip
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      tag: append_source_ip_to_related_ip
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      tag: append_destination_ip_to_related_ip
+      if: ctx.destination?.ip != null
+  # AegisBPF-specific forensics kept under aegisbpf.*
+  - rename:
+      field: unmapped.aegis_device
+      target_field: aegisbpf.device
+      ignore_missing: true
+      tag: rename_aegisbpf_device
+  - rename:
+      field: unmapped.aegis_cgroup_id
+      target_field: aegisbpf.cgroup.id
+      ignore_missing: true
+      tag: rename_aegisbpf_cgroup_id
+  - rename:
+      field: unmapped.aegis_cgroup_path
+      target_field: aegisbpf.cgroup.path
+      ignore_missing: true
+      tag: rename_aegisbpf_cgroup_path
   - set:
       field: aegisbpf.class_uid
       copy_from: class_uid
+      tag: set_aegisbpf_class_uid
       if: ctx.class_uid != null
   - set:
       field: aegisbpf.class_name
       copy_from: class_name
+      tag: set_aegisbpf_class_name
       if: ctx.class_name != null
   - set:
       field: aegisbpf.disposition
       copy_from: disposition
+      tag: set_aegisbpf_disposition
       if: ctx.disposition != null
-  - set:
-      field: aegisbpf.device
-      copy_from: unmapped.aegis_device
-      if: ctx.unmapped?.aegis_device != null
-  - set:
-      field: aegisbpf.cgroup.id
-      copy_from: unmapped.aegis_cgroup_id
-      if: ctx.unmapped?.aegis_cgroup_id != null
-  - set:
-      field: aegisbpf.cgroup.path
-      copy_from: unmapped.aegis_cgroup_path
-      if: ctx.unmapped?.aegis_cgroup_path != null
-      ignore_empty_value: true
-  # Remove the raw OCSF envelope fields now that they are mapped to ECS.
+  # Remove the raw OCSF envelope now that it is mapped to ECS.
   - remove:
       field:
         - class_uid
@@ -180,10 +237,24 @@ processors:
         - src_endpoint
         - dst_endpoint
       ignore_missing: true
+      tag: remove_ocsf_envelope
+  # Keep event.original only when the user opts into preserving it.
+  - remove:
+      field: event.original
+      ignore_missing: true
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+      tag: append_error_message
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      tag: append_preserve_original_event
