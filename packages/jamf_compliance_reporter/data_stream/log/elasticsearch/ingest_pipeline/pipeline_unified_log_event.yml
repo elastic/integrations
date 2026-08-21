@@ -2,128 +2,157 @@
 description: Pipeline for Jamf Compliance Reporter unified event logs.
 processors:
   - convert:
+      tag: convert_json_event_attributes_activityIdentifier_to_jamf_compliance_reporter_log_event_attributes_activity_identifier_6972ae84
       field: json.event_attributes.activityIdentifier
       target_field: jamf_compliance_reporter.log.event_attributes.activity_identifier
       type: string
       ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_backtrace_frames_66890ef3
       field: json.event_attributes.backtrace.frames
       if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         convert:
+          tag: convert_ingest_value_imageOffset_to_ingest_value_image_offset_b149a82c
           field: _ingest._value.imageOffset
           target_field: _ingest._value.image_offset
           type: long
           on_failure:
             - remove:
+                tag: remove_ingest_value_imageOffset_45e923c1
                 field: _ingest._value.imageOffset
                 ignore_missing: true
             - append:
+                tag: append_error_message_732f427e
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_event_attributes_backtrace_frames_f567ad80
       field: json.event_attributes.backtrace.frames
       if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_imageOffset_697b55ed
           field: _ingest._value.imageOffset
           ignore_failure: true
   - foreach:
+      tag: foreach_json_event_attributes_backtrace_frames_359aa530
       field: json.event_attributes.backtrace.frames
       if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_imageUUID_to_ingest_value_image_uuid_a85dfc96
           field: _ingest._value.imageUUID
           target_field: _ingest._value.image_uuid
           ignore_failure: true
   - rename:
+      tag: rename_json_event_attributes_backtrace_frames_to_jamf_compliance_reporter_log_event_attributes_backtrace_frames_429613c2
       field: json.event_attributes.backtrace.frames
       target_field: jamf_compliance_reporter.log.event_attributes.backtrace.frames
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_category_to_jamf_compliance_reporter_log_event_attributes_category_aff19ff2
       field: json.event_attributes.category
       target_field: jamf_compliance_reporter.log.event_attributes.category
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_eventMessage_to_jamf_compliance_reporter_log_event_attributes_event_message_913a1592
       field: json.event_attributes.eventMessage
       target_field: jamf_compliance_reporter.log.event_attributes.event.message
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_eventType_to_jamf_compliance_reporter_log_event_attributes_event_type_05617a1a
       field: json.event_attributes.eventType
       target_field: jamf_compliance_reporter.log.event_attributes.event.type
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_formatString_to_jamf_compliance_reporter_log_event_attributes_format_string_c0a32007
       field: json.event_attributes.formatString
       target_field: jamf_compliance_reporter.log.event_attributes.format_string
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_machTimestamp_to_jamf_compliance_reporter_log_event_attributes_mach_timestamp_a2649842
       field: json.event_attributes.machTimestamp
       target_field: jamf_compliance_reporter.log.event_attributes.mach_timestamp
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_event_type_b4258b86
       field: event.type
       value: 'info'
       if: ctx.json?.event_attributes?.messageType != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_event_attributes_parentActivityIdentifier_to_jamf_compliance_reporter_log_event_attributes_parent_activity_identifier_8ffc9451
       field: json.event_attributes.parentActivityIdentifier
       target_field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_event_attributes_processID_to_jamf_compliance_reporter_log_event_attributes_process_id_05fec6b2
       field: json.event_attributes.processID
       target_field: jamf_compliance_reporter.log.event_attributes.process.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6bc3ee23
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_processImagePath_to_jamf_compliance_reporter_log_event_attributes_process_image_path_9727bd80
       field: json.event_attributes.processImagePath
       target_field: jamf_compliance_reporter.log.event_attributes.process.image.path
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_processImageUUID_to_jamf_compliance_reporter_log_event_attributes_process_image_uuid_92647cc8
       field: json.event_attributes.processImageUUID
       target_field: jamf_compliance_reporter.log.event_attributes.process.image.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_senderImagePath_to_jamf_compliance_reporter_log_event_attributes_sender_image_path_1ebcae94
       field: json.event_attributes.senderImagePath
       target_field: jamf_compliance_reporter.log.event_attributes.sender.image.path
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_senderImageUUID_to_jamf_compliance_reporter_log_event_attributes_sender_image_uuid_3231d394
       field: json.event_attributes.senderImageUUID
       target_field: jamf_compliance_reporter.log.event_attributes.sender.image.uuid
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_senderProgramCounter_to_jamf_compliance_reporter_log_event_attributes_sender_program_counter_2b7b082b
       field: json.event_attributes.senderProgramCounter
       target_field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_810b817c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_source_to_jamf_compliance_reporter_log_event_attributes_source_72ef1212
       field: json.event_attributes.source
       target_field: jamf_compliance_reporter.log.event_attributes.source
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_subsystem_to_jamf_compliance_reporter_log_event_attributes_subsystem_d3322ff2
       field: json.event_attributes.subsystem
       target_field: jamf_compliance_reporter.log.event_attributes.subsystem
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_threadID_to_jamf_compliance_reporter_log_event_attributes_thread_id_f71be0ec
       field: json.event_attributes.threadID
       target_field: jamf_compliance_reporter.log.event_attributes.thread_id
       type: string
       ignore_missing: true
       ignore_failure: true
   - date:
+      tag: date_json_event_attributes_timestamp_to_jamf_compliance_reporter_log_event_attributes_timestamp_35bc5640
       field: json.event_attributes.timestamp
       target_field: jamf_compliance_reporter.log.event_attributes.timestamp
       if: ctx.json?.event_attributes?.timestamp != null && ctx.json.event_attributes.timestamp != 0
@@ -131,13 +160,16 @@ processors:
         - yyyy-MM-dd HH:mm:ss.SSSSSSZ
       on_failure:
         - append:
+            tag: append_error_message_18db0b33
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_event_attributes_timezoneName_to_jamf_compliance_reporter_log_event_attributes_timezone_name_71b67557
       field: json.event_attributes.timezoneName
       target_field: jamf_compliance_reporter.log.event_attributes.timezone_name
       ignore_missing: true
   - convert:
+      tag: convert_json_event_attributes_traceID_to_jamf_compliance_reporter_log_event_attributes_trace_id_ddce6ab0
       field: json.event_attributes.traceID
       target_field: jamf_compliance_reporter.log.event_attributes.trace_id
       type: string
@@ -145,8 +177,18 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_04cb6111
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

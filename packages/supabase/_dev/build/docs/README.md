@@ -10,6 +10,8 @@ This integration scrapes metrics from the Supabase Metrics API (Prometheus-compa
 
 Metrics are stored with native OTel schema — no field renaming or custom mapping is applied. Raw Prometheus metric names are preserved under the `metrics.*` namespace.
 
+Once data starts flowing, the **[Supabase OpenTelemetry Assets](https://www.elastic.co/docs/reference/integrations/supabase_otel)** package provides assets for infrastructure, PostgreSQL, and application services.
+
 ## Compatibility
 
 This integration requires a Supabase **Pro**, **Team**, or **Enterprise** plan. The Metrics API is not available on the Free tier.
@@ -40,14 +42,6 @@ This integration requires a Supabase **Pro**, **Team**, or **Enterprise** plan. 
 
 3. **Verify data**:
    - Go to **Discover** and filter on `data_stream.dataset: "supabase.metrics.otel"`
-
-## Dashboards
-
-Kibana dashboards are provided by the **Supabase ** OpenTelemetry Assets package, which is installed automatically. The following dashboards are included:
-
-- **Node & Infrastructure** — CPU, memory, load, disk I/O, filesystem, network
-- **Database & Postgres Health** — connections, transactions, cache hit ratio, WAL, replication, bgwriter
-- **Services & API Health** — Supavisor, PostgREST, GoTrue Auth, Realtime, Storage
 
 ## Metrics Reference
 
