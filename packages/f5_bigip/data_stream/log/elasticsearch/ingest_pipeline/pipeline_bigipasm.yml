@@ -549,14 +549,16 @@ processors:
       separator: ',\s*'
       ignore_missing: true
   # The header is whatever the client sent. Keep the raw values on this keyword field as evidence,
-  # but only let addresses that parse reach related.ip, which is mapped as ip.
+  # but only let addresses that parse reach related.ip, which is mapped as ip. The sibling field
+  # below runs the same check from its own pipeline: Fleet rewrites only the first reference to a
+  # given pipeline name in a file, so a single shared pipeline cannot be called from both places.
   - foreach:
       field: f5_bigip.log.request.x_forwarded_for
       tag: foreach_request_x_forwarded_for
       if: ctx.f5_bigip?.log?.request?.x_forwarded_for instanceof List
       processor:
         pipeline:
-          name: '{{ IngestPipeline "pipeline_forwarded_ip" }}'
+          name: '{{ IngestPipeline "pipeline_forwarded_ip_request" }}'
           tag: pipeline_forwarded_ip_for_request
   - remove:
       field: _tmp
@@ -691,7 +693,7 @@ processors:
       if: ctx.json?.x_forwarded_for_header_value instanceof List
       processor:
         pipeline:
-          name: '{{ IngestPipeline "pipeline_forwarded_ip" }}'
+          name: '{{ IngestPipeline "pipeline_forwarded_ip_header_value" }}'
           tag: pipeline_forwarded_ip_for_header_value
   - rename:
       field: _tmp.valid_ips
