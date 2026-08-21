@@ -29,11 +29,11 @@ redact:
     - api_key
 program: |-
   {
-    "date_from": state.?cursor.date_from.orValue(
+    ?"date_from": state.?cursor.date_from.orValue(
       (!has(state.cursor) && has(state.initial_interval)) ?
-        (now - duration(state.initial_interval)).format("2006-01-02")
+        optional.of((now - duration(state.initial_interval)).format("2006-01-02"))
       :
-        ""
+        optional.none()
     ),
     "page": int(state.?cursor.page.orValue(1)),
   }.as(poll,
