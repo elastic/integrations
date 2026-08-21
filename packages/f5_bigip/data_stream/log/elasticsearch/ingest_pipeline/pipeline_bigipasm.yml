@@ -454,9 +454,9 @@ processors:
             continue;
           }
           if (!headers.containsKey(name)) {
-            headers[name] = value;
+            headers[name] = [value];
           } else if (!singletonHeaders.contains(name)) {
-            headers[name] = headers[name] + ', ' + value;
+            headers[name].add(value);
           }
         }
 
@@ -469,9 +469,9 @@ processors:
           'x-forwarded-for': 'x_forwarded_for'
         ];
         for (entry in headerFields.entrySet()) {
-          def value = headers[entry.getKey()];
-          if (value != null) {
-            request[entry.getValue()] = value;
+          def values = headers[entry.getKey()];
+          if (values != null) {
+            request[entry.getValue()] = String.join(', ', values);
           }
         }
   - append:
@@ -548,27 +548,20 @@ processors:
       tag: split_request_x_forwarded_for
       separator: ',\s*'
       ignore_missing: true
-  - convert:
-      field: f5_bigip.log.request.x_forwarded_for
-      tag: convert_x_forwarded_for_to_ip
-      target_field: f5_bigip.log.request.x_forwarded_for
-      if: ctx.f5_bigip?.log?.request?.x_forwarded_for != ''
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  # The header is whatever the client sent. Keep the raw values on this keyword field as evidence,
+  # but only let addresses that parse reach related.ip, which is mapped as ip.
   - foreach:
       field: f5_bigip.log.request.x_forwarded_for
+      tag: foreach_request_x_forwarded_for
       if: ctx.f5_bigip?.log?.request?.x_forwarded_for instanceof List
       processor:
-        append:
-          field: related.ip
-          tag: append_f5_bigip_log_request_x_forwarded_for_into_related_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-          ignore_failure: true
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_forwarded_ip" }}'
+          tag: pipeline_forwarded_ip_for_request
+  - remove:
+      field: _tmp
+      tag: remove_tmp_request_forwarded_ip
+      ignore_missing: true
   - rename:
       field: json.request_status
       tag: rename_request_status
@@ -690,27 +683,25 @@ processors:
       field: json.x_forwarded_for_header_value
       separator: ',\s*'
       ignore_missing: true
-  - convert:
-      field: json.x_forwarded_for_header_value
-      tag: convert_x_forwarded_for_header_value_to_ip
-      target_field: f5_bigip.log.x_forwarded_for_header_value
-      if: ctx.json?.x_forwarded_for_header_value != ''
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # BIG-IP copies the client's X-Forwarded-For header here verbatim, so a single unparseable entry
+  # must not discard the rest of the chain or fail the event.
   - foreach:
-      field: f5_bigip.log.x_forwarded_for_header_value
-      if: ctx.f5_bigip?.log?.x_forwarded_for_header_value instanceof List
+      field: json.x_forwarded_for_header_value
+      tag: foreach_x_forwarded_for_header_value
+      if: ctx.json?.x_forwarded_for_header_value instanceof List
       processor:
-        append:
-          field: related.ip
-          tag: append_related_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-          ignore_failure: true
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_forwarded_ip" }}'
+          tag: pipeline_forwarded_ip_for_header_value
+  - rename:
+      field: _tmp.valid_ips
+      tag: rename_tmp_valid_ips_to_x_forwarded_for_header_value
+      target_field: f5_bigip.log.x_forwarded_for_header_value
+      ignore_missing: true
+  - remove:
+      field: _tmp
+      tag: remove_tmp_header_value_forwarded_ip
+      ignore_missing: true
   - rename:
       field: json.geo_info
       tag: rename_geo_info
