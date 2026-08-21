@@ -1279,12 +1279,21 @@ processors:
       patterns:
         - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, %{GREEDYDATA:event.reason}$'
         - '^IPAA: %{GREEDYDATA:event.reason}$'
+  # 751025 reports the tunnel endpoints, the authenticated user and the addresses assigned to the
+  # session. The group clause is prefixed with the IKE version for IKEv2 tunnels, and every clause
+  # after the username is optional so that shorter variants still parse. The trailing IPv6 address
+  # is not captured: the field is frequently emitted as a non-address placeholder
+  # (`invalid-addr-2-0.0.0.0`) when no IPv6 address is assigned.
+  # The second pattern is a fallback that recovers at least the username from any other variant,
+  # preserving the behaviour of the original pattern.
   - grok:
       field: message
       if: "ctx._temp_.cisco.message_id == '751025'"
       tag: parse_751025
+      description: "751025"
       patterns:
-        - '^%{DATA} Username:%{USER:source.user.name}\s+%{GREEDYDATA}$'
+        - '^Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{NOTSPACE:source.user.name}(?: %{GROUP}:%{DATA:_temp_.cisco.group_policy})?(?: IPv4 Address=%{IP:_temp_.cisco.assigned_ip})?(?: IPv6 address=%{NOTSPACE})?(?: assigned to session)?\s*$'
+        - '^%{DATA} Username:%{NOTSPACE:source.user.name}\s*%{GREEDYDATA}$'
       pattern_definitions:
         GROUP: "(?:%{IKEGROUP}|%{NONIKEGROUP})"
         IKEGROUP: "IKEv2 Group"
