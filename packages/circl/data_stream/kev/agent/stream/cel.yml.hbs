@@ -49,10 +49,7 @@ program: |-
         {
           "Header": {
             "Accept": ["application/json"],
-            ?"X-API-KEY": (state.?api_key.orValue("") != "") ?
-              optional.of([string(state.api_key)])
-            :
-              optional.none(),
+            ?"X-API-KEY": state.?api_key.optMap(v, [v]),
           },
         }
       ).do_request().as(resp,
