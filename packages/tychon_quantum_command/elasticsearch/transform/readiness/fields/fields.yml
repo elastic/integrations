@@ -1,0 +1,719 @@
+- name: quantum_readiness
+  type: group
+  fields:
+    - name: assessment_duration_ms
+      description: Duration of the readiness assessment in milliseconds.
+      type: long
+
+    - name: assessment_id
+      description: Unique assessment identifier emitted by TQC.
+      type: keyword
+
+    - name: assessment_type
+      description: Type of readiness assessment performed.
+      type: keyword
+
+    - name: detailed_report
+      description: Markdown-formatted detailed readiness report.
+      type: match_only_text
+
+    - name: max_possible_score
+      description: Maximum possible score for the readiness assessment.
+      type: long
+
+    - name: overall_score
+      description: Overall readiness score.
+      type: long
+
+    - name: readiness_status
+      description: High-level readiness status returned by the assessment.
+      type: keyword
+
+    - name: ready_timeline
+      description: Estimated timeline to reach readiness.
+      type: keyword
+
+    - name: recommendations
+      description: Readiness recommendations summarized by TQC.
+      type: keyword
+
+    - name: status_color
+      description: UI-oriented status color assigned by TQC.
+      type: keyword
+
+    - name: timestamp
+      description: Native readiness timestamp emitted by TQC.
+      type: date
+
+    - name: compliance
+      type: group
+      fields:
+        - name: common_criteria
+          description: Indicates whether Common Criteria readiness is met.
+          type: boolean
+
+        - name: compliance_notes
+          description: Compliance notes reported by the readiness assessment.
+          type: wildcard
+
+        - name: fips_ready
+          description: Indicates whether FIPS readiness requirements are met.
+          type: boolean
+
+        - name: nist_ready
+          description: Indicates whether NIST readiness requirements are met.
+          type: boolean
+
+    - name: cost_analysis
+      type: group
+      fields:
+        - name: app_family
+          description: Application family reported by app-group readiness cost analysis records.
+          type: keyword
+
+        - name: hardware_cost_usd
+          description: Hardware remediation cost for an app-group readiness record.
+          type: float
+
+        - name: instance_count
+          description: Number of application instances represented by an app-group readiness record.
+          type: long
+
+        - name: labor_rate_used
+          description: Labor rate used for cost analysis.
+          type: float
+
+        - name: labor_cost_usd
+          description: Labor remediation cost for an app-group readiness record.
+          type: float
+
+        - name: license_cost_usd
+          description: License remediation cost for an app-group readiness record.
+          type: float
+
+        - name: os_category
+          description: Operating system category used in cost analysis.
+          type: keyword
+
+        - name: os_hardware_cost_usd
+          description: Hardware cost for the operating system upgrade path.
+          type: float
+
+        - name: os_labor_cost_usd
+          description: Labor cost for the operating system upgrade path.
+          type: float
+
+        - name: os_labor_hours
+          description: Labor hours for the operating system upgrade path.
+          type: float
+
+        - name: os_license_cost_usd
+          description: License cost for the operating system upgrade path.
+          type: float
+
+        - name: os_tier
+          description: Operating system tier classification for cost analysis.
+          type: keyword
+
+        - name: os_total_cost_usd
+          description: Total operating system remediation cost.
+          type: float
+
+        - name: os_upgrade_target
+          description: Target operating system identified for remediation.
+          type: keyword
+
+        - name: tier
+          description: App-group remediation tier used by cost analysis dashboards.
+          type: keyword
+
+        - name: total_cost_usd
+          description: Total estimated remediation cost.
+          type: float
+
+        - name: total_hardware_cost_usd
+          description: Total estimated hardware cost.
+          type: float
+
+        - name: total_labor_cost_usd
+          description: Total estimated labor cost.
+          type: float
+
+        - name: total_labor_hours
+          description: Total estimated labor hours.
+          type: float
+
+        - name: total_license_cost_usd
+          description: Total estimated license cost.
+          type: float
+
+    - name: crypto_libraries
+      type: group
+      fields:
+        - name: fips_mode
+          description: Indicates whether FIPS mode is enabled for system crypto libraries.
+          type: boolean
+
+        - name: legacy_libraries_present
+          description: Indicates whether legacy crypto libraries were detected.
+          type: boolean
+
+        - name: max_score
+          description: Maximum score available for crypto libraries.
+          type: long
+
+        - name: openssl_max_score
+          description: Maximum score assigned to OpenSSL readiness.
+          type: long
+
+        - name: openssl_score
+          description: OpenSSL readiness score.
+          type: long
+
+        - name: openssl_version
+          description: OpenSSL version detected on the system.
+          type: keyword
+
+        - name: oqs_provider
+          description: Indicates whether an OQS provider was detected.
+          type: boolean
+
+        - name: pqc_support
+          description: Indicates whether post-quantum crypto support was detected.
+          type: boolean
+
+        - name: system_crypto_max_score
+          description: Maximum score available for the system crypto stack.
+          type: long
+
+        - name: system_crypto_score
+          description: Score assigned to the system crypto stack.
+          type: long
+
+        - name: system_libraries
+          description: System crypto libraries detected during the assessment.
+          type: keyword
+
+        - name: total_score
+          description: Total crypto library readiness score.
+          type: long
+
+        - name: uses_openssl
+          description: Indicates whether OpenSSL was detected in the system crypto stack.
+          type: boolean
+
+    - name: hardware
+      type: group
+      fields:
+        - name: architecture
+          description: Hardware architecture evaluated by the readiness assessment.
+          type: keyword
+
+        - name: available_ram_gb
+          description: Available RAM in gigabytes.
+          type: float
+
+        - name: base_frequency_ghz
+          description: Base CPU frequency in gigahertz.
+          type: float
+
+        - name: cores
+          description: Number of CPU cores evaluated.
+          type: long
+
+        - name: cpu_max_score
+          description: Maximum possible CPU score.
+          type: long
+
+        - name: cpu_score
+          description: CPU score assigned by the assessment.
+          type: long
+
+        - name: has_aes_ni
+          description: Indicates whether AES-NI instructions are available.
+          type: boolean
+
+        - name: has_avx2
+          description: Indicates whether AVX2 instructions are available.
+          type: boolean
+
+        - name: has_hsm
+          description: Indicates whether a hardware security module is available.
+          type: boolean
+
+        - name: has_neon
+          description: Indicates whether NEON instructions are available.
+          type: boolean
+
+        - name: has_secure_boot
+          description: Indicates whether secure boot support is available.
+          type: boolean
+
+        - name: has_tpm
+          description: Indicates whether TPM support is available.
+          type: boolean
+
+        - name: instruction_sets
+          description: Instruction sets detected on the host.
+          type: keyword
+
+        - name: logical_cores
+          description: Number of logical CPU cores evaluated.
+          type: long
+
+        - name: max_score
+          description: Maximum hardware score.
+          type: long
+
+        - name: memory_max_score
+          description: Maximum memory score.
+          type: long
+
+        - name: memory_score
+          description: Memory score assigned by the assessment.
+          type: long
+
+        - name: security_hw_max_score
+          description: Maximum security hardware score.
+          type: long
+
+        - name: security_hw_score
+          description: Security hardware score assigned by the assessment.
+          type: long
+
+        - name: total_ram_gb
+          description: Total RAM in gigabytes.
+          type: float
+
+        - name: total_score
+          description: Total hardware readiness score.
+          type: long
+
+        - name: tpm_version
+          description: TPM version detected on the host.
+          type: keyword
+
+    - name: network
+      type: group
+      fields:
+        - name: bandwidth_max_score
+          description: Maximum bandwidth score.
+          type: long
+
+        - name: bandwidth_score
+          description: Bandwidth score assigned by the assessment.
+          type: long
+
+        - name: estimated_bandwidth_mbps
+          description: Estimated network bandwidth in megabits per second.
+          type: long
+
+        - name: ipv6_support
+          description: Indicates whether IPv6 support is available.
+          type: boolean
+
+        - name: latency_ms
+          description: Estimated network latency in milliseconds.
+          type: long
+
+        - name: max_score
+          description: Maximum network score.
+          type: long
+
+        - name: modern_cipher_support
+          description: Indicates whether modern network ciphers are supported.
+          type: boolean
+
+        - name: mtu
+          description: Network MTU detected during assessment.
+          type: long
+
+        - name: protocol_max_score
+          description: Maximum network protocol score.
+          type: long
+
+        - name: protocol_score
+          description: Network protocol score assigned by the assessment.
+          type: long
+
+        - name: tls13_capable
+          description: Indicates whether TLS 1.3 capability is present.
+          type: boolean
+
+        - name: total_score
+          description: Total network readiness score.
+          type: long
+
+    - name: operating_system
+      type: group
+      fields:
+        - name: build
+          description: Operating system build reported by the assessment.
+          type: keyword
+
+        - name: crypto_api_max_score
+          description: Maximum operating system crypto API score.
+          type: long
+
+        - name: crypto_api_score
+          description: Operating system crypto API score assigned by the assessment.
+          type: long
+
+        - name: crypto_framework
+          description: Native crypto framework detected on the operating system.
+          type: keyword
+
+        - name: family
+          description: Operating system family evaluated by the assessment.
+          type: keyword
+
+        - name: fips_mode_enabled
+          description: Indicates whether operating system FIPS mode is enabled.
+          type: boolean
+
+        - name: kernel_version
+          description: Kernel version evaluated by the assessment.
+          type: keyword
+
+        - name: max_score
+          description: Maximum operating system score.
+          type: long
+
+        - name: modern_crypto_api
+          description: Indicates whether a modern crypto API is available.
+          type: boolean
+
+        - name: native_pqc_support
+          description: Indicates whether native post-quantum support is available.
+          type: boolean
+
+        - name: os_version_max_score
+          description: Maximum operating system version score.
+          type: long
+
+        - name: os_version_score
+          description: Operating system version score assigned by the assessment.
+          type: long
+
+        - name: pqc_framework
+          description: Post-quantum framework detected on the operating system.
+          type: keyword
+
+        - name: symcrypt_present
+          description: Indicates whether SymCrypt is present.
+          type: boolean
+
+        - name: total_score
+          description: Total operating system readiness score.
+          type: long
+
+        - name: version
+          description: Operating system version evaluated by the assessment.
+          type: keyword
+
+    - name: system_classification
+      type: group
+      fields:
+        - name: criticality_level
+          description: System criticality level assigned by TQC.
+          type: keyword
+
+        - name: detection_reason
+          description: Reason used to classify the system role and type.
+          type: keyword
+
+        - name: role
+          description: System role assigned by the readiness assessment.
+          type: keyword
+
+        - name: type
+          description: System type assigned by the readiness assessment.
+          type: keyword
+
+    - name: upgrade_pathway
+      type: group
+      fields:
+        - name: action
+          description: Recommended remediation action.
+          type: keyword
+
+        - name: component
+          description: Component targeted by the remediation action.
+          type: keyword
+
+        - name: description
+          description: Description of the recommended remediation step.
+          type: keyword
+
+        - name: estimated_time_weeks
+          description: Estimated time in weeks for the remediation step.
+          type: long
+
+        - name: order
+          description: Ordered step number in the upgrade pathway.
+          type: long
+
+        - name: priority
+          description: Priority assigned to the remediation step.
+          type: keyword
+
+- name: tychon
+  type: group
+  fields:
+    - name: application
+      type: group
+      fields:
+        - name: name
+          type: keyword
+
+        - name: path
+          type: keyword
+
+        - name: pid
+          type: long
+
+    - name: observer
+      type: group
+      fields:
+        - name: bigfix_client_installed
+          type: boolean
+
+        - name: bios_serial_number
+          type: keyword
+
+        - name: cpu_cores
+          type: long
+
+        - name: cpu_logical_cores
+          type: long
+
+        - name: cpu_model_name
+          type: keyword
+
+        - name: cpu_vendor_id
+          type: keyword
+
+        - name: current_user
+          type: keyword
+
+        - name: domain
+          type: keyword
+
+        - name: fips_mode_enabled
+          type: boolean
+
+        - name: hostname
+          type: keyword
+
+        - name: id
+          type: keyword
+
+        - name: ip_addresses
+          type: keyword
+
+        - name: is_vdi_environment
+          type: boolean
+
+        - name: kernel_arch
+          type: keyword
+
+        - name: kernel_version
+          type: keyword
+
+        - name: machine_serial_number
+          type: keyword
+
+        - name: organization
+          type: keyword
+
+        - name: platform_version
+          type: keyword
+
+        - name: ram_used_percent
+          type: float
+
+        - name: software_version
+          type: keyword
+
+        - name: system_uptime_seconds
+          type: long
+
+        - name: total_ram_bytes
+          type: long
+
+        - name: tychon_client_id
+          type: keyword
+
+        - name: user_gid
+          type: keyword
+
+        - name: user_home_dir
+          type: keyword
+
+        - name: user_uid
+          type: keyword
+
+        - name: vdi_identity_source
+          type: keyword
+
+        - name: windows_server_role
+          type: keyword
+
+        - name: os
+          type: group
+          fields:
+            - name: build
+              type: keyword
+
+            - name: family
+              type: keyword
+
+            - name: kernel
+              type: keyword
+
+            - name: name
+              type: keyword
+
+            - name: platform
+              type: keyword
+
+            - name: version
+              type: keyword
+
+    - name: pipeline
+      type: group
+      fields:
+        - name: processed
+          type: boolean
+
+    - name: process
+      type: group
+      fields:
+        - name: executable_directory
+          type: keyword
+
+        - name: executable_file
+          type: group
+          fields:
+            - name: attributes
+              type: keyword
+
+            - name: company_name
+              type: keyword
+
+            - name: extension
+              type: keyword
+
+            - name: file_version
+              type: keyword
+
+            - name: group
+              type: keyword
+
+            - name: md5_hash
+              type: keyword
+
+            - name: name
+              type: keyword
+
+            - name: owner
+              type: keyword
+
+            - name: path
+              type: keyword
+
+            - name: product_name
+              type: keyword
+
+            - name: product_version
+              type: keyword
+
+            - name: sha1_hash
+              type: keyword
+
+            - name: sha256_hash
+              type: keyword
+
+            - name: size
+              type: long
+
+        - name: service_info
+          type: group
+          fields:
+            - name: description
+              type: keyword
+
+            - name: display_name
+              type: keyword
+
+            - name: name
+              type: keyword
+
+            - name: state
+              type: keyword
+
+        - name: user_name
+          type: keyword
+
+        - name: username
+          type: keyword
+
+    - name: quantum_ready
+      type: group
+      fields:
+        - name: certificate
+          type: boolean
+
+        - name: cipher
+          type: boolean
+
+        - name: key_exchange
+          type: boolean
+
+        - name: overall
+          type: boolean
+
+    - name: scan
+      type: group
+      fields:
+        - name: target_input
+          type: keyword
+
+        - name: timestamp
+          type: date
+
+        - name: type
+          type: keyword
+
+    - name: scan_mode
+      type: keyword
+
+- name: kerberos
+  type: group
+  fields:
+    - name: config_source
+      type: keyword
+
+    - name: has_aes128
+      type: boolean
+
+    - name: has_aes256
+      type: boolean
+
+    - name: has_des
+      type: boolean
+
+    - name: has_rc4
+      type: boolean
+
+    - name: is_explicitly_configured
+      type: boolean
+
+    - name: is_quantum_safe
+      type: boolean
+
+    - name: raw_bitmask
+      type: long
+
+    - name: supported_types
+      type: keyword

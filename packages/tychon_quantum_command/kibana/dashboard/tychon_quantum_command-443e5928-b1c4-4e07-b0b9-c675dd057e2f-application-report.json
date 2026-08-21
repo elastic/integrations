@@ -1,0 +1,2533 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "Aligns to schema 2.0.3.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": false
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Inventory](/app/dashboards#/view/tychon_quantum_command-32c01eb5-0d80-4a28-9de7-55b2046f7c45-inventory) | Application Report | [Application Detail](/app/dashboards#/view/tychon_quantum_command-6dfff015-3cc9-48b6-9410-7d8c01ff0d9a-application-detail) | [Certificate Report](/app/dashboards#/view/tychon_quantum_command-d0159137-9139-4a93-85bb-2ac9ddab3982-certificate-operations-dashboard) | [Application Connections Topology](/app/dashboards#/view/tychon_quantum_command-6f3d60d5-b5fb-45a5-9298-acf3ceb3ea1b-application-connections-topology) | [Cost Analysis](/app/dashboards#/view/tychon_quantum_command-02366033-dee4-4ea4-8458-7c8a8b58987e-cost-analysis)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "tychon-quantum-command-nav",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "tychon-quantum-command-nav",
+                "title": "",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.t === sel ? null : datum.t\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.t === sel ? kibanaRemoveFilter({'match_phrase': {'omb.kex_tier': datum.t}}) : kibanaAddFilter({'match_phrase': {'omb.kex_tier': datum.t}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"aggs\": {\"k\": {\"terms\": {\"field\": \"omb.kex_tier\", \"size\": 20}, \"aggs\": {\"u\": {\"cardinality\": {\"field\": \"process.executable\"}}}}}}}, \"format\": {\"property\": \"aggregations.k.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"t\", \"expr\": \"datum.key\"}, {\"type\": \"formula\", \"as\": \"hcount\", \"expr\": \"datum.u ? datum.u.value : 0\"}]}, {\"name\": \"tc\", \"source\": \"raw\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"t\"], \"ops\": [\"sum\"], \"fields\": [\"hcount\"], \"as\": [\"n\"]}]}, {\"name\": \"mx\", \"source\": \"tc\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}, {\"name\": \"rows\", \"values\": [{\"t\": \"PQC READY\", \"lbl\": \"ML-KEM / Kyber\", \"desc\": \"Post-quantum \\u2014 harvest-proof\", \"badge\": \"PQC READY\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"ord\": 0}, {\"t\": \"MODERN\", \"lbl\": \"X25519 / ECDHE\", \"desc\": \"Elliptic curve \\u2014 quantum-vulnerable\", \"badge\": \"MODERN\", \"clr\": \"#448aff\", \"bg\": \"#448aff18\", \"ord\": 1}, {\"t\": \"CLASSICAL\", \"lbl\": \"DHE / DH\", \"desc\": \"Finite-field DH \\u2014 quantum-vulnerable\", \"badge\": \"CLASSICAL\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"ord\": 2}, {\"t\": \"LEGACY\", \"lbl\": \"RSA Key Exchange\", \"desc\": \"No forward secrecy \\u2014 deprecated\", \"badge\": \"LEGACY\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"ord\": 3}], \"transform\": [{\"type\": \"lookup\", \"from\": \"tc\", \"key\": \"t\", \"fields\": [\"t\"], \"values\": [\"n\"], \"as\": [\"n\"], \"default\": 0}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.ord * 72 + 60\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"POST-QUANTUM CRYPTOGRAPHY READINESS\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 38}, \"text\": {\"value\": \"KEY EXCHANGE  \\u2014  click a tier to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 48}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.t===sel?'#1c1c2e':datum.n>0?'#161622':'#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.n>0?datum.clr:'#2a2a2a'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 65\"}, \"stroke\": {\"value\": \"#222222\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"datum.y + 24\"}, \"text\": {\"signal\": \"datum.lbl\"}, \"limit\": {\"signal\": \"width*0.62-18\"}, \"fill\": {\"signal\": \"datum.n>0?'#e8e8e8':'#444444'\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"datum.y + 44\"}, \"text\": {\"signal\": \"datum.desc\"}, \"limit\": {\"signal\": \"width*0.62-18\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 10}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65\"}, \"y\": {\"signal\": \"datum.y + 8\"}, \"width\": {\"value\": 82}, \"height\": {\"value\": 17}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.n>0?datum.bg:'#1a1a1a'\"}, \"stroke\": {\"signal\": \"datum.n>0?datum.clr:'#2a2a2a'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65+41\"}, \"y\": {\"signal\": \"datum.y + 20\"}, \"text\": {\"signal\": \"datum.badge\"}, \"fill\": {\"signal\": \"datum.n>0?datum.clr:'#383838'\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65\"}, \"y\": {\"signal\": \"datum.y + 31\"}, \"width\": {\"value\": 82}, \"height\": {\"value\": 17}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"'#1a1a1a'\"}, \"stroke\": {\"signal\": \"'#333333'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65+41\"}, \"y\": {\"signal\": \"datum.y + 43\"}, \"text\": {\"signal\": \"datum.t===sel?'SELECTED':''\"}, \"fill\": {\"signal\": \"datum.t===sel?datum.clr:'#448aff'\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width-10\"}, \"y\": {\"signal\": \"datum.y + 36\"}, \"text\": {\"signal\": \"datum.n>0?(datum.n>=1000?format(datum.n,'.3~s'):format(datum.n,',')):'\\u2014'\"}, \"fill\": {\"signal\": \"datum.t===sel?datum.clr:datum.n>0?'#dddddd':'#333333'\"}, \"fontSize\": {\"value\": 20}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"signal\": \"width/2\"}, \"y\": {\"signal\": \"height-8\"}, \"text\": {\"value\": \"\\u2191 at the highest tier\"}, \"fill\": {\"value\": \"#2a2a2a\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "b5127f43-801b-4411-a631-e5c71ca96645",
+                    "w": 16,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "b5127f43-801b-4411-a631-e5c71ca96645",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"totalApps\", \"update\": \"length(data('apps_total'))>0 ? data('apps_total')[0].n : 0\"}, {\"name\": \"kexReady\", \"update\": \"length(data('kex_pqc'))>0 ? data('kex_pqc')[0].n : 0\"}, {\"name\": \"kexPct\", \"update\": \"totalApps > 0 ? round(kexReady / totalApps * 100) : 0\"}, {\"name\": \"kexClr\", \"update\": \"kexPct>=90 ? '#00c853' : kexPct>=60 ? '#448aff' : kexPct>=30 ? '#ffa726' : '#ef5350'\"}, {\"name\": \"protoReady\", \"update\": \"length(data('proto_pqc'))>0 ? data('proto_pqc')[0].n : 0\"}, {\"name\": \"protoPct\", \"update\": \"totalApps > 0 ? round(protoReady / totalApps * 100) : 0\"}, {\"name\": \"protoClr\", \"update\": \"protoPct>=90 ? '#00c853' : protoPct>=60 ? '#448aff' : protoPct>=30 ? '#ffa726' : '#ef5350'\"}, {\"name\": \"sigReady\", \"update\": \"length(data('sig_pqc'))>0 ? data('sig_pqc')[0].n : 0\"}, {\"name\": \"sigPct\", \"update\": \"totalApps > 0 ? round(sigReady / totalApps * 100) : 0\"}, {\"name\": \"sigClr\", \"update\": \"sigPct>=90 ? '#00c853' : sigPct>=60 ? '#448aff' : sigPct>=30 ? '#ffa726' : '#ef5350'\"}, {\"name\": \"barW\", \"update\": \"width * 0.62 - 18\"}], \"data\": [{\"name\": \"apps_raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"aggs\": {\"v\": {\"cardinality\": {\"field\": \"process.executable\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"apps_total\", \"source\": \"apps_raw\"}, {\"name\": \"kex_pqc_raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"term\": {\"omb.kex_tier\": \"PQC READY\"}}, \"aggs\": {\"u\": {\"cardinality\": {\"field\": \"process.executable\"}}}}}}}, \"format\": {\"property\": \"aggregations.f.u\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"kex_pqc\", \"source\": \"kex_pqc_raw\"}, {\"name\": \"proto_pqc_raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"term\": {\"omb.protocol_tier\": \"TLS 1.3\"}}, \"aggs\": {\"u\": {\"cardinality\": {\"field\": \"process.executable\"}}}}}}}, \"format\": {\"property\": \"aggregations.f.u\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"proto_pqc\", \"source\": \"proto_pqc_raw\"}, {\"name\": \"sig_pqc_raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"term\": {\"omb.sig_tier\": \"PQC READY\"}}, \"aggs\": {\"u\": {\"cardinality\": {\"field\": \"process.executable\"}}}}}}}, \"format\": {\"property\": \"aggregations.f.u\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"sig_pqc\", \"source\": \"sig_pqc_raw\"}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 22}, \"text\": {\"value\": \"APPLICATION PQC DASHBOARD\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 40}, \"text\": {\"signal\": \"'PQC COMPLIANCE PROGRESS  \\u2014  ' + (totalApps>=1000?format(totalApps,'.3~s'):format(totalApps,',')) + ' unique applications'\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 48}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 60}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 78}, \"fill\": {\"value\": \"#161616\"}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 60}, \"width\": {\"value\": 4}, \"height\": {\"value\": 78}, \"fill\": {\"signal\": \"kexClr\"}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 78}, \"text\": {\"value\": \"KEX COMPLIANCE\"}, \"fill\": {\"value\": \"#888888\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 93}, \"text\": {\"signal\": \"(kexReady>=1000?format(kexReady,'.3~s'):format(kexReady,',')) + ' of ' + (totalApps>=1000?format(totalApps,'.3~s'):format(totalApps,',')) + ' applications  \\u2014  PQC READY key exchange'\"}, \"fill\": {\"value\": \"#444444\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 106}, \"width\": {\"signal\": \"barW\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"value\": \"#1e1e1e\"}, \"stroke\": {\"value\": \"#2a2a2a\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 106}, \"width\": {\"signal\": \"max(0, barW * kexPct / 100)\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"signal\": \"kexClr\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"value\": 122}, \"text\": {\"signal\": \"kexPct + '%'\"}, \"fill\": {\"signal\": \"kexClr\"}, \"fontSize\": {\"value\": 24}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 138}, \"stroke\": {\"value\": \"#222222\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 140}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 78}, \"fill\": {\"value\": \"#161616\"}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 140}, \"width\": {\"value\": 4}, \"height\": {\"value\": 78}, \"fill\": {\"signal\": \"protoClr\"}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 158}, \"text\": {\"value\": \"PROTOCOL COMPLIANCE\"}, \"fill\": {\"value\": \"#888888\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 173}, \"text\": {\"signal\": \"(protoReady>=1000?format(protoReady,'.3~s'):format(protoReady,',')) + ' of ' + (totalApps>=1000?format(totalApps,'.3~s'):format(totalApps,',')) + ' applications  \\u2014  TLS 1.3 capable'\"}, \"fill\": {\"value\": \"#444444\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 186}, \"width\": {\"signal\": \"barW\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"value\": \"#1e1e1e\"}, \"stroke\": {\"value\": \"#2a2a2a\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 186}, \"width\": {\"signal\": \"max(0, barW * protoPct / 100)\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"signal\": \"protoClr\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"value\": 202}, \"text\": {\"signal\": \"protoPct + '%'\"}, \"fill\": {\"signal\": \"protoClr\"}, \"fontSize\": {\"value\": 24}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 218}, \"stroke\": {\"value\": \"#222222\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 220}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 78}, \"fill\": {\"value\": \"#161616\"}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 220}, \"width\": {\"value\": 4}, \"height\": {\"value\": 78}, \"fill\": {\"signal\": \"sigClr\"}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 238}, \"text\": {\"value\": \"CERT SIGNATURE\"}, \"fill\": {\"value\": \"#888888\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 253}, \"text\": {\"signal\": \"(sigReady>=1000?format(sigReady,'.3~s'):format(sigReady,',')) + ' of ' + (totalApps>=1000?format(totalApps,'.3~s'):format(totalApps,',')) + ' applications  \\u2014  PQC READY signature'\"}, \"fill\": {\"value\": \"#444444\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 266}, \"width\": {\"signal\": \"barW\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"value\": \"#1e1e1e\"}, \"stroke\": {\"value\": \"#2a2a2a\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"value\": 266}, \"width\": {\"signal\": \"max(0, barW * sigPct / 100)\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"signal\": \"sigClr\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"value\": 282}, \"text\": {\"signal\": \"sigPct + '%'\"}, \"fill\": {\"signal\": \"sigClr\"}, \"fontSize\": {\"value\": 24}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('apps_raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('apps_raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "1192b05f-8047-4601-ba71-3f601169574b",
+                    "w": 15,
+                    "x": 16,
+                    "y": 2
+                },
+                "panelIndex": "1192b05f-8047-4601-ba71-3f601169574b",
+                "title": "",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.t === sel ? null : datum.t\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.t === sel ? kibanaRemoveFilter({'match_phrase': {'omb.sig_tier': datum.t}}) : kibanaAddFilter({'match_phrase': {'omb.sig_tier': datum.t}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"aggs\": {\"k\": {\"terms\": {\"field\": \"omb.sig_tier\", \"size\": 20}}}}}, \"format\": {\"property\": \"aggregations.k.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"t\", \"expr\": \"datum.key\"}]}, {\"name\": \"tc\", \"source\": \"raw\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"t\"], \"ops\": [\"sum\"], \"fields\": [\"doc_count\"], \"as\": [\"n\"]}]}, {\"name\": \"mx\", \"source\": \"tc\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}, {\"name\": \"rows\", \"values\": [{\"t\": \"PQC READY\", \"lbl\": \"ML-DSA / Dilithium\", \"desc\": \"Post-quantum lattice signature \\u2014 quantum-resistant\", \"badge\": \"PQC READY\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"ord\": 0}, {\"t\": \"MODERN\", \"lbl\": \"ECDSA (P-256 / P-384)\", \"desc\": \"Elliptic curve signature \\u2014 efficient, quantum-vulnerable\", \"badge\": \"MODERN\", \"clr\": \"#448aff\", \"bg\": \"#448aff18\", \"ord\": 1}, {\"t\": \"CLASSICAL\", \"lbl\": \"RSA / SHA-256 RSA\", \"desc\": \"RSA signature \\u2014 quantum-vulnerable via Shor's algorithm\", \"badge\": \"CLASSICAL\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"ord\": 2}, {\"t\": \"LEGACY\", \"lbl\": \"MD5 / SHA-1 RSA\", \"desc\": \"Broken hash \\u2014 deprecated by all modern standards\", \"badge\": \"LEGACY\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"ord\": 3}], \"transform\": [{\"type\": \"lookup\", \"from\": \"tc\", \"key\": \"t\", \"fields\": [\"t\"], \"values\": [\"n\"], \"as\": [\"n\"], \"default\": 0}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.ord * 72 + 60\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"CERTIFICATE SIGNATURE\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 38}, \"text\": {\"value\": \"SIGNATURE ALGORITHM  \\u2014  click a tier to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 48}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.t===sel?'#1c1c2e':datum.n>0?'#161622':'#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.n>0?datum.clr:'#2a2a2a'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 65\"}, \"stroke\": {\"value\": \"#222222\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"datum.y + 24\"}, \"text\": {\"signal\": \"datum.lbl\"}, \"limit\": {\"signal\": \"width*0.62-18\"}, \"fill\": {\"signal\": \"datum.n>0?'#e8e8e8':'#444444'\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"datum.y + 44\"}, \"text\": {\"signal\": \"datum.desc\"}, \"limit\": {\"signal\": \"width*0.62-18\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 10}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65\"}, \"y\": {\"signal\": \"datum.y + 8\"}, \"width\": {\"value\": 82}, \"height\": {\"value\": 17}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.n>0?datum.bg:'#1a1a1a'\"}, \"stroke\": {\"signal\": \"datum.n>0?datum.clr:'#2a2a2a'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65+41\"}, \"y\": {\"signal\": \"datum.y + 20\"}, \"text\": {\"signal\": \"datum.badge\"}, \"fill\": {\"signal\": \"datum.n>0?datum.clr:'#383838'\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65\"}, \"y\": {\"signal\": \"datum.y + 31\"}, \"width\": {\"value\": 82}, \"height\": {\"value\": 17}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"'#1a1a1a'\"}, \"stroke\": {\"signal\": \"'#333333'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width*0.65+41\"}, \"y\": {\"signal\": \"datum.y + 43\"}, \"text\": {\"signal\": \"datum.t===sel?'SELECTED':''\"}, \"fill\": {\"signal\": \"datum.t===sel?datum.clr:'#448aff'\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width-10\"}, \"y\": {\"signal\": \"datum.y + 36\"}, \"text\": {\"signal\": \"datum.n>0?(datum.n>=1000?format(datum.n,'.3~s'):format(datum.n,',')):'\\u2014'\"}, \"fill\": {\"signal\": \"datum.t===sel?datum.clr:datum.n>0?'#dddddd':'#333333'\"}, \"fontSize\": {\"value\": 20}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"signal\": \"width/2\"}, \"y\": {\"signal\": \"height-8\"}, \"text\": {\"value\": \"\\u2191 at the highest tier\"}, \"fill\": {\"value\": \"#2a2a2a\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "3b53c655-5c7c-4910-9b19-657d22031234",
+                    "w": 17,
+                    "x": 31,
+                    "y": 2
+                },
+                "panelIndex": "3b53c655-5c7c-4910-9b19-657d22031234",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"rowBg\"}, \"update\": \"datum.family === sel ? null : datum.family\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"rowBg\"}, \"update\": \"datum.family === sel ? kibanaRemoveFilter({'terms': {'process.name': datum.filterTerms}}) : kibanaAddFilter({'terms': {'process.name': datum.filterTerms}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc*\", \"body\": {\"size\": 0, \"aggs\": {\"procs\": {\"terms\": {\"field\": \"process.name\", \"size\": 80}, \"aggs\": {\"kex\": {\"terms\": {\"field\": \"omb.kex_tier\", \"size\": 5}, \"aggs\": {\"thosts\": {\"cardinality\": {\"field\": \"host.id\"}}}}}}}}}, \"format\": {\"property\": \"aggregations.procs.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"family\", \"expr\": \"lower(datum.key)==='w3wp.exe'||lower(datum.key)==='iisexpress.exe'||lower(datum.key)==='inetinfo.exe' ? 'IIS' : lower(datum.key)==='node'||lower(datum.key)==='node.exe'||lower(datum.key)==='nodejs'||lower(datum.key)==='nodejs.exe' ? 'Node.js' : lower(datum.key)==='apache2'||lower(datum.key)==='httpd'||lower(datum.key)==='apache'||lower(datum.key)==='httpd.exe'||lower(datum.key)==='apache.exe'||lower(datum.key)==='httpd.worker' ? 'Apache' : lower(datum.key)==='nginx'||lower(datum.key)==='nginx.exe'||lower(datum.key)==='nginx-debug'||lower(datum.key)==='openresty' ? 'Nginx' : lower(datum.key)==='jsvc'||lower(datum.key)==='tomcat'||lower(datum.key)==='tomcat.exe'||lower(datum.key)==='tomcat9'||lower(datum.key)==='tomcat9.exe'||lower(datum.key)==='tomcat10'||lower(datum.key)==='tomcat10.exe'||lower(datum.key)==='tomcat8'||lower(datum.key)==='tomcat8.exe'||lower(datum.key)==='tomcat7'||lower(datum.key)==='tomcat7.exe'||lower(datum.key)==='catalina'||lower(datum.key)==='catalina.sh' ? 'Tomcat' : lower(datum.key)==='dotnet'||lower(datum.key)==='dotnet.exe' ? '.NET / Kestrel' : lower(datum.key)==='caddy'||lower(datum.key)==='caddy.exe' ? 'Caddy' : lower(datum.key)==='traefik'||lower(datum.key)==='traefik.exe' ? 'Traefik' : lower(datum.key)==='haproxy' ? 'HAProxy' : lower(datum.key)==='gunicorn' ? 'Gunicorn' : lower(datum.key)==='uwsgi' ? 'uWSGI' : lower(datum.key)==='puma'||lower(datum.key)==='passenger'||lower(datum.key)==='passenger-ruby' ? 'Puma' : lower(datum.key)==='varnishd' ? 'Varnish' : lower(datum.key)==='lighttpd' ? 'Lighttpd' : lower(datum.key)==='java'||lower(datum.key)==='java.exe'||lower(datum.key)==='javaw.exe' ? 'Java App Server' : 'Other'\"}, {\"type\": \"filter\", \"expr\": \"datum.family != null\"}]}, {\"name\": \"mapped\", \"source\": \"raw\", \"transform\": [{\"type\": \"flatten\", \"fields\": [\"kex.buckets\"], \"as\": [\"tb\"]}, {\"type\": \"formula\", \"as\": \"tier\", \"expr\": \"datum.tb.key\"}, {\"type\": \"formula\", \"as\": \"tier_h\", \"expr\": \"datum.tb.thosts ? datum.tb.thosts.value : 0\"}, {\"type\": \"formula\", \"as\": \"tier_ord\", \"expr\": \"datum.tier==='LEGACY' ? 0 : datum.tier==='CLASSICAL' ? 1 : datum.tier==='MODERN' ? 2 : datum.tier==='PQC READY' ? 3 : 4\"}]}, {\"name\": \"by_ft\", \"source\": \"mapped\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"family\", \"tier\", \"tier_ord\"], \"fields\": [\"tier_h\"], \"ops\": [\"sum\"], \"as\": [\"tier_total\"]}]}, {\"name\": \"fam_totals\", \"source\": \"by_ft\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"family\"], \"fields\": [\"tier_total\"], \"ops\": [\"sum\"], \"as\": [\"fam_total\"]}]}, {\"name\": \"fam_risk\", \"source\": \"by_ft\", \"transform\": [{\"type\": \"filter\", \"expr\": \"datum.tier === 'LEGACY' || datum.tier === 'CLASSICAL'\"}, {\"type\": \"aggregate\", \"groupby\": [\"family\"], \"fields\": [\"tier_total\"], \"ops\": [\"sum\"], \"as\": [\"risk_total\"]}]}, {\"name\": \"fam_pqc\", \"source\": \"by_ft\", \"transform\": [{\"type\": \"filter\", \"expr\": \"datum.tier === 'PQC READY'\"}, {\"type\": \"aggregate\", \"groupby\": [\"family\"], \"fields\": [\"tier_total\"], \"ops\": [\"sum\"], \"as\": [\"pqc_total\"]}]}, {\"name\": \"fam_rows\", \"source\": \"fam_totals\", \"transform\": [{\"type\": \"lookup\", \"from\": \"fam_risk\", \"key\": \"family\", \"fields\": [\"family\"], \"values\": [\"risk_total\"], \"default\": 0}, {\"type\": \"lookup\", \"from\": \"fam_pqc\", \"key\": \"family\", \"fields\": [\"family\"], \"values\": [\"pqc_total\"], \"default\": 0}, {\"type\": \"formula\", \"as\": \"clr\", \"expr\": \"datum.family==='IIS' ? '#0078d4' : datum.family==='Node.js' ? '#68a063' : datum.family==='Apache' ? '#d22128' : datum.family==='Nginx' ? '#009900' : datum.family==='Tomcat' ? '#f8a51a' : datum.family==='.NET / Kestrel' ? '#7b5ea7' : datum.family==='Caddy' ? '#00acd7' : datum.family==='Traefik' ? '#24a1c1' : datum.family==='HAProxy' ? '#7db8e8' : datum.family==='Gunicorn' ? '#499848' : datum.family==='uWSGI' ? '#cc4125' : datum.family==='Puma' ? '#e040fb' : datum.family==='Varnish' ? '#ff6d00' : datum.family==='Lighttpd' ? '#909090' : datum.family==='Java App Server' ? '#c7a008' : '#666666'\"}, {\"type\": \"formula\", \"as\": \"filterTerms\", \"expr\": \"datum.family==='IIS' ? ['w3wp.exe','iisexpress.exe','inetinfo.exe'] : datum.family==='Node.js' ? ['node','node.exe','nodejs','nodejs.exe'] : datum.family==='Apache' ? ['apache2','httpd','apache','httpd.exe','apache.exe','httpd.worker'] : datum.family==='Nginx' ? ['nginx','nginx.exe','nginx-debug','openresty'] : datum.family==='Tomcat' ? ['jsvc','tomcat','tomcat.exe','tomcat9','tomcat9.exe','tomcat10','tomcat10.exe','tomcat8','tomcat8.exe','tomcat7','tomcat7.exe','catalina','catalina.sh'] : datum.family==='.NET / Kestrel' ? ['dotnet','dotnet.exe'] : datum.family==='Caddy' ? ['caddy','caddy.exe'] : datum.family==='Traefik' ? ['traefik','traefik.exe'] : datum.family==='HAProxy' ? ['haproxy'] : datum.family==='Gunicorn' ? ['gunicorn'] : datum.family==='uWSGI' ? ['uwsgi'] : datum.family==='Puma' ? ['puma','passenger','passenger-ruby'] : datum.family==='Varnish' ? ['varnishd'] : datum.family==='Lighttpd' ? ['lighttpd'] : datum.family==='Java App Server' ? ['java','java.exe','javaw.exe'] : [datum.family]\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"risk_total\", \"order\": \"descending\"}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"rowIdx\"]}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"(datum.rowIdx - 1) * 38 + 52\"}]}, {\"name\": \"stacked\", \"source\": \"by_ft\", \"transform\": [{\"type\": \"lookup\", \"from\": \"fam_rows\", \"key\": \"family\", \"fields\": [\"family\"], \"values\": [\"y\", \"fam_total\", \"risk_total\"]}, {\"type\": \"filter\", \"expr\": \"datum.y != null\"}, {\"type\": \"formula\", \"as\": \"tier_clr\", \"expr\": \"datum.tier==='LEGACY' ? '#ef5350' : datum.tier==='CLASSICAL' ? '#ffa726' : datum.tier==='MODERN' ? '#42a5f5' : datum.tier==='PQC READY' ? '#66bb6a' : '#555555'\"}, {\"type\": \"joinaggregate\", \"fields\": [\"fam_total\"], \"ops\": [\"max\"], \"as\": [\"max_fam\"]}, {\"type\": \"window\", \"groupby\": [\"family\"], \"sort\": {\"field\": \"tier_ord\", \"order\": \"ascending\"}, \"ops\": [\"sum\"], \"fields\": [\"tier_total\"], \"as\": [\"cumul\"]}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"WEB SERVER DISTRIBUTION\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 30}, \"text\": {\"value\": \"HOSTS BY SERVER FAMILY & PQC KEX TIER  \\u00c2\\u00b7  sorted by at-risk count  \\u00c2\\u00b7  click to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 8}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 0.8}}}}, {\"type\": \"rect\", \"encode\": {\"enter\": {\"x\": {\"value\": 170}, \"y\": {\"value\": 37}, \"width\": {\"value\": 7}, \"height\": {\"value\": 6}, \"fill\": {\"value\": \"#ef5350\"}, \"cornerRadius\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 180}, \"y\": {\"value\": 44}, \"text\": {\"value\": \"LEGACY\"}, \"fill\": {\"value\": \"#666666\"}, \"fontSize\": {\"value\": 8}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"encode\": {\"enter\": {\"x\": {\"value\": 228}, \"y\": {\"value\": 37}, \"width\": {\"value\": 7}, \"height\": {\"value\": 6}, \"fill\": {\"value\": \"#ffa726\"}, \"cornerRadius\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 238}, \"y\": {\"value\": 44}, \"text\": {\"value\": \"CLASSICAL\"}, \"fill\": {\"value\": \"#666666\"}, \"fontSize\": {\"value\": 8}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"encode\": {\"enter\": {\"x\": {\"value\": 300}, \"y\": {\"value\": 37}, \"width\": {\"value\": 7}, \"height\": {\"value\": 6}, \"fill\": {\"value\": \"#42a5f5\"}, \"cornerRadius\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 310}, \"y\": {\"value\": 44}, \"text\": {\"value\": \"MODERN\"}, \"fill\": {\"value\": \"#666666\"}, \"fontSize\": {\"value\": 8}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"encode\": {\"enter\": {\"x\": {\"value\": 362}, \"y\": {\"value\": 37}, \"width\": {\"value\": 7}, \"height\": {\"value\": 6}, \"fill\": {\"value\": \"#66bb6a\"}, \"cornerRadius\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 372}, \"y\": {\"value\": 44}, \"text\": {\"value\": \"PQC READY\"}, \"fill\": {\"value\": \"#666666\"}, \"fontSize\": {\"value\": 8}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 50}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"rowBg\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 37}, \"fill\": {\"signal\": \"datum.family===sel ? '#1c1c2e' : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 37}, \"fill\": {\"field\": \"clr\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 14\"}, \"text\": {\"field\": \"family\"}, \"limit\": {\"value\": 148}, \"fill\": {\"signal\": \"datum.family===sel ? '#ffffff' : '#e8e8e8'\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 170}, \"y\": {\"signal\": \"datum.y + 22\"}, \"width\": {\"signal\": \"width - 245\"}, \"height\": {\"value\": 8}, \"fill\": {\"value\": \"#1e1e1e\"}, \"cornerRadius\": {\"value\": 2}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"stacked\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"170 + ((datum.cumul - datum.tier_total) / (datum.max_fam > 0 ? datum.max_fam : 1)) * (width - 245)\"}, \"x2\": {\"signal\": \"170 + (datum.cumul / (datum.max_fam > 0 ? datum.max_fam : 1)) * (width - 245)\"}, \"y\": {\"signal\": \"datum.y + 22\"}, \"height\": {\"value\": 8}, \"fill\": {\"field\": \"tier_clr\"}, \"fillOpacity\": {\"signal\": \"datum.family===sel ? 1 : 0.8\"}, \"cornerRadius\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 14\"}, \"text\": {\"signal\": \"datum.fam_total >= 1000 ? format(datum.fam_total, '.3~s') : format(datum.fam_total, ',')\"}, \"fill\": {\"signal\": \"datum.family===sel ? datum.clr : '#cccccc'\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 35\"}, \"text\": {\"signal\": \"datum.risk_total > 0 ? format(datum.risk_total, ',') + ' AT RISK' : datum.pqc_total > 0 ? 'PQC READY' : 'NOT PQC READY'\"}, \"fill\": {\"signal\": \"datum.risk_total > 0 ? '#ef5350' : datum.pqc_total > 0 ? '#66bb6a' : '#ffa726'\"}, \"fontSize\": {\"value\": 7}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"fam_rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 37\"}, \"stroke\": {\"value\": \"#1e1e1e\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "0634e4b1-c33f-45ed-a33c-ba3937c4ed1f",
+                    "w": 26,
+                    "x": 0,
+                    "y": 21
+                },
+                "panelIndex": "0634e4b1-c33f-45ed-a33c-ba3937c4ed1f",
+                "title": "",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9110ccf0-1795-4d13-bab1-9a55f24a24a6": {
+                                            "columnOrder": [
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0"
+                                            ],
+                                            "columns": {
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "App Process Count",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.executable"
+                                                },
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Weak Cipher",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [
+                                                            "svchost.exe",
+                                                            "dllhost.exe"
+                                                        ],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 999
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.weak_ciphers"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                        "isTransposed": false,
+                                        "oneClickFilter": true,
+                                        "width": 314
+                                    },
+                                    {
+                                        "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Detail"
+                                    },
+                                    "eventId": "9c6edb36-c71b-5cf1-8dcd-a37de6214334",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "2e9c8eb8-3234-44f1-aaf7-95b6832d1657",
+                    "w": 11,
+                    "x": 26,
+                    "y": 21
+                },
+                "panelIndex": "2e9c8eb8-3234-44f1-aaf7-95b6832d1657",
+                "title": "Weak Ciphers In-Use",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {
+                                        "9110ccf0-1795-4d13-bab1-9a55f24a24a6": {
+                                            "columnOrder": [
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0"
+                                            ],
+                                            "columns": {
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "App Count ",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.executable"
+                                                },
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Insecure Cipher",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [
+                                                            "svchost.exe",
+                                                            "dllhost.exe"
+                                                        ],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 999
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.insecure_ciphers"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Detail"
+                                    },
+                                    "eventId": "b0c9f1de-0afd-5b7d-b3a1-fb28c055a10a",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "ae78c400-d497-4d7f-9541-3e14fb724097",
+                    "w": 11,
+                    "x": 37,
+                    "y": 21
+                },
+                "panelIndex": "ae78c400-d497-4d7f-9541-3e14fb724097",
+                "title": "Insecure Ciphers In-Use",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-8e8a2d62-de50-4140-91d5-4d323f4bfe51",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {
+                                        "8e8a2d62-de50-4140-91d5-4d323f4bfe51": {
+                                            "columnOrder": [
+                                                "b9ce2593-2e18-4a93-997b-fea289547d59",
+                                                "119c83a6-13f7-4470-b14e-00f524c8f68c",
+                                                "57ed4372-97b0-41ed-a161-eb151f832cdb"
+                                            ],
+                                            "columns": {
+                                                "119c83a6-13f7-4470-b14e-00f524c8f68c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "omb.kex_primary_quantum_safe : false "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Not Resilient",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.name"
+                                                },
+                                                "57ed4372-97b0-41ed-a161-eb151f832cdb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "omb.kex_primary_quantum_safe : true "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Quantum Resilient ",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.name"
+                                                },
+                                                "b9ce2593-2e18-4a93-997b-fea289547d59": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Port Number",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "119c83a6-13f7-4470-b14e-00f524c8f68c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 999
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "server.port"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "timeField": "@timestamp",
+                                            "title": "tychon-pqc*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "b9ce2593-2e18-4a93-997b-fea289547d59"
+                                    },
+                                    {
+                                        "columnId": "119c83a6-13f7-4470-b14e-00f524c8f68c",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "57ed4372-97b0-41ed-a161-eb151f832cdb",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "8e8a2d62-de50-4140-91d5-4d323f4bfe51",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Connections Topology"
+                                    },
+                                    "eventId": "0ba322cf-440b-5ad3-a615-62aad7cf634c",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "5a1a9fd8-a9e5-4333-ad15-e08a3b6cb091",
+                    "w": 10,
+                    "x": 0,
+                    "y": 40
+                },
+                "panelIndex": "5a1a9fd8-a9e5-4333-ad15-e08a3b6cb091",
+                "title": "Port Usage",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9110ccf0-1795-4d13-bab1-9a55f24a24a6": {
+                                            "columnOrder": [
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0"
+                                            ],
+                                            "columns": {
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Host Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Software Package Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [
+                                                            "svchost.exe",
+                                                            "dllhost.exe"
+                                                        ],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 999
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "process.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "tychon.index: \"inventory\" and tychon.application.quantum_ready: \"false\""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Detail"
+                                    },
+                                    "eventId": "d46a3ff4-c28b-57a1-a225-f58957519288",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": "tychon.index: \"inventory\" and tychon.application.quantum_ready: \"false\""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "bd58f6e5-41a8-4bd7-9b5b-c8f2502833b1",
+                    "w": 16,
+                    "x": 10,
+                    "y": 40
+                },
+                "panelIndex": "bd58f6e5-41a8-4bd7-9b5b-c8f2502833b1",
+                "title": "Vulnerable Software",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {
+                                        "9110ccf0-1795-4d13-bab1-9a55f24a24a6": {
+                                            "columnOrder": [
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0"
+                                            ],
+                                            "columns": {
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "App Count ",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.executable"
+                                                },
+                                                "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Key Exchange",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [
+                                                            ".*(mlkem|ffdh).*"
+                                                        ],
+                                                        "excludeIsRegex": true,
+                                                        "include": [
+                                                            ""
+                                                        ],
+                                                        "includeIsRegex": true,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 999
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.supported_key_exchanges"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "omb.kex_tier",
+                                        "index": "9d644013-9636-4968-9154-38f0c5207120",
+                                        "key": "omb.kex_tier",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "PQC READY"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "omb.kex_tier": "PQC READY"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "9c1ef140-d9ad-40dd-b4f7-5fffeb57893c",
+                                        "isTransposed": false,
+                                        "oneClickFilter": true,
+                                        "width": 314
+                                    },
+                                    {
+                                        "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Connections Topology"
+                                    },
+                                    "eventId": "e17bab29-a9ff-52fc-911c-0fbbde37ba9b",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "omb.kex_tier",
+                                "index": "9d644013-9636-4968-9154-38f0c5207120",
+                                "key": "omb.kex_tier",
+                                "negate": true,
+                                "params": {
+                                    "query": "PQC READY"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "omb.kex_tier": "PQC READY"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "d2885626-4e44-41c7-b5ba-45c5b524280a",
+                    "w": 11,
+                    "x": 26,
+                    "y": 40
+                },
+                "panelIndex": "d2885626-4e44-41c7-b5ba-45c5b524280a",
+                "title": "Non-Quantum Ready KX",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {
+                                        "9110ccf0-1795-4d13-bab1-9a55f24a24a6": {
+                                            "columnOrder": [
+                                                "7bb8af8f-5ff6-433e-9a1a-ca36a3af873d",
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0"
+                                            ],
+                                            "columns": {
+                                                "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "App Count ",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.executable"
+                                                },
+                                                "7bb8af8f-5ff6-433e-9a1a-ca36a3af873d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Signature",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [
+                                                            "(MLDSA|SLH|FND).*"
+                                                        ],
+                                                        "excludeIsRegex": true,
+                                                        "include": [
+                                                            ""
+                                                        ],
+                                                        "includeIsRegex": true,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 50
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "x509.sig_algorithm"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "x509.signature_algorithm",
+                                        "index": "7503da64-ec7e-41aa-962f-15507a9e77a5",
+                                        "key": "x509.signature_algorithm",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "PQC READY "
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "x509.signature_algorithm": "PQC READY "
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "7bb8af8f-5ff6-433e-9a1a-ca36a3af873d",
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "27ead65c-5a7b-4ce3-83ff-bc77a2cc20a0",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Certificate Operations"
+                                    },
+                                    "eventId": "dfda3f15-fd80-541a-a930-8a72e988f26d",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "x509.signature_algorithm",
+                                "index": "7503da64-ec7e-41aa-962f-15507a9e77a5",
+                                "key": "x509.signature_algorithm",
+                                "negate": true,
+                                "params": {
+                                    "query": "PQC READY "
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "x509.signature_algorithm": "PQC READY "
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "01b3101c-246d-448d-a05d-3a05e7747926",
+                    "w": 11,
+                    "x": 37,
+                    "y": 40
+                },
+                "panelIndex": "01b3101c-246d-448d-a05d-3a05e7747926",
+                "title": "Non-Quantum Ready Signatures",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-e75aaba0-a144-4cc0-a761-f8be87375cb4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {
+                                        "e75aaba0-a144-4cc0-a761-f8be87375cb4": {
+                                            "columnOrder": [
+                                                "b5fce59b-3087-426d-aab0-9b9bbecb3ed8",
+                                                "f9d9e11f-6962-422b-b6da-2fd7558dd085",
+                                                "c01e7181-5ff6-4dcf-acab-76dda3f5a746",
+                                                "590cd120-8a6e-4be0-bd3b-0ba0026d28a6",
+                                                "434e93db-3c69-4dae-807b-d0719c662bac",
+                                                "78f4e7ab-8d4a-44c8-a828-9c575851796c",
+                                                "eae233bd-7ec6-46a2-8f6b-85fb3c94e9a2",
+                                                "a5eeb316-c12c-4532-b3d7-60b8f2f06876",
+                                                "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                "3406b6a3-14cc-43af-9f24-ac050dd0a821",
+                                                "d4469a63-4cf7-4e5f-bdcc-b9a494d4a232",
+                                                "5b34e39e-686f-462c-9121-c0695e10982f",
+                                                "d80e5fa1-371d-4474-b958-366159cfdd27",
+                                                "331d730b-580a-4d92-a2fe-6a84c9d97da7"
+                                            ],
+                                            "columns": {
+                                                "331d730b-580a-4d92-a2fe-6a84c9d97da7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Host Count",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.id"
+                                                },
+                                                "3406b6a3-14cc-43af-9f24-ac050dd0a821": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "TLS Supported Ciphers",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tls.supported_cipher_count"
+                                                },
+                                                "434e93db-3c69-4dae-807b-d0719c662bac": {
+                                                    "customLabel": true,
+                                                    "dataType": "boolean",
+                                                    "isBucketed": true,
+                                                    "label": "Quantum Resilient",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.application.quantum_ready"
+                                                },
+                                                "590cd120-8a6e-4be0-bd3b-0ba0026d28a6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Primary Key Exchange",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 8
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "omb.kex_primary"
+                                                },
+                                                "5b34e39e-686f-462c-9121-c0695e10982f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "TLS Weak Ciphers",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tls.weak_ciphers"
+                                                },
+                                                "78f4e7ab-8d4a-44c8-a828-9c575851796c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Cipher Suite",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.crypto.cipher"
+                                                },
+                                                "a5eeb316-c12c-4532-b3d7-60b8f2f06876": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Certificate",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.crypto.certificate"
+                                                },
+                                                "b5fce59b-3087-426d-aab0-9b9bbecb3ed8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Process",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "process.name"
+                                                },
+                                                "c01e7181-5ff6-4dcf-acab-76dda3f5a746": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Proto Version",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.crypto.protocol_version"
+                                                },
+                                                "d4469a63-4cf7-4e5f-bdcc-b9a494d4a232": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "TLS Insecure Ciphers",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tls.insecure_cipher_count"
+                                                },
+                                                "d80e5fa1-371d-4474-b958-366159cfdd27": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total OS",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "observer.os.platform"
+                                                },
+                                                "eae233bd-7ec6-46a2-8f6b-85fb3c94e9a2": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "MAC",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.crypto.mac"
+                                                },
+                                                "f998a85c-6b52-4d94-9644-c76256e90cc5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Port Count ",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "server.port"
+                                                },
+                                                "f9d9e11f-6962-422b-b6da-2fd7558dd085": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Protocol",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.crypto.protocol"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "timeField": "@timestamp",
+                                            "title": "tychon-pqc*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b5fce59b-3087-426d-aab0-9b9bbecb3ed8",
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "590cd120-8a6e-4be0-bd3b-0ba0026d28a6",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "78f4e7ab-8d4a-44c8-a828-9c575851796c",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "TLSv1.3"
+                                                        ]
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 5,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "TLSv1.2"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "TLSv1.1"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "TLS1.0"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "TLS1"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "colorMode": "text",
+                                        "columnId": "f9d9e11f-6962-422b-b6da-2fd7558dd085",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "default",
+                                            "params": {
+                                                "stops": [
+                                                    {
+                                                        "color": "#54B399",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#6092C0",
+                                                        "stop": 30
+                                                    },
+                                                    {
+                                                        "color": "#D36086",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#9170B8",
+                                                        "stop": 50
+                                                    },
+                                                    {
+                                                        "color": "#CA8EAE",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#D6BF57",
+                                                        "stop": 70
+                                                    },
+                                                    {
+                                                        "color": "#B9A888",
+                                                        "stop": 80
+                                                    },
+                                                    {
+                                                        "color": "#DA8B45",
+                                                        "stop": 90
+                                                    },
+                                                    {
+                                                        "color": "#AA6556",
+                                                        "stop": 100
+                                                    },
+                                                    {
+                                                        "color": "#E7664C",
+                                                        "stop": 110
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "0"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "1"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "colorMode": "cell",
+                                        "columnId": "434e93db-3c69-4dae-807b-d0719c662bac",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "default",
+                                            "params": {
+                                                "stops": [
+                                                    {
+                                                        "color": "#54B399",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#6092C0",
+                                                        "stop": 30
+                                                    },
+                                                    {
+                                                        "color": "#D36086",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#9170B8",
+                                                        "stop": 50
+                                                    },
+                                                    {
+                                                        "color": "#CA8EAE",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#D6BF57",
+                                                        "stop": 70
+                                                    },
+                                                    {
+                                                        "color": "#B9A888",
+                                                        "stop": 80
+                                                    },
+                                                    {
+                                                        "color": "#DA8B45",
+                                                        "stop": 90
+                                                    },
+                                                    {
+                                                        "color": "#AA6556",
+                                                        "stop": 100
+                                                    },
+                                                    {
+                                                        "color": "#E7664C",
+                                                        "stop": 110
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "f998a85c-6b52-4d94-9644-c76256e90cc5",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "d80e5fa1-371d-4474-b958-366159cfdd27",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "331d730b-580a-4d92-a2fe-6a84c9d97da7",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "3406b6a3-14cc-43af-9f24-ac050dd0a821",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "d4469a63-4cf7-4e5f-bdcc-b9a494d4a232",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "5b34e39e-686f-462c-9121-c0695e10982f",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "eae233bd-7ec6-46a2-8f6b-85fb3c94e9a2",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "1.0",
+                                                            "1.1"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 5,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "1.2"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "1.3",
+                                                            "2.0"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "colorMode": "cell",
+                                        "columnId": "c01e7181-5ff6-4dcf-acab-76dda3f5a746",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "default",
+                                            "params": {
+                                                "stops": [
+                                                    {
+                                                        "color": "#54B399",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#6092C0",
+                                                        "stop": 30
+                                                    },
+                                                    {
+                                                        "color": "#D36086",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#9170B8",
+                                                        "stop": 50
+                                                    },
+                                                    {
+                                                        "color": "#CA8EAE",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#D6BF57",
+                                                        "stop": 70
+                                                    },
+                                                    {
+                                                        "color": "#B9A888",
+                                                        "stop": 80
+                                                    },
+                                                    {
+                                                        "color": "#DA8B45",
+                                                        "stop": 90
+                                                    },
+                                                    {
+                                                        "color": "#AA6556",
+                                                        "stop": 100
+                                                    },
+                                                    {
+                                                        "color": "#E7664C",
+                                                        "stop": 110
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "a5eeb316-c12c-4532-b3d7-60b8f2f06876",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "headerRowHeightLines": 2,
+                                "layerId": "e75aaba0-a144-4cc0-a761-f8be87375cb4",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 30
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": true,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": false
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Application Detail"
+                                    },
+                                    "eventId": "d0188d05-be4a-474b-8825-cf250d80d88f",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 32,
+                    "i": "07f49118-bcf0-44f7-875a-df393ce88c47",
+                    "w": 48,
+                    "x": 0,
+                    "y": 59
+                },
+                "panelIndex": "07f49118-bcf0-44f7-875a-df393ce88c47",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                "name": "indexpattern-datasource-layer-76c0d382-132a-4232-b1ba-2928d86d36eb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {
+                                        "76c0d382-132a-4232-b1ba-2928d86d36eb": {
+                                            "columnOrder": [
+                                                "c452013b-c1a4-444a-9861-fd5f8283dbb8",
+                                                "72caa386-75a2-404d-996c-609cc9ce8705",
+                                                "c38c78d3-f83a-4b39-8766-fd169aa8f1cf",
+                                                "496f4a9c-c379-4dfc-8e74-df11f73cfa52",
+                                                "d60e63d5-11c7-4413-b41f-139d3870723e",
+                                                "64bc500b-17f2-4b63-99de-710ec63da6b9",
+                                                "f1c203be-6445-4ac0-8f8f-64797cb120ba",
+                                                "98a06023-cab2-4907-bc55-dbb722c5294a",
+                                                "66633750-7aab-4f60-82cb-63d6b4fb604e",
+                                                "98a06023-cab2-4907-bc55-dbb722c5294aX0",
+                                                "98a06023-cab2-4907-bc55-dbb722c5294aX1",
+                                                "98a06023-cab2-4907-bc55-dbb722c5294aX2"
+                                            ],
+                                            "columns": {
+                                                "496f4a9c-c379-4dfc-8e74-df11f73cfa52": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Algorithm",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "66633750-7aab-4f60-82cb-63d6b4fb604e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "x509.public_key_algorithm"
+                                                },
+                                                "64bc500b-17f2-4b63-99de-710ec63da6b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"x509.validity.not_before\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Issued",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "x509.validity.not_before"
+                                                },
+                                                "66633750-7aab-4f60-82cb-63d6b4fb604e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "72caa386-75a2-404d-996c-609cc9ce8705": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Lifespan",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "66633750-7aab-4f60-82cb-63d6b4fb604e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.certificate_leaf_details.validity.duration_days"
+                                                },
+                                                "98a06023-cab2-4907-bc55-dbb722c5294a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Time Left",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "fromUnit": "milliseconds"
+                                                            }
+                                                        },
+                                                        "formula": "last_value(x509.not_after) - now()",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "98a06023-cab2-4907-bc55-dbb722c5294aX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "98a06023-cab2-4907-bc55-dbb722c5294aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"x509.not_after\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Time Left",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "x509.not_after"
+                                                },
+                                                "98a06023-cab2-4907-bc55-dbb722c5294aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Time Left",
+                                                    "operationType": "now",
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                },
+                                                "98a06023-cab2-4907-bc55-dbb722c5294aX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Time Left",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "98a06023-cab2-4907-bc55-dbb722c5294aX0",
+                                                                "98a06023-cab2-4907-bc55-dbb722c5294aX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 34,
+                                                                "min": 0
+                                                            },
+                                                            "name": "subtract",
+                                                            "text": "last_value(x509.not_after) - now()",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "98a06023-cab2-4907-bc55-dbb722c5294aX0",
+                                                        "98a06023-cab2-4907-bc55-dbb722c5294aX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "c38c78d3-f83a-4b39-8766-fd169aa8f1cf": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Curve",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "66633750-7aab-4f60-82cb-63d6b4fb604e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "x509.public_key_curve"
+                                                },
+                                                "c452013b-c1a4-444a-9861-fd5f8283dbb8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Subject",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "66633750-7aab-4f60-82cb-63d6b4fb604e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "x509.subject.distinguished_name"
+                                                },
+                                                "d60e63d5-11c7-4413-b41f-139d3870723e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"x509.public_key_size\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Key Size",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "x509.public_key_size"
+                                                },
+                                                "f1c203be-6445-4ac0-8f8f-64797cb120ba": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"x509.validity.not_after\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Expires",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "x509.validity.not_after"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "0e56225a-3b03-4f4e-bdbc-2fd59f0ef78c",
+                                            "timeField": "@timestamp",
+                                            "title": "tychon-pqc*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "tychon.index: inventory"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "c452013b-c1a4-444a-9861-fd5f8283dbb8",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "66633750-7aab-4f60-82cb-63d6b4fb604e",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "64bc500b-17f2-4b63-99de-710ec63da6b9",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f1c203be-6445-4ac0-8f8f-64797cb120ba",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "72caa386-75a2-404d-996c-609cc9ce8705",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "98a06023-cab2-4907-bc55-dbb722c5294a",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "c38c78d3-f83a-4b39-8766-fd169aa8f1cf",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "496f4a9c-c379-4dfc-8e74-df11f73cfa52",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "d60e63d5-11c7-4413-b41f-139d3870723e",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "76c0d382-132a-4232-b1ba-2928d86d36eb",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": "tychon.index: inventory"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "316d40b0-635e-4969-bf7a-b5e03e2834b4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 91
+                },
+                "panelIndex": "316d40b0-635e-4969-bf7a-b5e03e2834b4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "OMB Report for the Department of Defense",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 54,
+                    "i": "dab055a8-39ea-4507-a004-7e78a229d7e7",
+                    "w": 48,
+                    "x": 0,
+                    "y": 103
+                },
+                "panelIndex": "dab055a8-39ea-4507-a004-7e78a229d7e7",
+                "panelRefName": "panel_dab055a8-39ea-4507-a004-7e78a229d7e7",
+                "title": "DoD OMB Report",
+                "type": "search"
+            }
+        ],
+        "refreshInterval": {
+            "pause": true,
+            "value": 60000
+        },
+        "timeFrom": "now-1y/d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[TYCHON Quantum Command] Application Report",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-07-20T16:55:14.701Z",
+    "id": "tychon_quantum_command-443e5928-b1c4-4e07-b0b9-c675dd057e2f-application-report",
+    "references": [
+        {
+            "id": "tychon_quantum_command-d0159137-9139-4a93-85bb-2ac9ddab3982-certificate-operations-dashboard",
+            "name": "01b3101c-246d-448d-a05d-3a05e7747926:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:dfda3f15-fd80-541a-a930-8a72e988f26d:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-6dfff015-3cc9-48b6-9410-7d8c01ff0d9a-application-detail",
+            "name": "07f49118-bcf0-44f7-875a-df393ce88c47:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:d0188d05-be4a-474b-8825-cf250d80d88f:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-6dfff015-3cc9-48b6-9410-7d8c01ff0d9a-application-detail",
+            "name": "2e9c8eb8-3234-44f1-aaf7-95b6832d1657:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:9c6edb36-c71b-5cf1-8dcd-a37de6214334:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-6f3d60d5-b5fb-45a5-9298-acf3ceb3ea1b-application-connections-topology",
+            "name": "5a1a9fd8-a9e5-4333-ad15-e08a3b6cb091:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:0ba322cf-440b-5ad3-a615-62aad7cf634c:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-6dfff015-3cc9-48b6-9410-7d8c01ff0d9a-application-detail",
+            "name": "ae78c400-d497-4d7f-9541-3e14fb724097:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:b0c9f1de-0afd-5b7d-b3a1-fb28c055a10a:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-6dfff015-3cc9-48b6-9410-7d8c01ff0d9a-application-detail",
+            "name": "bd58f6e5-41a8-4bd7-9b5b-c8f2502833b1:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:d46a3ff4-c28b-57a1-a225-f58957519288:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-6f3d60d5-b5fb-45a5-9298-acf3ceb3ea1b-application-connections-topology",
+            "name": "d2885626-4e44-41c7-b5ba-45c5b524280a:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:e17bab29-a9ff-52fc-911c-0fbbde37ba9b:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "01b3101c-246d-448d-a05d-3a05e7747926:indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "07f49118-bcf0-44f7-875a-df393ce88c47:indexpattern-datasource-layer-e75aaba0-a144-4cc0-a761-f8be87375cb4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "2e9c8eb8-3234-44f1-aaf7-95b6832d1657:indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "316d40b0-635e-4969-bf7a-b5e03e2834b4:indexpattern-datasource-layer-76c0d382-132a-4232-b1ba-2928d86d36eb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "5a1a9fd8-a9e5-4333-ad15-e08a3b6cb091:indexpattern-datasource-layer-8e8a2d62-de50-4140-91d5-4d323f4bfe51",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "ae78c400-d497-4d7f-9541-3e14fb724097:indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "bd58f6e5-41a8-4bd7-9b5b-c8f2502833b1:indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "05179988-8b3d-4f26-9832-d83a1e769b2d",
+            "name": "d2885626-4e44-41c7-b5ba-45c5b524280a:indexpattern-datasource-layer-9110ccf0-1795-4d13-bab1-9a55f24a24a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon_quantum_command-662602a4-f820-4e80-9fe2-115c951fe43c-dod-omb-report",
+            "name": "dab055a8-39ea-4507-a004-7e78a229d7e7:panel_dab055a8-39ea-4507-a004-7e78a229d7e7",
+            "type": "search"
+        },
+        {
+            "id": "tychon_quantum_command-e9b715ba-5f19-4f99-b837-2c1a24143212",
+            "name": "tag-ref-tychon_quantum_command-e9b715ba-5f19-4f99-b837-2c1a24143212",
+            "type": "tag"
+        },
+        {
+            "id": "tychon_quantum_command-07b6a21f-5bba-413b-8d49-e8c246dde2ba",
+            "name": "tag-ref-tychon_quantum_command-07b6a21f-5bba-413b-8d49-e8c246dde2ba",
+            "type": "tag"
+        },
+        {
+            "id": "tychon_quantum_command-dacb217e-57b4-4296-8545-cbf6b5739344",
+            "name": "tag-ref-tychon_quantum_command-dacb217e-57b4-4296-8545-cbf6b5739344",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}
