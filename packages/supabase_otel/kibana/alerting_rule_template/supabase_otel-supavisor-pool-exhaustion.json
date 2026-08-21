@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-supavisor-pool-exhaustion",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when at least 95% of a Supavisor pool's open connections are checked out, leaving almost nothing for the next client. Covers projects on the shared pooler, which emit no PgBouncer series at all.",
+        "name": "[Supabase OTel] Supavisor pool exhausted",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "supavisor",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Supavisor Pool Exhausted\n\nSupavisor is the shared, multi-tenant pooler fronting the database. It supports both session and transaction pooling, and the alert reports which mode is affected. With 95% or more of the open connections checked out, the pool has almost no capacity left for the next client.\n\n### Triage Steps\n1. Note the pooling mode. `session` mode pins a backend for the whole client session, so it exhausts far more easily than `transaction` mode; a workload in session mode that should be in transaction mode is a common cause.\n2. Check whether the underlying Postgres connection budget is also near its ceiling — Supavisor cannot open backends that PostgreSQL will not grant.\n3. Check query latency and long-running transactions. Connections held longer than necessary exhaust a correctly sized pool.\n4. Confirm client behaviour with `supavisor_client_queries_count` and `supavisor_client_joins_ok` to distinguish a traffic increase from connections being held.\n\n### Tuning\nThe rule fires at 95% checked out, so a small number of idle connections may still be reported — `Idle` is shown as context and a non-zero value does not contradict the alert. Note that `Pool Size` is derived from the connections that exist right now (`Checked Out` + `Idle`) rather than from a configured maximum, because Supavisor publishes no pool-size gauge. A very small pool therefore crosses 95% easily; raise the `Pool Size` floor in the query if that proves noisy. Supavisor series only exist when the shared pooler is in use, and they can be sparse; projects on the dedicated PgBouncer pooler produce no rows and the rule stays silent. Widen the window if your Supavisor scrape is intermittent."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Supavisor gauges are per tenant / mode / node, so SUM() across series gives the pool\n// totals for the tenant. Projects without the shared pooler emit none of these series,\n// so the query returns no rows rather than a false breach.\n| STATS\n    `Checked Out` = SUM(LAST_OVER_TIME(supavisor_pool_connections_checked_out)),\n    `Idle` = SUM(LAST_OVER_TIME(supavisor_pool_connections_idle)),\n    `Active Connections` = SUM(LAST_OVER_TIME(supavisor_connections_active))\n  BY resource.attributes.supabase_project_ref, attributes.tenant, attributes.mode\n| EVAL `Pool Size` = `Checked Out` + `Idle`\n| WHERE `Pool Size` > 0\n| EVAL `Checked Out %` = ROUND(`Checked Out` / `Pool Size` * 100, 1)\n// 95% of the open pool checked out. Pool Size is derived from live connections, so a very\n// small pool crosses this easily; raise the Pool Size floor if that proves noisy.\n| WHERE `Checked Out %` >= 95\n| EVAL alert_instance = CONCAT(resource.attributes.supabase_project_ref, \" / \", attributes.tenant, \" / \", attributes.mode)\n| SORT `Checked Out %` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "alert_instance",
+            "termSize": 50
+        }
+    }
+}

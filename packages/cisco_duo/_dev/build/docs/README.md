@@ -2,10 +2,10 @@
 
 The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi). The Duo Admin API provides programmatic access to the administrative functionality of Duo Security's two-factor authentication platform.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Compatibility
 
@@ -19,6 +19,7 @@ In order to ingest data from the Cisco Duo Admin API you must:
 - Go through following tabs **Application > Protect an Application > Admin API > Protect**
 - Now you will find your **Hostname**, **Integration key** and **Secret key** which will be required while configuring the integration package.
 - For this integration you will require **Grant read information** and **Grant read log** permissions.
+- The Users data stream also requires the **Grant resource - Read** permission.
 - Make sure you have whitelisted your IP Address.
 
 More details for each step can be found at [First steps](https://duo.com/docs/adminapi#first-steps).
@@ -35,6 +36,7 @@ The Cisco Duo integration collects logs for the following types of events.
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
 - [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
+- [**Users**](https://duo.com/docs/adminapi#retrieve-users)
 
 ## V2 Handlers
 
@@ -50,6 +52,18 @@ The following considerations should be taken into account when configuring the i
 - The Duo Admin API retrieves records from the last 180 days up to as recently as two minutes before the API request. Consider this when configuring the `Initial interval` parameter for the v2 API endpoints, as it doesn't support `d` as a suffix, its maximum value is `4320h` which corresponds to that 180 days.
 - For v2 API endpoints, a new parameter `limit` has been added to control the number of records per response. Default value is 100 and can be incresead until 1000.
 - Larger values of interval might cause delay in data ingestion.
+
+## Transforms
+
+This integration installs an [Elastic latest transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) for the Users data stream to maintain a current view of each user. For more details, see [Transform setup and requirements](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup).
+
+The transform writes only the most recent record per user to a destination index, accessible via the `logs-cisco_duo_latest.user` alias.
+
+| Source index | Destination index | Alias |
+|---|---|---|
+| `logs-cisco_duo.user-*` | `logs-cisco_duo_latest.dest_user-1` | `logs-cisco_duo_latest.user` |
+
+The transform requires the built-in `transform_admin` role or equivalent privileges. See [Elastic documentation](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup#transform-privileges) for details.
 
 ## Logs
 
@@ -116,3 +130,11 @@ This is the `trust_monitor` dataset.
 {{event "trust_monitor"}}
 
 {{fields "trust_monitor"}}
+
+### User
+
+This is the `user` dataset.
+
+{{event "user"}}
+
+{{fields "user"}}

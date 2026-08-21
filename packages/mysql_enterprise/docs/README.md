@@ -1,4 +1,4 @@
-# MySQL Enterprise Integration
+# MySQL Enterprise (Audit Logs)
 
 This integration is for different types of MySQL logs. Currently focusing on data from the MySQL Enterprise Audit Plugin in JSON format.
 

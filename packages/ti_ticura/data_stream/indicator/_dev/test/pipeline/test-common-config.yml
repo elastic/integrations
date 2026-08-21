@@ -1,0 +1,17 @@
+fields:
+  tags:
+    - preserve_original_event
+dynamic_fields:
+  "ticura.indicator.feed_ingest_timestamp": "^.*$"
+  "event.ingested": "^.*$"
+  # GeoIP/ASN enrichment is produced by Elasticsearch's geoip processors and
+  # depends entirely on which GeoLite2 databases are loaded. elastic-package's
+  # bundled SAMPLE databases (used in CI) resolve the TEST-NET documentation IPs
+  # in these fixtures and add geo + as; a real stack with the geoip downloader
+  # enabled does NOT resolve reserved doc ranges (so the fields are absent), and
+  # real public IPs resolve to yet different values. Strip the whole geo and as
+  # objects from the comparison so the test passes on CI and on any real stack
+  # regardless of database contents. dynamic_fields deletes the keyed subtree
+  # from both expected and actual before diffing, so an absent field is fine.
+  "threat.indicator.geo": "^.*$"
+  "threat.indicator.as": "^.*$"

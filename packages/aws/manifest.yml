@@ -1,7 +1,7 @@
-format_version: 3.4.0
+format_version: 3.6.1
 name: aws
 title: AWS
-version: 6.20.0
+version: 7.3.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -21,7 +21,10 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "^8.19.4 || ^9.2.1"
+    version: "^9.6.0"
+  # auth.aws.use_cloud_connectors (Identity Federation) requires Elastic Agent 9.6.0+.
+  agent:
+    version: "^9.6.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -73,13 +76,20 @@ vars:
     multi: false
     required: false
     show_user: false
-  - name: external_id
-    type: text
-    title: External ID
+  - name: assume_role_duration
+    type: duration
+    title: Assume Role Duration
     multi: false
     required: false
     show_user: false
-    description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
+    description: Duration of the assumed role session.
+  - name: assume_role_expiry_window
+    type: duration
+    title: Assume Role Expiry Window
+    multi: false
+    required: false
+    show_user: false
+    description: Amount of time before the assumed role session expires during which credentials are refreshed.
   - name: default_region
     type: text
     title: Default AWS Region
@@ -95,6 +105,39 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 policy_templates:
   - name: awshealth
     title: AWS Health
@@ -922,6 +965,8 @@ policy_templates:
       - type: httpjson
         title: Collect AWS Security Hub CSPM logs via API
         description: Collecting AWS Security Hub CSPM logs via API.
+        hide_in_var_group_options:
+          credential_type: [identity_federation]
     screenshots:
       - src: /img/securityhub_cspm_findings_insights_dashboard.png
         title: Security Hub CSPM Findings and Insights dashboard screenshot

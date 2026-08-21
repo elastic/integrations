@@ -1,10 +1,10 @@
-# Agentless Hello World
+# Elastic Managed Hello World
 
-This is a sample integration designed to exercise the Agentless infrastructure. It periodically fetches data from `https://epr.elastic.co` every 20 seconds to demonstrate basic agentless functionality.
+This is a sample integration designed to exercise the Elastic Managed Integration infrastructure. It periodically fetches data from `https://epr.elastic.co` every 20 seconds to demonstrate basic functionality.
 
 ## Overview
 
-The Agentless Hello World integration is a minimal example that:
+The Elastic Managed Hello World integration is a minimal example that:
 - Fetches data from the Elastic Package Registry (EPR) endpoint
 - Runs every 20 seconds
 - Requires no user configuration
@@ -16,7 +16,7 @@ It also includes an optional **Mock counter metrics** data stream for generating
 This integration requires no configuration from the user. All settings are pre-configured:
 - **Endpoint**: `https://epr.elastic.co`
 - **Interval**: 20 seconds
-- **Deployment mode**: Agentless by default
+- **Deployment mode**: Elastic Managed by default
 
 ### Mock counter metrics (turned off by default)
 
@@ -32,11 +32,11 @@ The integration makes HTTP GET requests to `https://epr.elastic.co` and stores:
 
 ## Requirements
 
-### Agentless-enabled integration
+### Elastic Managed-enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Logs
 

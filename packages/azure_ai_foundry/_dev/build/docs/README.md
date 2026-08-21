@@ -10,13 +10,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to collect data from Azure and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-### Agentless deployment
+### Elastic Managed deployment
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-> **Note:** Agentless deployment is currently supported for Microsoft Foundry metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+> **Note:** Elastic Managed deployment is currently supported for Microsoft Foundry metrics only. Log collection is not available via Elastic Managed Integration and requires a traditional Elastic Agent deployment.
 
 ## Data streams
 
@@ -35,6 +35,23 @@ The Microsoft Foundry logs data stream captures the gateway log events. These ar
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
 
 **Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
+#### AMQP-over-WebSockets
+
+By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443`.
+
+This option requires the Event Hub processor v2 (**Processor version** set to `v2`, which is the default) and Elastic Agent 9.2.4 or later.
+
+#### Proxy support
+
+Proxy support is optional and requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**.
+
+To enable it:
+
+1. In the advanced options, set **Event Hubs transport protocol** to **AMQP-over-WebSockets**.
+2. Define the `HTTPS_PROXY` environment variable for the Elastic Agent process, for example `HTTPS_PROXY=http://proxy.example.com:8080`. Elastic Agent routes both Event Hubs and Storage Account traffic through the proxy.
+
+This requires processor v2 and Elastic Agent 9.2.4 or later.
 
 #### Native logging
 

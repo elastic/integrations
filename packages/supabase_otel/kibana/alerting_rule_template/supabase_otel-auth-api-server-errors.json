@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-auth-api-server-errors",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when a meaningful share of Auth (GoTrue) API requests return 5xx. Client errors are excluded: 4xx is routine for authentication flows (bad passwords, expired tokens) and is carried as context only.",
+        "name": "[Supabase OTel] Auth API server errors",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "gotrue",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Auth API Server Errors\n\n`http_status_codes_total` is the only request-count metric in this data, so it is the sole request-oriented error signal for the project. A 5xx means the Auth service accepted a request and failed to serve it, which is user-visible as a failed sign-in, sign-up or token refresh.\n\n### Triage Steps\n1. Confirm the service is actually running. If it is not, the `[Supabase OTel] Auth service is down` rule will also be active and that is the real incident.\n2. Break the errors down by route to find the failing surface: `TS metrics-supabase.metrics.otel-* | STATS errors = SUM(INCREASE(http_status_codes_total)) BY attributes.http_route, attributes.code | SORT errors DESC`\n3. Auth holds its own SQL pool. Check `db_sql_connection_open` against `db_sql_connection_max_open`, and the pool wait derived from `db_sql_connection_wait_duration_milliseconds_total / db_sql_connection_wait_total` — Auth failing to reach the database surfaces as 5xx here.\n4. Check whether the whole Postgres connection budget is exhausted, which starves Auth regardless of its own pool settings.\n5. Password hashing is deliberately CPU-expensive. A spike in `gotrue_generate_from_password_submitted_total` alongside high host CPU can push request handling into timeouts.\n\n### Tuning\nThe rule requires at least 20 requests in the window before evaluating a ratio, so a single error against trivial traffic cannot trigger it. On low-traffic projects raise that floor or lengthen the window; on high-traffic projects lower the 5% threshold, since 5% of a large volume is a lot of failed logins.\n\n### Related content\nThere is no Auth API SLO. `http_status_codes_total` carries one series per status code and route, and the available SLO indicator types cannot correctly delta a multi-series counter, so this rule is the only Auth request-error coverage in the package."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// http_status_codes_total is a counter, one series per status code and route.\n// Per-aggregation WHERE splits server errors from total requests in a single pass, so both\n// sides of the ratio come from the same buckets. 4xx is carried as context only: bad\n// passwords and expired tokens are routine auth traffic, not service failures.\n| STATS\n    `Server Errors` = SUM(INCREASE(http_status_codes_total)) WHERE attributes.code LIKE \"5*\",\n    `Client Errors` = SUM(INCREASE(http_status_codes_total)) WHERE attributes.code LIKE \"4*\",\n    `Requests` = SUM(INCREASE(http_status_codes_total))\n  BY resource.attributes.supabase_project_ref\n// Volume floor: a ratio over a handful of requests is noise, not signal.\n| WHERE `Requests` >= 20\n// The 5xx series does not exist until a 5xx occurs, so substitute zero for null.\n| EVAL `Server Error %` = ROUND(CASE(`Server Errors` IS NULL, 0.0, `Server Errors`) / `Requests` * 100, 2)\n// 5% of requests failing. Lower on high-traffic projects.\n| WHERE `Server Error %` >= 5\n| SORT `Server Error %` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

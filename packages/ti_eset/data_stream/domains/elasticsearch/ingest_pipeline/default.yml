@@ -2,75 +2,99 @@
 description: Pipeline for processing domains collection feed
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_8e392818
       field: event.category
       value: threat
       allow_duplicates: false
   - append:
+      tag: append_event_type_d9f6d523
       field: event.type
       value: indicator
       allow_duplicates: false
   - set:
+      tag: set_threat_indicator_provider_279cc367
       field: threat.indicator.provider
       value: eset
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_facc4822
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_eti_4a2d37eb
       field: event.original
       target_field: eti
   - drop:
+      tag: drop_4393c941
       if: ctx.eti?.type != 'indicator'
   - set:
+      tag: set_threat_feed_name_f6e12443
       field: threat.feed.name
       value: "ESET Domain stix 2.1"
   - date:
+      tag: date_eti_created_to_timestamp_568d758e
       field: eti.created
       target_field: "@timestamp"
       formats:
         - "ISO8601"
       if: "ctx.eti?.created != null"
   - date:
+      tag: date_eti_modified_to_threat_indicator_last_seen_1d05799e
       field: eti.modified
       target_field: threat.indicator.last_seen
       formats:
         - "ISO8601"
       if: "ctx.eti?.modified != null"
   - set:
+      tag: set_threat_indicator_modified_at_84bbc9df
       field: threat.indicator.modified_at
       copy_from: threat.indicator.last_seen
       if: "ctx.threat?.indicator?.last_seen != null"
   - date:
+      tag: date_eti_valid_until_to_eset_valid_until_5a65bdeb
       field: eti.valid_until
       target_field: eset.valid_until
       formats:
         - "ISO8601"
       if: "ctx.eti?.valid_until != null"
   - rename:
+      tag: rename_eti_id_to_eset_id_c4d94906
       field: eti.id
       target_field: eset.id
       ignore_missing: true
   - rename:
+      tag: rename_eti_description_to_threat_indicator_description_4798fda9
       field: eti.description
       target_field: threat.indicator.description
       ignore_missing: true
   - foreach:
+      tag: foreach_eti_labels_34808b48
       field: eti.labels
       processor:
         append:
+          tag: append_eset_labels_9f943387
           field: eset.labels
           value: "{{{_ingest._value}}}"
       ignore_missing: true
       ignore_failure: true
       if: ctx.eti?.labels != null
   - script:
+      tag: script_4395b8e2
       lang: painless
       params:
         "benign": 'Low'
@@ -86,36 +110,43 @@ processors:
           }
         }
   - split:
+      tag: split_eti_pattern_to_eti__patterns_9e43cfbd
       field: eti.pattern
       target_field: eti._patterns
       separator: ' OR '
       ignore_missing: true
   - foreach:
+      tag: foreach_eti__patterns_a4086049
       field: eti._patterns
       if: "ctx.eti?._patterns != null"
       processor:
         grok:
+          tag: grok_ingest_value_3a7640ca
           field: _ingest._value
           patterns:
             - "^\\[?domain-name:value='%{DATA:threat.indicator.url.original}'\\]?"
           ignore_failure: true
   - set:
+      tag: set_threat_indicator_url_domain_04e49dfb
       field: threat.indicator.url.domain
       copy_from: threat.indicator.url.original
       if: "ctx.threat?.indicator?.url?.original != null"
   - set:
+      tag: set_threat_indicator_type_9ba07e96
       field: threat.indicator.type
       value: url
   - set:
+      tag: set_threat_indicator_name_8814e0a2
       field: threat.indicator.name
       copy_from: eti.name
       if: "ctx.eti?.name != null"
   - remove:
+      tag: remove_886d6f4f
       field:
         - eti
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -133,24 +164,28 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_acc297e3
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

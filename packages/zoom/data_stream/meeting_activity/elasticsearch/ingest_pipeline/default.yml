@@ -1,0 +1,159 @@
+---
+description: Parse Zoom meeting activity logs report events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version_6b2cef5e
+      value: '8.11.0'
+  - terminate:
+      tag: data_collection_error_4bdbb3d0
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original_176375fd
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+        The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_9ecc8509
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: zoom.meeting_activity
+      tag: parse_json_from_event_original_6c52ddce
+      if: ctx.event?.original != null
+  - fingerprint:
+      tag: fingerprint_event_original_5df148ab
+      fields:
+        - event.original
+      target_field: _id
+      ignore_missing: true
+
+  # zoom.meeting_activity.*
+  - date:
+      field: zoom.meeting_activity.activity_time
+      target_field: '@timestamp'
+      formats:
+        - "yyyy-MM-dd HH:mm:ss:SSS"
+        - ISO8601
+      timezone: UTC
+      tag: date_meeting_activity_time_3b5cca47
+      if: ctx.zoom?.meeting_activity?.activity_time != null && ctx.zoom.meeting_activity.activity_time != ''
+      on_failure:
+        - remove:
+            field: zoom.meeting_activity.activity_time
+            ignore_missing: true
+            tag: remove_meeting_activity_time_on_date_failure_ca138120
+        - append:
+            field: error.message
+            value: 'Failed to parse zoom.meeting_activity.activity_time: {{{ _ingest.on_failure_message }}}'
+            tag: append_date_meeting_activity_time_failure_798b908b
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind_d452ef2c
+      value: event
+  - set:
+      field: event.action
+      tag: set_event_action_from_activity_category_49bb4f17
+      copy_from: zoom.meeting_activity.activity_category
+      ignore_empty_value: true
+  - append:
+      field: event.type
+      tag: append_event_type_info_5eab37e6
+      value: info
+
+  # user.*
+  - rename:
+      field: zoom.meeting_activity.operator_email
+      target_field: user.email
+      ignore_missing: true
+      tag: rename_meeting_activity_operator_email_to_user_email_7a657225
+  - rename:
+      field: zoom.meeting_activity.operator
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_meeting_activity_operator_to_user_name_ccb763e0
+
+  # related.*
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user_b9ac313b
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user_325195a6
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  # cleanup
+  - remove:
+      field:
+        - zoom.meeting_activity.activity_time
+      ignore_missing: true
+      tag: remove_fields_c0e47876
+  - script:
+      tag: script_to_drop_null_values_982a9b9f
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_b6c08950
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_error_message_417e65c9
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

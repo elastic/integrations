@@ -22,7 +22,6 @@ program: |
       "GET",
       state.url.trim_right("/") + "/feed/domainrdap/?" + {
         "api_username": [state.api_username],
-        "api_key": [state.api_key],
         "sessionID": [state.session_id],
         "app_name": [state.app_name],
         "app_partner": [state.app_partner],
@@ -33,6 +32,7 @@ program: |
       {
         "Header": {
           "Accept": ["application/x-ndjson"],
+          "X-Api-Key": [state.api_key],
         },
       }
     ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?

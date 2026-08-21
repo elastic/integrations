@@ -3,16 +3,18 @@ description: Pipeline for processing URL STIX patterns
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_url_pattern
+      tag: grok_url_pattern_2b48bfe4
       patterns:
         - "^\\[?url:value%{SPACE}=%{SPACE}'%{DATA:_tmp.url}'\\]?"
       ignore_failure: true
 
   # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
+      tag: append_threat_indicator_url_original_aa2a2861
       field: threat.indicator.url.original
       value: '{{{ _tmp.url }}}'
       if: ctx._tmp?.url != null
   - remove:
+      tag: remove__tmp_9ef01a7c
       field: _tmp
       ignore_missing: true

@@ -2,6 +2,7 @@
 description: Pipeline for processing Message Trace Logs
 processors:
   - rename:
+      tag: rename_message_to_event_original_86cdcc50
       field: message
       target_field: event.original
       ignore_missing: true
@@ -9,68 +10,84 @@ processors:
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   # Parsing of payload json
   - json:
+      tag: json_event_original_to_microsoft_online_message_trace_f8c7efed
       field: event.original
       target_field: microsoft.online_message_trace
   # Map field names from the Graph API to equivalents from the previous API
   - rename:
+      tag: rename_microsoft_online_message_trace_fromIP_to_microsoft_online_message_trace_FromIP_58bb58aa
       field: microsoft.online_message_trace.fromIP
       target_field: microsoft.online_message_trace.FromIP
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_messageId_to_microsoft_online_message_trace_MessageId_2efcdcb4
       field: microsoft.online_message_trace.messageId
       target_field: microsoft.online_message_trace.MessageId
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_id_to_microsoft_online_message_trace_MessageTraceId_5828108a
       field: microsoft.online_message_trace.id
       target_field: microsoft.online_message_trace.MessageTraceId
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_receivedDateTime_to_microsoft_online_message_trace_Received_7de5a4d3
       field: microsoft.online_message_trace.receivedDateTime
       target_field: microsoft.online_message_trace.Received
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_recipientAddress_to_microsoft_online_message_trace_RecipientAddress_c6aaf3be
       field: microsoft.online_message_trace.recipientAddress
       target_field: microsoft.online_message_trace.RecipientAddress
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_senderAddress_to_microsoft_online_message_trace_SenderAddress_1ea16ac8
       field: microsoft.online_message_trace.senderAddress
       target_field: microsoft.online_message_trace.SenderAddress
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_size_to_microsoft_online_message_trace_Size_2931f41e
       field: microsoft.online_message_trace.size
       target_field: microsoft.online_message_trace.Size
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_status_to_microsoft_online_message_trace_Status_e7bd64bc
       field: microsoft.online_message_trace.status
       target_field: microsoft.online_message_trace.Status
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_subject_to_microsoft_online_message_trace_Subject_3250b694
       field: microsoft.online_message_trace.subject
       target_field: microsoft.online_message_trace.Subject
       ignore_missing: true
   - rename:
+      tag: rename_microsoft_online_message_trace_toIP_to_microsoft_online_message_trace_ToIP_d866f2e4
       field: microsoft.online_message_trace.toIP
       target_field: microsoft.online_message_trace.ToIP
       ignore_missing: true
   # Drop "null" event
   - drop:
-      if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0 
+      tag: drop_null_event_e6f11cc5
+      if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0
   - drop:
+      tag: drop_ec724f95
       if: ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase(ctx._conf?.drop_status) == true
   - set:
+      tag: set_event_outcome_2023d459
       field: event.outcome
       value: success
       if: ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('delivered') == true
   - set:
+      tag: set_event_outcome_e25919b7
       field: event.outcome
       value: failure
       if: >
@@ -78,94 +95,116 @@ processors:
         ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('quarantined') == true ||
         ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('filteredAsSpam') == true
   - set:
+      tag: set_event_outcome_6f947b7c
       field: event.outcome
       value: unknown
       if: ctx.event?.outcome == null
   # Event Category & Type https://www.elastic.co/guide/en/ecs/current/ecs-allowed-values-event-category.html#ecs-event-category-email
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set__temp__email_from_address_b7bf0e97
       if: ctx.microsoft?.online_message_trace?.SenderAddress != "<>"
       field: _temp_.email.from.address
       copy_from: microsoft.online_message_trace.SenderAddress
       ignore_empty_value: true
   - append:
+      tag: append_email_from_address_50a9aee0
       field: email.from.address
       value: '{{{_temp_.email.from.address}}}'
       if: ctx._temp_?.email?.from?.address != null
   - set:
+      tag: set_source_user_id_897d343c
       field: source.user.id
       copy_from: _temp_.email.from.address
       ignore_empty_value: true
   - set:
+      tag: set_source_user_email_292d32d5
       field: source.user.email
       copy_from: _temp_.email.from.address
       ignore_empty_value: true
   - set:
+      tag: set_email_local_id_1003b996
       field: email.local_id
       copy_from: microsoft.online_message_trace.MessageTraceId
       ignore_empty_value: true
   - set:
+      tag: set_destination_ip_b7b3c99b
       field: destination.ip
       copy_from: microsoft.online_message_trace.ToIP
       ignore_empty_value: true
   - set:
+      tag: set_email_attachments_file_size_629523d0
       field: email.attachments.file.size
       copy_from: microsoft.online_message_trace.Size
       ignore_empty_value: true
   - set:
+      tag: set_email_delivery_timestamp_463b387a
       field: email.delivery_timestamp
       copy_from: microsoft.online_message_trace.Received
       ignore_empty_value: true
   - set:
+      tag: set_email_subject_c18b7f84
       field: email.subject
       copy_from: microsoft.online_message_trace.Subject
       ignore_empty_value: true
   - set:
+      tag: set__temp__email_to_address_b8b42654
       field: _temp_.email.to.address
       copy_from: microsoft.online_message_trace.RecipientAddress
       ignore_empty_value: true
   - append:
+      tag: append_email_to_address_ef9a0133
       field: email.to.address
       value: '{{{_temp_.email.to.address}}}'
       if: ctx._temp_?.email?.to?.address != null
   - set:
+      tag: set_destination_user_id_ee80b5cd
       field: destination.user.id
       copy_from: microsoft.online_message_trace.RecipientAddress
       ignore_empty_value: true
   - set:
+      tag: set_destination_user_email_3baf170e
       field: destination.user.email
       copy_from: microsoft.online_message_trace.RecipientAddress
       ignore_empty_value: true
   - set:
+      tag: set_source_ip_57b71e55
       field: source.ip
       copy_from: microsoft.online_message_trace.FromIP
       ignore_empty_value: true
   - set:
+      tag: set_email_message_id_0d658bad
       field: email.message_id
       copy_from: microsoft.online_message_trace.MessageId
       ignore_empty_value: true
   # Parse the date included in logs
   - date:
+      tag: date_email_delivery_timestamp_8b3059d1
       field: "email.delivery_timestamp"
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ"
         - "ISO8601"
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -174,14 +213,17 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -190,36 +232,41 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   # Extraction of domain
   - grok:
-      tag: grok_from_source_domain
+      tag: grok_from_source_domain_adfbfe6c
       field: _temp_.email.from.address
       patterns:
         - "^%{DATA}@%{DATA:source.domain}$"
       ignore_failure: false
       ignore_missing: true
   - grok:
-      tag: grok_to_destination_domain
+      tag: grok_to_destination_domain_a7e9264c
       field: _temp_.email.to.address
       patterns:
         - "^%{DATA}@%{DATA:destination.domain}$"
       ignore_failure: false
       ignore_missing: true
   - registered_domain:
+      tag: registered_domain_destination_domain_to_destination_1322951c
       field: "destination.domain"
       target_field: "destination"
   - registered_domain:
+      tag: registered_domain_source_domain_to_source_2342224a
       field: "source.domain"
       target_field: "source"
   # Calculation of mail Direction
   - script:
+      tag: script_to_extract_direction_mailflow_34585be1
       lang: painless
       description: Script to extract the direction of a mailflow
       if: ctx._conf?.local_domains != null
@@ -228,10 +275,10 @@ processors:
         def destination_internal = 0;
         def source_internal = 0;
         for (local_domain in ctx._conf.local_domains) {
-          if (ctx.destination?.domain == local_domain){
+          if (ctx.destination?.domain instanceof String && ctx.destination.domain.equalsIgnoreCase(local_domain)){
             destination_internal = 1;
           }
-          if (ctx.source?.domain == local_domain){
+          if (ctx.source?.domain instanceof String && ctx.source.domain.equalsIgnoreCase(local_domain)){
             source_internal = 1;
           }
         }
@@ -242,64 +289,77 @@ processors:
         else {ctx.email.direction = "unknown";}
   # Extract Username from mail
   - append:
+      tag: append_related_user_c8274169
       field: related.user
       value: '{{{_temp_.email.to.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.to?.address != null && ctx._temp_.email.to.address != ""
   - append:
+      tag: append_related_user_5d58d760
       field: related.user
       value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != ""
   - dissect:
+      tag: dissect__temp__email_to_address_2d013dc1
       field: _temp_.email.to.address
       pattern: '%{_temp_.to_user_name}@%{_temp_.to_user_domain}'
       ignore_missing: true
   - append:
+      tag: append_related_user_ce5e784f
       field: related.user
       value: '{{{_temp_.to_user_name}}}'
       allow_duplicates: false
       if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != ""
   - dissect:
+      tag: dissect__temp__email_from_address_24dc2524
       field: _temp_.email.from.address
       pattern: '%{_temp_.from_user_name}@%{_temp_.from_user_domain}'
       ignore_missing: true
   - append:
+      tag: append_related_user_e08ebfbc
       field: related.user
       value: '{{{_temp_.from_user_name}}}'
       allow_duplicates: false
       if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != ""
   - append:
+      tag: append_user_name_1a617eaf
       field: user.name
       value: '{{{_temp_.to_user_name}}}'
       allow_duplicates: false
       if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
   - append:
+      tag: append_user_name_17a1bd37
       field: user.name
       value: '{{{_temp_.from_user_name}}}'
       allow_duplicates: false
       if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - append:
+      tag: append_user_email_e10ffe9e
       field: user.email
       value: '{{{_temp_.email.to.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.to?.address != null && ctx._temp_.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
   - append:
+      tag: append_user_email_5b7a9fe2
       field: user.email
       value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - append:
+      tag: append_user_id_e8d4a6ab
       field: user.id
       value: '{{{_temp_.email.to.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.to?.address != null && ctx._temp_.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
   - append:
+      tag: append_user_id_5447623d
       field: user.id
       value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - script:
+      tag: script_reduce_user_to_keyword_single_331f6684
       lang: painless
       description: Reduce user.* to keyword if a single element.
       source: |
@@ -313,23 +373,28 @@ processors:
           ctx.user.id = ctx.user.id[0];
         }
   - set:
+      tag: set_destination_user_name_217a8e6f
       field: destination.user.name
       copy_from: _temp_.to_user_name
       if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != ""
   - set:
+      tag: set_destination_user_domain_0f8b221d
       field: destination.user.domain
       copy_from: _temp_.to_user_domain
       if: ctx._temp_?.to_user_domain != null && ctx._temp_.to_user_domain != ""
   - set:
+      tag: set_source_user_name_d82b6cf7
       field: source.user.name
       copy_from: _temp_.from_user_name
       if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != ""
   - set:
+      tag: set_source_user_domain_4442508f
       field: source.user.domain
       copy_from: _temp_.from_user_domain
       if: ctx._temp_?.from_user_domain != null && ctx._temp_.from_user_domain != ""
   # Add unique fingerprint for deduplication
   - fingerprint:
+      tag: fingerprint_to_id_e1052810
       fields:
         - email.from.address
         - email.to.address
@@ -342,14 +407,17 @@ processors:
       target_field: "_id"
   # Cleanup fields
   - remove:
+      tag: remove__temp__ef8e4353
       field: _temp_
       ignore_failure: true
       ignore_missing: true
   - remove:
+      tag: remove__conf_67aec840
       field: _conf
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -368,13 +436,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

@@ -2,9 +2,11 @@
 description: Pipeline for parsing Box Events
 processors:
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: "8.11.0"
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,17 +18,21 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original
       field: event.original
       target_field: box
   - drop:
+      tag: drop_empty_entries
       if: ctx.box?.entries instanceof List && ctx.box.entries.length == 0
   - fingerprint:
+      tag: fingerprint_event_id
       fields:
         - box.event_id
         - _conf.client_id
       target_field: "_id"
       ignore_missing: true
   - date:
+      tag: date_recorded_at
       field: box.recorded_at
       target_field: "@timestamp"
       ignore_failure: true
@@ -34,30 +40,37 @@ processors:
         - yyyy-MM-dd'T'hh:mm:ssXXX
       if: "ctx.box?.source != null"
   - rename:
+      tag: rename_session_id
       field: box.session_id
       target_field: box.session.id
       ignore_missing: true
 # `box.type` is always `event` - remove to avoid ambiguity with `event.kind`
   - remove:
+      tag: remove_box_type
       field: box.type
       ignore_missing: true
   - set:
+      tag: set_event_kind_event
       field: event.kind
       value: "event"
       if: "ctx.box?.source != null"
       ignore_failure: true
   - set:
+      tag: set_event_kind_alert
       field: event.kind
       value: "alert"
       if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
   - set:
+      tag: set_event_category
       field: event.category
       value: []
   - set:
+      tag: set_event_type
       field: event.type
       value: []
   - script:
+      tag: script_event_category_type
       description: Set event.category + event.type
       lang: painless
       params:
@@ -590,156 +603,188 @@ processors:
           for ( type in eventType.map.get('type')) {
             ctx.event.type.add(type);
           }
-        }   
+        }
   - rename:
+      tag: rename_event_type
       field: box.event_type
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_event_id
       field: box.event_id
       target_field: event.id
       ignore_missing: true
 # User details: set rather than rename is used in these to avoid breaking change.
   - set:
+      tag: set_user_full_name
       field: user.full_name
       copy_from: box.created_by.name
       ignore_empty_value: true
       if: ctx.user?.full_name == null && ctx.box?.created_by?.type == 'user'
   - set:
+      tag: set_user_email
       field: user.email
       copy_from: box.created_by.login
       ignore_empty_value: true
       if: ctx.user?.email == null && ctx.box?.created_by?.login != null
   - split:
+      tag: split_created_by_login
       field: box.created_by.login
       target_field: _tmp.created_login
       separator: '@'
       if: ctx.box?.created_by?.login instanceof String && ctx.box.created_by.login.length() > 2
   - set:
+      tag: set_user_name
       field: user.name
       copy_from: _tmp.created_login.0
       if: ctx._tmp?.created_login instanceof List && ctx._tmp.created_login.length == 2
   - set:
+      tag: set_user_domain
       field: user.domain
       copy_from: _tmp.created_login.1
       if: ctx._tmp?.created_login instanceof List && ctx._tmp.created_login.length == 2
   - set:
+      tag: set_user_id
       field: user.id
       copy_from: box.created_by.login
       ignore_empty_value: true
       if: ctx.user?.id == null && ctx.box?.created_by?.type == 'user'
   - append:
+      tag: append_related_user_email
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null && ctx.user.email != ''
       allow_duplicates: false
   - append:
+      tag: append_related_user_full_name
       field: related.user
       value: '{{{user.full_name}}}'
       if: ctx.user?.full_name != null && ctx.user.full_name != ''
       allow_duplicates: false
 # Collaboration events.
   - set:
+      tag: set_user_target_full_name
       field: user.target.full_name
       copy_from: box.accessible_by.name
       ignore_empty_value: true
       if: ctx.user?.target?.full_name == null && ctx.box?.accessible_by?.name != null
   - set:
+      tag: set_user_target_email
       field: user.target.email
       copy_from: box.accessible_by.login
       ignore_empty_value: true
       if: ctx.user?.target?.email == null && ctx.box?.accessible_by?.login != null
   - split:
+      tag: split_accessible_by_login
       field: box.accessible_by.login
       target_field: _tmp.accessible_login
       separator: '@'
       if: ctx.box?.accessible_by?.login instanceof String && ctx.box.accessible_by.login.length() > 2
   - set:
+      tag: set_user_target_name
       field: user.target.name
       copy_from: _tmp.accessible_login.0
       if: ctx._tmp?.accessible_login instanceof List && ctx._tmp.accessible_login.length == 2
   - set:
+      tag: set_user_target_domain
       field: user.target.domain
       copy_from: _tmp.accessible_login.1
       if: ctx._tmp?.accessible_login instanceof List && ctx._tmp.accessible_login.length == 2
   - rename:
+      tag: rename_accessible_by_login
       field: box.accessible_by.login
       target_field: user.target.id
       ignore_missing: true
       if: ctx.user?.target?.id == null && ctx.box?.accessible_by?.type == 'user'
   - append:
+      tag: append_related_user_target_email
       field: related.user
       value: '{{{user.target.email}}}'
       if: ctx.user?.target?.email != null && ctx.user.target.email != ''
       allow_duplicates: false
   - append:
+      tag: append_related_user_target_full_name
       field: related.user
       value: '{{{user.target.full_name}}}'
       if: ctx.user?.target?.full_name != null && ctx.user.target.full_name != ''
       allow_duplicates: false
   - rename:
+      tag: rename_source_folder_id
       field: box.source.folder_id
       target_field: box.source.id
       ignore_missing: true
       if: ctx.box?.source?.id == null
 # If a user or item triggers an event, The response of the GET /events endpoint contains an event source object.
   - convert:
+      tag: convert_source_sequence_id
       field: box.source.sequence_id
       target_field: event.sequence
       type: integer
       ignore_missing: true
   - rename:
+      tag: rename_source_type
       field: box.source.type
       target_field: file.type
       ignore_missing: true
   - rename:
+      tag: rename_source_name_file
       if: ctx.file?.type != "folder"
       field: box.source.name
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_source_name_folder
       if: ctx.file?.type == "folder"
       field: box.source.name
       target_field: file.directory
       ignore_missing: true
   - date:
+      tag: date_source_created_at
       field: box.source.created_at
       target_field: file.created
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
   - remove:
+      tag: remove_source_created_at
       field: box.source.created_at
       ignore_missing: true
   - date:
+      tag: date_source_content_created_at
       field: box.source.content_created_at
       target_field: file.created
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
   - remove:
+      tag: remove_source_content_created_at
       field: box.source.content_created_at
       ignore_missing: true
   - date:
+      tag: date_source_content_modified_at
       field: box.source.content_modified_at
       target_field: file.mtime
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
   - remove:
+      tag: remove_source_content_modified_at
       field: box.source.content_modified_at
       ignore_missing: true
   - date:
+      tag: date_source_modified_at
       field: box.source.modified_at
       target_field: file.ctime
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
   - rename:
+      tag: rename_source_size
       field: box.source.size
       target_field: file.size
       ignore_missing: true
   - rename:
+      tag: rename_source_sha1
       field: box.source.file_version.sha1
       target_field: file.hash.sha1
       ignore_missing: true
@@ -750,65 +795,80 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_is_performed_by_admin
             field: box.additional_details.is_performed_by_admin
         - append:
+            tag: append_error_is_performed_by_admin
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Shield Focused Processors
   - convert:
+      tag: convert_ip_address
       field: box.ip_address
       target_field: client.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_ip_address
       field: box.ip_address
       ignore_missing: true
   - rename:
+      tag: rename_risk_score
       field: box.additional_details.shield_alert.risk_score
       target_field: event.risk_score
       ignore_missing: true
   - rename:
+      tag: rename_indicator_sightings
       field: box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count
       target_field: threat.indicator.sightings
       ignore_missing: true
   - rename:
+      tag: rename_rule_category
       field: box.additional_details.shield_alert.rule_category
       target_field: rule.category
       ignore_missing: true
   - convert:
+      tag: convert_rule_id
       field: box.additional_details.shield_alert.rule_id
       type: string
       target_field: rule.id
       ignore_missing: true
   - remove:
+      tag: remove_rule_id
       field: box.additional_details.shield_alert.rule_id
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_rule_name
       field: box.additional_details.shield_alert.rule_name
       target_field: rule.name
       ignore_missing: true
   - rename:
+      tag: rename_user_effective_email
       field: box.additional_details.shield_alert.user.email
       target_field: user.effective.email
       ignore_missing: true
   - rename:
+      tag: rename_user_effective_name
       field: box.additional_details.shield_alert.user.name
       target_field: user.effective.name
       ignore_missing: true
   - convert:
+      tag: convert_user_effective_id
       field: box.additional_details.shield_alert.user.id
       type: string
       target_field: user.effective.id
       ignore_missing: true
   - remove:
+      tag: remove_user_effective_id
       field: box.additional_details.shield_alert.user.id
       ignore_failure: true
       ignore_missing: true
 # script processors to unpack the 4 box shield event formats
 #
   - script:
+      tag: script_prepare_shield_objects
       description: Prepare intervening objects for subsequent scripts
       lang: painless
       source: |
@@ -826,6 +886,7 @@ processors:
         }
 #
   - script:
+      tag: script_suspicious_sessions
       description: Unpack Suspicious sessions property within array of object within array of object
       lang: painless
       source: |
@@ -859,7 +920,7 @@ processors:
                 activity.item_path + "/" + activity.item_name + " by " +
               activity.service_name);
               indicator.indicator.put("provider",activity.service_name);
-              indicator.indicator.put("type","user-account");    
+              indicator.indicator.put("type","user-account");
               ctx.threat.enrichments.add(indicator);
               ctx.related.ip.add(geo.ip);
             }
@@ -867,6 +928,7 @@ processors:
         }
 #
   - script:
+      tag: script_suspicious_locations
       description: Unpack Suspicious locations properties
       lang: painless
       source: |
@@ -899,14 +961,15 @@ processors:
             alert_activity.service_name);
           indicator.indicator.put("provider",alert_activity.service_name);
           if (alert_activity.ip_info.ip.indexOf(":") != -1) {
-            indicator.indicator.put("type","ipv6-addr");    
-          } else { 
-            indicator.indicator.put("type","ipv4-addr");   
-          }  
+            indicator.indicator.put("type","ipv6-addr");
+          } else {
+            indicator.indicator.put("type","ipv4-addr");
+          }
           ctx.threat.enrichments.add(indicator);
           ctx.related.ip.add(geo.ip);
         }
   - script:
+      tag: script_anomalous_download
       description: Unpack Anomalous Download properties
       lang: painless
       source: |
@@ -938,6 +1001,7 @@ processors:
           }
         }
   - script:
+      tag: script_malicious_content
       description: Unpack Malicious Content properties
       lang: painless
       source: |
@@ -979,8 +1043,10 @@ processors:
       if: ctx.threat?.indicator?.first_seen != null && ctx.threat.indicator.first_seen != ''
       on_failure:
         - remove:
+            tag: remove_threat_indicator_first_seen
             field: threat.indicator.first_seen
         - append:
+            tag: append_error_threat_indicator_first_seen
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -992,13 +1058,16 @@ processors:
       if: ctx.threat?.indicator?.last_seen != null && ctx.threat.indicator.last_seen != ''
       on_failure:
         - remove:
+            tag: remove_threat_indicator_last_seen
             field: threat.indicator.last_seen
         - append:
+            tag: append_error_threat_indicator_last_seen
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # Remove or mark invalid IPs.
   - foreach:
+      tag: foreach_related_ip_type
       description: Ensure related.ip type
       field: related.ip
       processor:
@@ -1007,9 +1076,11 @@ processors:
           field: _ingest._value
           on_failure:
             - remove:
+                tag: remove_invalid_related_ip
                 field: _ingest._value
       ignore_missing: true
   - foreach:
+      tag: foreach_enrichments_ip_type
       description: Ensure threat.enrichments.indicator.ip type
       field: threat.enrichments
       processor:
@@ -1019,17 +1090,21 @@ processors:
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_invalid_enrichment_ip
                 field: _ingest._value.indicator.ip
       ignore_missing: true
   - convert:
+      tag: convert_indicator_ip
       description: Ensure threat.indicator.ip type
       field: threat.indicator.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_invalid_indicator_ip
             field: threat.indicator.ip
   - foreach:
+      tag: foreach_download_ips
       description: box.additional_details.shield_alert.alert_summary.download_ips.ip type
       field: box.additional_details.shield_alert.alert_summary.download_ips
       processor:
@@ -1038,11 +1113,13 @@ processors:
               field: _ingest._value.ip
               on_failure:
                 - remove:
+                    tag: remove_invalid_download_ip
                     field: _ingest._value
       ignore_missing: true
 
 # Deduplicate Arrays and finalise invalid IP removals.
   - script:
+      tag: script_deduplicate_arrays
       description: Deduplicate Arrays
       lang: painless
       source: |
@@ -1073,6 +1150,7 @@ processors:
 # post-script processors dependent on outcome of scripts, or append to fields
 # created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
   - date:
+      tag: date_shield_date
       field: shield_date
       target_field: "@timestamp"
       ignore_failure: true
@@ -1080,90 +1158,105 @@ processors:
         - yyyy-MM-dd'T'hh:mm:ssXXX
       if: ctx.shield_date != null
   - append:
+      tag: append_related_hash
       field: related.hash
       value: "{{{file.hash.sha1}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.file?.hash?.sha1 != null
   - append:
+      tag: append_related_ip_indicator
       field: related.ip
       value: "{{{threat.indicator.ip}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.threat?.indicator?.ip != null
   - append:
+      tag: append_related_ip_client
       field: related.ip
       value: "{{{client.ip}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.client?.ip != null
   - append:
+      tag: append_related_user_source_created_by_id
       field: related.user
       value: "{{{box.source.created_by.id}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.created_by?.id != null
   - append:
+      tag: append_related_user_source_created_by_login
       field: related.user
       value: "{{{box.source.created_by.login}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.created_by?.login != null
   - append:
+      tag: append_related_user_source_created_by_name
       field: related.user
       value: "{{{box.source.created_by.name}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.created_by?.name != null
   - append:
+      tag: append_related_user_source_modified_by_id
       field: related.user
       value: "{{{box.source.modified_by.id}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.modified_by?.id != null
   - append:
+      tag: append_related_user_source_modified_by_login
       field: related.user
       value: "{{{box.source.modified_by.login}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.modified_by?.login != null
   - append:
+      tag: append_related_user_source_modified_by_name
       field: related.user
       value: "{{{box.source.modified_by.name}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.modified_by?.name != null
   - append:
+      tag: append_related_user_source_owned_by_id
       field: related.user
       value: "{{{box.source.owned_by.id}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.owned_by?.id != null
   - append:
+      tag: append_related_user_source_owned_by_login
       field: related.user
       value: "{{{box.source.owned_by.login}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.owned_by?.login != null
   - append:
+      tag: append_related_user_source_owned_by_name
       field: related.user
       value: "{{{box.source.owned_by.name}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.box.source?.owned_by?.name != null
   - append:
+      tag: append_related_user_effective_email
       field: related.user
       value: "{{{user.effective.email}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.effective?.email != null
   - append:
+      tag: append_related_user_effective_id
       field: related.user
       value: "{{{user.effective.id}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.effective?.id != null
   - append:
+      tag: append_related_user_effective_name
       field: related.user
       value: "{{{user.effective.name}}}"
       ignore_failure: true
@@ -1171,7 +1264,8 @@ processors:
       if: ctx.user?.effective?.name != null
 # remove fields remapped by scripts
   - remove:
-      field: 
+      tag: remove_shield_fields
+      field:
         - box.additional_details.shield_alert.alert_summary.alert_activities
         - box.additional_details.shield_alert.alert_summary.alert_summary.anomaly_period.date_range.end_date
         - box.additional_details.shield_alert.alert_summary.alert_summary.anomaly_period.date_range.start_date
@@ -1195,16 +1289,18 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_capitalize_priority
       description: Capitalize Priority to match Appendix A of the STIX 2.1 framework
       lang: painless
       source: |
         if (ctx.box?.additional_details?.shield_alert?.priority != null) {
-          ctx.threat.indicator.confidence = 
-            ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
+          ctx.threat.indicator.confidence =
+            ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() +
             ctx.box.additional_details.shield_alert.priority.substring(1);
         }
 # geo
   - foreach:
+      tag: foreach_enrichments_geoip
       field: threat.enrichments
       ignore_missing: true
       processor:
@@ -1212,12 +1308,14 @@ processors:
           field: "_ingest._value.indicator.ip"
           target_field: "_ingest._value.indicator.geo"
           ignore_missing: true
-  - geoip: 
+  - geoip:
+      tag: geoip_indicator
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
 # AS look-ups on enrichments within Array
   - foreach:
+      tag: foreach_enrichments_asn
       field: threat.enrichments
       ignore_missing: true
       processor:
@@ -1230,6 +1328,7 @@ processors:
             - organization_name
           ignore_missing: true
   - foreach:
+      tag: foreach_enrichments_rename_asn
       field: threat.enrichments
       ignore_missing: true
       processor:
@@ -1238,6 +1337,7 @@ processors:
           target_field: "_ingest._value.indicator.as.number"
           ignore_missing: true
   - foreach:
+      tag: foreach_enrichments_rename_org
       field: threat.enrichments
       ignore_missing: true
       processor:
@@ -1247,6 +1347,7 @@ processors:
           ignore_missing: true
 # Move geo.ip out of geo and check for IP validity.
   - foreach:
+      tag: foreach_enrichments_ip_from_geo
       field: threat.enrichments
       ignore_missing: true
       processor:
@@ -1256,14 +1357,16 @@ processors:
           type: ip
           ignore_failure: true
   - foreach:
+      tag: foreach_enrichments_remove_geo_ip
       field: threat.enrichments
       ignore_missing: true
       processor:
         remove:
           field: "_ingest._value.indicator.geo.ip"
           ignore_missing: true
-# AS lookup for stand-alone indicator 
+# AS lookup for stand-alone indicator
   - geoip:
+      tag: geoip_asn_indicator
       database_file: GeoLite2-ASN.mmdb
       field: threat.indicator.ip
       target_field: threat.indicator.as
@@ -1272,15 +1375,18 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_indicator_asn
       field: threat.indicator.as.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
   - rename:
+      tag: rename_indicator_org_name
       field: threat.indicator.as.organization_name
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
 # Drop empty/null fields
   - script:
+      tag: script_drop_empty_fields
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -1298,6 +1404,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_tmp_fields
       field:
         - _conf
         - _tmp
@@ -1312,4 +1419,4 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -59,7 +59,7 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_4d10bd0a-70ef-4bc6-88ba-f8aada18ccdd_dashboard",
+                            "destinationRefName": "link_a802043b-30bc-421f-a41b-635866189068_dashboard",
                             "label": "\u003c Overview",
                             "options": {
                                 "open_in_new_tab": false,
@@ -2362,7 +2362,7 @@
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
-                                    "x": true,
+                                    "x": false,
                                     "yLeft": false,
                                     "yRight": true
                                 },
@@ -2433,6 +2433,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "CPU limit utilization per pod over time.",
+                    "drilldowns": [],
                     "title": "CPU limit utilization by pod"
                 },
                 "gridData": {
@@ -2582,7 +2583,7 @@
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
-                                    "x": true,
+                                    "x": false,
                                     "yLeft": false,
                                     "yRight": true
                                 },
@@ -2653,6 +2654,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Memory limit utilization per pod over time.",
+                    "drilldowns": [],
                     "title": "Memory limit utilization by pod"
                 },
                 "gridData": {
@@ -2955,7 +2957,7 @@
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
-                                    "x": true,
+                                    "x": false,
                                     "yLeft": false,
                                     "yRight": true
                                 },
@@ -3026,6 +3028,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Container restarts per pod over time. Only pods with restarts greater than zero are shown.",
+                    "drilldowns": [],
                     "title": "Container restarts by pod"
                 },
                 "gridData": {
@@ -3355,7 +3358,7 @@
                                             ],
                                             "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL AND k8s.pod.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.namespace.name IS NOT NULL AND k8s.namespace.name != \"\"\n| STATS\n    phase_num      = MAX(k8s.pod.phase),\n    cpu_usage      = MAX(k8s.pod.cpu.usage),\n    memory_ws      = MAX(k8s.pod.memory.working_set),\n    mem_limit_util = MAX(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    k8s.node.name  = MAX(k8s.node.name),\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    last_seen      = MAX(@timestamp)\n  BY k8s.namespace.name, k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| EVAL\n    phase = CASE(\n      phase_num == 1, \"Pending\",\n      phase_num == 2, \"Running\",\n      phase_num == 3, \"Succeeded\",\n      phase_num == 4, \"Failed\",\n      phase_num == 5, \"Unknown\",\n      \"Unknown\"),\n    restarts = COALESCE(restarts, 0)\n| KEEP k8s.cluster.name, k8s.namespace.name, k8s.pod.name, phase, cpu_usage, memory_ws, mem_limit_util, restarts, k8s.node.name\n| SORT restarts DESC\n| LIMIT 100"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL AND k8s.pod.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.namespace.name IS NOT NULL AND k8s.namespace.name != \"\"\n| STATS\n    phase_num      = MAX(k8s.pod.phase),\n    cpu_usage      = MAX(k8s.pod.cpu.usage),\n    memory_ws      = MAX(k8s.pod.memory.working_set),\n    mem_limit_util = MAX(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    k8s.node.name  = MAX(k8s.node.name),\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    last_seen      = MAX(@timestamp)\n  BY k8s.namespace.name, k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| EVAL\n    phase = CASE(\n      phase_num == 1, \"Pending\",\n      phase_num == 2, \"Running\",\n      phase_num == 3, \"Succeeded\",\n      phase_num == 4, \"Failed\",\n      phase_num == 5, \"Unknown\",\n      \"Unknown\"),\n    restarts = COALESCE(restarts, 0)\n| KEEP k8s.cluster.name, k8s.namespace.name, k8s.pod.name, phase, cpu_usage, memory_ws, mem_limit_util, restarts, k8s.node.name\n| SORT restarts DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3365,7 +3368,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL AND k8s.pod.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.namespace.name IS NOT NULL AND k8s.namespace.name != \"\"\n| STATS\n    phase_num      = MAX(k8s.pod.phase),\n    cpu_usage      = MAX(k8s.pod.cpu.usage),\n    memory_ws      = MAX(k8s.pod.memory.working_set),\n    mem_limit_util = MAX(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    k8s.node.name  = MAX(k8s.node.name),\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    last_seen      = MAX(@timestamp)\n  BY k8s.namespace.name, k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| EVAL\n    phase = CASE(\n      phase_num == 1, \"Pending\",\n      phase_num == 2, \"Running\",\n      phase_num == 3, \"Succeeded\",\n      phase_num == 4, \"Failed\",\n      phase_num == 5, \"Unknown\",\n      \"Unknown\"),\n    restarts = COALESCE(restarts, 0)\n| KEEP k8s.cluster.name, k8s.namespace.name, k8s.pod.name, phase, cpu_usage, memory_ws, mem_limit_util, restarts, k8s.node.name\n| SORT restarts DESC\n| LIMIT 100"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL AND k8s.pod.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.namespace.name IS NOT NULL AND k8s.namespace.name != \"\"\n| STATS\n    phase_num      = MAX(k8s.pod.phase),\n    cpu_usage      = MAX(k8s.pod.cpu.usage),\n    memory_ws      = MAX(k8s.pod.memory.working_set),\n    mem_limit_util = MAX(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    k8s.node.name  = MAX(k8s.node.name),\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    last_seen      = MAX(@timestamp)\n  BY k8s.namespace.name, k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| EVAL\n    phase = CASE(\n      phase_num == 1, \"Pending\",\n      phase_num == 2, \"Running\",\n      phase_num == 3, \"Succeeded\",\n      phase_num == 4, \"Failed\",\n      phase_num == 5, \"Unknown\",\n      \"Unknown\"),\n    restarts = COALESCE(restarts, 0)\n| KEEP k8s.cluster.name, k8s.namespace.name, k8s.pod.name, phase, cpu_usage, memory_ws, mem_limit_util, restarts, k8s.node.name\n| SORT restarts DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -4204,18 +4207,18 @@
                 "title": "Pods in deployment"
             }
         ],
-        "timeFrom": "now-1h",
+        "timeFrom": "now-24h/h",
         "timeRestore": true,
         "timeTo": "now",
         "title": "[Kubernetes OTel] Deployment Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-06-15T05:59:56.666Z",
+    "created_at": "2026-06-17T05:44:16.016Z",
     "id": "kubernetes_otel-8cf34def-60de-4bf3-9b06-d4ffc6cb4236",
     "references": [
         {
             "id": "kubernetes_otel-7b1ac87f-60ea-477f-b506-8a248026afbb",
-            "name": "v3-deployment-back-link:link_4d10bd0a-70ef-4bc6-88ba-f8aada18ccdd_dashboard",
+            "name": "v3-deployment-back-link:link_a802043b-30bc-421f-a41b-635866189068_dashboard",
             "type": "dashboard"
         },
         {

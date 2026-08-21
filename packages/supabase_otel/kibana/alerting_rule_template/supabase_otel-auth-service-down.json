@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-auth-service-down",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the GoTrue (Auth) liveness gauge reports 0 for a Supabase project. With Auth down, no user can sign in or refresh a token even though the database and REST API may look healthy.",
+        "name": "[Supabase OTel] Auth service is down",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "auth",
+            "availability"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Auth (GoTrue) Down\n\nGoTrue issues and validates user tokens. It is a Go service with its own SQL pool and HTTP surface, colocated with the database. When it is down the database can be perfectly healthy while every sign-in fails.\n\n### Triage Steps\n1. Confirm PostgreSQL is up. GoTrue cannot start or stay healthy without its database.\n2. Check GoTrue's own SQL pool for exhaustion just before the outage: `TS metrics-supabase.metrics.otel-* | STATS open = MAX(LAST_OVER_TIME(db_sql_connection_open)), max = MAX(LAST_OVER_TIME(db_sql_connection_max_open)) BY resource.attributes.supabase_project_ref`\n3. Check host memory pressure and OOM kills — GoTrue is a common OOM victim on small compute tiers because password hashing is memory- and CPU-expensive by design.\n4. Check the Postgres connection budget: if it is exhausted, GoTrue cannot acquire a connection and will fail its own health check.\n\n### Related content\nAuth API server errors are covered by the `[Supabase OTel] Auth API server errors` rule on `http_status_codes_total`. That rule catches a process that is running but failing requests; this one catches the process not running at all. There is no Auth API SLO, because the request counter carries one series per status code and route and the SLO indicator types cannot delta a multi-series counter correctly."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// gotrue_running is a gauge: 1 = the Auth service is alive, 0 = it is not.\n// MIN() across series so one unhealthy instance is not masked by a healthy one.\n| STATS `Auth Running` = MIN(LAST_OVER_TIME(gotrue_running))\n    BY resource.attributes.supabase_project_ref\n| WHERE `Auth Running` == 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

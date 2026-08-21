@@ -58,7 +58,7 @@ processors:
       tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
-      field_split: ', '
+      field_split: ', (?=[^,=]+=)'
       value_split: =
       ignore_failure: true
   - dissect:
@@ -163,7 +163,7 @@ processors:
       field: cisco_ise.log.log_details.NAS-IP-Address
       target_field: cisco_ise.log.nas.ip
       type: ip
-      if: ctx.cisco_ise?.log?.log_details['NAS-IP-Address'] != null
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['NAS-IP-Address'] != null
       ignore_missing: true
       on_failure:
         - append:

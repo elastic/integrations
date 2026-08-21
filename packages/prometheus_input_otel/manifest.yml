@@ -1,11 +1,12 @@
 format_version: 3.5.0
 name: prometheus_input_otel
-title: "Prometheus OTel Scrape (Guided)"
-version: 0.1.0
+title: "Prometheus Scrape via OTel (Guided)"
+version: 0.2.0
 source:
   license: "Elastic-2.0"
-description: "Scrape Prometheus metrics endpoints using the OpenTelemetry Collector Prometheus receiver with guided configuration"
+description: "Scrape Prometheus-format metrics via the OTel Collector with guided HTTPS/TLS/auth configuration."
 type: input
+group: prometheus
 categories:
   - monitoring
   - observability
@@ -120,7 +121,7 @@ policy_templates:
         type: text
         title: Username
         required: false
-        description: Username for basic authentication
+        description: Username for basic authentication. When set, basic auth is used and Bearer Token is ignored.
         show_user: true
       - name: password
         type: password
@@ -130,6 +131,15 @@ policy_templates:
         # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
         secret: false
         description: Password for basic authentication. Must be used together with Username.
+        show_user: true
+      - name: bearer_token
+        type: password
+        title: Bearer Token
+        required: false
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        description: Bearer token sent as Authorization Bearer credentials. Ignored when Username is set.
         show_user: true
 owner:
   github: elastic/ecosystem

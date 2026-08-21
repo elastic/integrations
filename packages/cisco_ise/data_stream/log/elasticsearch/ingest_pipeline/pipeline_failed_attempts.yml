@@ -249,7 +249,7 @@ processors:
   - kv:
       tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
-      field_split: ', '
+      field_split: ', (?=[^,=]+=)'
       value_split: =
       ignore_failure: true
       target_field: cisco_ise.log.log_details
@@ -272,7 +272,7 @@ processors:
       ignore_failure: true
   - foreach:
       tag: foreach_cisco_ise_log_log_details_acme-av-pair_72a6fe4c
-      if: "ctx.cisco_ise?.log?.log_details['acme-av-pair'] != null && ctx.cisco_ise?.log?.log_details['acme-av-pair'] instanceof List"
+      if: "ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['acme-av-pair'] != null && ctx.cisco_ise.log.log_details['acme-av-pair'] instanceof List"
       field: cisco_ise.log.log_details.acme-av-pair
       ignore_missing: true
       processor:
@@ -287,7 +287,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
   - kv:
       tag: kv_cisco_ise_log_log_details_acme-av-pair_to_cisco_ise_log_acme-av-pair_6cc5cb52
-      if: "ctx.cisco_ise?.log?.log_details['acme-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['acme-av-pair'] instanceof List)"
+      if: "ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['acme-av-pair'] != null && !(ctx.cisco_ise.log.log_details['acme-av-pair'] instanceof List)"
       field: cisco_ise.log.log_details.acme-av-pair
       target_field: cisco_ise.log.acme-av-pair
       field_split: ', '
@@ -907,7 +907,7 @@ processors:
       tag: append_user_name_26066071
       field: user.name
       value: '{{{cisco_ise.log.log_details.User-Name}}}'
-      if: ctx.cisco_ise?.log?.log_details['User-Name'] != null
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['User-Name'] != null
       allow_duplicates: false
       on_failure:
         - append:
@@ -919,7 +919,7 @@ processors:
       tag: append_related_user_54d37901
       field: related.user
       value: '{{{cisco_ise.log.log_details.User-Name}}}'
-      if: ctx.cisco_ise?.log?.log_details['User-Name'] != null
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['User-Name'] != null
       allow_duplicates: false
       on_failure:
         - append:

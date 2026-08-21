@@ -1,0 +1,134 @@
+rules:
+  # Zoom S2S OAuth token endpoint (account_credentials grant).
+  - path: /oauth/token
+    methods: [POST]
+    query_params:
+      grant_type: account_credentials
+      account_id: test-account-id
+    request_headers:
+      Authorization:
+        - "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0"
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":3600,"scope":"report:read:admin"}
+  # Pagination page 2 — token from page 1.
+  - path: /v2/report/meeting_activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      activity_type: "{activity_type:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: mock-page-2-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "meeting_activity_logs": [
+              {
+                "meeting_number": "982 610 0285",
+                "activity_time": "{{ .request.vars.from }} 07:35:12:880",
+                "operator": "Bob Brown",
+                "operator_email": "bob@example.com",
+                "activity_category": "User left",
+                "activity_detail": "Bob Brown left the meeting"
+              }
+            ],
+            "page_size": 300,
+            "next_page_token": "mock-page-3-token"
+          }
+  # Pagination page 3 — terminal page for round 1.
+  - path: /v2/report/meeting_activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      activity_type: "{activity_type:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: mock-page-3-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "meeting_activity_logs": [
+              {
+                "meeting_number": "982 610 0285",
+                "activity_time": "{{ .request.vars.from }} 07:40:00:120",
+                "operator": "Jill Chill",
+                "operator_email": "jillchill@example.com",
+                "activity_category": "Meeting ended",
+                "activity_detail": "Meeting ended"
+              }
+            ],
+            "page_size": 300,
+            "next_page_token": ""
+          }
+  # Initial page (round 1) and cursor-resumed page (round 2).
+  - path: /v2/report/meeting_activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      activity_type: "{activity_type:.*}"
+      page_size: "{page_size:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {
+            "meeting_activity_logs": [
+              {
+                "meeting_number": "982 610 0285",
+                "activity_time": "{{ .request.vars.from }} 07:09:03:216",
+                "operator": "Jill Chill",
+                "operator_email": "jillchill@example.com",
+                "activity_category": "Meeting Started",
+                "activity_detail": "Meeting Started"
+              },
+              {
+                "meeting_number": "982 610 0285",
+                "activity_time": "{{ .request.vars.from }} 07:09:45:002",
+                "operator": "Bob Brown",
+                "operator_email": "bob@example.com",
+                "activity_category": "User joined",
+                "activity_detail": "Bob Brown joined the meeting"
+              }
+            ],
+            "page_size": 300,
+            "next_page_token": "mock-page-2-token"
+          }
+          {{ else if eq .req_num 2 }}
+          {
+            "meeting_activity_logs": [
+              {
+                "meeting_number": "112 233 4455",
+                "activity_time": "{{ .request.vars.from }} 09:00:10:500",
+                "operator": "Alice Adams",
+                "operator_email": "alice@example.com",
+                "activity_category": "Meeting created",
+                "activity_detail": "Meeting created"
+              }
+            ],
+            "page_size": 300
+          }
+          {{ else }}
+          {
+            "meeting_activity_logs": [],
+            "page_size": 300
+          }
+          {{ end }}

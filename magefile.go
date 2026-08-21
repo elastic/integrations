@@ -7,12 +7,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
@@ -23,15 +21,9 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/packagenames"
-	"github.com/elastic/integrations/dev/testsreporter"
 )
 
 const (
-	defaultResultsPath           = "build/test-results/"
-	defaultPreviousLinksNumber   = 5
-	defaultMaximumTestsReported  = 20
-	defaultServerlessProjectType = "observability"
-
 	elasticPackageModulePath = "github.com/elastic/elastic-package"
 )
 
@@ -152,70 +144,6 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 
 func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
-}
-
-func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
-	stackVersion := os.Getenv("STACK_VERSION")
-	serverlessEnv := os.Getenv("SERVERLESS")
-	dryRunEnv := os.Getenv("DRY_RUN")
-	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
-	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
-	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
-
-	serverless := false
-	if serverlessEnv != "" {
-		var err error
-		serverless, err = strconv.ParseBool(serverlessEnv)
-		if err != nil {
-			return fmt.Errorf("failed to parse SERVERLESS value: %w", err)
-		}
-		if serverlessProjectEnv == "" {
-			serverlessProjectEnv = defaultServerlessProjectType
-		}
-	}
-
-	logsDBEnabled := false
-	if v, found := os.LookupEnv("STACK_LOGSDB_ENABLED"); found && v == "true" {
-		logsDBEnabled = true
-	}
-
-	verboseMode := false
-	if v, found := os.LookupEnv("VERBOSE_MODE_ENABLED"); found && v == "true" {
-		verboseMode = true
-	}
-
-	maxIssuesString := os.Getenv("CI_MAX_TESTS_REPORTED")
-	maxIssues := defaultMaximumTestsReported
-	if maxIssuesString != "" {
-		var err error
-		maxIssues, err = strconv.Atoi(maxIssuesString)
-		if err != nil {
-			return fmt.Errorf("failed to convert env. variable CI_MAX_TESTS_REPORTED to int (%s): %w", maxIssuesString, err)
-		}
-	}
-
-	dryRun := false
-	if dryRunEnv != "" {
-		var err error
-		dryRun, err = strconv.ParseBool(dryRunEnv)
-		if err != nil {
-			return fmt.Errorf("failed to parse DRY_RUN value: %w", err)
-		}
-	}
-
-	options := testsreporter.CheckOptions{
-		Serverless:        serverless,
-		ServerlessProject: serverlessProjectEnv,
-		LogsDB:            logsDBEnabled,
-		StackVersion:      stackVersion,
-		Subscription:      subscription,
-		BuildURL:          buildURL,
-		MaxPreviousLinks:  defaultPreviousLinksNumber,
-		MaxTestsReported:  maxIssues,
-		DryRun:            dryRun,
-		Verbose:           verboseMode,
-	}
-	return testsreporter.Check(ctx, testResultsFolder, options)
 }
 
 // ListPackages lists all packages found under the packages directory.
