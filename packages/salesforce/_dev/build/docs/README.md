@@ -14,7 +14,7 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login`, `Logout`, and `AuraRequest` data streams can collect from either EventLogFile or the corresponding real-time object (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`). The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login`, `Logout`, and `AuraRequest` data streams can collect from either EventLogFile or the corresponding real-time object (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`). The `Apex` data stream reads EventLogFile records, and the `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
@@ -122,7 +122,7 @@ For step-by-step instructions on how to set up an integration, see {{ url "getti
 ### Onboard and configure
 
 1. Install Elastic Agent and enroll it in Fleet.
-2. In Fleet, add the Salesforce integration and enable the `apex`, `aura_request`, `login`, `logout`, and/or `setupaudittrail` data streams as needed.
+2. In Fleet, add the Salesforce integration and enable the data streams you need: `apex`, `aura_request`, `login`, `logout`, or `setupaudittrail`.
 3. Enter your Salesforce instance URL and API version.
 4. Choose an authentication method:
    - JWT bearer flow: set Client ID, Username, Private key path (PEM), and JWT audience URL.
@@ -369,7 +369,7 @@ The `apex` data stream captures events related to Apex operations, enabling deve
 
 #### AuraRequest
 
-The `aura_request` data stream captures the server-side Aura framework requests that Salesforce Lightning Experience makes when users load pages, open records, or when components fetch data. It is the record and component level access log for the modern Salesforce UI, which makes it useful for detecting UI-driven data scraping, guest user abuse, and abnormal access patterns.
+The `aura_request` data stream captures the server-side Aura framework requests that Salesforce Lightning Experience makes when users load pages, open records, or when components fetch data. It is the record and component level access log for the modern Salesforce UI, which makes it useful for detecting UI-driven data scraping, guest user misuse, and atypical access patterns.
 
 {{event "aura_request"}}
 
