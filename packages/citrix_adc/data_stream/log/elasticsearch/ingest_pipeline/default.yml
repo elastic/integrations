@@ -152,7 +152,7 @@ processors:
 
   - script:
       tag: parse_custom_time_formats
-      if: ctx._conf?.custom_date_format != null
+      if: ctx._conf?.custom_date_format != null && ctx._conf.custom_date_format != ''
       lang: painless
       params:
         fields:
@@ -162,7 +162,6 @@ processors:
           - start_time
           - end_time
       source: |-
-        def zone = ctx.event?.timezone != null ? ZoneId.of(ctx.event.timezone) : null;
         def formatter = DateTimeFormatter.ofPattern(ctx._conf.custom_date_format);
         def outFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
@@ -172,10 +171,26 @@ processors:
           }
 
           try {
-            def localDateTime = LocalDateTime.parse(ctx._tmp[field], formatter);
-            ctx.citrix_adc.log[field] = outFormatter.format(ZonedDateTime.of(localDateTime, zone));
+            def parsed = formatter.parse(ctx._tmp[field]);
+            def zonedDateTime = null;
+            try {
+              zonedDateTime = ZonedDateTime.from(parsed);
+            } catch (Exception e) {
+              def zone = ZoneId.of(ctx.event.timezone);
+              zonedDateTime = ZonedDateTime.of(LocalDateTime.from(parsed), zone);
+            }
+            ctx.citrix_adc.log[field] = outFormatter.format(zonedDateTime);
           } catch (Exception e) {
-            /* Intentionally ignored */
+            if (ctx.error == null) {
+              ctx.error = [:];
+            }
+            if (ctx.error.message == null) {
+              ctx.error.message = [];
+            } else if (!(ctx.error.message instanceof List)) {
+              ctx.error.message = [ctx.error.message];
+            }
+            ctx.error.message.add("Failed to parse field [_tmp." + field + "] with value [" + ctx._tmp[field] + "] using custom date format [" + ctx._conf.custom_date_format + "]: " + e.getMessage());
+            ctx.event.kind = 'pipeline_error';
             return true;
           }
         });
@@ -187,7 +202,7 @@ processors:
       field: _tmp.timestamp_native
       target_field: citrix_adc.log.timestamp_native
       timezone: '{{{event.timezone}}}'
-      if: ctx._tmp?.timestamp_native != null && ctx.citrix_adc?.log?.timestamp_native == null
+      if: ctx._tmp?.timestamp_native != null && (ctx._conf?.custom_date_format == null || ctx._conf.custom_date_format == '') && ctx.citrix_adc?.log?.timestamp_native == null
       formats:
         - ISO8601
         - yyyy/MM/dd:HH:mm:ss
@@ -203,7 +218,7 @@ processors:
       field: _tmp.timestamp
       target_field: citrix_adc.log.timestamp
       timezone: '{{{event.timezone}}}'
-      if: ctx._tmp?.timestamp != null && ctx.citrix_adc?.log?.timestamp == null
+      if: ctx._tmp?.timestamp != null && (ctx._conf?.custom_date_format == null || ctx._conf.custom_date_format == '') && ctx.citrix_adc?.log?.timestamp == null
       formats:
         - ISO8601
         - yyyy/MM/dd:HH:mm:ss
@@ -219,7 +234,7 @@ processors:
       field: _tmp.start_time
       target_field: citrix_adc.log.start_time
       timezone: '{{{event.timezone}}}'
-      if: ctx._tmp?.start_time != null && ctx.citrix_adc?.log?.start_time == null
+      if: ctx._tmp?.start_time != null && (ctx._conf?.custom_date_format == null || ctx._conf.custom_date_format == '') && ctx.citrix_adc?.log?.start_time == null
       formats:
         - ISO8601
         - yyyy/MM/dd:HH:mm:ss
@@ -235,7 +250,7 @@ processors:
       field: _tmp.end_time
       timezone: '{{{event.timezone}}}'
       target_field: citrix_adc.log.end_time
-      if: ctx._tmp?.end_time != null && ctx.citrix_adc?.log?.end_time == null
+      if: ctx._tmp?.end_time != null && (ctx._conf?.custom_date_format == null || ctx._conf.custom_date_format == '') && ctx.citrix_adc?.log?.end_time == null
       formats:
         - ISO8601
         - yyyy/MM/dd:HH:mm:ss
@@ -253,7 +268,7 @@ processors:
       field: _tmp.delink_time
       target_field: citrix_adc.log.delink_time
       timezone: '{{{event.timezone}}}'
-      if: ctx._tmp?.delink_time != null && ctx.citrix_adc?.log?.delink_time == null
+      if: ctx._tmp?.delink_time != null && (ctx._conf?.custom_date_format == null || ctx._conf.custom_date_format == '') && ctx.citrix_adc?.log?.delink_time == null
       formats:
         - ISO8601
         - yyyy/MM/dd:HH:mm:ss
