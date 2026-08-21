@@ -1,0 +1,40 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.6.0
+            name: aws_bedrock_agentcore
+      name: test-aws-cloudwatch-agentless-cloud-connector-aws_bedrock_agentcore
+      streams:
+        - api_sleep: 200ms
+          data_stream:
+            dataset: aws_bedrock_agentcore.runtime_application_logs
+          default_region: us-east-1
+          log_group_name_prefix: /aws/bedrock-agentcore/runtimes
+          number_of_workers: 1
+          publisher_pipeline.disable_host: true
+          region_name: us-east-1
+          role_arn: arn:aws:iam::123456789012:role/ElasticBedrockAgentCoreReadOnly
+          scan_frequency: 1m
+          start_position: beginning
+          tags:
+            - forwarded
+          use_cloud_connectors: true
+      type: aws-cloudwatch
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws_bedrock_agentcore.runtime_application_logs-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

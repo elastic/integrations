@@ -1,0 +1,76 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.6.0
+            name: aws_bedrock_agentcore
+      name: test-metrics-agentless-cloud-connector-aws_bedrock_agentcore
+      streams:
+        - data_stream:
+            dataset: aws_bedrock_agentcore.metrics
+          default_region: us-east-1
+          include_linked_accounts: true
+          metrics:
+            - name:
+                - Sessions
+                - Invocations
+                - Errors
+                - SystemErrors
+                - UserErrors
+                - TokenCount
+                - InboundAuthorizationFailure
+                - CreationCount
+                - Throttles
+                - ResourceAccessTokenFetchFailures
+                - WorkloadAccessTokenFetchSuccess
+                - InboundAuthorizationSuccess
+                - ResourceAccessTokenFetchSuccess
+                - WorkloadAccessTokenFetchFailures
+                - TargetType.LAMBDA
+                - TargetType.MCP
+                - CallCount
+                - ThrottleCount
+                - ResourceAccessTokenFetchThrottles
+                - ApiKeyFetchSuccess
+                - ApiKeyFetchFailures
+                - ApiKeyFetchThrottles
+                - WorkloadAccessTokenFetchThrottles
+                - TakeOverCount
+                - TakeOverReleaseCount
+              namespace: AWS/Bedrock-AgentCore
+              resource_type: bedrock
+              statistic:
+                - Sum
+            - name:
+                - Latency
+                - Duration
+                - TargetExecutionTime
+                - TakeOverDuration
+              namespace: AWS/Bedrock-AgentCore
+              resource_type: bedrock
+              statistic:
+                - Average
+          metricsets:
+            - cloudwatch
+          period: 5m
+          role_arn: arn:aws:iam::123456789012:role/ElasticBedrockAgentCoreReadOnly
+          tags_filter: null
+          use_cloud_connectors: true
+      type: aws/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-aws_bedrock_agentcore.metrics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
