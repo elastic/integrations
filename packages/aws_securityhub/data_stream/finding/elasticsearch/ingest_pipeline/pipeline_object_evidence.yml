@@ -143,48 +143,48 @@ processors:
                 tag: append_error_message_9e9da0c3
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_a9f98587
-      field: aws_securityhub.finding.evidences
+  # Foreach child processors cannot use 'if', so a script is used to conditionally
+  # convert date fields that are only present on some evidence types.
+  - script:
+      tag: date_evidences_actor_time_fields
+      lang: painless
       if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.actor.process.terminated_time_dt
-          tag: date_evidences_actor_process_terminated_time_dt_871a4fbc
-          target_field: _ingest._value.actor.process.terminated_time_dt
-          formats:
-            - ISO8601
-            - UNIX_MS
-            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_actor_process_terminated_time_dt_026a7ea2
-                field: _ingest._value.actor.process.terminated_time_dt
-                ignore_missing: true
-            - append:
-                tag: append_error_message_8e2d66bc
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_6f66441c
-      field: aws_securityhub.finding.evidences
-      if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.actor.process.terminated_time
-          tag: date_evidences_actor_process_terminated_time_a41267a2
-          target_field: _ingest._value.actor.process.terminated_time
-          formats:
-            - UNIX_MS
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_actor_process_terminated_time_c3063a3d
-                field: _ingest._value.actor.process.terminated_time
-                ignore_missing: true
-            - append:
-                tag: append_error_message_d2b4be67
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      source: |
+        void normalize(def owner, def key, DateTimeFormatter spaceFmt) {
+          def v = owner[key];
+          if (v == null || (v instanceof String && v == '')) { return; }
+          try {
+            def zdt;
+            if (v instanceof Number) {
+              zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number)v).longValue()), ZoneOffset.UTC);
+            } else {
+              try { zdt = ZonedDateTime.parse((String)v); }
+              catch (Exception e) { zdt = ZonedDateTime.parse((String)v, spaceFmt); }
+            }
+            owner[key] = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          } catch (Exception e) {
+            owner.remove(key);
+          }
+        }
+        def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
+        for (def ev : ctx.aws_securityhub.finding.evidences) {
+          if (ev == null || !(ev.actor instanceof Map)) { continue; }
+          if (ev.actor.process instanceof Map) {
+            normalize(ev.actor.process, 'terminated_time_dt', spaceFmt);
+            normalize(ev.actor.process, 'terminated_time', spaceFmt);
+          }
+          if (ev.actor.session instanceof Map) {
+            normalize(ev.actor.session, 'created_time_dt', spaceFmt);
+            normalize(ev.actor.session, 'created_time', spaceFmt);
+            normalize(ev.actor.session, 'expiration_time_dt', spaceFmt);
+            normalize(ev.actor.session, 'expiration_time', spaceFmt);
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_date_evidences_actor_time_fields
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       tag: foreach_aws_securityhub_finding_evidences_c9b3ad26
       field: aws_securityhub.finding.evidences
@@ -216,90 +216,6 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       tag: foreach_aws_securityhub_finding_evidences_2919e631
-      field: aws_securityhub.finding.evidences
-      if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.actor.session.created_time_dt
-          tag: date_evidences_actor_session_created_time_dt_17662dbe
-          target_field: _ingest._value.actor.session.created_time_dt
-          formats:
-            - ISO8601
-            - UNIX_MS
-            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_actor_session_created_time_dt_c9bc47bb
-                field: _ingest._value.actor.session.created_time_dt
-                ignore_missing: true
-            - append:
-                tag: append_error_message_b6c6b733
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_d3cdca14
-      field: aws_securityhub.finding.evidences
-      if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.actor.session.created_time
-          tag: date_evidences_actor_session_created_time_4536e8e2
-          target_field: _ingest._value.actor.session.created_time
-          formats:
-            - UNIX_MS
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_actor_session_created_time_21a749e8
-                field: _ingest._value.actor.session.created_time
-                ignore_missing: true
-            - append:
-                tag: append_error_message_77c76c2e
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_731de3d9
-      field: aws_securityhub.finding.evidences
-      if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.actor.session.expiration_time_dt
-          tag: date_evidences_actor_session_expiration_time_dt_68aae5cd
-          target_field: _ingest._value.actor.session.expiration_time_dt
-          formats:
-            - ISO8601
-            - UNIX_MS
-            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_actor_session_expiration_time_dt_67d6e935
-                field: _ingest._value.actor.session.expiration_time_dt
-                ignore_missing: true
-            - append:
-                tag: append_error_message_912e24cd
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_ba45f2ac
-      field: aws_securityhub.finding.evidences
-      if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.actor.session.expiration_time
-          tag: date_evidences_actor_session_expiration_time_92a8dce4
-          target_field: _ingest._value.actor.session.expiration_time
-          formats:
-            - UNIX_MS
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_actor_session_expiration_time_b2495b20
-                field: _ingest._value.actor.session.expiration_time
-                ignore_missing: true
-            - append:
-                tag: append_error_message_d4857886
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_25877c82
       field: aws_securityhub.finding.evidences
       if: ctx.aws_securityhub?.finding?.evidences instanceof List
       processor:
@@ -736,48 +652,40 @@ processors:
                 tag: append_error_message_9c346ce3
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_304eba36
-      field: aws_securityhub.finding.evidences
+  # Foreach child processors cannot use 'if', so a script is used to conditionally
+  # convert date fields that are only present on some evidence types.
+  - script:
+      tag: date_evidences_process_terminated_time_fields
+      lang: painless
       if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.process.terminated_time_dt
-          tag: date_evidences_process_terminated_time_dt_fabf3963
-          target_field: _ingest._value.process.terminated_time_dt
-          formats:
-            - ISO8601
-            - UNIX_MS
-            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_process_terminated_time_dt_391cbd6c
-                field: _ingest._value.process.terminated_time_dt
-                ignore_missing: true
-            - append:
-                tag: append_error_message_93b85626
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_aws_securityhub_finding_evidences_61eb0d7f
-      field: aws_securityhub.finding.evidences
-      if: ctx.aws_securityhub?.finding?.evidences instanceof List
-      processor:
-        date:
-          field: _ingest._value.process.terminated_time
-          tag: date_evidences_process_terminated_time_dd421775
-          target_field: _ingest._value.process.terminated_time
-          formats:
-            - UNIX_MS
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_process_terminated_time_956b4788
-                field: _ingest._value.process.terminated_time
-                ignore_missing: true
-            - append:
-                tag: append_error_message_47a662fe
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      source: |
+        void normalize(def owner, def key, DateTimeFormatter spaceFmt) {
+          def v = owner[key];
+          if (v == null || (v instanceof String && v == '')) { return; }
+          try {
+            def zdt;
+            if (v instanceof Number) {
+              zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number)v).longValue()), ZoneOffset.UTC);
+            } else {
+              try { zdt = ZonedDateTime.parse((String)v); }
+              catch (Exception e) { zdt = ZonedDateTime.parse((String)v, spaceFmt); }
+            }
+            owner[key] = zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+          } catch (Exception e) {
+            owner.remove(key);
+          }
+        }
+        def spaceFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X");
+        for (def ev : ctx.aws_securityhub.finding.evidences) {
+          if (ev == null || !(ev.process instanceof Map)) { continue; }
+          normalize(ev.process, 'terminated_time_dt', spaceFmt);
+          normalize(ev.process, 'terminated_time', spaceFmt);
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_date_evidences_process_terminated_time_fields
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       tag: foreach_aws_securityhub_finding_evidences_3f397f69
       field: aws_securityhub.finding.evidences
