@@ -1281,9 +1281,12 @@ processors:
         - '^IPAA: %{GREEDYDATA:event.reason}$'
   # 751025 reports the tunnel endpoints, the authenticated user and the addresses assigned to the
   # session. The group clause is prefixed with the IKE version for IKEv2 tunnels, and every clause
-  # after the username is optional so that shorter variants still parse. The trailing IPv6 address
-  # is not captured: the field is frequently emitted as a non-address placeholder
-  # (`invalid-addr-2-0.0.0.0`) when no IPv6 address is assigned.
+  # after the username is optional so that shorter variants still parse.
+  # Either assigned address may be a non-address placeholder (`invalid-addr-2-0.0.0.0`) when no
+  # address of that family is assigned, so both accept a %{NOTSPACE} alternative that is matched but
+  # not captured, keeping the placeholder out of the `ip`-mapped fields. The group policy is bounded
+  # with %{NOTSPACE} rather than %{DATA}: because the clauses that follow it are optional, a lazy
+  # capture would backtrack and swallow the rest of the message when a later clause cannot match.
   # The second pattern is a fallback that recovers at least the username from any other variant,
   # preserving the behaviour of the original pattern.
   - grok:
@@ -1292,7 +1295,7 @@ processors:
       tag: parse_751025
       description: "751025"
       patterns:
-        - '^Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{NOTSPACE:source.user.name}(?: %{GROUP}:%{DATA:_temp_.cisco.group_policy})?(?: IPv4 Address=%{IP:_temp_.cisco.assigned_ip})?(?: IPv6 address=%{NOTSPACE})?(?: assigned to session)?\s*$'
+        - '^Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{NOTSPACE:source.user.name}(?: %{GROUP}:%{NOTSPACE:_temp_.cisco.group_policy})?(?: IPv4 Address=(?:%{IP:_temp_.cisco.assigned_ip}|%{NOTSPACE}))?(?: IPv6 address=(?:%{IP:_temp_.cisco.assigned_ipv6}|%{NOTSPACE}))?(?: assigned to session)?\s*$'
         - '^%{DATA} Username:%{NOTSPACE:source.user.name}\s*%{GREEDYDATA}$'
       pattern_definitions:
         GROUP: "(?:%{IKEGROUP}|%{NONIKEGROUP})"
@@ -3343,6 +3346,18 @@ processors:
       field: related.ip
       value: "{{{cisco.asa.pool_address}}}"
       if: "ctx?.cisco?.asa?.pool_address != null"
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_assigned_ip
+      field: related.ip
+      value: "{{{cisco.asa.assigned_ip}}}"
+      if: "ctx?.cisco?.asa?.assigned_ip != null"
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_assigned_ipv6
+      field: related.ip
+      value: "{{{cisco.asa.assigned_ipv6}}}"
+      if: "ctx?.cisco?.asa?.assigned_ipv6 != null"
       allow_duplicates: false
   - append:
       tag: append_related_user_970ac916
