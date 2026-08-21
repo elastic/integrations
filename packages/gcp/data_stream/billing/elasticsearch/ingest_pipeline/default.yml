@@ -2,21 +2,26 @@
 description: Pipeline for parsing GCP Billing metrics.
 processors:
   - set:
+      tag: set_event_start_ada05dda
       field: event.start
       copy_from: "gcp.billing.usage_start_time"
       ignore_empty_value: true
   - set:
+      tag: set_event_end_30d22bb4
       field: event.end
       copy_from: "gcp.billing.usage_end_time"
       ignore_empty_value: true
 on_failure:
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
-- set:
+- append:
+    tag: append_error_message_0841b325
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
