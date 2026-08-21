@@ -1,0 +1,132 @@
+config_version: "2"
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.retry.wait_min: 5s
+resource.url: {{url}}
+state:
+  url: {{url}}
+  batch_size: {{batch_size}}
+{{#if api_key}}
+  api_key: {{api_key}}
+{{/if}}
+{{#if initial_interval}}
+  initial_interval: {{initial_interval}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+program: |-
+  {
+    ?"date_from": has(state.?cursor.orValue({}).date_from) ?
+      optional.of(state.cursor.date_from)
+    : (!has(state.cursor) && has(state.initial_interval)) ?
+      optional.of((now - duration(state.initial_interval)).format("2006-01-02"))
+    :
+      optional.none(),
+    "page": int(state.?cursor.page.orValue(1)),
+  }.as(poll,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/api/kev/?" + {
+          "page": [string(poll.page)],
+          "per_page": [string(int(state.batch_size))],
+          ?"date_from": poll.?date_from.optMap(v, [v]),
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            ?"X-API-KEY": state.?api_key.optMap(v, [v]),
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(parsed,
+            (is_error(parsed) || !has(parsed.data) || !has(parsed.metadata)) ?
+              {
+                "events": [
+                  {
+                    "error": {
+                      "code": "response_shape",
+                      "id": resp.Status,
+                      "message": "GET /api/kev/: expected a JSON object with data and metadata keys, got: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                    },
+                  },
+                ],
+                "want_more": false,
+              }
+            : (int(parsed.?metadata.per_page.orValue(0)) < 1) ?
+              {
+                "events": [
+                  {
+                    "error": {
+                      "code": "page_size",
+                      "id": resp.Status,
+                      "message": "GET /api/kev/: server reported an effective page size of " + string(int(parsed.?metadata.per_page.orValue(0))) + ", so the catalog cannot be walked; check the Batch Size setting",
+                    },
+                  },
+                ],
+                "want_more": false,
+              }
+            :
+              (poll.page * int(parsed.?metadata.per_page.orValue(0)) < int(parsed.?metadata.count.orValue(0))).as(more,
+                {
+                  "events": (size(parsed.data) > 0) ?
+                    dyn(parsed.data.map(e, {"message": e.encode_json()}))
+                  :
+                    dyn([{"retry": true}]),
+                  "cursor": more ?
+                    {
+                      "page": poll.page + 1,
+                      ?"date_from": poll.?date_from,
+                    }
+                  :
+                    {"date_from": now.format("2006-01-02")},
+                  "want_more": more,
+                }
+              )
+          )
+        :
+          {
+            "events": [
+              {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET /api/kev/: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                },
+              },
+            ],
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event:
+    when:
+      equals:
+        retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
