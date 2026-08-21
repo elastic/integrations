@@ -3,31 +3,32 @@ description: Pipeline for processing asset logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - rename:
       field: interval_id
-      tag: rename_interval_id
+      tag: rename_interval_id_cdd42385
       target_field: qualys_gav.asset.interval_id
       ignore_missing: true
   - date:
       field: interval_start
-      tag: date_interval_start
+      tag: date_interval_start_718f7fe5
       target_field: qualys_gav.asset.interval_start
       formats:
         - ISO8601
       if: ctx.interval_start != null && ctx.interval_start != ''
       on_failure:
         - append:
+            tag: append_error_message_62d5b4a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
-      tag: remove_interval_start
+      tag: remove_interval_start_080d07be
       field:
         - interval_start
       ignore_missing: true
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
 
@@ -39,29 +40,33 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
-
   # Set up tag logic for choosing which cloud metadata to include.
   - append:
+      tag: append_tags_8889e0bc
       field: tags
       value: ["elastic_cloud_data", "provider_cloud_data"]
       if: ctx.tags?.contains('both') == true
   - script:
+      tag: script_50fcbb73
       lang: painless
       if: ctx.tags?.contains('both') == true
       source: ctx.tags.remove(ctx.tags.indexOf('both'));
   - script:
+      tag: script_c700db75
       lang: painless
       if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
       source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
   - set:
+      tag: set__conf_want_provider_cloud_791fe766
       field: _conf.want_provider_cloud
       value: true
       if: ctx.tags?.contains('provider_cloud_data') == true
   - remove:
+      tag: remove_cloud_61d5aaea
       description: Remove elastic agent-provided cloud metadata fields if not requested.
       field: cloud
       if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
@@ -71,25 +76,25 @@ processors:
   # parse the event JSON
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
 
   # rename to snake case
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_e887f140
       lang: painless
       description: Convert camelCase to snake_case
       source: |
@@ -142,137 +147,151 @@ processors:
   # Set observer.* and event.* fields
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_2b19d651
       value: Qualys
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_15805b0d
       value: Global AssetView
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_host_into_event_category
+      tag: append_host_into_event_category_5098f71a
       value: host
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
 
   # Convert values into appropriate type and do ECS mapping
   - convert:
       field: qualys_gav.asset.address
-      tag: convert_address_to_ip
+      tag: convert_address_to_ip_d1d43fcb
       type: ip
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.address != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_address_3fd1a894
             field: qualys_gav.asset.address
         - append:
+            tag: append_error_message_9eee65b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
-      tag: append_qualys_gav_asset_address_into_host_ip
+      tag: append_qualys_gav_asset_address_into_host_ip_bf1ae64f
       value: '{{{qualys_gav.asset.address}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.address != null
   - append:
       field: related.ip
-      tag: append_asset_address_into_related_ip
+      tag: append_asset_address_into_related_ip_f9239949
       value: '{{{qualys_gav.asset.address}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.address != null
   - convert:
       field: qualys_gav.asset.agent.connected_from
-      tag: convert_agent_connected_from_to_ip
+      tag: convert_agent_connected_from_to_ip_1199a23a
       type: ip
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.agent?.connected_from != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_connected_from_2681922e
             field: qualys_gav.asset.agent.connected_from
         - append:
+            tag: append_error_message_433fd5ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_asset_agent_connected_from_into_related_ip
+      tag: append_asset_agent_connected_from_into_related_ip_1f778f67
       value: '{{{qualys_gav.asset.agent.connected_from}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.agent?.connected_from != null
   - date:
       field: qualys_gav.asset.agent.last_activity
       target_field: qualys_gav.asset.agent.last_activity
-      tag: date_agent_last_activity
+      tag: date_agent_last_activity_ebb9b1a2
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.agent?.last_activity != null && ctx.qualys_gav.asset.agent.last_activity != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_last_activity_d2d83118
             field: qualys_gav.asset.agent.last_activity
         - append:
+            tag: append_error_message_5fa6a211
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.agent.last_checked_in
       target_field: qualys_gav.asset.agent.last_checked_in
-      tag: date_agent_last_checked_in
+      tag: date_agent_last_checked_in_6dd93541
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.agent?.last_checked_in != null && ctx.qualys_gav.asset.agent.last_checked_in != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_last_checked_in_5f504262
             field: qualys_gav.asset.agent.last_checked_in
         - append:
+            tag: append_error_message_7c069ed6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.agent.last_inventory
       target_field: qualys_gav.asset.agent.last_inventory
-      tag: date_agent_last_inventory
+      tag: date_agent_last_inventory_48fd6be7
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.agent?.last_inventory != null && ctx.qualys_gav.asset.agent.last_inventory != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_last_inventory_a10a0e11
             field: qualys_gav.asset.agent.last_inventory
         - append:
+            tag: append_error_message_5fa1c722
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.agent.udc_manifest_assigned
-      tag: convert_agent_udc_manifest_assigned_to_boolean
+      tag: convert_agent_udc_manifest_assigned_to_boolean_7d41636c
       type: boolean
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.agent?.udc_manifest_assigned != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_udc_manifest_assigned_386409f7
             field: qualys_gav.asset.agent.udc_manifest_assigned
         - append:
+            tag: append_error_message_d02c73db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.agent.error_status
-      tag: convert_agent_error_status_to_boolean
+      tag: convert_agent_error_status_to_boolean_c5eb0130
       type: boolean
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.agent?.error_status != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_agent_error_status_61eb3431
             field: qualys_gav.asset.agent.error_status
         - append:
+            tag: append_error_message_6803e037
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Remove fields having 0 value
   - script:
-      tag: script_to_drop_zero_values
+      tag: script_to_drop_zero_values_983a207d
       lang: painless
       description: This script processor iterates over the sensor object to remove fields with zero values.
       if: ctx.qualys_gav?.asset?.sensor instanceof Map
@@ -281,481 +300,531 @@ processors:
   - date:
       field: qualys_gav.asset.sensor.last_vmscan
       target_field: qualys_gav.asset.sensor.last_vmscan
-      tag: date_agent_last_vm_scan
+      tag: date_agent_last_vm_scan_fa6518e4
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_vmscan != null && ctx.qualys_gav.asset.sensor.last_vmscan != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_vmscan_4e14ab2c
             field: qualys_gav.asset.sensor.last_vmscan
         - append:
+            tag: append_error_message_29bf52d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_compliance_scan
       target_field: qualys_gav.asset.sensor.last_compliance_scan
-      tag: date_agent_last_compliance_scan
+      tag: date_agent_last_compliance_scan_bce238f9
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_compliance_scan != null && ctx.qualys_gav.asset.sensor.last_compliance_scan != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_compliance_scan_d793342d
             field: qualys_gav.asset.sensor.last_compliance_scan
         - append:
+            tag: append_error_message_b2a07006
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_full_scan
       target_field: qualys_gav.asset.sensor.last_full_scan
-      tag: date_agent_last_full_scan
+      tag: date_agent_last_full_scan_a89be436
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_full_scan != null && ctx.qualys_gav.asset.sensor.last_full_scan != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_full_scan_991a659a
             field: qualys_gav.asset.sensor.last_full_scan
         - append:
+            tag: append_error_message_e6ceff15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_vm_scan_date_scanner
       target_field: qualys_gav.asset.sensor.last_vm_scan_date_scanner
-      tag: date_agent_last_vm_scan_date_scanner
+      tag: date_agent_last_vm_scan_date_scanner_4d20be17
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_vm_scan_date_scanner != null && ctx.qualys_gav.asset.sensor.last_vm_scan_date_scanner != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_vm_scan_date_scanner_098dfdd7
             field: qualys_gav.asset.sensor.last_vm_scan_date_scanner
         - append:
+            tag: append_error_message_a806b0dd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.first_easm_scan_date
       target_field: qualys_gav.asset.sensor.first_easm_scan_date
-      tag: date_agent_first_easm_scan_date
+      tag: date_agent_first_easm_scan_date_a348ee42
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.first_easm_scan_date != null && ctx.qualys_gav.asset.sensor.first_easm_scan_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_first_easm_scan_date_06955c12
             field: qualys_gav.asset.sensor.first_easm_scan_date
         - append:
+            tag: append_error_message_6d1a2de3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_vm_scan_date_agent
       target_field: qualys_gav.asset.sensor.last_vm_scan_date_agent
-      tag: date_agent_last_vm_scan_date_agent
+      tag: date_agent_last_vm_scan_date_agent_1cde43a5
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_vm_scan_date_agent != null && ctx.qualys_gav.asset.sensor.last_vm_scan_date_agent != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_vm_scan_date_agent_b8d47b9d
             field: qualys_gav.asset.sensor.last_vm_scan_date_agent
         - append:
+            tag: append_error_message_031cca5e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_pc_scan_date_scanner
       target_field: qualys_gav.asset.sensor.last_pc_scan_date_scanner
-      tag: date_agent_last_pc_scan_date_scanner
+      tag: date_agent_last_pc_scan_date_scanner_aaed3c3f
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_pc_scan_date_scanner != null && ctx.qualys_gav.asset.sensor.last_pc_scan_date_scanner != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_pc_scan_date_scanner_853c1ce8
             field: qualys_gav.asset.sensor.last_pc_scan_date_scanner
         - append:
+            tag: append_error_message_29e185d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_pc_scan_date_agent
       target_field: qualys_gav.asset.sensor.last_pc_scan_date_agent
-      tag: date_agent_last_pc_scan_date_agent
+      tag: date_agent_last_pc_scan_date_agent_12201bb1
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_pc_scan_date_agent != null && ctx.qualys_gav.asset.sensor.last_pc_scan_date_agent != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_pc_scan_date_agent_6efd1368
             field: qualys_gav.asset.sensor.last_pc_scan_date_agent
         - append:
+            tag: append_error_message_9ef2bf1c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_easm_scan_date
       target_field: qualys_gav.asset.sensor.last_easm_scan_date
-      tag: date_agent_last_easm_scan_date
+      tag: date_agent_last_easm_scan_date_054a385f
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.sensor?.last_easm_scan_date != null && ctx.qualys_gav.asset.sensor.last_easm_scan_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_easm_scan_date_bcd055cf
             field: qualys_gav.asset.sensor.last_easm_scan_date
         - append:
+            tag: append_error_message_c693f834
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.asset_id
-      tag: convert_asset_id_to_string
+      tag: convert_asset_id_to_string_9f2d39b7
       type: string
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_asset_asset_id
+      tag: set_host_id_from_asset_asset_id_07a3c8b5
       copy_from: qualys_gav.asset.asset_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_asset_asset_id_into_related_hosts
+      tag: append_asset_asset_id_into_related_hosts_22943d40
       value: '{{{qualys_gav.asset.asset_id}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.asset_id != null
   - set:
       field: host.name
-      tag: set_host_name_from_asset_asset_name
+      tag: set_host_name_from_asset_asset_name_73de6552
       copy_from: qualys_gav.asset.asset_name
       ignore_empty_value: true
   - lowercase:
       field: host.name
-      tag: lowercase_host_name
+      tag: lowercase_host_name_676c5247
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_asset_asset_name_into_related_hosts
+      tag: append_asset_asset_name_into_related_hosts_9e13a866
       value: '{{{qualys_gav.asset.asset_name}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.asset_name != null
   - set:
       field: host.type
-      tag: set_host_type_from_asset_asset_type
+      tag: set_host_type_from_asset_asset_type_cfcdfaca
       copy_from: qualys_gav.asset.asset_type
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_asset_asset_uuid_into_related_hosts
+      tag: append_asset_asset_uuid_into_related_hosts_f5bd4392
       value: '{{{qualys_gav.asset.asset_uuid}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.asset_uuid != null
   - convert:
       field: qualys_gav.asset.container.has_sensor
-      tag: convert_container_has_sensor_to_string
+      tag: convert_container_has_sensor_to_string_44616af2
       type: string
       ignore_missing: true
   - convert:
       field: qualys_gav.asset.container.no_of_containers
-      tag: convert_container_no_of_containers_to_long
+      tag: convert_container_no_of_containers_to_long_48cfa6f2
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.container?.no_of_containers != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_container_no_of_containers_ac100035
             field: qualys_gav.asset.container.no_of_containers
         - append:
+            tag: append_error_message_0c149769
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.container.no_of_images
-      tag: convert_container_no_of_images_to_long
+      tag: convert_container_no_of_images_to_long_c53cf40b
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.container?.no_of_images != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_container_no_of_images_c4d7c7ac
             field: qualys_gav.asset.container.no_of_images
         - append:
+            tag: append_error_message_4ab2bff7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.cpu_count
-      tag: convert_cpu_count_to_long
+      tag: convert_cpu_count_to_long_3591cb22
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.cpu_count != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cpu_count_80189341
             field: qualys_gav.asset.cpu_count
         - append:
+            tag: append_error_message_905bdb97
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.created_date
       target_field: qualys_gav.asset.created_date
-      tag: date_created_date
+      tag: date_created_date_89126040
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.created_date != null && ctx.qualys_gav.asset.created_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_created_date_1cdcf338
             field: qualys_gav.asset.created_date
         - append:
+            tag: append_error_message_17219f56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_asset_created_date
+      tag: set_event_created_from_asset_created_date_86a21dad
       copy_from: qualys_gav.asset.created_date
       ignore_empty_value: true
   - convert:
       field: qualys_gav.asset.criticality.is_default
-      tag: convert_criticality_is_default_to_boolean
+      tag: convert_criticality_is_default_to_boolean_86c69371
       type: boolean
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.criticality?.is_default != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_criticality_is_default_7df6fcec
             field: qualys_gav.asset.criticality.is_default
         - append:
+            tag: append_error_message_cebf422a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.criticality.last_updated
       target_field: qualys_gav.asset.criticality.last_updated
-      tag: date_criticality_last_updated
+      tag: date_criticality_last_updated_dcf502fa
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.criticality?.last_updated != null && ctx.qualys_gav.asset.criticality.last_updated != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_criticality_last_updated_5af597f4
             field: qualys_gav.asset.criticality.last_updated
         - append:
+            tag: append_error_message_825866da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.criticality.score
-      tag: convert_criticality_score_to_long
+      tag: convert_criticality_score_to_long_8ff57787
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.criticality?.score != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_criticality_score_6eb8840c
             field: qualys_gav.asset.criticality.score
         - append:
+            tag: append_error_message_7a5f3e2e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_asset_dns_name
+      tag: set_host_hostname_from_asset_dns_name_ae941a0c
       copy_from: qualys_gav.asset.dns_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_asset_dns_name_into_related_hosts
+      tag: append_asset_dns_name_into_related_hosts_e0b09430
       value: '{{{qualys_gav.asset.dns_name}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.dns_name != null
   - foreach:
       field: qualys_gav.asset.domain
-      tag: foreach_asset_domain_to_set_host_domain
+      tag: foreach_asset_domain_to_set_host_domain_7c7de0dd
       if: ctx.qualys_gav?.asset?.domain instanceof List
       processor:
         append:
           field: host.domain
-          tag: append_asset_domain_into_host_domain
+          tag: append_asset_domain_into_host_domain_2439474e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.domain
-      tag: foreach_asset_domain_to_set_related_hosts
+      tag: foreach_asset_domain_to_set_related_hosts_84a65113
       if: ctx.qualys_gav?.asset?.domain instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_asset_domain_into_related_hosts
+          tag: append_asset_domain_into_related_hosts_10d4a237
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.subdomain
-      tag: foreach_asset_subdomain
+      tag: foreach_asset_subdomain_4d3378fb
       if: ctx.qualys_gav?.asset?.subdomain instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_asset_subdomain_into_related_hosts
+          tag: append_asset_subdomain_into_related_hosts_71f3c226
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - date:
       field: qualys_gav.asset.hardware.lifecycle.eos_date
       target_field: qualys_gav.asset.hardware.lifecycle.eos_date
-      tag: date_qualys_gav_asset_hardware_lifecycle_eos_date
+      tag: date_qualys_gav_asset_hardware_lifecycle_eos_date_3931e96a
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.eos_date != null && ctx.qualys_gav.asset.hardware.lifecycle.eos_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_eos_date_39c63924
             field: qualys_gav.asset.hardware.lifecycle.eos_date
         - append:
+            tag: append_error_message_8a440b8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.hardware.lifecycle.ga_date
       target_field: qualys_gav.asset.hardware.lifecycle.ga_date
-      tag: date_qualys_gav_asset_hardware_lifecycle_ga_date
+      tag: date_qualys_gav_asset_hardware_lifecycle_ga_date_8eb2d0a5
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.ga_date != null && ctx.qualys_gav.asset.hardware.lifecycle.ga_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_ga_date_d46459ce
             field: qualys_gav.asset.hardware.lifecycle.ga_date
         - append:
+            tag: append_error_message_904a6591
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.hardware.lifecycle.intro_date
       target_field: qualys_gav.asset.hardware.lifecycle.intro_date
-      tag: date_qualys_gav_asset_hardware_lifecycle_intro_date
+      tag: date_qualys_gav_asset_hardware_lifecycle_intro_date_ff3f4301
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.intro_date != null && ctx.qualys_gav.asset.hardware.lifecycle.intro_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_intro_date_43ff370c
             field: qualys_gav.asset.hardware.lifecycle.intro_date
         - append:
+            tag: append_error_message_bf31e2bc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.hardware.lifecycle.obsolete_date
       target_field: qualys_gav.asset.hardware.lifecycle.obsolete_date
-      tag: date_qualys_gav_asset_hardware_lifecycle_obsolete_date
+      tag: date_qualys_gav_asset_hardware_lifecycle_obsolete_date_7a629b28
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.hardware?.lifecycle?.obsolete_date != null && ctx.qualys_gav.asset.hardware.lifecycle.obsolete_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_hardware_lifecycle_obsolete_date_ee243581
             field: qualys_gav.asset.hardware.lifecycle.obsolete_date
         - append:
+            tag: append_error_message_219d87c4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: device.manufacturer
-      tag: set_device_manufacturer_from_asset_hardware_manufacturer
+      tag: set_device_manufacturer_from_asset_hardware_manufacturer_47c4230c
       copy_from: qualys_gav.asset.hardware.manufacturer
       ignore_empty_value: true
   - set:
       field: device.model.name
-      tag: set_device_model_name_from_asset_hardware_model
+      tag: set_device_model_name_from_asset_hardware_model_ff8d27fa
       copy_from: qualys_gav.asset.hardware.model
       ignore_empty_value: true
   - convert:
       field: qualys_gav.asset.hardware.taxonomy.id
-      tag: convert_qualys_gav_asset_hardware_taxonomy_id_to_string
+      tag: convert_qualys_gav_asset_hardware_taxonomy_id_to_string_996d9edd
       type: string
       ignore_missing: true
   - convert:
       field: qualys_gav.asset.host_id
-      tag: convert_host_id_to_string
+      tag: convert_host_id_to_string_ff55be41
       type: string
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_asset_host_id_into_related_hosts
+      tag: append_asset_host_id_into_related_hosts_0905f848
       value: '{{{qualys_gav.asset.host_id}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.host_id != null
   - date:
       field: qualys_gav.asset.inventory.created
       target_field: qualys_gav.asset.inventory.created
-      tag: date_qualys_gav_asset_inventory_created
+      tag: date_qualys_gav_asset_inventory_created_73f80a4d
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.inventory?.created != null && ctx.qualys_gav.asset.inventory.created != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_inventory_created_1a2ec5d6
             field: qualys_gav.asset.inventory.created
         - append:
+            tag: append_error_message_c8599ca9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.inventory.last_updated
       target_field: qualys_gav.asset.inventory.last_updated
-      tag: date_qualys_gav_asset_inventory_last_updated
+      tag: date_qualys_gav_asset_inventory_last_updated_1d6688ad
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.inventory?.last_updated != null && ctx.qualys_gav.asset.inventory.last_updated != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_inventory_last_updated_9807d99a
             field: qualys_gav.asset.inventory.last_updated
         - append:
+            tag: append_error_message_dcf9419d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.inventory_list_data.inventory
-      tag: foreach_asset_inventory_list_data_inventory_to_date_created
+      tag: foreach_asset_inventory_list_data_inventory_to_date_created_61671ad1
       if: ctx.qualys_gav?.asset?.inventory_list_data?.inventory instanceof List
       processor:
         date:
           field: _ingest._value.created
           target_field: _ingest._value.created
-          tag: date_asset_inventory_list_data_inventory_created
+          tag: date_asset_inventory_list_data_inventory_created_370aff7f
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_c2830050
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.inventory_list_data.inventory
-      tag: foreach_asset_inventory_list_data_inventory_to_date_last_updated
+      tag: foreach_asset_inventory_list_data_inventory_to_date_last_updated_62d86f55
       if: ctx.qualys_gav?.asset?.inventory_list_data?.inventory instanceof List
       processor:
         date:
           field: _ingest._value.last_updated
           target_field: _ingest._value.last_updated
-          tag: date_asset_inventory_list_data_inventory_last_updated
+          tag: date_asset_inventory_list_data_inventory_last_updated_eca5b6c9
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated_d4efbd66
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - date:
       field: qualys_gav.asset.activity.last_scanned_date
       target_field: qualys_gav.asset.activity.last_scanned_date
-      tag: date_qualys_gav_asset_activity_last_scanned_date
+      tag: date_qualys_gav_asset_activity_last_scanned_date_6de00f4b
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.activity?.last_scanned_date != null && ctx.qualys_gav.asset.activity.last_scanned_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_activity_last_scanned_date_f6c12efe
             field: qualys_gav.asset.activity.last_scanned_date
         - append:
+            tag: append_error_message_e658ad99
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.is_container_host
-      tag: convert_is_container_host_to_boolean
+      tag: convert_is_container_host_to_boolean_8f313971
       type: boolean
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.is_container_host != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_is_container_host_6cbaa43c
             field: qualys_gav.asset.is_container_host
         - append:
+            tag: append_error_message_567e7944
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.last_boot
-      tag: date_last_boot
+      tag: date_last_boot_bfb23966
       target_field: qualys_gav.asset.last_boot
       formats:
         - UNIX_MS
@@ -763,296 +832,312 @@ processors:
       if: ctx.qualys_gav?.asset?.last_boot != null && ctx.qualys_gav.asset.last_boot != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_last_boot_69fa7502
             field: qualys_gav.asset.last_boot
         - append:
+            tag: append_error_message_ad56b01c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.geo.city_name
-      tag: set_host_geo_city_name_from_asset_last_location_city
+      tag: set_host_geo_city_name_from_asset_last_location_city_a1128296
       copy_from: qualys_gav.asset.last_location.city
       ignore_empty_value: true
   - set:
       field: host.geo.continent_name
-      tag: set_host_geo_continent_name_from_asset_last_location_continent
+      tag: set_host_geo_continent_name_from_asset_last_location_continent_db195fec
       copy_from: qualys_gav.asset.last_location.continent
       ignore_empty_value: true
   - set:
       field: host.geo.country_name
-      tag: set_host_geo_country_name_from_asset_last_location_name
+      tag: set_host_geo_country_name_from_asset_last_location_name_cf152e13
       copy_from: qualys_gav.asset.last_location.name
       ignore_empty_value: true
   - set:
       field: host.geo.postal_code
-      tag: set_host_geo_postal_code_from_asset_last_location_postal
+      tag: set_host_geo_postal_code_from_asset_last_location_postal_e45b6dc4
       copy_from: qualys_gav.asset.last_location.postal
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name_from_asset_last_logged_on_user
+      tag: set_user_name_from_asset_last_logged_on_user_22115cbe
       copy_from: qualys_gav.asset.last_logged_on_user
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_asset_last_logged_on_user_into_related_user
+      tag: append_asset_last_logged_on_user_into_related_user_79bef934
       value: '{{{qualys_gav.asset.last_logged_on_user}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.last_logged_on_user != null
   - append:
       field: related.hosts
-      tag: append_asset_netbios_name_into_related_hosts
+      tag: append_asset_netbios_name_into_related_hosts_41ab15fd
       value: '{{{qualys_gav.asset.netbios_name}}}'
       allow_duplicates: false
       if: ctx.qualys_gav?.asset?.netbios_name != null
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_split_address_ip_v4
+      tag: foreach_network_interface_list_data_network_interface_to_split_address_ip_v4_e3472b20
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         split:
           field: _ingest._value.address_ip_v4
           separator: ','
-          tag: split_asset_network_interface_list_data_network_interface_address_ip_v4
+          tag: split_asset_network_interface_list_data_network_interface_address_ip_v4_bdd915b6
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_305b518c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_trim_address_ip_v4
+      tag: foreach_network_interface_list_data_network_interface_to_trim_address_ip_v4_3617315e
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         foreach:
           field: _ingest._value.address_ip_v4
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_trim
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_trim_2b93b6c3
           ignore_failure: true
           processor:
             trim:
               field: _ingest._value
-              tag: trim_asset_network_interface_list_data_network_interface_address_ip_v4
+              tag: trim_asset_network_interface_list_data_network_interface_address_ip_v4_42272592
               ignore_missing: true
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v4
+      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v4_24c58762
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         foreach:
           field: _ingest._value.address_ip_v4
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_9de440dc
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_asset_network_interface_list_data_network_interface_address_ip_v4
+              tag: convert_asset_network_interface_list_data_network_interface_address_ip_v4_79e2329c
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_ab28c5fe
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_373f505b
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_set_related_ip_from_address_ip_v4
+      tag: foreach_network_interface_list_data_network_interface_to_set_related_ip_from_address_ip_v4_9cb0ecbc
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         foreach:
           field: _ingest._value.address_ip_v4
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_7fb83455
           ignore_failure: true
           processor:
             append:
               field: related.ip
-              tag: append_network_interface_list_data_network_interface_address_ip_v4_into_related_ip
+              tag: append_network_interface_list_data_network_interface_address_ip_v4_into_related_ip_5afc06d3
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_gsub_mac_address
+      tag: foreach_network_interface_list_data_network_interface_to_gsub_mac_address_ddd02c30
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         gsub:
           field: _ingest._value.mac_address
-          tag: gsub_network_interface_list_data_network_interface_mac_address
+          tag: gsub_network_interface_list_data_network_interface_mac_address_3bd7aa9e
           pattern: ':'
           replacement: '-'
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_1e7075b7
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_uppercase_mac_address
+      tag: foreach_network_interface_list_data_network_interface_to_uppercase_mac_address_0f714dbe
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         uppercase:
           field: _ingest._value.mac_address
-          tag: uppercase_network_interface_list_data_network_interface_mac_address
+          tag: uppercase_network_interface_list_data_network_interface_mac_address_40887c9a
           ignore_missing: true
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_append_hostname
+      tag: foreach_network_interface_list_data_network_interface_to_append_hostname_d52c11c2
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_network_interface_list_data_network_interface_hostname_into_related_hosts
+          tag: append_network_interface_list_data_network_interface_hostname_into_related_hosts_cbe4760d
           value: '{{{_ingest._value.hostname}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_network_interface_list_data_network_interface_to_split_address_ip_v6
+      tag: foreach_network_interface_list_data_network_interface_to_split_address_ip_v6_a0331d27
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         split:
           field: _ingest._value.address_ip_v6
           separator: ', '
-          tag: split_asset_network_interface_list_data_network_interface_address_ip_v6
+          tag: split_asset_network_interface_list_data_network_interface_address_ip_v6_c1b9e7d4
           ignore_missing: true
           on_failure:
             - append:
+                tag: append_error_message_bb32ce5f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v6
+      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v6_760fa039
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         foreach:
           field: _ingest._value.address_ip_v6
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v6
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v6_7a54d9f1
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_asset_network_interface_list_data_network_interface_address_ip_v6
+              tag: convert_asset_network_interface_list_data_network_interface_address_ip_v6_63d8abe7
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_71285a21
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_35f0a99b
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_asset_network_interface_list_data_network_interface_to_set_related_ip_from_address_ip_v6
+      tag: foreach_asset_network_interface_list_data_network_interface_to_set_related_ip_from_address_ip_v6_d4db04bf
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         foreach:
           field: _ingest._value.address_ip_v6
-          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v6
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v6_e8786a53
           ignore_failure: true
           processor:
             append:
               field: related.ip
-              tag: append_asset_network_interface_list_data_network_interface_address_ip_v6_into_related_ip
+              tag: append_asset_network_interface_list_data_network_interface_address_ip_v6_into_related_ip_069e0eb0
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_asset_network_interface_list_data_network_interface_to_date_mac_vendor_intro_date
+      tag: foreach_asset_network_interface_list_data_network_interface_to_date_mac_vendor_intro_date_aa30d78f
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
         date:
           field: _ingest._value.mac_vendor_intro_date
           target_field: _ingest._value.mac_vendor_intro_date
-          tag: date_asset_network_interface_list_data_network_interface_mac_vendor_intro_date
+          tag: date_asset_network_interface_list_data_network_interface_mac_vendor_intro_date_a4ed9d95
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_mac_vendor_intro_date_5fc68938
                 field: _ingest._value.mac_vendor_intro_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.open_port_list_data.open_port
-      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_convert_port_to_long
+      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_convert_port_to_long_24cc375d
       if: ctx.qualys_gav?.asset?.open_port_list_data?.open_port instanceof List
       processor:
         convert:
           field: _ingest._value.port
-          tag: convert_qualys_gav_asset_open_port_list_data_open_port_to_long
+          tag: convert_qualys_gav_asset_open_port_list_data_open_port_to_long_9948cb81
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_port_03caeeb4
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
+                tag: append_error_message_a2e5e206
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.open_port_list_data.open_port
-      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_convert_detection_score_to_long
+      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_convert_detection_score_to_long_e012e311
       if: ctx.qualys_gav?.asset?.open_port_list_data?.open_port instanceof List
       processor:
         convert:
           field: _ingest._value.detection_score
-          tag: convert_qualys_gav_asset_open_port_list_data_open_port_detection_score_to_long
+          tag: convert_qualys_gav_asset_open_port_list_data_open_port_detection_score_to_long_d1eaf59a
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_detection_score_ef35890e
                 field: _ingest._value.detection_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_6b05b3d2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.open_port_list_data.open_port
-      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_date_first_found
+      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_date_first_found_f7054ca0
       if: ctx.qualys_gav?.asset?.open_port_list_data?.open_port instanceof List
       processor:
         date:
           field: _ingest._value.first_found
           target_field: _ingest._value.first_found
-          tag: date_open_port_list_data_open_port_first_found
+          tag: date_open_port_list_data_open_port_first_found_6d14a17f
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_found_69ef3fd7
                 field: _ingest._value.first_found
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.open_port_list_data.open_port
-      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_date_last_updated
+      tag: foreach_qualys_gav_asset_open_port_list_data_open_port_to_date_last_updated_33414d09
       if: ctx.qualys_gav?.asset?.open_port_list_data?.open_port instanceof List
       processor:
         date:
           field: _ingest._value.last_updated
           target_field: _ingest._value.last_updated
-          tag: date_open_port_list_data_open_port_last_updated
+          tag: date_open_port_list_data_open_port_last_updated_b7c289b7
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated_0cddb16c
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - set:
       field: host.architecture
-      tag: set_host_architecture_from_asset_operating_system_architecture
+      tag: set_host_architecture_from_asset_operating_system_architecture_0d70646c
       copy_from: qualys_gav.asset.operating_system.architecture
       ignore_empty_value: true
   - script:
       description: Dynamically set host.os.type values.
-      tag: script_map_host_os_type
+      tag: script_map_host_os_type_d6c71d44
       lang: painless
       if: ctx.qualys_gav?.asset?.operating_system?.category1 != null
       params:
-        macos : macos
-        linux : linux
-        unix : unix
-        windows : windows
-        ios : ios
-        android : android
+        macos: macos
+        linux: linux
+        unix: unix
+        windows: windows
+        ios: ios
+        android: android
       source: |
         def os_type = ctx.qualys_gav.asset.operating_system.category1.toLowerCase();
 
@@ -1066,129 +1151,141 @@ processors:
         }
   - convert:
       field: qualys_gav.asset.operating_system.cpe_id
-      tag: convert_qualys_gav_asset_operating_system_cpe_id_to_string
+      tag: convert_qualys_gav_asset_operating_system_cpe_id_to_string_22fb1033
       type: string
       ignore_missing: true
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_asset_operating_system_full_name
+      tag: set_host_os_full_from_asset_operating_system_full_name_c294a3ae
       copy_from: qualys_gav.asset.operating_system.full_name
       ignore_empty_value: true
   - date:
       field: qualys_gav.asset.operating_system.install_date
       target_field: qualys_gav.asset.operating_system.install_date
-      tag: date_qualys_gav_asset_operating_system_install_date
+      tag: date_qualys_gav_asset_operating_system_install_date_19d9d229
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.operating_system?.install_date != null && ctx.qualys_gav.asset.operating_system.install_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_install_date_b2d27148
             field: qualys_gav.asset.operating_system.install_date
         - append:
+            tag: append_error_message_edaa5e7d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.operating_system.lifecycle.eol_date
       target_field: qualys_gav.asset.operating_system.lifecycle.eol_date
-      tag: date_qualys_gav_asset_operating_system_lifecycle_eol_date
+      tag: date_qualys_gav_asset_operating_system_lifecycle_eol_date_c87a81a8
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.eol_date != null && ctx.qualys_gav.asset.operating_system.lifecycle.eol_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_eol_date_3da3b7b2
             field: qualys_gav.asset.operating_system.lifecycle.eol_date
         - append:
+            tag: append_error_message_61e0fc55
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.operating_system.lifecycle.eos_date
       target_field: qualys_gav.asset.operating_system.lifecycle.eos_date
-      tag: date_qualys_gav_asset_operating_system_lifecycle_eos_date
+      tag: date_qualys_gav_asset_operating_system_lifecycle_eos_date_cb248794
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.eos_date != null && ctx.qualys_gav.asset.operating_system.lifecycle.eos_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_eos_date_b7d31090
             field: qualys_gav.asset.operating_system.lifecycle.eos_date
         - append:
+            tag: append_error_message_ef3cbb2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.operating_system.lifecycle.ga_date
       target_field: qualys_gav.asset.operating_system.lifecycle.ga_date
-      tag: date_qualys_gav_asset_operating_system_lifecycle_ga_date
+      tag: date_qualys_gav_asset_operating_system_lifecycle_ga_date_a52f0df3
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.ga_date != null && ctx.qualys_gav.asset.operating_system.lifecycle.ga_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_ga_date_aea0bea5
             field: qualys_gav.asset.operating_system.lifecycle.ga_date
         - append:
+            tag: append_error_message_a2c03cfd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.operating_system.lifecycle.detection_score
-      tag: convert_qualys_gav_asset_operating_system_lifecycle_detection_score_to_long
+      tag: convert_qualys_gav_asset_operating_system_lifecycle_detection_score_to_long_022dcda6
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.operating_system?.lifecycle?.detection_score != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_operating_system_lifecycle_detection_score_d753c86c
             field: qualys_gav.asset.operating_system.lifecycle.detection_score
         - append:
+            tag: append_error_message_eb6c052f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.name
-      tag: set_host_os_name_from_asset_operating_system_os_name
+      tag: set_host_os_name_from_asset_operating_system_os_name_dbb44a4b
       copy_from: qualys_gav.asset.operating_system.os_name
       ignore_empty_value: true
   - set:
       field: host.os.family
-      tag: set_host_os_family_from_asset_operating_system_product_family
+      tag: set_host_os_family_from_asset_operating_system_product_family_869da589
       copy_from: qualys_gav.asset.operating_system.product_family
       ignore_empty_value: true
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_from_asset_operating_system_product_name
+      tag: set_host_os_platform_from_asset_operating_system_product_name_e8097018
       copy_from: qualys_gav.asset.operating_system.product_name
       ignore_empty_value: true
   - convert:
       field: qualys_gav.asset.operating_system.taxonomy.id
-      tag: convert_qualys_gav_asset_operating_system_taxonomy_id_to_string
+      tag: convert_qualys_gav_asset_operating_system_taxonomy_id_to_string_1ba2a677
       type: string
       ignore_missing: true
   - set:
       field: host.os.version
-      tag: set_host_os_version_from_asset_operating_system_version
+      tag: set_host_os_version_from_asset_operating_system_version_4e1dc8e4
       copy_from: qualys_gav.asset.operating_system.version
       ignore_empty_value: true
   - lowercase:
       field: qualys_gav.asset.provider
       target_field: cloud.provider
-      tag: lowercase_cloud_provider_from_asset_provider
+      tag: lowercase_cloud_provider_from_asset_provider_6bf5e256
       ignore_missing: true
 
   # Convert AWS EC2 specific fields
   - convert:
       field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
-      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_to_boolean
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_to_boolean_6d53d690
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_3a794bf9
             field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
             ignore_missing: true
         - append:
+            tag: append_error_message_58dd58d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
-      tag: date_qualys_gav_asset_cloud_provider_aws_ec2_launchdate
+      tag: date_qualys_gav_asset_cloud_provider_aws_ec2_launchdate_448ac46a
       target_field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
       formats:
         - UNIX_MS
@@ -1196,244 +1293,253 @@ processors:
       if: ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2?.launchdate != null && ctx.qualys_gav.asset.cloud_provider.aws.ec2.launchdate != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_launchdate_e5cf1e79
             field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
             ignore_missing: true
         - append:
+            tag: append_error_message_cc8e59d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
-      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_qualys_scanner_to_boolean
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_qualys_scanner_to_boolean_660df783
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_qualys_scanner_ea590b50
             field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
             ignore_missing: true
         - append:
+            tag: append_error_message_7d265e70
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
-      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_to_boolean
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_to_boolean_84768335
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_7c65aeed
             field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
             ignore_missing: true
         - append:
+            tag: append_error_message_72840dc3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Map/Convert AWS EC2 specific fields to ECS fields
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_asset_cloud_provider_aws_ec2_account_id
+      tag: set_cloud_account_id_from_asset_cloud_provider_aws_ec2_account_id_13d180e7
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.account_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.availability_zone
-      tag: set_cloud_availability_zone_from_asset_cloud_provider_aws_ec2_availability_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_aws_ec2_availability_zone_96cdc526
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.availability_zone
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_asset_cloud_provider_aws_ec2_instance_id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_aws_ec2_instance_id_e2c3c5ab
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name_from_asset_cloud_provider_aws_ec2_hostname
+      tag: set_cloud_instance_name_from_asset_cloud_provider_aws_ec2_hostname_12a59c51
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.hostname
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.machine.type
-      tag: set_cloud_machine_type_from_asset_cloud_provider_aws_ec2_instance_type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_aws_ec2_instance_type_deacabc8
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_type
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.region
-      tag: set_cloud_region_from_asset_cloud_provider_aws_ec2_region_code
+      tag: set_cloud_region_from_asset_cloud_provider_aws_ec2_region_code_9e15e51c
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.region.code
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_4c2ee25e
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'aws' && ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2 != null
       value: ec2
 
   # Map/Convert Azure specific fields to ECS fields
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_asset_cloud_provider_azure_vm_subscription_id
+      tag: set_cloud_account_id_from_asset_cloud_provider_azure_vm_subscription_id_53826ba2
       copy_from: qualys_gav.asset.cloud_provider.azure.vm.subscription_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_asset_cloud_provider_azure_vm_vm_id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_azure_vm_vm_id_92354705
       copy_from: qualys_gav.asset.cloud_provider.azure.vm.vm_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name_from_asset_cloud_provider_azure_vm_name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_azure_vm_name_305231d4
       copy_from: qualys_gav.asset.cloud_provider.azure.vm.name
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.machine.type
-      tag: set_cloud_machine_type_from_asset_cloud_provider_azure_vm_size
+      tag: set_cloud_machine_type_from_asset_cloud_provider_azure_vm_size_00c37cb7
       copy_from: qualys_gav.asset.cloud_provider.azure.vm.size
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.region
-      tag: set_cloud_region_from_asset_cloud_provider_azure_vm_location
+      tag: set_cloud_region_from_asset_cloud_provider_azure_vm_location_ad43723a
       copy_from: qualys_gav.asset.cloud_provider.azure.vm.location
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_3c85a147
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.azure?.vm != null
       value: vm
 
   # Map/Convert GCP specific fields to ECS fields
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_asset_cloud_provider_gcp_compute_project_id
+      tag: set_cloud_account_id_from_asset_cloud_provider_gcp_compute_project_id_fdf4b031
       copy_from: qualys_gav.asset.cloud_provider.gcp.compute.project_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.availability_zone
-      tag: set_cloud_availability_zone_from_asset_cloud_provider_gcp_compute_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_gcp_compute_zone_e80d0b03
       copy_from: qualys_gav.asset.cloud_provider.gcp.compute.zone
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_asset_cloud_provider_gcp_compute_instance_id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_gcp_compute_instance_id_aac60170
       copy_from: qualys_gav.asset.cloud_provider.gcp.compute.instance_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name_from_asset_cloud_provider_gcp_compute_hostname
+      tag: set_cloud_instance_name_from_asset_cloud_provider_gcp_compute_hostname_b6e00122
       copy_from: qualys_gav.asset.cloud_provider.gcp.compute.hostname
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.machine.type
-      tag: set_cloud_machine_type_from_asset_cloud_provider_gcp_compute_machine_type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_gcp_compute_machine_type_8fe360e1
       copy_from: qualys_gav.asset.cloud_provider.gcp.compute.machine_type
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.project.id
-      tag: set_cloud_project_id_from_asset_cloud_provider_gcp_compute_project_id
+      tag: set_cloud_project_id_from_asset_cloud_provider_gcp_compute_project_id_30aa39f7
       copy_from: qualys_gav.asset.cloud_provider.gcp.compute.project_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - grok:
       field: qualys_gav.asset.cloud_provider.gcp.compute.zone
-      tag: grok_cloud_region_from_asset_cloud_provider_gcp_compute_zone
+      tag: grok_cloud_region_from_asset_cloud_provider_gcp_compute_zone_f0d55a6c
       patterns:
         - '%{GREEDYDATA:cloud.region}-%{WORD}$'
       if: ctx._conf?.want_provider_cloud == true
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f7c0d4cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_7f3021b2
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'gcp' && ctx.qualys_gav?.asset?.cloud_provider?.gcp?.compute != null
       value: compute
 
   # Convert IBM specific fields
   - convert:
       field: qualys_gav.asset.cloud_provider.ibm.virtual_server.datacenter_id
-      tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_datacenter_id_to_string
+      tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_datacenter_id_to_string_d9d226f0
       type: string
       ignore_missing: true
   - convert:
       field: qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id
-      tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_ibm_id_to_string
+      tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_ibm_id_to_string_a86b4449
       type: string
       ignore_missing: true
-  
+
   # Map/Convert IBM specific fields to ECS fields
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_asset_cloud_provider_ibm_virtual_server_datacenter_id
+      tag: set_cloud_account_id_from_asset_cloud_provider_ibm_virtual_server_datacenter_id_c5157c27
       copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.datacenter_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_asset_cloud_provider_ibm_virtual_server_ibm_id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_ibm_virtual_server_ibm_id_eb4eb59f
       copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name_from_asset_cloud_provider_ibm_virtual_server_device_name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_ibm_virtual_server_device_name_684c749d
       copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.device_name
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.availability_zone
-      tag: set_cloud_availability_zone_from_asset_cloud_provider_ibm_virtual_server_location
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_ibm_virtual_server_location_e153d6e6
       copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.location
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name
+      tag: set_cloud_service_name_fb901813
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.ibm?.virtual_server != null
       value: virtual_server
 
   # Map risk scores
   - convert:
       field: qualys_gav.asset.risk_score
-      tag: convert_qualys_gav_asset_risk_score_to_float
+      tag: convert_qualys_gav_asset_risk_score_to_float_9da7aa85
       type: float
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.risk_score != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_risk_score_bf125402
             field: qualys_gav.asset.risk_score
         - append:
+            tag: append_error_message_f8efa329
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.risk_score
-      tag: set_event_risk_score_from_asset_risk_score
+      tag: set_event_risk_score_from_asset_risk_score_fc2df9ed
       copy_from: qualys_gav.asset.risk_score
       ignore_empty_value: true
   - foreach:
       field: qualys_gav.asset.business_app_list_data.business_app
-      tag: foreach_business_app_list_data_software
+      tag: foreach_business_app_list_data_software_776d3011
       if: ctx.qualys_gav?.asset?.business_app_list_data?.business_app != null && ctx.qualys_gav.asset.business_app_list_data.business_app != ''
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_sofware_list_data_software_id_to_string
+          tag: convert_sofware_list_data_software_id_to_string_c90d159e
           type: string
           ignore_missing: true
   - date:
       field: qualys_gav.asset.sensor_last_updated_date
-      tag: date_sensor_last_updated_date
+      tag: date_sensor_last_updated_date_8dbb485e
       target_field: qualys_gav.asset.sensor_last_updated_date
       formats:
         - UNIX_MS
@@ -1441,597 +1547,642 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor_last_updated_date != null && ctx.qualys_gav.asset.sensor_last_updated_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_sensor_last_updated_date_14dc9f26
             field: qualys_gav.asset.sensor_last_updated_date
         - append:
+            tag: append_error_message_9be1c881
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_id_to_string
+      tag: foreach_sofware_list_data_software_to_convert_id_to_string_822ed7f8
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_sofware_list_data_software_id
+          tag: convert_sofware_list_data_software_id_571f4d28
           target_field: _ingest._value.id
           type: string
           ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_name_from_full_name
+      tag: foreach_sofware_list_data_software_to_append_package_name_from_full_name_1c28da11
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.name
-          tag: append_sofware_list_data_software_name_into_package_name
+          tag: append_sofware_list_data_software_name_into_package_name_8ce417ae
           value: '{{{_ingest._value.full_name}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_name_from_software_type
+      tag: foreach_sofware_list_data_software_to_append_package_name_from_software_type_832d8118
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.type
-          tag: append_sofware_list_data_software_name_into_package_name
+          tag: append_sofware_list_data_software_name_into_package_name_fcdc66f5
           value: '{{{_ingest._value.software_type}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_is_ignored
+      tag: foreach_sofware_list_data_software_to_convert_is_ignored_2e02c5c0
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         convert:
           field: _ingest._value.is_ignored
-          tag: convert_sofware_list_data_software_is_ignored
+          tag: convert_sofware_list_data_software_is_ignored_d13e9160
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_ignored_f1012280
                 field: _ingest._value.is_ignored
                 ignore_missing: true
             - append:
+                tag: append_error_message_c6120db2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_version_from_version
+      tag: foreach_sofware_list_data_software_to_append_package_version_from_version_74c2b78f
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.version
-          tag: append_software_list_data_software_version_into_package_version
+          tag: append_software_list_data_software_version_into_package_version_6cb69e74
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_architecture_from_architecture
+      tag: foreach_sofware_list_data_software_to_append_package_architecture_from_architecture_57523a60
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.architecture
-          tag: append_software_list_data_software_architecture_into_package_architecture
+          tag: append_software_list_data_software_architecture_into_package_architecture_315e5f9e
           value: '{{{_ingest._value.architecture}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_date_installed_date
+      tag: foreach_sofware_list_data_software_to_date_installed_date_539c1466
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         date:
           field: _ingest._value.install_date
           target_field: _ingest._value.install_date
-          tag: date_software_list_data_software_installDate
+          tag: date_software_list_data_software_installDate_29df0a76
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_install_date_b2eb146d
                 field: _ingest._value.install_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_installed_from_install_date
+      tag: foreach_sofware_list_data_software_to_append_package_installed_from_install_date_81ad3ff2
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.installed
-          tag: append_software_list_data_software_installDate_into_package_installed
+          tag: append_software_list_data_software_installDate_into_package_installed_14864750
           value: '{{{_ingest._value.install_date}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_path_from_install_path
+      tag: foreach_sofware_list_data_software_to_append_package_path_from_install_path_1b4420ff
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.path
-          tag: append_software_list_data_software_install_path_into_package_path
+          tag: append_software_list_data_software_install_path_into_package_path_0dea6167
           value: '{{{_ingest._value.install_path}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_date_last_updated
+      tag: foreach_sofware_list_data_software_to_date_last_updated_3adb9a42
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         date:
           field: _ingest._value.last_updated
           target_field: _ingest._value.last_updated
-          tag: date_software_list_data_software_last_updated
+          tag: date_software_list_data_software_last_updated_ab5e077a
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated_67e6bda2
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_date_last_use
+      tag: foreach_sofware_list_data_software_to_date_last_use_4b4053ad
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         date:
           field: _ingest._value.last_use_date
           target_field: _ingest._value.last_use_date
-          tag: date_software_list_data_software_last_use_date
+          tag: date_software_list_data_software_last_use_date_a4128bab
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_use_date_5fa24a69
                 field: _ingest._value.last_use_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_is_package
+      tag: foreach_sofware_list_data_software_to_convert_is_package_7bc20da2
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         convert:
           field: _ingest._value.is_package
-          tag: convert_sofware_list_data_software_is_package
+          tag: convert_sofware_list_data_software_is_package_1c2243a1
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_package_5afbdd35
                 field: _ingest._value.is_package
                 ignore_missing: true
             - append:
+                tag: append_error_message_73af1cbd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_is_package_component
+      tag: foreach_sofware_list_data_software_to_convert_is_package_component_adcb1ed9
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         convert:
           field: _ingest._value.is_package_component
-          tag: convert_sofware_list_data_software_is_package_component
+          tag: convert_sofware_list_data_software_is_package_component_bd7d3e93
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_package_component_9dad3b2e
                 field: _ingest._value.is_package_component
                 ignore_missing: true
             - append:
+                tag: append_error_message_42c1090a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_path_from_product_url
+      tag: foreach_sofware_list_data_software_to_append_package_path_from_product_url_447e04dd
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.reference
-          tag: append_software_list_data_software_product_url_into_package_path
+          tag: append_software_list_data_software_product_url_into_package_path_c7610d05
           value: '{{{_ingest._value.product_url}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_ga_date
+      tag: foreach_sofware_list_data_software_to_convert_ga_date_e7d0c71e
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         date:
           field: _ingest._value.lifecycle.ga_date
           target_field: _ingest._value.lifecycle.ga_date
-          tag: date_software_list_data_software_ga_date
+          tag: date_software_list_data_software_ga_date_bfd56579
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_ga_date_0cafbcfd
                 field: _ingest._value.lifecycle.ga_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_date_lifecycle_eol_date
+      tag: foreach_sofware_list_data_software_date_lifecycle_eol_date_1667e5f9
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         date:
           field: _ingest._value.lifecycle.eol_date
           target_field: _ingest._value.lifecycle.eol_date
-          tag: date_software_list_data_software_lifecycle_eol_date
+          tag: date_software_list_data_software_lifecycle_eol_date_6f5bc07c
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_eol_date_768b22ff
                 field: _ingest._value.lifecycle.eol_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_date_lifecycle_eos_date
+      tag: foreach_sofware_list_data_software_date_lifecycle_eos_date_e75297c6
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         date:
           field: _ingest._value.lifecycle.eos_date
           target_field: _ingest._value.lifecycle.eos_date
-          tag: date_software_list_data_software_lifecycle_eos_date
+          tag: date_software_list_data_software_lifecycle_eos_date_d9032321
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_eos_date_748cadfd
                 field: _ingest._value.lifecycle.eos_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_lifecycle_detection_score
+      tag: foreach_sofware_list_data_software_to_convert_lifecycle_detection_score_cdc53591
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         convert:
           field: _ingest._value.lifecycle.detection_score
-          tag: convert_software_list_data_software_lifecycle_detection_score
+          tag: convert_software_list_data_software_lifecycle_detection_score_717e66e4
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_lifecycle_detection_score_aa28b02e
                 field: _ingest._value.lifecycle.detection_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_a39bbaea
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_description_from_support_stage_desc
+      tag: foreach_sofware_list_data_software_to_append_package_description_from_support_stage_desc_028bca10
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.description
-          tag: append_software_list_data_software_support_stage_desc
+          tag: append_software_list_data_software_support_stage_desc_c364c5fd
           value: '{{{_ingest._value.support_stage_desc}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_append_package_license_from_support_stage_desc
+      tag: foreach_sofware_list_data_software_to_append_package_license_from_support_stage_desc_7d8269a5
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         append:
           field: package.license
-          tag: append_software_list_data_software_support_stage_desc
+          tag: append_software_list_data_software_support_stage_desc_acb1d2d9
           value: '{{{_ingest._value.license.category}}}'
           allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_convert_authorization_detection_score
+      tag: foreach_sofware_list_data_software_to_convert_authorization_detection_score_e57c2dc2
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         convert:
           field: _ingest._value.authorization_detection_score
-          tag: convert_software_list_data_software_authorization_detection_score
+          tag: convert_software_list_data_software_authorization_detection_score_b3d41ac2
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_authorization_detection_score_b86d2f0c
                 field: _ingest._value.authorization_detection_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_7e88c160
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_date_software_instances_first_seen
+      tag: foreach_sofware_list_data_software_to_date_software_instances_first_seen_f0318b0e
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         foreach:
           field: _ingest._value.software_instances
-          tag: foreach_software_list_data_software_software_instances_first_seen
+          tag: foreach_software_list_data_software_software_instances_first_seen_ecf3861e
           ignore_failure: true
           processor:
             date:
               field: _ingest._value.first_seen
               target_field: _ingest._value.first_seen
-              tag: date_software_list_data_software_software_instances_firstSeen
+              tag: date_software_list_data_software_software_instances_firstSeen_7ba0d98b
               formats:
                 - UNIX_MS
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_first_seen_6525120d
                     field: _ingest._value.first_seen
                     ignore_missing: true
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_sofware_list_data_software_to_date_software_instances_last_seen
+      tag: foreach_sofware_list_data_software_to_date_software_instances_last_seen_bd5af510
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List
       processor:
         foreach:
           field: _ingest._value.software_instances
-          tag: foreach_software_list_data_software_software_instances_last_seen
+          tag: foreach_software_list_data_software_software_instances_last_seen_84615178
           ignore_failure: true
           processor:
             date:
               field: _ingest._value.last_seen
               target_field: _ingest._value.last_seen
-              tag: date_software_list_data_software_software_instances_last_seen
+              tag: date_software_list_data_software_software_instances_last_seen_bb92ebe5
               formats:
                 - UNIX_MS
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_last_seen_b5ee77e5
                     field: _ingest._value.last_seen
                     ignore_missing: true
   - foreach:
       field: qualys_gav.asset.tag_list.tag
-      tag: foreach_tagList_tag_to_convert_criticality_score
+      tag: foreach_tagList_tag_to_convert_criticality_score_18ccd4df
       if: ctx.qualys_gav?.asset?.tag_list?.tag instanceof List
       processor:
         convert:
           field: _ingest._value.criticality_score
-          tag: convert_tagList_tag_criticality_score
+          tag: convert_tagList_tag_criticality_score_42a8debf
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_criticality_score_89a048af
                 field: _ingest._value.criticality_score
                 ignore_missing: true
             - append:
+                tag: append_error_message_c67ee697
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.tag_list.tag
-      tag: foreach_tagList_tag_to_convert_tag_id
+      tag: foreach_tagList_tag_to_convert_tag_id_48408904
       if: ctx.qualys_gav?.asset?.tag_list?.tag instanceof List
       processor:
         convert:
           field: _ingest._value.tag_id
-          tag: convert_tagList_tag_tag_id_to_string
+          tag: convert_tagList_tag_tag_id_to_string_7f7153c4
           type: string
           ignore_missing: true
   - foreach:
       field: qualys_gav.asset.tag_list.tag
-      tag: foreach_tagList_tag_to_convert_background_color
+      tag: foreach_tagList_tag_to_convert_background_color_b2d9d30a
       if: ctx.qualys_gav?.asset?.tag_list?.tag instanceof List
       processor:
         convert:
           field: _ingest._value.background_color
-          tag: convert_tagList_tag_background_color_to_string
+          tag: convert_tagList_tag_background_color_to_string_17b41ae2
           type: string
           ignore_missing: true
   - foreach:
       field: qualys_gav.asset.tag_list.tag
-      tag: foreach_tagList_tag_to_convert_foreground_color
+      tag: foreach_tagList_tag_to_convert_foreground_color_eef5126f
       if: ctx.qualys_gav?.asset?.tag_list?.tag instanceof List
       processor:
         convert:
           field: _ingest._value.foreground_color
-          tag: convert_tagList_tag_foreground_color_to_string
+          tag: convert_tagList_tag_foreground_color_to_string_0d5aa44e
           type: string
           ignore_missing: true
   - convert:
       field: qualys_gav.asset.threads_per_core
-      tag: convert_threads_per_core
+      tag: convert_threads_per_core_d2d319f2
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.threads_per_core != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_threads_per_core_a62a83c3
             field: qualys_gav.asset.threads_per_core
         - append:
+            tag: append_error_message_f319ca57
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.timezone
-      tag: set_event_timezone_from_asset_time_zone
+      tag: set_event_timezone_from_asset_time_zone_4a06a43b
       copy_from: qualys_gav.asset.time_zone
       ignore_empty_value: true
   - convert:
       field: qualys_gav.asset.total_memory
-      tag: convert_total_memory_to_long
+      tag: convert_total_memory_to_long_27024366
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.total_memory != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_total_memory_5b393921
             field: qualys_gav.asset.total_memory
         - append:
+            tag: append_error_message_93e233e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.volume_list_data.volume
-      tag: foreach_volume_list_data_volume_to_convert_free
+      tag: foreach_volume_list_data_volume_to_convert_free_bbad66d2
       if: ctx.qualys_gav?.asset?.volume_list_data?.volume instanceof List
       processor:
         convert:
           field: _ingest._value.free
-          tag: convert_volume_list_data_volume_free_to_long
+          tag: convert_volume_list_data_volume_free_to_long_63409b2a
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_free_3c2fc818
                 field: _ingest._value.free
                 ignore_missing: true
             - append:
+                tag: append_error_message_0281a330
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.volume_list_data.volume
-      tag: foreach_volume_list_data_volume_to_convert_size
+      tag: foreach_volume_list_data_volume_to_convert_size_5b700d8c
       if: ctx.qualys_gav?.asset?.volume_list_data?.volume instanceof List
       processor:
         convert:
           field: _ingest._value.size
-          tag: convert_volume_list_data_volume_size_to_long
+          tag: convert_volume_list_data_volume_size_to_long_9c7b5bf0
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_size_4b0fd9ca
                 field: _ingest._value.size
                 ignore_missing: true
             - append:
+                tag: append_error_message_d3007a45
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.whois
-      tag: foreach_whois_to_date_created_date
+      tag: foreach_whois_to_date_created_date_3d150dfc
       if: ctx.qualys_gav?.asset?.whois instanceof List
       processor:
         date:
           field: _ingest._value.created_date
-          tag: date_whois_created_date
+          tag: date_whois_created_date_a6037c5d
           target_field: _ingest._value.created_date
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_date_19b8af96
                 field: _ingest._value.created_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.whois
-      tag: foreach_whois_to_date_expiration_date
+      tag: foreach_whois_to_date_expiration_date_ea92441b
       if: ctx.qualys_gav?.asset?.whois instanceof List
       processor:
         date:
           field: _ingest._value.expiration_date
-          tag: date_whois_expiration_date
+          tag: date_whois_expiration_date_3e1ac050
           target_field: _ingest._value.expiration_date
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_expiration_date_9704406f
                 field: _ingest._value.expiration_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.whois
-      tag: foreach_whois_to_date_updated_date
+      tag: foreach_whois_to_date_updated_date_1137c414
       if: ctx.qualys_gav?.asset?.whois instanceof List
       processor:
         date:
           field: _ingest._value.updated_date
-          tag: date_whois_updated_date
+          tag: date_whois_updated_date_37a941e7
           target_field: _ingest._value.updated_date
           formats:
             - UNIX_MS
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_updated_date_bf67f445
                 field: _ingest._value.updated_date
                 ignore_missing: true
   - foreach:
       field: qualys_gav.asset.whois
-      tag: foreach_whois_to_append_domain_into_related_hosts
+      tag: foreach_whois_to_append_domain_into_related_hosts_4e0d0942
       if: ctx.qualys_gav?.asset?.whois instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_whois_domain_into_related_hosts
+          tag: append_whois_domain_into_related_hosts_8a564e07
           value: '{{{_ingest._value.domain}}}'
           allow_duplicates: false
   - date:
       field: qualys_gav.asset.last_modified_date
       target_field: qualys_gav.asset.last_modified_date
-      tag: date_last_modified_date
+      tag: date_last_modified_date_cd52caa3
       formats:
         - UNIX_MS
         - ISO8601
       if: ctx.qualys_gav?.asset?.last_modified_date != null && ctx.qualys_gav.asset.last_modified_date != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_last_modified_date_0bbdcf13
             field: qualys_gav.asset.last_modified_date
         - append:
+            tag: append_error_message_243c0d23
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.processor.speed
-      tag: convert_processor_speed_to_long
+      tag: convert_processor_speed_to_long_977a1e8b
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.processor?.speed != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_speed_077b26fa
             field: qualys_gav.asset.processor.speed
         - append:
+            tag: append_error_message_6bec619a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.processor.num_cpus
-      tag: convert_container_num_cpus_to_long
+      tag: convert_container_num_cpus_to_long_48e519a5
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.processor?.num_cpus != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_num_cpus_93302a4d
             field: qualys_gav.asset.processor.num_cpus
         - append:
+            tag: append_error_message_3c3652a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.processor.no_of_socket
-      tag: convert_container_no_of_socket_to_long
+      tag: convert_container_no_of_socket_to_long_73968f3b
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.processor?.no_of_socket != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_no_of_socket_7c50cfab
             field: qualys_gav.asset.processor.no_of_socket
         - append:
+            tag: append_error_message_0573ebda
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.processor.threads_per_core
-      tag: convert_container_threads_per_core_to_long
+      tag: convert_container_threads_per_core_to_long_d785cdee
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.processor?.threads_per_core != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_threads_per_core_91f902fe
             field: qualys_gav.asset.processor.threads_per_core
         - append:
+            tag: append_error_message_2c1e5afe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.processor.cores_per_socket
-      tag: convert_container_cores_per_socket_to_long
+      tag: convert_container_cores_per_socket_to_long_99ed9560
       type: long
       ignore_missing: true
       if: ctx.qualys_gav?.asset?.processor?.cores_per_socket != ''
       on_failure:
         - remove:
+            tag: remove_qualys_gav_asset_processor_cores_per_socket_bf28fa39
             field: qualys_gav.asset.processor.cores_per_socket
         - append:
+            tag: append_error_message_b106f4e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_gav.asset.lpar_id
-      tag: convert_lpar_id_to_string
+      tag: convert_lpar_id_to_string_bf5a8788
       type: string
       ignore_missing: true
 
   # Mask Sensitive Data
   - foreach:
       field: qualys_gav.asset.whois
-      tag: foreach_whois_to_mask_registrant_contact
+      tag: foreach_whois_to_mask_registrant_contact_15cad3e1
       if: ctx.qualys_gav?.asset?.whois instanceof List && ctx.tags != null && ctx.tags.contains('hide_sensitive')
       processor:
         set:
           field: _ingest._value.registrant_contact
-          tag: set_whois_registrant_contact
+          tag: set_whois_registrant_contact_e057c1fe
           value: 'REDACTED'
 
   # Remove Duplicate Custom Field if preserve_duplicate_custom_fields are not enabled
   - foreach:
       field: qualys_gav.asset.software_list_data.software
-      tag: foreach_software_list_data_software_to_remove_duplicate_custom_fields
+      tag: foreach_software_list_data_software_to_remove_duplicate_custom_fields_574129ac
       if: ctx.qualys_gav?.asset?.software_list_data?.software instanceof List && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
       processor:
         remove:
@@ -2045,7 +2196,7 @@ processors:
             - _ingest._value.product_url
             - _ingest._value.version
             - _ingest._value.support_stage_desc
-          tag: preserve_duplicate_custom_fields
+          tag: preserve_duplicate_custom_fields_a3265518
           ignore_missing: true
   - remove:
       field:
@@ -2073,18 +2224,18 @@ processors:
         - qualys_gav.asset.cloud_provider
         - qualys_gav.asset.risk_score
         - qualys_gav.asset.time_zone
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e11998d1
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - _conf
-      tag: remove_temporary_fields
+      tag: remove_temporary_fields_1277a50c
       ignore_missing: true
 
   # Cleanup
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_93302de8
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -2111,16 +2262,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -2128,9 +2281,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

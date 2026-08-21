@@ -41,6 +41,32 @@ processors:
   - remove:
       field: system.syslog.timestamp
   - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+      description: Set event.kind to event for syslog log records.
+  - script:
+      description: >-
+        Categorize systemd unit lifecycle messages. Only the completed
+        'Started'/'Stopped' templates are matched; 'Stopped target' is
+        excluded because targets are synchronization points, not services.
+        event.outcome is intentionally not set: a 'Stopped' line is identical
+        for clean shutdowns and crashed units, so outcome cannot be derived
+        from a single message.
+      tag: script_categorize_systemd_lifecycle
+      if: ctx.process?.name == 'systemd' && ctx.message != null
+      lang: painless
+      source: >-
+        if (ctx.message.startsWith('Started ')) {
+          ctx.event.category = ['process'];
+          ctx.event.type = ['start'];
+          ctx.event.action = 'service-start';
+        } else if (ctx.message.startsWith('Stopped ') && !ctx.message.startsWith('Stopped target ')) {
+          ctx.event.category = ['process'];
+          ctx.event.type = ['end'];
+          ctx.event.action = 'service-stop';
+        }
+  - set:
       field: ecs.version
       value: 8.11.0
 on_failure:

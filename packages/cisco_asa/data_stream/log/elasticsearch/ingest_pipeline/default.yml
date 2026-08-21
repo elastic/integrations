@@ -310,6 +310,9 @@ processors:
       description: "106015"
       patterns:
       - "Deny %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IPORHOST:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
+      pattern_definitions:
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106016'"
       tag: parse_106016
@@ -468,12 +471,12 @@ processors:
       field: "message"
       description: "113015"
       patterns:
-      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{DATA:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
+      - "^AAA user authentication Rejected%{SPACE}: reason = %{REASON:_temp_.cisco.rejection_reason}%{SPACE}: local database%{SPACE}: [Uu]ser = %{DATA:source.user.name}%{SPACE}: [Uu]ser IP = %{IPORNONE}%{SPACE}$"
+      - "^AAA user authentication Rejected%{SPACE}: reason = %{REASON:_temp_.cisco.rejection_reason}%{SPACE}: local database%{SPACE}: [Uu]ser = %{USERPART:source.user.name}%{SPACE}$"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|User was not found)
-        USERNAME: "[a-zA-Z0-9._'-]+"
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
-
+        IPORNONE: (%{IP:source.address}|None)
+        USERPART: "[^:]+?"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       tag: parse_113019
@@ -590,25 +593,142 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
+  # Message 302020 reports its addresses positionally: faddr is the foreign host, laddr the real
+  # address of the local host and gaddr the address the local host is mapped to. Which ECS entity
+  # each one belongs to therefore depends on the direction of the connection, so they are captured
+  # into direction-neutral fields here and assigned to source and destination below.
+  # https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/asa-syslog/syslog-messages-302003-to-342008.html#con_4770808
   - grok:
       if: "ctx._temp_.cisco.message_id == '302020'"
       tag: parse_302020
       field: "message"
       description: "302020"
       patterns:
-        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{MAPPEDSRC}|%{NOTCOLON}:%{MAPPEDSRC})/%{NUMBER} laddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{FADDR}|%{NOTCOLON:_temp_.faddr_interface}:%{FADDR})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_FADDR}\\) )?gaddr (?:%{GADDR}|%{NOTCOLON}:%{GADDR})/%{NUMBER} laddr (?:%{LADDR}|%{NOTCOLON:_temp_.laddr_interface}:%{LADDR})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_LADDR}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
-        ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
-        MAPPEDSRC: "(?:%{DATA:_temp_.natsrcip}|%{HOSTNAME})"
+        FADDR: "(?:%{IP:_temp_.faddr_address}|%{HOSTNAME:_temp_.faddr_domain})"
+        LADDR: "(?:%{IP:_temp_.laddr_address}|%{HOSTNAME:_temp_.laddr_domain})"
+        GADDR: "(?:%{DATA:_temp_.gaddr}|%{HOSTNAME})"
         USERNAME: "[a-zA-Z0-9._'-]+"
-        CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
-        CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
+        CISCO_USER_OR_SGT_FADDR: (?:%{CISCO_USER:_temp_.faddr_user_or_sgt}|%{CISCO_SGT:_temp_.faddr_user_or_sgt}|\((?:%{CISCO_USER:_temp_.faddr_user_or_sgt}|%{CISCO_SGT:_temp_.faddr_user_or_sgt})\))
+        CISCO_USER_OR_SGT_LADDR: (?:%{CISCO_USER:_temp_.laddr_user_or_sgt}|%{CISCO_SGT:_temp_.laddr_user_or_sgt}|\((?:%{CISCO_USER:_temp_.laddr_user_or_sgt}|%{CISCO_SGT:_temp_.laddr_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
+  # An inbound connection was initiated from the foreign host, so faddr is the source and laddr the
+  # destination, and gaddr is the mapped address of the local destination host.
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_faddr_address
+      field: _temp_.faddr_address
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_faddr_domain
+      field: _temp_.faddr_domain
+      target_field: source.domain
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_faddr_interface
+      field: _temp_.faddr_interface
+      target_field: _temp_.cisco.source_interface
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_faddr_user_or_sgt
+      field: _temp_.faddr_user_or_sgt
+      target_field: _temp_.cisco.source_user_or_sgt
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_laddr_address
+      field: _temp_.laddr_address
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_laddr_domain
+      field: _temp_.laddr_domain
+      target_field: destination.domain
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_laddr_interface
+      field: _temp_.laddr_interface
+      target_field: _temp_.cisco.destination_interface
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_laddr_user_or_sgt
+      field: _temp_.laddr_user_or_sgt
+      target_field: _temp_.cisco.destination_user_or_sgt
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'inbound'"
+      tag: rename_302020_inbound_gaddr
+      field: _temp_.gaddr
+      target_field: _temp_.natdstip
+      ignore_missing: true
+  # An outbound connection was initiated from the local host, so laddr is the source and faddr the
+  # destination, and gaddr is the mapped address of the local source host.
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_faddr_address
+      field: _temp_.faddr_address
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_faddr_domain
+      field: _temp_.faddr_domain
+      target_field: destination.domain
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_faddr_interface
+      field: _temp_.faddr_interface
+      target_field: _temp_.cisco.destination_interface
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_faddr_user_or_sgt
+      field: _temp_.faddr_user_or_sgt
+      target_field: _temp_.cisco.destination_user_or_sgt
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_laddr_address
+      field: _temp_.laddr_address
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_laddr_domain
+      field: _temp_.laddr_domain
+      target_field: source.domain
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_laddr_interface
+      field: _temp_.laddr_interface
+      target_field: _temp_.cisco.source_interface
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_laddr_user_or_sgt
+      field: _temp_.laddr_user_or_sgt
+      target_field: _temp_.cisco.source_user_or_sgt
+      ignore_missing: true
+  - rename:
+      if: "ctx._temp_.cisco.message_id == '302020' && ctx.network.direction == 'outbound'"
+      tag: rename_302020_outbound_gaddr
+      field: _temp_.gaddr
+      target_field: _temp_.natsrcip
+      ignore_missing: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302022'"
       tag: parse_302022
@@ -695,7 +815,8 @@ processors:
         - 'SSH session from (?:%{IP:source.ip} )?on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
         - 'SSH session from (?:%{IP:source.ip} )?on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
       pattern_definitions:
-        CISCO_USER: '\"?(?:\*{5}|%{USERNAME:source.user.name})\"?'
+        NOTQUOTE: '[^"]*?'
+        CISCO_USER: '(?:\"(?:\*{5}|(?<source.user.name>[^\"]+))\"|(?:\*{5}|%{NOTQUOTE:source.user.name}))'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '322001'"
       tag: parse_322001
@@ -949,12 +1070,13 @@ processors:
       field: "message"
       description: "609002"
       pattern: "Teardown local-host %{_temp_.cisco.source_interface}:%{source.address} duration %{_temp_.duration_hms}"
-  - dissect:
+  - grok:
       if: '["611102", "611101"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_611101-611102
       field: "message"
       description: "611102, 611101"
-      pattern: 'User authentication %{}: IP address: %{source.address}, Uname: %{server.user.name}'
+      patterns:
+        - '^User authentication %{DATA}:(?:\s*IP address: %{IP:source.address},)? Uname: %{DATA:server.user.name}$'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710003'"
       tag: parse_710003
