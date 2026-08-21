@@ -937,7 +937,7 @@
                                             ],
                                             "index": "a31a1bb1899802c97f172ff1ea92b5290f501079c662563874e4db4de5e5c0b6",
                                             "query": {
-                                                "esql": "FROM logs-circl.kev-default\n| WHERE vulnerability.id IS NOT NULL AND event.provider IS NOT NULL AND event.provider NOT IN (\"Checkpoint\", \"Host logs\")\n| STATS provider_count = COUNT_DISTINCT(event.provider), providers = VALUES(event.provider) BY vulnerability.id\n| MV_EXPAND providers\n| EVAL uniqueness = CASE(provider_count == 1, \"unique\", \"shared\")\n| STATS vulns = COUNT(*) BY catalog = providers, uniqueness\n| SORT vulns DESC"
+                                                "esql": "FROM logs-circl.kev-default\n| WHERE vulnerability.id IS NOT NULL\n| STATS provider_count = COUNT_DISTINCT(event.provider), providers = VALUES(event.provider) BY vulnerability.id\n| MV_EXPAND providers\n| EVAL uniqueness = CASE(provider_count == 1, \"unique\", \"shared\")\n| STATS vulns = COUNT(*) BY catalog = providers, uniqueness\n| SORT vulns DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -947,7 +947,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM logs-circl.kev-default\n| WHERE vulnerability.id IS NOT NULL AND event.provider IS NOT NULL AND event.provider NOT IN (\"Checkpoint\", \"Host logs\")\n| STATS provider_count = COUNT_DISTINCT(event.provider), providers = VALUES(event.provider) BY vulnerability.id\n| MV_EXPAND providers\n| EVAL uniqueness = CASE(provider_count == 1, \"unique\", \"shared\")\n| STATS vulns = COUNT(*) BY catalog = providers, uniqueness\n| SORT vulns DESC"
+                                "esql": "FROM logs-circl.kev-default\n| WHERE vulnerability.id IS NOT NULL\n| STATS provider_count = COUNT_DISTINCT(event.provider), providers = VALUES(event.provider) BY vulnerability.id\n| MV_EXPAND providers\n| EVAL uniqueness = CASE(provider_count == 1, \"unique\", \"shared\")\n| STATS vulns = COUNT(*) BY catalog = providers, uniqueness\n| SORT vulns DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
