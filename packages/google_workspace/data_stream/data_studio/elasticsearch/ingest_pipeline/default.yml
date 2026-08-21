@@ -3,18 +3,18 @@ description: Pipeline for processing Data Studio Audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_d69d3fcf
       value: 9.5.0
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_bcf88534
       value: Google Workspace
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_9949f457
       value: Data Studio
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -24,35 +24,36 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_552e65e1
       target_field: json
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_to_flatten_event_parameters
+      tag: script_to_flatten_event_parameters_2c27a7c1
       if: ctx.json?.events?.parameters instanceof List
       description: Script to flatten the event parameters.
       source: >
@@ -79,28 +80,30 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a6a18bcc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_json_events_parameters_2eab3501
       field: json.events.parameters
       ignore_missing: true
   - rename:
       field: json.events.name
-      tag: rename_json_events_name
+      tag: rename_json_events_name_c717ed7b
       target_field: google_workspace.data_studio.name
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: set_configuration_into_event_category
+      tag: append_configuration_into_event_category_5bc3dda0
       value: configuration
   - script:
       description: Set event category based on event name.
       if: ctx.google_workspace?.data_studio?.name != null
-      tag: set_event_category_from_data_studio_name
+      tag: set_event_category_from_data_studio_name_e7a6f128
       lang: painless
       params:
         ADD_REPORT_EMAIL_DELIVERY: configuration
@@ -130,12 +133,13 @@ processors:
         ctx.event.put('category', category);
       on_failure:
         - append:
+            tag: append_error_message_17895c18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Set event type based on event name.
       if: ctx.google_workspace?.data_studio?.name != null
-      tag: set_event_type_from_data_studio_name
+      tag: set_event_type_from_data_studio_name_94f82604
       lang: painless
       params:
         ADD_REPORT_EMAIL_DELIVERY: info
@@ -165,89 +169,92 @@ processors:
         ctx.event.put('type', type);
       on_failure:
         - append:
+            tag: append_error_message_45d39e40
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.kind
-      tag: rename_json_kind
+      tag: rename_json_kind_b1c61a80
       target_field: google_workspace.kind
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_json_ownerDomain_to_google_workspace_organization_domain_6580cd7d
       field: json.ownerDomain
       target_field: google_workspace.organization.domain
       ignore_missing: true
   - rename:
       field: json.etag
-      tag: rename_json_etag
+      tag: rename_json_etag_0e237599
       target_field: google_workspace.etag
       ignore_missing: true
   - rename:
       field: json.actor.callerType
-      tag: rename_actor_callerType
+      tag: rename_actor_callerType_27fe3c66
       target_field: google_workspace.actor.caller_type
       ignore_missing: true
   - rename:
       field: json.actor.email
-      tag: rename_actor_email
+      tag: rename_actor_email_44ec1d46
       target_field: google_workspace.actor.email
       ignore_missing: true
   - set:
       field: source.user.email
-      tag: set_source_user_email_from_actor_email
+      tag: set_source_user_email_from_actor_email_82df015b
       copy_from: google_workspace.actor.email
       ignore_empty_value: true
   - dissect:
       field: source.user.email
-      tag: dissect_user_email
+      tag: dissect_user_email_410d674c
       if: ctx.source?.user?.email != null && ctx.source.user.email.contains('@')
       pattern: '%{source.user.name}@%{source.user.domain}'
       on_failure:
         - append:
+            tag: append_error_message_b1c3b26d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.actor.key
-      tag: rename_actor_key
+      tag: rename_actor_key_88e08487
       target_field: google_workspace.actor.key
       ignore_missing: true
   - rename:
       field: json.actor.profileId
-      tag: rename_actor_profileId
+      tag: rename_actor_profileId_c3feca76
       target_field: google_workspace.actor.profile_id
       ignore_missing: true
   - set:
       field: source.user.id
-      tag: set_source_user_id_from_actor_profile_id
+      tag: set_source_user_id_from_actor_profile_id_8e626358
       copy_from: google_workspace.actor.profile_id
       ignore_empty_value: true
   - set:
       field: user
-      tag: set_user_from_source_user
+      tag: set_user_from_source_user_dc938198
       copy_from: source.user
       ignore_empty_value: true
   - rename:
       field: json.id.applicationName
-      tag: rename_id_applicationName
+      tag: rename_id_applicationName_bf09a743
       target_field: google_workspace.id.application_name
       ignore_missing: true
   - set:
       field: event.provider
-      tag: set_event_provider_from_id_application_name
+      tag: set_event_provider_from_id_application_name_b84179cd
       copy_from: google_workspace.id.application_name
       ignore_empty_value: true
   - rename:
       field: json.id.customerId
-      tag: rename_id_customerId
+      tag: rename_id_customerId_6cb9ae1e
       target_field: google_workspace.id.customer_id
       ignore_missing: true
   - set:
       field: organization.id
-      tag: set_organization_id_from_customerId
+      tag: set_organization_id_from_customerId_cbbda4fc
       copy_from: google_workspace.id.customer_id
       ignore_empty_value: true
   - date:
       field: json.id.time
-      tag: date_id_time
+      tag: date_id_time_4a5f9411
       target_field: google_workspace.id.time
       formats:
         - ISO8601
@@ -255,47 +262,49 @@ processors:
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       on_failure:
         - append:
+            tag: append_error_message_de0bed15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_id_time
+      tag: set_@timestamp_from_id_time_360f0b64
       copy_from: google_workspace.id.time
       ignore_empty_value: true
   - rename:
       field: json.id.uniqueQualifier
-      tag: rename_id_uniqueQualifier
+      tag: rename_id_uniqueQualifier_ed62122e
       target_field: google_workspace.id.unique_qualifier
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_id_unique_qualifier
+      tag: set_event_id_from_id_unique_qualifier_30ca4c7f
       copy_from: google_workspace.id.unique_qualifier
       ignore_empty_value: true
   - convert:
       field: json.ipAddress
-      tag: convert_ipAddress_to_ip
+      tag: convert_ipAddress_to_ip_ccfac6ff
       target_field: google_workspace.ip_address
       type: ip
       ignore_missing: true
       if: ctx.json?.ipAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_4cb1517b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_google_workspace_ip_address
+      tag: set_source_ip_from_google_workspace_ip_address_beca7977
       copy_from: google_workspace.ip_address
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_geo_from_source_ip
+      tag: geoip_source_geo_from_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - geoip:
       field: source.ip
-      tag: set_source_as_from_source_ip
+      tag: set_source_as_from_source_ip_dbf6fd22
       database_file: GeoLite2-ASN.mmdb
       target_field: source.as
       properties:
@@ -303,92 +312,97 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
       field: user.target.domain
-      tag: set_user_target_domain_from_data_studio_target_domain
+      tag: set_user_target_domain_from_data_studio_target_domain_627880a1
       copy_from: google_workspace.data_studio.target_domain
       ignore_empty_value: true
   - set:
       field: user.target.email
-      tag: set_user_target_email_from_data_studio_target_user_email
+      tag: set_user_target_email_from_data_studio_target_user_email_1f21b7c0
       copy_from: google_workspace.data_studio.target_user_email
       ignore_empty_value: true
   - rename:
       field: json.events.type
-      tag: rename_json_events_type
+      tag: rename_json_events_type_45a8a2b7
       target_field: google_workspace.data_studio.type
       ignore_missing: true
   - dissect:
       field: google_workspace.data_studio.target_user_email
-      tag: dissect_target_user_email
+      tag: dissect_target_user_email_46511fe3
       if: ctx.google_workspace?.data_studio?.target_user_email != null && ctx.google_workspace.data_studio.target_user_email.contains('@')
       pattern: '%{user.target.name}@%{user.target.domain}'
       on_failure:
         - append:
+            tag: append_error_message_3d41b0fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.action
-      tag: set_event_action_from_name
+      tag: set_event_action_from_name_009a5dc4
       copy_from: google_workspace.data_studio.name
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_2e707351
       separator: _
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_cfa0331f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_actor_email_into_related_user
+      tag: append_actor_email_into_related_user_c47582d2
       value: '{{{google_workspace.actor.email}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.actor?.email != null
   - append:
       field: related.user
-      tag: append_target_user_email_into_related_user
+      tag: append_target_user_email_into_related_user_f8ed5d04
       value: '{{{google_workspace.data_studio.target_user_email}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.data_studio?.target_user_email != null
   - append:
       field: related.user
-      tag: append_owner_email_into_related_user
+      tag: append_owner_email_into_related_user_6f17e78e
       value: '{{{google_workspace.data_studio.owner_email}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.data_studio?.owner_email != null
   - append:
       field: related.user
-      tag: append_distribution_content_owner_email_into_related_user
+      tag: append_distribution_content_owner_email_into_related_user_4f66bf30
       value: '{{{google_workspace.data_studio.distribution_content_owner_email}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.data_studio?.distribution_content_owner_email != null
   - append:
       field: related.ip
-      tag: append_ip_address_into_related_ip
+      tag: append_ip_address_into_related_ip_9c736e96
       value: '{{{google_workspace.ip_address}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.ip_address != null
@@ -403,15 +417,15 @@ processors:
         - google_workspace.ip_address
         - google_workspace.data_studio.target_domain
         - google_workspace.data_studio.target_user_email
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_30237c07
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f5f5cc66
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -430,30 +444,34 @@ processors:
         drop(ctx);
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error

@@ -8,48 +8,49 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_e5190762
       target_field: resp
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_4c2fca1c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
-      tag: remove_json_if_input_type_http_endpoint
+      tag: remove_json_if_input_type_http_endpoint_82d30ebe
       if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
-      tag: rename_resp_event
+      tag: rename_resp_event_b9eebc4b
       target_field: json
       ignore_missing: true
   - script:
-      tag: check_template_version
+      tag: check_template_version_1ebe987c
       params:
         pkg_version: 3.15.1
         data_stream: audit-log
@@ -77,15 +78,15 @@ processors:
         }
   - remove:
       field: resp
-      tag: remove_resp
+      tag: remove_resp_dbf90e37
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - script:
       description: Drops null/empty/na values recursively.
-      tag: script_to_remove_na_values
+      tag: script_to_remove_na_values_8f64ee12
       lang: painless
       source: |-
         boolean dropEmptyFields(Object object) {
@@ -104,7 +105,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: false
-      tag: Set ECS categorization fields
+      tag: set_ecs_categorization_fields_5942a48e
       description: Set ECS categorization fields
       params:
         'ACCESS_CONTROL_RESOURCE':
@@ -335,197 +336,201 @@ processors:
         });
       on_failure:
         - append:
+            tag: append_error_message_442e357d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action
-      tag: rename_action
+      tag: rename_action_79b62fb7
       target_field: zscaler_zia.audit.action
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_audit_action
+      tag: set_event_action_from_audit_action_a3280731
       copy_from: zscaler_zia.audit.action
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - gsub:
       field: event.action
-      tag: gsub_event_action
+      tag: gsub_event_action_71b6632a
       pattern: ' '
       replacement: '-'
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_c5f32020
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.adminid
-      tag: rename_adminid
+      tag: rename_adminid_a086f832
       target_field: zscaler_zia.audit.admin_id
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_audit_admin_id
+      tag: set_user_email_from_audit_admin_id_128363e2
       copy_from: zscaler_zia.audit.admin_id
       ignore_empty_value: true
   - dissect:
       field: user.email
-      tag: create_user_name_and_user_domain
+      tag: create_user_name_and_user_domain_93b5cc79
       pattern: '%{user.name}@%{user.domain}'
       ignore_missing: true
       if: ctx.user?.email != null
       on_failure:
         - append:
+            tag: append_error_message_d497485d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_user_email_to_related_user
+      tag: append_user_email_to_related_user_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - rename:
       field: json.auditlogtype
-      tag: rename_auditlogtype
+      tag: rename_auditlogtype_1311adbb
       target_field: zscaler_zia.audit.audit_log_type
       ignore_missing: true
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_f52e8c10
       target_field: zscaler_zia.audit.category
       ignore_missing: true
   - set:
       field: rule.ruleset
-      tag: set_rule_ruleset_from_audit_category
+      tag: set_rule_ruleset_from_audit_category_3766ccdb
       copy_from: zscaler_zia.audit.category
       ignore_empty_value: true
   - convert:
       field: json.clientip
-      tag: convert_clientip_to_ip
+      tag: convert_clientip_to_ip_f83caf1f
       target_field: zscaler_zia.audit.client_ip
       type: ip
       ignore_missing: true
       if: ctx.json?.clientip != ''
       on_failure:
         - append:
+            tag: append_error_message_7588996e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_audit_client_ip
+      tag: set_source_ip_from_audit_client_ip_f85970b0
       copy_from: zscaler_zia.audit.client_ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip_to_source_geo
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_723473d3
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - rename:
       field: json.errorcode
-      tag: rename_errorcode
+      tag: rename_errorcode_517a3666
       target_field: zscaler_zia.audit.error_code
       ignore_missing: true
   - set:
       field: error.code
-      tag: set_event_id_from_audit_error_code
+      tag: set_event_id_from_audit_error_code_631d9474
       copy_from: zscaler_zia.audit.error_code
       ignore_empty_value: true
   - rename:
       field: json.interface
-      tag: rename_interface
+      tag: rename_interface_3517cfa7
       target_field: zscaler_zia.audit.interface
       ignore_missing: true
   - rename:
       field: json.postaction
-      tag: rename_postaction
+      tag: rename_postaction_34d7d69f
       target_field: zscaler_zia.audit.post_action
       ignore_missing: true
   - rename:
       field: json.preaction
-      tag: rename_preaction
+      tag: rename_preaction_cf120359
       target_field: zscaler_zia.audit.pre_action
       ignore_missing: true
   - rename:
       field: json.recordid
-      tag: rename_recordid
+      tag: rename_recordid_ac882887
       target_field: zscaler_zia.audit.record.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_audit_record_id
+      tag: set_event_id_from_audit_record_id_ebdcf0a9
       copy_from: zscaler_zia.audit.record.id
       ignore_empty_value: true
   - rename:
       field: json.resource
-      tag: rename_resource
+      tag: rename_resource_0c186146
       target_field: zscaler_zia.audit.resource
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_audit_resource
+      tag: set_rule_name_from_audit_resource_eb3484e1
       copy_from: zscaler_zia.audit.resource
       ignore_empty_value: true
   - rename:
       field: json.result
-      tag: rename_result
+      tag: rename_result_7874c8da
       target_field: zscaler_zia.audit.result
       ignore_missing: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_success_from_audit_result
+      tag: set_event_outcome_success_from_audit_result_5421cbd3
       value: success
       if: ctx.zscaler_zia?.audit?.result == 'SUCCESS'
       ignore_failure: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_failure_from_audit_result
+      tag: set_event_outcome_failure_from_audit_result_ee882b40
       value: failure
       if: ctx.zscaler_zia?.audit?.result == 'FAILURE'
       ignore_failure: true
   - rename:
       field: json.subcategory
-      tag: rename_subcategory
+      tag: rename_subcategory_512e3b33
       target_field: zscaler_zia.audit.sub_category
       ignore_missing: true
   - set:
       field: rule.category
-      tag: set_rule_category_from_audit_sub_category
+      tag: set_rule_category_from_audit_sub_category_5df02d4f
       copy_from: zscaler_zia.audit.sub_category
       ignore_empty_value: true
   - rename:
       field: json.timezone
-      tag: rename_timezone
+      tag: rename_timezone_4fb31de7
       target_field: zscaler_zia.audit.timezone
       ignore_missing: true
   - set:
       field: event.timezone
-      tag: set_event_timezone_from_audit_timezone
+      tag: set_event_timezone_from_audit_timezone_98be18c8
       copy_from: zscaler_zia.audit.timezone
       ignore_empty_value: true
   - set:
       field: event.timezone
-      tag: set_event_timezone_to_utc
+      tag: set_event_timezone_to_utc_ae1d82ba
       value: UTC
       if: ctx.event?.timezone == null
   - date:
       field: json.time
-      tag: date_time_if_timezone
+      tag: date_time_if_timezone_198d7f7f
       target_field: zscaler_zia.audit.time
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -536,11 +541,12 @@ processors:
       if: ctx.json?.time != null && ctx.json.time != ''
       on_failure:
         - append:
+            tag: append_error_message_844645fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_time
+      tag: set_@timestamp_from_audit_time_7937fa70
       copy_from: zscaler_zia.audit.time
       ignore_empty_value: true
   - remove:
@@ -554,19 +560,19 @@ processors:
         - zscaler_zia.audit.error_code
         - zscaler_zia.audit.resource
         - zscaler_zia.audit.sub_category
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_b23f2ac4
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
         - _conf
-      tag: remove_unused
+      tag: remove_unused_5de97710
       ignore_missing: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -584,22 +590,25 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

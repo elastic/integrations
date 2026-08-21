@@ -8,83 +8,85 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - grok:
       field: event.original
-      tag: grok_event_original
+      tag: grok_event_original_aa955906
       patterns:
         - '^<%{NUMBER:zscaler_zia.alerts.log_syslog_priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} \[%{IPORHOST:zscaler_zia.alerts.destination.address}\] %{GREEDYDATA:zscaler_zia.alerts.message}$'
       ignore_failure: true
   - set:
       field: message
-      tag: set_message_from_alerts_message
+      tag: set_message_from_alerts_message_5e685132
       copy_from: zscaler_zia.alerts.message
       ignore_empty_value: true
   - grok:
       field: message
-      tag: grok_message
+      tag: grok_message_dfbe7f2f
       patterns:
         - '^ZscalerNSS: Zscaler cloud configuration connection to  %{IPORHOST:zscaler_zia.alerts.destination.address}:%{NUMBER:zscaler_zia.alerts.destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes$'
         - '^ZscalerNSS: SIEM Feed connection "%{GREEDYDATA:zscaler_zia.alerts.log_feed_name}" to %{IPORHOST:zscaler_zia.alerts.destination.address}:%{NUMBER:zscaler_zia.alerts.destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes$'
       ignore_failure: true
   - set:
       field: destination.address
-      tag: set_destination_address_from_alerts_destination_address
+      tag: set_destination_address_from_alerts_destination_address_eeaaf5ce
       copy_from: zscaler_zia.alerts.destination.address
       ignore_empty_value: true
   - convert:
       field: destination.address
-      tag: convert_destination_address_to_ip
+      tag: convert_destination_address_to_ip_05fd8300
       target_field: zscaler_zia.alerts.destination.ip
       type: ip
       ignore_missing: true
       if: ctx.destination?.address != ''
       on_failure:
         - remove:
+            tag: remove_destination_address_9c53e862
             field: destination.address
         - append:
+            tag: append_error_message_3030e948
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_alerts_destination_ip
+      tag: set_destination_ip_from_alerts_destination_ip_33c69d83
       copy_from: zscaler_zia.alerts.destination.ip
       ignore_empty_value: true
   - set:
       field: destination.port
-      tag: set_destination_port_from_alerts_destination_port
+      tag: set_destination_port_from_alerts_destination_port_21dede3a
       copy_from: zscaler_zia.alerts.destination.port
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_destination_ip_into_related_ip
+      tag: append_destination_ip_into_related_ip_05c5f34f
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - date:
       field: _tmp.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_b38e58f1
       target_field: zscaler_zia.alerts.timestamp
       formats:
         - MMM  d HH:mm:ss
@@ -94,18 +96,20 @@ processors:
       if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != ''
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_41965aec
             field: _tmp.timestamp
         - append:
+            tag: append_error_message_2709390f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_alerts_timestamp
+      tag: set_@timestamp_from_alerts_timestamp_60b14bbf
       copy_from: zscaler_zia.alerts.timestamp
       ignore_empty_value: true
   - set:
       field: log.syslog.priority
-      tag: set_log_syslog_priority_from_alerts_log_syslog_priority
+      tag: set_log_syslog_priority_from_alerts_log_syslog_priority_593252c6
       copy_from: zscaler_zia.alerts.log_syslog_priority
       ignore_empty_value: true
   - remove:
@@ -116,18 +120,18 @@ processors:
         - zscaler_zia.alerts.timestamp
         - zscaler_zia.alerts.message
         - zscaler_zia.alerts.destination.ip
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_bbe30d48
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - _tmp
-      tag: remove_tmp
+      tag: remove_tmp_c965bd83
       ignore_missing: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -145,22 +149,25 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

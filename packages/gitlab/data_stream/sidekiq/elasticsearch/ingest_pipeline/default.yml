@@ -2,33 +2,38 @@
 description: Pipeline for processing sidekiq logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_7f1de011
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
   - remove:
       field: message
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_319421e7
       if: ctx.event?.original != null
-  - drop: 
+  - drop:
+      tag: drop_logline_contains_header_s_a8ea228b
       if: ctx.event?.original?.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_59bad716
       target_field: gitlab.sidekiq
   - append:
+      tag: append_event_category_4595ee28
       field: event.category
       value: web
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - date:
@@ -37,59 +42,63 @@ processors:
         - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_c8f9822f
       on_failure:
         - append:
+            tag: append_error_message_f20e6e62
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.gitlab?.sidekiq?.time != null && ctx.gitlab.sidekiq.time != ''
   - remove:
+      tag: remove_gitlab_sidekiq_time_aceaf5fe
       field: gitlab.sidekiq.time
       ignore_missing: true
   - lowercase:
+      tag: lowercase_gitlab_sidekiq_severity_67779461
       field: gitlab.sidekiq.severity
       ignore_missing: true
   - set:
       field: event.severity
       value: 0
       if: ctx.gitlab?.sidekiq?.severity == 'emergency'
-      tag: set_severity_0
+      tag: set_severity_0_de545bbb
   - set:
       field: event.severity
       value: 1
       if: ctx.gitlab?.sidekiq?.severity == 'alert'
-      tag: set_severity_1
+      tag: set_severity_1_6143178f
   - set:
       field: event.severity
       value: 2
       if: ctx.gitlab?.sidekiq?.severity == 'critical'
-      tag: set_severity_2
+      tag: set_severity_2_1ef84362
   - set:
       field: event.severity
       value: 3
       if: ctx.gitlab?.sidekiq?.severity == 'error'
-      tag: set_severity_3
+      tag: set_severity_3_ea37fa2c
   - set:
       field: event.severity
       value: 4
       if: ctx.gitlab?.sidekiq?.severity == 'warn'
-      tag: set_severity_4
+      tag: set_severity_4_22898e25
   - set:
       field: event.severity
       value: 5
       if: ctx.gitlab?.sidekiq?.severity == 'notice'
-      tag: set_severity_5
+      tag: set_severity_5_5685823b
   - set:
       field: event.severity
       value: 6
       if: ctx.gitlab?.sidekiq?.severity == 'info'
-      tag: set_severity_6
+      tag: set_severity_6_145f2c34
   - set:
       field: event.severity
       value: 7
       if: ctx.gitlab?.sidekiq?.severity == 'debug'
-      tag: set_severity_7
+      tag: set_severity_7_44cae580
   - remove:
+      tag: remove_gitlab_sidekiq_severity_0d8bfc04
       field: gitlab.sidekiq.severity
       ignore_missing: true
   - date:
@@ -98,49 +107,56 @@ processors:
         - "ISO8601"
       target_field: event.start
       timezone: "UTC"
-      tag: start_date_event_created_time_epoch
+      tag: start_date_event_created_time_epoch_635d1acd
       if: ctx.gitlab?.sidekiq?.created_at != null && ctx.gitlab.sidekiq.created_at != ''
       on_failure:
         - append:
+            tag: append_error_message_5c11dec6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_gitlab_sidekiq_created_at_325ffd25
       field: gitlab.sidekiq.created_at
       ignore_missing: true
   - date:
       field: gitlab.sidekiq.enqueued_at
       formats:
         - "ISO8601"
-      target_field:  gitlab.sidekiq.enqueued_at
+      target_field: gitlab.sidekiq.enqueued_at
       timezone: "UTC"
-      tag: enqueued_date_event_created_time_epoch
+      tag: enqueued_date_event_created_time_epoch_9635ce2c
       if: ctx.gitlab?.sidekiq?.enqueued_at != null && ctx.gitlab.sidekiq.enqueued_at != ''
       on_failure:
         - append:
+            tag: append_error_message_bce42ce3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename: 
+  - rename:
+      tag: rename_gitlab_sidekiq_pid_to_process_pid_02394ec6
       field: gitlab.sidekiq.pid
       target_field: process.pid
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_gitlab_sidekiq_message_to_message_e488ac2f
       field: gitlab.sidekiq.message
       target_field: message
       ignore_missing: true
   - rename:
       field: gitlab.sidekiq.trace_propagation_headers.sentry-trace
-      tag: rename_trace_propagation_headers_sentry_trace_to_trace_propagation_headers_sentry_trace
+      tag: rename_trace_propagation_headers_sentry_trace_to_trace_propagation_headers_sentry_trace_b70ad630
       target_field: gitlab.sidekiq.trace_propagation_headers.sentry_trace
       ignore_missing: true
   - remove:
+      tag: remove_gitlab_sidekiq_trace_propagation_headers_sentry-trace_70b8f2e7
       field: gitlab.sidekiq.trace_propagation_headers.sentry-trace
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_gitlab_sidekiq_duration_to_event_duration_23ebc64d
       field: gitlab.sidekiq.duration
       target_field: event.duration
       ignore_missing: true
   - script:
-      tag: convert_duration_to_nanoseconds
+      tag: convert_duration_to_nanoseconds_60782378
       if: ctx.event?.duration instanceof double
       source: |-
         ctx.event.duration = (long) (ctx.event.duration*1e9)
@@ -150,1669 +166,1947 @@ processors:
         - "ISO8601"
       target_field: event.end
       timezone: "UTC"
-      tag: end_date_event_created_time_epoch
+      tag: end_date_event_created_time_epoch_72ead387
       if: ctx.gitlab?.sidekiq?.completed_at != null && ctx.gitlab.sidekiq.completed_at != ''
       on_failure:
         - append:
+            tag: append_error_message_e0cdca6f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_gitlab_sidekiq_completed_at_abc7e6f4
       field: gitlab.sidekiq.completed_at
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_sidekiq_db_duration_to_gitlab_sidekiq_db_duration_m_5e2023b5
       field: gitlab.sidekiq.db_duration
       target_field: gitlab.sidekiq.db.duration_m
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_sidekiq_db_duration_s_to_gitlab_sidekiq_db_duration_s_47cd0515
       field: gitlab.sidekiq.db_duration_s
       target_field: gitlab.sidekiq.db.duration_s
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_sidekiq_gitaly_duration_to_gitlab_gitaly_duration_e10280e9
       field: gitlab.sidekiq.gitaly_duration
       target_field: gitlab.gitaly.duration
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_gitlab_sidekiq_gitaly_calls_to_gitlab_gitaly_calls_f0ac9cb7
       field: gitlab.sidekiq.gitaly_calls
       target_field: gitlab.gitaly.calls
       ignore_missing: true
   - convert:
       field: gitlab.sidekiq.cpu_s
-      tag: convert_cpu_s_to_double
+      tag: convert_cpu_s_to_double_36474bf2
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_cpu_s_1cc5ab61
             field: gitlab.sidekiq.cpu_s
             ignore_missing: true
         - append:
+            tag: append_error_message_718c570f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_duration_s
-      tag: convert_redis_cache_duration_s_to_double
+      tag: convert_redis_cache_duration_s_to_double_1022bafe
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_cache_duration_s_4c5fc387
             field: gitlab.sidekiq.redis_cache_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_b2afd6b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_cached_count
-      tag: convert_db_cached_count_to_long
+      tag: convert_db_cached_count_to_long_89d3c268
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_cached_count_c2831e25
             field: gitlab.sidekiq.db_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_1b167f48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_cached_count
-      tag: convert_db_ci_cached_count_to_long
+      tag: convert_db_ci_cached_count_to_long_badd7cbb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_cached_count_43ee2b47
             field: gitlab.sidekiq.db_ci_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_4801834f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_count
-      tag: convert_db_ci_count_to_long
+      tag: convert_db_ci_count_to_long_829322be
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_count_2fdcca15
             field: gitlab.sidekiq.db_ci_count
             ignore_missing: true
         - append:
+            tag: append_error_message_3c5c26da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_duration_s
-      tag: convert_db_ci_duration_s_to_double
+      tag: convert_db_ci_duration_s_to_double_d8e84eec
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_duration_s_404592fb
             field: gitlab.sidekiq.db_ci_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_59dfbbb3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_cached_count
-      tag: convert_db_ci_replica_cached_count_to_long
+      tag: convert_db_ci_replica_cached_count_to_long_ab2d88da
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_cached_count_40b3128b
             field: gitlab.sidekiq.db_ci_replica_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e0d86eb2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_count
-      tag: convert_db_ci_replica_count_to_long
+      tag: convert_db_ci_replica_count_to_long_116f554b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_count_6d537749
             field: gitlab.sidekiq.db_ci_replica_count
             ignore_missing: true
         - append:
+            tag: append_error_message_4a5f7a33
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_duration_s
-      tag: convert_db_ci_replica_duration_s_to_double
+      tag: convert_db_ci_replica_duration_s_to_double_7006f19e
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_duration_s_06855477
             field: gitlab.sidekiq.db_ci_replica_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_278d942e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_txn_count
-      tag: convert_db_ci_replica_txn_count_to_long
+      tag: convert_db_ci_replica_txn_count_to_long_b97d72e4
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_txn_count_939193dd
             field: gitlab.sidekiq.db_ci_replica_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_645f0154
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_txn_duration_s
-      tag: convert_db_ci_replica_txn_duration_s_to_double
+      tag: convert_db_ci_replica_txn_duration_s_to_double_c28738d8
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_txn_duration_s_b26a363b
             field: gitlab.sidekiq.db_ci_replica_txn_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_dc264125
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_txn_max_duration_s
-      tag: convert_db_ci_replica_txn_max_duration_s_to_double
+      tag: convert_db_ci_replica_txn_max_duration_s_to_double_b5b60f8a
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_txn_max_duration_s_2d8ab557
             field: gitlab.sidekiq.db_ci_replica_txn_max_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_62a90ede
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_wal_cached_count
-      tag: convert_db_ci_replica_wal_cached_count_to_long
+      tag: convert_db_ci_replica_wal_cached_count_to_long_f6e2ccf8
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_wal_cached_count_3d17c1eb
             field: gitlab.sidekiq.db_ci_replica_wal_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a93f9c6f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_wal_count
-      tag: convert_db_ci_replica_wal_count_to_long
+      tag: convert_db_ci_replica_wal_count_to_long_b90a6650
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_wal_count_71ed1829
             field: gitlab.sidekiq.db_ci_replica_wal_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a7195746
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_replica_write_count
-      tag: convert_db_ci_replica_write_count_to_long
+      tag: convert_db_ci_replica_write_count_to_long_37d86085
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_replica_write_count_30b8fe61
             field: gitlab.sidekiq.db_ci_replica_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a662a827
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_txn_count
-      tag: convert_db_ci_txn_count_to_long
+      tag: convert_db_ci_txn_count_to_long_2ec7e47b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_txn_count_c1c36971
             field: gitlab.sidekiq.db_ci_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_84dd199d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_txn_duration_s
-      tag: convert_db_ci_txn_duration_s_to_double
+      tag: convert_db_ci_txn_duration_s_to_double_0abf3164
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_txn_duration_s_82a697d7
             field: gitlab.sidekiq.db_ci_txn_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_9feb8f58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_txn_max_duration_s
-      tag: convert_db_ci_txn_max_duration_s_to_double
+      tag: convert_db_ci_txn_max_duration_s_to_double_e35a804b
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_txn_max_duration_s_52a2d70b
             field: gitlab.sidekiq.db_ci_txn_max_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_670f4f0b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_wal_cached_count
-      tag: convert_db_ci_wal_cached_count_to_long
+      tag: convert_db_ci_wal_cached_count_to_long_a9de63f6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_wal_cached_count_68ce08f7
             field: gitlab.sidekiq.db_ci_wal_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_634fa516
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_wal_count
-      tag: convert_db_ci_wal_count_to_long
+      tag: convert_db_ci_wal_count_to_long_b540b515
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_wal_count_8bdb9ead
             field: gitlab.sidekiq.db_ci_wal_count
             ignore_missing: true
         - append:
+            tag: append_error_message_825b7fbb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_ci_write_count
-      tag: convert_db_ci_write_count_to_long
+      tag: convert_db_ci_write_count_to_long_c06b8b41
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_ci_write_count_2c67f8e5
             field: gitlab.sidekiq.db_ci_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_8861de06
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_count
-      tag: convert_db_count_to_long
+      tag: convert_db_count_to_long_2fc77ebd
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_count_eec6e7f7
             field: gitlab.sidekiq.db_count
             ignore_missing: true
         - append:
+            tag: append_error_message_6615dbcb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_cached_count
-      tag: convert_db_main_cached_count_to_long
+      tag: convert_db_main_cached_count_to_long_4d8c40af
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_cached_count_a2cbb1b3
             field: gitlab.sidekiq.db_main_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_54c2451c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_count
-      tag: convert_db_main_count_to_long
+      tag: convert_db_main_count_to_long_75cf4c20
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_count_9f061719
             field: gitlab.sidekiq.db_main_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2cdafe9d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_duration_s
-      tag: convert_db_main_duration_s_to_double
+      tag: convert_db_main_duration_s_to_double_edd6ed3a
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_duration_s_17aefc67
             field: gitlab.sidekiq.db_main_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_fc34a370
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_cached_count
-      tag: convert_db_main_replica_cached_count_to_long
+      tag: convert_db_main_replica_cached_count_to_long_1a323d15
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_cached_count_f53e90af
             field: gitlab.sidekiq.db_main_replica_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_cbadd6e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_count
-      tag: convert_db_main_replica_count_to_long
+      tag: convert_db_main_replica_count_to_long_195f1607
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_count_015360c5
             field: gitlab.sidekiq.db_main_replica_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e9689b2c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_duration_s
-      tag: convert_db_main_replica_duration_s_to_double
+      tag: convert_db_main_replica_duration_s_to_double_83872b16
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_duration_s_5d895e3b
             field: gitlab.sidekiq.db_main_replica_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_c8b7daa5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_txn_count
-      tag: convert_db_main_replica_txn_count_to_long
+      tag: convert_db_main_replica_txn_count_to_long_3fa46bfb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_txn_count_5d454039
             field: gitlab.sidekiq.db_main_replica_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a1316bbf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_txn_duration_s
-      tag: convert_db_main_replica_txn_duration_s_to_double
+      tag: convert_db_main_replica_txn_duration_s_to_double_ea2e1c93
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_txn_duration_s_3ad6caaf
             field: gitlab.sidekiq.db_main_replica_txn_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_9b3f271a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_txn_max_duration_s
-      tag: convert_db_main_replica_txn_max_duration_s_to_double
+      tag: convert_db_main_replica_txn_max_duration_s_to_double_c8a66b75
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_txn_max_duration_s_fe55a5b3
             field: gitlab.sidekiq.db_main_replica_txn_max_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_4e0e9d85
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_wal_cached_count
-      tag: convert_db_main_replica_wal_cached_count_to_long
+      tag: convert_db_main_replica_wal_cached_count_to_long_cbcad5d0
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_wal_cached_count_d5305cf7
             field: gitlab.sidekiq.db_main_replica_wal_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e146ebac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_wal_count
-      tag: convert_db_main_replica_wal_count_to_long
+      tag: convert_db_main_replica_wal_count_to_long_d36748c7
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_wal_count_2ff43965
             field: gitlab.sidekiq.db_main_replica_wal_count
             ignore_missing: true
         - append:
+            tag: append_error_message_3cfa8989
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_replica_write_count
-      tag: convert_db_main_replica_write_count_to_long
+      tag: convert_db_main_replica_write_count_to_long_e75e5dfb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_replica_write_count_fcf4a55d
             field: gitlab.sidekiq.db_main_replica_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e66a4770
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_txn_count
-      tag: convert_db_main_txn_count_to_long
+      tag: convert_db_main_txn_count_to_long_84eaa52a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_txn_count_7ecaf0d5
             field: gitlab.sidekiq.db_main_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a00fadbe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_txn_duration_s
-      tag: convert_db_main_txn_duration_s_to_double
+      tag: convert_db_main_txn_duration_s_to_double_d99203d3
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_txn_duration_s_96114273
             field: gitlab.sidekiq.db_main_txn_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_12787027
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_txn_max_duration_s
-      tag: convert_db_main_txn_max_duration_s_to_double
+      tag: convert_db_main_txn_max_duration_s_to_double_b40141c2
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_txn_max_duration_s_fe4f5dff
             field: gitlab.sidekiq.db_main_txn_max_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_3fd04108
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_wal_cached_count
-      tag: convert_db_main_wal_cached_count_to_long
+      tag: convert_db_main_wal_cached_count_to_long_f79794ee
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_wal_cached_count_c694695b
             field: gitlab.sidekiq.db_main_wal_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_f7d6f0fd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_wal_count
-      tag: convert_db_main_wal_count_to_long
+      tag: convert_db_main_wal_count_to_long_0a97ffcd
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_wal_count_37e32231
             field: gitlab.sidekiq.db_main_wal_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2023f704
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_main_write_count
-      tag: convert_db_main_write_count_to_long
+      tag: convert_db_main_write_count_to_long_9f9eb767
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_main_write_count_13641829
             field: gitlab.sidekiq.db_main_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_7559b9b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_cached_count
-      tag: convert_db_primary_cached_count_to_long
+      tag: convert_db_primary_cached_count_to_long_8b281d6d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_cached_count_c9868a21
             field: gitlab.sidekiq.db_primary_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_5d6d5d81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_count
-      tag: convert_db_primary_count_to_long
+      tag: convert_db_primary_count_to_long_aa125132
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_count_2b2e91ab
             field: gitlab.sidekiq.db_primary_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a56175c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_duration_s
-      tag: convert_db_primary_duration_s_to_double
+      tag: convert_db_primary_duration_s_to_double_8719bf98
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_duration_s_ab352641
             field: gitlab.sidekiq.db_primary_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_15168a91
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_txn_count
-      tag: convert_db_primary_txn_count_to_long
+      tag: convert_db_primary_txn_count_to_long_32792c64
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_txn_count_20d76f33
             field: gitlab.sidekiq.db_primary_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_83ed15c7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_txn_duration_s
-      tag: convert_db_primary_txn_duration_s_to_double
+      tag: convert_db_primary_txn_duration_s_to_double_2e9bbeb2
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_txn_duration_s_bee3c399
             field: gitlab.sidekiq.db_primary_txn_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_9d43b1d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_txn_max_duration_s
-      tag: convert_db_primary_txn_max_duration_s_to_double
+      tag: convert_db_primary_txn_max_duration_s_to_double_728350e3
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_txn_max_duration_s_1a2e8915
             field: gitlab.sidekiq.db_primary_txn_max_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_a924a7dd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_wal_cached_count
-      tag: convert_db_primary_wal_cached_count_to_long
+      tag: convert_db_primary_wal_cached_count_to_long_aa988c5d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_wal_cached_count_1350ea1d
             field: gitlab.sidekiq.db_primary_wal_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2ad9150e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_wal_count
-      tag: convert_db_primary_wal_count_to_long
+      tag: convert_db_primary_wal_count_to_long_5fc769d2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_wal_count_e5014d97
             field: gitlab.sidekiq.db_primary_wal_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2dbd7fbd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_primary_write_count
-      tag: convert_db_primary_write_count_to_long
+      tag: convert_db_primary_write_count_to_long_b6ca2ae8
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_primary_write_count_ac363c47
             field: gitlab.sidekiq.db_primary_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_b2adbada
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_cached_count
-      tag: convert_db_replica_cached_count_to_long
+      tag: convert_db_replica_cached_count_to_long_151fe794
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_cached_count_dac72219
             field: gitlab.sidekiq.db_replica_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_885535e7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_count
-      tag: convert_db_replica_count_to_long
+      tag: convert_db_replica_count_to_long_14c101c9
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_count_fa43e07b
             field: gitlab.sidekiq.db_replica_count
             ignore_missing: true
         - append:
+            tag: append_error_message_30c539d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_duration_s
-      tag: convert_db_replica_duration_s_to_double
+      tag: convert_db_replica_duration_s_to_double_26576138
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_duration_s_3e1cc861
             field: gitlab.sidekiq.db_replica_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_7d1afdcf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_txn_count
-      tag: convert_db_replica_txn_count_to_long
+      tag: convert_db_replica_txn_count_to_long_c5226d40
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_txn_count_16bc21c3
             field: gitlab.sidekiq.db_replica_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_1fabc005
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_txn_duration_s
-      tag: convert_db_replica_txn_duration_s_to_double
+      tag: convert_db_replica_txn_duration_s_to_double_d273ba13
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_txn_duration_s_69ee64d1
             field: gitlab.sidekiq.db_replica_txn_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_dd4af432
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_txn_max_duration_s
-      tag: convert_db_replica_txn_max_duration_s_to_double
+      tag: convert_db_replica_txn_max_duration_s_to_double_fcef21c8
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_txn_max_duration_s_ad09ff6d
             field: gitlab.sidekiq.db_replica_txn_max_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_4e1f25e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_wal_cached_count
-      tag: convert_db_replica_wal_cached_count_to_long
+      tag: convert_db_replica_wal_cached_count_to_long_0834f03a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_wal_cached_count_dd659e2d
             field: gitlab.sidekiq.db_replica_wal_cached_count
             ignore_missing: true
         - append:
+            tag: append_error_message_92dbad24
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_wal_count
-      tag: convert_db_replica_wal_count_to_long
+      tag: convert_db_replica_wal_count_to_long_e3faa0b2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_wal_count_71d91bbf
             field: gitlab.sidekiq.db_replica_wal_count
             ignore_missing: true
         - append:
+            tag: append_error_message_3b0f6a83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_replica_write_count
-      tag: convert_db_replica_write_count_to_long
+      tag: convert_db_replica_write_count_to_long_d0895fd1
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_replica_write_count_799d1eaf
             field: gitlab.sidekiq.db_replica_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e5029c20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_txn_count
-      tag: convert_db_txn_count_to_long
+      tag: convert_db_txn_count_to_long_4a86a663
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_txn_count_301a14b7
             field: gitlab.sidekiq.db_txn_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2346a4aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.db_write_count
-      tag: convert_db_write_count_to_long
+      tag: convert_db_write_count_to_long_24df1c0d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_db_write_count_95be0deb
             field: gitlab.sidekiq.db_write_count
             ignore_missing: true
         - append:
+            tag: append_error_message_84c0c18b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.dead
-      tag: convert_dead_to_boolean
+      tag: convert_dead_to_boolean_866ce075
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_dead_b8618fbf
             field: gitlab.sidekiq.dead
             ignore_missing: true
         - append:
+            tag: append_error_message_32e6f1ef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.duration_s
-      tag: convert_duration_s_to_double
+      tag: convert_duration_s_to_double_32e1c627
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_duration_s_4fee092f
             field: gitlab.sidekiq.duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_f7f02387
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.enqueue_latency_s
-      tag: convert_enqueue_latency_s_to_double
+      tag: convert_enqueue_latency_s_to_double_a00f14cf
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_enqueue_latency_s_88732f15
             field: gitlab.sidekiq.enqueue_latency_s
             ignore_missing: true
         - append:
+            tag: append_error_message_0587ea54
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_hold_duration_s
-      tag: convert_exclusive_lock_hold_duration_s_to_double
+      tag: convert_exclusive_lock_hold_duration_s_to_double_6582f163
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_exclusive_lock_hold_duration_s_4d69c4bf
             field: gitlab.sidekiq.exclusive_lock_hold_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_77ef8c90
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_requested_count
-      tag: convert_exclusive_lock_requested_count_to_long
+      tag: convert_exclusive_lock_requested_count_to_long_dc273baf
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_exclusive_lock_requested_count_27e93783
             field: gitlab.sidekiq.exclusive_lock_requested_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e41c921c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_wait_duration_s
-      tag: convert_exclusive_lock_wait_duration_s_to_double
+      tag: convert_exclusive_lock_wait_duration_s_to_double_c8486c72
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_exclusive_lock_wait_duration_s_e8dd035b
             field: gitlab.sidekiq.exclusive_lock_wait_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_86576700
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.batched_git_ref_updates_cleanup_scheduler_worker.stats.total_projects
-      tag: convert_extra_batched_git_ref_updates_cleanup_scheduler_worker_stats_total_projects_to_long
+      tag: convert_extra_batched_git_ref_updates_cleanup_scheduler_worker_stats_total_projects_to_long_2db9d6eb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_batched_git_ref_updates_cleanup_scheduler_worker_stats_total_projects_e38646a2
             field: gitlab.sidekiq.extra.batched_git_ref_updates_cleanup_scheduler_worker.stats.total_projects
             ignore_missing: true
         - append:
+            tag: append_error_message_2dc7323b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.cells_stale_requests_cleanup_cron_worker.removed_count
-      tag: convert_extra_cells_stale_requests_cleanup_cron_worker_removed_count_to_long
+      tag: convert_extra_cells_stale_requests_cleanup_cron_worker_removed_count_to_long_f231d492
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_cells_stale_requests_cleanup_cron_worker_removed_count_861ebc2d
             field: gitlab.sidekiq.extra.cells_stale_requests_cleanup_cron_worker.removed_count
             ignore_missing: true
         - append:
+            tag: append_error_message_03fe26f8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.consumable_events
-      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_consumable_events_to_long
+      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_consumable_events_to_long_501e54bd
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_ci_catalog_resources_process_sync_events_worker_consumable_events_a8cd6c69
             field: gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.consumable_events
             ignore_missing: true
         - append:
+            tag: append_error_message_23b0fff1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.estimated_total_events
-      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_estimated_total_events_to_long
+      tag: convert_extra_ci_catalog_resources_process_sync_events_worker_estimated_total_events_to_long_aa27df41
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_ci_catalog_resources_process_sync_events_worker_estimated_total_events_cd0d30eb
             field: gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.estimated_total_events
             ignore_missing: true
         - append:
+            tag: append_error_message_61c18f1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_pipeline_artifacts_expire_artifacts_worker.destroyed_pipeline_artifacts_count
-      tag: convert_extra_ci_pipeline_artifacts_expire_artifacts_worker_destroyed_pipeline_artifacts_count_to_long
+      tag: convert_extra_ci_pipeline_artifacts_expire_artifacts_worker_destroyed_pipeline_artifacts_count_to_long_87185c7b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_ci_pipeline_artifacts_expire_artifacts_worker_destroyed_pipeline_artifacts_count_b9d18dbf
             field: gitlab.sidekiq.extra.ci_pipeline_artifacts_expire_artifacts_worker.destroyed_pipeline_artifacts_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a6c6cce7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_unlock_pipelines_in_queue_worker.remaining_pending
-      tag: convert_extra_ci_unlock_pipelines_in_queue_worker_remaining_pending_to_long
+      tag: convert_extra_ci_unlock_pipelines_in_queue_worker_remaining_pending_to_long_f4dd7752
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_ci_unlock_pipelines_in_queue_worker_remaining_pending_5dca21fd
             field: gitlab.sidekiq.extra.ci_unlock_pipelines_in_queue_worker.remaining_pending
             ignore_missing: true
         - append:
+            tag: append_error_message_94e0c0b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_update_locked_unknown_artifacts_worker.locked_count
-      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_locked_count_to_long
+      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_locked_count_to_long_efc320e6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_ci_update_locked_unknown_artifacts_worker_locked_count_9984992b
             field: gitlab.sidekiq.extra.ci_update_locked_unknown_artifacts_worker.locked_count
             ignore_missing: true
         - append:
+            tag: append_error_message_69d63a72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.ci_update_locked_unknown_artifacts_worker.removed_count
-      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_removed_count_to_long
+      tag: convert_extra_ci_update_locked_unknown_artifacts_worker_removed_count_to_long_26289597
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_ci_update_locked_unknown_artifacts_worker_removed_count_9718525d
             field: gitlab.sidekiq.extra.ci_update_locked_unknown_artifacts_worker.removed_count
             ignore_missing: true
         - append:
+            tag: append_error_message_8e5b676e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_required_count
-      tag: convert_extra_container_expiration_policy_worker_cleanup_required_count_to_long
+      tag: convert_extra_container_expiration_policy_worker_cleanup_required_count_to_long_313f9285
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_container_expiration_policy_worker_cleanup_required_count_d54e5867
             field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_required_count
             ignore_missing: true
         - append:
+            tag: append_error_message_b0e27d18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_total_count
-      tag: convert_extra_container_expiration_policy_worker_cleanup_total_count_to_long
+      tag: convert_extra_container_expiration_policy_worker_cleanup_total_count_to_long_6bf50f1b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_container_expiration_policy_worker_cleanup_total_count_75d9fe69
             field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_total_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a00c5fb7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_unfinished_count
-      tag: convert_extra_container_expiration_policy_worker_cleanup_unfinished_count_to_long
+      tag: convert_extra_container_expiration_policy_worker_cleanup_unfinished_count_to_long_d3c76b19
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_container_expiration_policy_worker_cleanup_unfinished_count_5eeeac77
             field: gitlab.sidekiq.extra.container_expiration_policy_worker.cleanup_unfinished_count
             ignore_missing: true
         - append:
+            tag: append_error_message_aa31ca34
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.expire_build_artifacts_worker.destroyed_job_artifacts_count
-      tag: convert_extra_expire_build_artifacts_worker_destroyed_job_artifacts_count_to_long
+      tag: convert_extra_expire_build_artifacts_worker_destroyed_job_artifacts_count_to_long_c2f64842
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_expire_build_artifacts_worker_destroyed_job_artifacts_count_3599d4e1
             field: gitlab.sidekiq.extra.expire_build_artifacts_worker.destroyed_job_artifacts_count
             ignore_missing: true
         - append:
+            tag: append_error_message_978e4941
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.delete_count
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_delete_count_to_long
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_delete_count_to_long_6e73924b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_delete_count_4ec650fa
             field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.delete_count
             ignore_missing: true
         - append:
+            tag: append_error_message_a9fa3420
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.over_limit
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_over_limit_to_boolean
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_over_limit_to_boolean_f847a997
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_over_limit_cb1afc6e
             field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.over_limit
             ignore_missing: true
         - append:
+            tag: append_error_message_0ac2921b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.turbo_mode
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_turbo_mode_to_boolean
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_turbo_mode_to_boolean_0fbc0d8b
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_turbo_mode_a06c1ed6
             field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.turbo_mode
             ignore_missing: true
         - append:
+            tag: append_error_message_1b09d95b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.update_count
-      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_update_count_to_long
+      tag: convert_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_update_count_to_long_409f32df
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker_stats_update_count_20f86d32
             field: gitlab.sidekiq.extra.loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker.stats.update_count
             ignore_missing: true
         - append:
+            tag: append_error_message_4a959126
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.delete_count
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_delete_count_to_long
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_delete_count_to_long_e4f1ec2a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_cleanup_worker_stats_delete_count_73b15862
             field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.delete_count
             ignore_missing: true
         - append:
+            tag: append_error_message_f41fd592
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.over_limit
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_over_limit_to_boolean
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_over_limit_to_boolean_6a99974e
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_cleanup_worker_stats_over_limit_93909176
             field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.over_limit
             ignore_missing: true
         - append:
+            tag: append_error_message_8942d70f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.turbo_mode
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_turbo_mode_to_boolean
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_turbo_mode_to_boolean_e8d37428
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_cleanup_worker_stats_turbo_mode_996d8066
             field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.turbo_mode
             ignore_missing: true
         - append:
+            tag: append_error_message_625b90bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.update_count
-      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_update_count_to_long
+      tag: convert_extra_loose_foreign_keys_cleanup_worker_stats_update_count_to_long_e84e98d2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_cleanup_worker_stats_update_count_0a06c252
             field: gitlab.sidekiq.extra.loose_foreign_keys_cleanup_worker.stats.update_count
             ignore_missing: true
         - append:
+            tag: append_error_message_393ee028
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.delete_count
-      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_delete_count_to_long
+      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_delete_count_to_long_78165442
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_delete_count_f003d42a
             field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.delete_count
             ignore_missing: true
         - append:
+            tag: append_error_message_1fba4f95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.over_limit
-      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_over_limit_to_boolean
+      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_over_limit_to_boolean_85e00b11
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_over_limit_a0d67406
             field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.over_limit
             ignore_missing: true
         - append:
+            tag: append_error_message_462da28c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.update_count
-      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_update_count_to_long
+      tag: convert_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_update_count_to_long_42f541b0
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_loose_foreign_keys_merge_request_diff_commit_cleanup_worker_stats_update_count_ec1c1c92
             field: gitlab.sidekiq.extra.loose_foreign_keys_merge_request_diff_commit_cleanup_worker.stats.update_count
             ignore_missing: true
         - append:
+            tag: append_error_message_f2a70023
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.consumable_events
-      tag: convert_extra_namespaces_process_sync_events_worker_consumable_events_to_long
+      tag: convert_extra_namespaces_process_sync_events_worker_consumable_events_to_long_1984a9c4
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_namespaces_process_sync_events_worker_consumable_events_d39e8441
             field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.consumable_events
             ignore_missing: true
         - append:
+            tag: append_error_message_749c4b6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.estimated_total_events
-      tag: convert_extra_namespaces_process_sync_events_worker_estimated_total_events_to_long
+      tag: convert_extra_namespaces_process_sync_events_worker_estimated_total_events_to_long_069ee47d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_namespaces_process_sync_events_worker_estimated_total_events_359e3b9b
             field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.estimated_total_events
             ignore_missing: true
         - append:
+            tag: append_error_message_893340f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.processed_events
-      tag: convert_extra_namespaces_process_sync_events_worker_processed_events_to_long
+      tag: convert_extra_namespaces_process_sync_events_worker_processed_events_to_long_8f3e32ab
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_namespaces_process_sync_events_worker_processed_events_3a0d19bf
             field: gitlab.sidekiq.extra.namespaces_process_sync_events_worker.processed_events
             ignore_missing: true
         - append:
+            tag: append_error_message_c09dacae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.execution_timeout
-      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_execution_timeout_to_boolean
+      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_execution_timeout_to_boolean_c0ddd591
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_object_storage_delete_stale_direct_uploads_worker_execution_timeout_a711cad5
             field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.execution_timeout
             ignore_missing: true
         - append:
+            tag: append_error_message_e12074ae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.total_deleted_stale_entries
-      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_deleted_stale_entries_to_long
+      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_deleted_stale_entries_to_long_198d5aa6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_object_storage_delete_stale_direct_uploads_worker_total_deleted_stale_entries_e70207f5
             field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.total_deleted_stale_entries
             ignore_missing: true
         - append:
+            tag: append_error_message_5ec0aa07
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.total_pending_entries
-      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_pending_entries_to_long
+      tag: convert_extra_object_storage_delete_stale_direct_uploads_worker_total_pending_entries_to_long_5288395d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_object_storage_delete_stale_direct_uploads_worker_total_pending_entries_ffca9215
             field: gitlab.sidekiq.extra.object_storage_delete_stale_direct_uploads_worker.total_pending_entries
             ignore_missing: true
         - append:
+            tag: append_error_message_8da79c2f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.packages_cleanup_delete_orphaned_dependencies_worker.deleted_rows_count
-      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_deleted_rows_count_to_long
+      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_deleted_rows_count_to_long_617eee35
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_packages_cleanup_delete_orphaned_dependencies_worker_deleted_rows_count_f0618bbb
             field: gitlab.sidekiq.extra.packages_cleanup_delete_orphaned_dependencies_worker.deleted_rows_count
             ignore_missing: true
         - append:
+            tag: append_error_message_e965d54b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.packages_cleanup_delete_orphaned_dependencies_worker.last_processed_packages_dependency_id
-      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_last_processed_packages_dependency_id_to_long
+      tag: convert_extra_packages_cleanup_delete_orphaned_dependencies_worker_last_processed_packages_dependency_id_to_long_f57df378
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_packages_cleanup_delete_orphaned_dependencies_worker_last_processed_packages_dependency_id_57449541
             field: gitlab.sidekiq.extra.packages_cleanup_delete_orphaned_dependencies_worker.last_processed_packages_dependency_id
             ignore_missing: true
         - append:
+            tag: append_error_message_d43a1f5d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.pages_deactivate_expired_deployments_cron_worker.deactivate_expired_pages_deployments.deactivated_deployments
-      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_deactivated_deployments_to_long
+      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_deactivated_deployments_to_long_08ce82c8
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_deactivated_deployments_9a4a3b68
             field: gitlab.sidekiq.extra.pages_deactivate_expired_deployments_cron_worker.deactivate_expired_pages_deployments.deactivated_deployments
             ignore_missing: true
         - append:
+            tag: append_error_message_d8f5c10b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.pages_deactivate_expired_deployments_cron_worker.deactivate_expired_pages_deployments.duration
-      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_duration_to_double
+      tag: convert_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_duration_to_double_208abfd7
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_pages_deactivate_expired_deployments_cron_worker_deactivate_expired_pages_deployments_duration_3cbab1d4
             field: gitlab.sidekiq.extra.pages_deactivate_expired_deployments_cron_worker.deactivate_expired_pages_deployments.duration
             ignore_missing: true
         - append:
+            tag: append_error_message_0f9b1ab4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.projects_process_sync_events_worker.consumable_events
-      tag: convert_extra_projects_process_sync_events_worker_consumable_events_to_long
+      tag: convert_extra_projects_process_sync_events_worker_consumable_events_to_long_7c7f8da2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_projects_process_sync_events_worker_consumable_events_fbcacfb1
             field: gitlab.sidekiq.extra.projects_process_sync_events_worker.consumable_events
             ignore_missing: true
         - append:
+            tag: append_error_message_010f32e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.projects_process_sync_events_worker.estimated_total_events
-      tag: convert_extra_projects_process_sync_events_worker_estimated_total_events_to_long
+      tag: convert_extra_projects_process_sync_events_worker_estimated_total_events_to_long_486a664a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_projects_process_sync_events_worker_estimated_total_events_c1222203
             field: gitlab.sidekiq.extra.projects_process_sync_events_worker.estimated_total_events
             ignore_missing: true
         - append:
+            tag: append_error_message_bdd03d3d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.extra.projects_process_sync_events_worker.processed_events
-      tag: convert_extra_projects_process_sync_events_worker_processed_events_to_long
+      tag: convert_extra_projects_process_sync_events_worker_processed_events_to_long_6bc915b2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_extra_projects_process_sync_events_worker_processed_events_5e16350f
             field: gitlab.sidekiq.extra.projects_process_sync_events_worker.processed_events
             ignore_missing: true
         - append:
+            tag: append_error_message_0ef2f5a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.job_size_bytes
-      tag: convert_job_size_bytes_to_long
+      tag: convert_job_size_bytes_to_long_8596b682
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_job_size_bytes_8ec9fd27
             field: gitlab.sidekiq.job_size_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_deb866a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_bytes
-      tag: convert_mem_bytes_to_long
+      tag: convert_mem_bytes_to_long_4c7ab505
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_mem_bytes_1b0696f1
             field: gitlab.sidekiq.mem_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_8e83375c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_mallocs
-      tag: convert_mem_mallocs_to_long
+      tag: convert_mem_mallocs_to_long_c215a9d2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_mem_mallocs_69fb54a9
             field: gitlab.sidekiq.mem_mallocs
             ignore_missing: true
         - append:
+            tag: append_error_message_25cb8d76
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_objects
-      tag: convert_mem_objects_to_long
+      tag: convert_mem_objects_to_long_00809f26
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_mem_objects_1195a529
             field: gitlab.sidekiq.mem_objects
             ignore_missing: true
         - append:
+            tag: append_error_message_32a2f06d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.mem_total_bytes
-      tag: convert_mem_total_bytes_to_long
+      tag: convert_mem_total_bytes_to_long_224e8e23
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_mem_total_bytes_5d6fc9b9
             field: gitlab.sidekiq.mem_total_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_0e5b4b8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.meta.remote_ip
-      tag: convert_meta_remote_ip_to_ip
+      tag: convert_meta_remote_ip_to_ip_e570d1c8
       type: ip
       ignore_missing: true
       if: ctx.gitlab?.sidekiq?.meta?.remote_ip != ''
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_meta_remote_ip_34f5d6d1
             field: gitlab.sidekiq.meta.remote_ip
             ignore_missing: true
         - append:
+            tag: append_error_message_2a9fa8be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.queue_duration_s
-      tag: convert_queue_duration_s_to_double
+      tag: convert_queue_duration_s_to_double_a2e45d78
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_queue_duration_s_a854876b
             field: gitlab.sidekiq.queue_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_1e7c38a7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_calls
-      tag: convert_redis_cache_calls_to_long
+      tag: convert_redis_cache_calls_to_long_3fd8fcd7
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_cache_calls_53931685
             field: gitlab.sidekiq.redis_cache_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_c544693f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_read_bytes
-      tag: convert_redis_cache_read_bytes_to_long
+      tag: convert_redis_cache_read_bytes_to_long_b33d77b8
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_cache_read_bytes_6dc2f64b
             field: gitlab.sidekiq.redis_cache_read_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_f48b39de
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_cache_write_bytes
-      tag: convert_redis_cache_write_bytes_to_long
+      tag: convert_redis_cache_write_bytes_to_long_7408db0d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_cache_write_bytes_dc5463d9
             field: gitlab.sidekiq.redis_cache_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_ce0c8d01
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_calls
-      tag: convert_redis_calls_to_long
+      tag: convert_redis_calls_to_long_8bb25dc3
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_calls_159990f1
             field: gitlab.sidekiq.redis_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_2e643878
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_duration_s
-      tag: convert_redis_duration_s_to_double
+      tag: convert_redis_duration_s_to_double_cd3f531c
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_duration_s_038b0c2b
             field: gitlab.sidekiq.redis_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_f9d9074b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_calls
-      tag: convert_redis_feature_flag_calls_to_long
+      tag: convert_redis_feature_flag_calls_to_long_013838da
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_feature_flag_calls_a1d660bb
             field: gitlab.sidekiq.redis_feature_flag_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_bbceffd2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_duration_s
-      tag: convert_redis_feature_flag_duration_s_to_double
+      tag: convert_redis_feature_flag_duration_s_to_double_26486ad7
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_feature_flag_duration_s_4b354da9
             field: gitlab.sidekiq.redis_feature_flag_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_e0fda083
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_read_bytes
-      tag: convert_redis_feature_flag_read_bytes_to_long
+      tag: convert_redis_feature_flag_read_bytes_to_long_a255a274
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_feature_flag_read_bytes_e7ac8dc9
             field: gitlab.sidekiq.redis_feature_flag_read_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_ce2f119d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_feature_flag_write_bytes
-      tag: convert_redis_feature_flag_write_bytes_to_long
+      tag: convert_redis_feature_flag_write_bytes_to_long_14f68d93
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_feature_flag_write_bytes_d2cd678b
             field: gitlab.sidekiq.redis_feature_flag_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_aeb7f030
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_calls
-      tag: convert_redis_queues_calls_to_long
+      tag: convert_redis_queues_calls_to_long_cd8405c7
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_calls_716d1dcf
             field: gitlab.sidekiq.redis_queues_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_5e6e04bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_duration_s
-      tag: convert_redis_queues_duration_s_to_double
+      tag: convert_redis_queues_duration_s_to_double_9fb00f4f
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_duration_s_2ba5263d
             field: gitlab.sidekiq.redis_queues_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_91426e46
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_calls
-      tag: convert_redis_queues_metadata_calls_to_long
+      tag: convert_redis_queues_metadata_calls_to_long_c9d03031
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_metadata_calls_41cb4d75
             field: gitlab.sidekiq.redis_queues_metadata_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_19947ef1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_duration_s
-      tag: convert_redis_queues_metadata_duration_s_to_double
+      tag: convert_redis_queues_metadata_duration_s_to_double_448a0e06
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_metadata_duration_s_2782f8ef
             field: gitlab.sidekiq.redis_queues_metadata_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_032a30aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_read_bytes
-      tag: convert_redis_queues_metadata_read_bytes_to_long
+      tag: convert_redis_queues_metadata_read_bytes_to_long_a623f4ae
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_metadata_read_bytes_6d85a15b
             field: gitlab.sidekiq.redis_queues_metadata_read_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_32094228
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_metadata_write_bytes
-      tag: convert_redis_queues_metadata_write_bytes_to_long
+      tag: convert_redis_queues_metadata_write_bytes_to_long_85eed4af
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_metadata_write_bytes_cf1ea551
             field: gitlab.sidekiq.redis_queues_metadata_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_dea1e12b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_read_bytes
-      tag: convert_redis_queues_read_bytes_to_long
+      tag: convert_redis_queues_read_bytes_to_long_ceb22a6e
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_read_bytes_0717e065
             field: gitlab.sidekiq.redis_queues_read_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_82a02658
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_queues_write_bytes
-      tag: convert_redis_queues_write_bytes_to_long
+      tag: convert_redis_queues_write_bytes_to_long_b22b997e
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_queues_write_bytes_ae06795f
             field: gitlab.sidekiq.redis_queues_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_0c5bb8b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_rate_limiting_calls
-      tag: convert_redis_rate_limiting_calls_to_long
+      tag: convert_redis_rate_limiting_calls_to_long_1d94be65
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_rate_limiting_calls_c9a3b251
             field: gitlab.sidekiq.redis_rate_limiting_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_5e22d22f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_rate_limiting_duration_s
-      tag: convert_redis_rate_limiting_duration_s_to_double
+      tag: convert_redis_rate_limiting_duration_s_to_double_117aa796
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_rate_limiting_duration_s_810153bb
             field: gitlab.sidekiq.redis_rate_limiting_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_145ea8ac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_rate_limiting_write_bytes
-      tag: convert_redis_rate_limiting_write_bytes_to_long
+      tag: convert_redis_rate_limiting_write_bytes_to_long_87ec45d1
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_rate_limiting_write_bytes_cd7a11bd
             field: gitlab.sidekiq.redis_rate_limiting_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_46d24bc1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_read_bytes
-      tag: convert_redis_read_bytes_to_long
+      tag: convert_redis_read_bytes_to_long_a211faf6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_read_bytes_82ec7527
             field: gitlab.sidekiq.redis_read_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_9d2f188d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_calls
-      tag: convert_redis_shared_state_calls_to_long
+      tag: convert_redis_shared_state_calls_to_long_6829a2bb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_shared_state_calls_e624888b
             field: gitlab.sidekiq.redis_shared_state_calls
             ignore_missing: true
         - append:
+            tag: append_error_message_bb017cec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_duration_s
-      tag: convert_redis_shared_state_duration_s_to_double
+      tag: convert_redis_shared_state_duration_s_to_double_f1267afe
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_shared_state_duration_s_4accced9
             field: gitlab.sidekiq.redis_shared_state_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_2f1ad8f5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_read_bytes
-      tag: convert_redis_shared_state_read_bytes_to_long
+      tag: convert_redis_shared_state_read_bytes_to_long_bd20c578
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_shared_state_read_bytes_a6064889
             field: gitlab.sidekiq.redis_shared_state_read_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_68ce0c63
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_shared_state_write_bytes
-      tag: convert_redis_shared_state_write_bytes_to_long
+      tag: convert_redis_shared_state_write_bytes_to_long_cce6649b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_shared_state_write_bytes_263f91eb
             field: gitlab.sidekiq.redis_shared_state_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_b9892e2e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.redis_write_bytes
-      tag: convert_redis_write_bytes_to_long
+      tag: convert_redis_write_bytes_to_long_332dd311
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_redis_write_bytes_8fa9a225
             field: gitlab.sidekiq.redis_write_bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_86358076
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: gitlab.sidekiq.retried_at
-      tag: date_retried_at
+      tag: date_retried_at_39279ed9
       target_field: gitlab.sidekiq.retried_at
       formats:
         - ISO8601
       if: ctx.gitlab?.sidekiq?.retried_at != null && ctx.gitlab.sidekiq.retried_at != ''
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_retried_at_125add73
             field: gitlab.sidekiq.retried_at
             ignore_missing: true
         - append:
+            tag: append_error_message_1e46f436
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.retry
-      tag: convert_retry_to_long
+      tag: convert_retry_to_long_b09dd290
       target_field: gitlab.sidekiq.retry_long
       type: long
       ignore_missing: true
@@ -1820,110 +2114,126 @@ processors:
       ignore_failure: true
   - remove:
       field: gitlab.sidekiq.retry
-      tag: remove_sidekiq_retry
+      tag: remove_sidekiq_retry_6773098b
       if: ctx.gitlab?.sidekiq?.retry_long != null
       ignore_missing: true
   - convert:
       field: gitlab.sidekiq.retry
-      tag: convert_retry_to_boolean
+      tag: convert_retry_to_boolean_63a2d09d
       type: boolean
       ignore_missing: true
       if: ctx.gitlab?.sidekiq?.retry != null && ctx.gitlab.sidekiq.retry != ''
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_retry_0bb0fbaf
             field: gitlab.sidekiq.retry
             ignore_missing: true
         - append:
+            tag: append_error_message_b0c58117
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.retry_count
-      tag: convert_retry_count_to_long
+      tag: convert_retry_count_to_long_c0a94cf2
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_retry_count_5b6543c1
             field: gitlab.sidekiq.retry_count
             ignore_missing: true
         - append:
+            tag: append_error_message_b909d805
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: gitlab.sidekiq.scheduled_at
-      tag: date_scheduled_at
+      tag: date_scheduled_at_a7f3ddf6
       target_field: gitlab.sidekiq.scheduled_at
       formats:
         - ISO8601
       if: ctx.gitlab?.sidekiq?.scheduled_at != null && ctx.gitlab.sidekiq.scheduled_at != ''
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_scheduled_at_e334cfd3
             field: gitlab.sidekiq.scheduled_at
             ignore_missing: true
         - append:
+            tag: append_error_message_660a1656
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.scheduling_latency_s
-      tag: convert_scheduling_latency_s_to_double
+      tag: convert_scheduling_latency_s_to_double_85337f8f
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_scheduling_latency_s_d8ac0fc7
             field: gitlab.sidekiq.scheduling_latency_s
             ignore_missing: true
         - append:
+            tag: append_error_message_0143cc2c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.status_expiration
-      tag: convert_status_expiration_to_long
+      tag: convert_status_expiration_to_long_874e084b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_status_expiration_f051938d
             field: gitlab.sidekiq.status_expiration
             ignore_missing: true
         - append:
+            tag: append_error_message_4e4f5259
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.target_duration_s
-      tag: convert_target_duration_s_to_long
+      tag: convert_target_duration_s_to_long_eb52c23a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_target_duration_s_ad607e2d
             field: gitlab.sidekiq.target_duration_s
             ignore_missing: true
         - append:
+            tag: append_error_message_18854f6f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.target_scheduling_latency_s
-      tag: convert_target_scheduling_latency_s_to_long
+      tag: convert_target_scheduling_latency_s_to_long_b845b8c3
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_target_scheduling_latency_s_76e5c059
             field: gitlab.sidekiq.target_scheduling_latency_s
             ignore_missing: true
         - append:
+            tag: append_error_message_905addca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.version
-      tag: convert_version_to_long
+      tag: convert_version_to_long_c5d70b44
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_gitlab_sidekiq_version_2211b1b5
             field: gitlab.sidekiq.version
             ignore_missing: true
         - append:
+            tag: append_error_message_eac0e71b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -1941,23 +2251,28 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
