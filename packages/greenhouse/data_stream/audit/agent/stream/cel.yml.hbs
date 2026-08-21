@@ -16,8 +16,10 @@ resource.url: {{url}}
 state:
   initial_interval: {{initial_interval}}
   token_url: {{token_url}}
+  harvest_url: {{harvest_url}}
   client_id: {{client_id}}
   client_secret: {{client_secret}}
+  enrich_rejections: {{enrich_rejections}}
 {{#if user_id}}
   user_id: "{{user_id}}"
 {{/if}}
@@ -51,6 +53,34 @@ Endpoints:
     - Response: {paging: {pit_id, next_search_after}, results: [...]}
     - next_search_after is null on the last page.
 
+Rejection enrichment (optional, enrich_rejections):
+
+  When enabled, rejection events are enriched with data from the Harvest
+  API in a collect → fetch → apply pattern:
+
+  1. Collect: identify "Candidate or Prospect rejected" action events and
+     correlate each to its sibling "RejectionDetails" audit event via
+     request.id. Extract the application_id from unambiguous (1:1) matches.
+
+  2. Fetch (batched): a single call to rejection_details retrieves all
+     matched application_ids at once; notes are batch-fetched similarly.
+     Rejection reasons require individual /{id} calls (the list endpoint
+     is broken) but are de-duplicated so each unique reason is fetched
+     only once.
+
+  3. Apply: each rejection event is enriched from pre-built lookup maps.
+     Events with 0 or >1 RejectionDetails matches get an error instead.
+
+  Endpoints used:
+    GET /v3/rejection_details?application_ids=<comma-separated>
+    GET /v3/rejection_reasons/{id}
+    GET /v3/notes?ids=<comma-separated>
+
+  Required scopes on the OAuth credential:
+    harvest:rejection_details:list
+    harvest:rejection_reasons:show
+    harvest:notes:list
+
 State:
   auth_token — shallow-replaced object holding token and expires.
     Cleared to {} on 401 so the fields are absent, not sentinel-valued.
@@ -66,10 +96,11 @@ Cursor:
 program: |-
   state.with(
     (
-      !state.?auth_token.token.hasValue() || !state.?auth_token.expires.hasValue() ||
-      timestamp(state.auth_token.expires) < now-duration("30s")
-    ).as(need_token,
-      need_token ?
+      (
+        state.?auth_token.token.hasValue() && state.?auth_token.expires.optMap(expires, timestamp(expires) >= now - duration("30s")).orValue(false)
+      ) ?
+        {"auth_token": state.auth_token}
+      :
         request("POST", state.token_url).with(
           {
             "Header": {
@@ -102,20 +133,16 @@ program: |-
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
                   "message": "POST " + state.token_url + ": " + (
-                    size(resp.Body) != 0 ?
+                    (size(resp.Body) != 0) ?
                       string(resp.Body)
                     :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                   ),
                 },
               },
               "want_more": false,
             }
         )
-      :
-        {
-          "auth_token": state.auth_token,
-        }
     ).as(auth,
       has(auth.events) ?
         auth
@@ -126,10 +153,8 @@ program: |-
           :
             (now - duration(state.initial_interval)).format(time_layout.RFC3339)
         ).as(window_start_time,
-          (
-            // Query params must stay consistent across all pages in a session
-            // (per API docs). after_time is fixed to window_start_time for the
-            // entire pagination window, including retries after PIT expiry.
+          request(
+            "GET",
             state.url.trim_right("/") + "/events?" + {
               "paging": ["true"],
               "after_time": [window_start_time],
@@ -140,98 +165,274 @@ program: |-
                 (v != "") ? optional.of([v]) : optional.none()
               ),
             }.format_query()
-          ).as(url,
+          ).with(
             {
-              "Authorization": ["Bearer " + auth.auth_token.token],
-              "Size": [string(int(state.batch_size))],
-              ?"Pit-Id": state.?cursor.pit_id.optFlatMap(v,
-                (v != "") ? optional.of([v]) : optional.none()
-              ),
-              ?"Search-After": state.?cursor.search_after.optFlatMap(v,
-                (v != "") ? optional.of([v]) : optional.none()
-              ),
-            }.as(headers,
-              request("GET", url).with({"Header": headers}).do_request().as(resp,
-                (resp.StatusCode == 200) ?
-                  resp.Body.decode_json().as(body,
-                    body.?results.orValue([]).as(results,
-                      (body.?paging.next_search_after.orValue(null) != null).as(has_more,
-                        (size(results) > 0).as(has_results,
-                          (has_results ? body.results[0].event_time : "").as(page_newest_event_time,
-                            (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
-                              (has_results ?
-                                (has_max_event_time && timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)).as(use_existing,
-                                  use_existing ? state.cursor.max_event_time : page_newest_event_time
+              "Header": {
+                "Authorization": ["Bearer " + auth.auth_token.token],
+                "Size": [string(int(state.batch_size))],
+                ?"Pit-Id": state.?cursor.pit_id.optFlatMap(v,
+                  (v != "") ? optional.of([v]) : optional.none()
+                ),
+                ?"Search-After": state.?cursor.search_after.optFlatMap(v,
+                  (v != "") ? optional.of([v]) : optional.none()
+                ),
+              },
+            }
+          ).do_request().as(
+            resp,
+            (resp.StatusCode == 200) ?
+              resp.Body.decode_json().as(body,
+                {
+                  "results": body.?results.orValue([]),
+                  "has_more": body.?paging.next_search_after.orValue(null) != null,
+                  "harvest_hdr": {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}},
+                }.as(page,
+                  {
+                    "next_max": state.?cursor.max_event_time.orValue("").as(prev_max,
+                      (size(page.results) > 0 && (prev_max == "" || timestamp(page.results[0].event_time) > timestamp(prev_max))) ?
+                        page.results[0].event_time
+                      :
+                        prev_max
+                    ),
+                    "correlations": page.results.map(
+                      e,
+                      !(
+                        state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                        e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                      ) ?
+                        {"n": -1, "app_id": "", "ambiguous_ids": []}
+                      :
+                        page.results.filter(rd,
+                          rd.?event.target_type.orValue("") == "RejectionDetails" &&
+                          rd.?event.type.orValue("") == "data_change_create" && has(rd.?event.meta.application_id)
+                        ).filter(rde,
+                          rde.?request.id.orValue("") == e.?request.id.orValue("")
+                        ).as(matches,
+                          {
+                            "n": matches.size(),
+                            "app_id": (matches.size() == 1) ? string(int(matches[0].event.meta.application_id)) : "",
+                            "ambiguous_ids": (matches.size() > 1) ? matches.map(m, string(int(m.event.meta.application_id))) : [],
+                          }
+                        )
+                    ),
+                  }.as(ctx,
+                    ctx.correlations.map(c, c.n == 1, c.app_id).as(app_ids,
+                      (
+                        (size(app_ids) > 0) ?
+                          request(
+                            "GET",
+                            state.harvest_url.trim_right("/") + "/v3/rejection_details?application_ids=" + app_ids.join(",")
+                          ).with(page.harvest_hdr).do_request().as(resp,
+                            {"status": resp.StatusCode, "data": (resp.StatusCode == 200) ? resp.Body.decode_json() : []}
+                          )
+                        :
+                          {"status": 200, "data": []}
+                      ).as(rd_fetch,
+                        {
+                          "rd_map": (rd_fetch.status == 200 && size(rd_fetch.data) > 0) ?
+                            rd_fetch.data.transformMapEntry(_, rd, {string(int(rd.application_id)): rd})
+                          :
+                            {},
+                          "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(all_rr_ids,
+                            all_rr_ids.transformList(i, id,
+                              all_rr_ids.transformList(j, prev, j < i && prev == id, prev).size() == 0,
+                              id
+                            )
+                          ).as(unique_rr_ids,
+                            (size(unique_rr_ids) > 0) ?
+                              unique_rr_ids.map(id,
+                                request(
+                                  "GET",
+                                  state.harvest_url.trim_right("/") + "/v3/rejection_reasons/" + id
+                                ).with(page.harvest_hdr).do_request().as(rr_resp,
+                                  (rr_resp.StatusCode == 200) ?
+                                    {"id": id, "val": rr_resp.Body.decode_json()}
+                                  :
+                                    {"id": id}
+                                )
+                              ).transformMapEntry(_, r, has(r.val), {r.id: r.val})
+                            :
+                              {}
+                          ),
+                          "note_map": rd_fetch.data.map(rd, rd.?rejection_note_id.orValue(null) != null, string(int(rd.rejection_note_id))).as(note_ids,
+                            (
+                              (size(note_ids) > 0) ?
+                                request(
+                                  "GET",
+                                  state.harvest_url.trim_right("/") + "/v3/notes?ids=" + note_ids.join(",")
+                                ).with(page.harvest_hdr).do_request().as(n_resp,
+                                  (n_resp.StatusCode == 200) ? n_resp.Body.decode_json() : []
                                 )
                               :
-                                (has_max_event_time ? state.cursor.max_event_time : "")
-                              ).as(next_max_event_time,
-                                {
-                                  "auth_token": auth.auth_token,
-                                  "events": results.map(e, {"message": e.encode_json()}),
-                                  "cursor": {
-                                    // Keep window_start_time fixed until the final
-                                    // page succeeds so the whole window can be
-                                    // retried safely if the PIT expires.
-                                    "window_start_time": has_more ?
-                                      window_start_time
-                                    :
-                                      (next_max_event_time != "") ?
-                                        next_max_event_time
-                                      :
-                                        window_start_time,
-                                    "max_event_time": has_more ? next_max_event_time : "",
-                                    "pit_id": has_more ? string(body.paging.pit_id) : "",
-                                    "search_after": has_more ? string(body.paging.next_search_after) : "",
-                                  },
-                                  "want_more": has_more,
-                                }
-                              )
+                                []
+                            ).as(all_notes,
+                              (size(all_notes) > 0) ?
+                                all_notes.transformMapEntry(_, note, {string(int(note.id)): note.?body.orValue("")})
+                              :
+                                {}
                             )
-                          )
+                          ),
+                        }.as(lookups,
+                          {
+                            "auth_token": auth.auth_token,
+                            "events": page.results.transformList(i, e,
+                              {
+                                "message": (
+                                  (ctx.correlations[i].n == -1) ?
+                                    e
+                                  : (ctx.correlations[i].n == 0) ?
+                                    e.with(
+                                      {
+                                        "event": e.event.with(
+                                          {
+                                            "rejection": {
+                                              "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
+                                            },
+                                          }
+                                        ),
+                                      }
+                                    )
+                                  : (ctx.correlations[i].n > 1) ?
+                                    e.with(
+                                      {
+                                        "event": e.event.with(
+                                          {
+                                            "rejection": {
+                                              "error": "ambiguous: " + string(ctx.correlations[i].n) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
+                                              "ambiguous_application_ids": ctx.correlations[i].ambiguous_ids,
+                                            },
+                                          }
+                                        ),
+                                      }
+                                    )
+                                  :
+                                    ctx.correlations[i].app_id.as(app_id,
+                                      (rd_fetch.status != 200) ?
+                                        e.with(
+                                          {
+                                            "event": e.event.with(
+                                              {
+                                                "rejection": {
+                                                  "application_id": app_id,
+                                                  "error": "rejection_details fetch failed: " + string(rd_fetch.status),
+                                                },
+                                              }
+                                            ),
+                                          }
+                                        )
+                                      : !(app_id in lookups.rd_map) ?
+                                        e.with(
+                                          {
+                                            "event": e.event.with(
+                                              {
+                                                "rejection": {"application_id": app_id},
+                                              }
+                                            ),
+                                          }
+                                        )
+                                      :
+                                        lookups.rd_map[app_id].as(rd,
+                                          {
+                                            "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
+                                              (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
+                                            ),
+                                            "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                              (rn_id != null) ? lookups.note_map[?string(int(rn_id))].orValue("") : ""
+                                            ),
+                                          }.as(enrich,
+                                            e.with(
+                                              {
+                                                "event": e.event.with(
+                                                  {
+                                                    "rejection": {
+                                                      "application_id": app_id,
+                                                      ?"candidate_id": (rd.?candidate_id.orValue(null) == null) ?
+                                                        optional.none()
+                                                      :
+                                                        optional.of(string(int(rd.candidate_id))),
+                                                      ?"reason": (enrich.reason != null) ?
+                                                        optional.of(
+                                                          {
+                                                            "id": string(int(enrich.reason.id)),
+                                                            "name": enrich.reason.name,
+                                                            "type": enrich.reason.?type.?name.orValue(""),
+                                                          }
+                                                        )
+                                                      : enrich.notes_text.startsWith("Reason: ") ?
+                                                        enrich.notes_text.split("\n").as(lines,
+                                                          optional.of(
+                                                            {
+                                                              "name": lines[0].substring(8, size(lines[0])),
+                                                              "type": "",
+                                                            }
+                                                          )
+                                                        )
+                                                      :
+                                                        optional.none(),
+                                                      ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
+                                                      ?"rejected_at": rd.?rejected_at,
+                                                    },
+                                                  }
+                                                ),
+                                              }
+                                            )
+                                          )
+                                        )
+                                    )
+                                ).encode_json(),
+                              }
+                            ),
+                            "cursor": {
+                              "window_start_time": (page.has_more || ctx.next_max == "") ?
+                                window_start_time
+                              :
+                                ctx.next_max,
+                              "max_event_time": page.has_more ? ctx.next_max : "",
+                              "pit_id": page.has_more ? string(body.paging.pit_id) : "",
+                              "search_after": page.has_more ? string(body.paging.next_search_after) : "",
+                            },
+                            "want_more": page.has_more,
+                          }
                         )
                       )
                     )
                   )
-                : (resp.StatusCode == 401) ?
-                  {
-                    "auth_token": {},
-                    "events": [],
-                    "want_more": false,
-                  }
-                : (resp.StatusCode == 429) ?
-                  {
-                    "events": [],
-                    "want_more": false,
-                  }
-                : string(resp.Body).contains("Pit_Id") ?
-                  // Pit_Id expired — clear pagination tokens but keep the
-                  // current window so the next poll retries the same range.
-                  // Emit a dummy event so the cursor reset is persisted.
-                  {
-                    "auth_token": auth.auth_token,
-                    "events": [{"retry": true}],
-                    "cursor": {
-                      "window_start_time": window_start_time,
-                      "max_event_time": state.?cursor.max_event_time.orValue(""),
-                      "pit_id": "",
-                      "search_after": "",
-                    },
-                    "want_more": false,
-                  }
-                :
-                  {
-                    "events": {
-                      "error": {
-                        "code": string(resp.StatusCode),
-                        "id": string(resp.Status),
-                        "message": "GET /events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
-                      },
-                    },
-                    "want_more": false,
-                  }
+                )
               )
-            )
+            : (resp.StatusCode == 401) ?
+              {
+                "auth_token": {},
+                "events": [],
+                "want_more": false,
+              }
+            : (resp.StatusCode == 429) ?
+              {
+                "events": [],
+                "want_more": false,
+              }
+            : string(resp.Body).contains("Pit_Id") ?
+              {
+                "auth_token": auth.auth_token,
+                "events": [{"retry": true}],
+                "cursor": {
+                  "window_start_time": window_start_time,
+                  "max_event_time": state.?cursor.max_event_time.orValue(""),
+                  "pit_id": "",
+                  "search_after": "",
+                },
+                "want_more": false,
+              }
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET /events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                  },
+                },
+                "want_more": false,
+              }
           )
         )
     )

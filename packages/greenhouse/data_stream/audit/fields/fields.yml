@@ -71,3 +71,49 @@
           type: flattened
           description: >
             The before and after values from data change events, or other relevant data for the event.
+        - name: rejection
+          type: group
+          description: >
+            Rejection details looked up from the Harvest API for a "Candidate or Prospect rejected" audit event. This audit event does not include an application ID; it is obtained by correlating a sibling "RejectionDetails" audit event that shares the same request.id. Only populated when the `enrich_rejections` setting is enabled.
+          fields:
+            - name: application_id
+              type: keyword
+              description: >
+                The ID of the Application matched to this rejection event via its sibling "RejectionDetails" audit event.
+            - name: candidate_id
+              type: keyword
+              description: >
+                The ID of the candidate whose application was rejected.
+            - name: ambiguous_application_ids
+              type: keyword
+              description: >
+                When more than one "RejectionDetails" audit event shares the rejection event's request.id (for example, a bulk rejection), the Application IDs of all. No reason or notes are attached in this case, since it is impossible to tell which one corresponds to this rejection event.
+            - name: reason
+              type: group
+              description: >
+                The rejection reason selected in Greenhouse.
+              fields:
+                - name: id
+                  type: keyword
+                  description: >
+                    The ID of the rejection reason.
+                - name: name
+                  type: keyword
+                  description: >
+                    The name of the rejection reason.
+                - name: type
+                  type: keyword
+                  description: >
+                    The category of the rejection reason, for example "We rejected them" or "They rejected us."
+            - name: notes
+              type: match_only_text
+              description: >
+                The rejection notes/comments entered when the application was rejected, sourced from the Harvest v3 Notes API via the rejection_note_id on the rejection detail record.
+            - name: rejected_at
+              type: date
+              description: >
+                The timestamp when the application was rejected, as reported by the Harvest API.
+            - name: error
+              type: keyword
+              description: >
+                Error message if the rejection enrichment lookup against the Harvest API failed.
