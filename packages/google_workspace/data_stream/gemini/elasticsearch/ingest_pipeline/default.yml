@@ -189,7 +189,7 @@ processors:
         Map Gemini action and app_name to ECS event.category and event.type.
         Composite action|app_name keys disambiguate multi-app actions; action-only
         keys cover app-specific actions; app_name is the final fallback.
-      if: ctx.google_workspace?.gemini?.action != null
+      if: ctx.google_workspace?.gemini?.action != null || ctx.google_workspace?.gemini?.app_name != null
       params:
         composite:
           condense|gmail:
@@ -198,12 +198,30 @@ processors:
           condense|slides:
             category: [file]
             type: [change]
+          elaborate|gmail:
+            category: [email]
+            type: [info]
+          elaborate|docs:
+            category: [file]
+            type: [change]
+          elaborate|slides:
+            category: [file]
+            type: [change]
           formalize|gmail:
             category: [email]
             type: [info]
           formalize|slides:
             category: [file]
             type: [change]
+          generate_text|gmail:
+            category: [email]
+            type: [info]
+          generate_text|docs:
+            category: [file]
+            type: [creation]
+          generate_text|slides:
+            category: [file]
+            type: [creation]
           proofread|gmail:
             category: [email]
             type: [info]
@@ -238,9 +256,6 @@ processors:
           classic_use_case_sheets_turbofill:
             category: [file]
             type: [change]
-          elaborate:
-            category: [email]
-            type: [info]
           generate_avatar_video:
             category: [file]
             type: [creation]
@@ -256,9 +271,6 @@ processors:
           generate_table_name:
             category: [file]
             type: [change]
-          generate_text:
-            category: [email]
-            type: [info]
           generate_videos_in_product:
             category: [file]
             type: [creation]
@@ -336,10 +348,10 @@ processors:
         def action = ctx.google_workspace.gemini.action;
         def appName = ctx.google_workspace.gemini.app_name;
         def mapping = null;
-        if (appName != null) {
+        if (action != null && appName != null) {
           mapping = params.composite[action + '|' + appName];
         }
-        if (mapping == null) {
+        if (mapping == null && action != null) {
           mapping = params.actions[action];
         }
         if (mapping == null && appName != null) {
