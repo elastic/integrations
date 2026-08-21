@@ -44,6 +44,42 @@ processors:
     field: host.name
     tag: set_host_name_lowercase
     ignore_missing: true
+- script:
+    tag: lift_gcp_compute_lifecycle
+    description: >-
+      Lift GCP compute lifecycle fields from resource.raw (not queryable:
+      the findings index template sets dynamic: false and
+      resource.raw.resource.data is declared enabled: false) into indexed
+      resource.lifecycle.* fields for CSPM metering
+      (https://github.com/elastic/security-team/issues/17662).
+      Skips docs that already carry lifecycle fields
+      (future cloudbeat versions may emit them natively).
+    if: >-
+      ctx.resource?.sub_type == 'gcp-compute-instance' &&
+      ctx.resource?.lifecycle == null &&
+      ctx.resource?.raw?.resource?.data != null
+    ignore_failure: true
+    lang: painless
+    source: |
+      def data = ctx.resource.raw.resource.data;
+      Map lc = new HashMap();
+      if (data.status instanceof String) { lc.status = data.status; }
+      if (data.creationTimestamp instanceof String) {
+        lc.incarnation = data.creationTimestamp;
+        lc.created_at = data.creationTimestamp;
+      }
+      if (data.lastStartTimestamp instanceof String) { lc.last_started_at = data.lastStartTimestamp; }
+      if (data.lastStopTimestamp instanceof String) { lc.last_stopped_at = data.lastStopTimestamp; }
+      if (lc.isEmpty()) { return; }
+      // Assign before parsing: an unparseable timestamp throws, and ignore_failure
+      // swallows the throw without rolling back what was already written to ctx,
+      // so the rest of the lift survives and only last_run_ms is lost.
+      ctx.resource.lifecycle = lc;
+      if (data.lastStartTimestamp instanceof String && data.lastStopTimestamp instanceof String) {
+        long startMs = ZonedDateTime.parse(data.lastStartTimestamp).toInstant().toEpochMilli();
+        long stopMs = ZonedDateTime.parse(data.lastStopTimestamp).toInstant().toEpochMilli();
+        lc.last_run_ms = stopMs - startMs;
+      }
 on_failure:
   - set:
       field: event.kind

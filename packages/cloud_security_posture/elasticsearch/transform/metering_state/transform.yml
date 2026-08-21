@@ -1,0 +1,87 @@
+source:
+  index:
+    - "logs-cloud_security_posture.findings-*"
+  query:
+    term:
+      rule.benchmark.posture_type: cspm
+dest:
+  index: "logs-cloud_security_posture.metering_state-default"
+pivot:
+  group_by:
+    resource.id:
+      terms:
+        field: resource.id
+    resource.lifecycle.incarnation:
+      terms:
+        field: resource.lifecycle.incarnation
+        missing_bucket: true
+    resource.sub_type:
+      terms:
+        field: resource.sub_type
+    cloud.account.id:
+      terms:
+        field: cloud.account.id
+    posture_type:
+      terms:
+        field: rule.benchmark.posture_type
+  aggregations:
+    first_seen:
+      min:
+        field: "@timestamp"
+    last_seen:
+      max:
+        field: "@timestamp"
+    # > 0 means this incarnation was seen on at least two scans.
+    span_ms:
+      bucket_script:
+        buckets_path:
+          first: first_seen
+          last: last_seen
+        script: "params.last - params.first"
+    # max, not top_metrics: top_metrics emits the STRING "null" for a metric
+    # absent from a bucket, which a date/long mapping rejects, dropping the whole
+    # document. max is equivalent here because these timestamps are monotonic
+    # within one incarnation, and the incarnation is part of the group key.
+    last_started_at:
+      max:
+        field: resource.lifecycle.last_started_at
+    last_stopped_at:
+      max:
+        field: resource.lifecycle.last_stopped_at
+    # Duration of the run that ended at last_stopped_at. Default gap_policy
+    # 'skip' leaves it absent when the instance never stopped. A NEGATIVE value
+    # means the instance was started again after its last stop, i.e. it is
+    # running now — that is how the billing query tells a restarted-and-running
+    # instance from a stopped one.
+    last_run_ms:
+      bucket_script:
+        buckets_path:
+          start: last_started_at
+          stop: last_stopped_at
+        script: "params.stop - params.start"
+description: Per-incarnation scan state (first/last seen, lifecycle) for stateful CSPM metering
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+retention_policy:
+  time:
+    field: last_seen
+    max_age: 7d
+settings:
+  unattended: true
+  # top_metrics/bucket_script output mappings are not reliably deduced; the
+  # destination_index_template in manifest.yml pins them instead.
+  deduce_mappings: false
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package
+  # install. Required for any change to this file.
+  fleet_transform_version: 0.1.0
+  # run_as_kibana_system is deliberately left unset (defaults to true). This is
+  # an internal Elastic transform writing a system index that a Kibana
+  # background task bills from — not user data — so it runs as the internal
+  # user, matching the misconfiguration transform in this package. Setting it
+  # false would install under the logged-in user's credentials, which is for
+  # integration data that must stay scoped to what that user can read.
