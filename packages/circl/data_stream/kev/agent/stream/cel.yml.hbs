@@ -54,8 +54,8 @@ program: |-
         }
       ).do_request().as(resp,
         (resp.StatusCode == 200) ?
-          try(resp.Body.decode_json()).as(parsed,
-            (type(parsed) != map || !has(parsed.data) || !has(parsed.metadata)) ?
+          resp.Body.decode_json().as(parsed,
+            (is_error(parsed) || !has(parsed.data) || !has(parsed.metadata)) ?
               {
                 "events": [
                   {
