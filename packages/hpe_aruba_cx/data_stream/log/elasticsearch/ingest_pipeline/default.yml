@@ -38,7 +38,7 @@ processors:
         - "^%{BSD_SYSLOG_HEADER}%{GREEDYDATA:message}"
       pattern_definitions:
         SYSLOG_HEADER: "%{OPTIONAL_PRIORITY}%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}%{PROC_ID}\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
-        PROC_ID: "(\\[%{POSINT:log.syslog.procid}\\]:|\\s+%{POSINT:log.syslog.procid}\\s+- -)"
+        PROC_ID: "(\\[%{POSINT:log.syslog.procid}\\]:?|\\s+%{POSINT:log.syslog.procid}\\s+- -)"
         OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
         OPTIONAL_PRIORITY: "(?:<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT})?\\s+)?"
         BSD_PRIORITY: "(?:<%{NONNEGINT:log.syslog.priority:long}>)?"
