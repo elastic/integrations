@@ -412,18 +412,68 @@ processors:
       tag: rename_request
       target_field: f5_bigip.log.request.detail
       ignore_missing: true
-  # Two dissect patterns are used to handle both single and multiple escape characters.
-  - dissect:
-      # The literal escapes here are intentional. These appear in real-world data.
-      field: f5_bigip.log.request.detail
-      description: Pattern to handle multiple escape character.
-      pattern: '%{f5_bigip.log.request.method} %{f5_bigip.log.request.path} %{f5_bigip.log.request.protocol}\r\nHost: %{f5_bigip.log.request.host}\r\nConnection: %{f5_bigip.log.request.connection}\r\nCache-Control: %{f5_bigip.log.request.cache_control}'
-      ignore_failure: true
-  - dissect:
-      field: f5_bigip.log.request.detail
-      description: Pattern to handle single escape character.
-      pattern: "%{f5_bigip.log.request.method} %{f5_bigip.log.request.path} %{f5_bigip.log.request.protocol}\r\nHost: %{f5_bigip.log.request.host}\r\nUser-Agent: %{f5_bigip.log.request.user_agent}\r\nAccept: %{f5_bigip.log.request.accept}\r\nX-Forwarded-For: %{f5_bigip.log.request.x_forwarded_for}\r\n\r\n"
-      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_to_parse_request_detail
+      description: >-
+        Split the raw HTTP request into its request line and headers, then look up each header by
+        name. Clients send headers in any order and with any header set, so a positional pattern
+        over the whole request cannot be used. BIG-IP writes the line separators either as real
+        CRLF characters or as the two-character escape sequence, so the split accepts both.
+      if: ctx.f5_bigip?.log?.request?.detail instanceof String
+      source: |
+        def lines = /\\r\\n|\r\n|\r|\n/.split(ctx.f5_bigip.log.request.detail);
+        def request = ctx.f5_bigip.log.request;
+
+        String requestLine = lines[0];
+        int methodEnd = requestLine.indexOf(' ');
+        int protocolStart = requestLine.lastIndexOf(' ');
+        if (methodEnd > 0 && protocolStart > methodEnd) {
+          request.method = requestLine.substring(0, methodEnd);
+          request.path = requestLine.substring(methodEnd + 1, protocolStart);
+          request.protocol = requestLine.substring(protocolStart + 1);
+        }
+
+        // Host and User-Agent may only appear once. A request that repeats them is malformed, and
+        // joining the values would produce a host that is not usable, so the first one wins. The
+        // remaining headers are list valued, where RFC 9110 makes repeated lines equivalent to a
+        // single comma separated line.
+        List singletonHeaders = ['host', 'user-agent'];
+        Map headers = new HashMap();
+        for (int i = 1; i < lines.length; i++) {
+          if (lines[i].isEmpty()) {
+            break;
+          }
+          int nameEnd = lines[i].indexOf(':');
+          if (nameEnd < 1) {
+            continue;
+          }
+          String name = lines[i].substring(0, nameEnd).trim().toLowerCase();
+          String value = lines[i].substring(nameEnd + 1).trim();
+          if (value.isEmpty()) {
+            continue;
+          }
+          if (!headers.containsKey(name)) {
+            headers[name] = [value];
+          } else if (!singletonHeaders.contains(name)) {
+            headers[name].add(value);
+          }
+        }
+
+        Map headerFields = [
+          'accept': 'accept',
+          'cache-control': 'cache_control',
+          'connection': 'connection',
+          'host': 'host',
+          'user-agent': 'user_agent',
+          'x-forwarded-for': 'x_forwarded_for'
+        ];
+        for (entry in headerFields.entrySet()) {
+          def values = headers[entry.getKey()];
+          if (values != null) {
+            request[entry.getValue()] = String.join(', ', values);
+          }
+        }
   - append:
       field: related.hosts
       tag: append_f5_bigip_log_request_host_into_related_hosts
@@ -448,9 +498,22 @@ processors:
       ignore_missing: true
   - dissect:
       field: f5_bigip.log.request.protocol
-      description: Pattern to extract network protocol and http version.
-      pattern: "%{network.protocol}/%{http.version}"
+      tag: dissect_request_protocol
+      description: >-
+        Pattern to extract network protocol and http version. The request line always reads HTTP
+        even on a TLS virtual server, so it is only a fallback for the protocol BIG-IP reports.
+      pattern: "%{_tmp.protocol}/%{http.version}"
       ignore_failure: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_request_line
+      copy_from: _tmp.protocol
+      if: ctx.network?.protocol == null
+      ignore_empty_value: true
+  - remove:
+      field: _tmp
+      tag: remove_tmp_protocol
+      ignore_missing: true
   - lowercase:
       field: network.protocol
       tag: lowercase_network_protocol
@@ -458,13 +521,20 @@ processors:
   - script:
       lang: painless
       tag: script_to_set_url_full
-      if: ctx.network?.protocol != null && ctx.f5_bigip?.log?.request?.host != null && ctx.f5_bigip?.log?.request?.protocol != null
-      description:
+      if: ctx.network?.protocol != null && ctx.f5_bigip?.log?.request?.host != null && ctx.f5_bigip?.log?.request?.path != null
+      description: >-
+        Build url.original from the request line. The Host header is client controlled, so hosts
+        that cannot appear in a URL authority are left out rather than producing a URL that
+        uri_parts would reject.
       source: |
+        String host = ctx.f5_bigip.log.request.host;
+        if (!/^[\w.:\[\]-]+$/.matcher(host).matches()) {
+          return;
+        }
         if (ctx.url == null) {
             ctx.url = new HashMap();
         }
-        ctx.url.original = ctx.network.protocol + '://' +ctx.f5_bigip.log.request.host + ctx.f5_bigip.log.request.path
+        ctx.url.original = ctx.network.protocol + '://' + host + ctx.f5_bigip.log.request.path
   - uri_parts:
       field: url.original
       tag: uri_parts_url_original
@@ -473,23 +543,27 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - split:
       field: f5_bigip.log.request.x_forwarded_for
-      tag: convert_x_forwarded_for_to_ip
-      target_field: f5_bigip.log.request.x_forwarded_for
-      if: ctx.f5_bigip?.log?.request?.x_forwarded_for != ''
-      type: ip
+      tag: split_request_x_forwarded_for
+      separator: ',\s*'
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - append:
-      field: related.ip
-      tag: append_f5_bigip_log_request_x_forwarded_for_into_related_ip
-      value: '{{{f5_bigip.log.request.x_forwarded_for}}}'
-      allow_duplicates: false
-      ignore_failure: true
+  # The header is whatever the client sent. Keep the raw values on this keyword field as evidence,
+  # but only let addresses that parse reach related.ip, which is mapped as ip. The sibling field
+  # below runs the same check from its own pipeline: Fleet rewrites only the first reference to a
+  # given pipeline name in a file, so a single shared pipeline cannot be called from both places.
+  - foreach:
+      field: f5_bigip.log.request.x_forwarded_for
+      tag: foreach_request_x_forwarded_for
+      if: ctx.f5_bigip?.log?.request?.x_forwarded_for instanceof List
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_forwarded_ip_request" }}'
+          tag: pipeline_forwarded_ip_for_request
+  - remove:
+      field: _tmp
+      tag: remove_tmp_request_forwarded_ip
+      ignore_missing: true
   - rename:
       field: json.request_status
       tag: rename_request_status
@@ -611,27 +685,25 @@ processors:
       field: json.x_forwarded_for_header_value
       separator: ',\s*'
       ignore_missing: true
-  - convert:
-      field: json.x_forwarded_for_header_value
-      tag: convert_x_forwarded_for_header_value_to_ip
-      target_field: f5_bigip.log.x_forwarded_for_header_value
-      if: ctx.json?.x_forwarded_for_header_value != ''
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # BIG-IP copies the client's X-Forwarded-For header here verbatim, so a single unparseable entry
+  # must not discard the rest of the chain or fail the event.
   - foreach:
-      field: f5_bigip.log.x_forwarded_for_header_value
-      if: ctx.f5_bigip?.log?.x_forwarded_for_header_value instanceof List
+      field: json.x_forwarded_for_header_value
+      tag: foreach_x_forwarded_for_header_value
+      if: ctx.json?.x_forwarded_for_header_value instanceof List
       processor:
-        append:
-          field: related.ip
-          tag: append_related_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-          ignore_failure: true
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_forwarded_ip_header_value" }}'
+          tag: pipeline_forwarded_ip_for_header_value
+  - rename:
+      field: _tmp.valid_ips
+      tag: rename_tmp_valid_ips_to_x_forwarded_for_header_value
+      target_field: f5_bigip.log.x_forwarded_for_header_value
+      ignore_missing: true
+  - remove:
+      field: _tmp
+      tag: remove_tmp_header_value_forwarded_ip
+      ignore_missing: true
   - rename:
       field: json.geo_info
       tag: rename_geo_info
