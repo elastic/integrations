@@ -3290,6 +3290,7 @@ processors:
     # split member name into parts based on comma ignoring escaped commas
     # https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ldap/distinguished-names
   - split:
+      tag: split_winlog_event_data_MemberName_to__temp_MemberNameParts_c2e48f76
       if: ctx.winlog?.event_data?.MemberName != null
       field: winlog.event_data.MemberName
       target_field: _temp.MemberNameParts
@@ -3414,6 +3415,7 @@ processors:
         }
 
   - set:
+      tag: set_winlog_logon_id_40ea691f
       field: winlog.logon.id
       copy_from: winlog.event_data.TargetLogonId
       ignore_failure: false
@@ -3594,11 +3596,13 @@ processors:
         }
 
   - set:
+      tag: set_winlog_logon_id_c8ebde7f
       field: winlog.logon.id
       copy_from: winlog.event_data.SubjectLogonId
       ignore_failure: true
 
   - set:
+      tag: set_winlog_logon_id_70be5285
       field: winlog.logon.id
       copy_from: winlog.user_data.SubjectLogonId
       ignore_failure: true
@@ -3896,6 +3900,7 @@ processors:
         }
 
   - append:
+      tag: append_related_user_825d5463
       field: related.user
       value: '{{winlog.event_data.SubjectUserName}}'
       allow_duplicates: false
@@ -3906,6 +3911,7 @@ processors:
         ctx.winlog.event_data.SubjectUserName != "-"
 
   - append:
+      tag: append_related_user_1bfafd26
       field: related.user
       value: '{{winlog.event_data.TargetUserName}}'
       allow_duplicates: false
@@ -3917,6 +3923,7 @@ processors:
         ctx.winlog.event_data.TargetUserName != "-"
 
   - split:
+      tag: split_winlog_event_data_PrivilegeList_7e94364a
       field: winlog.event_data.PrivilegeList
       separator: "\\s+"
       if: |-
@@ -3925,16 +3932,19 @@ processors:
         ctx.winlog?.event_data?.PrivilegeList != null
 
   - set:
+      tag: set_user_target_name_5389a9cd
       field: user.target.name
       copy_from: winlog.event_data.OldTargetUserName
       ignore_empty_value: true
 
   - set:
+      tag: set_user_changes_name_90252ef2
       field: user.changes.name
       copy_from: winlog.event_data.NewTargetUserName
       ignore_empty_value: true
 
   - append:
+      tag: append_related_user_4efa74d6
       field: related.user
       value: '{{winlog.event_data.NewTargetUserName}}'
       allow_duplicates: false
@@ -3943,6 +3953,7 @@ processors:
         ctx.winlog.event_data.NewTargetUserName != "-"
 
   - append:
+      tag: append_related_user_ff6ef2c3
       field: related.user
       value: '{{winlog.event_data.OldTargetUserName}}'
       allow_duplicates: false
@@ -3951,6 +3962,7 @@ processors:
         ctx.winlog.event_data.OldTargetUserName != "-"
 
   - set:
+      tag: set_event_reason_98d7cf5a
       field: event.reason
       copy_from: winlog.event_data.OperationType
       if: ctx.event?.code == "5136" && ctx.winlog?.event_data?.OperationType != null
@@ -4009,6 +4021,7 @@ processors:
         }
 
   - set:
+      tag: set_registry_path_641868d3
       description: >-
         Map registry key path from ObjectName for registry audit events only.
         4657 is registry-specific; other IDs are generic object access — match when ObjectType is Key
@@ -4032,6 +4045,7 @@ processors:
         )
 
   - gsub:
+      tag: gsub_winlog_event_data_SidList_235dd056
       description: Normalize separators in the SidList value.
       field: winlog.event_data.SidList
       pattern: '\s+'
@@ -4397,6 +4411,7 @@ processors:
   # Populate network.transport from network.iana_number. 
   #
   - script:
+      tag: script_43bdf2cc
       if: "ctx.network?.iana_number != null && ctx.network?.transport == null"
       lang: painless
       params:
@@ -4432,6 +4447,7 @@ processors:
         ctx.network.put("transport", t)
 
   - script:
+      tag: script_b007664d
       description: Adds file information for file share events.
       # Event codes 5140 (network share object accessed) and 5145 (network share object checked to see
       # if client can be granted desired access) contain file information in the RelativeTargetName
@@ -4484,6 +4500,7 @@ processors:
         }
 
   - script:
+      tag: script_36be1179
       description: Adds file information.
       lang: painless
       if: ctx.file?.name != null
@@ -4493,22 +4510,38 @@ processors:
             ctx.file.extension = ctx.file.name.substring(extIdx+1);
         }
   - rename:
+      tag: rename_winlog_event_data_DirectionDescription_to_network_direction_68ca2fb1
       field: winlog.event_data.DirectionDescription
       target_field: network.direction
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_direction_e8f881c2
       field: network.direction
       ignore_missing: true
   - community_id:
+      tag: community_id_99f56bc8
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_1f8c5875
       field:
         - _temp
       ignore_missing: true
           
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message_2304b6c8
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_event_kind_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

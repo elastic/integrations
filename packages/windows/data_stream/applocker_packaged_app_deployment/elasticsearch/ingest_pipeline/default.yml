@@ -4,9 +4,11 @@ processors:
   ## ECS and Event fields.
 
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_log_level_b08eee5f
       field: log.level
       copy_from: winlog.level
       ignore_empty_value: true
@@ -20,27 +22,35 @@ processors:
       if: ctx.winlog?.time_created != null
       on_failure:
         - remove:
+            tag: remove_winlog_time_created_be99bb6d
             field: winlog.time_created
             ignore_failure: true
         - append:
+            tag: append_error_message_0382017e
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_c7c167df
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_code_4e4a3a91
       field: event.code
       value: "{{{winlog.event_id}}}"
   - set:
+      tag: set_event_category_dffe0229
       field: event.category
       value: ["process"]
   - set:
+      tag: set_event_type_64aaa9d8
       field: event.type
       value: ["start"]
   - convert:
+      tag: convert_winlog_record_id_b6e33898
       field: winlog.record_id
       type: string
       ignore_failure: true
@@ -48,28 +58,33 @@ processors:
 
   ## User fields.
   - set:
+      tag: set_user_id_0dabac40
       field: user.id
       copy_from: winlog.user.identifier
       ignore_failure: true
       ignore_empty_value: true
   - split:
+      tag: split_winlog_event_data_User_to__temp_user_parts_56cb506e
       field: winlog.event_data.User
       target_field: "_temp.user_parts"
       separator: '\\'
       if: ctx.winlog?.event_data?.User != null
   - set:
+      tag: set_user_domain_1967c9b8
       field: user.domain
       value: "{{{_temp.user_parts.0}}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
+      tag: set_user_name_1fda8e5e
       field: user.name
       value: "{{{_temp.user_parts.1}}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - rename:
+      tag: rename_winlog_user_name_to_user_name_2d2fb22d
       field: winlog.user.name
       target_field: user.name
       ignore_failure: true
@@ -78,67 +93,83 @@ processors:
 
   ## User data fields.
   - convert:
+      tag: convert_winlog_user_data_FileHashLength_3967d2ec
       field: winlog.user_data.FileHashLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_FileHashLength_17a02b3b
             field: winlog.user_data.FileHashLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_FilePathLength_8c4f65ce
       field: winlog.user_data.FilePathLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_FilePathLength_2f5f0f46
             field: winlog.user_data.FilePathLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_FqbnLength_b56a8d3a
       field: winlog.user_data.FqbnLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_FqbnLength_cdc0bb26
             field: winlog.user_data.FqbnLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_FullFilePathLength_7bea1858
       field: winlog.user_data.FullFilePathLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_FullFilePathLength_5a67aae1
             field: winlog.user_data.FullFilePathLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_PolicyNameLength_184c5a7a
       field: winlog.user_data.PolicyNameLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_PolicyNameLength_f4fdcb82
             field: winlog.user_data.PolicyNameLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_RuleNameLength_eab35a92
       field: winlog.user_data.RuleNameLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_RuleNameLength_5b4263d6
             field: winlog.user_data.RuleNameLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_RuleSddlLength_ff375262
       field: winlog.user_data.RuleSddlLength
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_RuleSddlLength_dc53fcb2
             field: winlog.user_data.RuleSddlLength
             ignore_failure: true
   - convert:
+      tag: convert_winlog_user_data_TargetProcessId_5f38635c
       field: winlog.user_data.TargetProcessId
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_winlog_user_data_TargetProcessId_c21e46d4
             field: winlog.user_data.TargetProcessId
             ignore_failure: true
 
@@ -146,6 +177,7 @@ processors:
     ## ECS now requires some fields to be arrays, so extract
     ## them into a temporary field
   - grok:
+      tag: grok_winlog_user_data_Fqbn_e951ecfb
       field: winlog.user_data.Fqbn
       ignore_missing: true
       patterns:
@@ -157,35 +189,42 @@ processors:
     ## Use the append processor to create arrays from the single
     ## strings extracted by the previous grok processor
   - append:
+      tag: append_file_x509_subject_country_2b29c9bd
       field: file.x509.subject.country
       value: "{{tmp.file.x509.subject.country}}"
       ignore_failure: false
 
   - append:
+      tag: append_file_x509_subject_state_or_province_bc20c061
       field: file.x509.subject.state_or_province
       value: "{{tmp.file.x509.subject.state_or_province}}"
       ignore_failure: false
 
   - append:
+      tag: append_file_x509_subject_organization_5d9bce9d
       field: file.x509.subject.organization
       value: "{{tmp.file.x509.subject.organization}}"
       ignore_failure: false
 
   - append:
+      tag: append_file_x509_subject_locality_5e1b6229
       field: file.x509.subject.locality
       value: "{{tmp.file.x509.subject.locality}}"
 
   - append:
+      tag: append_file_x509_subject_common_name_06aed65f
       field: file.x509.subject.common_name
       value: "{{tmp.file.x509.subject.common_name}}"
       ignore_failure: false
 
     ## Remove all temporary fields
   - remove:
+      tag: remove_tmp_cbaa8f47
       field: tmp
       ignore_missing: true
 
   - grok:
+      tag: grok_winlog_user_data_FullFilePath_2cd7f249
       field: winlog.user_data.FullFilePath
       ignore_missing: true
       patterns:
@@ -193,20 +232,32 @@ processors:
       if: ctx.winlog?.user_data?.FullFilePath != "-"
 
   - set:
+      tag: set_file_hash_sha256_5e124a25
       field: file.hash.sha256
       copy_from: winlog.user_data.FileHash
       ignore_empty_value: true
       if: ctx.winlog?.user_data?.FileHash != "-"
 
   - convert:
+      tag: convert_error_code_5bcb9be1
       field: error.code
       type: string
       ignore_missing: true
       
 on_failure:
+  - append:
+      tag: append_error_message_2304b6c8
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_f51b77ad
       field: event.kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
