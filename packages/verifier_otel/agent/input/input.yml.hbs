@@ -35,22 +35,22 @@ receivers:
           service_account_email: "{{credentials_service_account_email}}"
 {{/if}}
     policies:
-      - policy_id: "{{policy_id}}"
-{{#if policy_name}}
-        policy_name: "{{policy_name}}"
+{{#each policy_id}}
+      - policy_id: "{{this}}"
+{{#if (lookup ../policy_name @index)}}
+        policy_name: "{{lookup ../policy_name @index}}"
 {{/if}}
         integrations:
-{{#each policy_templates}}
-          - policy_template: "{{this}}"
-            package_name: "{{../package_name}}"
-{{#if ../package_policy_id}}
-            package_policy_id: "{{../package_policy_id}}"
+          - policy_template: "{{lookup ../policy_templates @index}}"
+            package_name: "{{lookup ../package_name @index}}"
+{{#if (lookup ../package_policy_id @index)}}
+            package_policy_id: "{{lookup ../package_policy_id @index}}"
 {{/if}}
-{{#if ../package_title}}
-            package_title: "{{../package_title}}"
+{{#if (lookup ../package_title @index)}}
+            package_title: "{{lookup ../package_title @index}}"
 {{/if}}
-{{#if ../package_version}}
-            package_version: "{{../package_version}}"
+{{#if (lookup ../package_version @index)}}
+            package_version: "{{lookup ../package_version @index}}"
 {{/if}}
 {{/each}}
 

@@ -1,5 +1,5 @@
 connectors:
-    forward: {}
+    forward/componentid-0: {}
 exporters:
     elasticsearch/componentid-0:
         endpoints:
@@ -25,8 +25,8 @@ processors:
             - context: log
               statements:
                 - set(attributes["data_stream.type"], "logs")
-                - set(attributes["data_stream.dataset"], "verifierreceiver")
-                - set(attributes["data_stream.namespace"], "ep")
+                - set(attributes["data_stream.dataset"], "verifierreceiver") where attributes["data_stream.dataset"] == nil
+                - set(attributes["data_stream.namespace"], "ep") where attributes["data_stream.namespace"] == nil
 receivers:
     verifier/componentid-0:
         account_type: single-account
@@ -35,12 +35,15 @@ receivers:
         policies:
             - integrations:
                 - package_name: aws
-                  package_policy_id: test-pp-789
+                  package_policy_id: test-pp-cloudtrail
                   package_title: AWS
                   package_version: "2.17.0"
                   policy_template: cloudtrail
+              policy_id: test-policy-123
+              policy_name: Verifier-Policy-Test-Connector-abc12345
+            - integrations:
                 - package_name: aws
-                  package_policy_id: test-pp-789
+                  package_policy_id: test-pp-guardduty
                   package_title: AWS
                   package_version: "2.17.0"
                   policy_template: guardduty
@@ -57,14 +60,14 @@ secret_references:
     - {}
 service:
     pipelines:
-        logs:
+        logs/componentid-0:
             exporters:
                 - elasticsearch/componentid-0
             receivers:
-                - forward
-        logs/componentid-0:
+                - forward/componentid-0
+        logs/componentid-1:
             exporters:
-                - forward
+                - forward/componentid-0
             processors:
                 - transform/componentid-0
             receivers:
