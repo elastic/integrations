@@ -4,55 +4,57 @@ description: Pipeline for processing TLS object.
 processors:
   - set:
       field: tls.cipher
-      tag: set_tls_cipher
+      tag: set_tls_cipher_0f12a756
       copy_from: ocsf.tls.cipher
       ignore_empty_value: true
   - set:
       field: tls.client.ja3
-      tag: set_tls_client_ja3
+      tag: set_tls_client_ja3_a29ab574
       copy_from: ocsf.tls.ja3_hash.value
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_tls_client_ja3_into_related_hash
+      tag: append_tls_client_ja3_into_related_hash_01812ea8
       value: '{{{tls.client.ja3}}}'
       allow_duplicates: false
       if: ctx.tls?.client?.ja3 != null
   - set:
       field: tls.client.server_name
-      tag: set_tls_client_server_name
+      tag: set_tls_client_server_name_764baa74
       copy_from: ocsf.tls.sni
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_tls_client_server_name_into_related_hosts
+      tag: append_tls_client_server_name_into_related_hosts_5b180cdf
       value: '{{{tls.client.server_name}}}'
       allow_duplicates: false
       if: ctx.tls?.client?.server_name != null
   - foreach:
+      tag: foreach_ocsf_tls_client_ciphers_44702864
       field: ocsf.tls.client_ciphers
       if: ctx.ocsf?.tls?.client_ciphers instanceof List
       ignore_failure: true
       processor:
         append:
           field: tls.client.supported_ciphers
-          tag: append_tls_client_ciphers_into_tls_client_supported_ciphers
+          tag: append_tls_client_ciphers_into_tls_client_supported_ciphers_5df8ebdf
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_ocsf_tls_sans_f5bd6787
       field: ocsf.tls.sans
       if: ctx.ocsf?.tls?.sans instanceof List
       ignore_failure: true
       processor:
         append:
           field: tls.client.x509.alternative_names
-          tag: append_tls_sans_name_into_tls_client_x509_alternative_names
+          tag: append_tls_sans_name_into_tls_client_x509_alternative_names_3e9c5814
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - script:
       lang: painless
       description: Drops '-' values recursively.
-      tag: drop_empty_json_tls_sans_name_ips
+      tag: drop_empty_json_tls_sans_name_ips_5b4a1ac0
       if: ctx.json?.tls?.sans instanceof List
       source: |-
         boolean dropDash(Object object) {
@@ -70,11 +72,13 @@ processors:
         }
         dropDash(ctx.ocsf);
   - foreach:
+      tag: foreach_json_tls_sans_3213e4fd
       field: json.tls.sans
       if: ctx.json?.tls?.sans instanceof List
       ignore_failure: true
       processor:
         convert:
+          tag: convert_ingest_value_name_to_ingest_value_name_ips_fe03f2a7
           field: _ingest._value.name
           type: ip
           target_field: _ingest._value.name_ips
@@ -82,36 +86,38 @@ processors:
           on_failure:
             - append:
                 field: related.hosts
-                tag: append_tls_sans_name_into_related_hosts
+                tag: append_tls_sans_name_into_related_hosts_9275f3f6
                 value: '{{{_ingest._value.name}}}'
                 allow_duplicates: false
   - foreach:
+      tag: foreach_json_tls_sans_58ea8857
       field: json.tls.sans
       if: ctx.json?.tls?.sans instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.ip
-          tag: append_tls_sans_name_ips_into_related_ip
+          tag: append_tls_sans_name_ips_into_related_ip_81c42927
           value: '{{{_ingest._value.name_ips}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_tls_sans_9195268d
       field: json.tls.sans
       if: ctx.json?.tls?.sans instanceof List
       ignore_failure: true
       processor:
         remove:
           field: _ingest._value.name_ips
-          tag: remove_tls_sans_name_ips
+          tag: remove_tls_sans_name_ips_5a131a43
           ignore_missing: true
   - set:
       field: tls.client.x509.issuer.distinguished_name
-      tag: set_tls_client_x509_issuer_distinguished_name
+      tag: set_tls_client_x509_issuer_distinguished_name_baab8e3c
       copy_from: ocsf.tls.certificate.issuer
       ignore_empty_value: true
   - date:
       field: ocsf.tls.certificate.expiration_time_dt
-      tag: date_tls_certificate_expiration_time_dt
+      tag: date_tls_certificate_expiration_time_dt_768bc861
       target_field: ocsf.tls.certificate.expiration_time_dt
       formats:
         - ISO8601
@@ -120,79 +126,84 @@ processors:
       if: ctx.ocsf?.tls?.certificate?.expiration_time_dt != null && ctx.ocsf.tls.certificate.expiration_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_certificate_expiration_time_dt_2f2135bb
             field: ocsf.tls.certificate.expiration_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_231c04c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ocsf_tls_extension_list_6d1dfc7d
       field: ocsf.tls.extension_list
       if: ctx.ocsf?.tls?.extension_list instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.type_id
-          tag: convert_tls_extension_list_type_id_to_string
+          tag: convert_tls_extension_list_type_id_to_string_0bbca01c
           type: string
           ignore_missing: true
   - set:
       field: tls.client.x509.not_after
-      tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time_dt
+      tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time_dt_a15fcd88
       copy_from: ocsf.tls.certificate.expiration_time_dt
       ignore_empty_value: true
   - date:
       field: ocsf.tls.certificate.expiration_time
-      tag: date_tls_certificate_expiration_time
+      tag: date_tls_certificate_expiration_time_0cb33148
       target_field: ocsf.tls.certificate.expiration_time
       formats:
         - UNIX_MS
       if: ctx.ocsf?.tls?.certificate?.expiration_time != null && ctx.ocsf.tls.certificate.expiration_time != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_certificate_expiration_time_4ddf66b3
             field: ocsf.tls.certificate.expiration_time
             ignore_missing: true
         - append:
+            tag: append_error_message_b4c8296c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: tls.client.x509.not_after
-      tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time
+      tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time_e29aaf3f
       copy_from: ocsf.tls.certificate.expiration_time
       ignore_empty_value: true
   - set:
       field: tls.client.x509.serial_number
-      tag: set_tls_client_x509_serial_number
+      tag: set_tls_client_x509_serial_number_5d73c173
       copy_from: ocsf.tls.certificate.serial_number
       ignore_empty_value: true
   - set:
       field: tls.client.x509.subject.distinguished_name
-      tag: set_tls_client_x509_subject_distinguished_name
+      tag: set_tls_client_x509_subject_distinguished_name_12040b6e
       copy_from: ocsf.tls.certificate.subject
       ignore_empty_value: true
   - set:
       field: tls.client.x509.version_number
-      tag: set_tls_client_x509_version_number
+      tag: set_tls_client_x509_version_number_3a86b19c
       copy_from: ocsf.tls.certificate.version
       ignore_empty_value: true
   - set:
       field: tls.server.ja3s
-      tag: set_tls_server_ja3s
+      tag: set_tls_server_ja3s_2ef174fd
       copy_from: ocsf.tls.ja3s_hash.value
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_tls_server_ja3s_into_related_hash
+      tag: append_tls_server_ja3s_into_related_hash_43acb49a
       value: '{{{tls.server.ja3s}}}'
       allow_duplicates: false
       if: ctx.tls?.server?.ja3s != null
   - set:
       field: tls.version
-      tag: set_tls_version
+      tag: set_tls_version_942e5011
       copy_from: ocsf.tls.version
       ignore_empty_value: true
   - date:
       field: ocsf.tls.certificate.created_time_dt
-      tag: date_tls_certificate_created_time_dt
+      tag: date_tls_certificate_created_time_dt_b6f1e9e1
       target_field: ocsf.tls.certificate.created_time_dt
       formats:
         - ISO8601
@@ -201,52 +212,60 @@ processors:
       if: ctx.ocsf?.tls?.certificate?.created_time_dt != null && ctx.ocsf.tls.certificate.created_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_certificate_created_time_dt_6d66e866
             field: ocsf.tls.certificate.created_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_3b2a364d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.tls.certificate.created_time
-      tag: date_tls_certificate_created_time
+      tag: date_tls_certificate_created_time_b0452720
       target_field: ocsf.tls.certificate.created_time
       formats:
         - UNIX_MS
       if: ctx.ocsf?.tls?.certificate?.created_time != null && ctx.ocsf.tls.certificate.created_time != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_certificate_created_time_9278c9ee
             field: ocsf.tls.certificate.created_time
             ignore_missing: true
         - append:
+            tag: append_error_message_b1e7ed52
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.tls.alert
-      tag: convert_tls_alert_to_long
+      tag: convert_tls_alert_to_long_1eaaf551
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_alert_3f54bf0a
             field: ocsf.tls.alert
             ignore_missing: true
         - append:
+            tag: append_error_message_71c11337
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.tls.handshake_dur
-      tag: convert_tls_handshake_dur_to_long
+      tag: convert_tls_handshake_dur_to_long_7ae99f8e
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_handshake_dur_17ba2646
             field: ocsf.tls.handshake_dur
             ignore_missing: true
         - append:
+            tag: append_error_message_1c680e4e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Set value for tls.client.hash.*.
-      tag: script_tls_client_hash_*
+      tag: script_tls_client_hash_199e534f
       if: ctx.ocsf?.tls?.certificate?.fingerprints != null
       lang: painless
       params:
@@ -280,51 +299,62 @@ processors:
         }
         ctx.tls.client.hash = map;
   - foreach:
+      tag: foreach_tls_client_hash_b65d0225
       field: tls.client.hash
       if: ctx.tls?.client?.hash instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.hash
-          tag: append_tls_client_hash_into_related_hash
+          tag: append_tls_client_hash_into_related_hash_4e3d8c67
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - convert:
       field: ocsf.tls.key_length
-      tag: convert_tls_key_length_to_long
+      tag: convert_tls_key_length_to_long_78bcc87d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_tls_key_length_83ec435a
             field: ocsf.tls.key_length
             ignore_missing: true
         - append:
+            tag: append_error_message_a05bbe39
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.tls.ja3_hash.algorithm_id
-      tag: convert_tls_ja3_hash_algorithm_id_to_string
+      tag: convert_tls_ja3_hash_algorithm_id_to_string_d72f439a
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.tls.ja3s_hash.algorithm_id
-      tag: convert_tls_ja3s_hash_algorithm_id_to_string
+      tag: convert_tls_ja3s_hash_algorithm_id_to_string_d4ad74d6
       type: string
       ignore_missing: true
   - foreach:
+      tag: foreach_ocsf_tls_certificate_fingerprints_9ede8363
       field: ocsf.tls.certificate.fingerprints
       if: ctx.ocsf?.tls?.certificate?.fingerprints instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.algorithm_id
-          tag: convert_tls_certificate_fingerprints_algorithm_id_to_string
+          tag: convert_tls_certificate_fingerprints_algorithm_id_to_string_cc3994b0
           type: string
           ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

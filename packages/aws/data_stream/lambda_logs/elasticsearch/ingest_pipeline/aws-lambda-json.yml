@@ -128,7 +128,7 @@ processors:
 - script:
     lang: painless
     description: Replace spaces, dashes and bom character in field names under parsed.record.metrics.
-    tag: painless_purge_spaces_and_dashes
+    tag: painless_purge_spaces_and_dashes_def53d2a
     ignore_failure: true
     if: ctx.parsed?.record instanceof Map && ctx.parsed.record.metrics instanceof Map
     source: |
@@ -517,10 +517,17 @@ processors:
         drop(ctx);
 
 on_failure:
+- append:
+    tag: append_tags_279d5a5c
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
-- set:
+- append:
+    tag: append_error_message_14080786
     field: error.message
     value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

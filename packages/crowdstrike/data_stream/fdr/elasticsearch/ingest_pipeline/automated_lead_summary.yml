@@ -3,24 +3,24 @@ description: Pipeline for Automated Lead Summary external API events.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind_automated_lead
+      tag: set_event_kind_automated_lead_ab1166ce
       value: alert
   - append:
       field: event.category
-      tag: append_event_category_threat
+      tag: append_event_category_threat_4039b90d
       value: threat
   - append:
       field: event.type
-      tag: append_event_type_indicator
+      tag: append_event_type_indicator_d4da06cc
       value: indicator
   - set:
       field: message
-      tag: set_message_from_name
+      tag: set_message_from_name_efc5284c
       copy_from: crowdstrike.Name
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_from_description
+      tag: set_message_from_description_beda13ed
       copy_from: crowdstrike.Description
       ignore_empty_value: true
       if: ctx.message == null || ctx.message == ''
@@ -30,11 +30,11 @@ processors:
       formats:
         - UNIX
         - UNIX_MS
-      tag: date_signal_start_timestamp
+      tag: date_signal_start_timestamp_4701af7f
       if: ctx.crowdstrike?.SignalStartTimestamp != null && ctx.crowdstrike.SignalStartTimestamp != 0
       on_failure:
         - remove:
-            tag: remove_signal_start_timestamp
+            tag: remove_signal_start_timestamp_bce56f95
             field: crowdstrike.SignalStartTimestamp
             ignore_missing: true
         - append:
@@ -44,7 +44,7 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.start
-      tag: set_event_start_from_signal_start_timestamp
+      tag: set_event_start_from_signal_start_timestamp_1389311a
       copy_from: crowdstrike.SignalStartTimestamp
       ignore_empty_value: true
   - date:
@@ -53,11 +53,11 @@ processors:
       formats:
         - UNIX
         - UNIX_MS
-      tag: date_signal_end_timestamp
+      tag: date_signal_end_timestamp_1e82abb5
       if: ctx.crowdstrike?.SignalEndTimestamp != null && ctx.crowdstrike.SignalEndTimestamp != 0
       on_failure:
         - remove:
-            tag: remove_signal_end_timestamp
+            tag: remove_signal_end_timestamp_fa3cc6d6
             field: crowdstrike.SignalEndTimestamp
             ignore_missing: true
         - append:
@@ -67,7 +67,7 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.end
-      tag: set_event_end_from_signal_end_timestamp
+      tag: set_event_end_from_signal_end_timestamp_5d5ba70f
       copy_from: crowdstrike.SignalEndTimestamp
       ignore_empty_value: true
   - date:
@@ -76,11 +76,11 @@ processors:
       formats:
         - UNIX
         - UNIX_MS
-      tag: date_signal_updated_timestamp
+      tag: date_signal_updated_timestamp_83588e24
       if: ctx.crowdstrike?.SignalUpdatedTimestamp != null && ctx.crowdstrike.SignalUpdatedTimestamp != 0
       on_failure:
         - remove:
-            tag: remove_signal_updated_timestamp
+            tag: remove_signal_updated_timestamp_b6acb135
             field: crowdstrike.SignalUpdatedTimestamp
             ignore_missing: true
         - append:
@@ -90,7 +90,7 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: date_crowdstrike_threatgraph_indicators_signal_association_timestamp_array
+      tag: date_crowdstrike_threatgraph_indicators_signal_association_timestamp_array_4db0c22e
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         date:
@@ -99,25 +99,26 @@ processors:
           formats:
             - UNIX
             - UNIX_MS
-          tag: date_threatgraph_indicators_signal_association_timestamp
+          tag: date_threatgraph_indicators_signal_association_timestamp_f8e10efc
           on_failure:
             - remove:
-                tag: remove_crowdstrike_threatgraph_indicators_signal_association_timestamp_array
+                tag: remove_crowdstrike_threatgraph_indicators_signal_association_timestamp_array_a4f412b8
                 field: _ingest._value.SignalAssociationTimestamp
                 ignore_missing: true
             - append:
+                tag: append_error_message_caae5573
                 field: error.message
                 value: |-
                   Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - convert:
       field: crowdstrike.Score
-      tag: convert_score_to_long
+      tag: convert_score_to_long_81266d1c
       type: long
       ignore_missing: true
       if: ctx.crowdstrike?.Score != null
       on_failure:
         - remove:
-            tag: remove_score
+            tag: remove_score_f0ec5202
             field: crowdstrike.Score
             ignore_missing: true
         - append:
@@ -127,7 +128,7 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - script:
       lang: painless
-      tag: set_event_risk_score_and_severity_from_score
+      tag: set_event_risk_score_and_severity_from_score_49a92e47
       if: ctx.crowdstrike?.Score instanceof long
       source: |-
         long score = ctx.crowdstrike.Score;
@@ -144,59 +145,61 @@ processors:
         }
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: convert_threatgraph_indicators_pattern_id_to_string_array
+      tag: convert_threatgraph_indicators_pattern_id_to_string_array_e20d77e2
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         convert:
           field: _ingest._value.PatternId
-          tag: convert_threatgraph_indicators_pattern_id_to_string
+          tag: convert_threatgraph_indicators_pattern_id_to_string_afc57463
           type: string
           ignore_missing: true
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: convert_threatgraph_indicators_template_instance_id_to_string_array
+      tag: convert_threatgraph_indicators_template_instance_id_to_string_array_6ace5fcc
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         convert:
           field: _ingest._value.TemplateInstanceId
-          tag: convert_threatgraph_indicators_template_instance_id_to_string
+          tag: convert_threatgraph_indicators_template_instance_id_to_string_07fd3119
           type: string
           ignore_missing: true
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: convert_threatgraph_indicators_severity_to_long_array
+      tag: convert_threatgraph_indicators_severity_to_long_array_e16064fe
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         convert:
           field: _ingest._value.Severity
-          tag: convert_threatgraph_indicators_severity_to_long
+          tag: convert_threatgraph_indicators_severity_to_long_d02ea718
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_crowdstrike_threatgraph_indicators_severity_array
+                tag: remove_crowdstrike_threatgraph_indicators_severity_array_4f34e705
                 field: _ingest._value.Severity
                 ignore_missing: true
             - append:
+                tag: append_error_message_fdc3a26d
                 field: error.message
                 value: |-
                   Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: convert_threatgraph_indicators_pattern_disposition_to_long_array
+      tag: convert_threatgraph_indicators_pattern_disposition_to_long_array_2a0f392e
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         convert:
           field: _ingest._value.PatternDisposition
-          tag: convert_threatgraph_indicators_pattern_disposition_to_long
+          tag: convert_threatgraph_indicators_pattern_disposition_to_long_fe62ba9e
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: remove_crowdstrike_threatgraph_indicators_pattern_disposition_array
+                tag: remove_crowdstrike_threatgraph_indicators_pattern_disposition_array_ee159140
                 field: _ingest._value.PatternDisposition
                 ignore_missing: true
             - append:
+                tag: append_error_message_da191ff5
                 field: error.message
                 value: |-
                   Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
@@ -204,45 +207,45 @@ processors:
       field: crowdstrike.CompositeId
       target_field: event.id
       ignore_missing: true
-      tag: rename_composite_id_to_event_id
+      tag: rename_composite_id_to_event_id_c83fdbef
   - rename:
       field: crowdstrike.FalconHostLink
       target_field: event.reference
       ignore_missing: true
-      tag: rename_falcon_host_link
+      tag: rename_falcon_host_link_54f21177
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: foreach_threatgraph_indicators_indicator_id
+      tag: foreach_threatgraph_indicators_indicator_id_755eeb74
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         append:
           field: threat.indicator.id
-          tag: append_threat_indicator_id
+          tag: append_threat_indicator_id_2d52bc34
           value: '{{{_ingest._value.IndicatorId}}}'
           allow_duplicates: false
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: foreach_threatgraph_indicators_indicator_name
+      tag: foreach_threatgraph_indicators_indicator_name_383b440c
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         append:
           field: threat.indicator.name
-          tag: append_threat_indicator_name
+          tag: append_threat_indicator_name_80058b6c
           value: '{{{_ingest._value.DisplayName}}}'
           allow_duplicates: false
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: foreach_threatgraph_indicators_indicator_description
+      tag: foreach_threatgraph_indicators_indicator_description_ff8f0f43
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         append:
           field: threat.indicator.description
-          tag: append_threat_indicator_description
+          tag: append_threat_indicator_description_d192456d
           value: '{{{_ingest._value.Description}}}'
           allow_duplicates: false
   - script:
       lang: painless
-      tag: set_host_and_process_from_first_threatgraph_indicator
+      tag: set_host_and_process_from_first_threatgraph_indicator_8b0537cf
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List && !ctx.crowdstrike.ThreatgraphIndicators.isEmpty()
       source: |-
         def indicator = ctx.crowdstrike.ThreatgraphIndicators[0];
@@ -260,24 +263,27 @@ processors:
         }
   - foreach:
       field: crowdstrike.ThreatgraphIndicators
-      tag: foreach_threatgraph_indicators_related_hosts
+      tag: foreach_threatgraph_indicators_related_hosts_1de3f04e
       if: ctx.crowdstrike?.ThreatgraphIndicators instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_related_hosts_from_hostname
+          tag: append_related_hosts_from_hostname_7732b611
           value: '{{{_ingest._value.Hostname}}}'
           allow_duplicates: false
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
