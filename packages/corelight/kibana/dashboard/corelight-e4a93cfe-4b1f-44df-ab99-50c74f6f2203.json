@@ -56,6 +56,58 @@
                                 "observer.vendor": "Corelight"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "event.dataset: tls* OR x509*",
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "query",
+                            "negate": false,
+                            "type": "custom"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "wildcard": {
+                                            "event.dataset": "tls*"
+                                        }
+                                    },
+                                    {
+                                        "wildcard": {
+                                            "event.dataset": "x509*"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Aggregation",
+                            "disabled": false,
+                            "field": "event.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "event.dataset",
+                            "negate": true,
+                            "params": {
+                                "query": "tls_agg"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.dataset": "tls_agg"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -163,7 +215,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-36ca6566-64fc-457d-8f1f-a283e2792d7b",
+                                "name": "indexpattern-datasource-layer-175a78af-d160-4466-a06b-0aa85c0bc279",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "fdd8510c-f50a-499e-b2ca-4f6c7238fd8b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -171,41 +228,14 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "36ca6566-64fc-457d-8f1f-a283e2792d7b": {
+                                        "175a78af-d160-4466-a06b-0aa85c0bc279": {
                                             "columnOrder": [
-                                                "3dcd3aa0-343a-4cd5-aee6-b8c0e9bf29e8",
-                                                "c8c450cc-785e-4e5b-ab32-65e83576aa57"
+                                                "58a01101-c283-44a8-9c8d-3a5b090cf461",
+                                                "0b55a912-d89b-4c3f-82da-11c2d62bebb9"
                                             ],
                                             "columns": {
-                                                "3dcd3aa0-343a-4cd5-aee6-b8c0e9bf29e8": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Certificate ID",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "c8c450cc-785e-4e5b-ab32-65e83576aa57",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "destination.domain"
-                                                },
-                                                "c8c450cc-785e-4e5b-ab32-65e83576aa57": {
+                                                "0b55a912-d89b-4c3f-82da-11c2d62bebb9": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -222,11 +252,36 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
+                                                },
+                                                "58a01101-c283-44a8-9c8d-3a5b090cf461": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Certificate ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0b55a912-d89b-4c3f-82da-11c2d62bebb9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.domain"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -247,7 +302,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "destination.domain",
-                                        "index": "6f6516d8-4601-4b34-bac1-24f9a787d17c",
+                                        "index": "fdd8510c-f50a-499e-b2ca-4f6c7238fd8b",
                                         "key": "destination.domain",
                                         "negate": true,
                                         "params": {
@@ -268,7 +323,26 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "554b25a1-9950-4801-820e-0088724f3ca3",
+                                        "field": "observer.hostname",
+                                        "index": "8449f673-b67a-4ebd-89c7-7746d92203c6",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d9603469-df56-4852-84a8-2905659fc6ce",
                                         "negate": false,
                                         "params": [
                                             {
@@ -316,39 +390,16 @@
                                         "store": "appState"
                                     },
                                     "meta": {
-                                        "alias": null,
+                                        "alias": "event.dataset: tls*",
                                         "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "233db244-dacc-4687-a304-18d0dac87659",
-                                        "key": "event.dataset",
+                                        "index": "48036000-70aa-4aac-b3ac-13a779bebccf",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "tls"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "tls"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "observer.hostname",
-                                        "index": "08304475-a100-4296-985d-740ca532fbeb",
-                                        "key": "observer.hostname",
-                                        "negate": false,
-                                        "type": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "observer.hostname"
+                                        "wildcard": {
+                                            "event.dataset": "tls*"
                                         }
                                     }
                                 }
@@ -361,15 +412,17 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "3dcd3aa0-343a-4cd5-aee6-b8c0e9bf29e8"
+                                        "columnId": "58a01101-c283-44a8-9c8d-3a5b090cf461",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "c8c450cc-785e-4e5b-ab32-65e83576aa57",
+                                        "columnId": "0b55a912-d89b-4c3f-82da-11c2d62bebb9",
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "36ca6566-64fc-457d-8f1f-a283e2792d7b",
+                                "layerId": "175a78af-d160-4466-a06b-0aa85c0bc279",
                                 "layerType": "data"
                             }
                         },
@@ -377,143 +430,101 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "destination.domain",
-                                "index": "6f6516d8-4601-4b34-bac1-24f9a787d17c",
-                                "key": "destination.domain",
-                                "negate": true,
-                                "params": {
-                                    "query": ""
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "destination.domain": ""
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "index": "554b25a1-9950-4801-820e-0088724f3ca3",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.domain",
-                                            "index": "logs-*",
-                                            "key": "destination.domain",
-                                            "negate": false,
-                                            "type": "exists",
-                                            "value": "exists"
-                                        },
-                                        "query": {
-                                            "exists": {
-                                                "field": "destination.domain"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "tls.server.subject",
-                                            "index": "logs-*",
-                                            "key": "tls.server.subject",
-                                            "negate": false,
-                                            "type": "exists",
-                                            "value": "exists"
-                                        },
-                                        "query": {
-                                            "exists": {
-                                                "field": "tls.server.subject"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "event.dataset",
-                                "index": "233db244-dacc-4687-a304-18d0dac87659",
-                                "key": "event.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "tls"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "event.dataset": "tls"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "observer.hostname",
-                                "index": "08304475-a100-4296-985d-740ca532fbeb",
-                                "key": "observer.hostname",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "observer.hostname"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "1a61d61b-0151-45d6-934e-a4359ae40424",
-                    "w": 36,
+                    "i": "0e3090cf-37f1-40c2-8f73-873f6714d933",
+                    "w": 19,
                     "x": 12,
                     "y": 4
                 },
-                "panelIndex": "1a61d61b-0151-45d6-934e-a4359ae40424",
-                "title": "Top Certificate Subjects [Logs Corelight]",
+                "panelIndex": "0e3090cf-37f1-40c2-8f73-873f6714d933",
+                "title": "Top Certificate Subjects",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "adb5fe3ee72aece1bc70935b2117f58c0fedbe068e7ad94404f1c53d09fca3fc": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "adb5fe3ee72aece1bc70935b2117f58c0fedbe068e7ad94404f1c53d09fca3fc",
+                                    "name": "logs-corelight.ssl*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.ssl*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "adb5fe3ee72aece1bc70935b2117f58c0fedbe068e7ad94404f1c53d09fca3fc",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.ssl*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "568daad0-13b2-41e8-a930-a3277c34c89f": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "SSL Aggregation",
+                                                    "fieldName": "SSL Aggregation",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "adb5fe3ee72aece1bc70935b2117f58c0fedbe068e7ad94404f1c53d09fca3fc",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.ssl*\r\n| WHERE event.dataset == \"tls_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `SSL Aggregation` = CASE(count \u003e 0, \"SSL Agg Logs Available\", \"No SSL Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `SSL Aggregation`, status\r\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-corelight.ssl*\r\n| WHERE event.dataset == \"tls_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `SSL Aggregation` = CASE(count \u003e 0, \"SSL Agg Logs Available\", \"No SSL Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `SSL Aggregation`, status\r\n"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "SSL Aggregation"
+                                    }
+                                ],
+                                "layerId": "568daad0-13b2-41e8-a930-a3277c34c89f",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "bd73f8ea-1b73-470e-8d06-26d22280d743",
+                    "w": 17,
+                    "x": 31,
+                    "y": 4
+                },
+                "panelIndex": "bd73f8ea-1b73-470e-8d06-26d22280d743",
+                "title": "SSL Aggregation",
                 "type": "lens"
             },
             {
@@ -522,7 +533,17 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-285b953a-092e-4d1e-afc4-aaf2cea4c7d6",
+                                "name": "indexpattern-datasource-layer-175a78af-d160-4466-a06b-0aa85c0bc279",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f34ffe7d-b3ae-4fc0-9c52-c31d48ce9a5b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2bb7b28e-3bf8-49fd-910f-e2f71567c502",
                                 "type": "index-pattern"
                             }
                         ],
@@ -530,15 +551,14 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "285b953a-092e-4d1e-afc4-aaf2cea4c7d6": {
+                                        "175a78af-d160-4466-a06b-0aa85c0bc279": {
                                             "columnOrder": [
-                                                "e20e7338-bdbd-49e0-9fd0-3706982c1b14",
-                                                "16c7561c-53d5-4aa0-bbda-e5a7b414547b"
+                                                "58a01101-c283-44a8-9c8d-3a5b090cf461",
+                                                "0b55a912-d89b-4c3f-82da-11c2d62bebb9"
                                             ],
                                             "columns": {
-                                                "16c7561c-53d5-4aa0-bbda-e5a7b414547b": {
+                                                "0b55a912-d89b-4c3f-82da-11c2d62bebb9": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -556,7 +576,7 @@
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "e20e7338-bdbd-49e0-9fd0-3706982c1b14": {
+                                                "58a01101-c283-44a8-9c8d-3a5b090cf461": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -569,7 +589,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "16c7561c-53d5-4aa0-bbda-e5a7b414547b",
+                                                            "columnId": "0b55a912-d89b-4c3f-82da-11c2d62bebb9",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -577,6 +597,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
@@ -585,7 +606,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -603,40 +623,17 @@
                                         "store": "appState"
                                     },
                                     "meta": {
-                                        "alias": null,
+                                        "alias": "event.dataset: tls*",
                                         "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "564afe32-0721-4c57-8b43-b94c74fa2c21",
-                                        "key": "event.dataset",
+                                        "index": "f34ffe7d-b3ae-4fc0-9c52-c31d48ce9a5b",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "tls"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom",
+                                        "value": "{\"wildcard\":{\"event.dataset\":\"tls*\"}}"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "tls"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "observer.hostname",
-                                        "index": "477d7f4d-43f5-442f-b7ce-6fc12a7e6af7",
-                                        "key": "observer.hostname",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "observer.hostname"
+                                        "wildcard": {
+                                            "event.dataset": "tls*"
                                         }
                                     }
                                 },
@@ -648,7 +645,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "tls.cipher",
-                                        "index": "5edd4f63-31ae-4fd3-9ce1-1cb972d3deee",
+                                        "index": "2bb7b28e-3bf8-49fd-910f-e2f71567c502",
                                         "key": "tls.cipher",
                                         "negate": false,
                                         "type": "exists",
@@ -657,6 +654,25 @@
                                     "query": {
                                         "exists": {
                                             "field": "tls.cipher"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "8449f673-b67a-4ebd-89c7-7746d92203c6",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
                                         }
                                     }
                                 }
@@ -688,16 +704,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "285b953a-092e-4d1e-afc4-aaf2cea4c7d6",
+                                        "layerId": "175a78af-d160-4466-a06b-0aa85c0bc279",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "metrics": [
-                                            "16c7561c-53d5-4aa0-bbda-e5a7b414547b"
+                                            "0b55a912-d89b-4c3f-82da-11c2d62bebb9"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "e20e7338-bdbd-49e0-9fd0-3706982c1b14"
+                                            "58a01101-c283-44a8-9c8d-3a5b090cf461"
                                         ],
                                         "truncateLegend": false
                                     }
@@ -709,92 +725,17 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "event.dataset",
-                                "index": "564afe32-0721-4c57-8b43-b94c74fa2c21",
-                                "key": "event.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "tls"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "event.dataset": "tls"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "observer.hostname",
-                                "index": "477d7f4d-43f5-442f-b7ce-6fc12a7e6af7",
-                                "key": "observer.hostname",
-                                "negate": false,
-                                "type": "exists",
-                                "value": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "observer.hostname"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "tls.cipher",
-                                "index": "5edd4f63-31ae-4fd3-9ce1-1cb972d3deee",
-                                "key": "tls.cipher",
-                                "negate": false,
-                                "type": "exists",
-                                "value": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "tls.cipher"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "bff2c27e-3dfc-440f-b8cc-d873091e21f3",
+                    "i": "dba54a10-6b39-4ffa-b933-73c5aa79cdf4",
                     "w": 36,
                     "x": 12,
                     "y": 20
                 },
-                "panelIndex": "bff2c27e-3dfc-440f-b8cc-d873091e21f3",
-                "title": "Top Ciphers [Logs Corelight]",
+                "panelIndex": "dba54a10-6b39-4ffa-b933-73c5aa79cdf4",
+                "title": "Top Ciphers",
                 "type": "lens"
             },
             {
@@ -843,521 +784,345 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-3004118f-134f-4321-af37-781efdd04bac",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "3004118f-134f-4321-af37-781efdd04bac": {
-                                            "columnOrder": [
-                                                "ed51292f-cad9-4860-bb84-1bc53d13c15a",
-                                                "9dfce745-b8ee-4d27-8dd8-d8aad86e3028"
-                                            ],
-                                            "columns": {
-                                                "9dfce745-b8ee-4d27-8dd8-d8aad86e3028": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "ed51292f-cad9-4860-bb84-1bc53d13c15a": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "SSL Subject",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "9dfce745-b8ee-4d27-8dd8-d8aad86e3028",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "file.x509.subject.distinguished_name"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
+                            "adHocDataViews": {
+                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                    "name": "logs-corelight.*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.*",
+                                    "type": "esql"
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "6fb9f18b-2091-498b-b6e3-8580b674b44e",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "x509"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "x509"
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.*"
                                         }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "observer.hostname",
-                                        "index": "abf12c96-6668-46a4-a639-adfe96bbc996",
-                                        "key": "observer.hostname",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "observer.hostname"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "file.x509.subject.distinguished_name",
-                                        "index": "85ac0951-223d-413f-87de-ff2d3640aa85",
-                                        "key": "file.x509.subject.distinguished_name",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "file.x509.subject.distinguished_name"
+                                    ],
+                                    "layers": {
+                                        "2f7627f5-9a2f-47b5-9c7d-82f1bcf0e219": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "SSL Subject",
+                                                    "fieldName": "SSL Subject",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.*\r\n| WHERE observer.vendor == \"Corelight\" AND  observer.hostname IS NOT NULL AND (event.dataset LIKE \"x509*\"\r\n   OR event.dataset LIKE \"tls*\")\r\n| EVAL `SSL Subject` = COALESCE(file.x509.subject.distinguished_name, tls.server.subject)\r\n| WHERE `SSL Subject` IS NOT NULL\r\n| STATS Count = COUNT() BY `SSL Subject`\r\n| SORT Count DESC\r\n| LIMIT 10\r\n| KEEP `SSL Subject`, Count"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
-                            ],
-                            "internalReferences": [],
+                            },
+                            "filters": [],
                             "query": {
-                                "language": "kuery",
-                                "query": ""
+                                "esql": "FROM logs-corelight.*\r\n| WHERE observer.vendor == \"Corelight\" AND  observer.hostname IS NOT NULL AND (event.dataset LIKE \"x509*\"\r\n   OR event.dataset LIKE \"tls*\")\r\n| EVAL `SSL Subject` = COALESCE(file.x509.subject.distinguished_name, tls.server.subject)\r\n| WHERE `SSL Subject` IS NOT NULL\r\n| STATS Count = COUNT() BY `SSL Subject`\r\n| SORT Count DESC\r\n| LIMIT 10\r\n| KEEP `SSL Subject`, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "9dfce745-b8ee-4d27-8dd8-d8aad86e3028",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "SSL Subject"
                                     },
                                     {
-                                        "columnId": "ed51292f-cad9-4860-bb84-1bc53d13c15a",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "3004118f-134f-4321-af37-781efdd04bac",
+                                "layerId": "2f7627f5-9a2f-47b5-9c7d-82f1bcf0e219",
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Bar vertical stacked",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "event.dataset",
-                                "index": "6fb9f18b-2091-498b-b6e3-8580b674b44e",
-                                "key": "event.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "x509"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "event.dataset": "x509"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "observer.hostname",
-                                "index": "abf12c96-6668-46a4-a639-adfe96bbc996",
-                                "key": "observer.hostname",
-                                "negate": false,
-                                "type": "exists",
-                                "value": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "observer.hostname"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.x509.subject.distinguished_name",
-                                "index": "85ac0951-223d-413f-87de-ff2d3640aa85",
-                                "key": "file.x509.subject.distinguished_name",
-                                "negate": false,
-                                "type": "exists",
-                                "value": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.x509.subject.distinguished_name"
-                                }
-                            }
-                        }
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
                     ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 16,
-                    "i": "afe182df-eaff-4276-bc75-4844ad0f83c1",
+                    "h": 17,
+                    "i": "d83076db-a279-45b1-813e-56c9370ccbfe",
                     "w": 24,
                     "x": 0,
                     "y": 39
                 },
-                "panelIndex": "afe182df-eaff-4276-bc75-4844ad0f83c1",
-                "title": "x509 Top Subjects [Logs Corelight]",
+                "panelIndex": "d83076db-a279-45b1-813e-56c9370ccbfe",
+                "title": "x509 Top Subjects",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-3004118f-134f-4321-af37-781efdd04bac",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "3004118f-134f-4321-af37-781efdd04bac": {
-                                            "columnOrder": [
-                                                "ed51292f-cad9-4860-bb84-1bc53d13c15a",
-                                                "9dfce745-b8ee-4d27-8dd8-d8aad86e3028"
-                                            ],
-                                            "columns": {
-                                                "9dfce745-b8ee-4d27-8dd8-d8aad86e3028": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "ed51292f-cad9-4860-bb84-1bc53d13c15a": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "SSL Subject",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "9dfce745-b8ee-4d27-8dd8-d8aad86e3028",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "file.x509.subject.distinguished_name"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
+                            "adHocDataViews": {
+                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                    "name": "logs-corelight.*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.*",
+                                    "type": "esql"
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "6fb9f18b-2091-498b-b6e3-8580b674b44e",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "x509"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "x509"
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.*"
                                         }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "observer.hostname",
-                                        "index": "abf12c96-6668-46a4-a639-adfe96bbc996",
-                                        "key": "observer.hostname",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "observer.hostname"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "file.x509.subject.distinguished_name",
-                                        "index": "85ac0951-223d-413f-87de-ff2d3640aa85",
-                                        "key": "file.x509.subject.distinguished_name",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "file.x509.subject.distinguished_name"
+                                    ],
+                                    "layers": {
+                                        "90615214-9648-42b2-befb-962d1a379254": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "SSL Subject",
+                                                    "fieldName": "SSL Subject",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.*\r\n| WHERE observer.vendor == \"Corelight\" AND  observer.hostname IS NOT NULL AND (event.dataset LIKE \"x509*\" \r\n   OR event.dataset LIKE \"tls*\")\r\n| EVAL `SSL Subject` = COALESCE(file.x509.subject.distinguished_name, tls.server.subject)\r\n| WHERE `SSL Subject` IS NOT NULL\r\n| STATS Count = COUNT() BY `SSL Subject`\r\n| SORT Count ASC\r\n| LIMIT 10\r\n| KEEP `SSL Subject`, Count"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
-                            ],
-                            "internalReferences": [],
+                            },
+                            "filters": [],
                             "query": {
-                                "language": "kuery",
-                                "query": ""
+                                "esql": "FROM logs-corelight.*\r\n| WHERE observer.vendor == \"Corelight\" AND  observer.hostname IS NOT NULL AND (event.dataset LIKE \"x509*\" \r\n   OR event.dataset LIKE \"tls*\")\r\n| EVAL `SSL Subject` = COALESCE(file.x509.subject.distinguished_name, tls.server.subject)\r\n| WHERE `SSL Subject` IS NOT NULL\r\n| STATS Count = COUNT() BY `SSL Subject`\r\n| SORT Count ASC\r\n| LIMIT 10\r\n| KEEP `SSL Subject`, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "9dfce745-b8ee-4d27-8dd8-d8aad86e3028",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "SSL Subject"
                                     },
                                     {
-                                        "columnId": "ed51292f-cad9-4860-bb84-1bc53d13c15a",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "3004118f-134f-4321-af37-781efdd04bac",
+                                "layerId": "90615214-9648-42b2-befb-962d1a379254",
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Bar vertical stacked",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "event.dataset",
-                                "index": "6fb9f18b-2091-498b-b6e3-8580b674b44e",
-                                "key": "event.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "x509"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "event.dataset": "x509"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "observer.hostname",
-                                "index": "abf12c96-6668-46a4-a639-adfe96bbc996",
-                                "key": "observer.hostname",
-                                "negate": false,
-                                "type": "exists",
-                                "value": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "observer.hostname"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.x509.subject.distinguished_name",
-                                "index": "85ac0951-223d-413f-87de-ff2d3640aa85",
-                                "key": "file.x509.subject.distinguished_name",
-                                "negate": false,
-                                "type": "exists",
-                                "value": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.x509.subject.distinguished_name"
-                                }
-                            }
-                        }
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
                     ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 16,
-                    "i": "5559c2c4-8059-4ace-b297-e0aac1a4138a",
+                    "h": 17,
+                    "i": "35eced3a-4745-4ea3-ac38-3534b134515b",
                     "w": 24,
                     "x": 24,
                     "y": 39
                 },
-                "panelIndex": "5559c2c4-8059-4ace-b297-e0aac1a4138a",
-                "title": "x509 Rare Subjects [Logs Corelight]",
+                "panelIndex": "35eced3a-4745-4ea3-ac38-3534b134515b",
+                "title": "x509 Rare Subjects",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                    "name": "logs-corelight.*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "5cd7f46d-14e2-4192-a26e-50b5428d714d": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "SSL Issuer",
+                                                    "fieldName": "SSL Issuer",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "c0ee7280-7b76-4409-9fcd-91eb69fa85c3",
+                                                    "fieldName": "SSL End Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "8f6c1dde-7e75-4852-bf55-3047941e86d2",
+                                                    "fieldName": "SSL Subject",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "SSL Subject",
+                                                    "fieldName": "SSL Subject",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "SSL End Time",
+                                                    "fieldName": "SSL End Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "c0ee7280-7b76-4409-9fcd-91eb69fa85c3",
+                                                    "fieldName": "SSL End Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "8f6c1dde-7e75-4852-bf55-3047941e86d2",
+                                                    "fieldName": "SSL Subject",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "4d7566c0-cb11-4821-817a-20c98bb51dce",
+                                                    "fieldName": "SSL Issuer",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.*\r\n| WHERE observer.vendor == \"Corelight\"\r\n  AND observer.hostname IS NOT NULL\r\n  AND event.dataset LIKE \"x509*\"\r\n  AND file.x509.not_after \u003c NOW()\r\n| KEEP file.x509.subject.distinguished_name, file.x509.not_after, file.x509.issuer.distinguished_name\r\n| RENAME file.x509.subject.distinguished_name AS `SSL Subject`, file.x509.not_after AS `SSL End Time`, file.x509.issuer.distinguished_name AS `SSL Issuer`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-corelight.*\r\n| WHERE observer.vendor == \"Corelight\"\r\n  AND observer.hostname IS NOT NULL\r\n  AND event.dataset LIKE \"x509*\"\r\n  AND file.x509.not_after \u003c NOW()\r\n| KEEP file.x509.subject.distinguished_name, file.x509.not_after, file.x509.issuer.distinguished_name\r\n| RENAME file.x509.subject.distinguished_name AS `SSL Subject`, file.x509.not_after AS `SSL End Time`, file.x509.issuer.distinguished_name AS `SSL Issuer`"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "c0ee7280-7b76-4409-9fcd-91eb69fa85c3",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "8f6c1dde-7e75-4852-bf55-3047941e86d2",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "4d7566c0-cb11-4821-817a-20c98bb51dce",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "5cd7f46d-14e2-4192-a26e-50b5428d714d",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Table SSL Subject \u0026 SSL End Time \u0026 SSL Issuer",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 18,
+                    "i": "fe7df02e-aff8-45dc-a880-14d2dc3f8433",
+                    "w": 48,
+                    "x": 0,
+                    "y": 56
+                },
+                "panelIndex": "fe7df02e-aff8-45dc-a880-14d2dc3f8433",
+                "title": "x509 Expired Certificates",
                 "type": "lens"
             }
         ],
@@ -1366,7 +1131,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-11T11:24:02.153Z",
+    "created_at": "2026-04-08T07:04:43.213Z",
     "id": "corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203",
     "references": [
         {
@@ -1376,22 +1141,37 @@
         },
         {
             "id": "logs-*",
-            "name": "1a61d61b-0151-45d6-934e-a4359ae40424:indexpattern-datasource-layer-36ca6566-64fc-457d-8f1f-a283e2792d7b",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "bff2c27e-3dfc-440f-b8cc-d873091e21f3:indexpattern-datasource-layer-285b953a-092e-4d1e-afc4-aaf2cea4c7d6",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "afe182df-eaff-4276-bc75-4844ad0f83c1:indexpattern-datasource-layer-3004118f-134f-4321-af37-781efdd04bac",
+            "name": "0e3090cf-37f1-40c2-8f73-873f6714d933:indexpattern-datasource-layer-175a78af-d160-4466-a06b-0aa85c0bc279",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5559c2c4-8059-4ace-b297-e0aac1a4138a:indexpattern-datasource-layer-3004118f-134f-4321-af37-781efdd04bac",
+            "name": "0e3090cf-37f1-40c2-8f73-873f6714d933:fdd8510c-f50a-499e-b2ca-4f6c7238fd8b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dba54a10-6b39-4ffa-b933-73c5aa79cdf4:indexpattern-datasource-layer-175a78af-d160-4466-a06b-0aa85c0bc279",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dba54a10-6b39-4ffa-b933-73c5aa79cdf4:f34ffe7d-b3ae-4fc0-9c52-c31d48ce9a5b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dba54a10-6b39-4ffa-b933-73c5aa79cdf4:2bb7b28e-3bf8-49fd-910f-e2f71567c502",
             "type": "index-pattern"
         },
         {
