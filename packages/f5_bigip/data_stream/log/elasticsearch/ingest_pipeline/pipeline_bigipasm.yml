@@ -434,6 +434,11 @@ processors:
           request.protocol = requestLine.substring(protocolStart + 1);
         }
 
+        // Host and User-Agent may only appear once. A request that repeats them is malformed, and
+        // joining the values would produce a host that is not usable, so the first one wins. The
+        // remaining headers are list valued, where RFC 9110 makes repeated lines equivalent to a
+        // single comma separated line.
+        List singletonHeaders = ['host', 'user-agent'];
         Map headers = new HashMap();
         for (int i = 1; i < lines.length; i++) {
           if (lines[i].isEmpty()) {
@@ -444,8 +449,14 @@ processors:
             continue;
           }
           String name = lines[i].substring(0, nameEnd).trim().toLowerCase();
+          String value = lines[i].substring(nameEnd + 1).trim();
+          if (value.isEmpty()) {
+            continue;
+          }
           if (!headers.containsKey(name)) {
-            headers[name] = lines[i].substring(nameEnd + 1).trim();
+            headers[name] = value;
+          } else if (!singletonHeaders.contains(name)) {
+            headers[name] = headers[name] + ', ' + value;
           }
         }
 
@@ -459,7 +470,7 @@ processors:
         ];
         for (entry in headerFields.entrySet()) {
           def value = headers[entry.getKey()];
-          if (value != null && value != '') {
+          if (value != null) {
             request[entry.getValue()] = value;
           }
         }
