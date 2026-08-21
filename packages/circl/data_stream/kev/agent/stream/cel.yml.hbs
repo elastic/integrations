@@ -43,10 +43,7 @@ program: |-
         state.url.trim_right("/") + "/api/kev/?" + {
           "page": [string(poll.page)],
           "per_page": [string(int(state.batch_size))],
-          ?"date_from": (poll.date_from != "") ?
-            optional.of([string(poll.date_from)])
-          :
-            optional.none(),
+          ?"date_from": poll.?date_from.optMap(v, [v]),
         }.format_query()
       ).with(
         {
