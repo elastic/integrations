@@ -431,12 +431,16 @@ processors:
       lang: painless
       if: ctx.json?.last_activity_time != null && ctx.json.created_at != null
       source: |-
-        long lastActivity = ctx.json.last_activity_time;
-        long createdAt = ctx.json.created_at;
-        long uptimeMillis = lastActivity - createdAt;
-        long uptimeSeconds = uptimeMillis / 1000;
+        long lastActivity = Long.parseLong(String.valueOf(ctx.json.last_activity_time));
+        long createdAt = Long.parseLong(String.valueOf(ctx.json.created_at));
+        long uptimeSeconds = (lastActivity - createdAt) / 1000;
         ctx.host = ctx.host ?: [:];
         ctx.host.uptime = uptimeSeconds;
+      on_failure:
+        - append:
+            tag: append_error_message_calculate_host_uptime_node
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
       tag: set_event_end_from_node_last_activity_time_afb8e94b
