@@ -553,22 +553,22 @@ An example event for `aura_request` looks as following:
 {
     "@timestamp": "2026-08-03T06:18:45.933Z",
     "agent": {
-        "ephemeral_id": "982baf6d-28e3-48e4-9faf-6f097c39ed49",
-        "id": "94f87ac1-7ea2-4478-b9cf-f920462a6cca",
-        "name": "elastic-agent-49589",
+        "ephemeral_id": "31a03624-5323-426d-bf9a-f8e8fe2622fb",
+        "id": "981c7440-3a3b-4935-8ddf-5a359ee534b9",
+        "name": "elastic-agent-48140",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "salesforce.aura_request",
-        "namespace": "11352",
+        "namespace": "34338",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "94f87ac1-7ea2-4478-b9cf-f920462a6cca",
+        "id": "981c7440-3a3b-4935-8ddf-5a359ee534b9",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -580,7 +580,7 @@ An example event for `aura_request` looks as following:
         ],
         "dataset": "salesforce.aura_request",
         "duration": 677000000,
-        "ingested": "2026-08-18T09:39:01Z",
+        "ingested": "2026-08-21T10:24:49Z",
         "kind": "event",
         "original": "{\"ACTION_MESSAGE\":\"1$serviceComponent://ui.force.components.controllers.hoverAction.HoverActionController/ACTION$getActions=52;2$aura://RecordUiController/ACTION$getRecordWithFields=118\",\"ACTION_MESSAGE_LENGTH\":\"10098\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"372\",\"DB_TOTAL_TIME\":\"167546388\",\"EASY_SUITE_VALUE\":\"C360SuiteEE\",\"EVENT_TYPE\":\"AuraRequest\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"SLB:9b1c4de8f0a2b3c4d5e6f708192a3b4c\",\"REQUEST_METHOD\":\"POST\",\"REQUEST_STATUS\":\"S\",\"RUN_TIME\":\"677\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"TIMESTAMP\":\"20260803061845.933\",\"TIMESTAMP_DERIVED\":\"2026-08-03T06:18:45.933Z\",\"URI\":\"/aura\",\"URI_ID_DERIVED\":\"\",\"USER_AGENT\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_TYPE\":\"Standard\"}",
         "outcome": "success",
@@ -592,18 +592,18 @@ An example event for `aura_request` looks as following:
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-49589",
+        "hostname": "elastic-agent-48140",
         "ip": [
             "172.19.0.2",
             "172.18.0.4"
         ],
         "mac": [
-            "3A-9B-E2-81-F3-33",
-            "86-5C-DE-29-71-39"
+            "B6-A4-1C-D0-D1-9A",
+            "EA-A0-6D-CF-AB-7C"
         ],
-        "name": "elastic-agent-49589",
+        "name": "elastic-agent-48140",
         "os": {
-            "kernel": "6.12.76-linuxkit",
+            "kernel": "7.0.12-linuxkit",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
