@@ -1,0 +1,150 @@
+---
+description: Pipeline for processing Resecurity RISK alert records.
+processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null
+      description: error message set and no data to process.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: resecurity_risk.alert
+      description: The whole record is kept under its own namespace so that no vendor field collides with an ECS field.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: [threat]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [indicator]
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: resecurity_risk.alert
+  - fingerprint:
+      fields:
+        - resecurity_risk.alert.id
+      tag: fingerprint_id
+      target_field: _id
+      if: ctx.resecurity_risk?.alert?.id != null
+  - date:
+      field: resecurity_risk.alert.updated_at
+      tag: date_updated_at
+      target_field: resecurity_risk.alert.updated_at
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.alert?.updated_at != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.alert.updated_at
+            tag: remove_unparsable_updated_at
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_updated_at
+            value: 'failed to parse updated_at: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp
+      copy_from: resecurity_risk.alert.updated_at
+      if: ctx.resecurity_risk?.alert?.updated_at != null
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score
+      copy_from: resecurity_risk.alert.risk_score
+      if: ctx.resecurity_risk?.alert?.risk_score != null
+  - split:
+      field: resecurity_risk.alert.tags
+      tag: split_tags
+      separator: ','
+      if: ctx.resecurity_risk?.alert?.tags instanceof String
+  - foreach:
+      field: resecurity_risk.alert.tags
+      tag: foreach_trim_tags
+      if: ctx.resecurity_risk?.alert?.tags instanceof List
+      processor:
+        trim:
+          field: _ingest._value
+          tag: trim_tag
+  - foreach:
+      field: resecurity_risk.alert.tags
+      tag: foreach_append_tags
+      if: ctx.resecurity_risk?.alert?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          tag: append_tag
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      description: The vendor tags are appended to the user's tags rather than replacing them.
+  - split:
+      field: resecurity_risk.alert.threat_actors
+      tag: split_threat_actors
+      separator: ','
+      if: ctx.resecurity_risk?.alert?.threat_actors instanceof String
+  - foreach:
+      field: resecurity_risk.alert.threat_actors
+      tag: foreach_trim_threat_actors
+      if: ctx.resecurity_risk?.alert?.threat_actors instanceof List
+      processor:
+        trim:
+          field: _ingest._value
+          tag: trim_threat_actor
+  - foreach:
+      field: resecurity_risk.alert.for_splunk.ip
+      tag: foreach_append_related_ip
+      if: ctx.resecurity_risk?.alert?.for_splunk?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related_hash_md5
+      value: '{{{resecurity_risk.alert.ioc.md5}}}'
+      if: ctx.resecurity_risk?.alert?.ioc?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related_hash_sha256
+      value: '{{{resecurity_risk.alert.ioc.sha256}}}'
+      if: ctx.resecurity_risk?.alert?.ioc?.sha256 != null
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
