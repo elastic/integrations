@@ -1,0 +1,94 @@
+format_version: 3.5.0
+name: gcp_input_otel
+title: "Google Cloud Monitoring (OpenTelemetry)"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect Google Cloud Monitoring metrics via the OTel googlecloudmonitoringreceiver."
+type: input
+group: gcp
+categories:
+  - google_cloud
+  - cloud
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_gcp_otel.svg
+    title: Google Cloud Monitoring OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: googlecloudmonitoringreceiver
+    type: metrics
+    title: Google Cloud Monitoring Metrics
+    description: Collect Google Cloud Monitoring metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: project_id
+        type: text
+        title: GCP Project ID
+        description: The GCP project ID to query Cloud Monitoring metrics from.
+        required: true
+        show_user: true
+      - name: metrics_list
+        type: text
+        title: Metrics List
+        description: >-
+          List of Google Cloud Monitoring metric type names to collect (for example, `compute.googleapis.com/instance/cpu/utilization`). Each entry is rendered as a `metric_name` selector on the receiver. This is the generic knob that a service-specific integration built on top of this input would override with the metric set for that service. At least one entry is required here or in Metric Descriptor Filters below.
+        required: false
+        multi: true
+        show_user: true
+      - name: metric_descriptor_filters
+        type: text
+        title: Metric Descriptor Filters
+        description: >-
+          Advanced alternative to Metrics List: filter expressions used to look up metric descriptors dynamically instead of naming exact metric types (for example, `metric.type = starts_with("compute.googleapis.com/instance/")`). Only the `project` and `metric.type` filter objects are supported. Each entry is rendered as a `metric_descriptor_filter` selector on the receiver; an entry cannot combine both a metric name and a filter. At least one entry is required here or in Metrics List above.
+        required: false
+        multi: true
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: >-
+          How often the receiver polls Cloud Monitoring. Default is 300s. The receiver enforces a hard minimum of 60s; lower values fail validation.
+        default: 300s
+        required: false
+        show_user: true
+      - name: initial_delay
+        type: duration
+        title: Initial Delay
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        required: false
+        show_user: false
+      - name: timeout
+        type: duration
+        title: Timeout
+        description: Timeout for requests against the GCP Monitoring REST API.
+        default: 1m
+        required: false
+        show_user: false
+      - name: endpoint
+        type: text
+        title: API Endpoint
+        description: >-
+          Overrides the default `monitoring.googleapis.com:443` endpoint. Use this only when targeting a non-standard universe domain.
+        required: false
+        show_user: false
+      - name: universe_domain
+        type: text
+        title: Universe Domain
+        description: >-
+          The Google Cloud universe domain to use. Defaults to `googleapis.com`. Set this for Sovereign Cloud regions that use a different universe domain.
+        default: googleapis.com
+        required: false
+        show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
