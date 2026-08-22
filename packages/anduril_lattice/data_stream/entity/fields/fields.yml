@@ -1,0 +1,660 @@
+- name: anduril_lattice
+  type: group
+  fields:
+    - name: entity
+      type: group
+      description: Anduril Lattice entity event fields.
+      fields:
+        - name: event_type
+          type: keyword
+          description: >-
+            Type of entity lifecycle event. One of: EVENT_TYPE_CREATED, EVENT_TYPE_UPDATE, EVENT_TYPE_PREEXISTING, EVENT_TYPE_DELETED, EVENT_TYPE_POST_EXPIRY_OVERRIDE.
+        - name: entity_id
+          type: keyword
+          description: Unique identifier for the entity.
+        - name: is_live
+          type: boolean
+          description: Whether the entity is currently live and active.
+        - name: no_expiry
+          type: boolean
+          description: Whether the entity has no expiry time (persistent asset).
+        - name: aliases
+          type: group
+          description: Alias information for the entity.
+          fields:
+            - name: name
+              type: keyword
+              description: Human-readable alias name for the entity.
+            - name: alternate_ids
+              type: keyword
+              description: Alternate identifier values extracted from alternateIds array.
+            - name: alternate_id_types
+              type: keyword
+              description: Alternate identifier type labels extracted from alternateIds array.
+        - name: mil_view
+          type: group
+          description: Military classification and environment of the entity.
+          fields:
+            - name: disposition
+              type: keyword
+              description: >-
+                Military disposition of the entity. Examples: DISPOSITION_FRIENDLY, DISPOSITION_ASSUMED_FRIENDLY, DISPOSITION_HOSTILE, DISPOSITION_NEUTRAL, DISPOSITION_SUSPECT, DISPOSITION_UNKNOWN.
+            - name: environment
+              type: keyword
+              description: >-
+                Operational environment. Examples: ENVIRONMENT_SURFACE, ENVIRONMENT_LAND, ENVIRONMENT_AIR, ENVIRONMENT_SUBSURFACE, ENVIRONMENT_SPACE.
+            - name: nationality
+              type: keyword
+              description: Nationality code of the entity.
+        - name: ontology
+          type: group
+          description: Entity classification and template type.
+          fields:
+            - name: template
+              type: keyword
+              description: >-
+                Entity template type determining which fields are populated. Examples: TEMPLATE_TRACK, TEMPLATE_ASSET, TEMPLATE_SIGNAL, TEMPLATE_ALERT, TEMPLATE_GEO_ENTITY, TEMPLATE_EM_ENTITY.
+            - name: platform_type
+              type: keyword
+              description: >-
+                Platform type of the entity. Examples: SURFACE_VESSEL, FIXED_SENSOR, GROUND_VEHICLE, AIRCRAFT, SUBMARINE.
+            - name: specific_type
+              type: keyword
+              description: More granular platform type classification.
+        - name: status
+          type: group
+          description: Current operational status of the entity.
+          fields:
+            - name: platform_activity
+              type: keyword
+              description: Platform activity state of the entity.
+            - name: role
+              type: keyword
+              description: Operational role of the entity.
+        - name: location
+          type: group
+          description: Geospatial location and motion of the entity.
+          fields:
+            - name: geo
+              type: geo_point
+              description: >-
+                Geographic position of the entity as a geo_point derived from latitudeDegrees and longitudeDegrees.
+            - name: geo.coordinates
+              type: object
+              object_type: double
+              description: Coordinates of the geo_point as [lon, lat].
+            - name: geo.type
+              type: keyword
+              description: GeoJSON type of the geo_point (always "Point").
+            - name: altitude_hae_meters
+              type: double
+              description: Altitude above WGS-84 ellipsoid in meters.
+            - name: altitude_agl_meters
+              type: float
+              description: Altitude above ground level in meters.
+            - name: altitude_asf_meters
+              type: float
+              description: Altitude above sea floor in meters.
+            - name: pressure_depth_meters
+              type: float
+              description: Depth derived from pressure in meters.
+            - name: speed_mps
+              type: double
+              description: Speed over ground in meters per second.
+            - name: velocity_enu
+              type: group
+              description: Velocity vector in East-North-Up coordinates (m/s).
+              fields:
+                - name: e
+                  type: double
+                  description: East component of velocity in m/s.
+                - name: n
+                  type: double
+                  description: North component of velocity in m/s.
+                - name: u
+                  type: double
+                  description: Up component of velocity in m/s.
+            - name: acceleration_enu
+              type: group
+              description: Acceleration vector in East-North-Up coordinates (m/s²).
+              fields:
+                - name: e
+                  type: float
+                  description: East component of acceleration in m/s².
+                - name: n
+                  type: float
+                  description: North component of acceleration in m/s².
+                - name: u
+                  type: float
+                  description: Up component of acceleration in m/s².
+            - name: attitude_enu
+              type: group
+              description: Attitude quaternion in East-North-Up frame.
+              fields:
+                - name: x
+                  type: float
+                  description: X component of attitude quaternion.
+                - name: y
+                  type: float
+                  description: Y component of attitude quaternion.
+                - name: z
+                  type: float
+                  description: Z component of attitude quaternion.
+                - name: w
+                  type: float
+                  description: W (scalar) component of attitude quaternion.
+        - name: location_uncertainty
+          type: group
+          description: Uncertainty estimates for position and velocity.
+          fields:
+            - name: position_enu_cov
+              type: group
+              description: Position covariance matrix in ENU frame (upper triangle, meters²).
+              fields:
+                - name: mxx
+                  type: float
+                  description: Position covariance mxx.
+                - name: mxy
+                  type: float
+                  description: Position covariance mxy.
+                - name: mxz
+                  type: float
+                  description: Position covariance mxz.
+                - name: myy
+                  type: float
+                  description: Position covariance myy.
+                - name: myz
+                  type: float
+                  description: Position covariance myz.
+                - name: mzz
+                  type: float
+                  description: Position covariance mzz.
+            - name: velocity_enu_cov
+              type: group
+              description: Velocity covariance matrix in ENU frame (upper triangle, (m/s)²).
+              fields:
+                - name: mxx
+                  type: float
+                  description: Velocity covariance mxx.
+                - name: mxy
+                  type: float
+                  description: Velocity covariance mxy.
+                - name: mxz
+                  type: float
+                  description: Velocity covariance mxz.
+                - name: myy
+                  type: float
+                  description: Velocity covariance myy.
+                - name: myz
+                  type: float
+                  description: Velocity covariance myz.
+                - name: mzz
+                  type: float
+                  description: Velocity covariance mzz.
+            - name: position_error_ellipse
+              type: group
+              description: 2D error ellipse for horizontal position uncertainty.
+              fields:
+                - name: probability
+                  type: float
+                  description: Probability level of the error ellipse (0–1).
+                - name: semi_major_axis_m
+                  type: float
+                  description: Semi-major axis of the position error ellipse in meters.
+                - name: semi_minor_axis_m
+                  type: float
+                  description: Semi-minor axis of the position error ellipse in meters.
+                - name: orientation_d
+                  type: float
+                  description: Orientation of the error ellipse semi-major axis in degrees from North.
+        - name: geo_shape
+          type: geo_shape
+          description: >-
+            Entity declared geometry as a GeoJSON shape derived from geoShape (point, line, or polygon).
+        - name: geo_shape.coordinates
+          type: object
+          object_type: double
+          description: Coordinates of the geo_shape geometry.
+        - name: geo_shape.type
+          type: keyword
+          description: 'GeoJSON geometry type (for example, "Polygon," "MultiPolygon.")'
+        - name: geo_shape_ellipse
+          type: group
+          description: Scalar fields for ellipse geometry (no GeoJSON equivalent).
+          fields:
+            - name: semi_major_axis_m
+              type: float
+              description: Semi-major axis of the ellipse in meters.
+            - name: semi_minor_axis_m
+              type: float
+              description: Semi-minor axis of the ellipse in meters.
+            - name: orientation_d
+              type: float
+              description: Orientation of the ellipse semi-major axis in degrees from North.
+            - name: height_m
+              type: float
+              description: Height of the ellipse in meters.
+        - name: geo_shape_ellipsoid
+          type: group
+          description: Scalar fields for ellipsoid geometry (no GeoJSON equivalent).
+          fields:
+            - name: forward_axis_m
+              type: float
+              description: Forward (x) semi-axis of the ellipsoid in meters.
+            - name: side_axis_m
+              type: float
+              description: Side (y) semi-axis of the ellipsoid in meters.
+            - name: up_axis_m
+              type: float
+              description: Up (z) semi-axis of the ellipsoid in meters.
+        - name: geo_details
+          type: group
+          description: Geo entity classification and area control details.
+          fields:
+            - name: type
+              type: keyword
+              description: Geo entity type.
+            - name: control_area_type
+              type: keyword
+              description: Control area type for the geo entity.
+            - name: acm
+              type: group
+              description: Airspace Control Measure details.
+              fields:
+                - name: type
+                  type: keyword
+                  description: ACM type.
+                - name: description
+                  type: keyword
+                  description: ACM description.
+        - name: tracked
+          type: group
+          description: Track quality and measurement information for TEMPLATE_TRACK entities.
+          fields:
+            - name: track_quality
+              type: long
+              description: Track quality score (0-9 scale).
+            - name: sensor_hits
+              type: long
+              description: Number of sensors contributing to this track.
+            - name: number_of_objects
+              type: group
+              description: Estimated number of objects in a group track.
+              fields:
+                - name: lower_bound
+                  type: integer
+                  description: Lower bound of the object count estimate.
+                - name: upper_bound
+                  type: integer
+                  description: Upper bound of the object count estimate.
+            - name: radar_cross_section
+              type: float
+              description: Radar cross section estimate in square meters.
+            - name: last_measurement_time
+              type: date
+              description: Time of the last sensor measurement contributing to this track.
+            - name: line_of_bearing
+              type: group
+              description: Line-of-bearing range estimates.
+              fields:
+                - name: range_estimate_m
+                  type: float
+                  description: Range estimate along line of bearing in meters.
+                - name: max_range_m
+                  type: float
+                  description: Maximum range along line of bearing in meters.
+        - name: provenance
+          type: group
+          description: Origin metadata for the entity data.
+          fields:
+            - name: data_type
+              type: keyword
+              description: Data type or sensor type of the entity source.
+            - name: source_id
+              type: keyword
+              description: Source system identifier.
+            - name: source_description
+              type: keyword
+              description: Human-readable description of the source.
+        - name: indicators
+          type: group
+          description: Contextual indicator flags for the entity.
+          fields:
+            - name: simulated
+              type: boolean
+              description: Whether this entity is part of a simulation or exercise.
+            - name: exercise
+              type: boolean
+              description: Whether this entity is part of a live exercise.
+            - name: emergency
+              type: boolean
+              description: Whether this entity is in an emergency state.
+            - name: c2
+              type: boolean
+              description: Whether this entity is a command and control node.
+            - name: egressable
+              type: boolean
+              description: Whether this entity can be egressed to external systems.
+            - name: starred
+              type: boolean
+              description: Whether this entity has been starred/bookmarked by an operator.
+        - name: target_priority
+          type: group
+          description: Target priority assessments.
+          fields:
+            - name: is_high_value_target
+              type: boolean
+              description: Whether this entity is designated as a high-value target.
+            - name: priority
+              type: integer
+              description: Numeric target priority rank.
+            - name: is_high_payoff_target
+              type: boolean
+              description: Whether this entity is designated as a high-payoff target.
+            - name: is_threat
+              type: boolean
+              description: Whether this entity is assessed as a threat.
+        - name: signal
+          type: group
+          description: Signal intelligence fields for RF/EM emitters.
+          fields:
+            - name: frequency_center_hz
+              type: double
+              description: Center frequency of the detected signal in Hz.
+            - name: frequency_min_hz
+              type: double
+              description: Minimum frequency of the signal range in Hz.
+            - name: frequency_max_hz
+              type: double
+              description: Maximum frequency of the signal range in Hz.
+            - name: bandwidth_hz
+              type: double
+              description: Signal bandwidth in Hz.
+            - name: signal_to_noise_ratio
+              type: float
+              description: Signal-to-noise ratio in dB.
+            - name: pulse_width_s
+              type: float
+              description: Pulse width in seconds.
+            - name: scan_type
+              type: keyword
+              description: Radar/signal scan type.
+            - name: scan_period_s
+              type: float
+              description: Scan period in seconds.
+            - name: emitter_notations
+              type: keyword
+              description: Emitter notation identifiers associated with this signal.
+        - name: transponder_codes
+          type: group
+          description: IFF/SSR transponder code fields.
+          fields:
+            - name: mode1
+              type: integer
+              description: Mode 1 IFF code.
+            - name: mode2
+              type: integer
+              description: Mode 2 IFF code.
+            - name: mode3
+              type: integer
+              description: Mode 3/A IFF code.
+            - name: mode_c_altitude_ft
+              type: integer
+              description: Mode C altitude in feet.
+            - name: mode_s_id
+              type: keyword
+              description: Mode S ICAO aircraft identifier string.
+            - name: mode_s_address
+              type: long
+              description: Mode S ICAO 24-bit address.
+            - name: mode5
+              type: long
+              description: Mode 5 IFF code.
+            - name: mode5_platform_id
+              type: long
+              description: Mode 5 platform identifier.
+        - name: data_classification
+          type: group
+          description: Data classification markings.
+          fields:
+            - name: level
+              type: keyword
+              description: Classification level (for example, UNCLASSIFIED, SECRET).
+            - name: caveats
+              type: keyword
+              description: Classification caveats or handling instructions.
+        - name: health
+          type: group
+          description: Health and alert status for TEMPLATE_ASSET entities.
+          fields:
+            - name: connection_status
+              type: keyword
+              description: >-
+                Asset connection status. Examples: CONNECTION_STATUS_ONLINE, CONNECTION_STATUS_OFFLINE, CONNECTION_STATUS_DEGRADED.
+            - name: health_status
+              type: keyword
+              description: >-
+                Overall health status. Examples: HEALTH_STATUS_HEALTHY, HEALTH_STATUS_DEGRADED, HEALTH_STATUS_CRITICAL.
+            - name: update_time
+              type: date
+              description: Time of the last health status update.
+            - name: active_alerts
+              type: group
+              description: Active alert details extracted from the activeAlerts array.
+              fields:
+                - name: alert_code
+                  type: keyword
+                  description: Alert code identifiers.
+                - name: level
+                  type: keyword
+                  description: Alert severity levels.
+                - name: description
+                  type: keyword
+                  description: Alert descriptions.
+                - name: activated_time
+                  type: keyword
+                  description: ISO8601 timestamps when each alert was activated (stored as keyword).
+        - name: correlation
+          type: group
+          description: Entity correlation membership and cross-references.
+          fields:
+            - name: primary_secondary_entity_ids
+              type: keyword
+              description: Secondary entity IDs associated with this primary entity.
+            - name: secondary_primary_entity_id
+              type: keyword
+              description: Primary entity ID that this secondary entity is correlated to.
+            - name: membership_set_id
+              type: keyword
+              description: Correlation set identifier for group membership.
+        - name: symbology
+          type: group
+          description: Military symbology codes.
+          fields:
+            - name: mil_std_2525c_sidc
+              type: keyword
+              description: MIL-STD-2525C Symbol Identification Code.
+        - name: orbit
+          type: group
+          description: Orbital elements for space objects.
+          fields:
+            - name: epoch
+              type: date
+              description: Epoch time of the mean orbital elements.
+            - name: semi_major_axis_km
+              type: float
+              description: Semi-major axis in kilometers.
+            - name: eccentricity
+              type: float
+              description: Orbital eccentricity (dimensionless).
+            - name: inclination_deg
+              type: float
+              description: Orbital inclination in degrees.
+            - name: norad_cat_id
+              type: long
+              description: NORAD catalog number.
+            - name: bstar
+              type: float
+              description: BSTAR drag term from TLE.
+        - name: dimensions
+          type: group
+          description: Physical dimensions of the entity.
+          fields:
+            - name: length_m
+              type: float
+              description: Length of the entity in meters.
+        - name: route_details
+          type: group
+          description: Route and navigation details.
+          fields:
+            - name: destination_name
+              type: keyword
+              description: Name of the destination waypoint or location.
+            - name: estimated_arrival_time
+              type: date
+              description: Estimated time of arrival at the destination.
+        - name: visual_details
+          type: group
+          description: Visual display parameters.
+          fields:
+            - name: range_rings
+              type: group
+              description: Range ring display configuration.
+              fields:
+                - name: min_distance_m
+                  type: float
+                  description: Minimum range ring distance in meters.
+                - name: max_distance_m
+                  type: float
+                  description: Maximum range ring distance in meters.
+                - name: ring_count
+                  type: integer
+                  description: Number of range rings to display.
+        - name: group_details
+          type: group
+          description: Group and formation details.
+          fields:
+            - name: army_echelon
+              type: keyword
+              description: Army echelon designation (for example, ARMY_ECHELON_PLATOON).
+        - name: task_catalog
+          type: group
+          description: Task catalog entries available for this entity.
+          fields:
+            - name: task_specification_urls
+              type: keyword
+              description: Task specification URLs from the task catalog.
+        - name: media
+          type: group
+          description: Media items associated with the entity.
+          fields:
+            - name: item_identifier
+              type: keyword
+              description: Media item identifiers.
+            - name: type
+              type: keyword
+              description: Media types (for example, IMAGE, VIDEO).
+            - name: relative_path
+              type: keyword
+              description: Relative paths to media items.
+        - name: supplies
+          type: group
+          description: Supply and logistics information.
+          fields:
+            - name: munition_id
+              type: keyword
+              description: Munition identifiers.
+            - name: munition_name
+              type: keyword
+              description: Munition names.
+            - name: munition_quantity_units
+              type: keyword
+              description: Munition quantity units (e.g. ROUNDS, MISSILES).
+            - name: fuel_id
+              type: keyword
+              description: Fuel type identifiers.
+            - name: fuel_name
+              type: keyword
+              description: Fuel type names.
+            - name: fuel_amount_gallons
+              type: float
+              description: Current fuel amounts in gallons.
+            - name: fuel_max_authorized_capacity_gallons
+              type: float
+              description: Maximum authorized fuel capacity in gallons.
+        - name: payloads
+          type: group
+          description: Payload configuration information.
+          fields:
+            - name: capability_id
+              type: keyword
+              description: Payload capability identifiers.
+            - name: operational_state
+              type: keyword
+              description: Payload operational state values.
+            - name: description
+              type: keyword
+              description: Payload descriptions.
+            - name: quantity
+              type: integer
+              description: Payload quantities.
+        - name: overrides
+          type: group
+          description: Field override requests applied to this entity.
+          fields:
+            - name: request_ids
+              type: keyword
+              description: Override request identifiers.
+            - name: field_paths
+              type: keyword
+              description: Field paths targeted by overrides.
+            - name: statuses
+              type: keyword
+              description: Override request statuses.
+            - name: types
+              type: keyword
+              description: Override types.
+            - name: request_timestamps
+              type: keyword
+              description: ISO8601 timestamps when override requests were submitted (stored as keyword).
+        - name: sensors
+          type: group
+          description: Sensor suite information.
+          fields:
+            - name: sensor_id
+              type: keyword
+              description: Sensor identifiers.
+            - name: operational_state
+              type: keyword
+              description: Sensor operational states.
+            - name: sensor_type
+              type: keyword
+              description: Sensor types.
+            - name: sensor_description
+              type: keyword
+              description: Sensor descriptions.
+            - name: last_detection_timestamp
+              type: keyword
+              description: ISO8601 timestamps of the last detection per sensor (stored as keyword).
+            - name: fields_of_view
+              type: group
+              description: Sensor field-of-view footprints.
+              fields:
+                - name: geo
+                  type: geo_shape
+                  description: >-
+                    Sensor field-of-view footprint polygons derived from projectedFrustum corners. Stored as an array of GeoJSON Polygon objects.
+                - name: geo.coordinates
+                  type: object
+                  object_type: double
+                  description: Coordinates of the geo_shape geometry.
+                - name: geo.type
+                  type: keyword
+                  description: 'GeoJSON geometry type (for example, "Polygon," "MultiPolygon.")'
+        - name: power_state
+          type: flattened
+          description: >-
+            Power state information keyed by power source ID. The map structure uses arbitrary string keys and is stored as a flattened object.
+        - name: relationships
+          type: flattened
+          description: Entity relationship data stored as a flattened object.
