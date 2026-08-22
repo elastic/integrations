@@ -94,7 +94,7 @@ This can be done in two ways:
     Example explicit field definition:
 
     ```yaml
-    - name: cloud.acount.id
+    - name: cloud.account.id
       level: extended
       type: keyword
       ignore_above: 1024
