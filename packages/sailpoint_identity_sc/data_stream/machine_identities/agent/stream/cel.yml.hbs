@@ -1,0 +1,104 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 5
+resource.url: {{api_host}}
+auth:
+  oauth2:
+    client:
+      id: {{client_id}}
+      secret: {{client_secret}}
+    token_url: "{{api_host}}/oauth/token"
+    scopes:
+      {{#each token_scopes as |token_scope|}}
+         - {{token_scope}}
+      {{/each}}
+    endpoint_params:
+      grant_type: client_credentials
+state:
+  batch_size: {{batch_size}}
+  api_version: {{api_version}}
+redact:
+  fields: ~
+program: |-
+  // Full scan every collection cycle via offset+limit pagination.
+  // No cursor — machine_identities does not use time-based filtering.
+  // X-SailPoint-Experimental header is required and hardcoded.
+  // HTTP 404 and 501 are treated as "feature not enabled" (no data, no error).
+  int(state.?offset.orValue(0)).as(offset,
+  	state.with(
+  		request(
+  			"GET",
+  			state.url.trim_right("/") + "/" + state.api_version + "/machine-identities?" + {
+  				"limit": [string(int(state.batch_size))],
+  				"offset": [string(offset)],
+  			}.format_query()
+  		).with(
+  			{
+  				"Header": {
+  					"X-SailPoint-Experimental": ["true"],
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 200) ?
+  				resp.Body.decode_json().as(body,
+  					{
+  						"events": body.map(e, {"message": e.encode_json()}),
+  						"offset": (size(body) == int(state.batch_size)) ? (offset + int(state.batch_size)) : 0,
+  						"want_more": size(body) == int(state.batch_size),
+  					}
+  				)
+  			: (resp.StatusCode == 404 || resp.StatusCode == 501) ?
+  				{
+  					"events": [],
+  					"offset": 0,
+  					"want_more": false,
+  				}
+  			:
+  				{
+  					"events": {
+  						"error": {
+  							"code": string(resp.StatusCode),
+  							"id": resp.Status,
+  							"message": "GET /" + state.api_version + "/machine-identities: " +
+  							(
+  								(size(resp.Body) != 0) ?
+  									string(resp.Body)
+  								:
+  									resp.Status + " (" + string(resp.StatusCode) + ")"
+  							),
+  						},
+  					},
+  					"offset": 0,
+  					"want_more": false,
+  				}
+  		)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

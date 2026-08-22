@@ -1,0 +1,175 @@
+rules:
+  # OAuth Token Endpoint
+  # Used by the system test agent for OAuth2 client_credentials flow.
+  # SailPoint ISC rejects an explicit scope parameter in the token request body,
+  # so no scope is sent in the request.
+  - path: /oauth/token
+    methods:
+      - POST
+    query_params:
+      grant_type: client_credentials
+      client_id: test-client-id
+      client_secret: test-client-secret
+    request_headers:
+      Content-Type:
+        - application/x-www-form-urlencoded
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "access_token": "test-token-machine-identities",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+  # Page 1 (offset=0): returns 2 records (== batch_size), so the CEL program
+  # requests the next page. Every collection cycle restarts here (full scan, no cursor).
+  - path: /v2026/machine-identities
+    methods:
+      - GET
+    query_params:
+      limit: "2"
+      offset: "0"
+    request_headers:
+      Authorization:
+        - Bearer test-token-machine-identities
+      X-SailPoint-Experimental:
+        - "true"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "mi-id-aabbccdd-1111-2222-3333-000000000001",
+              "name": "svc-example-service",
+              "created": "2024-01-15T10:30:00Z",
+              "modified": "2025-01-10T08:45:00Z",
+              "nativeIdentity": "svc-example:prod:00001",
+              "description": "Example service account for integration tests.",
+              "attributes": {
+                "env": "production",
+                "team": "Platform"
+              },
+              "subtype": "Application",
+              "owners": {
+                "primaryIdentity": {
+                  "type": "IDENTITY",
+                  "id": "00000000000000000000000000000001",
+                  "name": "alice.example"
+                },
+                "secondaryIdentities": []
+              },
+              "sourceId": "src-id-aabbccdd-1111-2222-3333-000000000001",
+              "uuid": "uuid-aabbccdd-1111-2222-3333-000000000001",
+              "manuallyEdited": false,
+              "manuallyCreated": false,
+              "source": {
+                "type": "SOURCE",
+                "id": "src-id-aabbccdd-1111-2222-3333-000000000001",
+                "name": "Example Directory"
+              },
+              "datasetId": "ds-id-aabbccdd-1111-2222-3333-000000000001",
+              "userEntitlements": []
+            },
+            {
+              "id": "mi-id-aabbccdd-1111-2222-3333-000000000002",
+              "name": "svc-reporting-job",
+              "created": "2024-02-20T14:00:00Z",
+              "modified": "2025-01-11T09:00:00Z",
+              "nativeIdentity": "svc-reporting:prod:00002",
+              "description": "Service account for scheduled reporting tasks.",
+              "attributes": {
+                "env": "production",
+                "team": "Analytics"
+              },
+              "subtype": "Application",
+              "owners": {
+                "primaryIdentity": {
+                  "type": "IDENTITY",
+                  "id": "00000000000000000000000000000002",
+                  "name": "bob.example"
+                },
+                "secondaryIdentities": []
+              },
+              "sourceId": "src-id-aabbccdd-1111-2222-3333-000000000002",
+              "uuid": "uuid-aabbccdd-1111-2222-3333-000000000002",
+              "manuallyEdited": false,
+              "manuallyCreated": false,
+              "source": {
+                "type": "SOURCE",
+                "id": "src-id-aabbccdd-1111-2222-3333-000000000002",
+                "name": "Example Cloud Apps"
+              },
+              "datasetId": "ds-id-aabbccdd-1111-2222-3333-000000000002",
+              "userEntitlements": [
+                {
+                  "sourceId": "src-id-aabbccdd-1111-2222-3333-000000000003",
+                  "entitlementId": "ent-id-aabbccdd-1111-2222-3333-000000000001",
+                  "displayName": "Reports DB Read Access",
+                  "source": {
+                    "type": "SOURCE",
+                    "id": "src-id-aabbccdd-1111-2222-3333-000000000003",
+                    "name": "Example SQL DB"
+                  }
+                }
+              ]
+            }
+          ]
+  # Round 1, Terminal page (offset=2): returns 1 record (< batch_size=2), triggers termination.
+  # Also serves as Round 2 termination for offset=2.
+  - path: /v2026/machine-identities
+    methods:
+      - GET
+    query_params:
+      limit: "2"
+      offset: "2"
+    request_headers:
+      Authorization:
+        - Bearer test-token-machine-identities
+      X-SailPoint-Experimental:
+        - "true"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "mi-id-aabbccdd-1111-2222-3333-000000000003",
+              "name": "svc-audit-collector",
+              "created": "2024-03-10T08:00:00Z",
+              "modified": "2025-01-12T07:30:00Z",
+              "nativeIdentity": "svc-audit:prod:00003",
+              "description": "Service account for audit log collection.",
+              "attributes": {
+                "env": "production",
+                "team": "Security"
+              },
+              "subtype": "Application",
+              "owners": {
+                "primaryIdentity": {
+                  "type": "IDENTITY",
+                  "id": "00000000000000000000000000000003",
+                  "name": "carol.example"
+                },
+                "secondaryIdentities": []
+              },
+              "sourceId": "src-id-aabbccdd-1111-2222-3333-000000000001",
+              "uuid": "uuid-aabbccdd-1111-2222-3333-000000000003",
+              "manuallyEdited": false,
+              "manuallyCreated": false,
+              "source": {
+                "type": "SOURCE",
+                "id": "src-id-aabbccdd-1111-2222-3333-000000000001",
+                "name": "Example Directory"
+              },
+              "datasetId": "ds-id-aabbccdd-1111-2222-3333-000000000001",
+              "userEntitlements": []
+            }
+          ]
