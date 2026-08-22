@@ -1,0 +1,65 @@
+{
+    "id": "a056caae-3bb1-446a-a3cd-5f1de54f7a88",
+    "type": "security-rule",
+    "attributes": {
+        "name": "WhoisFreaks - Domain Expiring Within 30 Days",
+        "description": "Detects domains in the WhoisFreaks feed with 30 or fewer days until expiry. Domains nearing expiry may indicate portfolio risk, accidental lapse, or opportunities for domain hijacking after expiration.",
+        "author": [
+            "WhoisFreaks"
+        ],
+        "enabled": true,
+        "false_positives": [
+            "Legitimate bulk domain registrations by portfolio managers or registrars."
+        ],
+        "from": "now-24h",
+        "interval": "1h",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 100,
+        "query": "data_stream.dataset: \"ti_whoisfreaks.whois\" and whoisfreaks.days_until_expiry <= 30 and event.kind: \"enrichment\"",
+        "references": [
+            "https://whoisfreaks.com/"
+        ],
+        "risk_score": 21,
+        "rule_id": "a056caae-3bb1-446a-a3cd-5f1de54f7a88",
+        "severity": "low",
+        "tags": [
+            "WhoisFreaks",
+            "Domain",
+            "Threat Intelligence",
+            "WHOIS",
+            "Expiration"
+        ],
+        "to": "now",
+        "type": "query",
+        "version": 1,
+        "index": [
+            "logs-ti_whoisfreaks.whois-*"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1596",
+                        "name": "Search Open Technical Databases",
+                        "reference": "https://attack.mitre.org/techniques/T1596/",
+                        "subtechnique": [
+                            {
+                                "id": "T1596.002",
+                                "name": "WHOIS",
+                                "reference": "https://attack.mitre.org/techniques/T1596/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "note": "Investigate the domain against brand lists, phishing reports, and internal asset inventories."
+    }
+}
