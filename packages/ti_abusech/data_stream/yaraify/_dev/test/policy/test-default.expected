@@ -1,0 +1,255 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_abusech
+      name: test-default-ti_abusech
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_abusech.yaraify
+          fields:
+            _conf:
+                ioc_expiration_duration: 90d
+          fields_under_root: true
+          interval: 10m
+          program: |-
+            state.with(
+              state.?api_type.orValue("community") == "commercial" ?
+                (
+                  !has(state.username) || !has(state.password) ?
+                    {
+                      "events": {
+                        "error": {
+                          "message": "api_type is 'commercial' but username/password are not configured",
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  : has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
+                    state.token
+                  :
+                    request(
+                      "POST",
+                      state.url.trim_right("/") + "/v1/login",
+                      {
+                        "username": state.username,
+                        "password": state.password,
+                        "realm": "abusech",
+                      }.encode_json()
+                    ).with(
+                      {
+                        "Header": {
+                          "Content-Type": ["application/json"],
+                        },
+                      }
+                    ).do_request().as(auth_resp, (auth_resp.StatusCode == 200) ?
+                      auth_resp.Body.decode_json().as(auth_body,
+                        {
+                          "access_token": auth_body.token,
+                          "expires": auth_body.expires,
+                        }
+                      )
+                    :
+                      {
+                        "events": {
+                          "error": {
+                            "code": string(auth_resp.StatusCode),
+                            "id": auth_resp.Status,
+                            "message": "POST " + state.url.trim_right("/") + "/v1/login: " + (
+                              size(auth_resp.Body) != 0 ?
+                                string(auth_resp.Body)
+                              :
+                                auth_resp.Status + " (" + string(auth_resp.StatusCode) + ")"
+                            ),
+                          },
+                        },
+                        "want_more": false,
+                      }
+                    )
+                ).as(token, !has(token.access_token) ?
+                  token
+                :
+                  (
+                    has(state.?cursor.after) ?
+                      state.cursor.since
+                    :
+                      state.?cursor.first_seen.orValue(
+                        state.?cursor.since.orValue(
+                          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                        )
+                      )
+                  ).as(since,
+                    request(
+                      "GET",
+                      state.url.trim_right("/") + "/yaraify/v1/rules?" + {
+                        "since": [since],
+                        "page_size": [string(int(state.page_size))],
+                        ?"after": state.?cursor.after.optMap(v, [v]),
+                      }.format_query()
+                    ).with(
+                      {
+                        "Header": {
+                          "Authorization": ["Bearer " + token.access_token],
+                        },
+                      }
+                    ).do_request().as(resp, resp.StatusCode == 200 ?
+                      resp.Body.decode_json().as(body,
+                        {
+                          "events": body.items.map(item,
+                            {
+                              "message": item.encode_json(),
+                            }
+                          ),
+                          "want_more": has(body.?meta.next_cursor),
+                          "cursor": (
+                            body.items.size() > 0 ?
+                              optional.of(
+                                (
+                                  has(state.?cursor.first_seen) ?
+                                    max(timestamp(state.cursor.first_seen), body.items.map(item, timestamp(item.first_seen)).max())
+                                  :
+                                    body.items.map(item, timestamp(item.first_seen)).max()
+                                ).format(time_layout.RFC3339)
+                              )
+                            :
+                              state.?cursor.first_seen
+                          ).as(first_seen,
+                            has(body.?meta.next_cursor) ?
+                              {
+                                "since": since,
+                                "after": body.meta.next_cursor,
+                                ?"first_seen": first_seen,
+                              }
+                            :
+                              {
+                                "since": since,
+                                ?"first_seen": first_seen,
+                              }
+                          ),
+                          "token": {
+                            "access_token": token.access_token,
+                            "expires": token.expires,
+                          },
+                        }
+                      )
+                    :
+                      {
+                        "events": {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": resp.Status,
+                            "message": "GET " + state.url.trim_right("/") + "/yaraify/v1/rules: " + (
+                              size(resp.Body) != 0 ?
+                                string(resp.Body)
+                              :
+                                resp.Status + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          },
+                        },
+                        "want_more": false,
+                      }
+                    )
+                  )
+                )
+              : !has(state.auth_key) ?
+                {
+                  "events": {
+                    "error": {
+                      "message": "auth_key is required for the YARAify Community API",
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                request("POST", state.url, "{\"query\":\"recent_yararules\"}").with(
+                  {
+                    "Header": {
+                      "Content-Type": ["application/json"],
+                      "Auth-Key": [state.auth_key],
+                    },
+                  }
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body, body.?query_status == optional.of("ok") ?
+                    {
+                      "events": body.data.map(item, { "message": item.encode_json() }),
+                      "want_more": false,
+                    }
+                  : body.?query_status == optional.of("no_results") ?
+                    {
+                      "events": [],
+                      "want_more": false,
+                    }
+                  :
+                    {
+                      "events": {
+                        "error": {
+                          ?"id": body.?query_status,
+                          "message": "POST " + state.url.trim_right("/") + ": " + (
+                            size(resp.Body) != 0 ?
+                              string(resp.Body)
+                            :
+                              resp.Status + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": "POST " + state.url.trim_right("/") + ": " + (
+                          size(resp.Body) != 0 ?
+                            string(resp.Body)
+                          :
+                            resp.Status + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+                )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - auth_key
+                - password
+                - token.access_token
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://yaraify-api.abuse.ch/api/v1/
+          state:
+            api_type: community
+            auth_key: ${SECRET_0}
+            initial_interval: 24h
+            page_size: 100
+          tags:
+            - forwarded
+            - abusech-yaraify
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_abusech.yaraify-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

@@ -6,7 +6,7 @@ The abuse.ch integration for Elastic allows you to collect logs from [abuse.ch](
 
 ### Compatibility
 
-The abuse.ch integration is compatible with `v1` version of abuse.ch URLhaus, MalwareBazaar, ThreatFox, and SSLBL APIs.
+The abuse.ch integration is compatible with `v1` version of abuse.ch URLhaus, MalwareBazaar, ThreatFox, SSLBL and YARAify APIs.
 
 ### How it works
 
@@ -18,10 +18,11 @@ This integration collects threat intelligence indicators into the following data
 
 - `ja3_fingerprints`: Collects JA3 fingerprint based threat indicators identified by SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `malwarebazaar`: Collects malware payloads from MalwareBazaar via the Community [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions) or the Commercial API (`GET /malwarebazaar/v1/samples`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 - `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects recently added malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent). The API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost.
+- `url`: Collects recently added malware URL based threat indicators from URLhaus via the Community [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent) or the Commercial API (`GET /urlhaus/v1/urls`). The Community API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost. Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
+- `yaraify`: Collects YARA rule metadata from YARAify via the Community [YARAify API](https://yaraify.abuse.ch/api/#recent-yararules) (`POST` with `query: recent_yararules`) or the Commercial API (`GET /yaraify/v1/rules`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 
 ### Supported use cases
 
@@ -35,9 +36,12 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 ### From abuse.ch
 
-abuse.ch requires an `Auth Key` (API key) for request authentication. Any requests made without this key will be rejected by the abuse.ch APIs.
+Authentication depends on which API you use:
 
-#### Obtain `Auth Key`
+- **Community API**: requires an `Auth Key` (API key). Any requests made without this key will be rejected by the abuse.ch community APIs.
+- **Commercial API** : requires Spamhaus username and password credentials. The integration uses these to obtain a short-lived JWT for API requests.
+
+#### Obtain `Auth Key` (Community API)
 
 1. Sign up for a new account, or login into the [abuse.ch authentication portal](https://auth.abuse.ch).
 2. Connect with at least one authentication provider: Google, Github, X, or LinkedIn.
@@ -46,6 +50,17 @@ abuse.ch requires an `Auth Key` (API key) for request authentication. Any reques
 5. Copy the generated **Auth Key**.
 
 For more details, check the abuse.ch [Community First - New Authentication](https://abuse.ch/blog/community-first/) blog.
+
+#### Obtain Commercial API credentials
+
+Commercial API access uses JWT authentication. Create credentials in the Spamhaus Customer Portal, then configure the username and password in the integration. The integration authenticates to `/v1/login` and refreshes the JWT as needed.
+
+1. Log in to the Spamhaus [Customer Portal](https://portal.spamhaus.com).
+2. Navigate to **Product** > **abuse.ch API**.
+3. Under **Generate new credentials for JWT authentication**, fill out the required information and follow the on-screen instructions.
+4. Copy the generated **username** and **password**.
+
+For more details, check the abuse.ch commercial API documentation on [JWT authentication for endpoints available to query](https://abusech.docs.spamhaus.com/api-reference#description/jwt-authentication-for-endpoints-available-to-query).
 
 ## How do I deploy this integration?
 
@@ -71,7 +86,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect abuse.ch logs via API**, you'll need to:
 
-        - Configure **Auth Key**.
+        - Configure **Auth Key** for Community API datasets.
+        - For Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
@@ -148,6 +164,10 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "url"}}
 
+#### YARAify
+
+{{fields "yaraify"}}
+
 ### Example event
 
 #### JA3 Fingerprint Blacklist
@@ -174,6 +194,10 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "url"}}
 
+#### YARAify
+
+{{event "yaraify"}}
+
 ### Inputs used
 
 These inputs can be used in this integration:
@@ -186,14 +210,15 @@ This integration datasets use the following APIs:
 
 - `ja3_fingerprints`: [SSLBL API](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `malwarebazaar`: [MalwareBazaar Community API](https://bazaar.abuse.ch/api/#latest_additions) and [abuse.ch Commercial API — MalwareBazaar](https://abusech.docs.spamhaus.com/) (`GET /malwarebazaar/v1/samples`).
 - `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent).
+- `url`: [URLhaus Community API](https://urlhaus-api.abuse.ch/#urls-recent) and [abuse.ch Commercial API — URLhaus](https://abusech.docs.spamhaus.com/) (`GET /urlhaus/v1/urls`).
+- `yaraify`: [YARAify Community API](https://yaraify.abuse.ch/api/#recent-yararules) (`recent_yararules`) and [abuse.ch Commercial API — YARAify](https://abusech.docs.spamhaus.com/) (`GET /yaraify/v1/rules`).
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-All abuse.ch datasets now support indicator expiration. The `URL`, `Malware`, `MalwareBazaar`, and `ThreatFox` datasets expire threat indicators after the duration configured in the `IOC Expiration Duration` setting (default `90d`). An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+All abuse.ch datasets now support indicator expiration. The `URL`, `Malware`, `MalwareBazaar`, `ThreatFox` and `YARAify` datasets expire threat indicators after the duration configured in the `IOC Expiration Duration` setting (default `90d`). An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 
 | Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |
@@ -202,6 +227,7 @@ Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 | `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
 | `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
 | `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+| `logs-ti_abusech.yaraify-*`        | `logs-ti_abusech_latest.dest_yaraify-*`          | `logs-ti_abusech_latest.yaraify`        |
 
 #### ILM Policy
 
