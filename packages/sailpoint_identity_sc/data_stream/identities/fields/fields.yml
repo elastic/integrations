@@ -1,0 +1,314 @@
+- name: sailpoint_identity_sc.identity
+  type: group
+  fields:
+    - name: employee_number
+      type: keyword
+      description: Employee number assigned to the identity.
+    - name: identity_profile
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: ID of the identity profile this identity belongs to.
+        - name: name
+          type: keyword
+          description: Name of the identity profile this identity belongs to.
+    - name: processing_state
+      type: keyword
+      description: Processing state of the identity (null when not in a special state).
+    - name: is_manager
+      type: boolean
+      description: Indicates whether this identity is a manager.
+    - name: status
+      type: keyword
+      description: Identity lifecycle status (for example, ACTIVE).
+    - name: inactive
+      type: boolean
+      description: Indicates whether this identity is inactive.
+    - name: protected
+      type: boolean
+      description: Indicates whether this identity is protected from modification.
+    - name: disabled
+      type: boolean
+      description: Indicates whether this identity is disabled.
+    - name: locked
+      type: boolean
+      description: Indicates whether this identity account is locked.
+    - name: source
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: ID of the authoritative source for this identity.
+        - name: name
+          type: keyword
+          description: Name of the authoritative source for this identity.
+    - name: attributes
+      type: flattened
+      description: Free-form identity attributes from the authoritative source (tenant-specific keys).
+    - name: account_count
+      type: long
+      description: Number of accounts associated with this identity.
+    - name: access_count
+      type: long
+      description: Number of access items assigned to this identity.
+    - name: entitlement_count
+      type: long
+      description: Number of entitlements assigned to this identity.
+    - name: role_count
+      type: long
+      description: Number of roles assigned to this identity.
+    - name: access_profile_count
+      type: long
+      description: Number of access profiles assigned to this identity.
+    - name: owns_count
+      type: long
+      description: Number of access items owned by this identity.
+    - name: visible_segments
+      type: keyword
+      description: List of segment names visible to this identity.
+    - name: pod
+      type: keyword
+      description: Pod (deployment region) where this identity is hosted.
+    - name: org
+      type: keyword
+      description: Organization (tenant) identifier for this identity.
+    - name: tags
+      type: keyword
+      description: Tags applied to this identity.
+    - name: manager
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: ID of the identity's manager.
+        - name: name
+          type: keyword
+          description: Username of the identity's manager.
+        - name: display_name
+          type: keyword
+          description: Display name of the identity's manager.
+    - name: accounts
+      type: nested
+      description: Accounts linked to this identity across connected sources.
+      fields:
+        - name: id
+          type: keyword
+          description: Account ID.
+        - name: name
+          type: keyword
+          description: Account display name.
+        - name: account_id
+          type: keyword
+          description: Account identifier on the source system.
+        - name: disabled
+          type: boolean
+          description: Indicates whether the account is disabled.
+        - name: locked
+          type: boolean
+          description: Indicates whether the account is locked.
+        - name: privileged
+          type: boolean
+          description: Indicates whether the account has privileged access.
+        - name: manually_correlated
+          type: boolean
+          description: Indicates whether the account was manually correlated to this identity.
+        - name: supports_password_change
+          type: boolean
+          description: Indicates whether the account supports password changes.
+        - name: created
+          type: date
+          description: When the account was created.
+        - name: password_last_set
+          type: date
+          description: When the account password was last set.
+        - name: entitlement_attributes
+          type: flattened
+          description: Entitlement attributes on the account (for example, memberOf groups).
+        - name: source
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the source system for this account.
+            - name: name
+              type: keyword
+              description: Name of the source system for this account.
+            - name: type
+              type: keyword
+              description: Type of the source system for this account.
+    - name: apps
+      type: nested
+      description: Applications accessible by this identity.
+      fields:
+        - name: id
+          type: keyword
+          description: Application ID.
+        - name: name
+          type: keyword
+          description: Application name.
+        - name: source
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the source associated with this application.
+            - name: name
+              type: keyword
+              description: Name of the source associated with this application.
+        - name: account
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the account linked to this application.
+            - name: account_id
+              type: keyword
+              description: Account identifier on the source system for this application.
+    - name: access
+      type: nested
+      description: Access items (entitlements, roles, access profiles) assigned to this identity.
+      fields:
+        - name: id
+          type: keyword
+          description: Access item ID.
+        - name: name
+          type: keyword
+          description: Access item name.
+        - name: display_name
+          type: keyword
+          description: Display name of the access item.
+        - name: type
+          type: keyword
+          description: Type of access item (ENTITLEMENT, ROLE, ACCESS_PROFILE).
+        - name: description
+          type: keyword
+          description: Description of the access item.
+        - name: enabled
+          type: boolean
+          description: Indicates whether the access item is enabled.
+        - name: requestable
+          type: boolean
+          description: Indicates whether the access item can be requested.
+        - name: request_comments_required
+          type: boolean
+          description: Indicates whether comments are required when requesting this access item.
+        - name: disabled
+          type: boolean
+          description: Indicates whether the access item is disabled.
+        - name: privileged
+          type: boolean
+          description: Indicates whether the access item grants privileged access.
+        - name: standalone
+          type: boolean
+          description: Indicates whether the access item is standalone.
+        - name: revocable
+          type: boolean
+          description: Indicates whether the access item can be revoked.
+        - name: cloud_eligible
+          type: boolean
+          description: Indicates whether the access item is cloud-eligible.
+        - name: cloud_governed
+          type: boolean
+          description: Indicates whether the access item is cloud-governed.
+        - name: attribute
+          type: keyword
+          description: Attribute name for entitlement-type access items.
+        - name: value
+          type: keyword
+          description: Attribute value for entitlement-type access items.
+        - name: schema
+          type: keyword
+          description: Schema name for entitlement-type access items.
+        - name: source
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the source system for this access item.
+            - name: name
+              type: keyword
+              description: Name of the source system for this access item.
+        - name: owner
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the owner of this access item.
+            - name: name
+              type: keyword
+              description: Username of the owner of this access item.
+            - name: display_name
+              type: keyword
+              description: Display name of the owner of this access item.
+    - name: owns
+      type: group
+      description: >-
+        Objects owned by this identity, keyed by category. Each category contains
+        an array of {id, name} references.
+      fields:
+        - name: sources
+          type: nested
+          description: Sources administered by this identity.
+          fields:
+            - name: id
+              type: keyword
+              description: ID of an administered source.
+            - name: name
+              type: keyword
+              description: Name of an administered source.
+        - name: entitlements
+          type: nested
+          description: Entitlements owned by this identity.
+          fields:
+            - name: id
+              type: keyword
+              description: ID of an owned entitlement.
+            - name: name
+              type: keyword
+              description: Name of an owned entitlement.
+        - name: access_profiles
+          type: nested
+          description: Access profiles owned by this identity.
+          fields:
+            - name: id
+              type: keyword
+              description: ID of an owned access profile.
+            - name: name
+              type: keyword
+              description: Name of an owned access profile.
+        - name: roles
+          type: nested
+          description: Roles owned by this identity.
+          fields:
+            - name: id
+              type: keyword
+              description: ID of an owned role.
+            - name: name
+              type: keyword
+              description: Name of an owned role.
+        - name: apps
+          type: nested
+          description: Applications owned by this identity.
+          fields:
+            - name: id
+              type: keyword
+              description: ID of an owned application.
+            - name: name
+              type: keyword
+              description: Name of an owned application.
+        - name: governance_groups
+          type: nested
+          description: Governance groups owned by this identity.
+          fields:
+            - name: id
+              type: keyword
+              description: ID of an owned governance group.
+            - name: name
+              type: keyword
+              description: Name of an owned governance group.
+    - name: supervises_error
+      type: keyword
+      description: >-
+        Error from the supervises enrichment call. Set when the direct reports lookup
+        returned a non-200 response; absent when enrichment succeeded or was not attempted.
