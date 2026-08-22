@@ -1,0 +1,53 @@
+title: Shodan Host Search
+type: logs
+streams:
+  - input: cel
+    title: Shodan Host Search Feed
+    description: Internet-exposed host data from Shodan including IPs, ports, vulnerabilities, and geolocation
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: url
+        title: URL
+        description: Base URL of the Shodan API.
+        required: true
+        show_user: false
+        default: "https://api.shodan.io"
+      - name: api_key
+        type: text
+        title: Shodan API Key
+        description: "Your Shodan API key from https://account.shodan.io/"
+        required: true
+        show_user: true
+        secret: true
+      - name: query
+        type: text
+        title: Search Query
+        description: Shodan search query
+        required: true
+        show_user: true
+        default: "has_vuln:true"
+      - name: interval
+        type: text
+        title: Interval
+        description: Collection interval
+        required: true
+        show_user: true
+        default: "24h"
+      - name: max_pages
+        type: integer
+        title: Max Pages Per Collection Interval
+        description: >-
+          Safety cap on pages fetched per interval (100 results/page). Each page
+          costs API credits; raise only if you understand your credit budget.
+          Leave empty to fetch all available pages with no cap - only do this
+          for queries you know return a small, bounded result set.
+        required: false
+        show_user: true
+        default: 10
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        required: false
+        show_user: true
+        default: false
