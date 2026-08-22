@@ -4,17 +4,18 @@
 
 [Workday](https://www.workday.com/en-in/homepage.html) is a cloud-based ERP system that manages business processes and allows organizations to use an integrated application. Workday is a coherent cloud ERP system for financial analysis, analytical solutions, HCM suites, and better business processes.
 
-The Workday integration for Elastic collects `Activity` logs via the **Workday API** and `Sign-on` logs via the **Workday Custom Report API**, and visualizes them in Kibana.
+The Workday integration for Elastic collects `Activity` logs via the **Workday API**, and `Sign-on` and `User` inventory logs via the **Workday Custom Report API**, and visualizes them in Kibana.
 
 ### Compatibility
 
 - The **Activity** data stream is compatible with Workday API version **v1**.
-- The **Sign-on** data stream is compatible with Workday Custom Reports exposed via the **Reports as a Service (RaaS)** JSON endpoint (`/ccx/service/customreport2/...?format=json`).
+- The **Sign-on** and **User** data streams are compatible with Workday Custom Reports exposed via the **Reports as a Service (RaaS)** JSON endpoint (`/ccx/service/customreport2/...?format=json`).
 
 ### How it works
 
 - **Activity**: This integration periodically queries the Workday API to retrieve Activity logs.
 - **Sign-on**: This integration periodically calls a Workday Custom Report (RaaS) JSON endpoint. On each poll it supplies the report's required **From Moment** / **To Moment** prompts (`From_Moment` / `To_Moment` query parameters), advances a collection cursor so the time window moves forward, and ingests each `Report_Entry` row as a single event. The first poll looks back by **Initial Interval**; later polls use **Interval**.
+- **User**: This integration periodically downloads a Workday Custom Report (for example, a Worker inventory report) over the Reports as a Service (RaaS) JSON endpoint. Each `Report_Entry` row is ingested as a user inventory document with `event.kind: asset` so Entity Analytics / the Entity Store can seed user entities. Core identity fields map to ECS (`user.id`, `user.name`, `user.email`, `user.roles`, `user.group.name`); remaining HR attributes land under `workday.user.*`.
 
 ## What data does this integration collect?
 
@@ -22,12 +23,15 @@ This integration collects log messages of the following types:
 
 - `Activity`: Collects [Activity Logs](https://community.workday.com/sites/default/files/file-hosting/restapi/#privacy/v1/get-/activityLogging) via the Workday API (endpoint: `/activityLogging`).
 - `Sign-on`: Collects sign-on information from a Workday Custom Report via the Workday Reports as a Service (RaaS) JSON endpoint.
+- `User`: Collects worker inventory information from a Workday Custom Report via the Workday Reports as a Service (RaaS) JSON endpoint for Entity Analytics.
 
 ### Supported use cases
 
-Integrating Workday with Elastic gives security and IT teams centralized visibility into **Workday activity logging** and **Workday sign-on data**, so you can monitor configuration and usage changes, track sign-on activity and access patterns, support audits, and investigate suspicious or unusual authentication behavior from Kibana.
+Integrating Workday with Elastic gives security and IT teams centralized visibility into **Workday activity logging**, **Workday sign-on data**, and **Workday worker inventory**, so you can monitor configuration and usage changes, track sign-on activity and access patterns, monitor new hires and terminations, support audits, and investigate suspicious or unusual authentication behavior from Kibana.
 
 The **Activity** dashboard summarizes key patterns such as **activity volume over time** and **top actors**, helping you spot unusual spikes and focus on the users and operations that matter. Built-in filters make it easier to narrow events by attributes such as **task**, **system account**, and **IP address**, which supports faster triage and a more consistent investigation workflow across your Workday telemetry.
+
+The **User Overview** dashboard summarizes worker inventory patterns such as **users over time**, **top worker types and statuses**, **top job titles**, **organization roles**, and **security groups**, with filters for attributes such as **user name**, **worker status**, **worker type**, and **location**. Use it to validate inventory coverage and support identity and leaver investigations alongside Entity Analytics.
 
 ## What do I need to use this integration?
 
@@ -124,6 +128,49 @@ Where:
 
 Use this base URL (with `?format=json` only) as the **Report URL** in the integration. Do not append `From_Moment` or `To_Moment` yourself, the integration adds those on every poll from **Initial Interval** or the collection cursor and **Interval**.
 
+#### For the User data stream
+
+##### Build the User inventory (Worker) custom report
+
+1. Sign in to your Workday tenant as a user with report-authoring privileges.
+2. In the Workday search bar, search for **Create Custom Report**.
+3. Create an Advanced report on a data source that exposes worker attributes (for example, `All Workers`).
+4. Add the columns required for worker inventory and Entity Analytics.
+
+5. Optionally filter terminated workers to a recent window (for example, the last ~30 days) to keep inventory volume manageable while still capturing leavers.
+6. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
+7. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
+
+**Note:** Unlike Sign-on, the User inventory report does not use **From Moment** / **To Moment** prompts. Each poll downloads the full report result set configured in Workday.
+
+##### Create the Integration System User (ISU)
+
+1. In the Workday search bar, search for **Create Integration System User**.
+2. Enter a User Name (for example, `ISU_SIEM_Export`) and a strong Password.
+3. Clear the **Require New Password at Next Sign In** checkbox.
+4. Click **OK**.
+5. Search for **Create Security Group** and create an Integration System Security Group (Unconstrained).
+6. Add the ISU (`ISU_SIEM_Export`) to this security group.
+7. Grant the ISU security group access to the domain protecting the custom report's data source (for example, the worker data domain).
+8. Search for **Activate Pending Security Policy Changes** and activate the changes.
+
+##### Determine the report URL
+
+The Custom Report endpoint URL has the following format:
+
+```
+https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json
+```
+
+Where:
+
+- `HOST` is your Workday hostname.
+- `TENANT` is your Workday tenant name.
+- `REPORT_OWNER` is the Workday account that owns the custom report.
+- `REPORT_NAME` is the name of the custom report you created above.
+
+Use this URL (with `?format=json`) as the **Report URL** in the integration.
+
 ## How do I deploy this integration?
 
 This integration supports both Elastic Agentless-based and Agent-based installations.
@@ -160,6 +207,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **Report URL** with the full Workday Custom Report (RaaS) URL noted above (include `?format=json`; do not add `From_Moment` / `To_Moment` to the URL — the integration adds them automatically).
         - Configure **Username** and **Password** for basic authentication against the Workday Custom Report API.
         - Adjust the integration configuration parameters if required, including the **Interval**, **Initial Interval**, and **Preserve original event** etc. to enable data collection.
+
+    * To **Collect Workday User inventory via Custom Report API**, you'll need to:
+
+        - Configure **Report URL** with the full Workday Custom Report (RaaS) URL noted above.
+        - Configure **Username** and **Password** for basic authentication against the Workday Custom Report API.
+        - Adjust the integration configuration parameters if required, including the **Interval** and **Preserve original event** etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
 
@@ -256,6 +309,33 @@ For more information on architectures that can be used for scaling this integrat
 | workday.sign_on.Workday_Account | The Workday account associated with the sign-on (alternate report column name for System_Account). | keyword |
 | workday.sign_on.session_ip_address_string | The originating IP address of the session (alternate report column name for Session_IP_Address). | keyword |
 | workday.sign_on.signon_ip_address_string | The originating IP address of the sign-on (alternate report column name for Signon_IP_Address). | keyword |
+
+
+#### User
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| workday.user.Cost_Center | The cost center the worker belongs to. | keyword |
+| workday.user.Job_Title | The job title held by the worker. | keyword |
+| workday.user.Last_Account_or_Proxy_Login_Moment | The date and time of the worker's last account or proxy login, as reported by Workday. | date |
+| workday.user.Manager_Email | The work email address of the worker's manager. | keyword |
+| workday.user.Manager_ID | The Workday Employee ID of the worker's manager. | keyword |
+| workday.user.WorkerIsManager | Whether the worker is a manager. | boolean |
+| workday.user.Worker_Status | The current status of the worker (for example, Active, Retired). | keyword |
+| workday.user.Worker_Type | The classification of the worker (for example, Employee, Contingent Worker). | keyword |
+| workday.user.Worker_s_Manager | The display name of the worker's manager, including their Employee ID. | keyword |
+| workday.user.location | The work location of the worker. | keyword |
+| workday.user.termination_date | The date the worker was terminated, when applicable. | date |
 
 
 ### Example event
@@ -444,6 +524,95 @@ An example event for `sign_on` looks as following:
 }
 ```
 
+#### User
+
+An example event for `user` looks as following:
+
+```json
+{
+    "@timestamp": "2024-03-19T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "87b60b55-8f33-40f7-aa7e-4636511c3b00",
+        "id": "7f57ab55-7fb6-4880-b513-5e25fa3bef49",
+        "name": "elastic-agent-65223",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "workday.user",
+        "namespace": "86569",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "7f57ab55-7fb6-4880-b513-5e25fa3bef49",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "workday.user",
+        "ingested": "2026-08-17T09:39:03Z",
+        "kind": "asset",
+        "original": "{\"Cost_Center\":\"Support\",\"Employee_ID\":\"007066\",\"Hire_Date\":\"2024-03-19\",\"Job_Title\":\"Customer Support Representative I\",\"Last_Account_or_Proxy_Login_Moment\":\"2024-12-24T00:44:07.572-08:00\",\"Manager_Email\":\"manager1@example.com\",\"Manager_ID\":\"000687\",\"Organization_Roles\":\"Cost Center Manager; Manager\",\"User-Based_Security_Groups_for_User\":\"Report Writer\",\"User_Name\":\"jdoe\",\"WorkerIsManager\":\"1\",\"Worker_Type\":\"Employee\",\"Worker_s_Manager\":\"Alex Manager (000687)\",\"location\":\"Mexico - Distributed\",\"primaryWorkEmail\":\"jdoe@example.com\"}",
+        "type": [
+            "user",
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "007066",
+            "jdoe",
+            "jdoe@example.com",
+            "000687",
+            "manager1@example.com"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "workday-user"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "jdoe@example.com",
+        "group": {
+            "name": [
+                "Report Writer"
+            ]
+        },
+        "id": "007066",
+        "name": "jdoe",
+        "roles": [
+            "Cost Center Manager",
+            "Manager"
+        ]
+    },
+    "workday": {
+        "user": {
+            "Cost_Center": "Support",
+            "Job_Title": "Customer Support Representative I",
+            "Last_Account_or_Proxy_Login_Moment": "2024-12-24T08:44:07.572Z",
+            "Manager_Email": "manager1@example.com",
+            "Manager_ID": "000687",
+            "WorkerIsManager": true,
+            "Worker_Type": "Employee",
+            "Worker_s_Manager": "Alex Manager (000687)",
+            "location": "Mexico - Distributed"
+        }
+    }
+}
+```
+
 ### Inputs used
 
 These inputs are used in the integration:
@@ -459,4 +628,10 @@ This integration uses the following Workday APIs:
 
 ```
 GET https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json&From_Moment=...&To_Moment=...
+```
+
+- **User**: The Workday **Reports as a Service (RaaS)** JSON endpoint is used to fetch a user-defined Worker custom report:
+
+```
+GET https://HOST/ccx/service/customreport2/TENANT/REPORT_OWNER/REPORT_NAME?format=json
 ```
