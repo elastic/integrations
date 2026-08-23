@@ -186,7 +186,6 @@
                             }
                         },
                         "description": "",
-                        "id": "",
                         "params": {
                             "fontSize": 12,
                             "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- Security Workflows\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - [IP Interrogation](#/dashboard/corelight-3a4a279f-f238-47de-90ba-f643c5647fde)\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n- **Data Explorer**\n  - [Asset Classification](#/dashboard/corelight-64c6d5b5-a485-4f00-b24f-6c261d595db4)\n  - [AWS VPC Flow](#/dashboard/corelight-caf92ff9-71b9-402c-813a-75ba5a3cb3b8)\n  - [Connections](#/dashboard/corelight-eff0434c-1e27-4c02-959e-9f5d95488efb)\n  - [DNS](#/dashboard/corelight-58885f47-95e1-4242-a1ee-783de69ace17)\n  - [Files](#/dashboard/corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9)\n  - **HTTP**\n  - [Software](#/dashboard/corelight-40bbc19b-dd9c-4b43-a88a-e29fc8701902)\n  - [SSL and x509](#/dashboard/corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
@@ -673,16 +672,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -690,13 +689,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "010ae7b1-9620-4caa-8fe5-512654504ab0": {
+                                        "e298b07c-842e-42ca-9fa2-83346edae834": {
                                             "columns": [
                                                 {
                                                     "columnId": "Distinct Connections",
@@ -708,9 +707,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\"  AND user_agent.original is not null AND observer.hostname IS NOT NULL\r\n| LIMIT 10000\r\n| STATS COUNT_DISTINCT(event.id)\r\n| RENAME `COUNT_DISTINCT(event.id)` AS `Distinct Connections`\r\n| KEEP `Distinct Connections`\r\n"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\"  AND user_agent.original is not null AND observer.hostname IS NOT NULL\r\n| LIMIT 10000\r\n| STATS COUNT_DISTINCT(event.id)\r\n| RENAME `COUNT_DISTINCT(event.id)` AS `Distinct Connections`\r\n| KEEP `Distinct Connections`\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -719,10 +718,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\"  AND user_agent.original is not null AND observer.hostname IS NOT NULL\r\n| LIMIT 10000\r\n| STATS COUNT_DISTINCT(event.id)\r\n| RENAME `COUNT_DISTINCT(event.id)` AS `Distinct Connections`\r\n| KEEP `Distinct Connections`\r\n"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\"  AND user_agent.original is not null AND observer.hostname IS NOT NULL\r\n| LIMIT 10000\r\n| STATS COUNT_DISTINCT(event.id)\r\n| RENAME `COUNT_DISTINCT(event.id)` AS `Distinct Connections`\r\n| KEEP `Distinct Connections`\r\n"
                             },
                             "visualization": {
-                                "layerId": "010ae7b1-9620-4caa-8fe5-512654504ab0",
+                                "layerId": "e298b07c-842e-42ca-9fa2-83346edae834",
                                 "layerType": "data",
                                 "metricAccessor": "Distinct Connections"
                             }
@@ -754,16 +753,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -771,16 +770,16 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "685de16a-e51f-4911-ad81-d5330c92e966": {
+                                        "dee3445e-4ef4-47b9-89b5-b35d42a30fb0": {
                                             "columns": [
                                                 {
-                                                    "columnId": "d1311566-0a6c-4ef5-a4aa-d1059da4d4cd",
+                                                    "columnId": "HTTP Aggregation",
                                                     "fieldName": "HTTP Aggregation",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -788,9 +787,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset  == \"http_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `HTTP Aggregation` = CASE(count \u003e 0, \"HTTP Agg Logs Available\", \"No HTTP Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `HTTP Aggregation`, status"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset  == \"http_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `HTTP Aggregation` = CASE(count \u003e 0, \"HTTP Agg Logs Available\", \"No HTTP Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `HTTP Aggregation`, status"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -799,15 +798,15 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset  == \"http_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `HTTP Aggregation` = CASE(count \u003e 0, \"HTTP Agg Logs Available\", \"No HTTP Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `HTTP Aggregation`, status"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset  == \"http_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `HTTP Aggregation` = CASE(count \u003e 0, \"HTTP Agg Logs Available\", \"No HTTP Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `HTTP Aggregation`, status"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "d1311566-0a6c-4ef5-a4aa-d1059da4d4cd"
+                                        "columnId": "HTTP Aggregation"
                                     }
                                 ],
-                                "layerId": "685de16a-e51f-4911-ad81-d5330c92e966",
+                                "layerId": "dee3445e-4ef4-47b9-89b5-b35d42a30fb0",
                                 "layerType": "data"
                             }
                         },
@@ -829,7 +828,7 @@
                     "y": 0
                 },
                 "panelIndex": "54ccb8cd-1a4e-4c5d-a6fa-89b2d71c415d",
-                "title": "DNS Aggregation",
+                "title": "HTTP Aggregation",
                 "type": "lens"
             },
             {
@@ -838,16 +837,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -855,13 +854,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "375b539e-d314-4a1b-8701-ba731d777b92": {
+                                        "b039bbbc-4596-4764-8b06-14e1bec2ec64": {
                                             "columns": [
                                                 {
                                                     "columnId": "Average Body Length",
@@ -873,9 +872,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.body.bytes) by source.ip, destination.ip, event.id\r\n| STATS AVG(`VALUES(http.response.body.bytes)`)\r\n| EVAL `Average Body Length` = ROUND(`AVG(``VALUES(http.response.body.bytes)``)`)\r\n| KEEP `Average Body Length`"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.body.bytes) by source.ip, destination.ip, event.id\r\n| STATS AVG(`VALUES(http.response.body.bytes)`)\r\n| EVAL `Average Body Length` = ROUND(`AVG(``VALUES(http.response.body.bytes)``)`)\r\n| KEEP `Average Body Length`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -884,10 +883,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.body.bytes) by source.ip, destination.ip, event.id\r\n| STATS AVG(`VALUES(http.response.body.bytes)`)\r\n| EVAL `Average Body Length` = ROUND(`AVG(``VALUES(http.response.body.bytes)``)`)\r\n| KEEP `Average Body Length`"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.body.bytes) by source.ip, destination.ip, event.id\r\n| STATS AVG(`VALUES(http.response.body.bytes)`)\r\n| EVAL `Average Body Length` = ROUND(`AVG(``VALUES(http.response.body.bytes)``)`)\r\n| KEEP `Average Body Length`"
                             },
                             "visualization": {
-                                "layerId": "375b539e-d314-4a1b-8701-ba731d777b92",
+                                "layerId": "b039bbbc-4596-4764-8b06-14e1bec2ec64",
                                 "layerType": "data",
                                 "metricAccessor": "Average Body Length"
                             }
@@ -1000,16 +999,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -1017,13 +1016,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "5516f319-6591-42bb-9209-836d8f218727": {
+                                        "5129fe52-946a-4559-a3bd-58a96c4b3932": {
                                             "columns": [
                                                 {
                                                     "columnId": "URL Domain",
@@ -1043,9 +1042,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count desc\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count desc\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1054,7 +1053,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count desc\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count desc\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -1065,7 +1064,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "5516f319-6591-42bb-9209-836d8f218727",
+                                "layerId": "5129fe52-946a-4559-a3bd-58a96c4b3932",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -1099,16 +1098,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -1116,13 +1115,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "3c488450-9869-4112-9544-17ef08cd1013": {
+                                        "d7b4ed19-0de3-4a8f-9f1d-688ae34f68f7": {
                                             "columns": [
                                                 {
                                                     "columnId": "Vendor Action",
@@ -1142,9 +1141,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND user_agent.original is not null AND http.response.status_name IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.status_name) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(http.response.status_name)` \r\n| RENAME `VALUES(http.response.status_name)` as `Vendor Action`, `COUNT()` as Count\r\n| SORT Count DESC\r\n| LIMIT 10 \r\n| KEEP `Vendor Action`, Count"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND user_agent.original is not null AND http.response.status_name IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.status_name) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(http.response.status_name)` \r\n| RENAME `VALUES(http.response.status_name)` as `Vendor Action`, `COUNT()` as Count\r\n| SORT Count DESC\r\n| LIMIT 10 \r\n| KEEP `Vendor Action`, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1153,7 +1152,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND user_agent.original is not null AND http.response.status_name IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.status_name) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(http.response.status_name)` \r\n| RENAME `VALUES(http.response.status_name)` as `Vendor Action`, `COUNT()` as Count\r\n| SORT Count DESC\r\n| LIMIT 10 \r\n| KEEP `Vendor Action`, Count"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND user_agent.original is not null AND http.response.status_name IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(http.response.status_name) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(http.response.status_name)` \r\n| RENAME `VALUES(http.response.status_name)` as `Vendor Action`, `COUNT()` as Count\r\n| SORT Count DESC\r\n| LIMIT 10 \r\n| KEEP `Vendor Action`, Count"
                             },
                             "visualization": {
                                 "layers": [
@@ -1177,7 +1176,7 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "3c488450-9869-4112-9544-17ef08cd1013",
+                                        "layerId": "d7b4ed19-0de3-4a8f-9f1d-688ae34f68f7",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "metrics": [
@@ -1381,16 +1380,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -1398,13 +1397,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "bd098722-f1ca-41fb-b23e-e2b0fde06eee": {
+                                        "db345a1a-bfc5-4233-9ad9-2060df89354e": {
                                             "columns": [
                                                 {
                                                     "columnId": "URL Domain",
@@ -1424,9 +1423,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count\r\n"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1435,7 +1434,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count\r\n"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `URL Domain`, Count\r\n"
                             },
                             "visualization": {
                                 "columns": [
@@ -1446,7 +1445,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "bd098722-f1ca-41fb-b23e-e2b0fde06eee",
+                                "layerId": "db345a1a-bfc5-4233-9ad9-2060df89354e",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -1480,16 +1479,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -1497,16 +1496,16 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "e7d46545-dc57-4008-868a-772e9f047150": {
+                                        "0fdd6d0c-108f-4a62-8ba1-a9eef7e16d45": {
                                             "columns": [
                                                 {
-                                                    "columnId": "f534b0be-2ac7-40a6-8d05-e66d1a88c742",
+                                                    "columnId": "Http User Agent",
                                                     "fieldName": "Http User Agent",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1514,17 +1513,18 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "579bdd94-54bc-4389-9a33-94027c4e2321",
+                                                    "columnId": "Count",
                                                     "fieldName": "Count",
+                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
                                                         "type": "number"
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(user_agent.original) by source.ip, destination.ip, event.id\r\n| STATS COUNT() by `VALUES(user_agent.original)`\r\n| RENAME `VALUES(user_agent.original)` as `Http User Agent`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `Http User Agent`, Count\r\n"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(user_agent.original) by source.ip, destination.ip, event.id\r\n| STATS COUNT() by `VALUES(user_agent.original)`\r\n| RENAME `VALUES(user_agent.original)` as `Http User Agent`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `Http User Agent`, Count\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1533,22 +1533,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(user_agent.original) by source.ip, destination.ip, event.id\r\n| STATS COUNT() by `VALUES(user_agent.original)`\r\n| RENAME `VALUES(user_agent.original)` as `Http User Agent`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `Http User Agent`, Count\r\n"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND observer.hostname IS NOT NULL AND dest_host is not null AND user_agent.original IS NOT NULL\r\n| LIMIT 10000\r\n| STATS VALUES(user_agent.original) by source.ip, destination.ip, event.id\r\n| STATS COUNT() by `VALUES(user_agent.original)`\r\n| RENAME `VALUES(user_agent.original)` as `Http User Agent`, `COUNT()` as Count\r\n| SORT Count ASC\r\n| LIMIT 20\r\n| KEEP `Http User Agent`, Count\r\n"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "f534b0be-2ac7-40a6-8d05-e66d1a88c742",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "Http User Agent"
                                     },
                                     {
-                                        "columnId": "579bdd94-54bc-4389-9a33-94027c4e2321",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "e7d46545-dc57-4008-868a-772e9f047150",
+                                "layerId": "0fdd6d0c-108f-4a62-8ba1-a9eef7e16d45",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -1556,7 +1552,7 @@
                                 }
                             }
                         },
-                        "title": "Table ",
+                        "title": "Bar vertical stacked",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1597,7 +1593,6 @@
                             }
                         },
                         "description": "",
-                        "id": "",
                         "params": {
                             "fontSize": 12,
                             "markdown": "## Details",
@@ -1625,16 +1620,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -1642,13 +1637,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "c997f5ea-bded-428f-9371-4c25b161a032": {
+                                        "a6b1729e-2ddb-40b0-a7de-8ce8b2a9b79c": {
                                             "columns": [
                                                 {
                                                     "columnId": "URL Domain",
@@ -1676,9 +1671,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND dest_host is not null AND http.request.method IS NOT NULL\r\n    AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host), VALUES(http.request.method) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)`, `VALUES(http.request.method)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count, `VALUES(http.request.method)` as `HTTP Method`\r\n| SORT Count desc\r\n| KEEP `URL Domain`, `HTTP Method`, Count"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND dest_host is not null AND http.request.method IS NOT NULL\r\n    AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host), VALUES(http.request.method) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)`, `VALUES(http.request.method)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count, `VALUES(http.request.method)` as `HTTP Method`\r\n| SORT Count desc\r\n| KEEP `URL Domain`, `HTTP Method`, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1687,7 +1682,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\" AND dest_host is not null AND http.request.method IS NOT NULL\r\n    AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host), VALUES(http.request.method) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)`, `VALUES(http.request.method)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count, `VALUES(http.request.method)` as `HTTP Method`\r\n| SORT Count desc\r\n| KEEP `URL Domain`, `HTTP Method`, Count"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\" AND dest_host is not null AND http.request.method IS NOT NULL\r\n    AND user_agent.original is not null\r\n| LIMIT 10000\r\n| STATS VALUES(dest_host), VALUES(http.request.method) by source.ip, destination.ip, event.id \r\n| STATS COUNT() by `VALUES(dest_host)`, `VALUES(http.request.method)` \r\n| RENAME `VALUES(dest_host)` as `URL Domain`, `COUNT()` as Count, `VALUES(http.request.method)` as `HTTP Method`\r\n| SORT Count desc\r\n| KEEP `URL Domain`, `HTTP Method`, Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -1702,7 +1697,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "c997f5ea-bded-428f-9371-4c25b161a032",
+                                "layerId": "a6b1729e-2ddb-40b0-a7de-8ce8b2a9b79c",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -1736,16 +1731,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af": {
+                                "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
-                                    "name": "logs-corelight.*",
+                                    "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
+                                    "name": "logs-corelight.http*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-corelight.*",
+                                    "title": "logs-corelight.http*",
                                     "type": "esql"
                                 }
                             },
@@ -1753,13 +1748,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "id": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.*"
+                                            "title": "logs-corelight.http*"
                                         }
                                     ],
                                     "layers": {
-                                        "9e5ba40a-cabe-48e5-8c1c-85e81e68b301": {
+                                        "8677b593-1693-47bd-afd3-a4e7d6e3de1c": {
                                             "allColumns": [
                                                 {
                                                     "columnId": "URL Domain",
@@ -1787,7 +1782,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "a023c81c-4ae7-4f41-8ca0-6639f05a355b",
+                                                    "columnId": "42b2ccd7-26eb-47cf-b3e1-2c55ef422376",
                                                     "fieldName": "Status",
                                                     "meta": {
                                                         "esType": "long",
@@ -1813,7 +1808,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "a023c81c-4ae7-4f41-8ca0-6639f05a355b",
+                                                    "columnId": "42b2ccd7-26eb-47cf-b3e1-2c55ef422376",
                                                     "fieldName": "Status",
                                                     "meta": {
                                                         "esType": "long",
@@ -1838,9 +1833,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "ef9316bda12c85af54487101bc5893c026388eda9ec7e84dbd4ea0a11d2a18af",
+                                            "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\"\r\n  AND observer.hostname IS NOT NULL\r\n  AND dest_host IS NOT NULL\r\n  AND http.response.status_code IS NOT NULL \r\n  AND user_agent.original IS NOT NULL\r\n| STATS\r\n    VALUES(dest_host),\r\n    VALUES(http.response.status_code),\r\n    VALUES(http.response.status_name)\r\n  BY source.ip, destination.ip, event.id\r\n| STATS Count = COUNT()\r\n  BY `VALUES(dest_host)`, `VALUES(http.response.status_code)`, `VALUES(http.response.status_name)`\r\n| RENAME\r\n    `VALUES(dest_host)` AS `URL Domain`,\r\n    `VALUES(http.response.status_code)` AS `Status`,\r\n    `VALUES(http.response.status_name)` AS `Vendor Action`\r\n| SORT Count DESC\r\n| KEEP `URL Domain`, `Status`, `Vendor Action`, Count"
+                                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\"\r\n  AND observer.hostname IS NOT NULL\r\n  AND dest_host IS NOT NULL\r\n  AND http.response.status_code IS NOT NULL \r\n  AND user_agent.original IS NOT NULL\r\n| STATS\r\n    VALUES(dest_host),\r\n    VALUES(http.response.status_code),\r\n    VALUES(http.response.status_name)\r\n  BY source.ip, destination.ip, event.id\r\n| STATS Count = COUNT()\r\n  BY `VALUES(dest_host)`, `VALUES(http.response.status_code)`, `VALUES(http.response.status_name)`\r\n| RENAME\r\n    `VALUES(dest_host)` AS `URL Domain`,\r\n    `VALUES(http.response.status_code)` AS `Status`,\r\n    `VALUES(http.response.status_name)` AS `Vendor Action`\r\n| SORT Count DESC\r\n| KEEP `URL Domain`, `Status`, `Vendor Action`, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1849,7 +1844,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.*\r\n| WHERE event.dataset LIKE \"http*\"\r\n  AND observer.hostname IS NOT NULL\r\n  AND dest_host IS NOT NULL\r\n  AND http.response.status_code IS NOT NULL \r\n  AND user_agent.original IS NOT NULL\r\n| STATS\r\n    VALUES(dest_host),\r\n    VALUES(http.response.status_code),\r\n    VALUES(http.response.status_name)\r\n  BY source.ip, destination.ip, event.id\r\n| STATS Count = COUNT()\r\n  BY `VALUES(dest_host)`, `VALUES(http.response.status_code)`, `VALUES(http.response.status_name)`\r\n| RENAME\r\n    `VALUES(dest_host)` AS `URL Domain`,\r\n    `VALUES(http.response.status_code)` AS `Status`,\r\n    `VALUES(http.response.status_name)` AS `Vendor Action`\r\n| SORT Count DESC\r\n| KEEP `URL Domain`, `Status`, `Vendor Action`, Count"
+                                "esql": "FROM logs-corelight.http*\r\n| WHERE event.dataset LIKE \"http*\"\r\n  AND observer.hostname IS NOT NULL\r\n  AND dest_host IS NOT NULL\r\n  AND http.response.status_code IS NOT NULL \r\n  AND user_agent.original IS NOT NULL\r\n| STATS\r\n    VALUES(dest_host),\r\n    VALUES(http.response.status_code),\r\n    VALUES(http.response.status_name)\r\n  BY source.ip, destination.ip, event.id\r\n| STATS Count = COUNT()\r\n  BY `VALUES(dest_host)`, `VALUES(http.response.status_code)`, `VALUES(http.response.status_name)`\r\n| RENAME\r\n    `VALUES(dest_host)` AS `URL Domain`,\r\n    `VALUES(http.response.status_code)` AS `Status`,\r\n    `VALUES(http.response.status_name)` AS `Vendor Action`\r\n| SORT Count DESC\r\n| KEEP `URL Domain`, `Status`, `Vendor Action`, Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -1865,13 +1860,13 @@
                                         "columnId": "Count"
                                     },
                                     {
-                                        "columnId": "a023c81c-4ae7-4f41-8ca0-6639f05a355b",
+                                        "columnId": "42b2ccd7-26eb-47cf-b3e1-2c55ef422376",
                                         "isMetric": false,
                                         "isTransposed": false,
                                         "oneClickFilter": true
                                     }
                                 ],
-                                "layerId": "9e5ba40a-cabe-48e5-8c1c-85e81e68b301",
+                                "layerId": "8677b593-1693-47bd-afd3-a4e7d6e3de1c",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -1905,7 +1900,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-22T06:44:38.653Z",
+    "created_at": "2026-08-22T17:04:57.345Z",
     "id": "corelight-8c5f15f7-7063-4228-be54-fb8c20b29caa",
     "references": [
         {

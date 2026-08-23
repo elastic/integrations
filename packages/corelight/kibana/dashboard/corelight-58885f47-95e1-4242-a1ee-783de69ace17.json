@@ -700,7 +700,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "d35a12fc-c75f-4c42-ae9e-2fd299167225": {
+                                        "340a9813-7a9f-4040-8a33-95096b7cfc15": {
                                             "columns": [
                                                 {
                                                     "columnId": "Top Non-Existent Domains",
@@ -714,7 +714,7 @@
                                             ],
                                             "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
                                             "query": {
-                                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND observer.hostname IS NOT NULL\r\n    AND event.dataset LIKE \"dns*\"\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.response_code == \"NXDOMAIN\"\r\n    AND dns.response_code IS NOT NULL\r\n| STATS  COUNT() BY source.ip, destination.ip\r\n// stats by event.ids\r\n| RENAME `COUNT()` AS `Top Non-Existent Domains`\r\n| KEEP `Top Non-Existent Domains`\r\n"
+                                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND observer.hostname IS NOT NULL\r\n    AND event.dataset LIKE \"dns*\"\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.response_code == \"NXDOMAIN\"\r\n    AND dns.response_code IS NOT NULL\r\n| STATS `Top Non-Existent Domains` = COUNT()\r\n| KEEP `Top Non-Existent Domains`\r\n\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -723,11 +723,11 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND observer.hostname IS NOT NULL\r\n    AND event.dataset LIKE \"dns*\"\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.response_code == \"NXDOMAIN\"\r\n    AND dns.response_code IS NOT NULL\r\n| STATS  COUNT() BY source.ip, destination.ip\r\n// stats by event.ids\r\n| RENAME `COUNT()` AS `Top Non-Existent Domains`\r\n| KEEP `Top Non-Existent Domains`\r\n"
+                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND observer.hostname IS NOT NULL\r\n    AND event.dataset LIKE \"dns*\"\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.response_code == \"NXDOMAIN\"\r\n    AND dns.response_code IS NOT NULL\r\n| STATS `Top Non-Existent Domains` = COUNT()\r\n| KEEP `Top Non-Existent Domains`\r\n\r\n"
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "d35a12fc-c75f-4c42-ae9e-2fd299167225",
+                                "layerId": "340a9813-7a9f-4040-8a33-95096b7cfc15",
                                 "layerType": "data",
                                 "metricAccessor": "Top Non-Existent Domains"
                             }
@@ -2214,7 +2214,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-15T13:35:20.020Z",
+    "created_at": "2026-08-22T14:34:26.683Z",
     "id": "corelight-58885f47-95e1-4242-a1ee-783de69ace17",
     "references": [
         {
@@ -2304,6 +2304,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.2.0"
 }

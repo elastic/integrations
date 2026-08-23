@@ -1294,9 +1294,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "30745a83f179da5f11b16656250be0a248d7293f796a233331383a8b71ff135a",
+                                            "id": "9ac500899338b2fcf45fd20d129c34e52b042f3ade63945dd675f42672450333",
                                             "timeField": "@timestamp",
-                                            "title": "logs-corelight.conn-*"
+                                            "title": "logs-corelight.conn*"
                                         }
                                     ],
                                     "layers": {
@@ -1335,9 +1335,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "30745a83f179da5f11b16656250be0a248d7293f796a233331383a8b71ff135a",
+                                            "index": "9ac500899338b2fcf45fd20d129c34e52b042f3ade63945dd675f42672450333",
                                             "query": {
-                                                "esql": "FROM logs-corelight.conn-*\r\n| WHERE observer.hostname IS NOT NULL\r\n  AND event.id IS NOT NULL\r\n  AND NOT (\r\n      (source.ip IN (\"0.0.0.0\",\"255.255.255.255\")\r\n       OR destination.ip IN (\"0.0.0.0\",\"255.255.255.255\")) AND conn.local_resp == \"true\")\r\n| STATS\r\n    service = VALUES(network.protocol),\r\n    bytes = SUM(source.ip_bytes)\r\n  BY\r\n    source.ip,\r\n    destination.ip,\r\n    network.direction\r\n| WHERE network.direction == \"inbound\"\r\n| KEEP source.ip, destination.ip, bytes, service\r\n| SORT bytes DESC\r\n| LIMIT 10\r\n"
+                                                "esql": "FROM logs-corelight.conn*\r\n| WHERE observer.hostname IS NOT NULL\r\n  AND event.id IS NOT NULL\r\n  AND NOT (\r\n      (source.ip IN (\"0.0.0.0\",\"255.255.255.255\")\r\n       OR destination.ip IN (\"0.0.0.0\",\"255.255.255.255\")) AND conn.local_resp == \"true\")\r\n| STATS\r\n    service = VALUES(network.protocol),\r\n    bytes = SUM(source.ip_bytes)\r\n  BY\r\n    source.ip,\r\n    destination.ip,\r\n    network.direction\r\n| WHERE network.direction == \"inbound\"\r\n| KEEP source.ip, destination.ip, bytes, service\r\n| SORT bytes DESC\r\n| LIMIT 10\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1598,7 +1598,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-14T05:56:46.193Z",
+    "created_at": "2026-08-22T14:42:50.714Z",
     "id": "corelight-eff0434c-1e27-4c02-959e-9f5d95488efb",
     "references": [
         {
@@ -1668,6 +1668,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.2.0"
 }
