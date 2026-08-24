@@ -308,8 +308,12 @@ processors:
       lang: painless
       if: ctx.json?.last_activity_time != null && ctx.json.created_at != null
       source: |-
-        long lastActivity = Long.parseLong(String.valueOf(ctx.json.last_activity_time));
-        long createdAt = Long.parseLong(String.valueOf(ctx.json.created_at));
+        long lastActivity = (ctx.json.last_activity_time instanceof Number) ?
+          ((Number)ctx.json.last_activity_time).longValue() :
+          Long.parseLong(ctx.json.last_activity_time.toString());
+        long createdAt = (ctx.json.created_at instanceof Number) ?
+          ((Number)ctx.json.created_at).longValue() :
+          Long.parseLong(ctx.json.created_at.toString());
         long uptimeSeconds = (lastActivity - createdAt) / 1000;
         ctx.host = ctx.host ?: [:];
         ctx.host.uptime = uptimeSeconds;

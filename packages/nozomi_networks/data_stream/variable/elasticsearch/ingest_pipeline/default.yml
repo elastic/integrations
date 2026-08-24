@@ -373,7 +373,7 @@ processors:
       target_field: nozomi_networks.variable.last_value
       type: double
       ignore_missing: true
-      if: ctx.json?.is_numeric == true && ctx.json?.last_value != ""
+      if: ctx.nozomi_networks?.variable?.is_numeric == true && ctx.json?.last_value != ""
       on_failure:
         - append:
             tag: append_error_message_457ba4f6
@@ -385,7 +385,7 @@ processors:
       target_field: nozomi_networks.variable.last_value_text
       type: string
       ignore_missing: true
-      if: ctx.json?.is_numeric == false && ctx.json?.last_value != ''
+      if: ctx.nozomi_networks?.variable?.is_numeric != true && ctx.json?.last_value != null && ctx.json?.last_value != ''
   - convert:
       field: json.last_value_is_valid
       tag: convert_last_value_is_valid_to_boolean_8d26feba
@@ -485,7 +485,7 @@ processors:
       tag: convert_value_to_double_fa9d87d8
       target_field: nozomi_networks.variable.value
       type: double
-      if: ctx.json?.is_numeric == true && ctx.json?.value != ""
+      if: ctx.nozomi_networks?.variable?.is_numeric == true && ctx.json?.value != ""
       ignore_missing: true
       on_failure:
         - append:
@@ -498,7 +498,7 @@ processors:
       target_field: nozomi_networks.variable.value_text
       type: string
       ignore_missing: true
-      if: ctx.json?.is_numeric == false && ctx.json?.value != ''
+      if: ctx.nozomi_networks?.variable?.is_numeric != true && ctx.json?.value != null && ctx.json?.value != ''
   - rename:
       field: json.var_key
       tag: rename_var_key_cc1bb7f0
