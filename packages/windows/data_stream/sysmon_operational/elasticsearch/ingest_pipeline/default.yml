@@ -737,15 +737,12 @@ processors:
         } else if (ctx.winlog?.event_data?.Signed instanceof String && ctx.winlog.event_data.Signed.startsWith("failed:")) {
           status = ctx.winlog.event_data.Signed;
         }
-        if (status != null) {
-          if (ctx.dll == null) {
-            ctx.dll = new HashMap();
-          }
-          if (ctx.dll.code_signature == null) {
-            ctx.dll.code_signature = new HashMap();
-          }
-          ctx.dll.code_signature.status = status;
+        if (status == null) {
+          return;
         }
+        ctx.dll = ctx.dll ?: [:];
+        ctx.dll.code_signature = ctx.dll.code_signature ?: [:];
+        ctx.dll.code_signature.status = status;
   - set:
       field: dll.hash
       copy_from: _temp.hashes
