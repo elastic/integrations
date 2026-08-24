@@ -8,40 +8,48 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_135371bc
       field: ecs.version
       value: '8.16.0'
   - append:
+      tag: append_event_category_576de059
       field: event.category
       value: iam
   - append:
+      tag: append_event_type_282e488b
       field: event.type
       value: group
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
-      tag: drop_empty_events
+      tag: drop_empty_events_ac9e0c9d
   - date:
+      tag: date_json_id_time_dc34ff3c
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       timezone: UTC
@@ -53,9 +61,11 @@ processors:
         - yyyy/MM/dd HH:mm:ss z
       on_failure:
         - append:
+            tag: append_error_message_a48f8d5f
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - fingerprint:
+      tag: fingerprint_to_id_567b61c4
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
         - json.id
@@ -64,37 +74,45 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_events_name_to_event_action_75ca640e
       field: json.events.name
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_id_applicationName_to_event_provider_fffca35d
       field: json.id.applicationName
       target_field: event.provider
       ignore_missing: true
   - convert:
+      tag: convert_json_id_uniqueQualifier_to_event_id_0664525d
       field: json.id.uniqueQualifier
       target_field: event.id
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_json_actor_email_to_source_user_email_4ee5e9ab
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_f8429233
       field: user.email
       copy_from: source.user.email
       ignore_failure: true
   - convert:
+      tag: convert_json_actor_profileId_to_source_user_id_edfcffb4
       field: json.actor.profileId
       target_field: source.user.id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_json_ipAddress_to_source_ip_aabdaf8f
       field: json.ipAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_json_kind_to_google_workspace_kind_8c6d9f29
       field: json.kind
       target_field: google_workspace.kind
       ignore_missing: true
@@ -103,32 +121,39 @@ processors:
       target_field: organization.id
       type: string
       ignore_missing: true
-      tag: convert_customer_id_to_string
+      tag: convert_customer_id_to_string_2c4efbdb
       on_failure:
         - append:
+            tag: append_error_message_044cfe8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_actor_callerType_to_google_workspace_actor_type_308eeffc
       field: json.actor.callerType
       target_field: google_workspace.actor.type
       ignore_missing: true
   - rename:
+      tag: rename_json_actor_key_to_google_workspace_actor_key_3f392d49
       field: json.actor.key
       target_field: google_workspace.actor.key
       ignore_missing: true
   - rename:
+      tag: rename_json_ownerDomain_to_google_workspace_organization_domain_6580cd7d
       field: json.ownerDomain
       target_field: google_workspace.organization.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_events_type_to_google_workspace_event_type_e73f1e18
       field: json.events.type
       target_field: google_workspace.event.type
       ignore_missing: true
   - set:
+      tag: set_user_id_64f70b73
       field: user.id
       copy_from: source.user.id
       if: ctx?.source?.user?.id != null
   - script:
+      tag: script_8d756e1a
       lang: painless
       if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
       source: >
@@ -144,40 +169,49 @@ processors:
         ctx.user.domain = splitmail[1];
         ctx.source.user.domain = splitmail[1];
   - append:
+      tag: append_related_ip_549fa858
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_8302ba1f
       field: related.user
       value: "{{{source.user.name}}}"
       if: ctx?.source?.user?.name != null
       allow_duplicates: false
-  - append: 
+  - append:
+      tag: append_event_type_900ff825
       field: event.type
       value: change
       if: '["change_basic_setting", "change_identity_setting", "change_info_setting", "change_new_members_restrictions_setting", "change_post_replies_setting", "change_spam_moderation_setting", "change_topic_setting", "change_acl_permission", "approve_join_request", "join"].contains(ctx?.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_category_c078fa55
       field: event.category
       value: configuration
       if: '["change_basic_setting", "change_identity_setting", "change_info_setting", "change_new_members_restrictions_setting", "change_post_replies_setting", "change_spam_moderation_setting", "change_topic_setting", "add_info_setting", "remove_info_setting"].contains(ctx?.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_a6341fe0
       field: event.type
       value: info
       if: '["accept_invitation", "request_to_join", "ban_user_with_moderation", "revoke_invitation", "invite_user", "reject_join_request", "reinvite_user", "moderate_message", "always_post_from_user"].contains(ctx?.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_bf3c9f50
       field: event.type
       value: user
       if: '["accept_invitation", "approve_join_request", "join", "request_to_join", "ban_user_with_moderation", "revoke_invitation", "invite_user", "reject_join_request", "reinvite_user", "add_user", "remove_user"].contains(ctx?.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_b7376da7
       field: event.type
       value: creation
       if: '["create_group", "add_info_setting", "add_user"].contains(ctx?.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_b440f4a5
       field: event.type
       value: deletion
       if: '["delete_group", "remove_info_setting", "remove_user"].contains(ctx?.event?.action)'
   - script:
+      tag: script_fd653f6d
       lang: painless
       if: 'ctx?.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
       source: >
@@ -196,70 +230,87 @@ processors:
           }
         }
   - rename:
+      tag: rename_google_workspace_groups_group_email_to_google_workspace_groups_email_678a6528
       field: google_workspace.groups.group_email
       target_field: google_workspace.groups.email
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_new_value_repeated_to_google_workspace_groups_new_value_3c4cf20f
       field: google_workspace.groups.new_value_repeated
       target_field: google_workspace.groups.new_value
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_old_value_repeated_to_google_workspace_groups_old_value_79a73143
       field: google_workspace.groups.old_value_repeated
       target_field: google_workspace.groups.old_value
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_user_email_to_google_workspace_groups_member_email_271af844
       field: google_workspace.groups.user_email
       target_field: google_workspace.groups.member.email
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_basic_setting_to_google_workspace_groups_setting_0ee9e98d
       field: google_workspace.groups.basic_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_identity_setting_to_google_workspace_groups_setting_7a5d6089
       field: google_workspace.groups.identity_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_info_setting_to_google_workspace_groups_setting_f2656dbf
       field: google_workspace.groups.info_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_new_members_restrictions_setting_to_google_workspace_groups_setting_73635047
       field: google_workspace.groups.new_members_restrictions_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_post_replies_setting_to_google_workspace_groups_setting_1e2f4cae
       field: google_workspace.groups.post_replies_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_spam_moderation_setting_to_google_workspace_groups_setting_ff1c2bd1
       field: google_workspace.groups.spam_moderation_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_topic_setting_to_google_workspace_groups_setting_1fd57144
       field: google_workspace.groups.topic_setting
       target_field: google_workspace.groups.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_message_id_to_google_workspace_groups_message_id_168dd0a9
       field: google_workspace.groups.message_id
       target_field: google_workspace.groups.message.id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_message_moderation_action_to_google_workspace_groups_message_moderation_action_3b810d61
       field: google_workspace.groups.message_moderation_action
       target_field: google_workspace.groups.message.moderation_action
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_groups_member_role_to_google_workspace_groups_member_role_9ef724bb
       field: google_workspace.groups.member_role
       target_field: google_workspace.groups.member.role
       ignore_missing: true
   - set:
+      tag: set_event_outcome_8b4f986f
       field: event.outcome
       value: failure
       if: 'ctx?.google_workspace?.groups?.status == "failed"'
   - set:
+      tag: set_event_outcome_fb386d50
       field: event.outcome
       value: success
       if: 'ctx?.google_workspace?.groups?.status == "success"'
   - script:
+      tag: script_085f346b
       lang: painless
       if: 'ctx?.google_workspace?.groups?.email != null && ctx?.google_workspace?.groups?.email.contains("@")'
       source: >
@@ -273,6 +324,7 @@ processors:
         ctx.group.name = splitmail[0];
         ctx.group.domain = splitmail[1];
   - script:
+      tag: script_769d8806
       lang: painless
       if: 'ctx?.google_workspace?.groups?.member?.email != null && ctx?.google_workspace?.groups?.member?.email.contains("@")'
       source: >
@@ -297,18 +349,22 @@ processors:
         ctx.user.target.domain = splitmail[1];
         ctx.user.target.email = ctx.google_workspace.groups.member.email;
   - set:
+      tag: set_user_target_group_name_fa952c70
       field: user.target.group.name
       copy_from: group.name
       if: ctx?.group?.name != null
   - set:
+      tag: set_user_target_group_domain_09d0d95f
       field: user.target.group.domain
       copy_from: group.domain
       if: ctx?.group?.domain != null
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -317,25 +373,31 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

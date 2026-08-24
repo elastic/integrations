@@ -7,34 +7,34 @@ processors:
       if: ctx.message == "retry"
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_f614bd4d
       value: package
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -45,22 +45,22 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - rename:
       field: json.accountName
-      tag: rename_accountName
+      tag: rename_accountName_43105a8d
       target_field: sentinel_one.account.name
       ignore_missing: true
   - date:
       field: json.applicationInstallationDate
-      tag: date_applicationInstallationDate
+      tag: date_applicationInstallationDate_7171ff40
       target_field: sentinel_one.application.application_installation_date
       formats:
         - ISO8601
@@ -72,32 +72,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: package.installed
-      tag: set_package_installed_from_application_application_installation_date
+      tag: set_package_installed_from_application_application_installation_date_fd2eec46
       copy_from: sentinel_one.application.application_installation_date
       ignore_empty_value: true
   - rename:
       field: json.applicationInstallationPath
-      tag: rename_applicationInstallationPath
+      tag: rename_applicationInstallationPath_52db3007
       target_field: sentinel_one.application.application_installation_path
       ignore_missing: true
   - rename:
       field: json.applicationName
-      tag: rename_applicationName
+      tag: rename_applicationName_ac158849
       target_field: sentinel_one.application.application_name
       ignore_missing: true
   - set:
       field: package.name
-      tag: set_package_name_from_application_application_name
+      tag: set_package_name_from_application_application_name_8b35469e
       copy_from: sentinel_one.application.application_name
       ignore_empty_value: true
   - rename:
       field: json.applicationVendor
-      tag: rename_applicationVendor
+      tag: rename_applicationVendor_b2b54c9f
       target_field: sentinel_one.application.application_vendor
       ignore_missing: true
   - convert:
       field: json.applicationVersionsCount
-      tag: convert_applicationVersionsCount_to_long
+      tag: convert_applicationVersionsCount_to_long_d53b3dde
       target_field: sentinel_one.application.application_versions_count
       type: long
       ignore_missing: true
@@ -108,7 +108,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.coreCount
-      tag: convert_coreCount_to_long
+      tag: convert_coreCount_to_long_c3c3b146
       target_field: sentinel_one.application.core_count
       type: long
       ignore_missing: true
@@ -119,12 +119,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.cpe
-      tag: rename_cpe
+      tag: rename_cpe_bbbff22f
       target_field: sentinel_one.application.cpe
       ignore_missing: true
   - convert:
       field: json.cpuCount
-      tag: convert_cpuCount_to_long
+      tag: convert_cpuCount_to_long_6ce57af1
       target_field: sentinel_one.application.cpu_count
       type: long
       ignore_missing: true
@@ -135,7 +135,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.detectionDate
-      tag: date_detectionDate
+      tag: date_detectionDate_00281f06
       target_field: sentinel_one.application.detection_date
       formats:
         - ISO8601
@@ -147,48 +147,48 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.endpointId
-      tag: rename_endpointId
+      tag: rename_endpointId_0c806777
       target_field: sentinel_one.application.endpoint_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_name_from_application_endpoint_id
+      tag: set_host_name_from_application_endpoint_id_15b91f5b
       copy_from: sentinel_one.application.endpoint_id
       ignore_empty_value: true
   - rename:
       field: json.endpointName
-      tag: rename_endpointName
+      tag: rename_endpointName_063945f3
       target_field: sentinel_one.application.endpoint_name
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_application_endpoint_name
+      tag: set_host_name_from_application_endpoint_name_122b22c6
       copy_from: sentinel_one.application.endpoint_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_related_hosts
+      tag: append_related_hosts_82ac1e98
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
       field: json.endpointType
-      tag: rename_endpointType
+      tag: rename_endpointType_97149f9b
       target_field: sentinel_one.application.endpoint_type
       ignore_missing: true
   - set:
       field: host.type
-      tag: set_host_type_from_application_endpoint_type
+      tag: set_host_type_from_application_endpoint_type_1fe333b5
       copy_from: sentinel_one.application.endpoint_type
       ignore_empty_value: true
   - rename:
       field: json.endpointUuid
-      tag: rename_endpointUuid
+      tag: rename_endpointUuid_6ebdc3f7
       target_field: sentinel_one.application.endpoint_uuid
       ignore_missing: true
   - convert:
       field: json.endpointsCount
-      tag: convert_endpointsCount_to_long
+      tag: convert_endpointsCount_to_long_91cc201d
       target_field: sentinel_one.application.endpoints_count
       type: long
       ignore_missing: true
@@ -199,7 +199,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.estimate
-      tag: convert_estimate_to_boolean
+      tag: convert_estimate_to_boolean_8c294240
       target_field: sentinel_one.application.estimate
       type: boolean
       ignore_missing: true
@@ -210,7 +210,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.fileSize
-      tag: convert_fileSize_to_long
+      tag: convert_fileSize_to_long_3aa90a50
       target_field: sentinel_one.application.file_size
       type: long
       ignore_missing: true
@@ -221,22 +221,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: package.size
-      tag: set_package_size_from_application_file_size
+      tag: set_package_size_from_application_file_size_3ad35273
       copy_from: sentinel_one.application.file_size
       ignore_empty_value: true
   - rename:
       field: json.groupName
-      tag: rename_groupName
+      tag: rename_groupName_cd56a6c9
       target_field: sentinel_one.application.group_name
       ignore_missing: true
   - set:
       field: group.name
-      tag: set_group_name
+      tag: set_group_name_6f94f9ac
       copy_from: sentinel_one.application.group_name
       ignore_empty_value: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_b289a1ca
       target_field: sentinel_one.application.id
       ignore_missing: true
   - set:
@@ -246,57 +246,57 @@ processors:
       ignore_empty_value: true
   - rename:
       field: json.osArch
-      tag: rename_osArch
+      tag: rename_osArch_4964f71a
       target_field: sentinel_one.application.os_arch
       ignore_missing: true
   - set:
       field: host.architecture
-      tag: set_host_architecture
+      tag: set_host_architecture_65445627
       copy_from: sentinel_one.application.os_arch
       ignore_empty_value: true
   - rename:
       field: json.osName
-      tag: rename_osName
+      tag: rename_osName_18b1f4dd
       target_field: sentinel_one.application.os_name
       ignore_missing: true
   - set:
       field: host.os.name
-      tag: set_host_os_name_from_application_os_name
+      tag: set_host_os_name_from_application_os_name_3b7b2fb9
       copy_from: sentinel_one.application.os_name
       ignore_empty_value: true
   - rename:
       field: json.osType
-      tag: rename_osType
+      tag: rename_osType_5ecd847e
       target_field: sentinel_one.application.os_type
       ignore_missing: true
   - set:
       field: host.os.type
-      tag: set_host_os_type_from_application_os_type
+      tag: set_host_os_type_from_application_os_type_d86c13cc
       copy_from: sentinel_one.application.os_type
       ignore_empty_value: true
   - rename:
       field: json.osVersion
-      tag: rename_osVersion
+      tag: rename_osVersion_1d801324
       target_field: sentinel_one.application.os_version
       ignore_missing: true
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_application_os_version
+      tag: set_host_os_full_from_application_os_version_cb6c8435
       copy_from: sentinel_one.application.os_version
       ignore_empty_value: true
   - rename:
       field: json.siteName
-      tag: rename_siteName
+      tag: rename_siteName_cfd69b27
       target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
       field: json.version
-      tag: rename_version
+      tag: rename_version_f9b63d63
       target_field: sentinel_one.application.version
       ignore_missing: true
   - set:
       field: package.version
-      tag: set_package_version_from_application_version
+      tag: set_package_version_from_application_version_cae0d46b
       copy_from: sentinel_one.application.version
       ignore_empty_value: true
   - remove:
@@ -310,15 +310,15 @@ processors:
         - sentinel_one.application.os_type
         - sentinel_one.application.os_version
         - sentinel_one.application.version
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_7a198f86
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -345,7 +345,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -356,16 +356,18 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
