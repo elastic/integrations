@@ -2,38 +2,47 @@
 description: Pipeline for processing Azure firewall logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_8fd37e4e
       field: event.type
       value: [connection]
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
 
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_time_to_timestamp_f995b862
       field: json.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -42,7 +51,7 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
@@ -50,12 +59,14 @@ processors:
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       if: ctx.json?.time != null
   - rename:
+      tag: rename_json_timeStamp_to_json_timestamp_bd4ae367
       field: json.timeStamp
       target_field: json.timestamp
       if: ctx.json?.timeStamp != null
       ignore_failure: true
       ignore_missing: true
   - date:
+      tag: date_json_timestamp_to_timestamp_1be297ee
       field: json.timestamp
       target_field: '@timestamp'
       ignore_failure: true
@@ -64,7 +75,7 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
@@ -72,81 +83,99 @@ processors:
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       if: ctx.json?.timestamp != null
   - rename:
+      tag: rename_json_resourceId_to_azure_resource_id_b341c9bc
       field: json.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_clientIp_to_json_properties_clientIP_e88c7928
       field: json.properties.clientIp
       target_field: json.properties.clientIP
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_clientIP_to_source_address_e8aea494
       field: json.properties.clientIP
       target_field: source.address
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - convert:
+      tag: convert_json_properties_clientPort_to_source_port_5d2ae674
       field: json.properties.clientPort
       target_field: source.port
       type: long
       ignore_missing: true
       if: ctx.json.properties?.clientPort != ""
   - rename:
+      tag: rename_json_properties_httpMethod_to_http_request_method_9f9593c2
       field: json.properties.httpMethod
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_requestUri_to_url_path_d7480322
       field: json.properties.requestUri
       target_field: url.path
       ignore_missing: true
       if: 'ctx.url?.path == null'
       description: 'Renames the original `json.properties.requestUri` field to `url.path` to match the ECS field name. The `url.path` field is not touched if the document already has one.'
   - remove:
+      tag: remove_json_properties_httpMethod_57aaca7e
       field: json.properties.httpMethod
       ignore_missing: true
       if: 'ctx.url?.path != null'
       description: 'The `json.properties.httpMethod` field is no longer required if the document has a `url.path` field.'
   - set:
+      tag: set_url_path_9c01fdff
       field: url.path
       copy_from: url.original
       ignore_empty_value: true
   - rename:
+      tag: rename_json_properties_requestQuery_to_url_query_8f46a5ef
       field: json.properties.requestQuery
       target_field: url.query
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_properties_userAgent_e823b264
       field: json.properties.userAgent
       ignore_missing: true
       if: ctx.json?.properties?.userAgent != "-"
   - rename:
+      tag: rename_json_properties_httpStatus_to_http_response_status_code_7230b94c
       field: json.properties.httpStatus
       target_field: http.response.status_code
       ignore_missing: true
   - dissect:
+      tag: dissect_json_properties_httpVersion_7a112f14
       field: json.properties.httpVersion
       pattern: "%{}/%{http.version}"
       ignore_failure: true
       ignore_missing: true
   - set:
+      tag: set_network_protocol_67fc3a1c
       field: network.protocol
       value: http
   - rename:
+      tag: rename_json_properties_receivedBytes_to_source_bytes_cc821bc5
       field: json.properties.receivedBytes
       target_field: source.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_sentBytes_to_destination_bytes_c57a50ab
       field: json.properties.sentBytes
       target_field: destination.bytes
       ignore_missing: true
   - script:
+      tag: script_25763d40
       lang: painless
       source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
       if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network?.bytes == null
       ignore_failure: true
   - script:
+      tag: script_b8d80e18
       lang: painless
       if: ctx.event?.duration != null
       params:
@@ -154,31 +183,38 @@ processors:
       source: >-
         ctx.event.duration *= params.MS_TO_NS;
   - rename:
+      tag: rename_json_properties_host_to_url_domain_88678732
       field: json.properties.host
       target_field: url.domain
       ignore_missing: true
   - set:
+      tag: set_destination_address_0d605210
       field: destination.address
       copy_from: url.domain
       ignore_empty_value: true
   - set:
+      tag: set_destination_domain_3f78a68c
       field: destination.domain
       copy_from: url.domain
       ignore_empty_value: true
   - rename:
+      tag: rename_json_properties_sslCipher_to_tls_cipher_b9770846
       field: json.properties.sslCipher
       target_field: tls.cipher
       ignore_missing: true
   - dissect:
+      tag: dissect_json_properties_sslProtocol_3e780990
       field: json.properties.sslProtocol
       pattern: "%{tls.version_protocol}v%{tls.version}"
       ignore_failure: true
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -187,129 +223,160 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - append:
+      tag: append_related_ip_5ea7f39f
       if: ctx?.source?.ip != null
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_16953535
       if: ctx?.destination?.domain != null
       field: related.hosts
       value: "{{destination.domain}}"
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_bd21994d
       if: ctx?.url?.domain != null
       field: related.hosts
       value: "{{url.domain}}"
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_operationName_to_azure_application_gateway_operation_name_96f80a11
       field: json.operationName
       target_field: azure.application_gateway.operation_name
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_instanceId_to_azure_application_gateway_instance_id_3ffdfcc4
       field: json.properties.instanceId
       target_field: azure.application_gateway.instance_id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_hostname_to_azure_application_gateway_hostname_919704b3
       field: json.properties.hostname
       target_field: azure.application_gateway.hostname
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_action_to_event_action_b3380c75
       field: json.properties.action
       target_field: event.action
-      ignore_missing: true      
+      ignore_missing: true
   - set:
+      tag: set_json_event_alert_action_c5d19c34
       field: json.event.alert.action
       value: denied
       if: ctx.azure?.firewall?.action == 'Deny'
   - set:
+      tag: set_json_event_alert_action_6762ff96
       field: json.event.alert.action
       value: allowed
       if: ctx.azure?.firewall?.action == 'Allow'
   - append:
+      tag: append_event_type_e08f5513
       field: event.type
       value: "allowed"
       if: 'ctx.event?.action != null && ["Allowed","Matched","Detected"].contains(ctx.event.action)'
   - append:
+      tag: append_event_type_fdc530b6
       field: event.type
       value: "denied"
       if: 'ctx.event?.action != null && ["Blocked"].contains(ctx.event.action)'
   - rename:
+      tag: rename_json_properties_details_data_to_event_reason_18b9bcc9
       field: json.properties.details.data
       target_field: event.reason
       ignore_missing: true
       if: ctx.json?.properties?.details?.message != null && !ctx.json.properties.details.message.contains("Equal 0") && !ctx.json.properties.details.message.contains("EQ matched 0")
   - rename:
+      tag: rename_json_properties_ruleSetType_to_rule_category_62183667
       field: json.properties.ruleSetType
       target_field: rule.category
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_ruleSetVersion_to_rule_version_79b19c31
       field: json.properties.ruleSetVersion
       target_field: rule.version
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_ruleId_to_rule_id_f4c741c9
       field: json.properties.ruleId
       target_field: rule.id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_ruleGroup_to_rule_ruleset_2ef8835e
       field: json.properties.ruleGroup
       target_field: rule.ruleset
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_message_to_message_958dbcd3
       field: json.properties.message
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_details_message_to_rule_description_4344a0ec
       field: json.properties.details.message
       target_field: rule.description
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_transactionId_to_azure_application_gateway_transaction_id_ffb43ec0
       field: json.properties.transactionId
       target_field: azure.application_gateway.transaction_id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_policyId_to_azure_application_gateway_policy_id_836d5f61
       field: json.properties.policyId
       target_field: azure.application_gateway.policy.id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_policyScope_to_azure_application_gateway_policy_scope_b7323039
       field: json.properties.policyScope
       target_field: azure.application_gateway.policy.scope
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_policyScopeName_to_azure_application_gateway_policy_scope_name_ae8bbb2e
       field: json.properties.policyScopeName
       target_field: azure.application_gateway.policy.scope_name
       ignore_missing: true
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   - set:
+      tag: set_observer_vendor_683eb6a5
       field: observer.vendor
       value: Azure
   - set:
+      tag: set_observer_product_2ea5b773
       field: observer.product
       value: "Web Application Firewall"
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - pipeline:
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:
+      tag: set_observer_name_5e6c4eea
       field: observer.name
       copy_from: azure.resource.name
       ignore_empty_value: true
   - script:
+      tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -328,19 +395,23 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
+      tag: remove_5ad63527
       field:
         - json
         - _conf

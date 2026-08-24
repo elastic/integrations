@@ -136,7 +136,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **Client ID**, **Client Secret** and **Tenant ID**.
     * To **Collect vulnerabilities using Microsoft Defender for Endpoint API**, you'll need to:
 
-        - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
+        - Configure **Client ID**, **Client Secret** and **Tenant ID**.
     * To **Collect events using Azure Event Hub**, you'll need to:
 
         - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
