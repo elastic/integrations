@@ -24,19 +24,6 @@ func (g Git) Run(args ...string) error {
 	return cmd.Run()
 }
 
-// RunToStderr runs a git command sending both stdout and stderr to os.Stderr.
-// Use this instead of Run when the process stdout must stay clean for
-// structured output — for example when the caller is invoked inside a shell
-// $() capture where only JSON must appear on stdout (git commit summaries,
-// fetch progress, etc. would otherwise contaminate the captured result).
-func (g Git) RunToStderr(args ...string) error {
-	cmd := exec.Command("git", args...)
-	cmd.Dir = g.Dir
-	cmd.Stdout = os.Stderr
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
 // Output runs a git command and returns its stdout as a string.
 // On failure the returned error includes git's stderr output.
 func (g Git) Output(args ...string) (string, error) {
