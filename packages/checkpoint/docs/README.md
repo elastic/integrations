@@ -661,6 +661,7 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | checkpoint.user_dn | User DN. | keyword |
 | checkpoint.usercheck |  | keyword |
 | checkpoint.usercheck_confirmation_level |  | keyword |
+| checkpoint.usercheck_incident_uid | Unique usercheck incident ID. | keyword |
 | checkpoint.usercheck_interaction_name |  | keyword |
 | checkpoint.vendor_list | The vendor name that provided the verdict for a malicious URL. | keyword |
 | checkpoint.verdict | TE engine verdict Possible values: Malicious/Benign/Error. | keyword |
