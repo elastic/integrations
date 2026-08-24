@@ -29,6 +29,15 @@ to match incoming box alerts during your desired timeframe and notify you using 
 
 The Box Web Application does not feature version numbers, see this [Community Post](https://support.box.com/hc/en-us/community/posts/1500000033881/comments/1500000038001). This integration was configured and tested against Box in the second quarter of 2022.
 
+## Upgrading to version 4.x
+
+Version 4.0.0 replaces the HTTPJSON input with the CEL input. This fixes a bug where large `next_stream_position` values returned by the Box API could be rounded, causing data gaps. The CEL input preserves the exact stream position.
+
+Be aware of the following when upgrading:
+
+- **Credentials must be re-entered.** Because the input type has changed, existing integration policies must be updated and the Client ID, Client Secret, and Box Subject ID re-entered.
+- **The stored stream position is reset.** The cursor saved by the HTTPJSON input does not carry over to the CEL input, so after the upgrade the integration restarts collection from the beginning of the event stream that the Box API makes available. The maximum time range depends on the stream type used. This causes a one-time, bounded re-ingest of events that were already collected — expect some reprocessing and additional Box API calls. Re-ingested events won't create duplicates in a single backing index because there they are deduplicated by document ID (`_id`). However, a new backing index may repeat earlier document IDs.
+
 ## Box Events
 
 The Box events API enables subscribing to live events across the enterprise or for a particular user, or querying historical events across the enterprise.

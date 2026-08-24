@@ -1,0 +1,79 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+auth.oauth2:
+  client.id: "{{client_id}}"
+  client.secret: "{{client_secret}}"
+  token_url: "{{api_url}}/oauth2/token"
+  endpoint_params:
+    box_subject_id: "{{box_subject_id}}"
+    box_subject_type: "{{box_subject_type}}"
+    grant_type: "{{grant_type}}"
+resource.url: "{{api_url}}"
+state:
+{{#if stream_type}}
+  stream_type: "{{stream_type}}"
+{{/if}}
+  limit: {{limit}}
+redact:
+  fields: ~
+program: |-
+  state.?cursor.next_stream_position.orValue("0").as(position,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/2.0/events?" + {
+          "stream_position": [position],
+          ?"stream_type": (state.?stream_type.orValue("") != "") ?
+            optional.of([state.stream_type])
+          :
+            optional.none(),
+          "limit": [string(int(state.limit))],
+        }.format_query()
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json_string_numbers().as(body,
+            {
+              "events": body.?entries.orValue([]).map(e, {"message": e.encode_json()}),
+              // The next_stream_position must be handled as a string to preserve
+              // the exact value; it must never pass through a float64
+              // representation, which would round values above 2^53.
+              "cursor": {
+                "next_stream_position": string(body.?next_stream_position.orValue(position)),
+              },
+              "want_more": size(body.?entries.orValue([])) >= int(state.limit) &&
+              has(body.next_stream_position),
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /2.0/events: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+fields_under_root: true
+fields:
+  _conf:
+    client_id: {{client_id}}
