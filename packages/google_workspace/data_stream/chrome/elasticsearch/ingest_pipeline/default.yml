@@ -3,18 +3,18 @@ description: Pipeline for processing Chrome Audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_d69d3fcf
       value: 8.16.0
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_bcf88534
       value: 'Google Workspace'
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_08f502c8
       value: Chrome
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -24,35 +24,36 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_552e65e1
       target_field: json
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_to_flatten_event_parameters
+      tag: script_to_flatten_event_parameters_50084292
       if: ctx.json?.events?.parameters instanceof List
       description: Script to flatten the event parameters.
       source: >
@@ -79,26 +80,27 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_bb1a78dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.events.name
-      tag: rename_json_events_name
+      tag: rename_json_events_name_f4104b75
       target_field: google_workspace.chrome.name
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_into_event_kind
+      tag: set_event_into_event_kind_d452ef2c
       value: event
   - set:
       field: event.kind
-      tag: set_alert_into_event_kind
+      tag: set_alert_into_event_kind_28ed4925
       value: alert
       if: ctx.google_workspace?.chrome?.name != null && ['malware_transfer', 'password_breach', 'sensitive_data_transfer', 'unsafe_site_visit'].contains(ctx.google_workspace.chrome.name.toLowerCase())
   - script:
       description: Set event outcome based on event result.
       if: ctx.google_workspace?.chrome?.event_result != null
-      tag: set_event_outcome_from_chrome_event_result
+      tag: set_event_outcome_from_chrome_event_result_b087c651
       lang: painless
       params:
         allowed: success
@@ -114,20 +116,22 @@ processors:
         ctx.event.outcome = params.get(ctx.google_workspace.chrome.event_result.toLowerCase());
       on_failure:
         - append:
+            tag: append_error_message_0df94f18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: url.full
-      tag: set_url_full_from_chrome_url
+      tag: set_url_full_from_chrome_url_8e3e5c08
       copy_from: google_workspace.chrome.url
       ignore_empty_value: true
   - uri_parts:
+      tag: uri_parts_url_full_62b0b3a9
       field: url.full
       ignore_failure: true
   - script:
       description: Set event category based on event name.
       if: ctx.google_workspace?.chrome?.name != null
-      tag: set_event_category_from_chrome_name
+      tag: set_event_category_from_chrome_name_c21e6443
       lang: painless
       params:
         browser_extension_install: package
@@ -156,12 +160,13 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_5b17d1f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Set event type based on event name.
       if: ctx.google_workspace?.chrome?.name != null
-      tag: set_event_type_from_chrome_name
+      tag: set_event_type_from_chrome_name_94f8e84f
       lang: painless
       params:
         browser_extension_install: installation
@@ -191,113 +196,125 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a0d69b22
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.events.type
-      tag: rename_json_events_type
+      tag: rename_json_events_type_484618c9
       target_field: google_workspace.chrome.type
       ignore_missing: true
   - rename:
       field: json.kind
-      tag: rename_json_kind
+      tag: rename_json_kind_f019ab8b
       target_field: google_workspace.chrome.kind
       ignore_missing: true
   - rename:
       field: json.etag
-      tag: rename_json_etag
+      tag: rename_json_etag_88196013
       target_field: google_workspace.chrome.etag
       ignore_missing: true
   - rename:
       field: json.ownerDomain
-      tag: rename_json_ownerDomain
+      tag: rename_json_ownerDomain_4e925278
       target_field: google_workspace.chrome.owner_domain
       ignore_missing: true
   - convert:
       field: google_workspace.chrome.is_encrypted
-      tag: convert_is_encrypted
+      tag: convert_is_encrypted_89aebd4b
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_is_encrypted_f9bcb9b2
             field: google_workspace.chrome.is_encrypted
         - append:
+            tag: append_error_message_e6d9bddc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
       field: google_workspace.chrome.local_ip
-      tag: split_local_ip
+      tag: split_local_ip_a2c857ad
       separator: ','
       target_field: google_workspace.chrome.local_ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0591a88f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
       field: google_workspace.chrome.local_ip
-      tag: trim_local_ip
+      tag: trim_local_ip_558f0046
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_chrome_local_ip_329b4ed8
       field: google_workspace.chrome.local_ip
       if: ctx.google_workspace?.chrome?.local_ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_local_ip_to_ip
+          tag: convert_local_ip_to_ip_7fbe6787
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_59c32b19
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_47dc5606
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
       field: google_workspace.chrome.remote_ip
-      tag: split_remote_ip
+      tag: split_remote_ip_30e60974
       separator: ','
       target_field: google_workspace.chrome.remote_ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c19aaaa6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
       field: google_workspace.chrome.remote_ip
-      tag: trim_remote_ip
+      tag: trim_remote_ip_17a281e2
       ignore_missing: true
   - foreach:
+      tag: foreach_google_workspace_chrome_remote_ip_0c6f0b5f
       field: google_workspace.chrome.remote_ip
       if: ctx.google_workspace?.chrome?.remote_ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_remote_ip_to_ip
+          tag: convert_remote_ip_to_ip_8bd13d72
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_40f2c32f
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_b74b5d1a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ipAddress
-      tag: convert_json_ipAddress_to_ip
+      tag: convert_json_ipAddress_to_ip_b64c752d
       target_field: google_workspace.chrome.ip_address
       type: ip
       ignore_missing: true
       if: ctx.json?.ipAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_6938c880
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.id.time
-      tag: date_json_id_time
+      tag: date_json_id_time_0ccf9861
       target_field: google_workspace.chrome.id.time
       formats:
         - ISO8601
@@ -305,70 +322,75 @@ processors:
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       on_failure:
         - append:
+            tag: append_error_message_6b9eb14c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id.uniqueQualifier
-      tag: rename_json_id_uniqueQualifier
+      tag: rename_json_id_uniqueQualifier_c5463070
       target_field: google_workspace.chrome.id.unique_qualifier
       ignore_missing: true
   - rename:
       field: json.id.applicationName
-      tag: rename_json_id_applicationName
+      tag: rename_json_id_applicationName_a30d41d7
       target_field: google_workspace.chrome.id.application_name
       ignore_missing: true
   - rename:
       field: json.id.customerId
-      tag: rename_json_id_customerId
+      tag: rename_json_id_customerId_090573d8
       target_field: google_workspace.chrome.id.customer_id
       ignore_missing: true
   - rename:
       field: json.actor.profileId
-      tag: rename_json_actor_profileId
+      tag: rename_json_actor_profileId_734462de
       target_field: google_workspace.chrome.actor.profile_id
       ignore_missing: true
   - rename:
       field: json.actor.email
-      tag: rename_json_actor_email
+      tag: rename_json_actor_email_4357f36c
       target_field: google_workspace.chrome.actor.email
       ignore_missing: true
   - rename:
       field: json.actor.callerType
-      tag: rename_json_actor_callerType
+      tag: rename_json_actor_callerType_8a041ec7
       target_field: google_workspace.chrome.actor.caller_type
       ignore_missing: true
   - rename:
       field: json.actor.key
-      tag: rename_json_actor_key
+      tag: rename_json_actor_key_53676b3a
       target_field: google_workspace.chrome.actor.key
       ignore_missing: true
   - convert:
       field: google_workspace.chrome.is_federated
-      tag: convert_is_federated
+      tag: convert_is_federated_16049f57
       type: boolean
       ignore_missing: true
       if: ctx.google_workspace?.chrome?.is_federated != ''
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_is_federated_e0eaa08c
             field: google_workspace.chrome.is_federated
         - append:
+            tag: append_error_message_73e5a522
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_workspace.chrome.content_size
-      tag: convert_content_size
+      tag: convert_content_size_da79bd27
       type: long
       ignore_missing: true
       if: ctx.google_workspace?.chrome?.content_size != ''
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_content_size_16f38772
             field: google_workspace.chrome.content_size
         - append:
+            tag: append_error_message_2953473c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_workspace.chrome.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_e171c328
       target_field: google_workspace.chrome.timestamp
       formats:
         - ISO8601
@@ -376,89 +398,93 @@ processors:
       if: ctx.google_workspace?.chrome?.timestamp != null && ctx.google_workspace.chrome.timestamp != ''
       on_failure:
         - remove:
+            tag: remove_google_workspace_chrome_timestamp_500aab99
             field: google_workspace.chrome.timestamp
         - append:
+            tag: append_error_message_45a9f91c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_login_user_name_into_related_user
+      tag: append_login_user_name_into_related_user_64c45412
       value: '{{{google_workspace.chrome.login_user_name}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.login_user_name != null
   - append:
       field: related.user
-      tag: append_device_user_into_related_user
+      tag: append_device_user_into_related_user_d3b57641
       value: '{{{google_workspace.chrome.device_user}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.device_user != null && !ctx.google_workspace.chrome.device_user.contains('\\')
   - append:
       field: related.user
-      tag: append_profile_user_name_into_related_user
+      tag: append_profile_user_name_into_related_user_e6245d1f
       value: '{{{google_workspace.chrome.profile_user_name}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.profile_user_name != null
   - append:
       field: related.user
-      tag: append_trigger_user_into_related_user
+      tag: append_trigger_user_into_related_user_c8c15a58
       value: '{{{google_workspace.chrome.trigger_user}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.trigger_user != null
   - append:
       field: related.user
-      tag: append_actor_profile_id_into_related_user
+      tag: append_actor_profile_id_into_related_user_292ca953
       value: '{{{google_workspace.chrome.actor.profile_id}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.actor?.profile_id != null
   - append:
       field: related.user
-      tag: append_actor_email_into_related_user
+      tag: append_actor_email_into_related_user_9c7c24fd
       value: '{{{google_workspace.chrome.actor.email}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.actor?.email != null
   - append:
       field: related.ip
-      tag: append_ip_address_into_related_ip
+      tag: append_ip_address_into_related_ip_1bed3861
       value: '{{{google_workspace.chrome.ip_address}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.ip_address != null
   - foreach:
+      tag: foreach_google_workspace_chrome_local_ip_8c40385f
       field: google_workspace.chrome.local_ip
       if: ctx.google_workspace?.chrome?.local_ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_local_ip_into_related_ip
+          tag: append_local_ip_into_related_ip_9a77ae84
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_workspace_chrome_remote_ip_75f2424c
       field: google_workspace.chrome.remote_ip
       if: ctx.google_workspace?.chrome?.remote_ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_remote_ip_into_related_ip
+          tag: append_remote_ip_into_related_ip_ab144c8a
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: related.hash
-      tag: append_content_hash_into_related_user
+      tag: append_content_hash_into_related_user_06e914cc
       value: '{{{google_workspace.chrome.content_hash}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.content_hash != null
   - set:
       field: device.model.name
-      tag: set_device_model_name_from_chrome_device_name
+      tag: set_device_model_name_from_chrome_device_name_938902e5
       copy_from: google_workspace.chrome.device_name
       ignore_empty_value: true
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_chrome_device_platform
+      tag: set_host_os_full_from_chrome_device_platform_49fc7b8e
       copy_from: google_workspace.chrome.device_platform
       ignore_empty_value: true
   - grok:
       field: google_workspace.chrome.device_user
-      tag: grok_device_user
+      tag: grok_device_user_8afc84cb
       patterns:
         - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
         - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
@@ -467,124 +493,127 @@ processors:
       ignore_missing: true
   - remove:
       field: _tmp
-      tag: remove_tmp
+      tag: remove_tmp_9ef01a7c
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - set:
       field: event.reason
-      tag: set_event_reason_from_chrome_event_reason
+      tag: set_event_reason_from_chrome_event_reason_e9ba4e88
       copy_from: google_workspace.chrome.event_reason
       ignore_empty_value: true
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_chrome_id_time
+      tag: set_@timestamp_from_chrome_id_time_65342af9
       copy_from: google_workspace.chrome.id.time
       ignore_empty_value: true
   - set:
       field: device.id
-      tag: set_device_id_from_chrome_device_id
+      tag: set_device_id_from_chrome_device_id_7d023d6a
       copy_from: google_workspace.chrome.device_id
       ignore_empty_value: true
   - user_agent:
+      tag: user_agent_google_workspace_chrome_user_agent_5e327613
       field: google_workspace.chrome.user_agent
       ignore_missing: true
   - set:
       field: event.hash
-      tag: set_event_hash_from_chrome_content_hash
+      tag: set_event_hash_from_chrome_content_hash_593b2926
       copy_from: google_workspace.chrome.content_hash
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_from_chrome_user_justification
+      tag: set_message_from_chrome_user_justification_6c6f8e14
       copy_from: google_workspace.chrome.user_justification
       ignore_empty_value: true
   - set:
       field: file.path
-      tag: set_file_path_from_chrome_evidence_locker_filepath
+      tag: set_file_path_from_chrome_evidence_locker_filepath_728fadab
       copy_from: google_workspace.chrome.evidence_locker_filepath
       ignore_empty_value: true
   - set:
       field: host.domain
-      tag: set_host_domain_from_chrome_owner_domain
+      tag: set_host_domain_from_chrome_owner_domain_8068e495
       copy_from: google_workspace.chrome.owner_domain
       ignore_empty_value: true
   - append:
       field: host.ip
-      tag: append_google_workspace_chrome_ip_address_into_host_ip
+      tag: append_google_workspace_chrome_ip_address_into_host_ip_6a72146a
       value: '{{{google_workspace.chrome.ip_address}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.ip_address != null
   - set:
       field: user.id
-      tag: set_user_id_from_chrome_actor_profile_id
+      tag: set_user_id_from_chrome_actor_profile_id_493f7e6e
       copy_from: google_workspace.chrome.actor.profile_id
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_chrome_actor_email
+      tag: set_user_email_from_chrome_actor_email_1951d47c
       copy_from: google_workspace.chrome.actor.email
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_uniqueQualifier
+      tag: set_event_id_from_uniqueQualifier_0c6a801d
       copy_from: google_workspace.chrome.id.unique_qualifier
       ignore_empty_value: true
   - set:
       field: event.provider
-      tag: set_event_provider_from_application_name
+      tag: set_event_provider_from_application_name_046c8e91
       copy_from: google_workspace.chrome.id.application_name
       ignore_empty_value: true
   - set:
       field: event.action
-      tag: set_event_action_from_name
+      tag: set_event_action_from_name_88ca583d
       copy_from: google_workspace.chrome.name
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: organization.id
-      tag: set_organization_id_from_customerId
+      tag: set_organization_id_from_customerId_45edc574
       copy_from: google_workspace.chrome.id.customer_id
       ignore_empty_value: true
   - set:
       field: source.ip
-      tag: set_source_ip_from_ipAddress
+      tag: set_source_ip_from_ipAddress_1ab92817
       copy_from: google_workspace.chrome.ip_address
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_geo_from_source_ip
+      tag: geoip_source_geo_from_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - geoip:
       field: source.ip
-      tag: set_source_as_from_source_ip
+      tag: set_source_as_from_source_ip_dbf6fd22
       database_file: GeoLite2-ASN.mmdb
       target_field: source.as
       properties:
@@ -592,21 +621,23 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
       field: source.user.email
-      tag: set_source_user_email
+      tag: set_source_user_email_24fdb223
       copy_from: user.email
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: script_to_extract_source_user_name_and_domain
+      tag: script_to_extract_source_user_name_and_domain_05d65631
       if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
       source: >
         String[] splitmail = ctx.source.user.email.splitOnToken('@');
@@ -620,7 +651,7 @@ processors:
         ctx.source.user.domain = splitmail[1];
   - set:
       field: source.user.id
-      tag: set_source_user_id
+      tag: set_source_user_id_d492bdd3
       copy_from: user.id
       ignore_empty_value: true
   - remove:
@@ -642,11 +673,11 @@ processors:
         - google_workspace.chrome.url
         - google_workspace.chrome.user_agent
         - google_workspace.chrome.user_justification
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_3ae15bc0
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f5f5cc66
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -665,34 +696,38 @@ processors:
         drop(ctx);
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_52a8202a
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error

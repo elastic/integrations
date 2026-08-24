@@ -3,134 +3,147 @@ description: Pipeline for processing load balancer logs.
 processors:
   - convert:
       field: axonius.network.allow_nat
-      tag: convert_allow_nat_to_boolean
+      tag: convert_allow_nat_to_boolean_8d1f17f3
       target_field: axonius.network.allow_nat
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_network_allow_nat_dcbf4db9
             field: axonius.network.allow_nat
             ignore_missing: true
         - append:
+            tag: append_error_message_0e328e34
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.balanced_integer_ips
-      tag: foreach_balanced_integer_ips
+      tag: foreach_balanced_integer_ips_e3718e4b
       if: ctx.axonius?.network?.balanced_integer_ips instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_balanced_integer_ips_to_long
+          tag: convert_balanced_integer_ips_to_long_514fa60c
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_7deaf7dd
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_91e6ec3a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.balanced_ips
-      tag: foreach_balanced_ips
+      tag: foreach_balanced_ips_2d31e1d3
       if: ctx.axonius?.network?.balanced_ips instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_balanced_ips_to_ip
+          tag: convert_balanced_ips_to_ip_6d89f415
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_6c05b329
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_03ea635e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.balanced_ips
-      tag: foreach_balanced_ips
+      tag: foreach_balanced_ips_65a9eb29
       if: ctx.axonius?.network?.balanced_ips instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_balanced_ips_into_related_ip
+          tag: append_balanced_ips_into_related_ip_720a0c4c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.network.pool_members_ips
-      tag: foreach_pool_members_ips
+      tag: foreach_pool_members_ips_ea579a73
       if: ctx.axonius?.network?.pool_members_ips instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_pool_members_ips_to_ip
+          tag: convert_pool_members_ips_to_ip_2692bada
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_647ef696
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_87ebc986
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.pool_members_ips
-      tag: foreach_pool_members_ips
+      tag: foreach_pool_members_ips_5934e5ba
       if: ctx.axonius?.network?.pool_members_ips instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_pool_members_ips_into_related_ip
+          tag: append_pool_members_ips_into_related_ip_54908ab0
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.network.private_integer_ips
-      tag: foreach_private_integer_ips
+      tag: foreach_private_integer_ips_04452332
       if: ctx.axonius?.network?.private_integer_ips instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_private_integer_ips_to_long
+          tag: convert_private_integer_ips_to_long_c6314a48
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_d6b44af7
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_4cce0323
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.private_ips
-      tag: foreach_private_ips
+      tag: foreach_private_ips_d94cf54b
       if: ctx.axonius?.network?.private_ips instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_private_ips_to_ip
+          tag: convert_private_ips_to_ip_7db1935a
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_b78024ef
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_b02f282f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.private_ips
-      tag: foreach_private_ips
+      tag: foreach_private_ips_b5409fb8
       if: ctx.axonius?.network?.private_ips instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_private_ips_into_related_ip
+          tag: append_private_ips_into_related_ip_9254d5be
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -138,5 +151,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -6,7 +6,7 @@ The Vercel OpenTelemetry assets provide dashboards for Vercel logs, audit logs, 
 
 ## Compatibility
 
-The Vercel OpenTelemetry assets have been tested with Vercel Drains delivering to the Vercel path (`/vercel`) of the Elastic Cloud managed endpoint.
+The Vercel OpenTelemetry assets have been tested with Vercel Drains delivering to the Vercel path (`/inputs/vercel/_default_`) of the Elastic Cloud managed endpoint.
 
 ## Requirements
 
@@ -44,16 +44,16 @@ Find your Elastic Cloud public endpoint:
 2. Open your project or deployment and select **Manage**.
 3. In **Application endpoints, cluster and component IDs**, select the Vercel endpoint, then copy the public endpoint value.
 
-The managed endpoint URL for Vercel is that public endpoint plus `/vercel`, which is the path that accepts Vercel drain payloads:
+The managed endpoint URL for Vercel is that public endpoint plus `/inputs/vercel/_default_`, which is the path that accepts Vercel drain payloads:
 
 ```text
-https://<managed-endpoint>/vercel
+https://<managed-endpoint>/inputs/vercel/_default_
 ```
 
 For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the managed endpoint URL for Vercel is:
 
 ```text
-https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel
+https://abc123.ingest.us-east-1.aws.elastic.cloud/inputs/vercel/_default_
 ```
 
 Every project and deployment has its own host, so always build the managed endpoint URL for Vercel from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
@@ -72,13 +72,13 @@ For each data type, in Vercel:
 
 1. Open your team **Drains** settings and create a drain for that data type.
 2. Choose **Custom Endpoint** as the destination.
-3. Set the **Endpoint URL** to the managed endpoint URL for Vercel, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel`.
+3. Set the **Endpoint URL** to the managed endpoint URL for Vercel, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/inputs/vercel/_default_`.
 4. Under **Custom Headers**, add a header named `Authorization` with the value `ApiKey <your-api-key>`, for example `Authorization: ApiKey abc123`.
 5. Save the drain.
 
 For Logs drains, you can also narrow which sources, environments, and sampling rates are forwarded under **Additional configuration for logs**. Refer to [Log Drains reference](https://vercel.com/docs/drains/reference/logs).
 
-> **Note**: The managed endpoint URL for Vercel is always your Elastic Cloud public endpoint plus `/vercel`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
+> **Note**: The managed endpoint URL for Vercel is always your Elastic Cloud public endpoint plus `/inputs/vercel/_default_`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
 
 ## Reference
 
@@ -112,3 +112,56 @@ To see how a payload field is indexed, open the data stream in **Discover** and 
 | **[Vercel OTel] Audit Logs** | Governance and security overview of audit event volume, actors, top event types, user activity, and sensitive operations. |
 | **[Vercel OTel] Web Analytics** | Traffic and engagement overview covering page views, geography, devices, top pages, and custom events. |
 | **[Vercel OTel] Speed Insights** | Web Vitals performance overview tracking LCP, INP, CLS, and TTFB at the p75 benchmark over time and per page. |
+
+## Alerting Rule Templates
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+**The following alert rule templates are available:**
+
+<details>
+<summary>View the alert rule templates</summary>
+
+| Name | Description |
+|---|---|
+| [Vercel OTel] Elevated ERROR/WARNING log rate by source | Alerts when the proportion of ERROR or WARNING level log entries for a given log source exceeds 10% over a 15-minute window. Catches recoverable issues and caught exceptions that don't necessarily surface as an HTTP 5xx. |
+| [Vercel OTel] Elevated TTFB p75 (edge/server latency) | Alerts when the site-wide p75 Time to First Byte (TTFB) exceeds the 'poor' threshold (1800ms) over a 1-hour window. TTFB reflects edge/server responsiveness and directly drives LCP, so a sustained elevation is an early signal of cold starts or edge congestion before it fully manifests as an LCP regression. |
+| [Vercel OTel] Firewall deny spike | Alerts when the count of firewall (WAF) requests with a 'deny' action exceeds 100 in a 10-minute window. An elevated deny rate can indicate an active attack (DDoS, credential stuffing, crawling) or an overly restrictive firewall rule change blocking legitimate traffic. |
+| [Vercel OTel] High HTTP 5xx error rate by log source | Alerts when the HTTP 5xx error rate for lambda or edge requests exceeds 2% over a 15-minute window, evaluated separately per log source. This is the primary server-side health signal for a Vercel deployment. |
+| [Vercel OTel] Lambda/edge function crash rate elevated | Alerts when the proportion of lambda/edge invocations that crash before returning any HTTP response (http.response.status_code == -1) exceeds 1% over a 15-minute window. These hard failures are excluded from standard HTTP error-rate calculations but represent the most severe class of runtime defect. |
+| [Vercel OTel] Page view rate drop | Alerts when Web Analytics page view volume drops by more than 50% in the most recent 15 minutes compared to the preceding 15 minutes, per project. Complements the server-side request-rate-drop rule with a client-side/user-facing engagement view. |
+| [Vercel OTel] Poor Core Web Vitals (p75) by route | Alerts when the p75 value of LCP, INP, or CLS for a given route exceeds the 'poor' Web Vitals threshold over a 1-hour window. p75 is the standard Vercel Speed Insights benchmark. Catches per-route regressions in perceived load speed, interactivity, or visual stability, typically introduced by a recent deployment. |
+| [Vercel OTel] Regional error rate skew | Alerts when the HTTP 5xx error rate in a single Vercel execution region exceeds 5% over a 15-minute window, even if the global error rate looks healthy. A regional error concentration typically indicates edge/lambda infrastructure issues localized to that region rather than a global code defect. |
+| [Vercel OTel] Request rate drop (traffic collapse) | Alerts when server-side request volume (Logs) drops by more than 50% in the most recent 15 minutes compared to the preceding 15 minutes, per project. A sudden traffic collapse can indicate a broken deployment, DNS misconfiguration, or an authentication barrier blocking users. |
+| [Vercel OTel] Sensitive audit activity spike by actor | Alerts when a single actor performs more than 5 sensitive audit actions (env variable reads, drain/webhook/token/domain/team configuration changes, project transfers) within a 1-hour window. Unusual volumes of sensitive actions from a given actor may indicate automated abuse, a compromised credential, or unintentional misconfiguration. |
+
+</details>
+
+
+
+## SLO Templates
+SLO templates provide pre-defined configurations for creating SLOs in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/solutions/observability/incident-management/service-level-objectives-slos).
+
+SLO templates require Elastic Stack version 9.4.0 or later.
+
+**The following SLO templates are available:**
+
+<details>
+<summary>View the SLO templates</summary>
+
+| Name | Description |
+|---|---|
+| [Vercel OTel] Cumulative layout shift p75 99.5% rolling 30 days | Tracks the 75th-percentile Cumulative Layout Shift (CLS) reported by Speed Insights for production page loads, targeting 99.5% of hourly windows with a p75 CLS score under 0.1 (Vercel's 'good' threshold) over a rolling 30-day window. A breach signals a layout-shifting regression — such as a newly introduced ad slot, web-font swap, or dynamically injected content — that visually destabilises the page for real users and risks accidental mis-clicks. |
+| [Vercel OTel] Interaction to next paint p75 99.5% rolling 30 days | Tracks the 75th-percentile Interaction to Next Paint (INP) reported by Speed Insights for production page loads, targeting 99.5% of hourly windows with a p75 INP under 200ms (Vercel's 'good' threshold) over a rolling 30-day window. A breach signals that heavy JavaScript execution or main-thread blocking introduced by a recent deployment is making the page feel sluggish to interact with, directly affecting users' ability to complete clicks, taps, and form input. |
+| [Vercel OTel] Largest contentful paint p75 99.5% rolling 30 days | Tracks the 75th-percentile Largest Contentful Paint (LCP) reported by Speed Insights for production page loads, targeting 99.5% of hourly windows with a p75 LCP under 2500ms (Vercel's 'good' threshold) over a rolling 30-day window. A breach signals a page-load regression — commonly an unoptimised image, a blocking resource, or elevated server response time introduced by a recent deployment — that visibly slows how quickly a page's main content appears to real users. |
+| [Vercel OTel] Server-side error rate 99% rolling 30 days | Tracks the proportion of production lambda and edge requests that complete without an HTTP 5xx response, targeting 99% success over a rolling 30-day window. A breach signals that a serverless function or edge middleware defect is causing real requests to fail, degrading the core request-serving experience for end users. Requests where the function crashed before returning any response (http.response.status_code = -1) are excluded from both good and total counts, since no HTTP response was actually served. |
+| [Vercel OTel] Time to first byte p75 99.5% rolling 30 days | Tracks the 75th-percentile Time to First Byte (TTFB) reported by Speed Insights for production page loads, targeting 99.5% of hourly windows with a p75 TTFB under 800ms (Vercel's 'good' threshold) over a rolling 30-day window. A breach signals cold starts, edge congestion, or regional capacity issues are slowing the server/edge response before rendering can begin — a leading indicator that also drives downstream Largest Contentful Paint regressions. |
+
+</details>
+
+
