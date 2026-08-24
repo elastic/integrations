@@ -649,6 +649,7 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | checkpoint.triggered_by | The name of the mechanism that triggered the Software Blade to enforce a protection. | keyword |
 | checkpoint.trusted_domain | In case of phishing event, the domain, which the attacker was impersonating. | keyword |
 | checkpoint.tunnel_protocol | Tunnel protocol. | keyword |
+| checkpoint.uid | Unique object identifier | keyword |
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
