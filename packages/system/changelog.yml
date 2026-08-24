@@ -1,4 +1,27 @@
 # later versions go on top
+- version: "2.23.0"
+  changes:
+    - description: Set `event.kind` to `event` for `system.syslog` records collected through the log input, matching the journald pipeline so all syslog events carry a consistent ECS event categorization.
+      type: bugfix
+      link: https://github.com/elastic/integrations/issues/20730
+    - description: Categorize systemd `Started`/`Stopped` unit lifecycle messages in `system.syslog` with `event.category`, `event.type`, and `event.action`.
+      type: enhancement
+      link: https://github.com/elastic/integrations/issues/20730
+- version: "2.22.4"
+  changes:
+    - description: Replace the journald `facilities` option with equivalent `SYSLOG_FACILITY` matches in the auth and syslog streams, fixing silent collection failure on hosts with journalctl older than 245 (e.g. RHEL 8), where `journalctl --facility` is not supported.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20303
+- version: "2.22.3"
+  changes:
+    - description: Fix parsing of sudo auth messages that omit the TTY field while preserving existing TTY and sudo error parsing.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20587
+- version: "2.22.2"
+  changes:
+    - description: Replace the hardcoded host link in the "[Metrics System] Overview" dashboard with a dashboard-to-dashboard drilldown, so navigation to "[Metrics System] Host Overview" works across Kibana Spaces (including after "Copy to Space").
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20411
 - version: "2.22.1"
   changes:
     - description: Fix `@timestamp` being overwritten by `ClientCreationTime` (process start time) on Windows Security events 5058, 5059, and 5061. The `date_clientcreationtime` processor was missing `target_field`, causing it to default to `@timestamp` instead of writing back to `winlog.event_data.ClientCreationTime`.

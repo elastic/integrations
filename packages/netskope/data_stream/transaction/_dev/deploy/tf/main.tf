@@ -7,6 +7,11 @@ provider "aws" {
       aws_branch       = var.BRANCH
       aws_build        = var.BUILD_ID
       aws_created_date = var.CREATED_DATE
+
+      division = "engineering"
+      org      = "obs"
+      team     = "security-service-integrations" # owner.github in manifest.yml
+      project  = "integrations-netskope-package" # name in manifest.yml
     }
   }
 }
