@@ -169,7 +169,7 @@ elastic/integrations#20234, fixed by elastic/integrations#20348).
   `cel.yml.hbs` so an incomplete extraction fails loudly instead of quietly measuring the
   wrong program. Without it the run continues and prints a warning.
   ```
-  go install github.com/elastic/mito/cmd/celfmt@latest
+  go install github.com/elastic/celfmt/cmd/celfmt@latest
   ```
 
 ## Usage
