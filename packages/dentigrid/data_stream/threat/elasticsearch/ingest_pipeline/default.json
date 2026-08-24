@@ -1,0 +1,522 @@
+{
+  "description": "Pipeline for normalizing DentiGrid threat deception telemetry into ECS v8.11",
+  "processors": [
+    {
+      "set": {
+        "field": "ecs.version",
+        "value": "8.11.0"
+      }
+    },
+    {
+      "set": {
+        "field": "event.dataset",
+        "value": "dentigrid.threat"
+      }
+    },
+    {
+      "set": {
+        "field": "event.module",
+        "value": "dentigrid"
+      }
+    },
+    {
+      "set": {
+        "field": "event.kind",
+        "value": "alert"
+      }
+    },
+    {
+      "set": {
+        "field": "event.category",
+        "value": [
+          "intrusion_detection",
+          "threat",
+          "network"
+        ]
+      }
+    },
+    {
+      "set": {
+        "field": "event.type",
+        "value": [
+          "denied",
+          "indicator"
+        ]
+      }
+    },
+    {
+      "set": {
+        "field": "event.outcome",
+        "value": "failure"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.vendor",
+        "value": "DentiSystems"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.product",
+        "value": "DentiGrid"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.type",
+        "value": "deception-honeynet"
+      }
+    },
+    {
+      "date": {
+        "field": "timestamp",
+        "target_field": "@timestamp",
+        "formats": [
+          "ISO8601",
+          "UNIX_MS",
+          "UNIX"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "date": {
+        "field": "time",
+        "target_field": "@timestamp",
+        "formats": [
+          "UNIX",
+          "UNIX_MS",
+          "ISO8601"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "sourceIP",
+        "target_field": "source.ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "src_ip",
+        "target_field": "source.ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "src",
+        "target_field": "source.ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "ip",
+        "target_field": "source.ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "src_port",
+        "target_field": "source.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "spt",
+        "target_field": "source.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "src_host",
+        "target_field": "source.domain",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "src_mac",
+        "target_field": "source.mac",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "destination_port",
+        "target_field": "destination.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "dest_port",
+        "target_field": "destination.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "port",
+        "target_field": "destination.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "dstPort",
+        "target_field": "destination.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "dpt",
+        "target_field": "destination.port",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "dest_ip",
+        "target_field": "destination.ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "dest",
+        "target_field": "destination.ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "dest_host",
+        "target_field": "destination.domain",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "transport",
+        "target_field": "network.transport",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "protocol",
+        "target_field": "network.protocol",
+        "ignore_missing": true
+      }
+    },
+    {
+      "set": {
+        "field": "network.transport",
+        "value": "tcp",
+        "if": "ctx.network?.transport == null && (ctx.network?.protocol == 'smb' || ctx.network?.protocol == 'ssh' || ctx.network?.protocol == 'rdp' || ctx.network?.protocol == 'http' || ctx.network?.protocol == 'msrpc' || ctx.network?.protocol == 'mysql')"
+      }
+    },
+    {
+      "rename": {
+        "field": "node_id",
+        "target_field": "observer.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "nodeId",
+        "target_field": "observer.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "sensor_id",
+        "target_field": "observer.serial_number",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "src_user",
+        "target_field": "user.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "user",
+        "target_field": "user.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "grok": {
+        "field": "user.name",
+        "patterns": [
+          "%{WORD:user.domain}\\\\%{GREEDYDATA:user.name}"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "threat.framework",
+        "value": "MITRE ATT&CK"
+      }
+    },
+    {
+      "set": {
+        "field": "threat.indicator.provider",
+        "value": "DentiGrid Active Deception Fabric"
+      }
+    },
+    {
+      "rename": {
+        "field": "signature",
+        "target_field": "threat.indicator.description",
+        "ignore_missing": true
+      }
+    },
+    {
+      "set": {
+        "field": "threat.indicator.name",
+        "copy_from": "threat.indicator.description",
+        "if": "ctx.threat?.indicator?.description != null"
+      }
+    },
+    {
+      "rename": {
+        "field": "signature_id",
+        "target_field": "threat.indicator.id",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "threat_type",
+        "target_field": "threat.indicator.type",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "mitre_tactic",
+        "target_field": "threat.tactic.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "mitre_tactic_id",
+        "target_field": "threat.tactic.id",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "mitre_technique",
+        "target_field": "threat.technique.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "mitre_technique_id",
+        "target_field": "threat.technique.id",
+        "ignore_missing": true
+      }
+    },
+    {
+      "set": {
+        "field": "threat.tactic.reference",
+        "value": "https://attack.mitre.org/tactics/{{threat.tactic.id}}/",
+        "if": "ctx.threat?.tactic?.id != null"
+      }
+    },
+    {
+      "set": {
+        "field": "threat.technique.reference",
+        "value": "https://attack.mitre.org/techniques/{{threat.technique.id}}/",
+        "if": "ctx.threat?.technique?.id != null"
+      }
+    },
+    {
+      "rename": {
+        "field": "severity_id",
+        "target_field": "event.severity",
+        "ignore_missing": true
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "\n                    int sev = 5;\n                    if (ctx.event?.severity != null) {\n                        try {\n                            sev = Integer.parseInt(ctx.event.severity.toString());\n                        } catch (Exception e) {}\n                    } else if (ctx.severity != null) {\n                        String s = ctx.severity.toString().toLowerCase();\n                        if (s.equals(\"critical\")) { sev = 10; }\n                        else if (s.equals(\"high\")) { sev = 8; }\n                        else if (s.equals(\"medium\")) { sev = 5; }\n                        else if (s.equals(\"low\")) { sev = 2; }\n                    }\n                    ctx.event.severity = sev;\n                    ctx.event.risk_score = sev * 10;\n                    ctx.event.risk_score_norm = (float)(sev * 10.0);\n                "
+      }
+    },
+    {
+      "geoip": {
+        "field": "source.ip",
+        "target_field": "source.geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "source.ip",
+        "target_field": "source.as",
+        "database_file": "GeoLite2-ASN.mmdb",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "sourceCountry",
+        "target_field": "source.geo.country_name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "sourceCity",
+        "target_field": "source.geo.city_name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "country",
+        "target_field": "source.geo.country_iso_code",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "city",
+        "target_field": "source.geo.city_name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "\n                    if (ctx.source?.ip != null) {\n                        String ip = ctx.source.ip.toString();\n                        if (ip.startsWith(\"10.\") || ip.startsWith(\"192.168.\") || (ip.startsWith(\"172.\") && ip.length() >= 7)) {\n                            ctx.network.direction = \"internal\";\n                            if (ctx.tags == null) { ctx.tags = new ArrayList(); }\n                            ctx.tags.add(\"lateral_movement_tripwire\");\n                        } else {\n                            ctx.network.direction = \"inbound\";\n                        }\n                    }\n                "
+      }
+    },
+    {
+      "rename": {
+        "field": "method",
+        "target_field": "http.request.method",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "url",
+        "target_field": "url.original",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "raw_payload",
+        "target_field": "dentigrid.deception.raw_payload",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "payload",
+        "target_field": "dentigrid.deception.raw_payload",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.dropped_file_path",
+        "target_field": "file.path",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.file_size_bytes",
+        "target_field": "file.size",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.sha256",
+        "target_field": "file.hash.sha256",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.imphash",
+        "target_field": "file.pe.imphash",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.heuristic_classification",
+        "target_field": "dentigrid.deception.heuristic_classification",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.share_path",
+        "target_field": "dentigrid.deception.share_path",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "event.honeypot_service",
+        "target_field": "dentigrid.deception.honey_service",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "category",
+        "target_field": "dentigrid.category",
+        "ignore_missing": true
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    },
+    {
+      "append": {
+        "field": "tags",
+        "value": [
+          "dentigrid-pipeline-failed"
+        ]
+      }
+    }
+  ]
+}
