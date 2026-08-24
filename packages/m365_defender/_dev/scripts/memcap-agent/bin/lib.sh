@@ -105,7 +105,7 @@ harness_render_config() {
       fi
     else
       echo "WARN: celfmt not found, so the extracted CEL program was not parse-checked." >&2
-      echo "      Install it with: go install github.com/elastic/mito/cmd/celfmt@latest" >&2
+      echo "      Install it with: go install github.com/elastic/celfmt/cmd/celfmt@latest" >&2
     fi
     # cel.yml.hbs indents the program body 2 spaces; the tmpl stream wants 6, so
     # re-indent by 4. Indent the verbatim extraction, not celfmt's output: the harness
