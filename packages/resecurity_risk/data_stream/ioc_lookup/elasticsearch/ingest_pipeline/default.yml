@@ -138,6 +138,12 @@ processors:
       value: '{{{resecurity_risk.ioc.hash_query}}}'
       if: ctx.resecurity_risk?.ioc?.hash_query != null
       allow_duplicates: false
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+      description: The `event.original` field is no longer required if the `preserve_original_event` tag is not set.
 on_failure:
   - append:
       field: error.message
