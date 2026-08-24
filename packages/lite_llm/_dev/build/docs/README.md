@@ -174,7 +174,3 @@ This integration uses the following APIs:
 - `Spend Tracking`: Collects spend tracking records via the **LiteLLM Spend Tracking API** (endpoint: `/spend/logs/v2`) or via **AWS S3/SQS** for organizations that export spend tracking data from LiteLLM to an S3 bucket.
 
 - `Audit`: Collects audit logs via the **LiteLLM Audit API** (endpoint: `/audit`) or via **AWS S3/SQS** for organizations that export logs from LiteLLM to an S3 bucket.
-
-### ILM Policy
-
-To facilitate audit log data, the source data stream-backed index `.ds-logs-lite_llm.audit-*` is allowed to contain duplicates from each polling interval or S3 collection cycle. The ILM policy `logs-lite_llm.audit-default_policy` is added to this source index so it doesn't lead to unbounded growth. This means that in this source index data will be deleted after `30 days` from ingested date.

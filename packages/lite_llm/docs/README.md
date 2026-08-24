@@ -352,17 +352,17 @@ An example event for `spend_tracking` looks as following:
 {
     "@timestamp": "2026-07-18T10:11:19.909Z",
     "agent": {
-        "ephemeral_id": "4060e8cd-5b3e-4f2b-ad16-0e869f97cdf9",
-        "id": "8c103279-d0af-4ade-9ccb-a54816fb4a0a",
-        "name": "elastic-agent-92634",
+        "ephemeral_id": "5a64aae1-248b-436b-bea1-256e000b3016",
+        "id": "35f5a622-8d87-4da9-ad45-934fc77621c9",
+        "name": "elastic-agent-29479",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-lite-llm-spend-tracking-bucket-84964",
-                "name": "elastic-package-lite-llm-spend-tracking-bucket-84964"
+                "arn": "arn:aws:s3:::elastic-package-lite-llm-spend-tracking-bucket-95648",
+                "name": "elastic-package-lite-llm-spend-tracking-bucket-95648"
             },
             "object": {
                 "key": "spend-tracking.log"
@@ -374,14 +374,14 @@ An example event for `spend_tracking` looks as following:
     },
     "data_stream": {
         "dataset": "lite_llm.spend_tracking",
-        "namespace": "90994",
+        "namespace": "48215",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "8c103279-d0af-4ade-9ccb-a54816fb4a0a",
+        "id": "35f5a622-8d87-4da9-ad45-934fc77621c9",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -398,7 +398,7 @@ An example event for `spend_tracking` looks as following:
         "duration": 0,
         "end": "2026-07-18T10:11:19.909Z",
         "id": "7d8f7a77-9f46-47b2-997e-0a0892fe2c7a",
-        "ingested": "2026-08-06T08:42:15Z",
+        "ingested": "2026-08-24T08:59:13Z",
         "kind": "event",
         "original": "{\"request_id\":\"7d8f7a77-9f46-47b2-997e-0a0892fe2c7a\",\"call_type\":\"\",\"api_key\":\"8de15ff28eedf53bd4cf2e65b8e980b9231acc3f894648a9fa3c2dbf0ab1a6d9\",\"spend\":0,\"total_tokens\":0,\"prompt_tokens\":0,\"completion_tokens\":0,\"start_time\":\"2026-07-18T10:11:19.909+00:00\",\"end_time\":\"2026-07-18T10:11:19.909+00:00\",\"model\":\"gemma-4-31b-it\",\"user\":\"default_user_id\",\"status\":\"failure\",\"metadata\":{\"error_information\":{\"error_code\":\"400\",\"error_class\":\"ProxyModelNotFoundError\",\"error_message\":\"Invalid model name passed in model=gemma-4-31b-it\"}}}",
         "outcome": "failure",
@@ -433,7 +433,7 @@ An example event for `spend_tracking` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-lite-llm-spend-tracking-bucket-84964.s3.us-east-2.amazonaws.com/spend-tracking.log"
+            "path": "https://elastic-package-lite-llm-spend-tracking-bucket-95648.s3.us-east-2.amazonaws.com/spend-tracking.log"
         },
         "offset": 1900
     },
@@ -552,17 +552,17 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-03T11:30:59.385Z",
     "agent": {
-        "ephemeral_id": "7612fa48-f470-4bbf-adea-9feab1f81f4e",
-        "id": "074b7c4a-cea2-4f37-92a0-aeb9e49a99d7",
-        "name": "elastic-agent-67631",
+        "ephemeral_id": "1b01ae82-6569-4c26-988b-12be1f604efc",
+        "id": "b640be36-1592-4a94-a8e7-a7c4d5ab5591",
+        "name": "elastic-agent-80057",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-lite-llm-audit-bucket-44222",
-                "name": "elastic-package-lite-llm-audit-bucket-44222"
+                "arn": "arn:aws:s3:::elastic-package-lite-llm-audit-bucket-45979",
+                "name": "elastic-package-lite-llm-audit-bucket-45979"
             },
             "object": {
                 "key": "audit.log"
@@ -574,14 +574,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "lite_llm.audit",
-        "namespace": "15741",
+        "namespace": "91691",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "074b7c4a-cea2-4f37-92a0-aeb9e49a99d7",
+        "id": "b640be36-1592-4a94-a8e7-a7c4d5ab5591",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -594,7 +594,7 @@ An example event for `audit` looks as following:
         "created": "2026-06-26T11:03:33.193Z",
         "dataset": "lite_llm.audit",
         "id": "f6bbb635-8079-46bc-a7c7-49b38bfceb7a",
-        "ingested": "2026-07-21T06:27:41Z",
+        "ingested": "2026-08-24T08:54:47Z",
         "kind": "event",
         "original": "{\"id\": \"f6bbb635-8079-46bc-a7c7-49b38bfceb7a\", \"updated_at\": \"2026-07-03T11:30:59.385000Z\", \"changed_by\": \"ops@example.com\", \"changed_by_api_key\": \"\", \"action\": \"updated\", \"table_name\": \"LiteLLM_UserTable\", \"object_id\": \"default_user_id\", \"before_value\": {\"spend\": 0.01098520000000001, \"teams\": [\"45d1cbaf-cf75-4052-9f51-a241d2518873\"], \"models\": [], \"user_id\": \"default_user_id\", \"metadata\": {}, \"policies\": [], \"user_role\": \"proxy_admin\", \"created_at\": \"2026-06-26T11:03:33.193000Z\", \"updated_at\": \"2026-07-03T11:12:06.577000Z\", \"model_spend\": {}, \"model_max_budget\": {}, \"allowed_cache_controls\": []}, \"updated_values\": {\"spend\": 0.01098520000000001, \"teams\": [\"45d1cbaf-cf75-4052-9f51-a241d2518873\"], \"models\": [], \"user_id\": \"default_user_id\", \"metadata\": {}, \"policies\": [], \"user_role\": \"proxy_admin\", \"created_at\": \"2026-06-26T11:03:33.193000Z\", \"updated_at\": \"2026-07-03T11:30:59.375000Z\", \"model_spend\": {}, \"model_max_budget\": {}, \"allowed_cache_controls\": []}}",
         "type": [
@@ -632,7 +632,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-lite-llm-audit-bucket-44222.s3.us-east-2.amazonaws.com/audit.log"
+            "path": "https://elastic-package-lite-llm-audit-bucket-45979.s3.us-east-2.amazonaws.com/audit.log"
         },
         "offset": 1478
     },
@@ -670,7 +670,3 @@ This integration uses the following APIs:
 - `Spend Tracking`: Collects spend tracking records via the **LiteLLM Spend Tracking API** (endpoint: `/spend/logs/v2`) or via **AWS S3/SQS** for organizations that export spend tracking data from LiteLLM to an S3 bucket.
 
 - `Audit`: Collects audit logs via the **LiteLLM Audit API** (endpoint: `/audit`) or via **AWS S3/SQS** for organizations that export logs from LiteLLM to an S3 bucket.
-
-### ILM Policy
-
-To facilitate audit log data, the source data stream-backed index `.ds-logs-lite_llm.audit-*` is allowed to contain duplicates from each polling interval or S3 collection cycle. The ILM policy `logs-lite_llm.audit-default_policy` is added to this source index so it doesn't lead to unbounded growth. This means that in this source index data will be deleted after `30 days` from ingested date.
