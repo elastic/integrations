@@ -36,7 +36,7 @@ Version 4.0.0 replaces the HTTPJSON input with the CEL input. This fixes a bug w
 Be aware of the following when upgrading:
 
 - **Credentials must be re-entered.** Because the input type has changed, existing integration policies must be updated and the Client ID, Client Secret, and Box Subject ID re-entered.
-- **The stored stream position is reset.** The cursor saved by the HTTPJSON input does not carry over to the CEL input, so after the upgrade the integration restarts collection from the beginning of the event stream that the Box API makes available. The maximum time range depends on the stream type used. This causes a one-time, bounded re-ingest of events that were already collected — expect some reprocessing and additional Box API calls. Re-ingested events won't create duplicates in a single backing index because there they are deduplicated by document ID (`_id`). However, a new backing index may repeat earlier document IDs.
+- **The stored stream position is reset.** The cursor saved by the HTTPJSON input does not carry over to the CEL input, so after the upgrade the integration restarts collection from the beginning of the event stream that the Box API makes available. The maximum time range depends on the stream type used. This causes a one-time, bounded re-ingest of events that were already collected — expect some reprocessing and additional Box API calls. If you're collecting the stream type `admin_logs`, you can re-ingest less history (14 days rather than 365 days) by switching to `admin_logs_streaming`. Re-ingested events won't create duplicates in a single backing index because there they are deduplicated by document ID (`_id`). However, a new backing index will allow re-ingestion of earlier document IDs.
 
 ## Box Events
 
