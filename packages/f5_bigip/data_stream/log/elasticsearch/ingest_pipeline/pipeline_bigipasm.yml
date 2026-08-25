@@ -528,7 +528,9 @@ processors:
         uri_parts would reject.
       source: |
         String host = ctx.f5_bigip.log.request.host;
-        if (!/^[\w.:\[\]-]+$/.matcher(host).matches()) {
+        boolean isNameOrIPv4 = /^[\w.-]+(?::\d+)?$/.matcher(host).matches();
+        boolean isBracketedIPv6 = /^\[[0-9A-Fa-f:.]+\](?::\d+)?$/.matcher(host).matches();
+        if (!isNameOrIPv4 && !isBracketedIPv6) {
           return;
         }
         if (ctx.url == null) {
@@ -540,9 +542,10 @@ processors:
       tag: uri_parts_url_original
       if: ctx.url?.original != null
       on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: url
+            tag: remove_invalid_url
+            ignore_missing: true
   - split:
       field: f5_bigip.log.request.x_forwarded_for
       tag: split_request_x_forwarded_for
@@ -685,8 +688,8 @@ processors:
       field: json.x_forwarded_for_header_value
       separator: ',\s*'
       ignore_missing: true
-  # BIG-IP copies the client's X-Forwarded-For header here verbatim, so a single unparseable entry
-  # must not discard the rest of the chain or fail the event.
+  # Validate each X-Forwarded-For address BIG-IP reports independently. Keep parseable entries and
+  # drop invalid ones so one bad value cannot fail the event or discard the rest of the chain.
   - foreach:
       field: json.x_forwarded_for_header_value
       tag: foreach_x_forwarded_for_header_value
