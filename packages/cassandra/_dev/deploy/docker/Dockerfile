@@ -11,7 +11,7 @@ ENV CASSANDRA_LIB=/var/lib/cassandra
 
 RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
-    apt-get update; \
+    apt-get -o Acquire::Retries=3 update; \
     apt-get install -y --no-install-recommends wget \
     &&  wget http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/${JOLOKIA_VERSION}/jolokia-jvm-${JOLOKIA_VERSION}-agent.jar -O jolokia-jvm-${JOLOKIA_VERSION}-agent.jar
 

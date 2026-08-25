@@ -9,7 +9,7 @@ ENV ACTIVEMQ_STOMP=61613 ACTIVEMQ_REST=8161
 
 RUN set -x && \
     mkdir -p /opt && \
-    apt-get update && \
+    apt-get -o Acquire::Retries=3 update && \
     apt-get install netcat-openbsd -y
 
 RUN curl --fail https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz -o $ACTIVEMQ-bin.tar.gz
