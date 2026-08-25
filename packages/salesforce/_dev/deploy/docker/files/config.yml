@@ -76,6 +76,75 @@ rules:
         headers:
           content-type: ["text/json"]
         body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # Login object: one bounded window, two SOQL pages (api 59.0).
+  - path: /services/data/v59.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":false,"nextRecordsUrl":"/nextRecords/LoginEvents/OBJECTBATCHPAGE","records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v59.0/sobjects/LoginEvent/000000000000011AAA"},"Id":"000000000000011AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"c3d4e5f6-pagination-login-event-page-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  - path: /nextRecords/LoginEvents/OBJECTBATCHPAGE
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v59.0/sobjects/LoginEvent/000000000000012AAA"},"Id":"000000000000012AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"c3d4e5f6-pagination-login-event-page-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  # Login object: three rows in one bounded window (api 60.0).
+  - path: /services/data/v60.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":3,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v60.0/sobjects/LoginEvent/000000000000021AAA"},"Id":"000000000000021AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"d4e5f6a7-multi-record-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"},{"attributes":{"type":"LoginEvent","url":"/services/data/v60.0/sobjects/LoginEvent/000000000000022AAA"},"Id":"000000000000022AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"d4e5f6a7-multi-record-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"},{"attributes":{"type":"LoginEvent","url":"/services/data/v60.0/sobjects/LoginEvent/000000000000023AAA"},"Id":"000000000000023AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"d4e5f6a7-multi-record-login-event-3","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:15.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  # Login object: first page succeeds, next page HTTP 500 (api 61.0).
+  - path: /services/data/v61.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":false,"nextRecordsUrl":"/nextRecords/LoginEvents/OBJECTBATCHFAIL","records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v61.0/sobjects/LoginEvent/000000000000031AAA"},"Id":"000000000000031AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"e5f6a7b8-pagination-failure-login-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  - path: /nextRecords/LoginEvents/OBJECTBATCHFAIL
+    methods: ["GET"]
+    responses:
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # Login object: sparse catch-up (api 62.0). Sequence is empty, row, empty, row, then empties.
+  - path: /services/data/v62.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v62.0/sobjects/LoginEvent/000000000000041AAA"},"Id":"000000000000041AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f6a7b8c9-sparse-windows-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v62.0/sobjects/LoginEvent/000000000000042AAA"},"Id":"000000000000042AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f6a7b8c9-sparse-windows-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
   # Setup Audit Trail
   - path: /services/data/v56.0/query/
     methods: ["GET"]
@@ -115,6 +184,43 @@ rules:
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v58.0/sobjects/LogoutEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"6f86fbe7-17a3-4a02-8dfe-dee2a38ab73a","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
         headers:
           content-type: ["text/json"]
+  # Logout object: empty windows then one row (api 57.0). Sequence is 2 empty, 1 row, 9 empty.
+  - path: /services/data/v57.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v57.0/sobjects/LogoutEvent/000000000000001AAA"},"Id":"000000000000001AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"a1b2c3d4-empty-windows-logout-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Logout object: first window succeeds, next window fails (api 58.0).
+  - path: /services/data/v58.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v58.0/sobjects/LogoutEvent/000000000000002AAA"},"Id":"000000000000002AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"b2c3d4e5-window-failure-logout-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
   # Apex ELF
   - path: /services/data/v56.0/query/
     methods: ["GET"]
