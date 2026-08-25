@@ -25,7 +25,7 @@ rules:
         body: |-
           "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","DB_TOTAL_TIME","BROWSER_TYPE","API_TYPE","API_VERSION","USER_NAME","TLS_PROTOCOL","CIPHER_SUITE","AUTHENTICATION_METHOD_REFERENCE","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED","LOGIN_STATUS","SOURCE_IP"
           "Login","20221122044615.591","4ehU_U-nbQyAPFl1cJILm-","00D5j000000VI3n","0055j000000utlP","83","30","/index.jsp","","QfNecrLXSII6fsBq","Standard","Success","52435102","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36","f","9998.0","user@elastic.co","TLSv1.2","ECDHE-RSA-AES256-GCM-SHA384","","2022-11-22T04:46:15.591Z","0055j000000utlPAAQ","81.2.69.142","s4heK3WbH-lcJIL3-n","LOGIN_NO_ERROR","81.2.69.142"
-  # Login Object
+  # Login Object (success: every bounded window returns one row)
   - path: /services/data/v56.0/query/
     methods: ["GET"]
     query_params:
@@ -35,6 +35,47 @@ rules:
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v58.0/sobjects/LoginEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f8c0ee8b-23a0-4c38-9c15-b054291d9a8b","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","RelatedEventIdentifier":null,"PolicyId":null,"PolicyOutcome":null,"EvaluationTime":0,"SessionKey":null,"LoginKey":"JpXdXgpRCtdCFkqA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","AdditionalInfo":"{}","ApiType":"N/A","ApiVersion":"N/A","Application":"elastic integration","AuthServiceId":null,"Browser":"Unknown","HttpMethod":"POST","CountryIso":"IN","LoginLatitude":21.9974,"LoginLongitude":79.0011,"Country":"India","City":null,"PostalCode":null,"Subdivision":null,"CipherSuite":"ECDHE-RSA-AES256-GCM-SHA384","ClientVersion":"N/A","LoginGeoId":"04FJ4000005zJdFMAA","LoginHistoryId":"0YaJ4000005wlPPKAA","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","Platform":"Unknown","Status":"Success","TlsProtocol":"TLS 1.2","UserType":"Standard","AuthMethodReference":null,"LoginSubType":"OAuth Username-Password"}]}'
         headers:
           content-type: ["text/json"]
+  # Login object: empty windows then one row (api 57.0). Sequence is 2 empty, 1 row, 9 empty.
+  - path: /services/data/v57.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - &sf_empty_soql
+        status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":0,"done":true,"records":[]}'
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v57.0/sobjects/LoginEvent/000000000000001AAA"},"Id":"000000000000001AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"a1b2c3d4-empty-windows-login-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object: first window succeeds, next window fails (api 58.0).
+  - path: /services/data/v58.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v58.0/sobjects/LoginEvent/000000000000002AAA"},"Id":"000000000000002AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"b2c3d4e5-window-failure-login-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
   # Setup Audit Trail
   - path: /services/data/v56.0/query/
     methods: ["GET"]
