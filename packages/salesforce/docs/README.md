@@ -14,7 +14,7 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window. Real-time `LoginEvent` and `LogoutEvent` collection uses bounded time windows so catch-up cannot issue an unbounded SOQL query. EventLogFile and SetupAuditTrail resume by timestamp and Salesforce Id so rows that share a timestamp are not skipped.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
@@ -32,7 +32,7 @@ The Salesforce integration collects the following events using the Salesforce RE
 
 ## Compatibility
 
-This integration has been tested against the Salesforce Winter '26 (v65.0). The minimum supported version is v46.0.
+This integration requires Elastic Agent 9.5.0 and Kibana 9.5.0 (or later). It has been tested against the Salesforce Winter '26 (v65.0). The minimum supported Salesforce API version is v46.0.
 
 To determine your Salesforce instance version, use one of the following methods:
 
@@ -113,13 +113,14 @@ For step-by-step instructions on how to set up an integration, see [Getting star
 3. Enter your Salesforce instance URL and API version.
 4. Choose an authentication method:
    - JWT bearer flow: set Client ID, Username, Private key path (PEM), and JWT audience URL.
-   - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (base domain).
+   - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (login host or full token endpoint).
 5. For `login` and `logout`, choose which sources to collect:
    - EventLogFile (batch logs)
    - Platform Events (`LoginEvent`, `LogoutEvent`)
 6. Optional tuning:
-   - Set an initial interval to backfill historical data.
+   - Set an initial interval to backfill historical data. For EventLogFile this is a first-run CreatedDate lookback; for real-time Login and Logout events, that lookback is drained in bounded windows over subsequent polls.
    - Adjust the collection interval per source.
+   - Login and Logout real-time events use automatic bounded batching; no separate batching option is required.
    - Optionally filter EventLogFile by log file interval (for example, hourly).
    - In Advanced options, adjust the request timeout if Salesforce responses are slow.
 
@@ -130,7 +131,7 @@ To configure the Salesforce integration, you need the following information:
 - [Salesforce instance URL](#salesforce-instance-url)
 - [Authentication methods](#authentication-methods): choose one of the following and gather the required values:
   - JWT bearer flow: Client ID, Username, JWT audience URL, Private key path (PEM)
-  - Username-Password flow: Client ID, Client Secret, Username, Password (+ security token if required), Token URL (base domain)
+  - Username-Password flow: Client ID, Client Secret, Username, Password (+ security token if required), Token URL (login host or full token endpoint)
 - [API version](#api-version)
 
 #### Authentication methods
@@ -197,7 +198,7 @@ Use this flow with Salesforce integration v0.15.0 or later on any deployment whe
 Username-Password flow (alternative):
 
 1. Use the `Connected App`'s `Consumer Key` and `Consumer Secret`.
-2. In Elastic, set `Username`, `Password` (append security token if required), `Client ID`, `Client Secret`, and `Token URL` (instance base domain; `/services/oauth2/token` is appended internally).
+2. In Elastic, set `Username`, `Password` (append security token if required), `Client ID`, `Client Secret`, and `Token URL` (login host such as `https://login.salesforce.com`, or the full endpoint ending in `/services/oauth2/token`).
 
 IMPORTANT: For security reasons, Salesforce blocks the OAuth 2.0 Username-Password flow by default in recent releases. Prefer the JWT bearer flow. If you must use the Username-Password flow, in `OAuth and OpenID Connect Settings`, select `Allow OAuth Username-Password Flows`. For more information, see the Salesforce release note: [Username-Password OAuth flow blocked by default](https://help.salesforce.com/s/articleView?id=release-notes.rn_security_username-password_flow_blocked_by_default.htm&language=en_US&release=244&type=5).
 
@@ -215,10 +216,10 @@ When using a Salesforce instance with a security token, append the token directl
 
 #### Token URL
 
-The Salesforce integration uses the token URL to obtain authentication tokens for API access. **Important:** The integration internally appends `/services/oauth2/token` to the URL you provide, so you should enter only the base URL.
+The Salesforce integration uses the token URL to obtain authentication tokens for API access. You can enter either the OAuth host or the full token endpoint; both forms are accepted.
 
-1. For most Salesforce instances, enter: `https://login.salesforce.com`
-2. For Salesforce sandbox environments, enter: `https://test.salesforce.com`
+1. For most Salesforce instances, enter: `https://login.salesforce.com` (or `https://login.salesforce.com/services/oauth2/token`)
+2. For Salesforce sandbox environments, enter: `https://test.salesforce.com` (or `https://test.salesforce.com/services/oauth2/token`)
 3. For custom Salesforce domains, enter your custom domain base URL. For example, if your custom domain is `mycompany.my.salesforce.com`, enter: `https://mycompany.my.salesforce.com`
 
 In most cases, the Token URL is the same as the Salesforce instance URL.
@@ -331,10 +332,13 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 
 ## Performance and scaling
 
-- Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage.
-- Backfill: Use the initial interval to safely ingest historical data. Large backfills may consume significant Salesforce API quotas; consider staging by data stream.
-- Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower-latency signals but may have throughput and retention limits in your org.
-- Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large result sets are expected.
+- Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage. For real-time Login and Logout events, bounded batching is enabled automatically. The real-time period is also the object catch-up window size. Each poll collects up to the configured maximum number of windows (default 12), so a 5-minute period catches up at most one hour of backlog per tick by default.
+- Backfill: Use the initial interval to safely ingest historical data. EventLogFile and Setup Audit Trail apply that lookback on the first query, then resume with CreatedDate plus Salesforce Id. Real-time Login and Logout events drain the same lookback in bounded windows, so a large first-run interval can take many polls. Large backfills may consume significant Salesforce API quotas; consider staging by data stream or by adding separate Salesforce integration policies for EventLogFile and real-time object collection.
+- High-volume real-time events: If a single LoginEvent or LogoutEvent batch window returns too many rows, reduce the real-time period to make each bounded SOQL query smaller. To catch up faster during large backfills, increase the advanced maximum real-time batch windows setting. This increases Salesforce API usage, so tune it carefully.
+- EventLogFile availability: Salesforce hourly event log files are generated after the activity period and can arrive several hours later, or later during Salesforce processing delays. The integration uses `CreatedDate` plus Salesforce `Id` to resume from newly generated files without relying on `LogDate`.
+- Login/Logout sources: EventLogFile is efficient for delayed batched reporting; real-time objects provide lower-latency signals but may have throughput, license, and storage behavior that varies by org.
+- Authentication scale: Salesforce can revoke older OAuth access tokens when too many inputs use the same user and connected app. For many agents or duplicated policies, distribute collection across multiple connected apps or integration users.
+- Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large EventLogFile downloads are expected.
 
 ## Reference
 
