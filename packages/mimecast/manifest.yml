@@ -1,7 +1,7 @@
-format_version: "3.3.2"
+format_version: "3.6.0"
 name: mimecast
 title: "Mimecast"
-version: "3.4.4"
+version: "3.7.0"
 description: Collect logs from Mimecast with Elastic Agent.
 type: integration
 categories: ["security", "email_security"]
@@ -27,14 +27,47 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
-        release: beta
+        release: ga
         organization: security
         division: engineering
         team: security-service-integrations
     inputs:
+      - type: cel
+        title: Mimecast v2 API
+        description: Collect logs from Mimecast API v2 Endpoints
+        vars:
+          - name: api_url
+            type: text
+            title: API URL
+            description: API URL.
+            multi: false
+            required: true
+            show_user: false
+            default: https://api.services.mimecast.com
+          - name: client_id
+            type: text
+            title: Client ID for v2 API Endpoints
+            description: Set Client ID.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: client_secret
+            type: password
+            title: Client Secret for v2 API Endpoints
+            description: Set Client Secret.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
       - type: httpjson
-        title: Mimecast v1 API
-        description: Collect logs from Mimecast API v1 Endpoints
+        title: Mimecast v1 API (deprecated)
+        description: "Deprecated: Collect logs from Mimecast API v1 Endpoints"
+        deprecated:
+          since: "3.6.0"
+          description: "The Mimecast v1 API input is deprecated. Use the Mimecast v2 API input instead."
+          replaced_by:
+            input: cel
         vars:
           - name: api_url
             type: text
@@ -76,34 +109,6 @@ policy_templates:
             required: true
             show_user: true
             secret: true
-      - type: cel
-        title: Mimecast v2 API
-        description: Collect logs from Mimecast API v2 Endpoints
-        vars:
-          - name: api_url
-            type: text
-            title: API URL
-            description: API URL.
-            multi: false
-            required: true
-            show_user: false
-            default: https://api.services.mimecast.com
-          - name: client_id
-            type: text
-            title: Client ID for v2 API Endpoints
-            description: Set Client ID.
-            multi: false
-            required: true
-            show_user: true
-            secret: true
-          - name: client_secret
-            type: password
-            title: Client Secret for v2 API Endpoints
-            description: Set Client Secret.
-            multi: false
-            required: true
-            show_user: true
-            secret: true
 owner:
   github: elastic/security-service-integrations
-  type: partner
+  type: elastic

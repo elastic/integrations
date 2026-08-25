@@ -7,11 +7,11 @@ processors:
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
   - set:
       tag: set_event_action_9543b2bf
       field: event.action
@@ -30,87 +30,87 @@ processors:
       field: crowdstrike.event.DetectDescription
       target_field: message
       ignore_missing: true
-      tag: rename_detect_description
+      tag: rename_detect_description_ddcdd7d9
   - rename:
       field: crowdstrike.event.LocationCountryCode
       target_field: host.geo.country_iso_code
       ignore_missing: true
-      tag: rename_location_country_code
+      tag: rename_location_country_code_e305ad71
   - convert:
       field: crowdstrike.event.PatternId
       target_field: rule.uuid
       type: string
-      tag: convert_pattern_id
+      tag: convert_pattern_id_af3129f2
       ignore_missing: true
   - rename:
       field: crowdstrike.event.SourceAccountDomain
       target_field: user.domain
       ignore_missing: true
-      tag: rename_source_account_domain
+      tag: rename_source_account_domain_0833c2d3
   - rename:
       field: crowdstrike.event.SourceAccountName
       target_field: user.name
       ignore_missing: true
-      tag: rename_source_account_name
+      tag: rename_source_account_name_9e2a6daa
   - rename:
       field: crowdstrike.event.SourceAccountObjectSid
       target_field: user.id
       ignore_missing: true
-      tag: rename_source_account_object_sid
+      tag: rename_source_account_object_sid_f2f0dae4
   - rename:
       field: crowdstrike.event.SourceEndpointHostName
       target_field: host.name
       ignore_missing: true
-      tag: rename_source_endpoint_hostname
+      tag: rename_source_endpoint_hostname_2f47a1ba
   - append:
       field: host.ip
       value: '{{{crowdstrike.event.SourceEndpointIpAddress}}}'
       if: ctx.crowdstrike?.event?.SourceEndpointIpAddress != null && ctx.crowdstrike.event.SourceEndpointIpAddress != ''
-      tag: append_host_ip
+      tag: append_host_ip_20d592e8
   - remove:
       field: crowdstrike.event.SourceEndpointIpAddress
       if: ctx.crowdstrike?.event?.SourceEndpointIpAddress != null
-      tag: remove_host_ip
+      tag: remove_host_ip_74c6d519
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
-      tag: append_technique_name
+      tag: append_technique_name_a3e26449
       if: ctx.crowdstrike?.event?.Technique != null
   - append:
       field: threat.technique.id
       value: "{{{crowdstrike.event.TechniqueId}}}"
-      tag: append_technique_id
+      tag: append_technique_id_2de189a2
       if: ctx.crowdstrike?.event?.TechniqueId != null
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
-      tag: append_tactic_name
+      tag: append_tactic_name_369a6cb5
       if: ctx.crowdstrike?.event?.Tactic != null
   - append:
       field: threat.tactic.id
       value: "{{{crowdstrike.event.TacticId}}}"
-      tag: append_tactic_id
+      tag: append_tactic_id_d732fb38
       if: ctx.crowdstrike?.event?.TacticId != null
   - set:
       field: rule.description
       copy_from: message
-      tag: set_rule_description
+      tag: set_rule_description_cd529b3d
       if: ctx.message != null
   - rename:
       field: crowdstrike.event.DetectName
       target_field: rule.name
       ignore_missing: true
-      tag: rename_detect_name
+      tag: rename_detect_name_e7b04914
   - rename:
       field: crowdstrike.event.DetectId
       target_field: rule.id
       ignore_missing: true
-      tag: rename_detect_id
+      tag: rename_detect_id_a74b89ee
   - rename:
       field: crowdstrike.event.FalconHostLink
       target_field: event.reference
       ignore_missing: true
-      tag: rename_falcon_host_link
+      tag: rename_falcon_host_link_7d3b772f
   - remove:
       tag: remove_9545c61d
       field:
@@ -120,14 +120,14 @@ processors:
   - convert:
       field: crowdstrike.event.ContextTimeStamp
       type: string
-      tag: convert_context_timestamp
+      tag: convert_context_timestamp_16c11f39
       ignore_missing: true
       if: ctx.crowdstrike?.event?.ContextTimeStamp != null
   - gsub:
       field: crowdstrike.event.ContextTimeStamp
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_context_timestamp
+      tag: gsub_context_timestamp_b144cc38
       if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() > 18"
   - date:
       field: crowdstrike.event.ContextTimeStamp
@@ -135,7 +135,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_context_timestamp_ms
+      tag: date_context_timestamp_ms_c5e87fce
       if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() >= 12"
   - date:
       field: crowdstrike.event.ContextTimeStamp
@@ -143,19 +143,19 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_context_timestamp
+      tag: date_context_timestamp_93e16482
       if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() <= 11'
   - convert:
       field: crowdstrike.event.AccountCreationTimeStamp
       type: string
-      tag: convert_account_creation_timestamp
+      tag: convert_account_creation_timestamp_45dc6791
       ignore_missing: true
       if: ctx.crowdstrike?.event?.AccountCreationTimeStamp != null
   - gsub:
       field: crowdstrike.event.AccountCreationTimeStamp
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_account_creation_timestamp
+      tag: gsub_account_creation_timestamp_4bf72a49
       if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() > 18"
   - date:
       field: crowdstrike.event.AccountCreationTimeStamp
@@ -163,7 +163,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_account_creation_timestamp_ms
+      tag: date_account_creation_timestamp_ms_6f585477
       if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() >= 12"
   - date:
       field: crowdstrike.event.AccountCreationTimeStamp
@@ -171,19 +171,19 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_account_creation_timestamp
+      tag: date_account_creation_timestamp_50bfee79
       if: 'ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() <= 11'
   - convert:
       field: crowdstrike.event.StartTime
       type: string
-      tag: convert_start_time_epoch
+      tag: convert_start_time_epoch_8473a450
       ignore_missing: true
       if: ctx.crowdstrike?.event?.StartTime != null
   - gsub:
       field: crowdstrike.event.StartTime
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_start_time_epoch
+      tag: gsub_start_time_epoch_fdcdc432
       if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() > 18"
   - date:
       field: crowdstrike.event.StartTime
@@ -191,7 +191,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_start_time_epoch_ms
+      tag: date_event_start_time_epoch_ms_24d4db1c
       if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() >= 12"
   - date:
       field: crowdstrike.event.StartTime
@@ -199,19 +199,19 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_start_time_epoch
+      tag: date_event_start_time_epoch_b6a1bedf
       if: 'ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() <= 11'
   - convert:
       field: crowdstrike.event.EndTime
       type: string
-      tag: convert_end_time_epoch
+      tag: convert_end_time_epoch_3e957e29
       ignore_missing: true
       if: ctx.crowdstrike?.event?.EndTime != null
   - gsub:
       field: crowdstrike.event.EndTime
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_end_time_epoch
+      tag: gsub_end_time_epoch_20a11650
       if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() > 18"
   - date:
       field: crowdstrike.event.EndTime
@@ -219,7 +219,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_end_time_epoch_ms
+      tag: date_event_end_time_epoch_ms_f22ca139
       if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() >= 12"
   - date:
       field: crowdstrike.event.EndTime
@@ -227,60 +227,63 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_end_time_epoch
+      tag: date_event_end_time_epoch_54a08e9c
       if: 'ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() <= 11'
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.TargetEndpointHostName}}}"
       allow_duplicates: false
-      tag: append_target_endpoint_hostname
+      tag: append_target_endpoint_hostname_d141f632
       if: ctx.crowdstrike?.event?.TargetEndpointHostName != null
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.TargetDomain}}}"
       allow_duplicates: false
-      tag: append_target_domain
+      tag: append_target_domain_b5b07b5f
       if: ctx.crowdstrike?.event?.TargetDomain != null
   - append:
       field: related.user
       value: "{{{crowdstrike.event.TargetAccountName}}}"
       allow_duplicates: false
-      tag: append_target_account_name
+      tag: append_target_account_name_cb94dace
       if: ctx.crowdstrike?.event?.TargetAccountName != null
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.AdditionalAccountDomain}}}"
       allow_duplicates: false
-      tag: append_additional_account_domain
+      tag: append_additional_account_domain_593cccb0
       if: ctx.crowdstrike?.event?.AdditionalAccountDomain != null
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.AdditionalAccountName}}}"
       allow_duplicates: false
-      tag: append_additional_account_name
+      tag: append_additional_account_name_cb0b8f40
       if: ctx.crowdstrike?.event?.AdditionalAccountName != null
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.AdditionalEndpointHostName}}}"
       allow_duplicates: false
-      tag: append_additional_endpoint_hostname
+      tag: append_additional_endpoint_hostname_46fb1715
       if: ctx.crowdstrike?.event?.AdditionalEndpointHostName != null
   - append:
       field: related.ip
       value: "{{{crowdstrike.event.AdditionalEndpointIpAddress}}}"
       allow_duplicates: false
-      tag: append_additional_endpoint_ip
+      tag: append_additional_endpoint_ip_cbda0da9
       if: ctx.crowdstrike?.event?.AdditionalEndpointIpAddress != null
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
