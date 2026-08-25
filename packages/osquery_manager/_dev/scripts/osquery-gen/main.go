@@ -114,13 +114,23 @@ func main() {
 	}
 
 	log.Printf("Resolved versions: osquery=%s beats=%s ecs=%s", osqueryVersion, beatsRef, ecsVersion)
-	if *updatePackage && osqueryVersion != strings.TrimSpace(cfg.Osquery.Version) {
+	runCheck := !*skipPackageCheck
+	shouldUpdatePackage := *updatePackage && osqueryVersion != strings.TrimSpace(cfg.Osquery.Version)
+	// Generate before bumping manifest/changelog so a failed generation does not leave
+	// package metadata partially updated. Run elastic-package check after metadata writes
+	// so validation covers the final package state.
+	if err := generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, *beatsPath, cfg.ECS.KeepFields, !shouldUpdatePackage && runCheck); err != nil {
+		log.Fatalf("generate artifacts: %v", err)
+	}
+	if shouldUpdatePackage {
 		if err := updatePackageMetadata(outputRoot, osqueryVersion, *changelogLink, *kibanaVersion); err != nil {
 			log.Fatalf("update package metadata: %v", err)
 		}
-	}
-	if err := generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, *beatsPath, cfg.ECS.KeepFields, !*skipPackageCheck); err != nil {
-		log.Fatalf("generate artifacts: %v", err)
+		if runCheck {
+			if err := runElasticPackageCheck(outputRoot, "osquery_manager"); err != nil {
+				log.Fatalf("elastic-package check: %v", err)
+			}
+		}
 	}
 	if *updateConfig {
 		if err := updateConfigOsqueryVersion(*cfgPath, osqueryVersion); err != nil {
@@ -143,9 +153,10 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	}
 	kibanaVersion = strings.TrimSpace(kibanaVersion)
 	if kibanaVersion == "" {
-		return errors.New("KIBANA_VERSION is required to identify stack releases containing the upgraded osquery runtime")
+		return errors.New("-kibana-version or KIBANA_VERSION is required to identify stack releases containing the upgraded osquery runtime")
 	}
-	kibanaVersionRE := regexp.MustCompile(`(?m)^(  kibana:\s*\n    version:)\s*"[^"]+"\s*$`)
+	// Allow flexible indentation and single/double/unquoted constraints under kibana:.
+	kibanaVersionRE := regexp.MustCompile(`(?m)^([ \t]*kibana:[ \t]*\n[ \t]*version:)[ \t]*["']?[^"'#\n]+["']?[ \t]*$`)
 	if !kibanaVersionRE.Match(manifest) {
 		return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
 	}
@@ -170,7 +181,7 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 		return os.WriteFile(manifestPath, manifest, 0o644)
 	}
 	if !regexp.MustCompile(`^https://github\.com/[^/]+/[^/]+/(?:issues|pull)/[1-9][0-9]*$`).MatchString(strings.TrimSpace(changelogLink)) {
-		return errors.New("CHANGELOG_LINK must be a GitHub issue or pull request URL with a positive number")
+		return errors.New("-changelog-link or CHANGELOG_LINK must be a GitHub issue or pull request URL with a positive number")
 	}
 	major, _ := strconv.Atoi(string(match[1]))
 	minor, _ := strconv.Atoi(string(match[2]))

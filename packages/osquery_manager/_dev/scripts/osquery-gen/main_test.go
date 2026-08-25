@@ -76,3 +76,40 @@ func TestUpdatePackageMetadata(t *testing.T) {
 		t.Fatalf("duplicate changelog entry:\n%s", changelog)
 	}
 }
+
+func TestUpdatePackageMetadataKibanaVersionFormats(t *testing.T) {
+	cases := []struct {
+		name   string
+		kibana string
+	}{
+		{name: "double-quoted", kibana: "conditions:\n  kibana:\n    version: \"^9.4.2\"\n"},
+		{name: "single-quoted", kibana: "conditions:\n  kibana:\n    version: '^9.4.2'\n"},
+		{name: "unquoted-tabs", kibana: "conditions:\n\tkibana:\n\t\tversion: ^9.4.2\n"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			packageDir := filepath.Join(root, "packages", "osquery_manager")
+			if err := os.MkdirAll(packageDir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			manifest := "name: osquery_manager\nversion: 1.33.2\n" + tc.kibana
+			if err := os.WriteFile(filepath.Join(packageDir, "manifest.yml"), []byte(manifest), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte("# newer versions go on top\n- version: \"1.33.2\"\n  changes: []\n"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/pull/1", "~9.4.6 || ^9.5.2"); err != nil {
+				t.Fatal(err)
+			}
+			updated, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(string(updated), `version: "~9.4.6 || ^9.5.2"`) {
+				t.Fatalf("kibana version not updated:\n%s", updated)
+			}
+		})
+	}
+}
