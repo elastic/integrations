@@ -115,14 +115,19 @@ func main() {
 
 	log.Printf("Resolved versions: osquery=%s beats=%s ecs=%s", osqueryVersion, beatsRef, ecsVersion)
 	runCheck := !*skipPackageCheck
-	// A prior run may have regenerated schemas (bumping metadata.json) yet failed before
-	// writing manifest/changelog. Decide from the changelog so a corrected re-run still
-	// completes the bump; updatePackageMetadata is itself idempotent when the entry exists.
+	// Decide from the changelog so a corrected re-run still completes the bump after a
+	// prior run regenerated schemas (or wrote the changelog) but failed before finishing
+	// package metadata. Also re-enter when the changelog entry exists but the manifest
+	// version lags, so updatePackageMetadata can sync them.
 	alreadyReleased, err := changelogHasOsquerySchemaVersion(outputRoot, osqueryVersion)
 	if err != nil {
 		log.Fatalf("inspect changelog: %v", err)
 	}
-	shouldUpdatePackage := *updatePackage && !alreadyReleased
+	needsManifestSync, err := manifestVersionLagsChangelog(outputRoot)
+	if err != nil {
+		log.Fatalf("compare manifest and changelog versions: %v", err)
+	}
+	shouldUpdatePackage := *updatePackage && (!alreadyReleased || needsManifestSync)
 	// Generate before bumping manifest/changelog so a failed generation does not leave
 	// package metadata partially updated. Run elastic-package check after metadata writes
 	// so validation covers the final package state.
@@ -153,12 +158,42 @@ func changelogHasOsquerySchemaVersion(repoRoot, osqueryVersion string) (bool, er
 	if err != nil {
 		return false, err
 	}
-	return strings.Contains(string(b), osquerySchemaUpgradeDescription(osqueryVersion)), nil
+	return changelogContainsOsquerySchemaVersion(string(b), osqueryVersion), nil
 }
 
-func osquerySchemaUpgradeDescription(osqueryVersion string) string {
-	return "description: Upgrade osquery schema artifacts to version " + osqueryVersion
+func changelogContainsOsquerySchemaVersion(changelog, osqueryVersion string) bool {
+	// Require a non-digit (or end) after the version so 5.23.1 does not match 5.23.10.
+	re := regexp.MustCompile(`description: Upgrade osquery schema artifacts to version ` + regexp.QuoteMeta(osqueryVersion) + `(?:[^0-9]|$)`)
+	return re.MatchString(changelog)
 }
+
+func manifestVersionLagsChangelog(repoRoot string) (bool, error) {
+	packageDir := filepath.Join(repoRoot, "packages", "osquery_manager")
+	manifest, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
+	if err != nil {
+		return false, err
+	}
+	manifestVersion := packageManifestVersionRE.FindSubmatch(manifest)
+	if manifestVersion == nil {
+		return false, fmt.Errorf("package version not found in %s", filepath.Join(packageDir, "manifest.yml"))
+	}
+	changelog, err := os.ReadFile(filepath.Join(packageDir, "changelog.yml"))
+	if err != nil {
+		return false, err
+	}
+	topVersion := changelogTopVersionRE.FindSubmatch(changelog)
+	if topVersion == nil {
+		return false, fmt.Errorf("top package version not found in %s", filepath.Join(packageDir, "changelog.yml"))
+	}
+	current := string(manifestVersion[1]) + "." + string(manifestVersion[2]) + "." + string(manifestVersion[3])
+	return current != string(topVersion[1]), nil
+}
+
+var (
+	// Accept unquoted or single/double-quoted package versions used across package manifests.
+	packageManifestVersionRE = regexp.MustCompile(`(?m)^version:\s*["']?([0-9]+)\.([0-9]+)\.([0-9]+)["']?\s*$`)
+	changelogTopVersionRE    = regexp.MustCompile(`(?m)^- version: "([0-9]+\.[0-9]+\.[0-9]+)"$`)
+)
 
 func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersion string) error {
 	manifestPath := filepath.Join(repoRoot, "packages", "osquery_manager", "manifest.yml")
@@ -166,9 +201,7 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	if err != nil {
 		return err
 	}
-	// Accept unquoted or single/double-quoted package versions used across package manifests.
-	versionRE := regexp.MustCompile(`(?m)^version:\s*["']?([0-9]+)\.([0-9]+)\.([0-9]+)["']?\s*$`)
-	match := versionRE.FindSubmatch(manifest)
+	match := packageManifestVersionRE.FindSubmatch(manifest)
 	if match == nil {
 		return fmt.Errorf("package version not found in %s", manifestPath)
 	}
@@ -192,12 +225,12 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	if !strings.HasPrefix(string(changelog), header) {
 		return fmt.Errorf("unexpected changelog header in %s", changelogPath)
 	}
-	if strings.Contains(string(changelog), osquerySchemaUpgradeDescription(osqueryVersion)) {
-		topVersion := regexp.MustCompile(`(?m)^- version: "([0-9]+\.[0-9]+\.[0-9]+)"$`).FindSubmatch(changelog)
+	if changelogContainsOsquerySchemaVersion(string(changelog), osqueryVersion) {
+		topVersion := changelogTopVersionRE.FindSubmatch(changelog)
 		if topVersion == nil {
 			return fmt.Errorf("top package version not found in %s", changelogPath)
 		}
-		manifest = versionRE.ReplaceAll(manifest, []byte("version: "+string(topVersion[1])))
+		manifest = packageManifestVersionRE.ReplaceAll(manifest, []byte("version: "+string(topVersion[1])))
 		return os.WriteFile(manifestPath, manifest, 0o644)
 	}
 	if !regexp.MustCompile(`^https://github\.com/[^/]+/[^/]+/(?:issues|pull)/[1-9][0-9]*$`).MatchString(strings.TrimSpace(changelogLink)) {
@@ -211,7 +244,7 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	if err := os.WriteFile(changelogPath, []byte(updated), 0o644); err != nil {
 		return err
 	}
-	manifest = versionRE.ReplaceAll(manifest, []byte("version: "+nextVersion))
+	manifest = packageManifestVersionRE.ReplaceAll(manifest, []byte("version: "+nextVersion))
 	return os.WriteFile(manifestPath, manifest, 0o644)
 }
 

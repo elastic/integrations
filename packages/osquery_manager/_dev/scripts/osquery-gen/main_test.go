@@ -127,6 +127,72 @@ func TestChangelogHasOsquerySchemaVersion(t *testing.T) {
 	}
 }
 
+func TestChangelogContainsOsquerySchemaVersionPrefix(t *testing.T) {
+	changelog := "- description: Upgrade osquery schema artifacts to version 5.23.10; require Kibana ^9.5.2 so the upgraded runtime is available\n"
+	if changelogContainsOsquerySchemaVersion(changelog, "5.23.1") {
+		t.Fatal("5.23.1 must not match a 5.23.10 changelog entry")
+	}
+	if !changelogContainsOsquerySchemaVersion(changelog, "5.23.10") {
+		t.Fatal("expected exact 5.23.10 match")
+	}
+}
+
+func TestManifestVersionLagsChangelog(t *testing.T) {
+	root := t.TempDir()
+	packageDir := filepath.Join(root, "packages", "osquery_manager")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "manifest.yml"), []byte("name: osquery_manager\nversion: 1.33.2\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte("# newer versions go on top\n- version: \"1.34.0\"\n  changes: []\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	lags, err := manifestVersionLagsChangelog(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !lags {
+		t.Fatal("expected manifest to lag changelog")
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "manifest.yml"), []byte("name: osquery_manager\nversion: 1.34.0\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	lags, err = manifestVersionLagsChangelog(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lags {
+		t.Fatal("expected manifest to match changelog")
+	}
+}
+
+func TestUpdatePackageMetadataSyncsManifestWhenChangelogExists(t *testing.T) {
+	root := t.TempDir()
+	packageDir := filepath.Join(root, "packages", "osquery_manager")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "manifest.yml"), []byte("name: osquery_manager\nversion: 1.33.2\nconditions:\n  kibana:\n    version: \"^9.4.2\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	changelog := "# newer versions go on top\n- version: \"1.34.0\"\n  changes:\n    - description: Upgrade osquery schema artifacts to version 5.23.1; require Kibana ~9.4.6 || ^9.5.2 so the upgraded runtime is available\n      type: enhancement\n      link: https://github.com/elastic/integrations/pull/1\n"
+	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte(changelog), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := updatePackageMetadata(root, "5.23.1", "", "~9.4.6 || ^9.5.2"); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(manifest), "version: 1.34.0") || !strings.Contains(string(manifest), `version: "~9.4.6 || ^9.5.2"`) {
+		t.Fatalf("manifest not synced from changelog:\n%s", manifest)
+	}
+}
+
 func TestUpdatePackageMetadataKibanaVersionFormats(t *testing.T) {
 	cases := []struct {
 		name   string
