@@ -181,15 +181,19 @@ func TestUpdatePackageMetadataSyncsManifestWhenChangelogExists(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte(changelog), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := updatePackageMetadata(root, "5.23.1", "", "~9.4.6 || ^9.5.2"); err != nil {
+	// Sync-only recovery must work without re-supplying Kibana constraints.
+	if err := updatePackageMetadata(root, "5.23.1", "", ""); err != nil {
 		t.Fatal(err)
 	}
 	manifest, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(manifest), "version: 1.34.0") || !strings.Contains(string(manifest), `version: "~9.4.6 || ^9.5.2"`) {
-		t.Fatalf("manifest not synced from changelog:\n%s", manifest)
+	if !strings.Contains(string(manifest), "version: 1.34.0") {
+		t.Fatalf("manifest version not synced from changelog:\n%s", manifest)
+	}
+	if !strings.Contains(string(manifest), `version: "^9.4.2"`) {
+		t.Fatalf("existing kibana constraint should be preserved when omitted:\n%s", manifest)
 	}
 }
 

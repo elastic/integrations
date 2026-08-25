@@ -205,16 +205,6 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	if match == nil {
 		return fmt.Errorf("package version not found in %s", manifestPath)
 	}
-	kibanaVersion = strings.TrimSpace(kibanaVersion)
-	if kibanaVersion == "" {
-		return errors.New("-kibana-version or KIBANA_VERSION is required to identify stack releases containing the upgraded osquery runtime")
-	}
-	// Allow flexible indentation and single/double/unquoted constraints under kibana:.
-	kibanaVersionRE := regexp.MustCompile(`(?m)^([ \t]*kibana:[ \t]*\n[ \t]*version:)[ \t]*["']?[^"'#\n]+["']?[ \t]*$`)
-	if !kibanaVersionRE.Match(manifest) {
-		return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
-	}
-	manifest = kibanaVersionRE.ReplaceAll(manifest, []byte(`${1} "`+kibanaVersion+`"`))
 
 	changelogPath := filepath.Join(repoRoot, "packages", "osquery_manager", "changelog.yml")
 	changelog, err := os.ReadFile(changelogPath)
@@ -225,7 +215,20 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	if !strings.HasPrefix(string(changelog), header) {
 		return fmt.Errorf("unexpected changelog header in %s", changelogPath)
 	}
+
+	kibanaVersion = strings.TrimSpace(kibanaVersion)
+	// Allow flexible indentation and single/double/unquoted constraints under kibana:.
+	kibanaVersionRE := regexp.MustCompile(`(?m)^([ \t]*kibana:[ \t]*\n[ \t]*version:)[ \t]*["']?[^"'#\n]+["']?[ \t]*$`)
+
 	if changelogContainsOsquerySchemaVersion(string(changelog), osqueryVersion) {
+		// Sync-only recovery path: changelog entry already exists. Kibana constraints are
+		// optional here; apply them only when explicitly provided.
+		if kibanaVersion != "" {
+			if !kibanaVersionRE.Match(manifest) {
+				return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
+			}
+			manifest = kibanaVersionRE.ReplaceAll(manifest, []byte(`${1} "`+kibanaVersion+`"`))
+		}
 		topVersion := changelogTopVersionRE.FindSubmatch(changelog)
 		if topVersion == nil {
 			return fmt.Errorf("top package version not found in %s", changelogPath)
@@ -233,6 +236,14 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 		manifest = packageManifestVersionRE.ReplaceAll(manifest, []byte("version: "+string(topVersion[1])))
 		return os.WriteFile(manifestPath, manifest, 0o644)
 	}
+
+	if kibanaVersion == "" {
+		return errors.New("-kibana-version or KIBANA_VERSION is required to identify stack releases containing the upgraded osquery runtime")
+	}
+	if !kibanaVersionRE.Match(manifest) {
+		return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
+	}
+	manifest = kibanaVersionRE.ReplaceAll(manifest, []byte(`${1} "`+kibanaVersion+`"`))
 	if !regexp.MustCompile(`^https://github\.com/[^/]+/[^/]+/(?:issues|pull)/[1-9][0-9]*$`).MatchString(strings.TrimSpace(changelogLink)) {
 		return errors.New("-changelog-link or CHANGELOG_LINK must be a GitHub issue or pull request URL with a positive number")
 	}
