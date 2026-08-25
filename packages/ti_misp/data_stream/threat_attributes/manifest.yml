@@ -37,13 +37,22 @@ streams:
         description: How far back to look for indicators the first time the agent is started. Supported units for this parameter are h/m/s.
       - name: daily_refetch
         type: bool
-        title: Enable Daily Refetch
+        title: Enable Refetch
         multi: false
         required: false
         show_user: true
         default: false
         description: >-
-          When enabled, the integration performs a daily full refetch of all attributes from the MISP API (every 24 hours), ignoring the cursor and re-fetching from Initial Interval. This ensures decay scores are updated and attributes marked as decayed by MISP's decay models are removed from destination indices.
+          When enabled, the integration periodically performs a full refetch of all attributes from the MISP API, ignoring the cursor and re-fetching from Initial Interval. The cadence is controlled by Refetch Interval (default 24 hours). This ensures decay scores are updated and attributes marked as decayed by MISP's decay models are removed from destination indices.
+      - name: refetch_interval
+        type: text
+        title: Refetch Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: >-
+          How often to perform a full refetch of all attributes when `Enable Refetch` is on. Supported units for this parameter are h/m/s. Short intervals re-ingest the full Initial Interval window and can produce high data volume.
       - name: ioc_expiration_duration
         type: text
         title: IOC Expiration Duration

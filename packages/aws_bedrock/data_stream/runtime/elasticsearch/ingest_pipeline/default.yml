@@ -2,77 +2,96 @@
 description: Pipeline for Amazon Bedrock runtime metrics
 processors:
   - dot_expander:
+      tag: dot_expander_c2762c23
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name_20733914
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
-  - rename:   
+  - rename:
+      tag: rename_aws_bedrock_metrics_to_aws_bedrock_runtime_ea25fa12
       field: aws.bedrock.metrics
       target_field: aws_bedrock.runtime
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_Invocations_sum_to_aws_bedrock_runtime_invocations_8a0fa0d1
       field: aws_bedrock.runtime.Invocations.sum
       target_field: aws_bedrock.runtime.invocations
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_InvocationLatency_avg_to_aws_bedrock_runtime_invocation_latency_94860301
       field: aws_bedrock.runtime.InvocationLatency.avg
       target_field: aws_bedrock.runtime.invocation_latency
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_InvocationClientErrors_sum_to_aws_bedrock_runtime_invocation_client_errors_1d7cf12b
       field: aws_bedrock.runtime.InvocationClientErrors.sum
       target_field: aws_bedrock.runtime.invocation_client_errors
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_InvocationServerErrors_sum_to_aws_bedrock_runtime_invocation_server_errors_6bb87adb
       field: aws_bedrock.runtime.InvocationServerErrors.sum
       target_field: aws_bedrock.runtime.invocation_server_errors
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_InvocationThrottles_sum_to_aws_bedrock_runtime_invocation_throttles_29b1fc44
       field: aws_bedrock.runtime.InvocationThrottles.sum
       target_field: aws_bedrock.runtime.invocation_throttles
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_InputTokenCount_sum_to_aws_bedrock_runtime_input_token_count_a15d08b1
       field: aws_bedrock.runtime.InputTokenCount.sum
       target_field: aws_bedrock.runtime.input_token_count
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_LegacyModelInvocations_sum_to_aws_bedrock_runtime_legacymodel_invocations_fba619e6
       field: aws_bedrock.runtime.LegacyModelInvocations.sum
       target_field: aws_bedrock.runtime.legacymodel_invocations
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_OutputTokenCount_sum_to_aws_bedrock_runtime_output_token_count_02a2bb4d
       field: aws_bedrock.runtime.OutputTokenCount.sum
       target_field: aws_bedrock.runtime.output_token_count
       ignore_missing: true
-  - rename: 
+  - rename:
+      tag: rename_aws_bedrock_runtime_OutputImageCount_sum_to_aws_bedrock_runtime_output_image_count_f47044ad
       field: aws_bedrock.runtime.OutputImageCount.sum
       target_field: aws_bedrock.runtime.output_image_count
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_ModelId_to_aws_bedrock_runtime_model_id_d4d1c413
       field: aws.dimensions.ModelId
       target_field: aws_bedrock.runtime.model_id
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_ImageSize_to_aws_bedrock_runtime_image_size_e5f4c223
       field: aws.dimensions.ImageSize
       target_field: aws_bedrock.runtime.image_size
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_Quality_to_aws_bedrock_runtime_quality_cb1367d0
       field: aws.dimensions.Quality
       target_field: aws_bedrock.runtime.quality
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_BucketedStepSize_to_aws_bedrock_runtime_bucketed_step_size_b21efbbe
       field: aws.dimensions.BucketedStepSize
       target_field: aws_bedrock.runtime.bucketed_step_size
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-  - set:
+  - append:
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
