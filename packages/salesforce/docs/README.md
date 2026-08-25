@@ -14,7 +14,7 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window. Real-time Login and Logout events are backfilled gradually in fixed-size windows so historical catch-up stays within Salesforce API limits, and every source resumes reliably across restarts even when multiple records share the same timestamp.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records, while the `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window. Real-time Login and Logout events are backfilled gradually in fixed-size windows so historical catch-up stays within Salesforce API limits, and every source resumes reliably across restarts even when multiple records share the same timestamp.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
@@ -215,7 +215,7 @@ When using a Salesforce instance with a security token, append the token directl
 
 #### Token URL
 
-The Salesforce integration uses the token URL to obtain authentication tokens for API access. You can enter either the OAuth host or the full token endpoint; both forms are accepted.
+The Salesforce integration uses the token URL to obtain authentication tokens for API access. You can enter either the OAuth host or the full token endpoint. Both forms are accepted.
 
 1. For most Salesforce instances, enter: `https://login.salesforce.com` (or `https://login.salesforce.com/services/oauth2/token`)
 2. For Salesforce sandbox environments, enter: `https://test.salesforce.com` (or `https://test.salesforce.com/services/oauth2/token`)

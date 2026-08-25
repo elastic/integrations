@@ -38,7 +38,7 @@ event_monitoring_method:
       max_windows_per_run: {{#if real_time_batch_max_windows}}{{real_time_batch_max_windows}}{{else}}12{{/if}}
       window: {{real_time_period}}
     query:
-      default: SELECT FIELDS(STANDARD) FROM LoginEvent ORDER BY EventDate DESC
+      default: SELECT FIELDS(STANDARD) FROM LoginEvent{{#if initial_interval}} WHERE EventDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]]{{/if}} ORDER BY EventDate DESC
       value: SELECT FIELDS(STANDARD) FROM LoginEvent WHERE EventDate > [[ .cursor.object.batch_start_time ]] AND EventDate <= [[ .cursor.object.batch_end_time ]] ORDER BY EventDate DESC
     cursor:
       field: "EventDate"
