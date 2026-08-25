@@ -1,0 +1,23 @@
+# Force multi-window object catch-up: 1h lookback / 5m window / 12 windows per poll.
+# The mock only matches bounded EventDate SOQL, so this fails if batching is off
+# or if the first poll issues a single unbounded query.
+input: salesforce
+service: salesforce
+vars:
+  instance_url: http://{{Hostname}}:{{Port}}
+  jwt_enabled: false
+  username: temp_user
+  client_id: temp_client_id
+  client_secret: forty_characters_long_secret_key
+  password: temp_password
+  token_url: http://{{Hostname}}:{{Port}}
+data_stream:
+  vars:
+    initial_interval: 1h
+    real_time_period: 5m
+    real_time_batch_max_windows: 12
+    preserve_original_event: true
+    event_log_file: false
+    object: true
+assert:
+  hit_count: 12
