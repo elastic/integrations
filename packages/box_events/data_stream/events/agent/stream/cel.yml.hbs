@@ -4,17 +4,17 @@ resource.tracer:
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
 auth.oauth2:
-  client.id: "{{client_id}}"
-  client.secret: "{{client_secret}}"
+  client.id: {{escape_string client_id}}
+  client.secret: {{escape_string client_secret}}
   token_url: "{{api_url}}/oauth2/token"
   endpoint_params:
-    box_subject_id: "{{box_subject_id}}"
-    box_subject_type: "{{box_subject_type}}"
-    grant_type: "{{grant_type}}"
-resource.url: "{{api_url}}"
+    box_subject_id: {{escape_string box_subject_id}}
+    box_subject_type: {{escape_string box_subject_type}}
+    grant_type: {{escape_string grant_type}}
+resource.url: {{escape_string api_url}}
 state:
 {{#if stream_type}}
-  stream_type: "{{stream_type}}"
+  stream_type: {{escape_string stream_type}}
 {{/if}}
   limit: {{limit}}
 redact:
@@ -68,9 +68,9 @@ tags:
   - preserve_original_event
 {{/if}}
 {{#each tags as |tag|}}
-  - {{tag}}
+  - {{escape_string tag}}
 {{/each}}
 fields_under_root: true
 fields:
   _conf:
-    client_id: {{client_id}}
+    client_id: {{escape_string client_id}}
