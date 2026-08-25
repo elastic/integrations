@@ -26,10 +26,7 @@ program: |-
         "GET",
         state.url.trim_right("/") + "/2.0/events?" + {
           "stream_position": [position],
-          ?"stream_type": (state.?stream_type.orValue("") != "") ?
-            optional.of([state.stream_type])
-          :
-            optional.none(),
+          ?"stream_type": state.?stream_type.optMap(v, [v]),
           "limit": [string(int(state.limit))],
         }.format_query()
       ).do_request().as(resp,
