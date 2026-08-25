@@ -25,26 +25,25 @@ program: |-
       (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body,
           {
-            "events": (has(body.Report_Entry) && size(body.Report_Entry) > 0) ?
-              body.Report_Entry.map(e, {"message": e.encode_json()})
-            :
-              [{"message": "{}"}],
+            "events": body.Report_Entry.orValue([]).map(e, {"message": e.encode_json()}),
+            "want_more": false,
           }
         )
       :
         {
-          "events": [{
-            "message": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "status": string(resp.Status),
-                "body": (size(resp.Body) != 0) ?
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "GET " + state.url + ": " + (
+                (size(resp.Body) != 0) ?
                   string(resp.Body)
                 :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")",
-              },
-            }.encode_json(),
-          }],
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
         }
     )
   )

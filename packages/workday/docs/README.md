@@ -348,27 +348,27 @@ An example event for `activity` looks as following:
 {
     "@timestamp": "2026-04-02T12:46:18.012Z",
     "agent": {
-        "ephemeral_id": "56b15ab2-aac3-4167-a87e-300667f9c510",
-        "id": "49c06832-6dd8-4eea-8c9d-702a4bcee941",
-        "name": "elastic-agent-15161",
+        "ephemeral_id": "fdc15701-b03f-491e-8e22-c056b584ae8a",
+        "id": "212a329f-1ab7-4422-8b62-341360200cb2",
+        "name": "elastic-agent-72002",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "workday.activity",
-        "namespace": "58781",
+        "namespace": "73594",
         "type": "logs"
     },
     "device": {
         "type": "desktop"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "49c06832-6dd8-4eea-8c9d-702a4bcee941",
+        "id": "212a329f-1ab7-4422-8b62-341360200cb2",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "action": "read",
@@ -377,7 +377,7 @@ An example event for `activity` looks as following:
             "iam"
         ],
         "dataset": "workday.activity",
-        "ingested": "2026-06-05T11:40:39Z",
+        "ingested": "2026-08-25T06:50:26Z",
         "kind": "event",
         "original": "{\"activityAction\":\"READ\",\"deviceType\":\"Desktop\",\"ipAddress\":\"127.0.0.1\",\"requestTime\":\"2026-04-02T12:46:18.012Z\",\"sessionId\":\"c7c6ff\",\"systemAccount\":\"wd-implementer\",\"taskDisplayName\":\"privacy/activityLogging/userActivity (GET) (v1 -  )\",\"taskId\":\"e67b812850dc100047be196f396d745f\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}",
         "type": [
@@ -436,27 +436,27 @@ An example event for `sign_on` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-14T10:17:41.830Z",
+    "@timestamp": "2026-08-25T06:51:16.698Z",
     "agent": {
-        "ephemeral_id": "ac7e12bf-8acc-4d21-83c5-1bef2dfc7399",
-        "id": "b458462c-8d38-4125-ac4d-d3a25bff477c",
-        "name": "elastic-agent-93505",
+        "ephemeral_id": "b0b803b9-1ef0-453a-af7f-a0f2ad9053c6",
+        "id": "af409a53-c702-40f8-8967-fe5ac84d1149",
+        "name": "elastic-agent-45156",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "workday.sign_on",
-        "namespace": "15969",
+        "namespace": "42668",
         "type": "logs"
     },
     "device": {
         "type": "Desktop"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b458462c-8d38-4125-ac4d-d3a25bff477c",
+        "id": "af409a53-c702-40f8-8967-fe5ac84d1149",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -469,7 +469,7 @@ An example event for `sign_on` looks as following:
         ],
         "dataset": "workday.sign_on",
         "end": "2026-06-19T06:25:22.000Z",
-        "ingested": "2026-08-14T10:17:44Z",
+        "ingested": "2026-08-25T06:51:19Z",
         "kind": "event",
         "original": "{\"Account_Locked__Disabled_or_Expired\":\"0\",\"Active_Session\":\"0\",\"Authentication_Type_for_Signon\":\"SAML\",\"Browser_Type\":\"Chrome\",\"Device_Type\":\"Desktop\",\"Device_is_Trusted\":\"0\",\"Failed_Signon\":\"0\",\"Forgotten_Password_Reset_Request\":\"0\",\"Invalid_Credentials\":\"0\",\"Is_Device_Managed\":\"0\",\"Operating_System\":\"Mac OS X\",\"Password_Changed\":\"0\",\"Request_Originator\":\"UI\",\"SAML_Identity_Provider\":\"IdP_Acme\",\"Session_End\":\"2026-06-18T23:25:22-07:00\",\"Session_Start\":\"2026-06-18T16:59:32-07:00\",\"System_Account\":\"user534.acme / User 534\"}",
         "outcome": "success",
@@ -532,22 +532,22 @@ An example event for `user` looks as following:
 {
     "@timestamp": "2024-03-19T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "87b60b55-8f33-40f7-aa7e-4636511c3b00",
-        "id": "7f57ab55-7fb6-4880-b513-5e25fa3bef49",
-        "name": "elastic-agent-65223",
+        "ephemeral_id": "1f9df58a-a55d-40cc-b690-52f7adc9ba95",
+        "id": "1ec749f8-732a-4171-b92e-c9679fbddb98",
+        "name": "elastic-agent-89181",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "workday.user",
-        "namespace": "86569",
+        "namespace": "73169",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "7f57ab55-7fb6-4880-b513-5e25fa3bef49",
+        "id": "1ec749f8-732a-4171-b92e-c9679fbddb98",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -557,7 +557,7 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "workday.user",
-        "ingested": "2026-08-17T09:39:03Z",
+        "ingested": "2026-08-25T07:08:39Z",
         "kind": "asset",
         "original": "{\"Cost_Center\":\"Support\",\"Employee_ID\":\"007066\",\"Hire_Date\":\"2024-03-19\",\"Job_Title\":\"Customer Support Representative I\",\"Last_Account_or_Proxy_Login_Moment\":\"2024-12-24T00:44:07.572-08:00\",\"Manager_Email\":\"manager1@example.com\",\"Manager_ID\":\"000687\",\"Organization_Roles\":\"Cost Center Manager; Manager\",\"User-Based_Security_Groups_for_User\":\"Report Writer\",\"User_Name\":\"jdoe\",\"WorkerIsManager\":\"1\",\"Worker_Type\":\"Employee\",\"Worker_s_Manager\":\"Alex Manager (000687)\",\"location\":\"Mexico - Distributed\",\"primaryWorkEmail\":\"jdoe@example.com\"}",
         "type": [
