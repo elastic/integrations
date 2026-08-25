@@ -27,6 +27,7 @@ processors:
       tag: grok_event_original_cad2ef7a
       field: event.original
       patterns:
+        - '^(%{ECS_SYSLOG_PRI})?1 %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NAS} qulogd:? %{POSINT:process.pid:int} - \[QuLog@Access %{DATA:_tmp.structured_data}\] %{GREEDYDATA:_tmp.message}'
         - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NAS} %{SYSLOGPROG}: %{LOG_TYPE:event.provider}: %{GREEDYDATA:_tmp.message}'
       pattern_definitions:
         NAS: '(?:%{IP:host.ip}|%{HOSTNAME:host.name})'
@@ -44,6 +45,7 @@ processors:
       target_field: '@timestamp'
       timezone: "{{{ event.timezone }}}"
       formats:
+        - ISO8601
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone != null
@@ -52,6 +54,7 @@ processors:
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
+        - ISO8601
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone == null
@@ -70,6 +73,86 @@ processors:
         SHARED: 'Users: (---|(%{DATA:user.domain}\\)?%{DATA:user.name}), Source IP: (---|127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
         RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
         FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
+      if: ctx._tmp?.structured_data == null
+  - kv:
+      tag: kv_tmp_structured_data
+      field: _tmp.structured_data
+      field_split: ' '
+      value_split: '='
+      prefix: '_tmp.sd.'
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._tmp?.structured_data != null
+  - grok:
+      tag: grok_rfc5424_client_app
+      field: _tmp.structured_data
+      patterns:
+        - 'client_app="%{DATA:_tmp.sd.client_app}"'
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - grok:
+      tag: grok_rfc5424_client_agent
+      field: _tmp.structured_data
+      patterns:
+        - 'client_agent="%{DATA:_tmp.sd.client_agent}"'
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - rename:
+      tag: rename_tmp_sd_ip_to_source_address
+      field: _tmp.sd.ip
+      target_field: source.address
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - rename:
+      tag: rename_tmp_sd_user_to_user_name
+      field: _tmp.sd.user
+      target_field: user.name
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - rename:
+      tag: rename_tmp_sd_mac_to_source_mac
+      field: _tmp.sd.mac
+      target_field: source.mac
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - rename:
+      tag: rename_tmp_sd_computer_to_source_domain
+      field: _tmp.sd.computer
+      target_field: source.domain
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null && ctx._tmp.sd?.computer != '---'
+  - rename:
+      tag: rename_tmp_sd_application_to_qnap_nas_application
+      field: _tmp.sd.application
+      target_field: qnap.nas.application
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null && ctx._tmp.sd?.application != '---'
+  - rename:
+      tag: rename_tmp_sd_client_agent_to_user_agent_original
+      field: _tmp.sd.client_agent
+      target_field: user_agent.original
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - rename:
+      tag: rename_tmp_sd_client_app_to_qnap_nas_client_app
+      field: _tmp.sd.client_app
+      target_field: qnap.nas.client_app
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - rename:
+      tag: rename_tmp_sd_client_id_to_qnap_nas_client_id
+      field: _tmp.sd.client_id
+      target_field: qnap.nas.client_id
+      ignore_missing: true
+      if: ctx._tmp?.structured_data != null
+  - set:
+      tag: set_event_provider_rfc5424
+      field: event.provider
+      value: 'conn-log'
+      if: ctx._tmp?.structured_data != null && ctx.event?.provider == null
   - grok:
       tag: grok_message_5c258068
       field: message
@@ -153,6 +236,34 @@ processors:
       pattern: \s
       replacement: '-'
       ignore_missing: true
+  - script:
+      tag: script_rfc5424_action_code
+      lang: painless
+      description: Map RFC 5424 QuLog@Access numeric action codes to event.action vocabulary
+      if: ctx._tmp?.sd?.action != null
+      source: >-
+        String actionCode = ctx._tmp.sd.action;
+        String actionResult = ctx._tmp.sd.action_result;
+        int code;
+        try { code = Integer.parseInt(actionCode); } catch (Exception e) { return; }
+        if (code == 512) {
+          if ('0'.equals(actionResult)) {
+            ctx.event.action = 'login-success';
+            ctx.event.outcome = 'success';
+          } else {
+            ctx.event.action = 'login-fail';
+            ctx.event.outcome = 'failure';
+          }
+        } else {
+          if (ctx.qnap == null) { ctx.qnap = new HashMap(); }
+          if (ctx.qnap.nas == null) { ctx.qnap.nas = new HashMap(); }
+          ctx.qnap.nas.action_code = actionCode;
+          if ('0'.equals(actionResult)) {
+            ctx.event.outcome = 'success';
+          } else if (actionResult != null) {
+            ctx.event.outcome = 'failure';
+          }
+        }
   - script:
       tag: script_1d15b5b0
       lang: painless
