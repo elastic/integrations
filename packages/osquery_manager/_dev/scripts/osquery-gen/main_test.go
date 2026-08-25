@@ -77,6 +77,48 @@ func TestUpdatePackageMetadata(t *testing.T) {
 	}
 }
 
+func TestUpdatePackageMetadataQuotedVersion(t *testing.T) {
+	root := t.TempDir()
+	packageDir := filepath.Join(root, "packages", "osquery_manager")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "manifest.yml"), []byte("name: osquery_manager\nversion: \"1.33.2\"\nconditions:\n  kibana:\n    version: \"^9.4.2\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte("# newer versions go on top\n- version: \"1.33.2\"\n  changes: []\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/pull/1", "~9.4.6 || ^9.5.2"); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(manifest), "version: 1.34.0") {
+		t.Fatalf("quoted package version not updated:\n%s", manifest)
+	}
+}
+
+func TestLoadCommittedOsqueryVersion(t *testing.T) {
+	root := t.TempDir()
+	schemasDir := filepath.Join(root, "packages", "osquery_manager", "schemas")
+	if err := os.MkdirAll(schemasDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(schemasDir, "metadata.json"), []byte(`{"ecs_version":"9.3.0","osquery_version":"5.22.0"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	got, err := loadCommittedOsqueryVersion(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "5.22.0" {
+		t.Fatalf("got %q, want 5.22.0", got)
+	}
+}
+
 func TestUpdatePackageMetadataKibanaVersionFormats(t *testing.T) {
 	cases := []struct {
 		name   string

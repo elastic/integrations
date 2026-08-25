@@ -115,7 +115,11 @@ func main() {
 
 	log.Printf("Resolved versions: osquery=%s beats=%s ecs=%s", osqueryVersion, beatsRef, ecsVersion)
 	runCheck := !*skipPackageCheck
-	shouldUpdatePackage := *updatePackage && osqueryVersion != strings.TrimSpace(cfg.Osquery.Version)
+	committedOsqueryVersion, err := loadCommittedOsqueryVersion(outputRoot)
+	if err != nil {
+		log.Fatalf("load committed osquery version: %v", err)
+	}
+	shouldUpdatePackage := *updatePackage && osqueryVersion != committedOsqueryVersion
 	// Generate before bumping manifest/changelog so a failed generation does not leave
 	// package metadata partially updated. Run elastic-package check after metadata writes
 	// so validation covers the final package state.
@@ -140,13 +144,33 @@ func main() {
 	log.Println("Done.")
 }
 
+func loadCommittedOsqueryVersion(repoRoot string) (string, error) {
+	path := filepath.Join(repoRoot, "packages", "osquery_manager", "schemas", "metadata.json")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	var meta struct {
+		OsqueryVersion string `json:"osquery_version"`
+	}
+	if err := json.Unmarshal(b, &meta); err != nil {
+		return "", fmt.Errorf("parse %s: %w", path, err)
+	}
+	version := strings.TrimSpace(meta.OsqueryVersion)
+	if version == "" {
+		return "", fmt.Errorf("%s: osquery_version is required", path)
+	}
+	return version, nil
+}
+
 func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersion string) error {
 	manifestPath := filepath.Join(repoRoot, "packages", "osquery_manager", "manifest.yml")
 	manifest, err := os.ReadFile(manifestPath)
 	if err != nil {
 		return err
 	}
-	versionRE := regexp.MustCompile(`(?m)^version:\s*([0-9]+)\.([0-9]+)\.([0-9]+)\s*$`)
+	// Accept unquoted or single/double-quoted package versions used across package manifests.
+	versionRE := regexp.MustCompile(`(?m)^version:\s*["']?([0-9]+)\.([0-9]+)\.([0-9]+)["']?\s*$`)
 	match := versionRE.FindSubmatch(manifest)
 	if match == nil {
 		return fmt.Errorf("package version not found in %s", manifestPath)
