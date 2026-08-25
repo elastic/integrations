@@ -22,7 +22,7 @@ streams:
       - name: object
         type: bool
         title: Real-Time Object Data Collection
-        description: "Enable collection from real-time events (LogoutEvent). When enabled, catch-up is automatically collected in bounded EventDate windows to avoid unbounded SOQL queries."
+        description: "Enable collection of real-time logout events (LogoutEvent) via the Real-Time Event Monitoring API."
         multi: false
         required: true
         show_user: true
@@ -38,15 +38,15 @@ streams:
       - name: real_time_period
         type: text
         title: Real-Time Events Period
-        description: "Polling interval for real-time events. This also controls the automatic batch window size. Supported units: h, m, s."
+        description: "How often to poll for real-time logout events. This value also sets the size of each catch-up window when backfilling. Supported units: h, m, s."
         multi: false
         required: false
         show_user: true
         default: 5m
       - name: real_time_batch_max_windows
         type: integer
-        title: Max Real-Time Batch Windows Per Poll
-        description: "Maximum number of bounded LogoutEvent windows to process per poll. Increase to catch up faster during large backfills; decrease to reduce Salesforce API pressure. Must be greater than 0."
+        title: Max Real-Time Catch-Up Windows Per Poll
+        description: "Advanced. Maximum number of catch-up windows the agent processes in one poll. With the default 5m period and 12 windows, each poll catches up at most 1 hour of backlog. Raise to catch up faster after downtime or a large initial interval, at the cost of more Salesforce API calls. Must be greater than 0."
         multi: false
         required: false
         show_user: false
@@ -54,7 +54,7 @@ streams:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: "How far back to fetch historical data on the first run. For EventLogFile, this is a CreatedDate lookback on the first query. For real-time LogoutEvent collection, backfill is drained in bounded windows (window size is the real-time period, up to 12 windows per poll by default), so a 168h lookback can take many polls to catch up. Supported units: h, m, s."
+        description: "How far back to fetch historical data on the first run. Applies to both EventLogFile and real-time logout events. Real-time backfill is processed gradually over several polls to protect Salesforce API limits, so a large value can take a while to fully catch up. Supported units: h, m, s."
         multi: false
         required: true
         show_user: true

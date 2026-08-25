@@ -14,7 +14,7 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window. Real-time `LoginEvent` and `LogoutEvent` collection uses bounded time windows so catch-up cannot issue an unbounded SOQL query. EventLogFile and SetupAuditTrail resume by timestamp and Salesforce Id so rows that share a timestamp are not skipped.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window. Real-time Login and Logout events are backfilled gradually in fixed-size windows so historical catch-up stays within Salesforce API limits, and every source resumes reliably across restarts even when multiple records share the same timestamp.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
@@ -118,11 +118,10 @@ For step-by-step instructions on how to set up an integration, see {{ url "getti
    - EventLogFile (batch logs)
    - Platform Events (`LoginEvent`, `LogoutEvent`)
 6. Optional tuning:
-   - Set an initial interval to backfill historical data. For EventLogFile this is a first-run CreatedDate lookback; for real-time Login and Logout events, that lookback is drained in bounded windows over subsequent polls.
-   - Adjust the collection interval per source.
-   - Login and Logout real-time events use automatic bounded batching; no separate batching option is required.
+   - Set an **initial interval** to control how far back historical data is fetched on the first run.
+   - Adjust the **collection interval** for each source (EventLogFile and real-time events are polled independently).
    - Optionally filter EventLogFile by log file interval (for example, hourly).
-   - In Advanced options, adjust the request timeout if Salesforce responses are slow.
+   - In Advanced options, adjust the request timeout if Salesforce responses are slow. See [Performance and scaling](#performance-and-scaling) for guidance on real-time backfill and quota-friendly tuning.
 
 ### Configuration
 
@@ -332,13 +331,14 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 
 ## Performance and scaling
 
-- Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage. For real-time Login and Logout events, bounded batching is enabled automatically. The real-time period is also the object catch-up window size. Each poll collects up to the configured maximum number of windows (default 12), so a 5-minute period catches up at most one hour of backlog per tick by default.
-- Backfill: Use the initial interval to safely ingest historical data. EventLogFile and Setup Audit Trail apply that lookback on the first query, then resume with CreatedDate plus Salesforce Id. Real-time Login and Logout events drain the same lookback in bounded windows, so a large first-run interval can take many polls. Large backfills may consume significant Salesforce API quotas; consider staging by data stream or by adding separate Salesforce integration policies for EventLogFile and real-time object collection.
-- High-volume real-time events: If a single LoginEvent or LogoutEvent batch window returns too many rows, reduce the real-time period to make each bounded SOQL query smaller. To catch up faster during large backfills, increase the advanced maximum real-time batch windows setting. This increases Salesforce API usage, so tune it carefully.
-- EventLogFile availability: Salesforce hourly event log files are generated after the activity period and can arrive several hours later, or later during Salesforce processing delays. The integration uses `CreatedDate` plus Salesforce `Id` to resume from newly generated files without relying on `LogDate`.
-- Login/Logout sources: EventLogFile is efficient for delayed batched reporting; real-time objects provide lower-latency signals but may have throughput, license, and storage behavior that varies by org.
-- Authentication scale: Salesforce can revoke older OAuth access tokens when too many inputs use the same user and connected app. For many agents or duplicated policies, distribute collection across multiple connected apps or integration users.
-- Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large EventLogFile downloads are expected.
+- **Collection intervals**: Longer intervals reduce API usage and agent load; shorter intervals increase freshness. EventLogFile and real-time events are polled independently, so you can tune each.
+- **Real-time backfill**: When real-time Login or Logout collection is enabled, the agent catches up historical events in fixed-size windows equal to the *Real-Time Events Period* (5 minutes by default), processing up to 12 windows per poll. So each poll catches up at most ~1 hour of backlog by default, and a 7-day *Initial Interval* takes many polls to fully drain. This is intentional — it keeps each Salesforce query small and predictable. To catch up faster after downtime or a large initial interval, raise the advanced **Max Real-Time Catch-Up Windows Per Poll** setting. This increases Salesforce API usage, so tune it carefully.
+- **Large backfills**: Setting a very large *Initial Interval* may consume significant Salesforce API quota. Consider staging by data stream, or add separate integration policies for EventLogFile and real-time collection.
+- **High-volume orgs**: If a single catch-up window still returns too many rows, reduce the *Real-Time Events Period* so each window covers a smaller time slice.
+- **EventLogFile availability**: Salesforce hourly EventLogFile records are generated after the activity period and can arrive several hours later. The integration resumes reliably across these delays without missing or duplicating files.
+- **Login/Logout source choice**: EventLogFile is efficient for delayed batched reporting; real-time platform events provide lower-latency signals but may have throughput, license, and storage behavior that varies by org.
+- **Authentication scale**: Salesforce can revoke older OAuth access tokens when many inputs share the same user and connected app. For many agents or duplicated policies, distribute collection across multiple connected apps or integration users.
+- **Timeouts**: Increase the request timeout in Advanced options if Salesforce responses are slow or large EventLogFile downloads are expected.
 
 ## Reference
 
