@@ -1,0 +1,22 @@
+# EDGE: poll every 5m but query 15m windows. 1h lookback → 4 windows, not 12.
+input: salesforce
+service: salesforce
+vars:
+  instance_url: http://{{Hostname}}:{{Port}}
+  jwt_enabled: false
+  username: temp_user
+  client_id: temp_client_id
+  client_secret: forty_characters_long_secret_key
+  password: temp_password
+  token_url: http://{{Hostname}}:{{Port}}
+data_stream:
+  vars:
+    initial_interval: 1h
+    real_time_period: 5m
+    real_time_batch_window: 15m
+    real_time_batch_max_windows: 12
+    preserve_original_event: true
+    event_log_file: false
+    object: true
+assert:
+  hit_count: 4
