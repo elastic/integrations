@@ -115,11 +115,14 @@ func main() {
 
 	log.Printf("Resolved versions: osquery=%s beats=%s ecs=%s", osqueryVersion, beatsRef, ecsVersion)
 	runCheck := !*skipPackageCheck
-	committedOsqueryVersion, err := loadCommittedOsqueryVersion(outputRoot)
+	// A prior run may have regenerated schemas (bumping metadata.json) yet failed before
+	// writing manifest/changelog. Decide from the changelog so a corrected re-run still
+	// completes the bump; updatePackageMetadata is itself idempotent when the entry exists.
+	alreadyReleased, err := changelogHasOsquerySchemaVersion(outputRoot, osqueryVersion)
 	if err != nil {
-		log.Fatalf("load committed osquery version: %v", err)
+		log.Fatalf("inspect changelog: %v", err)
 	}
-	shouldUpdatePackage := *updatePackage && osqueryVersion != committedOsqueryVersion
+	shouldUpdatePackage := *updatePackage && !alreadyReleased
 	// Generate before bumping manifest/changelog so a failed generation does not leave
 	// package metadata partially updated. Run elastic-package check after metadata writes
 	// so validation covers the final package state.
@@ -144,23 +147,17 @@ func main() {
 	log.Println("Done.")
 }
 
-func loadCommittedOsqueryVersion(repoRoot string) (string, error) {
-	path := filepath.Join(repoRoot, "packages", "osquery_manager", "schemas", "metadata.json")
+func changelogHasOsquerySchemaVersion(repoRoot, osqueryVersion string) (bool, error) {
+	path := filepath.Join(repoRoot, "packages", "osquery_manager", "changelog.yml")
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return "", err
+		return false, err
 	}
-	var meta struct {
-		OsqueryVersion string `json:"osquery_version"`
-	}
-	if err := json.Unmarshal(b, &meta); err != nil {
-		return "", fmt.Errorf("parse %s: %w", path, err)
-	}
-	version := strings.TrimSpace(meta.OsqueryVersion)
-	if version == "" {
-		return "", fmt.Errorf("%s: osquery_version is required", path)
-	}
-	return version, nil
+	return strings.Contains(string(b), osquerySchemaUpgradeDescription(osqueryVersion)), nil
+}
+
+func osquerySchemaUpgradeDescription(osqueryVersion string) string {
+	return "description: Upgrade osquery schema artifacts to version " + osqueryVersion
 }
 
 func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersion string) error {
@@ -195,8 +192,7 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 	if !strings.HasPrefix(string(changelog), header) {
 		return fmt.Errorf("unexpected changelog header in %s", changelogPath)
 	}
-	description := "Upgrade osquery schema artifacts to version " + osqueryVersion
-	if strings.Contains(string(changelog), "description: "+description) {
+	if strings.Contains(string(changelog), osquerySchemaUpgradeDescription(osqueryVersion)) {
 		topVersion := regexp.MustCompile(`(?m)^- version: "([0-9]+\.[0-9]+\.[0-9]+)"$`).FindSubmatch(changelog)
 		if topVersion == nil {
 			return fmt.Errorf("top package version not found in %s", changelogPath)

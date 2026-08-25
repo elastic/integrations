@@ -101,21 +101,29 @@ func TestUpdatePackageMetadataQuotedVersion(t *testing.T) {
 	}
 }
 
-func TestLoadCommittedOsqueryVersion(t *testing.T) {
+func TestChangelogHasOsquerySchemaVersion(t *testing.T) {
 	root := t.TempDir()
-	schemasDir := filepath.Join(root, "packages", "osquery_manager", "schemas")
-	if err := os.MkdirAll(schemasDir, 0o755); err != nil {
+	packageDir := filepath.Join(root, "packages", "osquery_manager")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(schemasDir, "metadata.json"), []byte(`{"ecs_version":"9.3.0","osquery_version":"5.22.0"}`), 0o644); err != nil {
+	changelog := "# newer versions go on top\n- version: \"1.34.0\"\n  changes:\n    - description: Upgrade osquery schema artifacts to version 5.23.1; require Kibana ~9.4.6 || ^9.5.2 so the upgraded runtime is available\n      type: enhancement\n      link: https://github.com/elastic/integrations/pull/1\n"
+	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte(changelog), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	got, err := loadCommittedOsqueryVersion(root)
+	got, err := changelogHasOsquerySchemaVersion(root, "5.23.1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got != "5.22.0" {
-		t.Fatalf("got %q, want 5.22.0", got)
+	if !got {
+		t.Fatal("expected changelog to report schema version 5.23.1 as released")
+	}
+	got, err = changelogHasOsquerySchemaVersion(root, "5.24.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got {
+		t.Fatal("expected changelog not to report schema version 5.24.0 as released")
 	}
 }
 
