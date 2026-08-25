@@ -166,11 +166,11 @@ inputs:
                   // client secret failing token acquisition), so return a single-object
                   // error to mark the input degraded until collection recovers.
                   (
-                    (int(state.?transport_error_streak.orValue(0.0)) + 1 >= int(state.base.transport_failure_threshold)) ?
+                    (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
                       state.with(
                         {
                           "want_more": false,
-                          "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                          "transport_error_streak": int(state.transport_error_streak) + 1,
                           "events": {
                             "error": {
                               "message": "persistent transport failure starting subscription for '" + state.todo_types[0] + "': " + string(sub_resp.?_transport_error.orValue("")),
@@ -182,7 +182,7 @@ inputs:
                       state.with(
                         {
                           "want_more": false,
-                          "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                          "transport_error_streak": int(state.transport_error_streak) + 1,
                           "events": [{"retry": true}],
                         }
                       )
@@ -253,11 +253,11 @@ inputs:
                       // threshold the failure is persistent, so return a single-object
                       // error to mark the input degraded until collection recovers.
                       (
-                        (int(state.?transport_error_streak.orValue(0.0)) + 1 >= int(state.base.transport_failure_threshold)) ?
+                        (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
                           state.with(
                             {
                               "want_more": false,
-                              "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                              "transport_error_streak": int(state.transport_error_streak) + 1,
                               "events": {
                                 "error": {
                                   "message": "persistent transport failure fetching " + state.cursor.todo_content[0].contentUri + ": " + string(content_resp.?_transport_error.orValue("")),
@@ -274,7 +274,7 @@ inputs:
                                 }
                               ),
                               "want_more": false,
-                              "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                              "transport_error_streak": int(state.transport_error_streak) + 1,
                               "events": [{"retry": true}],
                             }
                           )
@@ -338,11 +338,11 @@ inputs:
                   // persistent, so return a single-object error to mark the input degraded
                   // until collection recovers.
                   (
-                    (int(state.?transport_error_streak.orValue(0.0)) + 1 >= int(state.base.transport_failure_threshold)) ?
+                    (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
                       state.with(
                         {
                           "want_more": false,
-                          "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                          "transport_error_streak": int(state.transport_error_streak) + 1,
                           "events": {
                             "error": {
                               "message": "persistent transport failure listing " + state.cursor.todo_links[0] + ": " + string(list_resp.?_transport_error.orValue("")),
@@ -359,7 +359,7 @@ inputs:
                             }
                           ),
                           "want_more": false,
-                          "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                          "transport_error_streak": int(state.transport_error_streak) + 1,
                           "events": [{"retry": true}],
                         }
                       )
@@ -498,6 +498,7 @@ inputs:
                 maximum_age: 167h55m
                 tenant_id: tenant-id
                 transport_failure_threshold: 5
+            transport_error_streak: 0
             want_more: false
           tags:
             - forwarded

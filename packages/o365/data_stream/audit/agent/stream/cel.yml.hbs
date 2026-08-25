@@ -64,6 +64,7 @@ resource.tracer:
 
 state:
   want_more: false
+  transport_error_streak: 0
   base:
     tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
@@ -87,14 +88,14 @@ redact:
 # state.cursor.todo_links:   A list of listing links, either generated or received.
 # state.cursor.last_for:     A map tracking latest time considered in listings for each content type.
 # state.transport_error_streak: Count of consecutive evaluations that ended in a
-#                               transport-level request failure. Reset to zero on any
-#                               successful subscription, listing or content fetch. When it
-#                               reaches state.base.transport_failure_threshold the failure
-#                               is treated as persistent (for example an expired client
-#                               secret failing token acquisition) and reported as a
-#                               single-object error so the input is marked degraded. Held
-#                               outside the cursor so it survives the cursor reset that a
-#                               single-object error triggers.
+#                               transport-level request failure. Initialized to zero in the
+#                               state block above and reset to zero on any successful
+#                               subscription, listing or content fetch. When it reaches
+#                               state.base.transport_failure_threshold the failure is treated
+#                               as persistent (for example an expired client secret failing
+#                               token acquisition) and reported as a single-object error so
+#                               the input is marked degraded. Held outside the cursor so it
+#                               survives the cursor reset that a single-object error triggers.
 #
 # LOGIC OVERVIEW
 #
@@ -259,11 +260,11 @@ program: |-
         // client secret failing token acquisition), so return a single-object
         // error to mark the input degraded until collection recovers.
         (
-          (int(state.?transport_error_streak.orValue(0.0)) + 1 >= int(state.base.transport_failure_threshold)) ?
+          (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
             state.with(
               {
                 "want_more": false,
-                "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
                 "events": {
                   "error": {
                     "message": "persistent transport failure starting subscription for '" + state.todo_types[0] + "': " + string(sub_resp.?_transport_error.orValue("")),
@@ -275,7 +276,7 @@ program: |-
             state.with(
               {
                 "want_more": false,
-                "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
                 "events": [{"retry": true}],
               }
             )
@@ -346,11 +347,11 @@ program: |-
             // threshold the failure is persistent, so return a single-object
             // error to mark the input degraded until collection recovers.
             (
-              (int(state.?transport_error_streak.orValue(0.0)) + 1 >= int(state.base.transport_failure_threshold)) ?
+              (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
                 state.with(
                   {
                     "want_more": false,
-                    "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                    "transport_error_streak": int(state.transport_error_streak) + 1,
                     "events": {
                       "error": {
                         "message": "persistent transport failure fetching " + state.cursor.todo_content[0].contentUri + ": " + string(content_resp.?_transport_error.orValue("")),
@@ -367,7 +368,7 @@ program: |-
                       }
                     ),
                     "want_more": false,
-                    "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                    "transport_error_streak": int(state.transport_error_streak) + 1,
                     "events": [{"retry": true}],
                   }
                 )
@@ -431,11 +432,11 @@ program: |-
         // persistent, so return a single-object error to mark the input degraded
         // until collection recovers.
         (
-          (int(state.?transport_error_streak.orValue(0.0)) + 1 >= int(state.base.transport_failure_threshold)) ?
+          (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
             state.with(
               {
                 "want_more": false,
-                "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
                 "events": {
                   "error": {
                     "message": "persistent transport failure listing " + state.cursor.todo_links[0] + ": " + string(list_resp.?_transport_error.orValue("")),
@@ -452,7 +453,7 @@ program: |-
                   }
                 ),
                 "want_more": false,
-                "transport_error_streak": int(state.?transport_error_streak.orValue(0.0)) + 1,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
                 "events": [{"retry": true}],
               }
             )
