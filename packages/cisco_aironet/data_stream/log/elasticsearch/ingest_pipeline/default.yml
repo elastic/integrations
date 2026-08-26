@@ -261,7 +261,7 @@ processors:
       tag: grok_sntp_source_context_a3f7c891
       description: LOG-4-Q_IND SNTP - extract source file and line from full_message before the field is stripped
       field: _temp_.full_message
-      if: "ctx._temp_?.reason == 'LOG-4-Q_IND' && ctx.message?.contains('NTP packet rejected')"
+      if: "ctx._temp_?.reason == 'LOG-4-Q_IND'"
       patterns:
         - "Q_IND: %{DATA:cisco.sntp.source_file}:%{INT:cisco.sntp.source_line:int} "
       ignore_failure: true
@@ -271,7 +271,7 @@ processors:
       field: message
       if: >-
         ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
-        (ctx._temp_?.reason == 'LOG-4-Q_IND' && (ctx.message?.contains('Target MAC Address') || ctx.message?.contains('NTP packet rejected')))
+        ctx._temp_?.reason == 'LOG-4-Q_IND'
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
         - "Spurious\\.NTP packet rejected on socket %{INT:cisco.sntp.socket_id:int}"
