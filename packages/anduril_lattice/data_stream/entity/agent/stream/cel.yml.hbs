@@ -26,11 +26,11 @@ redact:
     - sandbox_token
     - next.token
 program: |-
-  state.drop("auth_failed").with(
+  (
     has(state.client_id) ?
       (
         (has(state.?next.expiry) && timestamp(state.next.expiry) > now) ?
-          {"token": state.next.token, "next": state.next}
+          state.next
         :
           post_request(
             state.url.trim_right("/") + "/api/v1/oauth/token",
@@ -52,69 +52,64 @@ program: |-
               tok_resp.Body.decode_json().as(tok_body,
                 {
                   "token": tok_body.access_token,
-                  "next": {
-                    "token": tok_body.access_token,
-                    "expiry": string(now + duration(string(max(int(tok_body.expires_in) - 60, 1)) + "s")),
-                  },
+                  "expiry": string(now + duration(string(max(int(tok_body.expires_in) - 60, 1)) + "s")),
                 }
               )
             :
               {
-                "auth_failed": true,
-                "events": {
-                  "error": {
-                    "code": string(tok_resp.StatusCode),
-                    "id": string(tok_resp.Status),
-                    "message": "POST /api/v1/oauth/token: " + string(tok_resp.Body),
-                  },
+                "error": {
+                  "code": string(tok_resp.StatusCode),
+                  "id": string(tok_resp.Status),
+                  "message": "POST /api/v1/oauth/token: " + string(tok_resp.Body),
                 },
-                "want_more": false,
               }
           )
       )
-    :
-      {?"token": state.?token}
-  ).as(state,
-    state.?auth_failed.orValue(false) ?
-      state
-    :
+    : (state.?token.orValue("") != "") ? {"token": state.token} : {}
+  ).as(auth,
+    has(auth.error) ?
       state.with(
-        request(
-          "POST",
-          state.url.trim_right("/") + "/api/v1/entities/events"
+        {
+          "events": {"error": auth.error},
+          "want_more": false,
+        }
+      )
+    :
+      request(
+        "POST",
+        state.url.trim_right("/") + "/api/v1/entities/events"
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            ?"Authorization": auth.?token.optMap(t, ["Bearer " + t]),
+            ?"Anduril-Sandbox-Authorization": state.?sandbox_token.optMap(t, ["Bearer " + t]),
+          },
+          "Body": {
+            "sessionToken": state.?cursor.session_token.orValue(""),
+            "batchSize": int(state.batch_size),
+          }.encode_json(),
+        }
+      ).do_request().as(resp,
+        state.with(
+          {?"next": has(auth.expiry) ? optional.of(auth) : (state.?next)}
         ).with(
-          {
-            "Header": {
-              "Content-Type": ["application/json"],
-              ?"Authorization": (state.?token.orValue("") != "") ?
-                optional.of(["Bearer " + state.token])
-              :
-                optional.none(),
-              ?"Anduril-Sandbox-Authorization": state.?sandbox_token.optMap(t, ["Bearer " + t]),
-            },
-            "Body": {
-              "sessionToken": state.?cursor.session_token.orValue(""),
-              "batchSize": int(state.batch_size),
-            }.encode_json(),
-          }
-        ).do_request().as(resp,
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              ((body.?entityEvents.orValue(null) != null) ? body.entityEvents : []).as(events,
-                (size(events) > 0) ?
-                  {
-                    "events": events.map(e, {"message": e.encode_json()}),
-                    "cursor": {"session_token": body.sessionToken},
-                    "want_more": size(events) >= int(state.batch_size),
-                  }
-                :
-                  {
-                    "events": [{"retry": true}],
-                    "cursor": {"session_token": body.sessionToken},
-                    ?"next": state.?next,
-                    "want_more": false,
-                  }
-              )
+              (
+                type(body.?entityEvents.orValue(null)) == list && size(body.entityEvents) > 0
+              ) ?
+                {
+                  "events": body.entityEvents.map(e, {"message": e.encode_json()}),
+                  "cursor": {"session_token": body.sessionToken},
+                  "want_more": size(body.entityEvents) >= int(state.batch_size),
+                }
+              :
+                {
+                  "events": [{"retry": true}],
+                  "cursor": {"session_token": body.sessionToken},
+                  "want_more": false,
+                }
             )
           :
             {
