@@ -736,7 +736,6 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | destination.user.email | User email address. | keyword |
 | destination.user.full_name | User's full name, if available. | keyword |
 | destination.user.full_name.text | Multi-field of `destination.user.full_name`. | match_only_text |
-| destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
@@ -864,7 +863,6 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | source.user.full_name | User's full name, if available. | keyword |
 | source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.group.name | Name of the group. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
@@ -876,7 +874,6 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | user.full_name | User's full name, if available. | keyword |
 | user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.group.name | Name of the group. | keyword |
-| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.name | Name of the user agent. | keyword |
