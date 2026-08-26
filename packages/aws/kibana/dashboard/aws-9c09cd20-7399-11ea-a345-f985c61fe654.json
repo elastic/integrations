@@ -1,19 +1,16 @@
 {
     "attributes": {
         "description": "Summary of events from AWS CloudTrail.",
+        "esqlApproximation": false,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
                     {
-                        "$state": {
-                            "store": "appState"
-                        },
                         "meta": {
-                            "alias": null,
                             "disabled": false,
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
-                            "negate": false,
                             "params": {
                                 "query": "aws.cloudtrail"
                             },
@@ -33,6 +30,8 @@
             }
         },
         "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
             "hidePanelTitles": false,
             "syncColors": false,
             "syncCursor": true,
@@ -43,13 +42,155 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "",
-                        "layerListJSON": "[{\"alpha\":1,\"id\":\"2c7b49fb-3fb5-4e18-b27f-fabe930971f3\",\"label\":null,\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"isAutoSelect\":true,\"type\":\"EMS_TMS\",\"lightModeDefault\":\"road_map\"},\"style\":{},\"type\":\"EMS_VECTOR_TILE\",\"visible\":true},{\"alpha\":0.75,\"id\":\"a10fa758-30ad-4e2a-bf9d-472e133a7f17\",\"joins\":[],\"label\":\"CloudTrail Soure Location\",\"maxZoom\":24,\"minZoom\":0,\"query\":{\"language\":\"kuery\",\"query\":\"data_stream.dataset:aws.cloudtrail\"},\"sourceDescriptor\":{\"applyGlobalQuery\":true,\"filterByMapBounds\":true,\"geoField\":\"source.geo.location\",\"id\":\"7bfe2df9-9398-4f1a-8cf7-b57aa5f3f31e\",\"scalingType\":\"LIMIT\",\"sortField\":\"\",\"sortOrder\":\"desc\",\"tooltipProperties\":[],\"topHitsSize\":1,\"type\":\"ES_SEARCH\",\"indexPatternRefName\":\"layer_1_source_index_pattern\"},\"style\":{\"isTimeAware\":true,\"properties\":{\"fillColor\":{\"options\":{\"color\":\"#54B399\"},\"type\":\"STATIC\"},\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"iconOrientation\":{\"options\":{\"orientation\":0},\"type\":\"STATIC\"},\"iconSize\":{\"options\":{\"size\":6},\"type\":\"STATIC\"},\"labelBorderColor\":{\"options\":{\"color\":\"#FFFFFF\"},\"type\":\"STATIC\"},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}},\"labelColor\":{\"options\":{\"color\":\"#000000\"},\"type\":\"STATIC\"},\"labelSize\":{\"options\":{\"size\":14},\"type\":\"STATIC\"},\"labelText\":{\"options\":{\"value\":\"\"},\"type\":\"STATIC\"},\"lineColor\":{\"options\":{\"color\":\"#41937c\"},\"type\":\"STATIC\"},\"lineWidth\":{\"options\":{\"size\":1},\"type\":\"STATIC\"},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}}},\"type\":\"VECTOR\"},\"type\":\"GEOJSON_VECTOR\",\"visible\":true}]",
-                        "mapStateJSON": "{\"center\":{\"lat\":19.94277,\"lon\":0},\"filters\":[],\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"refreshConfig\":{\"interval\":0,\"isPaused\":false},\"timeFilters\":{\"from\":\"now-15m\",\"to\":\"now\"},\"zoom\":1.97,\"settings\":{\"autoFitToDataBounds\":false}}",
-                        "title": "CloudTrail Source Location [Logs AWS]",
-                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
+                        "layerListJSON": [
+                            {
+                                "alpha": 1,
+                                "id": "2c7b49fb-3fb5-4e18-b27f-fabe930971f3",
+                                "label": null,
+                                "maxZoom": 24,
+                                "minZoom": 0,
+                                "sourceDescriptor": {
+                                    "isAutoSelect": true,
+                                    "lightModeDefault": "road_map",
+                                    "type": "EMS_TMS"
+                                },
+                                "style": {},
+                                "type": "EMS_VECTOR_TILE",
+                                "visible": true
+                            },
+                            {
+                                "alpha": 0.75,
+                                "id": "a10fa758-30ad-4e2a-bf9d-472e133a7f17",
+                                "joins": [],
+                                "label": "CloudTrail Soure Location",
+                                "maxZoom": 24,
+                                "minZoom": 0,
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "data_stream.dataset:aws.cloudtrail"
+                                },
+                                "sourceDescriptor": {
+                                    "applyGlobalQuery": true,
+                                    "filterByMapBounds": true,
+                                    "geoField": "source.geo.location",
+                                    "id": "7bfe2df9-9398-4f1a-8cf7-b57aa5f3f31e",
+                                    "indexPatternRefName": "layer_1_source_index_pattern",
+                                    "scalingType": "LIMIT",
+                                    "sortField": "",
+                                    "sortOrder": "desc",
+                                    "tooltipProperties": [],
+                                    "topHitsSize": 1,
+                                    "type": "ES_SEARCH"
+                                },
+                                "style": {
+                                    "isTimeAware": true,
+                                    "properties": {
+                                        "fillColor": {
+                                            "options": {
+                                                "color": "#54B399"
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "icon": {
+                                            "options": {
+                                                "value": "marker"
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "iconOrientation": {
+                                            "options": {
+                                                "orientation": 0
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "iconSize": {
+                                            "options": {
+                                                "size": 6
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "labelBorderColor": {
+                                            "options": {
+                                                "color": "#FFFFFF"
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "labelBorderSize": {
+                                            "options": {
+                                                "size": "SMALL"
+                                            }
+                                        },
+                                        "labelColor": {
+                                            "options": {
+                                                "color": "#000000"
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "labelSize": {
+                                            "options": {
+                                                "size": 14
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "labelText": {
+                                            "options": {
+                                                "value": ""
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "lineColor": {
+                                            "options": {
+                                                "color": "#41937c"
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "lineWidth": {
+                                            "options": {
+                                                "size": 1
+                                            },
+                                            "type": "STATIC"
+                                        },
+                                        "symbolizeAs": {
+                                            "options": {
+                                                "value": "circle"
+                                            }
+                                        }
+                                    },
+                                    "type": "VECTOR"
+                                },
+                                "type": "GEOJSON_VECTOR",
+                                "visible": true
+                            }
+                        ],
+                        "mapStateJSON": {
+                            "center": {
+                                "lat": 19.94277,
+                                "lon": 0
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "refreshConfig": {
+                                "interval": 0,
+                                "isPaused": false
+                            },
+                            "settings": {
+                                "autoFitToDataBounds": false
+                            },
+                            "timeFilters": {
+                                "from": "now-15m",
+                                "to": "now"
+                            },
+                            "zoom": 1.97
+                        },
+                        "title": "CloudTrail Source Location",
+                        "uiStateJSON": {
+                            "isLayerTOCOpen": true,
+                            "openTOCDetails": []
+                        }
                     },
-                    "enhancements": {},
                     "hiddenLayers": [],
                     "isLayerTOCOpen": false,
                     "mapCenter": {
@@ -64,7 +205,7 @@
                     "i": "85d26d9a-2a71-4b98-a026-5f513094d6e5",
                     "w": 24,
                     "x": 0,
-                    "y": 0
+                    "y": 3
                 },
                 "panelIndex": "85d26d9a-2a71-4b98-a026-5f513094d6e5",
                 "type": "map"
@@ -75,12 +216,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-48aeefd1-6c5b-484a-8f0a-92f62598973f",
+                                "name": "indexpattern-datasource-layer-4a0e1169-5ae9-4c34-9a1a-59f6e4272153",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "ac6db275-2ddb-41f1-b203-c8fab3ca7e72",
+                                "name": "df9eca25-d687-47e3-a729-395cdce4b952",
                                 "type": "index-pattern"
                             }
                         ],
@@ -89,27 +230,26 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "48aeefd1-6c5b-484a-8f0a-92f62598973f": {
+                                        "4a0e1169-5ae9-4c34-9a1a-59f6e4272153": {
                                             "columnOrder": [
-                                                "593c66bd-f9d4-4207-b216-5058b5081ece",
-                                                "2203c5fb-a284-4798-a782-72ae8c307d24",
-                                                "711a4fcc-5683-4af1-8cfe-6cfc1daec72a"
+                                                "758a8a05-2e51-430c-b881-3daa9742fc40",
+                                                "d14c0b60-746f-4c76-afff-6f05bebb6b93"
                                             ],
                                             "columns": {
-                                                "2203c5fb-a284-4798-a782-72ae8c307d24": {
+                                                "758a8a05-2e51-430c-b881-3daa9742fc40": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "event.outcome: Descending",
+                                                    "label": "user_agent.name: Descending",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": true,
+                                                        "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "711a4fcc-5683-4af1-8cfe-6cfc1daec72a",
+                                                            "columnId": "d14c0b60-746f-4c76-afff-6f05bebb6b93",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -120,23 +260,9 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.outcome"
+                                                    "sourceField": "user_agent.name"
                                                 },
-                                                "593c66bd-f9d4-4207-b216-5058b5081ece": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "711a4fcc-5683-4af1-8cfe-6cfc1daec72a": {
+                                                "d14c0b60-746f-4c76-afff-6f05bebb6b93": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -164,90 +290,185 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "curveType": "LINEAR",
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": -90
-                                },
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "711a4fcc-5683-4af1-8cfe-6cfc1daec72a"
-                                        ],
-                                        "isHistogram": true,
-                                        "layerId": "48aeefd1-6c5b-484a-8f0a-92f62598973f",
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "4a0e1169-5ae9-4c34-9a1a-59f6e4272153",
                                         "layerType": "data",
-                                        "palette": {
-                                            "name": "default",
-                                            "type": "palette"
-                                        },
-                                        "seriesType": "area_stacked",
-                                        "simpleView": false,
-                                        "splitAccessor": "2203c5fb-a284-4798-a782-72ae8c307d24",
-                                        "xAccessor": "593c66bd-f9d4-4207-b216-5058b5081ece",
-                                        "xScaleType": "time",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "711a4fcc-5683-4af1-8cfe-6cfc1daec72a"
-                                            }
-                                        ]
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "legendStats": [
+                                            "value"
+                                        ],
+                                        "metrics": [
+                                            "d14c0b60-746f-4c76-afff-6f05bebb6b93"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "758a8a05-2e51-430c-b881-3daa9742fc40"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "truncateLegend": true
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": true
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
                                 },
-                                "preferredSeriesType": "bar_stacked",
-                                "showCurrentTimeMarker": false,
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yLeftExtent": {
-                                    "enforce": true,
-                                    "mode": "full"
-                                },
-                                "yLeftScale": "linear",
-                                "yRightScale": "linear",
-                                "yTitle": "Count"
+                                "shape": "donut"
                             }
                         },
                         "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "version": 2,
+                        "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "hide_title": false,
+                    "title": "CloudTrail User Agents"
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "6b3eff90-3071-451e-a827-ca569e0ac10b",
+                    "h": 13,
+                    "i": "3e617d87-3acf-4203-b03b-c907c9145fce",
                     "w": 24,
                     "x": 24,
-                    "y": 0
+                    "y": 3
                 },
-                "panelIndex": "6b3eff90-3071-451e-a827-ca569e0ac10b",
-                "title": "CloudTrail Event Outcome over time [Logs AWS]",
-                "type": "lens"
+                "panelIndex": "3e617d87-3acf-4203-b03b-c907c9145fce",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f97bccca-84b0-43a3-a342-da0b4a1d0156",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "15d4ec78-9b38-428a-a871-c2a8c5849d30",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f97bccca-84b0-43a3-a342-da0b4a1d0156": {
+                                            "columnOrder": [
+                                                "675cbd91-6459-4ea0-bc00-5f09a42809ee",
+                                                "04729a65-bb54-44f7-b090-a560f9d0a8b7"
+                                            ],
+                                            "columns": {
+                                                "04729a65-bb54-44f7-b090-a560f9d0a8b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "675cbd91-6459-4ea0-bc00-5f09a42809ee": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "aws.cloudtrail.error_code: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "04729a65-bb54-44f7-b090-a560f9d0a8b7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.cloudtrail.error_code"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "f97bccca-84b0-43a3-a342-da0b4a1d0156",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "legendStats": [
+                                            "value"
+                                        ],
+                                        "metrics": [
+                                            "04729a65-bb54-44f7-b090-a560f9d0a8b7"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "675cbd91-6459-4ea0-bc00-5f09a42809ee"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "hide_title": false,
+                    "title": "CloudTrail Error Code"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "d6f03440-c717-4f5e-928c-72ae9d450318",
+                    "w": 24,
+                    "x": 24,
+                    "y": 16
+                },
+                "panelIndex": "d6f03440-c717-4f5e-928c-72ae9d450318",
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -368,6 +589,9 @@
                                         "legendMaxLines": 1,
                                         "legendPosition": "right",
                                         "legendSize": "large",
+                                        "legendStats": [
+                                            "value"
+                                        ],
                                         "metrics": [
                                             "4a865297-d4e2-4606-b456-58c474f550cf"
                                         ],
@@ -379,7 +603,6 @@
                                             "49e25fe9-0c1a-418f-b897-c24f56139396"
                                         ],
                                         "secondaryGroups": [],
-                                        "showValuesInLegend": true,
                                         "truncateLegend": true
                                     }
                                 ],
@@ -391,454 +614,22 @@
                             }
                         },
                         "title": "",
-                        "type": "lens",
+                        "version": 2,
                         "visualizationType": "lnsPie"
                     },
                     "description": "event.action values separated by event.provider.",
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "hide_title": false,
+                    "title": "CloudTrail Actions"
                 },
                 "gridData": {
                     "h": 13,
                     "i": "952e456a-e9ae-4606-b838-e16019375336",
                     "w": 24,
                     "x": 0,
-                    "y": 15
+                    "y": 18
                 },
                 "panelIndex": "952e456a-e9ae-4606-b838-e16019375336",
-                "title": "CloudTrail Actions [Logs AWS]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-4a0e1169-5ae9-4c34-9a1a-59f6e4272153",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "df9eca25-d687-47e3-a729-395cdce4b952",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "4a0e1169-5ae9-4c34-9a1a-59f6e4272153": {
-                                            "columnOrder": [
-                                                "758a8a05-2e51-430c-b881-3daa9742fc40",
-                                                "d14c0b60-746f-4c76-afff-6f05bebb6b93"
-                                            ],
-                                            "columns": {
-                                                "758a8a05-2e51-430c-b881-3daa9742fc40": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "user_agent.name: Descending",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "d14c0b60-746f-4c76-afff-6f05bebb6b93",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "user_agent.name"
-                                                },
-                                                "d14c0b60-746f-4c76-afff-6f05bebb6b93": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "emptySizeRatio": 0.3,
-                                        "layerId": "4a0e1169-5ae9-4c34-9a1a-59f6e4272153",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "legendMaxLines": 1,
-                                        "legendPosition": "right",
-                                        "legendSize": "auto",
-                                        "metrics": [
-                                            "d14c0b60-746f-4c76-afff-6f05bebb6b93"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "percentDecimals": 2,
-                                        "primaryGroups": [
-                                            "758a8a05-2e51-430c-b881-3daa9742fc40"
-                                        ],
-                                        "secondaryGroups": [],
-                                        "showValuesInLegend": true,
-                                        "truncateLegend": true
-                                    }
-                                ],
-                                "palette": {
-                                    "name": "default",
-                                    "type": "palette"
-                                },
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "3e617d87-3acf-4203-b03b-c907c9145fce",
-                    "w": 24,
-                    "x": 24,
-                    "y": 15
-                },
-                "panelIndex": "3e617d87-3acf-4203-b03b-c907c9145fce",
-                "title": "CloudTrail User Agents [Logs AWS]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-8c57dfe1-238b-4a2e-a450-0bfa78a3e984",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "36383587-6745-42e7-be57-db8876de435e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "8c57dfe1-238b-4a2e-a450-0bfa78a3e984": {
-                                            "columnOrder": [
-                                                "f5e17fee-481e-4503-8058-340aed44fa81",
-                                                "80f1f897-eeac-4892-abd4-ea3859307e1d"
-                                            ],
-                                            "columns": {
-                                                "80f1f897-eeac-4892-abd4-ea3859307e1d": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f5e17fee-481e-4503-8058-340aed44fa81": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "CloudTrail Event Type",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "80f1f897-eeac-4892-abd4-ea3859307e1d",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.cloudtrail.event_type"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "emptySizeRatio": 0.3,
-                                        "layerId": "8c57dfe1-238b-4a2e-a450-0bfa78a3e984",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "legendMaxLines": 1,
-                                        "legendPosition": "right",
-                                        "legendSize": "auto",
-                                        "metrics": [
-                                            "80f1f897-eeac-4892-abd4-ea3859307e1d"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "percentDecimals": 2,
-                                        "primaryGroups": [
-                                            "f5e17fee-481e-4503-8058-340aed44fa81"
-                                        ],
-                                        "secondaryGroups": [],
-                                        "showValuesInLegend": true,
-                                        "truncateLegend": true
-                                    }
-                                ],
-                                "palette": {
-                                    "name": "default",
-                                    "type": "palette"
-                                },
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "802ad09d-5883-4e41-99ac-6c356144d24d",
-                    "w": 24,
-                    "x": 0,
-                    "y": 28
-                },
-                "panelIndex": "802ad09d-5883-4e41-99ac-6c356144d24d",
-                "title": "CloudTrail Event Type [Logs AWS]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-f97bccca-84b0-43a3-a342-da0b4a1d0156",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "15d4ec78-9b38-428a-a871-c2a8c5849d30",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "f97bccca-84b0-43a3-a342-da0b4a1d0156": {
-                                            "columnOrder": [
-                                                "675cbd91-6459-4ea0-bc00-5f09a42809ee",
-                                                "04729a65-bb54-44f7-b090-a560f9d0a8b7"
-                                            ],
-                                            "columns": {
-                                                "04729a65-bb54-44f7-b090-a560f9d0a8b7": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "675cbd91-6459-4ea0-bc00-5f09a42809ee": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "aws.cloudtrail.error_code: Descending",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "04729a65-bb54-44f7-b090-a560f9d0a8b7",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.cloudtrail.error_code"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "emptySizeRatio": 0.3,
-                                        "layerId": "f97bccca-84b0-43a3-a342-da0b4a1d0156",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "legendMaxLines": 1,
-                                        "legendPosition": "right",
-                                        "legendSize": "auto",
-                                        "metrics": [
-                                            "04729a65-bb54-44f7-b090-a560f9d0a8b7"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "percentDecimals": 2,
-                                        "primaryGroups": [
-                                            "675cbd91-6459-4ea0-bc00-5f09a42809ee"
-                                        ],
-                                        "secondaryGroups": [],
-                                        "showValuesInLegend": true,
-                                        "truncateLegend": true
-                                    }
-                                ],
-                                "palette": {
-                                    "name": "default",
-                                    "type": "palette"
-                                },
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "d6f03440-c717-4f5e-928c-72ae9d450318",
-                    "w": 24,
-                    "x": 24,
-                    "y": 28
-                },
-                "panelIndex": "d6f03440-c717-4f5e-928c-72ae9d450318",
-                "title": "CloudTrail Error Code [Logs AWS]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "columns": [
-                            "user.id",
-                            "event.provider",
-                            "aws.cloudtrail.event_type",
-                            "event.action",
-                            "event.outcome",
-                            "source.address",
-                            "source.geo.region_name"
-                        ],
-                        "kibanaSavedObjectMeta": {
-                            "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"alias\":null,\"disabled\":false,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\",\"key\":\"data_stream.dataset\",\"negate\":false,\"params\":{\"query\":\"aws.cloudtrail\"},\"type\":\"phrase\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"aws.cloudtrail\"}}}],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"version\":true}"
-                        },
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "sort": [
-                            []
-                        ]
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "5978c7e7-4414-42f7-80ba-180c784890c6",
-                    "w": 30,
-                    "x": 0,
-                    "y": 41
-                },
-                "panelIndex": "5978c7e7-4414-42f7-80ba-180c784890c6",
-                "title": "CloudTrail Events [Logs AWS]",
-                "type": "search"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -941,61 +732,1269 @@
                             }
                         },
                         "title": "",
-                        "type": "lens",
+                        "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "hide_title": false,
+                    "title": "CloudTrail Top User IDs"
                 },
                 "gridData": {
                     "h": 13,
                     "i": "40f0a89b-7ce5-498f-a0f0-5c7edf7f8b50",
                     "w": 18,
                     "x": 30,
-                    "y": 41
+                    "y": 29
                 },
                 "panelIndex": "40f0a89b-7ce5-498f-a0f0-5c7edf7f8b50",
-                "title": "CloudTrail Top User IDs [Logs AWS]",
-                "type": "lens"
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8c57dfe1-238b-4a2e-a450-0bfa78a3e984",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "36383587-6745-42e7-be57-db8876de435e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8c57dfe1-238b-4a2e-a450-0bfa78a3e984": {
+                                            "columnOrder": [
+                                                "f5e17fee-481e-4503-8058-340aed44fa81",
+                                                "80f1f897-eeac-4892-abd4-ea3859307e1d"
+                                            ],
+                                            "columns": {
+                                                "80f1f897-eeac-4892-abd4-ea3859307e1d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f5e17fee-481e-4503-8058-340aed44fa81": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "CloudTrail Event Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "80f1f897-eeac-4892-abd4-ea3859307e1d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.cloudtrail.event_type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "8c57dfe1-238b-4a2e-a450-0bfa78a3e984",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "legendStats": [
+                                            "value"
+                                        ],
+                                        "metrics": [
+                                            "80f1f897-eeac-4892-abd4-ea3859307e1d"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "f5e17fee-481e-4503-8058-340aed44fa81"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "hide_title": false,
+                    "title": "CloudTrail Event Type"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "802ad09d-5883-4e41-99ac-6c356144d24d",
+                    "w": 24,
+                    "x": 0,
+                    "y": 31
+                },
+                "panelIndex": "802ad09d-5883-4e41-99ac-6c356144d24d",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-81731194-359d-4d86-b2c8-17df4b5c490e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "81731194-359d-4d86-b2c8-17df4b5c490e": {
+                                            "columnOrder": [
+                                                "9860d824-6cef-4400-9041-b2f2575e2fc4",
+                                                "89d262f1-76a3-463c-8e7f-c836c1697e89"
+                                            ],
+                                            "columns": {
+                                                "89d262f1-76a3-463c-8e7f-c836c1697e89": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total CloudTrail Events",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "9860d824-6cef-4400-9041-b2f2575e2fc4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "linkToLayers": [
+                                                "f0632e85-7a67-4824-89e8-451519df0e01"
+                                            ],
+                                            "sampling": 1
+                                        },
+                                        "f0632e85-7a67-4824-89e8-451519df0e01": {
+                                            "columnOrder": [
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6"
+                                            ],
+                                            "columns": {
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total CloudTrail Events",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "density": "default",
+                                "iconAlign": "right",
+                                "layerId": "f0632e85-7a67-4824-89e8-451519df0e01",
+                                "layerType": "data",
+                                "metricAccessor": "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "secondaryAlign": "right",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "trendlineLayerId": "81731194-359d-4d86-b2c8-17df4b5c490e",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "89d262f1-76a3-463c-8e7f-c836c1697e89",
+                                "trendlineTimeAccessor": "9860d824-6cef-4400-9041-b2f2575e2fc4",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Total CloudTrail Events"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "5ea36adb-a79e-4ff5-a50b-69df24f98fcc",
+                    "sectionId": "fbd80cce-7db7-4ab8-985c-e54c526bd400",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "5ea36adb-a79e-4ff5-a50b-69df24f98fcc",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f0632e85-7a67-4824-89e8-451519df0e01": {
+                                            "columnOrder": [
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6"
+                                            ],
+                                            "columns": {
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Distinct IAM Principals",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.cloudtrail.user_identity.arn"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "iconAlign": "right",
+                                "layerId": "f0632e85-7a67-4824-89e8-451519df0e01",
+                                "layerType": "data",
+                                "metricAccessor": "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "secondaryAlign": "right",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "drilldowns": [],
+                    "hide_title": true,
+                    "title": "Distinct IAM Principals"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "1db6ca21-681e-4afb-8509-765f89f05818",
+                    "sectionId": "fbd80cce-7db7-4ab8-985c-e54c526bd400",
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "1db6ca21-681e-4afb-8509-765f89f05818",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f0632e85-7a67-4824-89e8-451519df0e01": {
+                                            "columnOrder": [
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6",
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X0",
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X1",
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X2"
+                                            ],
+                                            "columns": {
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Failed-Event Rate",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "count(kql='event.outcome: \"failure\" or aws.cloudtrail.error_code: *') / count()",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X2"
+                                                    ]
+                                                },
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "event.outcome: \"failure\" or aws.cloudtrail.error_code: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Distinct IAM Principals",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Distinct IAM Principals",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Distinct IAM Principals",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X0",
+                                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 79,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "count(kql='event.outcome: \"failure\" or aws.cloudtrail.error_code: *') / count()",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X0",
+                                                        "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6X1"
+                                                    ]
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#DA3737",
+                                "density": "default",
+                                "iconAlign": "right",
+                                "layerId": "f0632e85-7a67-4824-89e8-451519df0e01",
+                                "layerType": "data",
+                                "metricAccessor": "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "secondaryAlign": "right",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Failed-Event Rate"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "35ae39fc-dacd-4ea9-9e59-449d62112e0c",
+                    "sectionId": "fbd80cce-7db7-4ab8-985c-e54c526bd400",
+                    "w": 12,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "35ae39fc-dacd-4ea9-9e59-449d62112e0c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f0632e85-7a67-4824-89e8-451519df0e01": {
+                                            "columnOrder": [
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6"
+                                            ],
+                                            "columns": {
+                                                "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Distinct Source IPs",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "source.ip"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "iconAlign": "right",
+                                "layerId": "f0632e85-7a67-4824-89e8-451519df0e01",
+                                "layerType": "data",
+                                "metricAccessor": "8cfbe3ee-1f4a-4ca6-b8a3-2c7384a30ee6",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "secondaryAlign": "right",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "drilldowns": [],
+                    "hide_title": true,
+                    "title": "Distinct Source IPs"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "13e70017-64fb-45eb-a5dc-470371b042dc",
+                    "sectionId": "fbd80cce-7db7-4ab8-985c-e54c526bd400",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "13e70017-64fb-45eb-a5dc-470371b042dc",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-48aeefd1-6c5b-484a-8f0a-92f62598973f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "48aeefd1-6c5b-484a-8f0a-92f62598973f": {
+                                            "columnOrder": [
+                                                "593c66bd-f9d4-4207-b216-5058b5081ece",
+                                                "711a4fcc-5683-4af1-8cfe-6cfc1daec72a",
+                                                "bbdf083d-7674-4753-bd18-48f9b67298c1"
+                                            ],
+                                            "columns": {
+                                                "593c66bd-f9d4-4207-b216-5058b5081ece": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "711a4fcc-5683-4af1-8cfe-6cfc1daec72a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "event.outcome : \"success\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Success",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "bbdf083d-7674-4753-bd18-48f9b67298c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "event.outcome : \"failure\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Failure",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "areaFill": "gradient",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fillOpacity": 0.3,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "711a4fcc-5683-4af1-8cfe-6cfc1daec72a",
+                                            "bbdf083d-7674-4753-bd18-48f9b67298c1"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "48aeefd1-6c5b-484a-8f0a-92f62598973f",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "simpleView": false,
+                                        "xAccessor": "593c66bd-f9d4-4207-b216-5058b5081ece",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#24c292",
+                                                "forAccessor": "711a4fcc-5683-4af1-8cfe-6cfc1daec72a"
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "forAccessor": "bbdf083d-7674-4753-bd18-48f9b67298c1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "average"
+                                    ],
+                                    "maxLines": 1,
+                                    "position": "bottom",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "hide_title": false,
+                    "title": "Event Outcome over Time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "6b3eff90-3071-451e-a827-ca569e0ac10b",
+                    "sectionId": "af5b20ca-92ac-49b2-b5e2-1b1931996233",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "6b3eff90-3071-451e-a827-ca569e0ac10b",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-caebfcfe-60f1-4dd6-bf0e-fb31dad1f297",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "caebfcfe-60f1-4dd6-bf0e-fb31dad1f297": {
+                                            "columnOrder": [
+                                                "2fb66ee9-6f4e-470c-9f7b-b1f571c47c12",
+                                                "24b33288-01d8-43ac-aa63-644d53d9bd9a",
+                                                "6831adc6-6cdf-44ca-8841-9480269a3d98"
+                                            ],
+                                            "columns": {
+                                                "24b33288-01d8-43ac-aa63-644d53d9bd9a": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "2fb66ee9-6f4e-470c-9f7b-b1f571c47c12": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Category",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6831adc6-6cdf-44ca-8841-9480269a3d98",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.cloudtrail.event_category"
+                                                },
+                                                "6831adc6-6cdf-44ca-8841-9480269a3d98": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "6831adc6-6cdf-44ca-8841-9480269a3d98"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "caebfcfe-60f1-4dd6-bf0e-fb31dad1f297",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessors": [
+                                            "2fb66ee9-6f4e-470c-9f7b-b1f571c47c12"
+                                        ],
+                                        "xAccessor": "24b33288-01d8-43ac-aa63-644d53d9bd9a"
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": false,
+                                    "isVisible": true,
+                                    "legendStats": [],
+                                    "position": "bottom",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "title": "Events over Time by Category"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "c0826986-d944-4116-bbe7-58dd75dd33ec",
+                    "sectionId": "af5b20ca-92ac-49b2-b5e2-1b1931996233",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "c0826986-d944-4116-bbe7-58dd75dd33ec",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-caebfcfe-60f1-4dd6-bf0e-fb31dad1f297",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "caebfcfe-60f1-4dd6-bf0e-fb31dad1f297": {
+                                            "columnOrder": [
+                                                "3ab8d43c-1bde-43f5-bc8c-c2d95804ea7d",
+                                                "4b59aa98-6d8f-4645-b94a-5697411d8727"
+                                            ],
+                                            "columns": {
+                                                "3ab8d43c-1bde-43f5-bc8c-c2d95804ea7d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Service",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4b59aa98-6d8f-4645-b94a-5697411d8727",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "event.provider"
+                                                },
+                                                "4b59aa98-6d8f-4645-b94a-5697411d8727": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "4b59aa98-6d8f-4645-b94a-5697411d8727"
+                                        ],
+                                        "layerId": "caebfcfe-60f1-4dd6-bf0e-fb31dad1f297",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "3ab8d43c-1bde-43f5-bc8c-c2d95804ea7d",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "4b59aa98-6d8f-4645-b94a-5697411d8727"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": false,
+                                    "isVisible": false,
+                                    "legendStats": [],
+                                    "position": "bottom",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "title": "Top AWS Services by Volume"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "0ee3880e-5be0-4d77-809a-99c77dce24bb",
+                    "sectionId": "af5b20ca-92ac-49b2-b5e2-1b1931996233",
+                    "w": 48,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "0ee3880e-5be0-4d77-809a-99c77dce24bb",
+                "type": "vis"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "344fbfb5-24e0-48fc-bcce-da201c992e1c": {
+                    "config": {
+                        "dataViewRefName": "344fbfb5-24e0-48fc-bcce-da201c992e1c:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "event.action",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Action",
+                        "use_global_filters": true,
+                        "values_source": "field"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "3cb713ef-955a-4993-a254-745cd10e373e": {
+                    "config": {
+                        "dataViewRefName": "3cb713ef-955a-4993-a254-745cd10e373e:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "cloud.service.name",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Service",
+                        "use_global_filters": true,
+                        "values_source": "field"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "48aafccc-7542-4fa9-a111-2099137d2f06": {
+                    "config": {
+                        "dataViewRefName": "48aafccc-7542-4fa9-a111-2099137d2f06:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "aws.cloudtrail.user_identity.type",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "User Identity Type",
+                        "use_global_filters": true,
+                        "values_source": "field"
+                    },
+                    "grow": true,
+                    "order": 3,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "b4c1467d-0afb-44ab-88de-c704755f367b": {
+                    "config": {
+                        "dataViewRefName": "b4c1467d-0afb-44ab-88de-c704755f367b:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "cloud.region",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Region",
+                        "use_global_filters": true,
+                        "values_source": "field"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "options_list_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "fbd80cce-7db7-4ab8-985c-e54c526bd400",
+                    "y": 0
+                },
+                "title": "Overview (KPIs)"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "af5b20ca-92ac-49b2-b5e2-1b1931996233",
+                    "y": 1
+                },
+                "title": "Activity Trends"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "4c9ac104-8833-4986-88ff-b07749f2fe49",
+                    "y": 2
+                },
+                "title": "Identity \u0026 Access"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs AWS] CloudTrail",
-        "version": 1
+        "title": "[Logs AWS] CloudTrail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-04-11T07:45:40.367Z",
+    "created_at": "2026-08-26T06:41:28.807Z",
     "id": "aws-9c09cd20-7399-11ea-a345-f985c61fe654",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "85d26d9a-2a71-4b98-a026-5f513094d6e5:layer_1_source_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6b3eff90-3071-451e-a827-ca569e0ac10b:indexpattern-datasource-layer-48aeefd1-6c5b-484a-8f0a-92f62598973f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6b3eff90-3071-451e-a827-ca569e0ac10b:ac6db275-2ddb-41f1-b203-c8fab3ca7e72",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "952e456a-e9ae-4606-b838-e16019375336:indexpattern-datasource-layer-8b11eda5-942c-448e-8452-adb3fdd9e745",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "952e456a-e9ae-4606-b838-e16019375336:67c166a6-891b-47b5-a916-28eb114c129b",
             "type": "index-pattern"
         },
         {
@@ -1010,16 +2009,6 @@
         },
         {
             "id": "logs-*",
-            "name": "802ad09d-5883-4e41-99ac-6c356144d24d:indexpattern-datasource-layer-8c57dfe1-238b-4a2e-a450-0bfa78a3e984",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "802ad09d-5883-4e41-99ac-6c356144d24d:36383587-6745-42e7-be57-db8876de435e",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "d6f03440-c717-4f5e-928c-72ae9d450318:indexpattern-datasource-layer-f97bccca-84b0-43a3-a342-da0b4a1d0156",
             "type": "index-pattern"
         },
@@ -1030,12 +2019,12 @@
         },
         {
             "id": "logs-*",
-            "name": "5978c7e7-4414-42f7-80ba-180c784890c6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "952e456a-e9ae-4606-b838-e16019375336:indexpattern-datasource-layer-8b11eda5-942c-448e-8452-adb3fdd9e745",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5978c7e7-4414-42f7-80ba-180c784890c6:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "952e456a-e9ae-4606-b838-e16019375336:67c166a6-891b-47b5-a916-28eb114c129b",
             "type": "index-pattern"
         },
         {
@@ -1047,8 +2036,84 @@
             "id": "logs-*",
             "name": "40f0a89b-7ce5-498f-a0f0-5c7edf7f8b50:0c6c1e85-98f6-499c-a84a-b9056ee6387b",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "802ad09d-5883-4e41-99ac-6c356144d24d:indexpattern-datasource-layer-8c57dfe1-238b-4a2e-a450-0bfa78a3e984",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "802ad09d-5883-4e41-99ac-6c356144d24d:36383587-6745-42e7-be57-db8876de435e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5ea36adb-a79e-4ff5-a50b-69df24f98fcc:indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5ea36adb-a79e-4ff5-a50b-69df24f98fcc:indexpattern-datasource-layer-81731194-359d-4d86-b2c8-17df4b5c490e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1db6ca21-681e-4afb-8509-765f89f05818:indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "35ae39fc-dacd-4ea9-9e59-449d62112e0c:indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "13e70017-64fb-45eb-a5dc-470371b042dc:indexpattern-datasource-layer-f0632e85-7a67-4824-89e8-451519df0e01",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6b3eff90-3071-451e-a827-ca569e0ac10b:indexpattern-datasource-layer-48aeefd1-6c5b-484a-8f0a-92f62598973f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c0826986-d944-4116-bbe7-58dd75dd33ec:indexpattern-datasource-layer-caebfcfe-60f1-4dd6-bf0e-fb31dad1f297",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0ee3880e-5be0-4d77-809a-99c77dce24bb:indexpattern-datasource-layer-caebfcfe-60f1-4dd6-bf0e-fb31dad1f297",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b4c1467d-0afb-44ab-88de-c704755f367b:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3cb713ef-955a-4993-a254-745cd10e373e:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "344fbfb5-24e0-48fc-bcce-da201c992e1c:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "48aafccc-7542-4fa9-a111-2099137d2f06:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "8.9.0"
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
