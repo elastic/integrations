@@ -1,0 +1,90 @@
+title: "Max logs"
+type: logs
+streams:
+  - input: mqtt
+    title: "Max logs via MQTT"
+    description: Collect Max logs from an MQTT broker.
+    template_path: mqtt.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Broker Hosts
+        description: >-
+          MQTT broker URIs to connect to, for example `tcp://localhost:1883`. Use the `ssl://` scheme for TLS connections.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - tcp://localhost:1883
+      - name: topics
+        type: text
+        title: Topics
+        description: Topics to subscribe to. Wildcards such as `max/#` are supported.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - max/#
+      - name: client_id
+        type: text
+        title: Client ID
+        description: >-
+          Client ID used when connecting to the broker. Must be unique per agent when several agents share a broker.
+        required: false
+        show_user: true
+        default: elastic-agent-max
+      - name: qos
+        type: integer
+        title: QoS
+        description: >-
+          Quality of service level for the subscription. `0` at most once, `1` at least once, `2` exactly once.
+        required: false
+        show_user: true
+        default: 1
+      - name: username
+        type: text
+        title: Username
+        description: Username for broker authentication. Leave empty for anonymous access.
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: Password for broker authentication.
+        required: false
+        secret: true
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: >-
+          SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        required: false
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - max-log
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

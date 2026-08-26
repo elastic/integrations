@@ -1,0 +1,77 @@
+---
+description: Pipeline for processing Max logs received over MQTT.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  # MQTT payloads are commonly JSON. Parsing is guarded so non-JSON payloads pass
+  # through untouched. Replace this branch with product-specific parsing once
+  # sample Max payloads are available.
+  - json:
+      field: event.original
+      tag: parse_json_payload
+      target_field: json
+      if: ctx.event?.original != null && ctx.event.original.trim().startsWith('{')
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_json_parse_error
+            value: "failed to parse payload as JSON: {{{ _ingest.on_failure_message }}}"
+  - date:
+      field: json.timestamp
+      tag: date_json_timestamp_to_timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - UNIX
+        - UNIX_MS
+      if: ctx.json?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_timestamp_parse_error
+            value: "failed to parse @timestamp: {{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+      if: ctx.json != null && ctx.json.isEmpty()
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
