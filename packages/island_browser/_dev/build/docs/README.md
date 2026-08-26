@@ -14,12 +14,17 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to log audit events and admin action events.
 
+Audit and admin action events are collected through the **SIEM Events** data stream, which pulls audit and admin action logs together through the Island SIEM integration.
+
+The separate **Audit** and **Admin Actions** data streams are deprecated. New deployments should use **SIEM Events** instead.
+
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
-- `Admin Actions`: Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
-- `Audit`: Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
+- `SIEM Events`: Collects audit and admin action logs through the Island SIEM integration.
+- `Admin Actions` (deprecated): Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `Audit` (deprecated): Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
@@ -40,15 +45,17 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 ### From Island Browser
 
-To collect data through the Island Browser APIs, `Admin` role must be required and admin must have permission to generate and manage API keys (i.e. full admin, system admin). Authentication is handled using a `API Key`, which serve as the required credentials.
+**Required permissions:** The API key must belong to an Island account with administrator access (Admin or System Admin).
+
+Authentication uses an API key as the required credential. The account used to create the key must also have permission to generate and manage API keys.
 
 #### Generate an `API Key`:
 
-1. Log in to Island Browser Management Console.
+1. Log in to Island Browser Management Console as an administrator (Admin or System Admin).
 2. From the **Island Management Console**, navigate to **Modules > Platform Settings > System Settings > Integrations > API**.
 3. Click **+ Create**. The **Create API Key** drawer is displayed to assist in the key creation.
 4. Enter a **Name**.
-5. Select the **Role** that applies to this API key (i.e. Full Admin, or Read Only).
+5. Select **Full Admin** or **System Admin** as the role for this API key.
 6. Click **Generate API Key**.
 7. Copy the **API Key** to your clipboard to be used when using the [API Explorer](https://documentation.island.io/v1-api/apidocs/introduction-to-the-api-explorer).
 8. Click **Save**.
@@ -56,6 +63,18 @@ To collect data through the Island Browser APIs, `Admin` role must be required a
 For more details, check [Documentation](https://documentation.island.io/apidocs/generate-and-manage-api-keys).
 
 >**Note**: If an API key already exists and you need to create a new one, you must first deactivate and delete the existing key by selecting **Deactivate and Delete API Key**.
+
+#### Configure the SIEM integration
+
+To collect audit and admin action logs through the SIEM API, set up the Generic SIEM Integration in the Island Management Console and copy the **Audit ID**.
+
+1. Log in to the Island Management Console as an administrator (Full Admin or System Admin).
+2. Navigate to **Modules > Platform Settings > System Settings > Integrations > SIEM**.
+3. Click **Setup** for the **Generic SIEM Integration**.
+4. Click **Generate API Key** if you need a dedicated SIEM API key. The API key must belong to an Island account with administrator access (Admin or System Admin).
+5. Copy the **Audit ID** displayed for the SIEM connector. You will need this value when configuring **SIEM Events** in Elastic.
+
+> **Note**: **Audit** and **Admin Actions** are deprecated. Use **SIEM Events** for new deployments. Do not enable **SIEM Events** together with **Audit** or **Admin Actions** to avoid collecting duplicate logs.
 
 
 ## How do I deploy this integration?
@@ -84,9 +103,17 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
         - Configure **URL** and **API Key**.
         - Enable/Disable the required datasets.
+        - For **SIEM Events**, provide the **Audit ID** from the Generic SIEM Integration in the Island Management Console.
         - For each dataset, adjust the integration configuration parameters if required, including the Interval, Batch Size etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
+
+### Collecting data from the SIEM API
+
+To collect audit and admin action logs through the Island SIEM integration:
+
+1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
+2. Enable **SIEM Events** in Fleet and configure **URL**, **API Key**, and **Audit ID**.
 
 ### Validation
 
@@ -110,6 +137,10 @@ For more information on architectures that can be used for scaling this integrat
 ## Reference
 
 ### ECS field reference
+
+#### SIEM Events
+
+{{fields "siem_event"}}
 
 #### Admin Actions
 
@@ -163,8 +194,9 @@ This input is used in this integration:
 
 This integration dataset uses the following APIs:
 
-- `Admin Actions`: [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
-- `Audit`: [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
+- `SIEM Events`: Island SIEM API
+- `Admin Actions` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `Audit` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).

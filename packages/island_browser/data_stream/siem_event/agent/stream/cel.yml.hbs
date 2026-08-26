@@ -1,0 +1,131 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  audit_id: '{{audit_id}}'
+  api_key: {{api_key}}
+redact:
+  fields:
+    - api_key
+
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id
+    ).with({
+      "Header": {
+        "Authorization": ["Bearer " + state.api_key],
+      },
+    }).do_request().as(get_resp, get_resp.StatusCode == 200 ?
+      get_resp.Body.decode_json().as(body,
+        body.count != 0 ?
+          {
+            "audits": body.audits,
+            "page_id": body.pageId,
+            "want_more": true,
+          }
+        :
+          {
+            "events": [{
+              "message": "retry",
+            }],
+            "page_id": null,
+            "audits": null,
+            "want_more": false,
+          }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(get_resp.StatusCode),
+            "id": string(get_resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id + ": " + (
+              size(get_resp.Body) != 0 ?
+                string(get_resp.Body)
+              :
+                string(get_resp.Status) + ' (' + string(get_resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "page_id": null,
+        "audits": null,
+        "want_more": false,
+      }
+    )
+  ).as(state,
+    has(state.page_id) ?
+      post_request(
+        state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id,
+        "application/json",
+        {"pageId": state.page_id}.encode_json()
+      ).with({
+        "Header": {
+          "Authorization": ["Bearer " + state.api_key],
+          "Content-Type": ["application/json"],
+        },
+      }).do_request().as(post_resp,
+        (post_resp.StatusCode == 204 || post_resp.StatusCode == 200) ?
+          // Events are only emitted after a successful acknowledgment.
+          {
+            "events": state.audits.split("\n").filter(line, line != "").map(line, {
+              "message": line,
+            }),
+            "page_id": null,
+            "audits": null,
+            "want_more": state.want_more,
+          }
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(post_resp.StatusCode),
+                "id": string(post_resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id + ": " + (
+                  size(post_resp.Body) != 0 ?
+                    string(post_resp.Body)
+                  :
+                    string(post_resp.Status) + ' (' + string(post_resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "page_id": null,
+            "audits": null,
+            "want_more": false,
+          }
+      )
+    :
+      state
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+  {{processors}}
+{{/if}}
