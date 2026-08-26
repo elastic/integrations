@@ -1,4 +1,15 @@
 # newer versions go on top
+- version: "8.1.0"
+  changes:
+    - description: Migrate the Security Hub CSPM Findings (`securityhub_findings`) and Findings Full Posture (`securityhub_findings_full_posture`) data streams from the legacy `httpjson` input with hand-rolled SigV4 signing to CEL via `run_as_cel` with native `auth.aws`, which additionally honors the assume-role, shared-credentials, and temporary-credentials setup options rather than only static access keys.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20818
+    - description: Add a `filters` variable to the Findings and Findings Full Posture data streams to apply server-side `AwsSecurityFindingFilters` to `GetFindings`, and a `Maximum Executions` variable to bound the number of pages fetched per collection interval.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20818
+    - description: Fix `Invalid NextToken` errors (HTTP 403/400) observed when paginating large `GetFindings` result sets, where the previous hand-rolled request was rebuilt and re-signed on every page and could invalidate the `NextToken`, forcing collection to restart. The CEL program pins the request per collection interval and only appends `NextToken` between pages.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20818
 - version: "8.0.0"
   changes:
     - description: Change TargetResponseTime.avg from `long` to `double`.
