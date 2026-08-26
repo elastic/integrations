@@ -114,13 +114,13 @@ processors:
         def m = ctx.openai_chatgpt_enterprise.app_log.input._meta;
         def ua = m.get('openai/userAgent');
         if (ua != null && ua != '') {
-          if (ctx.user_agent == null) { ctx.user_agent = [:]; }
+          ctx.user_agent = ctx.user_agent ?: [:];
           ctx.user_agent.original = ua;
         }
         def loc = m.get('openai/userLocation');
         if (loc instanceof Map) {
-          if (ctx.source == null) { ctx.source = [:]; }
-          if (ctx.source.geo == null) { ctx.source.geo = [:]; }
+          ctx.source = ctx.source ?: [:];
+          ctx.source.geo = ctx.source.geo ?: [:];
           if (loc.city != null && loc.city != '') { ctx.source.geo.city_name = loc.city; }
           if (loc.region != null && loc.region != '') { ctx.source.geo.region_name = loc.region; }
           if (loc.country != null && loc.country != '') { ctx.source.geo.country_iso_code = loc.country; }
