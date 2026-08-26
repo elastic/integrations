@@ -259,13 +259,14 @@ processors:
   ###
   - grok:
       tag: grok_message_6b8b95f5
-      description: DTL-4-ARP_ORPHANPKT_DETECTED, Dot1x_NW_MsgTask_4
+      description: DTL-4-ARP_ORPHANPKT_DETECTED, LOG-4-Q_IND (ARP orphan, SNTP spurious-packet)
       field: message
       if: >-
         ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
-        (ctx._temp_?.reason == 'LOG-4-Q_IND' && ctx.message?.contains('Target MAC Address'))
+        ctx._temp_?.reason == 'LOG-4-Q_IND'
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
+        - "Spurious\\.NTP packet rejected on socket %{INT:cisco.sntp.socket_id:int}"
       ignore_failure: true
   - grok:
       tag: grok_message_757b5cf5
