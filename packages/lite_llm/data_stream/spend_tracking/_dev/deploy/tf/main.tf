@@ -17,11 +17,11 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "elastic-package-lite-llm-audit-bucket-${var.TEST_RUN_ID}"
+  bucket = "elastic-package-lite-llm-spend-tracking-bucket-${var.TEST_RUN_ID}"
 }
 
 resource "aws_sqs_queue" "queue" {
-  name       = "elastic-package-lite-llm-audit-queue-${var.TEST_RUN_ID}"
+  name       = "elastic-package-lite-llm-spend-tracking-queue-${var.TEST_RUN_ID}"
   policy     = <<POLICY
 {
   "Version": "2012-10-17",
@@ -30,7 +30,7 @@ resource "aws_sqs_queue" "queue" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-lite-llm-audit-queue-${var.TEST_RUN_ID}",
+      "Resource": "arn:aws:sqs:*:*:elastic-package-lite-llm-spend-tracking-queue-${var.TEST_RUN_ID}",
       "Condition": {
         "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.bucket.arn}" }
       }
@@ -51,8 +51,8 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
-  key    = "audit.log"
-  source = "./files/test-audit.log"
+  key    = "spend-tracking.log"
+  source = "./files/test-spend-tracking.log"
 
   depends_on = [aws_s3_bucket_notification.bucket_notification]
 }

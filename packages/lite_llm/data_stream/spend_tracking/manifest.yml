@@ -1,11 +1,11 @@
-title: 'LiteLLM Audit Logs'
+title: 'LiteLLM Spend Tracking Logs'
 type: logs
 streams:
   - input: aws-s3
-    title: 'LiteLLM audit logs via AWS S3'
-    description: 'Collect LiteLLM audit logs (StandardAuditLogPayload) from an S3 bucket.'
+    title: 'LiteLLM spend tracking logs via AWS S3'
+    description: 'Collect LiteLLM spend tracking logs from an S3 bucket.'
     enabled: false
-    template_path: aws-s3.yml.hbs
+    template_path: aws_s3.yml.hbs
     vars:
       - name: bucket_arn
         type: text
@@ -125,7 +125,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - litellm-audit
+          - litellm-spend_tracking
         secret: false
       - name: preserve_original_event
         type: bool
@@ -145,15 +145,15 @@ streams:
         show_user: false
         secret: false
   - input: cel
-    title: 'LiteLLM audit logs via API (CEL polling)'
-    description: "Collect LiteLLM audit logs (StandardAuditLogPayload) by polling the LiteLLM proxy's own `/audit` REST API directly with the CEL input."
+    title: 'LiteLLM spend tracking logs via API (CEL polling)'
+    description: "Collect LiteLLM spend tracking logs by polling the LiteLLM proxy's own `/spend/logs/v2` REST API directly with the CEL input."
     enabled: false
     template_path: cel.yml.hbs
     vars:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: How far back to pull the logs from the audit API. Supported units for this parameter are h/m/s.
+        description: How far back to pull the logs from the spend tracking API. Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -162,7 +162,7 @@ streams:
       - name: interval
         type: text
         title: Interval
-        description: Duration between audit log collection requests from the LiteLLM Audit API. Supported units for this parameter are h/m/s.
+        description: Duration between spend tracking log collection requests from the LiteLLM spend tracking API. Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -171,7 +171,7 @@ streams:
       - name: batch_size
         type: integer
         title: Batch Size
-        description: Number of audit log records fetched per API request. Maps to the page_size parameter.
+        description: Number of spend tracking log records fetched per API request. Maps to the page_size parameter.
         multi: false
         required: true
         show_user: false
@@ -214,7 +214,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - litellm-audit
+          - litellm-spend_tracking
         secret: false
       - name: processors
         type: yaml
