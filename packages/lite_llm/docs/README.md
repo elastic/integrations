@@ -155,14 +155,8 @@ The `spend_tracking` data stream provides LLM request usage and cost records col
 | data_stream.type | Type of data stream, such as logs or metrics. | constant_keyword |
 | event.dataset | Identifies the LiteLLM spend tracking log dataset. | constant_keyword |
 | event.module | Module that generated the event. | constant_keyword |
-| gen_ai.agent.id | The unique identifier of the GenAI agent. | keyword |
-| gen_ai.operation.name | The name of the operation being performed. | keyword |
-| gen_ai.request.model | Model used for the generative AI request. | keyword |
-| gen_ai.response.id | Identifier for the generative AI response. | keyword |
-| gen_ai.system | The Generative AI product as identified by the client or server instrumentation. | keyword |
-| gen_ai.tool.name | Name of the tool utilized by the agent. | keyword |
-| gen_ai.usage.input_tokens | Number of input tokens consumed. | long |
-| gen_ai.usage.output_tokens | Number of output tokens consumed. | long |
+| gen_ai.conversation.id | Identifier grouping related generative AI requests into one conversation. | keyword |
+| gen_ai.usage.cache_read.input_tokens | Number of input tokens read from the prompt cache. | long |
 | input.type | Type of filebeat input. | keyword |
 | lite_llm.spend_tracking.api_key | Serialized API-key identifier stored with the spend log; LiteLLM hashes real keys before persistence. | keyword |
 | lite_llm.spend_tracking.cache_hit | String representation of whether the response was served from cache. | keyword |
@@ -335,13 +329,12 @@ The `spend_tracking` data stream provides LLM request usage and cost records col
 | lite_llm.spend_tracking.response | Model response retained in the spend log; LiteLLM may also emit list or object forms. | keyword |
 | lite_llm.spend_tracking.response_cost | Calculated response cost in US dollars. | double |
 | lite_llm.spend_tracking.response_time | Total response time in seconds; for streaming calls this may represent time to first token. | double |
-| lite_llm.spend_tracking.session_id | Identifier used to group related LiteLLM requests into one session. | keyword |
 | lite_llm.spend_tracking.spend | Spend charged for the request in US dollars. | double |
 | lite_llm.spend_tracking.total_tokens | Total number of input and output tokens used by the call. | long |
 | lite_llm.spend_tracking.user_api_key_hash | Hash of the LiteLLM virtual API key used for the request. | keyword |
 | log.offset | Log offset. | long |
-| observer.product | Product name of the observer that generated the event. | constant_keyword |
-| observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
 #### Spend Tracking example event
@@ -352,17 +345,17 @@ An example event for `spend_tracking` looks as following:
 {
     "@timestamp": "2026-07-18T10:11:19.909Z",
     "agent": {
-        "ephemeral_id": "5a64aae1-248b-436b-bea1-256e000b3016",
-        "id": "35f5a622-8d87-4da9-ad45-934fc77621c9",
-        "name": "elastic-agent-29479",
+        "ephemeral_id": "9cdbf985-ddb5-4eea-9f23-60134664eae0",
+        "id": "2cc4b23e-176d-4ea3-9bec-8e6c84e57604",
+        "name": "elastic-agent-88630",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-lite-llm-spend-tracking-bucket-95648",
-                "name": "elastic-package-lite-llm-spend-tracking-bucket-95648"
+                "arn": "arn:aws:s3:::elastic-package-lite-llm-spend-tracking-bucket-77881",
+                "name": "elastic-package-lite-llm-spend-tracking-bucket-77881"
             },
             "object": {
                 "key": "spend-tracking.log"
@@ -374,14 +367,14 @@ An example event for `spend_tracking` looks as following:
     },
     "data_stream": {
         "dataset": "lite_llm.spend_tracking",
-        "namespace": "48215",
+        "namespace": "50636",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "35f5a622-8d87-4da9-ad45-934fc77621c9",
+        "id": "2cc4b23e-176d-4ea3-9bec-8e6c84e57604",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -398,7 +391,7 @@ An example event for `spend_tracking` looks as following:
         "duration": 0,
         "end": "2026-07-18T10:11:19.909Z",
         "id": "7d8f7a77-9f46-47b2-997e-0a0892fe2c7a",
-        "ingested": "2026-08-24T08:59:13Z",
+        "ingested": "2026-08-25T13:27:21Z",
         "kind": "event",
         "original": "{\"request_id\":\"7d8f7a77-9f46-47b2-997e-0a0892fe2c7a\",\"call_type\":\"\",\"api_key\":\"8de15ff28eedf53bd4cf2e65b8e980b9231acc3f894648a9fa3c2dbf0ab1a6d9\",\"spend\":0,\"total_tokens\":0,\"prompt_tokens\":0,\"completion_tokens\":0,\"start_time\":\"2026-07-18T10:11:19.909+00:00\",\"end_time\":\"2026-07-18T10:11:19.909+00:00\",\"model\":\"gemma-4-31b-it\",\"user\":\"default_user_id\",\"status\":\"failure\",\"metadata\":{\"error_information\":{\"error_code\":\"400\",\"error_class\":\"ProxyModelNotFoundError\",\"error_message\":\"Invalid model name passed in model=gemma-4-31b-it\"}}}",
         "outcome": "failure",
@@ -410,6 +403,9 @@ An example event for `spend_tracking` looks as following:
     "gen_ai": {
         "request": {
             "model": "gemma-4-31b-it"
+        },
+        "response": {
+            "id": "7d8f7a77-9f46-47b2-997e-0a0892fe2c7a"
         },
         "usage": {
             "input_tokens": 0,
@@ -433,7 +429,7 @@ An example event for `spend_tracking` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-lite-llm-spend-tracking-bucket-95648.s3.us-east-2.amazonaws.com/spend-tracking.log"
+            "path": "https://elastic-package-lite-llm-spend-tracking-bucket-77881.s3.us-east-2.amazonaws.com/spend-tracking.log"
         },
         "offset": 1900
     },
@@ -540,8 +536,8 @@ The `audit` data stream provides audit log records collected from LiteLLM via AP
 | lite_llm.audit.updated_values.user_id | User ID (UserTable only). | keyword |
 | lite_llm.audit.updated_values.user_role | User role (UserTable only). | keyword |
 | log.offset | Log offset. | long |
-| observer.product | Product name of the observer that generated the event. | constant_keyword |
-| observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
 #### Audit example event
@@ -552,17 +548,17 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-03T11:30:59.385Z",
     "agent": {
-        "ephemeral_id": "1b01ae82-6569-4c26-988b-12be1f604efc",
-        "id": "b640be36-1592-4a94-a8e7-a7c4d5ab5591",
-        "name": "elastic-agent-80057",
+        "ephemeral_id": "ad1967af-42ff-4c2f-a96e-1dc1a3dc11b9",
+        "id": "4fa77f61-1d5c-4d03-8b8e-26abc7747295",
+        "name": "elastic-agent-70751",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-lite-llm-audit-bucket-45979",
-                "name": "elastic-package-lite-llm-audit-bucket-45979"
+                "arn": "arn:aws:s3:::elastic-package-lite-llm-audit-bucket-83514",
+                "name": "elastic-package-lite-llm-audit-bucket-83514"
             },
             "object": {
                 "key": "audit.log"
@@ -574,14 +570,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "lite_llm.audit",
-        "namespace": "91691",
+        "namespace": "51846",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b640be36-1592-4a94-a8e7-a7c4d5ab5591",
+        "id": "4fa77f61-1d5c-4d03-8b8e-26abc7747295",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -594,7 +590,7 @@ An example event for `audit` looks as following:
         "created": "2026-06-26T11:03:33.193Z",
         "dataset": "lite_llm.audit",
         "id": "f6bbb635-8079-46bc-a7c7-49b38bfceb7a",
-        "ingested": "2026-08-24T08:54:47Z",
+        "ingested": "2026-08-25T10:43:55Z",
         "kind": "event",
         "original": "{\"id\": \"f6bbb635-8079-46bc-a7c7-49b38bfceb7a\", \"updated_at\": \"2026-07-03T11:30:59.385000Z\", \"changed_by\": \"ops@example.com\", \"changed_by_api_key\": \"\", \"action\": \"updated\", \"table_name\": \"LiteLLM_UserTable\", \"object_id\": \"default_user_id\", \"before_value\": {\"spend\": 0.01098520000000001, \"teams\": [\"45d1cbaf-cf75-4052-9f51-a241d2518873\"], \"models\": [], \"user_id\": \"default_user_id\", \"metadata\": {}, \"policies\": [], \"user_role\": \"proxy_admin\", \"created_at\": \"2026-06-26T11:03:33.193000Z\", \"updated_at\": \"2026-07-03T11:12:06.577000Z\", \"model_spend\": {}, \"model_max_budget\": {}, \"allowed_cache_controls\": []}, \"updated_values\": {\"spend\": 0.01098520000000001, \"teams\": [\"45d1cbaf-cf75-4052-9f51-a241d2518873\"], \"models\": [], \"user_id\": \"default_user_id\", \"metadata\": {}, \"policies\": [], \"user_role\": \"proxy_admin\", \"created_at\": \"2026-06-26T11:03:33.193000Z\", \"updated_at\": \"2026-07-03T11:30:59.375000Z\", \"model_spend\": {}, \"model_max_budget\": {}, \"allowed_cache_controls\": []}}",
         "type": [
@@ -632,7 +628,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-lite-llm-audit-bucket-45979.s3.us-east-2.amazonaws.com/audit.log"
+            "path": "https://elastic-package-lite-llm-audit-bucket-83514.s3.us-east-2.amazonaws.com/audit.log"
         },
         "offset": 1478
     },

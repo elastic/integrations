@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.4.0
+      value: 9.5.0
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -128,11 +128,39 @@ processors:
       tag: set_gen_ai_agent_id_from_spend_tracking_agent_id
       copy_from: lite_llm.spend_tracking.agent_id
       ignore_empty_value: true
+  - uri_parts:
+      field: lite_llm.spend_tracking.api_base
+      tag: uri_parts_spend_tracking_api_base
+      target_field: url
+      keep_original: false
+      if: ctx.lite_llm?.spend_tracking?.api_base != null && ctx.lite_llm.spend_tracking.api_base != ''
+      description: Splits the backend provider URL so the provider host can be exposed as the event destination. Runs before `url.full` is set because `uri_parts` replaces the whole target object.
+      on_failure:
+        - append:
+            tag: append_uri_parts_spend_tracking_api_base_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: url.extension
+      tag: remove_url_extension
+      ignore_missing: true
+      description: The provider path ends in a model name, so `uri_parts` derives a meaningless file extension from it.
   - set:
       field: url.full
       tag: set_url_full_from_spend_tracking_api_base
       copy_from: lite_llm.spend_tracking.api_base
       ignore_empty_value: true
+  - set:
+      field: destination.address
+      tag: set_destination_address_from_url_domain
+      copy_from: url.domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_url_domain_into_related_hosts
+      if: ctx.url?.domain != null
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
   - set:
       field: gen_ai.operation.name
       tag: set_gen_ai_operation_name_from_spend_tracking_call_type
@@ -174,8 +202,8 @@ processors:
       copy_from: lite_llm.spend_tracking.completion_tokens
       ignore_empty_value: true
   - set:
-      field: gen_ai.system
-      tag: set_gen_ai_system_from_spend_tracking_custom_llm_provider
+      field: gen_ai.provider.name
+      tag: set_gen_ai_provider_name_from_spend_tracking_custom_llm_provider
       copy_from: lite_llm.spend_tracking.custom_llm_provider
       ignore_empty_value: true
   - date:
@@ -212,13 +240,35 @@ processors:
       allow_duplicates: false
   - set:
       field: gen_ai.response.id
-      tag: set_gen_ai_response_id_from_spend_tracking_id
-      copy_from: lite_llm.spend_tracking.id
+      tag: set_gen_ai_response_id_from_spend_tracking_request_id
+      copy_from: lite_llm.spend_tracking.request_id
       ignore_empty_value: true
   - set:
       field: gen_ai.tool.name
       tag: set_gen_ai_tool_name_from_spend_tracking_mcp_namespaced_tool_name
       copy_from: lite_llm.spend_tracking.mcp_namespaced_tool_name
+      ignore_empty_value: true
+  - json:
+      field: lite_llm.spend_tracking.messages
+      tag: json_spend_tracking_messages_into_gen_ai_input_messages
+      target_field: gen_ai.input.messages
+      if: ctx.lite_llm?.spend_tracking?.messages instanceof String && ctx.lite_llm.spend_tracking.messages != '' && ctx.lite_llm.spend_tracking.messages != '{}' && ctx.lite_llm.spend_tracking.messages != '[]'
+      description: LiteLLM serialises the request chat history into a JSON string, so it is parsed before being copied into the `flattened` ECS field. Only populated when `general_settings.store_prompts_in_spend_logs` is enabled; the column otherwise defaults to an empty object.
+      on_failure:
+        - append:
+            tag: append_json_spend_tracking_messages_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: gen_ai.input.messages
+      tag: set_gen_ai_input_messages_from_spend_tracking_messages_object
+      copy_from: lite_llm.spend_tracking.messages
+      if: (ctx.lite_llm?.spend_tracking?.messages instanceof Map && !ctx.lite_llm.spend_tracking.messages.isEmpty()) || (ctx.lite_llm?.spend_tracking?.messages instanceof List && !ctx.lite_llm.spend_tracking.messages.isEmpty())
+      description: Handles the variant where LiteLLM emits the chat history already decoded as a list or object rather than as a serialised string. Empty maps and lists are skipped because the column defaults to an empty object rather than null.
+  - set:
+      field: gen_ai.usage.cache_read.input_tokens
+      tag: set_gen_ai_usage_cache_read_input_tokens_from_spend_tracking_metadata_additional_usage_values_prompt_tokens_details_cached_tokens
+      copy_from: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.cached_tokens
       ignore_empty_value: true
   - convert:
       field: lite_llm.spend_tracking.metadata.attempted_retries
@@ -2178,6 +2228,15 @@ processors:
       if: ctx.lite_llm?.spend_tracking?.requester_ip_address != null
       value: '{{{lite_llm.spend_tracking.requester_ip_address}}}'
       allow_duplicates: false
+  - set:
+      field: gen_ai.output.messages
+      tag: set_gen_ai_output_messages_from_spend_tracking_response
+      copy_from: lite_llm.spend_tracking.response
+      if: (ctx.lite_llm?.spend_tracking?.response instanceof Map && !ctx.lite_llm.spend_tracking.response.isEmpty()) || (ctx.lite_llm?.spend_tracking?.response instanceof List && !ctx.lite_llm.spend_tracking.response.isEmpty())
+      description: >
+        Copies the model response into the ECS field exactly as LiteLLM emits it, without reshaping it into a message
+        object. `gen_ai.output.messages` is `flattened`, which accepts objects and arrays but rejects scalars, so this
+        applies only to the structured form. A plain-text completion is left on `lite_llm.spend_tracking.response`.
   - convert:
       field: lite_llm.spend_tracking.response_cost
       tag: convert_response_cost_to_double
@@ -2206,6 +2265,11 @@ processors:
             tag: append_convert_response_time_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: gen_ai.conversation.id
+      tag: set_gen_ai_conversation_id_from_spend_tracking_session_id
+      copy_from: lite_llm.spend_tracking.session_id
+      ignore_empty_value: true
   - convert:
       field: lite_llm.spend_tracking.spend
       tag: convert_spend_to_double
@@ -2320,6 +2384,7 @@ processors:
         - lite_llm.spend_tracking.organization_id
         - lite_llm.spend_tracking.request_id
         - lite_llm.spend_tracking.requester_ip_address
+        - lite_llm.spend_tracking.session_id
         - lite_llm.spend_tracking.start_time
         - lite_llm.spend_tracking.status
         - lite_llm.spend_tracking.team_id
