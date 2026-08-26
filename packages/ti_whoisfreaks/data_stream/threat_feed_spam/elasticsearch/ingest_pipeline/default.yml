@@ -1,5 +1,5 @@
 ---
-description: "Ingest pipeline for WhoisFreaks Spam Threat Feed (CSV Format)"
+description: "Ingest pipeline for WhoisFreaks Threat Feed (Dynamic CSV Mapping)"
 processors:
   - set:
       tag: set_event_dataset
@@ -10,40 +10,71 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - set:
-      tag: set_event_category          # FIXED: Added missing tag
+      tag: set_event_category
       field: event.category
       value: ["threat"]
   - set:
-      tag: set_event_type              # FIXED: Added missing tag
+      tag: set_event_type
       field: event.type
       value: ["indicator"]
   - set:
-      tag: set_event_kind              # FIXED: Added missing tag
+      tag: set_event_kind
       field: event.kind
       value: "enrichment"
 
-  # Sanitize the raw message string by trimming spaces first
   - trim:
       tag: pre_sanitize_message_whitespace
       field: message
       ignore_missing: true
 
-  # Parse the raw text line from the message field into structural ECS columns
+  # Drop raw header lines if they pass through individually
+  - drop:
+      tag: drop_header_event
+      if: "ctx.message != null && ctx.message.startsWith('domain,')"
+
+  # Parse CSV dynamically based on column names in the message
   - csv:
       tag: parse_csv_message_fields
       field: message
       target_fields:
-        - threat.indicator.domain
-        - threat.feed.threat_type
-        - threat.indicator.confidence
-        - _temp.first_seen
-        - _temp.last_seen
-        - whoisfreaks.threat_feed.no_of_threat_matched_pivots
+        - _temp.parsed_csv
       ignore_missing: true
 
-  # Convert string confidence scores and pivot values into true numbers
+  # Map extracted CSV header fields to ECS fields dynamically regardless of column order
+  - rename:
+      tag: map_domain
+      field: _temp.parsed_csv.domain
+      target_field: threat.indicator.url.domain
+      ignore_missing: true
+
+  - rename:
+      tag: map_threat_type
+      field: _temp.parsed_csv.threat_type
+      target_field: threat.feed.name
+      ignore_missing: true
+
+  - rename:
+      tag: map_confidence
+      field: _temp.parsed_csv.confidence
+      target_field: threat.indicator.confidence
+      ignore_missing: true
+
+  - rename:
+      tag: map_pivots
+      field: _temp.parsed_csv.No_of_threat_matched_pivots
+      target_field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
+      ignore_missing: true
+
+  # Duplicate domain to nested ECS indicator for SIEM compatibility (FIXED: replaced ignore_missing with if guard)
+  - set:
+      tag: set_indicator_nested_domain
+      field: threat.indicator.domain
+      value: "{{threat.indicator.url.domain}}"
+      if: "ctx.threat?.indicator?.url?.domain != null"
+
+  # Convert data types
   - convert:
-      tag: convert_string_types_to_numeric
+      tag: convert_confidence_to_float
       field: threat.indicator.confidence
       type: float
       ignore_missing: true
@@ -54,30 +85,44 @@ processors:
       type: integer
       ignore_missing: true
 
-  # Set the core Elasticsearch event timestamp using the log's last_seen field
+  # Timestamps
   - date:
       tag: set_main_event_timestamp
-      field: _temp.last_seen
+      field: _temp.parsed_csv.last_seen
       target_field: "@timestamp"
-      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "ISO8601"]
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSXX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSZZ"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        - "ISO8601"
       ignore_failure: true
 
-  # Normalize threat validation lifecycle fields
   - date:
       tag: set_threat_first_seen
-      field: _temp.first_seen
+      field: _temp.parsed_csv.first_seen
       target_field: threat.indicator.first_seen
-      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "ISO8601"]
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSXX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSZZ"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        - "ISO8601"
       ignore_failure: true
 
   - date:
       tag: set_threat_last_seen
-      field: _temp.last_seen
+      field: _temp.parsed_csv.last_seen
       target_field: threat.indicator.last_seen
-      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "ISO8601"]
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSXX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSZZ"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        - "ISO8601"
       ignore_failure: true
 
-  # Drop the working sandbox map object to maintain a clean document profile
+  # Drop temporary working objects
   - remove:
       tag: drop_temporary_working_fields
       field: _temp
