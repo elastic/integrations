@@ -1,0 +1,196 @@
+---
+description: Pipeline for processing Phishing URLs collection feed
+processors:
+- terminate:
+    tag: data_collection_error
+    if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+    description: error message set and no data to process.
+- set:
+    tag: set_ecs_version_0f7334bb
+    field: ecs.version
+    value: 8.11.0
+- set:
+    tag: set_event_kind_a131107f
+    field: event.kind
+    value: enrichment
+- append:
+    tag: append_event_category_5a2092f1
+    field: event.category
+    value: threat
+    allow_duplicates: false
+- append:
+    tag: append_event_type_46bf75e8
+    field: event.type
+    value: indicator
+    allow_duplicates: false
+- set:
+    tag: set_threat_indicator_provider_7fa63b87
+    field: threat.indicator.provider
+    value: eset
+- rename:
+    field: message
+    tag: rename_message_to_event_original
+    target_field: event.original
+    ignore_missing: true
+    description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+    if: ctx.event?.original == null
+- remove:
+    field: message
+    tag: remove_message
+    ignore_missing: true
+    description: The `message` field is no longer required if the document has an `event.original` field.
+    if: ctx.event?.original != null
+- json:
+    tag: json_event_original_to_eti_561d07d4
+    field: event.original
+    target_field: eti
+- drop:
+    tag: drop_5a415bbc
+    if: ctx.eti?.type != 'indicator'
+- set:
+    tag: set_threat_feed_name_51adf541
+    field: threat.feed.name
+    value: ESET Phishing URLs stix 2.1
+- date:
+    tag: date_eti_created_to_timestamp_0ff57497
+    field: eti.created
+    target_field: "@timestamp"
+    formats:
+    - ISO8601
+    if: ctx.eti?.created != null
+- date:
+    tag: date_eti_modified_to_threat_indicator_last_seen_64ffa1f2
+    field: eti.modified
+    target_field: threat.indicator.last_seen
+    formats:
+    - ISO8601
+    if: ctx.eti?.modified != null
+- set:
+    tag: set_threat_indicator_modified_at_5a74d882
+    field: threat.indicator.modified_at
+    copy_from: threat.indicator.last_seen
+    if: ctx.threat?.indicator?.last_seen != null
+- date:
+    tag: date_eti_valid_from_to_eset_valid_from_58ad1807
+    field: eti.valid_from
+    target_field: eset.valid_from
+    formats:
+    - ISO8601
+    if: ctx.eti?.valid_from != null
+- date:
+    tag: date_eti_valid_until_to_eset_valid_until_502c1899
+    field: eti.valid_until
+    target_field: eset.valid_until
+    formats:
+    - ISO8601
+    if: ctx.eti?.valid_until != null
+- rename:
+    tag: rename_eti_id_to_eset_id_e33c480b
+    field: eti.id
+    target_field: eset.id
+    ignore_missing: true
+- rename:
+    tag: rename_eti_description_to_threat_indicator_description_d13d7cb3
+    field: eti.description
+    target_field: threat.indicator.description
+    ignore_missing: true
+- foreach:
+    tag: foreach_eti_labels_ff89dc21
+    field: eti.labels
+    processor:
+      append:
+        field: eset.labels
+        value: '{{{_ingest._value}}}'
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.eti?.labels != null
+- script:
+    tag: script_bce6660a
+    lang: painless
+    params:
+      malicious-activity: High
+      phishing-activity: High
+      unwanted-activity: Medium
+      benign: Low
+    source: >
+      for (def label : ctx.eset.labels) {
+        if (params.containsKey(label)) {
+          ctx.threat.indicator.confidence = params.get(label);
+          break;
+        }
+      }
+    if: ctx.eset?.labels != null
+- split:
+    tag: split_eti_pattern_to_eti__patterns_7811368c
+    field: eti.pattern
+    target_field: eti._patterns
+    separator: ' OR '
+    ignore_missing: true
+- foreach:
+    tag: foreach_eti__patterns_605d59c7
+    field: eti._patterns
+    processor:
+      grok:
+        field: _ingest._value
+        patterns:
+        - "^\\[url:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.original}'\\]?"
+        ignore_failure: true
+- set:
+    tag: set_threat_indicator_type_2f871b98
+    field: threat.indicator.type
+    value: url
+- rename:
+    tag: rename_eti_name_to_threat_indicator_name_a10b4bbd
+    target_field: threat.indicator.name
+    field: eti.name
+    ignore_missing: true
+- remove:
+    tag: remove_a0758d9e
+    field:
+    - eti
+    ignore_missing: true
+- script:
+    lang: painless
+    tag: script_to_drop_null_values
+    description: Drops null/empty values recursively.
+    source: |
+      boolean drop(Object o) {
+        if (o == null || o == '') {
+          return true;
+        } else if (o instanceof Map) {
+          ((Map) o).values().removeIf(v -> drop(v));
+          return (((Map) o).size() == 0);
+        } else if (o instanceof List) {
+          ((List) o).removeIf(v -> drop(v));
+          return (((List) o).length == 0);
+        }
+        return false;
+      }
+      drop(ctx);
+- append:
+    tag: append_event_kind_d2f25e35
+    field: event.kind
+    value: pipeline_error
+    allow_duplicates: false
+    if: ctx.error?.message != null
+- append:
+    tag: append_tags_9fe66b2c
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    if: ctx.error?.message != null
+on_failure:
+- append:
+    field: error.message
+    value: |-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+- set:
+    field: event.kind
+    tag: set_pipeline_error_to_event_kind
+    value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
