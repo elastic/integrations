@@ -7,7 +7,8 @@ inputs:
             name: aws_logs
       name: test-aws-cloudwatch-agentless-cloud-connector-aws_logs
       streams:
-        - data_stream:
+        - api_sleep: 200ms
+          data_stream:
             dataset: aws_logs.generic
           default_region: us-east-1
           log_group_name_prefix: /aws/custom/logs
@@ -15,6 +16,7 @@ inputs:
           publisher_pipeline.disable_host: true
           region_name: us-east-1
           role_arn: arn:aws:iam::123456789012:role/ElasticAwsLogsReadOnly
+          scan_frequency: 1m
           start_position: beginning
           tags:
             - forwarded
@@ -31,7 +33,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-aws_logs.generic-ep
+                    - logs-*-*
                   privileges:
                     - auto_configure
                     - create_doc
