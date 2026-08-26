@@ -1,0 +1,95 @@
+---
+description: "Ingest pipeline for WhoisFreaks Spam Threat Feed (CSV Format)"
+processors:
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: ti_whoisfreaks.threat_feed_spam
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      tag: set_event_category          # FIXED: Added missing tag
+      field: event.category
+      value: ["threat"]
+  - set:
+      tag: set_event_type              # FIXED: Added missing tag
+      field: event.type
+      value: ["indicator"]
+  - set:
+      tag: set_event_kind              # FIXED: Added missing tag
+      field: event.kind
+      value: "enrichment"
+
+  # Sanitize the raw message string by trimming spaces first
+  - trim:
+      tag: pre_sanitize_message_whitespace
+      field: message
+      ignore_missing: true
+
+  # Parse the raw text line from the message field into structural ECS columns
+  - csv:
+      tag: parse_csv_message_fields
+      field: message
+      target_fields:
+        - threat.indicator.domain
+        - threat.feed.threat_type
+        - threat.indicator.confidence
+        - _temp.first_seen
+        - _temp.last_seen
+        - whoisfreaks.threat_feed.no_of_threat_matched_pivots
+      ignore_missing: true
+
+  # Convert string confidence scores and pivot values into true numbers
+  - convert:
+      tag: convert_string_types_to_numeric
+      field: threat.indicator.confidence
+      type: float
+      ignore_missing: true
+
+  - convert:
+      tag: convert_pivots_to_integer
+      field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
+      type: integer
+      ignore_missing: true
+
+  # Set the core Elasticsearch event timestamp using the log's last_seen field
+  - date:
+      tag: set_main_event_timestamp
+      field: _temp.last_seen
+      target_field: "@timestamp"
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "ISO8601"]
+      ignore_failure: true
+
+  # Normalize threat validation lifecycle fields
+  - date:
+      tag: set_threat_first_seen
+      field: _temp.first_seen
+      target_field: threat.indicator.first_seen
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "ISO8601"]
+      ignore_failure: true
+
+  - date:
+      tag: set_threat_last_seen
+      field: _temp.last_seen
+      target_field: threat.indicator.last_seen
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "ISO8601"]
+      ignore_failure: true
+
+  # Drop the working sandbox map object to maintain a clean document profile
+  - remove:
+      tag: drop_temporary_working_fields
+      field: _temp
+      ignore_missing: true
+
+on_failure:
+  - set:
+      tag: handle_pipeline_failure_metadata
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}' with tag '{{ _ingest.on_failure_processor_tag }}' in pipeline '{{ _ingest.pipeline }}' failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: marking_failure_state
+      field: event.kind
+      value: pipeline_error

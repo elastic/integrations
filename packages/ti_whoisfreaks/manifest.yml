@@ -4,7 +4,7 @@ title: "WhoisFreaks"
 version: 0.1.0
 source:
   license: "Elastic-2.0"
-description: "Collects newly registered gTLD and ccTLD WHOIS records via the WhoisFreaks domainer stream API over HTTPS and indexes them into Elastic search indices as threat intelligence."
+description: "Collects newly registered gTLD and ccTLD WHOIS records via the WhoisFreaks domainer stream API over HTTPS and indexes them into Elasticsearch indices as threat intelligence."
 type: integration
 categories:
   - security
@@ -27,15 +27,27 @@ icons:
     size: 32x32
     type: image/svg+xml
 policy_templates:
-  - name: whois
+  - name: ti_whoisfreaks
     title: WhoisFreaks
     description: Collect domain threat intelligence records via CEL API input.
+    # FIXED: data_streams sits here, parallel to inputs
     data_streams:
       - whois
+      - threat_feed_spam
     inputs:
       - type: cel
         title: WhoisFreaks CEL Input
         description: Collect domain and threat intelligence data using CEL input.
+        vars:
+          - name: api_key
+            type: text
+            secret: true
+            title: "API Key"
+            description: |-
+              Your WhoisFreaks API Key, from the WhoisFreaks billing dashboard. It is
+              sent as the `apiKey` query parameter on each stream request.
+            required: true
+            show_user: true
 owner:
   github: WhoisFreaks
   type: partner
