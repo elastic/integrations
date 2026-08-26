@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: m365_defender
 title: Microsoft Defender XDR
-version: "5.17.0"
+version: "5.18.0"
 description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
@@ -29,7 +29,26 @@ policy_templates:
         team: security-service-integrations
         resources:
           requests:
-            memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
+            # Peak memory is set by the largest single decoded API page, not by dataset size.
+            # Measured with _dev/scripts/memcap-agent (all three agentless streams in one agent,
+            # polling back-to-back, 400 alerts per incident, four repeats): cgroup memory.peak
+            # 1,835-2,135 MB and working-set peak 1,603-1,932 MB. Size on the maximum - the 16%
+            # spread over identical inputs is GC timing, not noise that averages away. Compared
+            # metric for metric that is above production, whose cgroup usage peaks at p95
+            # ~1,515 MB / max ~1,578 MB and whose working set peaks at 1,507 MB, which is what a
+            # constructed worst case should do.
+            #
+            # So this is over-provisioned by less than it looks: 2Gi (2,048 MB) is *below* the
+            # measured worst case and would OOM, 3Gi leaves ~30% headroom and 4Gi ~48%. The
+            # agentless ORR recommends 3Gi; that reduction is a separate change, reviewed on its
+            # own because it affects every agentless deployment.
+            #
+            # The residual risk is that nothing in the package or the API bounds
+            # alerts-per-incident (~1.2 MB of pod memory per alert with include_alerts=true);
+            # the modelled OOM boundary is ~450 alerts per incident at 2Gi. Capping the per-poll
+            # page sizes holds the same worst case in 651 MB, which is what any move to 1Gi
+            # would rest on, and needs a code change to expose vulnerability's pageSize.
+            memory: 4Gi
     inputs:
       - type: httpjson
         title: "Collect alerts and incidents using Microsoft Graph Security API"

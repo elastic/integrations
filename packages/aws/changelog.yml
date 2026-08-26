@@ -1,4 +1,28 @@
 # newer versions go on top
+- version: "8.0.0"
+  changes:
+    - description: Change TargetResponseTime.avg from `long` to `double`.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/14717
+- version: "7.4.0"
+  changes:
+    - description: |
+        The changes below apply to the CloudTrail data stream only.
+        Replace every `ignore_failure: true` with an `ignore_missing` flag, a condition guard, or an explicit `on_failure` handler reporting to `error.message`, so real faults surface instead of being silently swallowed.
+        Add support for CloudTrail fields that were previously dropped.
+        Populate the `cloud.provider`, `cloud.service.name` and `related.*` ECS fields.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20403
+    - description: |
+        The fixes below apply to the CloudTrail data stream only.
+        Stop populating `file.hash.sha256` on digest records, where it held the hash of the previous digest file while `file.path` pointed at the current one. The value is still available as `aws.cloudtrail.digest.previous_hash_value` and in `related.hash`.
+        Fix `DeleteObject` using `event.type: delete`, which is not a valid ECS value. It is now `deletion`.
+        Fix `Publish`, `SendCommand` and `Converse` producing no `event.type`. They now use `info`, `start` and `info` respectively.
+        Fix `retain: none` behaving like `retain: all`. It now drops both the keyword and the flattened copies as documented.
+        Fix `retain: keyword` and `retain: minimal` discarding digest and Insights records. The setting governs API call payloads and no longer affects either record type.
+        Fix `aws.cloudtrail.service_event_details` surviving `retain: flattened` and `retain: none`. It is now governed like the other payload fields.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20403
 - version: "7.3.0"
   changes:
     - description: Add tags to ingest pipeline processors and add `preserve_original_event` to pipeline-level `on_failure` handlers.
