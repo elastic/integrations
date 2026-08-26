@@ -28,7 +28,17 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   1. For the current integration package, it is recommended to have interval in hours.
   2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
   3. Findings Full Posture data stream request all the historical findings every 24 hours.
-  4. The **Findings** and **Findings Full Posture** data streams collect from the `GetFindings` API using the CEL input with native AWS SigV4 signing (`auth.aws`). These two data streams require Elastic Agent `9.4.0`+ (or `8.19.18`+ on 8.x).
+  4. The **Findings** and **Findings Full Posture** data streams collect from the `GetFindings` API using the CEL input with native AWS SigV4 signing (`auth.aws`).
+
+## Troubleshooting
+
+### "reached maximum number of CEL executions"
+
+The **Findings** and **Findings Full Posture** data streams page through the `GetFindings` API using the CEL input, which caps the number of pages fetched per collection interval at the **Maximum Executions** value (each page returns up to 100 findings). When an account holds more findings than the cap allows, the agent logs `reached maximum number of CEL executions: will continue at next periodic evaluation` and stops paging for that interval.
+
+For the **Findings** stream this is usually self-correcting: collection is incremental, so the next interval resumes where the previous one stopped. For **Findings Full Posture**, which re-reads the full current posture on each run, a very large account may not finish a sweep within one interval.
+
+To resolve this, increase **Maximum Executions** in the data stream's advanced settings (it must be a positive integer), or shorten the collection interval so each run has fewer pages to fetch.
 
 ## Logs
 

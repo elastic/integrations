@@ -23,11 +23,30 @@ auth.aws:
 {{#if session_token}}
   session_token: {{session_token}}
 {{/if}}
+{{#if shared_credential_file}}
+  shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if credential_profile_name}}
+  credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if role_arn}}
+  role_arn: {{role_arn}}
+{{/if}}
+{{#if assume_role_duration}}
+  assume_role.duration: {{assume_role_duration}}
+{{/if}}
+{{#if assume_role_expiry_window}}
+  assume_role.expiry_window: {{assume_role_expiry_window}}
+{{/if}}
   service_name: securityhub
   default_region: {{aws_region}}
 cel.max_executions: {{max_executions}}
 cel.state:
+{{#if filters}}
   filters: {{filters}}
+{{else}}
+  filters: {}
+{{/if}}
 cel.program: |-
   state.with(
     request(
@@ -61,6 +80,7 @@ cel.program: |-
             ),
           },
         },
+        "next_token": "",
         "want_more": false,
       }
     )
