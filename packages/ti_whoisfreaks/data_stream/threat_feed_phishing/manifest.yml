@@ -1,0 +1,68 @@
+title: "Threat Feed Phishing"
+type: logs
+streams:
+  - input: cel
+    title: "Phishing Domain Feed"
+    description: |-
+      A daily feed of phishing domains caught sending unsolicited bulk email or hosting the landing pages and link networks phishing campaigns promote. Covers snowshoe sending infrastructure, phishingvertised domains, and mail systems with a history of abuse. Every record is expanded from verified phishing seeds through shared MX, NS, and registrant pivots and scored, so secure email gateways and mail filters can reject messages and URLs at scale.
+    template_path: cel.yml.hbs
+    vars:
+      - name: resource_interval
+        type: text
+        title: "Resource Interval"
+        description: |-
+          How often the phishing feed endpoint is checked for a new file. When a newer
+          date is found the whole day is paged in one burst; otherwise the poll
+          does nothing. The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls request count per poll, not how much
+          data is ingested. Larger pages mean fewer requests but more memory per
+          request. 5000 is a safe default; lower it on small agents.
+        required: true
+        show_user: true
+        default: 2m
+      - name: file_date
+        type: text
+        title: "File Date (optional)"
+        description: |-
+          Specific file date to ingest, format yyyy-MM-dd (e.g. 2026-08-10).
+          Leave empty to always page the most recently published file, which is
+          the recommended setting for a recurring poll.
+        required: false
+        show_user: true
+        default: ""
+      - name: limit
+        type: integer
+        title: "Page Size"
+        description: |-
+          Number of records requested per page (the `limit` sent to the feed
+          endpoint). The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls memory and request count per poll, not
+          how much data is ingested. Larger pages mean fewer requests but more
+          memory per request. 5000 is a safe default; lower it on small agents.
+        required: true
+        show_user: true
+        default: 5000
+      - name: resource_timeout
+        type: text
+        title: "Resource Timeout"
+        description: |-
+          The maximum time to wait for a response from the phishing feed endpoint.
+        required: true
+        show_user: true
+        default: 5m
+    # - name: status_url
+    #   type: text
+    #   title: "Status URL"
+    #   description: |-
+    #     The public WhoisFreaks database file status endpoint. On each poll the
+    #     integration reads `phishing.last_update` from this endpoint and pages through
+    #     a feed only when its date is newer than the last date already ingested,
+    #     so re-polling never re-ingests the same file. This endpoint is public and
+    #     does not require the API key.
+    #   required: true
+    #   show_user: false
+    #   default: https://files.whoisfreaks.com/v3.3/status
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
