@@ -1,22 +1,15 @@
 ---
 description: Pipeline for Datadog audit trail logs (Log Archives via S3/SQS) with ECS mapping
 processors:
-  - json:
-      field: message
-      target_field: json
-      tag: json_parse_message
-      on_failure:
-        - append:
-            field: error.message
-            value: "failed to parse message as JSON: {{{ _ingest.on_failure_message }}}"
-        - set:
-            field: event.kind
-            value: pipeline_error
-
   - set:
       field: ecs.version
       value: "9.4.0"
       tag: set_ecs_version
+
+  - json:
+      field: message
+      target_field: json
+      tag: json_parse_message
 
   # event.original is populated agent-side by the .hbs copy_fields block in
   # production. Setting it here as well — guarded, so production does not
