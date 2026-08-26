@@ -1,0 +1,92 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.6.0
+            name: aws_mq
+      name: test-metrics-agentless-cloud-connector-aws_mq
+      streams:
+        - data_stream:
+            dataset: aws_mq.activemq_metrics
+          default_region: us-east-1
+          metrics:
+            - name:
+                - AmqpMaximumConnections
+                - MqttMaximumConnections
+                - OpenwireMaximumConnections
+                - StompMaximumConnections
+                - WsMaximumConnections
+                - CurrentConnectionsCount
+                - EstablishedConnectionsCount
+                - InactiveDurableTopicSubscribersCount
+                - JournalFilesForFastRecovery
+                - JournalFilesForFullRecovery
+                - NetworkConnectorConnectionCount
+                - NetworkIn
+                - NetworkOut
+                - OpenTransactionCount
+                - TotalConsumerCount
+                - TotalMessageCount
+                - TotalProducerCount
+                - VolumeReadOps
+                - VolumeWriteOps
+                - ConsumerCount
+                - ReceiveCount
+                - ProducerCount
+                - QueueSize
+                - TotalEnqueueCount
+                - TotalDequeueCount
+              namespace: AWS/AmazonMQ
+              statistic:
+                - Maximum
+            - name:
+                - BurstBalance
+                - CpuCreditBalance
+              namespace: AWS/AmazonMQ
+              statistic:
+                - Minimum
+            - name:
+                - CpuUtilization
+                - HeapUsage
+                - JobSchedulerStorePercentUsage
+                - StorePercentUsage
+                - TempPercentUsage
+                - EnqueueTime
+                - MemoryUsage
+                - BurstBalance
+              namespace: AWS/AmazonMQ
+              statistic:
+                - Average
+            - name:
+                - EnqueueCount
+                - ExpiredCount
+                - DequeueCount
+                - DispatchCount
+                - InFlightCount
+              namespace: AWS/AmazonMQ
+              statistic:
+                - Sum
+          metricsets:
+            - cloudwatch
+          period: 5m
+          role_arn: arn:aws:iam::123456789012:role/ElasticAmazonMQReadOnly
+          tags_filter: null
+          use_cloud_connectors: true
+      type: aws/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-aws_mq.activemq_metrics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
