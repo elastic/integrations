@@ -1,0 +1,36 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: max
+      name: test-default-max
+      streams:
+        - client_id: elastic-agent-max
+          data_stream:
+            dataset: max.log
+          hosts:
+            - tcp://mqtt.example.com:1883
+          qos: 1
+          tags:
+            - preserve_original_event
+            - max-log
+          topics:
+            - max/#
+      type: mqtt
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-max.log-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
