@@ -71,6 +71,13 @@ processors:
     copy_from: threat.indicator.last_seen
     if: ctx.threat?.indicator?.last_seen != null
 - date:
+    tag: date_eti_valid_from_to_eset_valid_from_58ad1807
+    field: eti.valid_from
+    target_field: eset.valid_from
+    formats:
+    - ISO8601
+    if: ctx.eti?.valid_from != null
+- date:
     tag: date_eti_valid_until_to_eset_valid_until_502c1899
     field: eti.valid_until
     target_field: eset.valid_until
@@ -132,11 +139,11 @@ processors:
     tag: set_threat_indicator_type_2f871b98
     field: threat.indicator.type
     value: url
-- set:
-    tag: set_threat_indicator_name_8701e0cf
-    field: threat.indicator.name
-    copy_from: eti.name
-    if: ctx.eti?.name != null
+- rename:
+    tag: rename_eti_name_to_threat_indicator_name_a10b4bbd
+    target_field: threat.indicator.name
+    field: eti.name
+    ignore_missing: true
 - remove:
     tag: remove_a0758d9e
     field:
