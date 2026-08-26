@@ -162,7 +162,18 @@ processors:
           - start_time
           - end_time
       source: |-
-        def formatter = DateTimeFormatter.ofPattern(ctx._conf.custom_date_format);
+        def fmt = ctx._conf.custom_date_format.trim();
+        if (fmt == '') {
+          if (ctx.error == null) { ctx.error = [:]; }
+          if (ctx.error.message == null) { ctx.error.message = []; }
+          else if (!(ctx.error.message instanceof List)) { ctx.error.message = [ctx.error.message]; }
+          ctx.error.message.add("custom_date_format cannot be set to empty value");
+          ctx.event.kind = 'pipeline_error';
+          return;
+        }
+        if (ctx.citrix_adc == null) { ctx.citrix_adc = [:]; }
+        if (ctx.citrix_adc.log == null) { ctx.citrix_adc.log = [:]; }
+        def formatter = DateTimeFormatter.ofPattern(fmt);
         def outFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
         params.fields.forEach(field -> {
@@ -189,7 +200,7 @@ processors:
             } else if (!(ctx.error.message instanceof List)) {
               ctx.error.message = [ctx.error.message];
             }
-            ctx.error.message.add("Failed to parse field [_tmp." + field + "] with value [" + ctx._tmp[field] + "] using custom date format [" + ctx._conf.custom_date_format + "]: " + e.getMessage());
+            ctx.error.message.add("Failed to parse field [_tmp." + field + "] with value [" + ctx._tmp[field] + "] using custom date format [" + fmt + "]: " + e.getMessage());
             ctx.event.kind = 'pipeline_error';
             return true;
           }
