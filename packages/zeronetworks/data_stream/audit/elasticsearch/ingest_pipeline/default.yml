@@ -2,101 +2,122 @@
 description: Pipeline for processing Zero Networks Audit logs
 processors:
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_74d23cc2
       field: event.original
       target_field: json
   - date:
+      tag: date_json_isoTimestamp_to_timestamp_a4c60d30
       field: json.isoTimestamp
       formats:
         - date_optional_time
       target_field: '@timestamp'
   - convert:
+      tag: convert_json_auditType_28c4599c
       field: json.auditType
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_json_auditType_to_event_code_8dca07c0
       field: json.auditType
       target_field: event.code
       ignore_missing: true
   - rename:
+      tag: rename_json_performedBy_id_to_user_id_4d6d81b5
       field: json.performedBy.id
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_performedBy_name_to_user_full_name_c5fd5bb3
       field: json.performedBy.name
       target_field: user.full_name
       ignore_missing: true
   - rename:
+      tag: rename_json_enforcementSource_to_zeronetworks_audit_enforcementSource_9e898cf1
       field: json.enforcementSource
       target_field: zeronetworks.audit.enforcementSource
       if: 'ctx.json?.enforcementSource != null'
   - rename:
+      tag: rename_json_userRole_to_zeronetworks_audit_userRole_6620f96b
       field: json.userRole
       target_field: zeronetworks.audit.userRole
       if: 'ctx.json?.userRole != null'
   - rename:
+      tag: rename_json_reportedObjectId_to_zeronetworks_audit_reportedObjectId_c1cae677
       field: json.reportedObjectId
       target_field: zeronetworks.audit.reportedObjectId
       if: 'ctx.json?.reportedObjectId != null'
   - rename:
+      tag: rename_json_reportedObjectGeneration_to_zeronetworks_audit_reportedObjectGeneration_370b9346
       field: json.reportedObjectGeneration
       target_field: zeronetworks.audit.reportedObjectGeneration
       if: 'ctx.json?.reportedObjectGeneration != null'
   - rename:
+      tag: rename_json_parentObjectId_to_zeronetworks_audit_parentObjectId_884d4112
       field: json.parentObjectId
       target_field: zeronetworks.audit.parentObjectId
       ignore_missing: true
       if: 'ctx.json?.parentObjectId != null'
   - foreach:
+      tag: foreach_json_destinationEntitiesList_fb167b3c
       field: json.destinationEntitiesList
       ignore_missing: true
       processor:
         set:
+          tag: set_zeronetworks_audit_destinationEntitiesList_name_4a717a7a
           field: zeronetworks.audit.destinationEntitiesList.name
           value: '{{{_ingest._value.name}}}'
   - foreach:
+      tag: foreach_json_destinationEntitiesList_66d11144
       field: json.destinationEntitiesList
       ignore_missing: true
       processor:
         set:
+          tag: set_zeronetworks_audit_destinationEntitiesList_id_859f779d
           field: zeronetworks.audit.destinationEntitiesList.id
           value: '{{{_ingest._value.id}}}'
   - json:
+      tag: json_json_details_to_zeronetworks_audit_details_75798942
       field: json.details
       target_field: zeronetworks.audit.details
       if: 'ctx.json?.details != null'
   - append:
+      tag: append_related_user_23cff8dc
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
+      tag: append_related_user_fa04533f
       field: related.user
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - fingerprint:
+      tag: fingerprint_to_event_id_f9b0526e
       fields:
         - json.timestamp
         - event.code
         - user.full_name
       target_field: event.id
   - set:
+      tag: set__id_60edd145
       field: _id
       copy_from: event.id
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_0006c134
       params:
         ## Audit Types
         "1":
@@ -694,7 +715,7 @@ processors:
             - change
           category:
             - configuration
-        "82": 
+        "82":
           action: 'Segment server deployed'
           outcome: success
           type:
@@ -702,7 +723,7 @@ processors:
             - change
           category:
             - configuration
-        "83": 
+        "83":
           action: 'AI inbound allow rule rejected'
           outcome: success
           type:
@@ -1112,10 +1133,12 @@ processors:
             return;
         } def hm = new HashMap(params.get(ctx.event.code)); hm.forEach((k, v) -> ctx.event[k] = v);
   - remove:
+      tag: remove_f3d169b2
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_a0a1a21a
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -1142,12 +1165,15 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -2,34 +2,42 @@
 description: Pipeline for parsing DHCP lease logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_42379782
       field: event.type
       value: [protocol]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_88d6232c
       if: ctx.json?.results instanceof List && ctx.json.results.length == 0
   - fingerprint:
+      tag: fingerprint_to_id_5163c038
       fields:
         - json.starts
         - json.last_updated
@@ -37,6 +45,7 @@ processors:
       target_field: _id
       ignore_missing: true
   - convert:
+      tag: convert_json_address_to_infoblox_bloxone_ddi_dhcp_lease_address_7777cb8b
       field: json.address
       target_field: infoblox_bloxone_ddi.dhcp_lease.address
       if: ctx.json?.address != ''
@@ -44,22 +53,27 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_88799948
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_d8950161
       field: related.ip
       value: '{{{infoblox_bloxone_ddi.dhcp_lease.address}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_client_id_to_infoblox_bloxone_ddi_dhcp_lease_client_id_5bda9385
       field: json.client_id
       target_field: infoblox_bloxone_ddi.dhcp_lease.client_id
       ignore_missing: true
   - set:
+      tag: set_client_user_id_d6b5d0f9
       field: client.user.id
       copy_from: infoblox_bloxone_ddi.dhcp_lease.client_id
       ignore_failure: true
   - date:
+      tag: date_json_ends_to_infoblox_bloxone_ddi_dhcp_lease_ends_eb4503fe
       field: json.ends
       target_field: infoblox_bloxone_ddi.dhcp_lease.ends
       if: ctx.json?.ends != null && ctx.json.ends != ''
@@ -67,65 +81,80 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_137b2977
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_end_63e76756
       field: event.end
       copy_from: infoblox_bloxone_ddi.dhcp_lease.ends
       ignore_failure: true
   - rename:
+      tag: rename_json_fingerprint_to_infoblox_bloxone_ddi_dhcp_lease_fingerprint_value_846eae7e
       field: json.fingerprint
       target_field: infoblox_bloxone_ddi.dhcp_lease.fingerprint.value
       ignore_missing: true
   - rename:
+      tag: rename_json_fingerprint_processed_to_infoblox_bloxone_ddi_dhcp_lease_fingerprint_processed_c2f42aca
       field: json.fingerprint_processed
       target_field: infoblox_bloxone_ddi.dhcp_lease.fingerprint.processed
       ignore_missing: true
   - rename:
+      tag: rename_json_ha_group_to_infoblox_bloxone_ddi_dhcp_lease_ha_group_3050e467
       field: json.ha_group
       target_field: infoblox_bloxone_ddi.dhcp_lease.ha_group
       ignore_missing: true
   - gsub:
+      tag: gsub_json_hardware_596a3f78
       field: json.hardware
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_json_hardware_528ed21c
       field: json.hardware
       ignore_missing: true
   - rename:
+      tag: rename_json_hardware_to_infoblox_bloxone_ddi_dhcp_lease_hardware_9901083b
       field: json.hardware
       target_field: infoblox_bloxone_ddi.dhcp_lease.hardware
       ignore_missing: true
   - rename:
+      tag: rename_json_host_to_infoblox_bloxone_ddi_dhcp_lease_host_a57b956b
       field: json.host
       target_field: infoblox_bloxone_ddi.dhcp_lease.host
       ignore_missing: true
   - set:
+      tag: set_host_name_3e9882f6
       field: host.name
       copy_from: infoblox_bloxone_ddi.dhcp_lease.host
       ignore_failure: true
   - append:
+      tag: append_related_hosts_0c50b474
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_hostname_to_infoblox_bloxone_ddi_dhcp_lease_hostname_8574c513
       field: json.hostname
       target_field: infoblox_bloxone_ddi.dhcp_lease.hostname
       ignore_missing: true
   - set:
+      tag: set_host_hostname_e1e135a9
       field: host.hostname
       copy_from: infoblox_bloxone_ddi.dhcp_lease.hostname
       ignore_failure: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_iaid_to_infoblox_bloxone_ddi_dhcp_lease_iaid_8a6c9d6d
       field: json.iaid
       target_field: infoblox_bloxone_ddi.dhcp_lease.iaid
       if: ctx.json?.iaid != ''
@@ -133,9 +162,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6f5e79e8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_last_updated_to_infoblox_bloxone_ddi_dhcp_lease_last_updated_a75ac04e
       field: json.last_updated
       target_field: infoblox_bloxone_ddi.dhcp_lease.last_updated
       if: ctx.json?.last_updated != null && ctx.json.last_updated != ''
@@ -143,17 +174,21 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_2f57298f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_dc7215f9
       field: '@timestamp'
       copy_from: infoblox_bloxone_ddi.dhcp_lease.last_updated
       ignore_failure: true
   - rename:
+      tag: rename_json_options_to_infoblox_bloxone_ddi_dhcp_lease_options_3d08d0f3
       field: json.options
       target_field: infoblox_bloxone_ddi.dhcp_lease.options
       ignore_missing: true
   - date:
+      tag: date_json_preferred_lifetime_to_infoblox_bloxone_ddi_dhcp_lease_preferred_lifetime_1a4099dc
       field: json.preferred_lifetime
       target_field: infoblox_bloxone_ddi.dhcp_lease.preferred_lifetime
       if: ctx.json?.preferred_lifetime != null && ctx.json.preferred_lifetime != ''
@@ -161,34 +196,42 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_e3cf6031
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_json_protocol_420e2bce
       field: json.protocol
       value: ipv4
       if: ctx.json?.protocol == 'ip4'
       ignore_failure: true
   - set:
+      tag: set_json_protocol_7448394a
       field: json.protocol
       value: ipv6
       if: ctx.json?.protocol == 'ip6'
       ignore_failure: true
   - rename:
+      tag: rename_json_protocol_to_infoblox_bloxone_ddi_dhcp_lease_protocol_a1a8e5c3
       field: json.protocol
       target_field: infoblox_bloxone_ddi.dhcp_lease.protocol
       ignore_missing: true
   - set:
+      tag: set_network_type_cf82cbe1
       field: network.type
       copy_from: infoblox_bloxone_ddi.dhcp_lease.protocol
       ignore_failure: true
   - lowercase:
+      tag: lowercase_network_type_e98b3947
       field: network.type
       ignore_failure: true
   - rename:
+      tag: rename_json_space_to_infoblox_bloxone_ddi_dhcp_lease_space_28751503
       field: json.space
       target_field: infoblox_bloxone_ddi.dhcp_lease.space
       ignore_missing: true
   - date:
+      tag: date_json_starts_to_infoblox_bloxone_ddi_dhcp_lease_starts_dc90d0dc
       field: json.starts
       target_field: infoblox_bloxone_ddi.dhcp_lease.starts
       if: ctx.json?.starts != null && ctx.json.starts != ''
@@ -196,35 +239,44 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_015288c5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_start_b78cf9fc
       field: event.start
       copy_from: infoblox_bloxone_ddi.dhcp_lease.starts
       ignore_failure: true
   - rename:
+      tag: rename_json_state_to_infoblox_bloxone_ddi_dhcp_lease_state_874099bd
       field: json.state
       target_field: infoblox_bloxone_ddi.dhcp_lease.state
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_infoblox_bloxone_ddi_dhcp_lease_type_89325657
       field: json.type
       target_field: infoblox_bloxone_ddi.dhcp_lease.type
       ignore_missing: true
   - json:
+      tag: json_infoblox_bloxone_ddi_dhcp_lease_options_to_infoblox_bloxone_ddi_dhcp_lease_options_2f967340
       field: infoblox_bloxone_ddi.dhcp_lease.options
       target_field: infoblox_bloxone_ddi.dhcp_lease.options
       if: ctx.infoblox_bloxone_ddi?.dhcp_lease?.options instanceof String
       on_failure:
         - remove:
+            tag: remove_infoblox_bloxone_ddi_dhcp_lease_options_0695192a
             field: infoblox_bloxone_ddi.dhcp_lease.options
             ignore_failure: true
         - append:
+            tag: append_error_message_52a30439
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_1f750f93
       field:
         - infoblox_bloxone_ddi.dhcp_lease.last_updated
         - infoblox_bloxone_ddi.dhcp_lease.client_id
@@ -237,6 +289,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -255,12 +308,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

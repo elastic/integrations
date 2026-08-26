@@ -3,10 +3,10 @@ description: Pipeline for processing health logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,43 +16,44 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_cbc3f167
       value: host
       allow_duplicates: false
   - append:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_a75e9a8a
       value: info
       allow_duplicates: false
   - fingerprint:
@@ -60,171 +61,176 @@ processors:
         - json.id
         - json.record_created_at
         - json.time
-      tag: fingerprint_nozomi_networks_health
+      tag: fingerprint_nozomi_networks_health_788c9add
       target_field: _id
       ignore_missing: true
   - rename:
       field: json.appliance_host
-      tag: rename_appliance_host
+      tag: rename_appliance_host_ca618294
       target_field: nozomi_networks.health.appliance_host
       ignore_missing: true
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_health_appliance_host
+      tag: set_host_hostname_from_health_appliance_host_2ba174bd
       copy_from: nozomi_networks.health.appliance_host
       ignore_empty_value: true
   - set:
       field: host.name
-      tag: set_host_hostname_from_health_appliance_host
+      tag: set_host_name_from_health_appliance_host_adea30d1
       copy_from: nozomi_networks.health.appliance_host
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_health_appliance_host_into_related_hosts
+      tag: append_health_appliance_host_into_related_hosts_f05406c8
       value: '{{{nozomi_networks.health.appliance_host}}}'
       allow_duplicates: false
       if: ctx.nozomi_networks?.health?.appliance_host != null
   - rename:
       field: json.appliance_id
-      tag: rename_appliance_id
+      tag: rename_appliance_id_7a7577d1
       target_field: nozomi_networks.health.appliance_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_health_appliance_id
+      tag: set_host_id_from_health_appliance_id_d3386f4d
       copy_from: nozomi_networks.health.appliance_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_health_appliance_id_into_related_hosts
+      tag: append_health_appliance_id_into_related_hosts_607728ae
       value: '{{{nozomi_networks.health.appliance_id}}}'
       allow_duplicates: false
       if: ctx.nozomi_networks?.health?.appliance_id != null
   - convert:
       field: json.appliance_ip
-      tag: convert_appliance_ip_to_ip
+      tag: convert_appliance_ip_to_ip_0173bbdb
       target_field: nozomi_networks.health.appliance_ip
       type: ip
       ignore_missing: true
       if: ctx.json?.appliance_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_293a22c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
-      tag: append_nozomi_networks_health_appliance_ip_into_host_ip
+      tag: append_nozomi_networks_health_appliance_ip_into_host_ip_49008c8c
       value: '{{{nozomi_networks.health.appliance_ip}}}'
       allow_duplicates: false
       if: ctx.nozomi_networks?.health?.appliance_ip != null
   - append:
       field: related.ip
-      tag: append_health_appliance_ip_into_related_ip
+      tag: append_health_appliance_ip_into_related_ip_9f83ca39
       value: '{{{nozomi_networks.health.appliance_ip}}}'
       allow_duplicates: false
       if: ctx.nozomi_networks?.health?.appliance_ip != null
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_206636db
       target_field: nozomi_networks.health.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_health_id
+      tag: set_event_id_from_health_id_de56a3cd
       copy_from: nozomi_networks.health.id
       ignore_empty_value: true
   - rename:
       field: json.info
-      tag: rename_info
+      tag: rename_info_7306f195
       target_field: nozomi_networks.health.info
       ignore_missing: true
   - date:
       field: json.record_created_at
-      tag: date_record_created_at
+      tag: date_record_created_at_c0ff446c
       target_field: nozomi_networks.health.record_created_at
       formats:
         - UNIX_MS
       if: ctx.json?.record_created_at != null && ctx.json.record_created_at != ''
       on_failure:
         - append:
+            tag: append_error_message_21ea7df0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_health_record_created_at
+      tag: set_@timestamp_from_health_record_created_at_514a2e6d
       copy_from: nozomi_networks.health.record_created_at
       ignore_empty_value: true
   - set:
       field: event.created
-      tag: set_event_created_from_health_record_created_at
+      tag: set_event_created_from_health_record_created_at_9ecbe575
       copy_from: nozomi_networks.health.record_created_at
       ignore_empty_value: true
   - convert:
       field: json.replicated
-      tag: convert_replicated_to_boolean
+      tag: convert_replicated_to_boolean_11bb91d5
       target_field: nozomi_networks.health.replicated
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_20f0625d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sensor_appliance_type
-      tag: rename_sensor_appliance_type
+      tag: rename_sensor_appliance_type_2b612b46
       target_field: nozomi_networks.health.sensor_appliance_type
       ignore_missing: true
   - rename:
       field: json.sensor_host
-      tag: rename_sensor_host
+      tag: rename_sensor_host_e177f547
       target_field: nozomi_networks.health.sensor_host
       ignore_missing: true
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_health_sensor_host
+      tag: set_host_hostname_from_health_sensor_host_7c0d514c
       copy_from: nozomi_networks.health.sensor_host
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_health_sensor_host_into_related_hosts
+      tag: append_health_sensor_host_into_related_hosts_32b9025c
       value: '{{{nozomi_networks.health.sensor_host}}}'
       allow_duplicates: false
       if: ctx.nozomi_networks?.health?.sensor_host != null
   - rename:
       field: json.sensor_id
-      tag: rename_sensor_id
+      tag: rename_sensor_id_e7b77a30
       target_field: nozomi_networks.health.sensor_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_health_sensor_host
+      tag: set_host_id_from_health_sensor_host_fb5c1277
       copy_from: nozomi_networks.health.sensor_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_health_sensor_id_into_related_hosts
+      tag: append_health_sensor_id_into_related_hosts_d9fc8903
       value: '{{{nozomi_networks.health.sensor_id}}}'
       allow_duplicates: false
       if: ctx.nozomi_networks?.health?.sensor_id != null
   - convert:
       field: json.synchronized
-      tag: convert_synchronized_to_boolean
+      tag: convert_synchronized_to_boolean_07c24882
       target_field: nozomi_networks.health.synchronized
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_02f4fa9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.time
-      tag: date_time
+      tag: date_time_10cb249d
       target_field: nozomi_networks.health.time
       formats:
         - UNIX_MS
       if: ctx.json?.time != null && ctx.json.time != ''
       on_failure:
         - append:
+            tag: append_error_message_9e271141
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -236,15 +242,15 @@ processors:
         - nozomi_networks.health.record_created_at
         - nozomi_networks.health.sensor_host
         - nozomi_networks.health.sensor_id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_341386c0
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -271,16 +277,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -288,9 +296,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
