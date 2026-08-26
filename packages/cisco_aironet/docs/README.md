@@ -316,6 +316,8 @@ The `log` data stream provides events from Cisco Aironet Wireless LAN Controller
 | cisco.radius.status | RADIUS status (enabled/disabled) | keyword |
 | cisco.site_tag | Load balancer site tag name | keyword |
 | cisco.sntp.socket_id | Socket identifier on which a spurious SNTP/NTP packet was rejected | integer |
+| cisco.sntp.source_file | C source filename that generated the SNTP log entry | keyword |
+| cisco.sntp.source_line | Line number in the C source file that generated the SNTP log entry | integer |
 | cisco.ssid | Cisco SSID | keyword |
 | cisco.wps.channel | Cisco WPS channel | short |
 | cisco.wps.hits | Cisco WPS hits | short |

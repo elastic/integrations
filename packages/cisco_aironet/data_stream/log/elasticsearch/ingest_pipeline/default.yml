@@ -258,16 +258,24 @@ processors:
       ignore_failure: false
   ###
   - grok:
+      tag: grok_sntp_source_context_a3f7c891
+      description: LOG-4-Q_IND SNTP - extract source file and line from full_message before the field is stripped
+      field: _temp_.full_message
+      if: "ctx._temp_?.reason == 'LOG-4-Q_IND' && ctx.message?.contains('NTP packet rejected')"
+      patterns:
+        - "Q_IND: %{DATA:cisco.sntp.source_file}:%{INT:cisco.sntp.source_line:int} "
+      ignore_failure: true
+  - grok:
       tag: grok_message_6b8b95f5
       description: DTL-4-ARP_ORPHANPKT_DETECTED, LOG-4-Q_IND (ARP orphan, SNTP spurious-packet)
       field: message
       if: >-
         ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
-        ctx._temp_?.reason == 'LOG-4-Q_IND'
+        (ctx._temp_?.reason == 'LOG-4-Q_IND' && (ctx.message?.contains('Target MAC Address') || ctx.message?.contains('NTP packet rejected')))
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
         - "Spurious\\.NTP packet rejected on socket %{INT:cisco.sntp.socket_id:int}"
-      ignore_failure: true
+      ignore_failure: false
   - grok:
       tag: grok_message_757b5cf5
       description: CLIENT_ORCH_LOG-6-CLIENT_ADDED_TO_RUN_STATE
