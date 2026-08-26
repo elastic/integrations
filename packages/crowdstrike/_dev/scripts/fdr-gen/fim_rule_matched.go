@@ -188,7 +188,7 @@ func timestampFields() {
 		DATE(time.dst, "crowdstrike."+time.src, "UNIX", "UNIX_MS").
 			IF(fmt.Sprintf(`ctx.crowdstrike?.%s != null && ctx.crowdstrike.%s != ''`, time.src, time.src)).
 			TIMEZONE("UTC").ON_FAILURE(
-			errorHandlers(true, time.src)...,
+			errorHandlers(true, time.dst)...,
 		)
 	}
 }
