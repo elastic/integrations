@@ -113,7 +113,7 @@ For step-by-step instructions on how to set up an integration, see [Getting star
 3. Enter your Salesforce instance URL and API version.
 4. Choose an authentication method:
    - JWT bearer flow: set Client ID, Username, Private key path (PEM), and JWT audience URL.
-   - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (login host or full token endpoint).
+   - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (base domain).
 5. For `login` and `logout`, choose which sources to collect:
    - EventLogFile (batch logs)
    - Platform Events (`LoginEvent`, `LogoutEvent`)
@@ -130,7 +130,7 @@ To configure the Salesforce integration, you need the following information:
 - [Salesforce instance URL](#salesforce-instance-url)
 - [Authentication methods](#authentication-methods): choose one of the following and gather the required values:
   - JWT bearer flow: Client ID, Username, JWT audience URL, Private key path (PEM)
-  - Username-Password flow: Client ID, Client Secret, Username, Password (+ security token if required), Token URL (login host or full token endpoint)
+  - Username-Password flow: Client ID, Client Secret, Username, Password (+ security token if required), Token URL (base domain)
 - [API version](#api-version)
 
 #### Authentication methods
@@ -197,7 +197,7 @@ Use this flow with Salesforce integration v0.15.0 or later on any deployment whe
 Username-Password flow (alternative):
 
 1. Use the `Connected App`'s `Consumer Key` and `Consumer Secret`.
-2. In Elastic, set `Username`, `Password` (append security token if required), `Client ID`, `Client Secret`, and `Token URL` (login host such as `https://login.salesforce.com`, or the full endpoint ending in `/services/oauth2/token`).
+2. In Elastic, set `Username`, `Password` (append security token if required), `Client ID`, `Client Secret`, and `Token URL` (instance base domain; `/services/oauth2/token` is appended internally).
 
 IMPORTANT: For security reasons, Salesforce blocks the OAuth 2.0 Username-Password flow by default in recent releases. Prefer the JWT bearer flow. If you must use the Username-Password flow, in `OAuth and OpenID Connect Settings`, select `Allow OAuth Username-Password Flows`. For more information, see the Salesforce release note: [Username-Password OAuth flow blocked by default](https://help.salesforce.com/s/articleView?id=release-notes.rn_security_username-password_flow_blocked_by_default.htm&language=en_US&release=244&type=5).
 
@@ -215,10 +215,10 @@ When using a Salesforce instance with a security token, append the token directl
 
 #### Token URL
 
-The Salesforce integration uses the token URL to obtain authentication tokens for API access. You can enter either the OAuth host or the full token endpoint. Both forms are accepted.
+The Salesforce integration uses the token URL to obtain authentication tokens for API access. **Important:** The integration internally appends `/services/oauth2/token` to the URL you provide, so you should enter only the base URL.
 
-1. For most Salesforce instances, enter: `https://login.salesforce.com` (or `https://login.salesforce.com/services/oauth2/token`)
-2. For Salesforce sandbox environments, enter: `https://test.salesforce.com` (or `https://test.salesforce.com/services/oauth2/token`)
+1. For most Salesforce instances, enter: `https://login.salesforce.com`
+2. For Salesforce sandbox environments, enter: `https://test.salesforce.com`
 3. For custom Salesforce domains, enter your custom domain base URL. For example, if your custom domain is `mycompany.my.salesforce.com`, enter: `https://mycompany.my.salesforce.com`
 
 In most cases, the Token URL is the same as the Salesforce instance URL.
