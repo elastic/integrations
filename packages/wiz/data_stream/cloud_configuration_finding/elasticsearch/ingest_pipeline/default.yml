@@ -1,143 +1,135 @@
 ---
 description: Pipeline for processing Cloud Configuration Finding logs
 processors:
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: '8.11.0'
   - rename:
       field: message
-      tag: rename_message
+      tag: rename_message_4217da53
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_decoding
+      tag: json_decoding_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_bb13926c
       value: 'Wiz'
   - rename:
       field: json.resource.subscription.cloudProvider
-      tag: rename_cloudProvider
+      tag: rename_cloudProvider_2a528c88
       target_field: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
       ignore_missing: true
   - lowercase:
       field: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
       target_field: cloud.provider
-      tag: set_cloud_provider_lowercase
+      tag: lowercase_cloud_provider_b548bdc8
       ignore_missing: true
   - rename:
       field: json.resource.subscription.externalId
-      tag: rename_subscription_externalId
+      tag: rename_subscription_externalId_21b3e3e8
       target_field: wiz.cloud_configuration_finding.resource.subscription.external_id
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id
+      tag: set_cloud_account_id_9d16172b
       copy_from: wiz.cloud_configuration_finding.resource.subscription.external_id
       ignore_empty_value: true
   - rename:
       field: json.resource.subscription.name
-      tag: rename_subscription_name
+      tag: rename_subscription_name_87393507
       target_field: wiz.cloud_configuration_finding.resource.subscription.name
       ignore_missing: true
   - set:
       field: cloud.account.name
-      tag: set_cloud_account_name
+      tag: set_cloud_account_name_208d00fe
       copy_from: wiz.cloud_configuration_finding.resource.subscription.name
       ignore_empty_value: true
   - rename:
       field: json.resource.region
-      tag: rename_region
+      tag: rename_region_d1f1737c
       target_field: wiz.cloud_configuration_finding.resource.region
       ignore_missing: true
   - set:
       field: cloud.region
-      tag: set_cloud_region
+      tag: set_cloud_region_981615f8
       copy_from: wiz.cloud_configuration_finding.resource.region
       ignore_empty_value: true
   - rename:
       field: json.resource.cloudPlatform
-      tag: rename_cloud_plarform
+      tag: rename_cloud_plarform_f8c037f6
       target_field: wiz.cloud_configuration_finding.resource.cloud_platform
       ignore_missing: true
   - lowercase:
       field: wiz.cloud_configuration_finding.resource.cloud_platform
       target_field: cloud.service.name
-      tag: set_cloud_service_name_lowercase
+      tag: lowercase_cloud_service_name_f5a9ca28
       ignore_missing: true
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_5bc3dda0
       value: configuration
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - date:
       field: json.analyzedAt
       target_field: wiz.cloud_configuration_finding.analyzed_at
-      tag: date_set_analyzedat
+      tag: date_set_analyzedat_6a627da0
       formats:
         - ISO8601
       if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_ebd52954
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created
+      tag: set_event_created_e72f1b4f
       copy_from: wiz.cloud_configuration_finding.analyzed_at
       ignore_empty_value: true
   - date:
       field: json.updatedAt
       target_field: wiz.cloud_configuration_finding.updated_at
-      tag: date_set_updatedat
+      tag: date_set_updatedat_1301f768
       formats:
         - ISO8601
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_20ebd240
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_6e851244
       target_field: wiz.cloud_configuration_finding.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_a156e857
       copy_from: wiz.cloud_configuration_finding.id
       ignore_empty_value: true
   - script:
-      tag: set_event_url
+      tag: set_event_url_0f6e0a09
       description: Generate an event URL from the event ID and rule ID; helps to investigate the Wiz events.
       lang: painless
       if: ctx.event?.id != null && ctx.json?.rule?.id != null
@@ -146,230 +138,231 @@ processors:
   - set:
       field: event.kind
       value: state
-      tag: set_event_kind
+      tag: set_event_kind_c3139286
   - rename:
       field: json.rule.description
-      tag: rename_rule_description
+      tag: rename_rule_description_41e36677
       target_field: wiz.cloud_configuration_finding.rule.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message
+      tag: set_message_a2e749ea
       copy_from: wiz.cloud_configuration_finding.rule.description
       ignore_empty_value: true
   - set:
       field: rule.description
-      tag: set_rule_description
+      tag: set_rule_description_424cf56a
       copy_from: wiz.cloud_configuration_finding.rule.description
       ignore_empty_value: true
   - date:
       field: json.analyzedAt
-      tag: date_set_timestamp
+      tag: date_set_timestamp_26da21dd
       formats:
         - ISO8601
       if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_29cdc455
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.rule.id
-      tag: rename_rule_id
+      tag: rename_rule_id_2f25acf7
       target_field: wiz.cloud_configuration_finding.rule.id
       ignore_missing: true
   - set:
       field: rule.uuid
-      tag: set_rule_uuid
+      tag: set_rule_uuid_db83590f
       copy_from: wiz.cloud_configuration_finding.rule.id
       ignore_empty_value: true
   - rename:
       field: json.rule.shortId
-      tag: rename_rule_short_id
+      tag: rename_rule_short_id_b8f39962
       target_field: wiz.cloud_configuration_finding.rule.short_id
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id
+      tag: set_rule_id_8d076957
       copy_from: wiz.cloud_configuration_finding.rule.short_id
       ignore_empty_value: true
   - rename:
       field: json.rule.name
-      tag: rename_rule_name
+      tag: rename_rule_name_31d6d6ce
       target_field: wiz.cloud_configuration_finding.rule.name
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name
+      tag: set_rule_name_dcf470ae
       copy_from: wiz.cloud_configuration_finding.rule.name
       ignore_empty_value: true
   - rename:
       field: json.rule.remediationInstructions
-      tag: rename_rule_remediation_instructions
+      tag: rename_rule_remediation_instructions_7cccea3b
       target_field: wiz.cloud_configuration_finding.rule.remediation_instructions
       ignore_missing: true
   - set:
       field: rule.remediation
-      tag: set_rule_remediation
+      tag: set_rule_remediation_7325ad48
       copy_from: wiz.cloud_configuration_finding.rule.remediation_instructions
       ignore_empty_value: true
   - rename:
       field: json.resource.id
-      tag: rename_resource_id
+      tag: rename_resource_id_c7ead908
       target_field: wiz.cloud_configuration_finding.resource.id
       ignore_missing: true
   - rename:
       field: json.resource.providerId
-      tag: rename_resource_providerId
+      tag: rename_resource_providerId_7c8d94df
       target_field: wiz.cloud_configuration_finding.resource.provider_id
       ignore_missing: true
   - set:
       field: resource.id
-      tag: set_resource_id_from_provider_id
+      tag: set_resource_id_from_provider_id_86ca0090
       copy_from: wiz.cloud_configuration_finding.resource.provider_id
       ignore_empty_value: true
   - set:
       field: resource.id
-      tag: set_resource_id_from_resource_id
+      tag: set_resource_id_from_resource_id_ce426e6b
       copy_from: wiz.cloud_configuration_finding.resource.id
       ignore_empty_value: true
-      override: false  # This ensures the value isn't overwritten if already set
+      override: false # This ensures the value isn't overwritten if already set
   - rename:
       field: json.resource.name
-      tag: rename_resource_name
+      tag: rename_resource_name_bcc0a14c
       target_field: wiz.cloud_configuration_finding.resource.name
       ignore_missing: true
   - set:
       field: resource.name
-      tag: set_resource_name
+      tag: set_resource_name_090e69e7
       copy_from: wiz.cloud_configuration_finding.resource.name
       ignore_empty_value: true
   - rename:
       field: json.resource.type
-      tag: rename_resource_type
+      tag: rename_resource_type_f6b6e33b
       target_field: wiz.cloud_configuration_finding.resource.type
       ignore_missing: true
   - set:
       field: resource.type
-      tag: set_resource_type
+      tag: set_resource_type_b861f248
       copy_from: wiz.cloud_configuration_finding.resource.type
       ignore_empty_value: true
   - rename:
       field: json.resource.nativeType
-      tag: rename_resource_nativeType
+      tag: rename_resource_nativeType_13f946e6
       target_field: wiz.cloud_configuration_finding.resource.native_type
       ignore_missing: true
   - set:
       field: resource.sub_type
-      tag: set_resource_sub_type
+      tag: set_resource_sub_type_3cafc570
       copy_from: wiz.cloud_configuration_finding.resource.native_type
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name_if_user_account
+      tag: set_user_name_if_user_account_fe4498cd
       copy_from: wiz.cloud_configuration_finding.resource.name
       if: ctx?.resource?.type == 'USER_ACCOUNT'
       ignore_empty_value: true
   - set:
       field: user.id
-      tag: set_user_id_if_user_account
+      tag: set_user_id_if_user_account_21e74f78
       copy_from: wiz.cloud_configuration_finding.resource.provider_id
       if: ctx.resource?.type == 'USER_ACCOUNT'
       ignore_empty_value: true
   - lowercase:
       field: wiz.cloud_configuration_finding.resource.name
       target_field: host.name
-      tag: set_host_name_lowercase_if_vm
+      tag: lowercase_host_name_if_vm_bd32a427
       if: ctx?.resource?.type == 'VIRTUAL_MACHINE'
       ignore_missing: true
   - rename:
       field: json.result
-      tag: rename_result
+      tag: rename_result_0b130fa9
       target_field: wiz.cloud_configuration_finding.result
       ignore_missing: true
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_passed
+      tag: set_result_evaluation_passed_737a9156
       value: 'passed'
       if: ctx?.wiz?.cloud_configuration_finding?.result == 'PASS'
       ignore_empty_value: true
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_failed
+      tag: set_result_evaluation_failed_58f717fb
       value: 'failed'
       if: ctx?.wiz?.cloud_configuration_finding?.result == 'FAIL'
       ignore_empty_value: true
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_unknown
+      tag: set_result_evaluation_unknown_8d9b0512
       value: 'unknown'
       if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_success
+      tag: set_event_outcome_success_f6e83c5c
       value: 'success'
       if: ctx?.wiz?.cloud_configuration_finding?.result == 'PASS'
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_failure
+      tag: set_event_outcome_failure_fbd73f77
       value: 'failure'
       if: ctx?.wiz?.cloud_configuration_finding?.result == 'FAIL'
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_unknown
+      tag: set_event_outcome_unknown_e9f3ddb9
       value: 'unknown'
       if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
       ignore_empty_value: true
   - rename:
       field: json.evidence.currentValue
-      tag: rename_evidence_current_value
+      tag: rename_evidence_current_value_d0b29c45
       target_field: wiz.cloud_configuration_finding.evidence.current_value
       ignore_missing: true
   - set:
       field: result.evidence.current_value
-      tag: set_result_evidence_current_value
+      tag: set_result_evidence_current_value_9081e9f0
       copy_from: wiz.cloud_configuration_finding.evidence.current_value
       ignore_empty_value: true
   - rename:
       field: json.evidence.expectedValue
-      tag: rename_evidence_expected_value
+      tag: rename_evidence_expected_value_c9cfd51c
       target_field: wiz.cloud_configuration_finding.evidence.expected_value
       ignore_missing: true
   - set:
       field: result.evidence.expected_value
-      tag: set_result_evidence_expected_value
+      tag: set_result_evidence_expected_value_0d1b2bb8
       copy_from: wiz.cloud_configuration_finding.evidence.expected_value
       ignore_empty_value: true
   - rename:
       field: json.evidence.configurationPath
-      tag: rename_evidence_configuration_path
+      tag: rename_evidence_configuration_path_b2b4f560
       target_field: wiz.cloud_configuration_finding.evidence.configuration_path
       ignore_missing: true
   - set:
       field: result.evidence.configuration_path
-      tag: set_result_evidence_configuration_path
+      tag: set_result_evidence_configuration_path_b86045ac
       copy_from: wiz.cloud_configuration_finding.evidence.configuration_path
       ignore_empty_value: true
   - rename:
       field: json.evidence.cloudConfigurationLink
-      tag: rename_evidence_cloud_configuration_link
+      tag: rename_evidence_cloud_configuration_link_22ffc94b
       target_field: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_missing: true
   - set:
       field: result.evidence.cloud_configuration_link
-      tag: set_result_evidence_cloud_configuration_link
+      tag: set_result_evidence_cloud_configuration_link_e701b564
       copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_empty_value: true
   - set:
       field: rule.reference
-      tag: set_rule_reference
+      tag: set_rule_reference_d5f18b22
       copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_empty_value: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - remove:
       field:
@@ -392,12 +385,12 @@ processors:
         - wiz.cloud_configuration_finding.evidence.current_value
         - wiz.cloud_configuration_finding.evidence.configuration_path
         - wiz.cloud_configuration_finding.evidence.cloud_configuration_link
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_f9353927
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       description: Drops null/empty values recursively.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_84501ca6
       lang: painless
       source: |
         boolean drop(Object object) {
@@ -415,22 +408,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

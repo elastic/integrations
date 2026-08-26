@@ -3,88 +3,98 @@ description: Pipeline for processing Attack object.
 # Attack object docs: https://schema.ocsf.io/1.5.0/objects/attack
 processors:
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_acba7f4a
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.tactic.id
           value: '{{{_ingest._value.tactic.uid}}}'
-          tag: append_attacks_tactic_uid_into_threat_tactic_id
+          tag: append_attacks_tactic_uid_into_threat_tactic_id_a71b99ef
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_aed967de
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.tactic.name
           value: '{{{_ingest._value.tactic.name}}}'
-          tag: append_attacks_tactic_name_into_threat_tactic_name
+          tag: append_attacks_tactic_name_into_threat_tactic_name_720fb537
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_f7199c38
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.tactic.reference
           value: '{{{_ingest._value.tactic.src_url}}}'
-          tag: append_attacks_tactic_src_url_into_threat_tactic_reference
+          tag: append_attacks_tactic_src_url_into_threat_tactic_reference_415dda74
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_b7b42044
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.technique.id
           value: '{{{_ingest._value.technique.uid}}}'
-          tag: append_attacks_technique_uid_into_threat_technique_id
+          tag: append_attacks_technique_uid_into_threat_technique_id_451f01b7
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_b891d100
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.technique.name
           value: '{{{_ingest._value.technique.name}}}'
-          tag: append_attacks_technique_name_into_threat_technique_name
+          tag: append_attacks_technique_name_into_threat_technique_name_3cdf85a5
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_59be8a52
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.technique.reference
           value: '{{{_ingest._value.technique.src_url}}}'
-          tag: append_attacks_technique_src_url_into_threat_technique_reference
+          tag: append_attacks_technique_src_url_into_threat_technique_reference_a6e19c2a
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_0d7da6b1
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.technique.subtechnique.id
           value: '{{{_ingest._value.sub_technique.uid}}}'
-          tag: append_attacks_sub_technique_uid_into_threat_technique_subtechnique_id
+          tag: append_attacks_sub_technique_uid_into_threat_technique_subtechnique_id_8945e6ec
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_5847e5a7
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.technique.subtechnique.name
           value: '{{{_ingest._value.sub_technique.name}}}'
-          tag: append_attacks_sub_technique_name_into_threat_technique_subtechnique_name
+          tag: append_attacks_sub_technique_name_into_threat_technique_subtechnique_name_2dad03aa
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_attacks_b3a53e5b
       field: aws_securityhub.finding.attacks
       if: ctx.aws_securityhub?.finding?.attacks instanceof List
       processor:
         append:
           field: threat.technique.subtechnique.reference
           value: '{{{_ingest._value.sub_technique.src_url}}}'
-          tag: append_attacks_sub_technique_src_url_into_threat_technique_subtechnique_reference
+          tag: append_attacks_sub_technique_src_url_into_threat_technique_subtechnique_reference_2c5f6455
           allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -92,9 +102,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

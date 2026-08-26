@@ -8,61 +8,61 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: '8.11.0'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_vulnerability_into_event_category
+      tag: append_vulnerability_into_event_category_30f59663
       value: vulnerability
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_baab6a8f
       value: Amazon Inspector
   - set:
       field: vulnerability.scanner.vendor
-      tag: set_vulnerability_scanner_vendor
+      tag: set_vulnerability_scanner_vendor_80cc08ae
       value: Amazon Inspector
   # Remove cloud.* fields populated by beat.
   # These fields correspond to EA rather than AWS hosts and could be misleading.
   - remove:
       field: cloud
-      tag: remove_cloud_fields
+      tag: remove_cloud_fields_9e177b96
       ignore_missing: true
       description: Remove ECS cloud fields that are populated from EA metadata.
   - set:
       field: cloud.provider
-      tag: set_cloud_provider
+      tag: set_cloud_provider_fccb2a9a
       value: aws
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -72,12 +72,12 @@ processors:
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_inspector
+      tag: fingerprint_inspector_5df148ab
       target_field: _id
       ignore_missing: true
   - date:
       field: json.updatedAt
-      tag: date_updatedAt
+      tag: date_updatedAt_947ea779
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
       target_field: aws.inspector.updated_at
       formats:
@@ -91,42 +91,42 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_updated_at
+      tag: set_@timestamp_from_updated_at_d03eb06c
       copy_from: aws.inspector.updated_at
       ignore_empty_value: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_f38daa74
       target_field: aws.inspector.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_description
+      tag: set_message_from_description_516c53b5
       copy_from: aws.inspector.description
       ignore_empty_value: true
   - set:
       field: vulnerability.description
-      tag: set_vulnerability_description
+      tag: set_vulnerability_description_2b04cc96
       copy_from: aws.inspector.description
       ignore_empty_value: true
   - rename:
       field: json.awsAccountId
-      tag: rename_awsAccountId
+      tag: rename_awsAccountId_c61e2d24
       target_field: aws.inspector.aws_account_id
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_aws_account_id
+      tag: set_cloud_account_id_from_aws_account_id_e9938720
       copy_from: aws.inspector.aws_account_id
       ignore_empty_value: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_c09a945f
       target_field: aws.inspector.severity
       ignore_missing: true
   - script:
       description: Map vulnerability.severity to CVSS standard
-      tag: script_to_map_severity_to_CVSS
+      tag: script_to_map_severity_to_CVSS_48341909
       lang: painless
       if: ctx.aws?.inspector?.severity != null
       source: >
@@ -151,41 +151,41 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.networkReachabilityDetails.protocol
-      tag: rename_networkReachabilityDetails_protocol
+      tag: rename_networkReachabilityDetails_protocol_66cbf7df
       target_field: aws.inspector.network_reachability_details.protocol
       ignore_missing: true
   - set:
       field: network.transport
-      tag: set_network_transport_from_network_reachability_details_protocol
+      tag: set_network_transport_from_network_reachability_details_protocol_68b4a1e7
       copy_from: aws.inspector.network_reachability_details.protocol
       ignore_empty_value: true
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.cwes
-      tag: rename_codeVulnerabilityDetails_cwes
+      tag: rename_codeVulnerabilityDetails_cwes_51d3bed5
       target_field: aws.inspector.code_vulnerability_details.cwes
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.detectorId
-      tag: rename_codeVulnerabilityDetails_detectorId
+      tag: rename_codeVulnerabilityDetails_detectorId_91044cba
       target_field: aws.inspector.code_vulnerability_details.detector_id
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.detectorName
-      tag: rename_codeVulnerabilityDetails_detectorName
+      tag: rename_codeVulnerabilityDetails_detectorName_b3d2b435
       target_field: aws.inspector.code_vulnerability_details.detector_name
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.detectorTags
-      tag: rename_codeVulnerabilityDetails_detectorTags
+      tag: rename_codeVulnerabilityDetails_detectorTags_6a19e99d
       target_field: aws.inspector.code_vulnerability_details.detector_tags
       ignore_missing: true
   - convert:
       field: json.codeVulnerabilityDetails.filePath.endLine
-      tag: convert_codeVulnerabilityDetails_filePath_endLine_to_long
+      tag: convert_codeVulnerabilityDetails_filePath_endLine_to_long_226ebade
       type: long
       target_field: aws.inspector.code_vulnerability_details.file_path.end_line
       ignore_missing: true
@@ -196,17 +196,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.codeVulnerabilityDetails.filePath.fileName
-      tag: rename_codeVulnerabilityDetails_filePath_fileName
+      tag: rename_codeVulnerabilityDetails_filePath_fileName_69660856
       target_field: aws.inspector.code_vulnerability_details.file_path.name
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.filePath.filePath
-      tag: rename_codeVulnerabilityDetails_filePath_filePath
+      tag: rename_codeVulnerabilityDetails_filePath_filePath_2616b739
       target_field: aws.inspector.code_vulnerability_details.file_path.path
       ignore_missing: true
   - convert:
       field: json.codeVulnerabilityDetails.filePath.startLine
-      tag: convert_codeVulnerabilityDetails_filePath_startLine_to_long
+      tag: convert_codeVulnerabilityDetails_filePath_startLine_to_long_e466693b
       type: long
       target_field: aws.inspector.code_vulnerability_details.file_path.start_line
       ignore_missing: true
@@ -217,22 +217,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.codeVulnerabilityDetails.referenceUrls
-      tag: rename_codeVulnerabilityDetails_referenceUrls
+      tag: rename_codeVulnerabilityDetails_referenceUrls_d50d6a2d
       target_field: aws.inspector.code_vulnerability_details.reference_urls
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.ruleId
-      tag: rename_codeVulnerabilityDetails_ruleId
+      tag: rename_codeVulnerabilityDetails_ruleId_3ca3c888
       target_field: aws.inspector.code_vulnerability_details.rule_id
       ignore_missing: true
   - rename:
       field: json.codeVulnerabilityDetails.sourceLambdaLayerArn
-      tag: rename_codeVulnerabilityDetails_sourceLambdaLayerArn
+      tag: rename_codeVulnerabilityDetails_sourceLambdaLayerArn_5f58c4d6
       target_field: aws.inspector.code_vulnerability_details.source_lambda_layer_arn
       ignore_missing: true
   - convert:
       field: json.epss.score
-      tag: convert_epss_score_to_double
+      tag: convert_epss_score_to_double_82e1e67b
       type: double
       target_field: aws.inspector.epss.score
       ignore_missing: true
@@ -243,7 +243,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.exploitabilityDetails.lastKnownExploitAt
-      tag: date_exploitabilityDetails_lastKnownExploitAt
+      tag: date_exploitabilityDetails_lastKnownExploitAt_51733dca
       if: ctx.json?.exploitabilityDetails?.lastKnownExploitAt != null && ctx.json.exploitabilityDetails.lastKnownExploitAt != ''
       target_field: aws.inspector.exploitability_details.last_known_exploit_at
       formats:
@@ -257,48 +257,48 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.exploitAvailable
-      tag: rename_exploitAvailable
+      tag: rename_exploitAvailable_c553fab3
       target_field: aws.inspector.exploit_available
       ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.referenceUrls
-      tag: rename_packageVulnerabilityDetails_referenceUrls
+      tag: rename_packageVulnerabilityDetails_referenceUrls_03ae23a2
       target_field: aws.inspector.package_vulnerability_details.reference_urls
       ignore_missing: true
   - set:
       field: vulnerability.reference
-      tag: set_vulnerability_reference_from_package_vulnerability_details_reference_urls
+      tag: set_vulnerability_reference_from_package_vulnerability_details_reference_urls_baa7607d
       copy_from: aws.inspector.package_vulnerability_details.reference_urls
       ignore_empty_value: true
   - rename:
       field: json.packageVulnerabilityDetails.vulnerabilityId
-      tag: rename_packageVulnerabilityDetails_vulnerabilityId
+      tag: rename_packageVulnerabilityDetails_vulnerabilityId_e5a1694c
       target_field: aws.inspector.package_vulnerability_details.vulnerability_id
       ignore_missing: true
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id_from_package_vulnerability_details_vulnerability_id
+      tag: set_vulnerability_id_from_package_vulnerability_details_vulnerability_id_4252f5cb
       copy_from: aws.inspector.package_vulnerability_details.vulnerability_id
       ignore_empty_value: true
   - set:
       field: vulnerability.cve
-      tag: set_vulnerability_cve_from_package_vulnerability_details_vulnerability_id
+      tag: set_vulnerability_cve_from_package_vulnerability_details_vulnerability_id_80fb9e8b
       copy_from: aws.inspector.package_vulnerability_details.vulnerability_id
       ignore_empty_value: true
       if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY' && ctx.aws.inspector.package_vulnerability_details?.vulnerability_id?.startsWith('CVE') == true
   - set:
       field: vulnerability.enumeration
-      tag: set_vulnerability_enumeration
+      tag: set_vulnerability_enumeration_23ceb90f
       value: CVE
       if: ctx.vulnerability?.cve != null
   - rename:
       field: json.findingArn
-      tag: rename_findingArn
+      tag: rename_findingArn_6335cf20
       target_field: aws.inspector.finding_arn
       ignore_missing: true
   - date:
       field: json.firstObservedAt
-      tag: date_firstObservedAt
+      tag: date_firstObservedAt_d7e8e152
       if: ctx.json?.firstObservedAt != null && ctx.json.firstObservedAt != ''
       target_field: aws.inspector.first_observed_at
       formats:
@@ -312,12 +312,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.fixAvailable
-      tag: rename_fixAvailable
+      tag: rename_fixAvailable_e90fa98b
       target_field: aws.inspector.fix_available
       ignore_missing: true
   - convert:
       field: json.inspectorScore
-      tag: convert_inspectorScore_to_double
+      tag: convert_inspectorScore_to_double_585c5ed3
       type: double
       target_field: aws.inspector.inspector_score
       ignore_missing: true
@@ -328,17 +328,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.adjustments
-      tag: rename_inspectorScoreDetails_adjustedCvss_adjustments
+      tag: rename_inspectorScoreDetails_adjustedCvss_adjustments_29edd817
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.adjustments
       ignore_missing: true
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.cvssSource
-      tag: rename_inspectorScoreDetails_adjustedCvss_cvssSource
+      tag: rename_inspectorScoreDetails_adjustedCvss_cvssSource_8c0377f6
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.cvss_source
       ignore_missing: true
   - convert:
       field: json.inspectorScoreDetails.adjustedCvss.score
-      tag: convert_inspectorScoreDetails_adjustedCvss_score_to_double
+      tag: convert_inspectorScoreDetails_adjustedCvss_score_to_double_22ec9cfa
       type: double
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.score.value
       ignore_missing: true
@@ -349,37 +349,37 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base
+      tag: set_vulnerability_score_base_ef594b91
       copy_from: aws.inspector.inspector_score_details.adjusted_cvss.score.value
       ignore_empty_value: true
   - set:
       field: vulnerability.classification
-      tag: set_vulnerability_classification
+      tag: set_vulnerability_classification_223e0d90
       value: CVSS
       if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY' && ctx.aws.inspector.inspector_score_details?.adjusted_cvss?.score?.value != null
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.scoreSource
-      tag: rename_inspectorScoreDetails_adjustedCvss_scoreSource
+      tag: rename_inspectorScoreDetails_adjustedCvss_scoreSource_2f7d204d
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.score.source
       ignore_missing: true
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.scoringVector
-      tag: rename_inspectorScoreDetails_adjustedCvss_scoringVector
+      tag: rename_inspectorScoreDetails_adjustedCvss_scoringVector_90628802
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.scoring_vector
       ignore_missing: true
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.version
-      tag: rename_inspectorScoreDetails_adjustedCvss_version
+      tag: rename_inspectorScoreDetails_adjustedCvss_version_20f72424
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.version
       ignore_missing: true
   - set:
       field: vulnerability.score.version
-      tag: set_vulnerability_score_version
+      tag: set_vulnerability_score_version_176ca01a
       copy_from: aws.inspector.inspector_score_details.adjusted_cvss.version
       ignore_empty_value: true
   - date:
       field: json.lastObservedAt
-      tag: date_lastObservedAt
+      tag: date_lastObservedAt_c1601a36
       if: ctx.json?.lastObservedAt != null && ctx.json.lastObservedAt != ''
       target_field: aws.inspector.last_observed_at
       formats:
@@ -398,7 +398,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.componentId
-          tag: rename_networkReachabilityDetails_networkPath_steps_componentId
+          tag: rename_networkReachabilityDetails_networkPath_steps_componentId_5b1d6a6a
           target_field: _ingest._value.component.id
           ignore_missing: true
   - foreach:
@@ -408,7 +408,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.componentType
-          tag: rename_networkReachabilityDetails_networkPath_steps_componentType
+          tag: rename_networkReachabilityDetails_networkPath_steps_componentType_74c7f32e
           target_field: _ingest._value.component.type
           ignore_missing: true
   - foreach:
@@ -418,17 +418,17 @@ processors:
       processor:
         rename:
           field: _ingest._value.componentArn
-          tag: rename_networkReachabilityDetails_networkPath_steps_componentArn
+          tag: rename_networkReachabilityDetails_networkPath_steps_componentArn_5af71e1e
           target_field: _ingest._value.component.arn
           ignore_missing: true
   - rename:
       field: json.networkReachabilityDetails.networkPath.steps
-      tag: rename_networkReachabilityDetails_networkPath_steps
+      tag: rename_networkReachabilityDetails_networkPath_steps_34012b93
       target_field: aws.inspector.network_reachability_details.network_path.steps
       ignore_missing: true
   - convert:
       field: json.networkReachabilityDetails.openPortRange.begin
-      tag: convert_networkReachabilityDetails_openPortRange_begin_to_long
+      tag: convert_networkReachabilityDetails_openPortRange_begin_to_long_30336d3c
       type: long
       target_field: aws.inspector.network_reachability_details.open_port_range.begin
       ignore_missing: true
@@ -439,7 +439,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.networkReachabilityDetails.openPortRange.end
-      tag: convert_networkReachabilityDetails_openPortRange_end_to_long
+      tag: convert_networkReachabilityDetails_openPortRange_end_to_long_db20b28c
       type: long
       target_field: aws.inspector.network_reachability_details.open_port_range.end
       ignore_missing: true
@@ -455,15 +455,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.baseScore
-          tag: convert_packageVulnerabilityDetails_cvss_baseScore_to_double
+          tag: convert_packageVulnerabilityDetails_cvss_baseScore_to_double_3d07a0bf
           type: double
           target_field: _ingest._value.base_score
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_baseScore_1a97c574
                 field: _ingest._value.baseScore
                 ignore_missing: true
             - append:
+                tag: append_error_message_99ee6976
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -473,7 +475,7 @@ processors:
       processor:
         remove:
           field: _ingest._value.baseScore
-          tag: remove_packageVulnerabilityDetails_cvss_baseScore
+          tag: remove_packageVulnerabilityDetails_cvss_baseScore_0d101b11
           ignore_missing: true
   - foreach:
       tag: foreach_json_packageVulnerabilityDetails_cvss_1130ad25
@@ -482,12 +484,12 @@ processors:
       processor:
         rename:
           field: _ingest._value.scoringVector
-          tag: rename_packageVulnerabilityDetails_cvss_scoringVector
+          tag: rename_packageVulnerabilityDetails_cvss_scoringVector_328ba2b5
           target_field: _ingest._value.scoring_vector
           ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.cvss
-      tag: rename_packageVulnerabilityDetails_cvss
+      tag: rename_packageVulnerabilityDetails_cvss_8bdd3614
       target_field: aws.inspector.package_vulnerability_details.cvss
       ignore_missing: true
   - rename:
@@ -497,17 +499,17 @@ processors:
       ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.relatedVulnerabilities
-      tag: rename_packageVulnerabilityDetails_relatedVulnerabilities
+      tag: rename_packageVulnerabilityDetails_relatedVulnerabilities_b47674f9
       target_field: aws.inspector.package_vulnerability_details.related_vulnerabilities
       ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.source
-      tag: rename_packageVulnerabilityDetails_source
+      tag: rename_packageVulnerabilityDetails_source_c934d470
       target_field: aws.inspector.package_vulnerability_details.source.value
       ignore_missing: true
   - uri_parts:
       field: json.packageVulnerabilityDetails.sourceUrl
-      tag: uri_parts_packageVulnerabilityDetails_sourceUrl
+      tag: uri_parts_packageVulnerabilityDetails_sourceUrl_9570e931
       target_field: aws.inspector.package_vulnerability_details.source.url
       if: ctx.json?.packageVulnerabilityDetails?.sourceUrl != null
       keep_original: true
@@ -522,7 +524,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.packageVulnerabilityDetails.vendorCreatedAt
-      tag: date_packageVulnerabilityDetails_vendorCreatedAt
+      tag: date_packageVulnerabilityDetails_vendorCreatedAt_dd82b456
       if: ctx.json?.packageVulnerabilityDetails?.vendorCreatedAt != null && ctx.json.packageVulnerabilityDetails.vendorCreatedAt != ''
       target_field: aws.inspector.package_vulnerability_details.vendor.created_at
       formats:
@@ -536,17 +538,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.published_date
-      tag: set_vulnerability_published_date
+      tag: set_vulnerability_published_date_11d5b238
       copy_from: aws.inspector.package_vulnerability_details.vendor.created_at
       ignore_empty_value: true
   - rename:
       field: json.packageVulnerabilityDetails.vendorSeverity
-      tag: rename_packageVulnerabilityDetails_vendorSeverity
+      tag: rename_packageVulnerabilityDetails_vendorSeverity_a0d47a07
       target_field: aws.inspector.package_vulnerability_details.vendor.severity
       ignore_missing: true
   - date:
       field: json.packageVulnerabilityDetails.vendorUpdatedAt
-      tag: date_packageVulnerabilityDetails_vendorUpdatedAt
+      tag: date_packageVulnerabilityDetails_vendorUpdatedAt_bf87346d
       if: ctx.json?.packageVulnerabilityDetails?.vendorUpdatedAt!= null && ctx.json.packageVulnerabilityDetails.vendorUpdatedAt != ''
       target_field: aws.inspector.package_vulnerability_details.vendor.updated_at
       formats:
@@ -565,7 +567,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.filePath
-          tag: rename_packageVulnerabilityDetails_vulnerablePackages_filePath
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_filePath_be30a23e
           target_field: _ingest._value.file_path
           ignore_missing: true
   - foreach:
@@ -575,7 +577,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.fixedInVersion
-          tag: rename_packageVulnerabilityDetails_vulnerablePackages_fixedInVersion
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_fixedInVersion_8611f963
           target_field: _ingest._value.fixed_in_version
           ignore_missing: true
   - foreach:
@@ -585,7 +587,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.packageManager
-          tag: rename_packageVulnerabilityDetails_vulnerablePackages_packageManager
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_packageManager_55c96e1e
           target_field: _ingest._value.package_manager
           ignore_missing: true
   - foreach:
@@ -595,7 +597,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.sourceLambdaLayerArn
-          tag: rename_packageVulnerabilityDetails_vulnerablePackages_sourceLambdaLayerArn
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_sourceLambdaLayerArn_f94228c6
           target_field: _ingest._value.source_lambda_layer_arn
           ignore_missing: true
   - foreach:
@@ -605,7 +607,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.sourceLayerHash
-          tag: rename_packageVulnerabilityDetails_vulnerablePackages_sourceLayerHash
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_sourceLayerHash_47b40c3d
           target_field: _ingest._value.source_layer_hash
           ignore_missing: true
   - foreach:
@@ -615,18 +617,18 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_packageVulnerabilityDetails_vulnerablePackages_source_layer_hash_into_related_hash
+          tag: append_packageVulnerabilityDetails_vulnerablePackages_source_layer_hash_into_related_hash_796fc072
           value: '{{{_ingest._value.source_layer_hash}}}'
           allow_duplicates: false
   - rename:
       field: json.packageVulnerabilityDetails.vulnerablePackages
-      tag: rename_packageVulnerabilityDetails_vulnerablePackages
+      tag: rename_packageVulnerabilityDetails_vulnerablePackages_59cd4f71
       target_field: aws.inspector.package_vulnerability_details.vulnerable_packages
       ignore_missing: true
   # Introduce aws.inspector.package_nested field with nested type to associate relationship between version, name, fixed_version, path, etc.
   - set:
       field: aws.inspector.package_nested
-      tag: set_package_nested_from_package_vulnerability_details_vulnerable_packages
+      tag: set_package_nested_from_package_vulnerability_details_vulnerable_packages_f7400de1
       copy_from: aws.inspector.package_vulnerability_details.vulnerable_packages
       ignore_empty_value: true
   - foreach:
@@ -636,7 +638,7 @@ processors:
       processor:
         append:
           field: package.architecture
-          tag: append_package_vulnerability_details_vulnerable_packages_arch_into_package_architecture
+          tag: append_package_vulnerability_details_vulnerable_packages_arch_into_package_architecture_7b80b3ab
           value: '{{{_ingest._value.arch}}}'
           allow_duplicates: false
   - foreach:
@@ -646,7 +648,7 @@ processors:
       processor:
         append:
           field: package.name
-          tag: append_package_vulnerability_details_vulnerable_packages_name_into_package_name
+          tag: append_package_vulnerability_details_vulnerable_packages_name_into_package_name_5853f3e5
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
@@ -656,7 +658,7 @@ processors:
       processor:
         append:
           field: package.version
-          tag: append_package_vulnerability_details_vulnerable_packages_version_into_package_version
+          tag: append_package_vulnerability_details_vulnerable_packages_version_into_package_version_852096bd
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
   - foreach:
@@ -666,7 +668,7 @@ processors:
       processor:
         append:
           field: package.path
-          tag: append_package_vulnerability_details_vulnerable_packages_file_path_into_package_path
+          tag: append_package_vulnerability_details_vulnerable_packages_file_path_into_package_path_1c98dc1a
           value: '{{{_ingest._value.file_path}}}'
           allow_duplicates: false
   - foreach:
@@ -676,17 +678,17 @@ processors:
       processor:
         append:
           field: package.fixed_version
-          tag: append_package_vulnerability_details_vulnerable_packages_fixed_in_version_into_package_fixed_version
+          tag: append_package_vulnerability_details_vulnerable_packages_fixed_in_version_into_package_fixed_version_92da3017
           value: '{{{_ingest._value.fixed_in_version}}}'
           allow_duplicates: false
   - rename:
       field: json.remediation.recommendation.text
-      tag: rename_remediation_recommendation_text
+      tag: rename_remediation_recommendation_text_6c0ec3a6
       target_field: aws.inspector.remediation.recommendation.text
       ignore_missing: true
   - uri_parts:
       field: json.remediation.recommendation.Url
-      tag: uri_parts_remediation_recommendation_Url
+      tag: uri_parts_remediation_recommendation_Url_e17a5c25
       target_field: aws.inspector.remediation.recommendation.url
       if: ctx.json?.remediation?.recommendation?.Url != null
       keep_original: true
@@ -706,7 +708,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.iamInstanceProfileArn
-          tag: rename_resources_details_awsEc2Instance_iamInstanceProfileArn
+          tag: rename_resources_details_awsEc2Instance_iamInstanceProfileArn_85a8a822
           target_field: _ingest._value.details.aws.ec2_instance.iam_instance_profile_arn
           ignore_missing: true
   - foreach:
@@ -716,7 +718,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.imageId
-          tag: rename_resources_details_awsEc2Instance_imageId
+          tag: rename_resources_details_awsEc2Instance_imageId_926b9e75
           target_field: _ingest._value.details.aws.ec2_instance.image_id
           ignore_missing: true
   - foreach:
@@ -726,7 +728,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.ipV4Addresses
-          tag: rename_resources_details_awsEc2Instance_ipV4Addresses
+          tag: rename_resources_details_awsEc2Instance_ipV4Addresses_3274ebd2
           target_field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
           ignore_missing: true
   - foreach:
@@ -735,17 +737,20 @@ processors:
       if: ctx.json?.resources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_details_aws_ec2_instance_ipv4_addresses_6397e0a4
           field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_details_aws_ec2_instance_ipv4_addresses_to_ip
+              tag: convert_details_aws_ec2_instance_ipv4_addresses_to_ip_886328dd
               type: ip
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_5eedea9b
                     field: _ingest._value
                 - append:
+                    tag: append_error_message_f3a7b3ee
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -754,12 +759,13 @@ processors:
       if: ctx.json?.resources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_details_aws_ec2_instance_ipv4_addresses_e3bf327f
           field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
           ignore_missing: true
           processor:
             append:
               field: related.ip
-              tag: append_resources_details_aws_ec2_instance_ipv4_addresses_into_related_ip
+              tag: append_resources_details_aws_ec2_instance_ipv4_addresses_into_related_ip_372513e4
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
@@ -769,7 +775,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.ipV6Addresses
-          tag: rename_resources_details_awsEc2Instance_ipV6Addresses
+          tag: rename_resources_details_awsEc2Instance_ipV6Addresses_f6cc1c99
           target_field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
           ignore_missing: true
   - foreach:
@@ -778,17 +784,20 @@ processors:
       if: ctx.json?.resources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_details_aws_ec2_instance_ipv6_addresses_a6fa14b0
           field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_details_aws_ec2_instance_ipv6_addresses_to_ip
+              tag: convert_details_aws_ec2_instance_ipv6_addresses_to_ip_0d47051f
               type: ip
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_5041d7b2
                     field: _ingest._value
                 - append:
+                    tag: append_error_message_59672529
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -797,12 +806,13 @@ processors:
       if: ctx.json?.resources instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_details_aws_ec2_instance_ipv6_addresses_faf8497f
           field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
           ignore_missing: true
           processor:
             append:
               field: related.ip
-              tag: append_resources_details_aws_ec2_instance_ipv6_addresses_into_related_ip
+              tag: append_resources_details_aws_ec2_instance_ipv6_addresses_into_related_ip_f1fab057
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
@@ -812,7 +822,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.keyName
-          tag: rename_resources_details_awsEc2Instance_keyName
+          tag: rename_resources_details_awsEc2Instance_keyName_7d196075
           target_field: _ingest._value.details.aws.ec2_instance.key_name
           ignore_missing: true
   - foreach:
@@ -822,7 +832,7 @@ processors:
       processor:
         date:
           field: _ingest._value.details.awsEc2Instance.launchedAt
-          tag: date_resources_details_awsEc2Instance_launchedAt
+          tag: date_resources_details_awsEc2Instance_launchedAt_bbbbb9b2
           target_field: _ingest._value.details.aws.ec2_instance.launched_at
           formats:
             - ISO8601
@@ -830,6 +840,7 @@ processors:
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           on_failure:
             - remove:
+                tag: remove_ingest_value_details_awsEc2Instance_launchedAt_cdfa956c
                 field: _ingest._value.details.awsEc2Instance.launchedAt
                 ignore_missing: true
   - foreach:
@@ -839,7 +850,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.platform
-          tag: rename_resources_details_awsEc2Instance_platform
+          tag: rename_resources_details_awsEc2Instance_platform_9ad4a890
           target_field: _ingest._value.details.aws.ec2_instance.platform
           ignore_missing: true
   - foreach:
@@ -849,7 +860,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.subnetId
-          tag: rename_resources_details_awsEc2Instance_subnetId
+          tag: rename_resources_details_awsEc2Instance_subnetId_d43afed2
           target_field: _ingest._value.details.aws.ec2_instance.subnet_id
           ignore_missing: true
   - foreach:
@@ -859,7 +870,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.type
-          tag: rename_resources_details_awsEc2Instance_type
+          tag: rename_resources_details_awsEc2Instance_type_45e828a7
           target_field: _ingest._value.details.aws.ec2_instance.type
           ignore_missing: true
   - foreach:
@@ -869,7 +880,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.vpcId
-          tag: rename_resources_details_awsEc2Instance_vpcId
+          tag: rename_resources_details_awsEc2Instance_vpcId_7c7e915a
           target_field: _ingest._value.details.aws.ec2_instance.vpc_id
           ignore_missing: true
   - foreach:
@@ -879,7 +890,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.architecture
-          tag: rename_resources_details_awsEcrContainerImage_architecture
+          tag: rename_resources_details_awsEcrContainerImage_architecture_5745da02
           target_field: _ingest._value.details.aws.ecr_container_image.architecture
           ignore_missing: true
   - foreach:
@@ -889,7 +900,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.author
-          tag: rename_resources_details_awsEcrContainerImage_author
+          tag: rename_resources_details_awsEcrContainerImage_author_837f683e
           target_field: _ingest._value.details.aws.ecr_container_image.author
           ignore_missing: true
   - foreach:
@@ -899,7 +910,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.imageHash
-          tag: rename_resources_details_awsEcrContainerImage_imageHash
+          tag: rename_resources_details_awsEcrContainerImage_imageHash_da15e54c
           target_field: _ingest._value.details.aws.ecr_container_image.image.hash
           ignore_missing: true
   - foreach:
@@ -909,7 +920,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_resources_details_awsEcrContainerImage_imageHash_into_related_hash
+          tag: append_resources_details_awsEcrContainerImage_imageHash_into_related_hash_46945ec3
           value: '{{{_ingest._value.details.aws.ecr_container_image.image.hash}}}'
           allow_duplicates: false
   - foreach:
@@ -919,7 +930,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.imageTags
-          tag: rename_resources_details_awsEcrContainerImage_imageTags
+          tag: rename_resources_details_awsEcrContainerImage_imageTags_005fdec7
           target_field: _ingest._value.details.aws.ecr_container_image.image.tags
           ignore_missing: true
   - foreach:
@@ -929,15 +940,17 @@ processors:
       processor:
         convert:
           field: _ingest._value.details.awsEcrContainerImage.inUseCount
-          tag: convert_resources_details_awsEcrContainerImage_inUseCount_to_long
+          tag: convert_resources_details_awsEcrContainerImage_inUseCount_to_long_c0ad2251
           type: long
           target_field: _ingest._value.details.aws.ecr_container_image.in_use_count
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_details_awsEcrContainerImage_inUseCount_f0718100
                 field: _ingest._value.details.awsEcrContainerImage.inUseCount
                 ignore_missing: true
             - append:
+                tag: append_error_message_d195bc65
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -947,7 +960,7 @@ processors:
       processor:
         date:
           field: _ingest._value.details.awsEcrContainerImage.lastInUseAt
-          tag: date_resources_details_awsEcrContainerImage_lastInUseAt
+          tag: date_resources_details_awsEcrContainerImage_lastInUseAt_8f870d09
           target_field: _ingest._value.details.aws.ecr_container_image.last_in_use_at
           formats:
             - ISO8601
@@ -955,6 +968,7 @@ processors:
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           on_failure:
             - remove:
+                tag: remove_ingest_value_details_awsEcrContainerImage_lastInUseAt_b376decf
                 field: _ingest._value.details.awsEcrContainerImage.lastInUseAt
                 ignore_missing: true
   - foreach:
@@ -964,7 +978,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.platform
-          tag: rename_resources_details_awsEcrContainerImage_platform
+          tag: rename_resources_details_awsEcrContainerImage_platform_e82f112d
           target_field: _ingest._value.details.aws.ecr_container_image.platform
           ignore_missing: true
   - foreach:
@@ -974,7 +988,7 @@ processors:
       processor:
         date:
           field: _ingest._value.details.awsEcrContainerImage.pushedAt
-          tag: date_resources_details_awsEcrContainerImage_pushedAt
+          tag: date_resources_details_awsEcrContainerImage_pushedAt_98d40158
           target_field: _ingest._value.details.aws.ecr_container_image.pushed_at
           formats:
             - ISO8601
@@ -982,6 +996,7 @@ processors:
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           on_failure:
             - remove:
+                tag: remove_ingest_value_details_awsEcrContainerImage_pushedAt_c0b756e7
                 field: _ingest._value.details.awsEcrContainerImage.pushedAt
                 ignore_missing: true
   - foreach:
@@ -991,7 +1006,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.registry
-          tag: rename_resources_details_awsEcrContainerImage_registry
+          tag: rename_resources_details_awsEcrContainerImage_registry_06f8564a
           target_field: _ingest._value.details.aws.ecr_container_image.registry
           ignore_missing: true
   - foreach:
@@ -1001,7 +1016,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.repositoryName
-          tag: rename_resources_details_awsEcrContainerImage_repositoryName
+          tag: rename_resources_details_awsEcrContainerImage_repositoryName_2c2e7025
           target_field: _ingest._value.details.aws.ecr_container_image.repository_name
           ignore_missing: true
   - foreach:
@@ -1011,7 +1026,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.codeSha256
-          tag: rename_resources_details_awsLambdaFunction_codeSha256
+          tag: rename_resources_details_awsLambdaFunction_codeSha256_5a6195c1
           target_field: _ingest._value.details.awsLambdaFunction.code_sha256
           ignore_missing: true
   - foreach:
@@ -1021,7 +1036,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_resource_details_awsLambdaFunction_code_sha256_into_related_hash
+          tag: append_resource_details_awsLambdaFunction_code_sha256_into_related_hash_05f08f8e
           value: '{{{_ingest._value.details.awsLambdaFunction.code_sha256}}}'
           allow_duplicates: false
   - foreach:
@@ -1031,7 +1046,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.executionRoleArn
-          tag: rename_resources_details_awsLambdaFunction_executionRoleArn
+          tag: rename_resources_details_awsLambdaFunction_executionRoleArn_175ad8a5
           target_field: _ingest._value.details.awsLambdaFunction.execution_role_arn
           ignore_missing: true
   - foreach:
@@ -1041,7 +1056,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.functionName
-          tag: rename_resources_details_awsLambdaFunction_functionName
+          tag: rename_resources_details_awsLambdaFunction_functionName_d9b43279
           target_field: _ingest._value.details.awsLambdaFunction.function_name
           ignore_missing: true
   - foreach:
@@ -1051,7 +1066,7 @@ processors:
       processor:
         date:
           field: _ingest._value.details.awsLambdaFunction.lastModifiedAt
-          tag: date_resources_details_awsLambdaFunction_lastModifiedAt
+          tag: date_resources_details_awsLambdaFunction_lastModifiedAt_4bb04149
           target_field: _ingest._value.details.awsLambdaFunction.last_modified_at
           formats:
             - ISO8601
@@ -1059,6 +1074,7 @@ processors:
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           on_failure:
             - remove:
+                tag: remove_ingest_value_details_awsLambdaFunction_lastModifiedAt_c3cbaa60
                 field: _ingest._value.details.awsLambdaFunction.lastModifiedAt
                 ignore_missing: true
   - foreach:
@@ -1068,7 +1084,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.packageType
-          tag: rename_resources_details_awsLambdaFunction_packageType
+          tag: rename_resources_details_awsLambdaFunction_packageType_d67fe641
           target_field: _ingest._value.details.awsLambdaFunction.package_type
           ignore_missing: true
   - foreach:
@@ -1078,7 +1094,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.vpcConfig.securityGroupIds
-          tag: rename_resources_details_awsLambdaFunction_vpcConfig_securityGroupIds
+          tag: rename_resources_details_awsLambdaFunction_vpcConfig_securityGroupIds_52423630
           target_field: _ingest._value.details.awsLambdaFunction.vpc_config.security_group_ids
           ignore_missing: true
   - foreach:
@@ -1088,7 +1104,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.vpcConfig.subnetIds
-          tag: rename_resources_details_awsLambdaFunction_vpcConfig_subnetIds
+          tag: rename_resources_details_awsLambdaFunction_vpcConfig_subnetIds_5f0172ec
           target_field: _ingest._value.details.awsLambdaFunction.vpc_config.subnet_ids
           ignore_missing: true
   - foreach:
@@ -1098,7 +1114,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction.vpcConfig.vpcId
-          tag: rename_resources_details_awsLambdaFunction_vpcConfig_vpcId
+          tag: rename_resources_details_awsLambdaFunction_vpcConfig_vpcId_95276dd5
           target_field: _ingest._value.details.awsLambdaFunction.vpc_config.vpc_id
           ignore_missing: true
   - foreach:
@@ -1113,7 +1129,7 @@ processors:
             - _ingest._value.details.awsEcrContainerImage.lastInUseAt
             - _ingest._value.details.awsEcrContainerImage.pushedAt
             - _ingest._value.details.awsLambdaFunction.lastModifiedAt
-          tag: remove_resources_fields
+          tag: remove_resources_fields_7d7f45f3
           ignore_missing: true
   - foreach:
       tag: foreach_json_resources_6918858c
@@ -1122,7 +1138,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.awsLambdaFunction
-          tag: rename_resources_details_awsLambdaFunction
+          tag: rename_resources_details_awsLambdaFunction_cc13df6e
           target_field: _ingest._value.details.aws.lambda_function
           ignore_missing: true
   - foreach:
@@ -1132,7 +1148,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.codeRepository.integrationArn
-          tag: rename_resources_details_codeRepository_integrationArn
+          tag: rename_resources_details_codeRepository_integrationArn_e0d08f9d
           target_field: _ingest._value.details.code_repository.integration_arn
           ignore_missing: true
   - foreach:
@@ -1142,7 +1158,7 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.codeRepository.projectName
-          tag: rename_resources_details_codeRepository_projectName
+          tag: rename_resources_details_codeRepository_projectName_e0fefd9d
           target_field: _ingest._value.details.code_repository.project_name
           ignore_missing: true
   - foreach:
@@ -1152,17 +1168,17 @@ processors:
       processor:
         rename:
           field: _ingest._value.details.codeRepository.providerType
-          tag: rename_resources_details_codeRepository_providerType
+          tag: rename_resources_details_codeRepository_providerType_30ddc9fc
           target_field: _ingest._value.details.code_repository.provider_type
           ignore_missing: true
   - rename:
       field: json.resources
-      tag: rename_resources
+      tag: rename_resources_effbc409
       target_field: aws.inspector.resources
       ignore_missing: true
   - script:
       description: Extract fields from aws.inspector.resources with single resource.
-      tag: script_extract_fields_from_single_resource
+      tag: script_extract_fields_from_single_resource_c6f796cb
       lang: painless
       if: ctx.aws?.inspector?.resources instanceof List && ctx.aws.inspector.resources.size() == 1
       source: |-
@@ -1225,7 +1241,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Extract fields from aws.inspector.resources with multiple resources.
-      tag: script_extract_fields_from_multiple_resources
+      tag: script_extract_fields_from_multiple_resources_8f235455
       lang: painless
       if: ctx.aws?.inspector?.resources instanceof List && ctx.aws.inspector.resources.size() > 1
       source: |-
@@ -1292,7 +1308,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_40a3a1cf
       target_field: aws.inspector.status
       ignore_missing: true
   # Map the Inspector finding status to the vulnerability.status lifecycle field so
@@ -1303,43 +1319,43 @@ processors:
   # who want to hide them can filter on NOT aws.inspector.status: SUPPRESSED.
   - set:
       field: vulnerability.status
-      tag: set_vulnerability_status_open
+      tag: set_vulnerability_status_open_e70f3efd
       value: open
       if: ctx.aws?.inspector?.status == 'ACTIVE' || ctx.aws?.inspector?.status == 'SUPPRESSED'
   - set:
       field: vulnerability.status
-      tag: set_vulnerability_status_fixed
+      tag: set_vulnerability_status_fixed_f090e38a
       value: fixed
       if: ctx.aws?.inspector?.status == 'CLOSED'
   - rename:
       field: json.title
-      tag: rename_title
+      tag: rename_title_4f85fded
       target_field: aws.inspector.title
       ignore_missing: true
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title
+      tag: set_vulnerability_title_8c5b26e8
       copy_from: aws.inspector.title
       ignore_empty_value: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_a98c2009
       target_field: aws.inspector.type
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_379263f4
       value: '{{vulnerability.id}}|{{resource.id}}|{{package.name}}|{{package.version}}|{{@timestamp}}'
       if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY'
   - set:
       field: aws.inspector.transform_unique_id
-      tag: set_transform_unique_id
+      tag: set_transform_unique_id_39678303
       value: '{{vulnerability.id}}|{{resource.id}}|{{package.name}}|{{package.version}}'
       if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY'
   - remove:
       field:
         - json
-      tag: remove_json
+      tag: remove_json_f3d169b2
       ignore_missing: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
@@ -1354,10 +1370,10 @@ processors:
         - aws.inspector.inspector_score_details.adjusted_cvss.score.value
         - aws.inspector.inspector_score_details.adjusted_cvss.version
         - aws.inspector.title
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_ea5d1e0f
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -1384,7 +1400,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -1395,6 +1411,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_cc9b314e
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -1402,9 +1419,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

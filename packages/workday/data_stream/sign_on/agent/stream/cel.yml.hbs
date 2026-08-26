@@ -1,0 +1,80 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+redact:
+  fields:
+    - auth.basic.user
+    - auth.basic.password
+state:
+  initial_interval: {{initial_interval}}
+program: |-
+  (
+    state.url + (state.url.contains("?") ? "&" : "?") + {
+      "From_Moment": [state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))],
+      "To_Moment": [now.format(time_layout.RFC3339)],
+    }.format_query()
+  ).as(request_url,
+    get(request_url).as(resp,
+      (resp.StatusCode == 200) ?
+        bytes(resp.Body).decode_json().as(body,
+          {
+            "events": (has(body.Report_Entry) && size(body.Report_Entry) > 0) ?
+              body.Report_Entry.map(e, {"message": e.encode_json()})
+            :
+              [],
+            "cursor": {
+              "last_timestamp":
+                (has(body.Report_Entry) && size(body.Report_Entry) > 0) ?
+                  now.format(time_layout.RFC3339)
+                :
+                  state.?cursor.last_timestamp.orValue(now.format(time_layout.RFC3339)),
+            },
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "GET " + request_url + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
