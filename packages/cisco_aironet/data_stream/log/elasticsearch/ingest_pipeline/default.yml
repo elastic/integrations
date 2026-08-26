@@ -263,10 +263,10 @@ processors:
       field: message
       if: >-
         ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
-        ctx._temp_?.reason == 'LOG-4-Q_IND'
+        (ctx._temp_?.reason == 'LOG-4-Q_IND' && ctx.message?.contains('Target MAC Address'))
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
-      ignore_failure: false
+      ignore_failure: true
   - grok:
       tag: grok_message_757b5cf5
       description: CLIENT_ORCH_LOG-6-CLIENT_ADDED_TO_RUN_STATE
