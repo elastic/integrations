@@ -1,0 +1,469 @@
+format_version: "3.4.2"
+name: mqtt
+title: Custom MQTT Input
+description: Collect data from an MQTT broker with Elastic Agent.
+type: input
+version: "0.1.0"
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+categories:
+  - custom
+  - message_queue
+policy_templates:
+  - name: mqtt_logs
+    type: logs
+    title: Custom MQTT Logs
+    description: Collect logs from an MQTT broker.
+    input: mqtt
+    template_path: mqtt.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Broker Hosts
+        description: |
+          MQTT broker URIs to connect to, for example `tcp://localhost:1883`. Use the `ssl://` scheme for TLS connections.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - tcp://localhost:1883
+      - name: topics
+        type: text
+        title: Topics
+        description: |
+          Topics to subscribe to. Wildcards are supported, for example `sensors/#`.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - "#"
+      - name: client_id
+        type: text
+        title: Client ID
+        description: |
+          Client identifier used when connecting to the broker. Must be unique per agent when several agents share a broker.
+        required: false
+        show_user: true
+        default: elastic-agent
+      - name: qos
+        type: integer
+        title: QoS
+        description: |
+          Quality of service level for the subscription. `0` at most once, `1` at least once, `2` exactly once.
+        required: false
+        show_user: true
+        default: 1
+      - name: username
+        type: text
+        title: Username
+        description: |
+          Username for broker authentication. Leave empty for anonymous access.
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: |
+          Password for broker authentication.
+        required: false
+        secret: true
+        show_user: true
+      - name: clean_session
+        type: bool
+        title: Clean Session
+        description: |
+          Whether the broker should discard any previously held session state for this client on connect.
+        required: false
+        show_user: false
+        default: true
+      - name: connect_timeout
+        type: text
+        title: Connect Timeout
+        description: |
+          How long to wait for a connection to the broker to be established. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: connect_backoff
+        type: text
+        title: Connect Backoff
+        description: |
+          How long to wait before retrying a failed connection. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        required: true
+        show_user: true
+        default: mqtt.generic
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: keep_null
+        type: bool
+        title: Keep Null Values
+        description: |
+          If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the data is parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: |
+          Tags to include in the published event.
+        required: false
+        multi: true
+        show_user: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: |
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        multi: false
+        show_user: true
+        default: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: |
+          SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    ...
+          #    -----END CERTIFICATE-----
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        description: >
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+
+        required: false
+        show_user: false
+        default: ""
+  - name: mqtt_metrics
+    type: metrics
+    title: Custom MQTT Metrics
+    description: Collect metrics from an MQTT broker.
+    input: mqtt
+    template_path: mqtt.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Broker Hosts
+        description: |
+          MQTT broker URIs to connect to, for example `tcp://localhost:1883`. Use the `ssl://` scheme for TLS connections.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - tcp://localhost:1883
+      - name: topics
+        type: text
+        title: Topics
+        description: |
+          Topics to subscribe to. Wildcards are supported, for example `sensors/#`.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - "#"
+      - name: client_id
+        type: text
+        title: Client ID
+        description: |
+          Client identifier used when connecting to the broker. Must be unique per agent when several agents share a broker.
+        required: false
+        show_user: true
+        default: elastic-agent
+      - name: qos
+        type: integer
+        title: QoS
+        description: |
+          Quality of service level for the subscription. `0` at most once, `1` at least once, `2` exactly once.
+        required: false
+        show_user: true
+        default: 1
+      - name: username
+        type: text
+        title: Username
+        description: |
+          Username for broker authentication. Leave empty for anonymous access.
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: |
+          Password for broker authentication.
+        required: false
+        secret: true
+        show_user: true
+      - name: clean_session
+        type: bool
+        title: Clean Session
+        description: |
+          Whether the broker should discard any previously held session state for this client on connect.
+        required: false
+        show_user: false
+        default: true
+      - name: connect_timeout
+        type: text
+        title: Connect Timeout
+        description: |
+          How long to wait for a connection to the broker to be established. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: connect_backoff
+        type: text
+        title: Connect Backoff
+        description: |
+          How long to wait before retrying a failed connection. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        required: true
+        show_user: true
+        default: mqtt.generic
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: keep_null
+        type: bool
+        title: Keep Null Values
+        description: |
+          If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the data is parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: |
+          Tags to include in the published event.
+        required: false
+        multi: true
+        show_user: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: |
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        multi: false
+        show_user: true
+        default: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: |
+          SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    ...
+          #    -----END CERTIFICATE-----
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        description: >
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+
+        required: false
+        show_user: false
+        default: ""
+  - name: mqtt_traces
+    type: traces
+    title: Custom MQTT Traces
+    description: Collect traces from an MQTT broker.
+    input: mqtt
+    template_path: mqtt.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Broker Hosts
+        description: |
+          MQTT broker URIs to connect to, for example `tcp://localhost:1883`. Use the `ssl://` scheme for TLS connections.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - tcp://localhost:1883
+      - name: topics
+        type: text
+        title: Topics
+        description: |
+          Topics to subscribe to. Wildcards are supported, for example `sensors/#`.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - "#"
+      - name: client_id
+        type: text
+        title: Client ID
+        description: |
+          Client identifier used when connecting to the broker. Must be unique per agent when several agents share a broker.
+        required: false
+        show_user: true
+        default: elastic-agent
+      - name: qos
+        type: integer
+        title: QoS
+        description: |
+          Quality of service level for the subscription. `0` at most once, `1` at least once, `2` exactly once.
+        required: false
+        show_user: true
+        default: 1
+      - name: username
+        type: text
+        title: Username
+        description: |
+          Username for broker authentication. Leave empty for anonymous access.
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: |
+          Password for broker authentication.
+        required: false
+        secret: true
+        show_user: true
+      - name: clean_session
+        type: bool
+        title: Clean Session
+        description: |
+          Whether the broker should discard any previously held session state for this client on connect.
+        required: false
+        show_user: false
+        default: true
+      - name: connect_timeout
+        type: text
+        title: Connect Timeout
+        description: |
+          How long to wait for a connection to the broker to be established. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: connect_backoff
+        type: text
+        title: Connect Backoff
+        description: |
+          How long to wait before retrying a failed connection. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        required: true
+        show_user: true
+        default: mqtt.generic
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: keep_null
+        type: bool
+        title: Keep Null Values
+        description: |
+          If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the data is parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: |
+          Tags to include in the published event.
+        required: false
+        multi: true
+        show_user: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: |
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        multi: false
+        show_user: true
+        default: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: |
+          SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    ...
+          #    -----END CERTIFICATE-----
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        description: >
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+
+        required: false
+        show_user: false
+        default: ""
+icons:
+  - src: "/img/icon.svg"
+    type: "image/svg+xml"
+owner:
+  github: elastic/integration-experience
+  type: elastic
