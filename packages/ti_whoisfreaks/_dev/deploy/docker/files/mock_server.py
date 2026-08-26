@@ -50,12 +50,26 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
 
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        if parsed.path in ("/", "/healthcheck", "/v3.1/status"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+        else:
+            self.send_response(404)
+            self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         qs = parse_qs(parsed.query)
+
+        # Health check endpoint for Docker Compose / test runners
+        if parsed.path in ("/", "/healthcheck"):
+            self._send(200, "application/json", b'{"status":"ok"}')
+            return
+
         if parsed.path == "/v3.1/status":
-            # Shape matches the real WhoisFreaks Database Files Status endpoint:
-            # https://whoisfreaks.com/documentation/database-file-status
             body = json.dumps({
                 "newly": {
                     "gtld": {"last_update": "2026-08-04", "available_from": "2026-05-01"},
@@ -64,11 +78,13 @@ class Handler(BaseHTTPRequestHandler):
             }).encode()
             self._send(200, "application/json", body)
             return
+
         if parsed.path in ("/v3.3/stream/domainer/gtld", "/v3.3/stream/domainer/cctld"):
             feed = parsed.path.rsplit("/", 1)[1]
             offset = int(qs.get("offset", ["0"])[0])
             self._send(200, "text/plain; charset=UTF-8", csv_page(feed, offset).encode())
             return
+
         self._send(404, "application/json", b'{"status":404}')
 
     def _send(self, code, ctype, body):

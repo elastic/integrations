@@ -1,8 +1,14 @@
 services:
-  whoisfreaks-mock:
+  ti_whoisfreaks:
     image: python:3.12-alpine
     volumes:
       - ./files/mock_server.py:/mock/mock_server.py:ro
     command: ["python", "/mock/mock_server.py"]
     ports:
       - "8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthcheck')"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+      start_period: 1s
