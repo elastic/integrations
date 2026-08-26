@@ -253,12 +253,13 @@ program: |-
         // response body makes do_request return an error rather than a response
         // with a status code, which would otherwise crash the evaluation. Count
         // consecutive transport failures: below the threshold, emit a dropped
-        // retry event and stop this cycle so the subscription is retried on the
-        // next polling interval (the failure is not indexed; it stays visible
-        // through the input's HTTP metrics and request tracer). Once the streak
-        // reaches the threshold the failure is persistent (for example an expired
-        // client secret failing token acquisition), so return a single-object
-        // error to mark the input degraded until collection recovers.
+        // cursor-persistence event and stop this cycle (want_more:false) so the
+        // subscription is retried on the next polling interval (the failure is
+        // not indexed; it stays visible through the input's HTTP metrics and
+        // request tracer). Once the streak reaches the threshold the failure is
+        // persistent (for example an expired client secret failing token
+        // acquisition), so return a single-object error to mark the input
+        // degraded until collection recovers.
         (
           (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
             state.with(
@@ -277,7 +278,7 @@ program: |-
               {
                 "want_more": false,
                 "transport_error_streak": int(state.transport_error_streak) + 1,
-                "events": [{"retry": true}],
+                "events": [{"publish_cursor": true}],
               }
             )
         )
@@ -340,12 +341,13 @@ program: |-
             // truncated response body makes do_request return an error rather
             // than a response with a status code. Below the threshold, move the
             // item to the back of the queue so the remaining items can still be
-            // fetched, emit a dropped retry event so the cursor change persists,
-            // and stop this cycle to back off until the next interval (the
-            // failure is not indexed; it stays visible through the input's HTTP
-            // metrics and request tracer). Once consecutive failures reach the
-            // threshold the failure is persistent, so return a single-object
-            // error to mark the input degraded until collection recovers.
+            // fetched, emit a dropped cursor-persistence event so the cursor
+            // change persists, and stop this cycle (want_more:false) to back off
+            // until the next interval (the failure is not indexed; it stays
+            // visible through the input's HTTP metrics and request tracer). Once
+            // consecutive failures reach the threshold the failure is
+            // persistent, so return a single-object error to mark the input
+            // degraded until collection recovers.
             (
               (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
                 state.with(
@@ -369,7 +371,7 @@ program: |-
                     ),
                     "want_more": false,
                     "transport_error_streak": int(state.transport_error_streak) + 1,
-                    "events": [{"retry": true}],
+                    "events": [{"publish_cursor": true}],
                   }
                 )
             )
@@ -425,12 +427,13 @@ program: |-
         // truncated response body makes do_request return an error rather than
         // a response with a status code. Below the threshold, move the link to
         // the back of the queue so the remaining links can still be requested,
-        // emit a dropped retry event so the cursor change persists, and stop
-        // this cycle to back off until the next interval (the failure is not
-        // indexed; it stays visible through the input's HTTP metrics and request
-        // tracer). Once consecutive failures reach the threshold the failure is
-        // persistent, so return a single-object error to mark the input degraded
-        // until collection recovers.
+        // emit a dropped cursor-persistence event so the cursor change persists,
+        // and stop this cycle (want_more:false) to back off until the next
+        // interval (the failure is not indexed; it stays visible through the
+        // input's HTTP metrics and request tracer). Once consecutive failures
+        // reach the threshold the failure is persistent, so return a
+        // single-object error to mark the input degraded until collection
+        // recovers.
         (
           (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
             state.with(
@@ -454,7 +457,7 @@ program: |-
                 ),
                 "want_more": false,
                 "transport_error_streak": int(state.transport_error_streak) + 1,
-                "events": [{"retry": true}],
+                "events": [{"publish_cursor": true}],
               }
             )
         )
@@ -586,7 +589,13 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-- drop_event.when.equals.retry: true
+- drop_event:
+    when:
+      or:
+        - equals:
+            retry: true
+        - equals:
+            publish_cursor: true
 {{#if processors}}
 {{processors}}
 {{/if}}
