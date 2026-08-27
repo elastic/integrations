@@ -1,55 +1,45 @@
 ---
 description: Pipeline for processing tunnel logs.
 processors:
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_e5190762
       target_field: resp
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_4c2fca1c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
-      tag: remove_json_if_input_type_http_endpoint
+      tag: remove_json_if_input_type_http_endpoint_82d30ebe
       if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
-      tag: rename_resp_event
+      tag: rename_resp_event_b9eebc4b
       target_field: json
       ignore_missing: true
   - script:
-      tag: check_template_version
+      tag: check_template_version_43fe6017
       params:
         pkg_version: 3.15.1
         data_stream: tunnel-log
@@ -81,25 +71,25 @@ processors:
         }
   - remove:
       field: resp
-      tag: remove_resp
+      tag: remove_resp_dbf90e37
       ignore_missing: true
   - append:
       field: event.category
-      tag: append_network_into_event_category
+      tag: append_network_into_event_category_2c621924
       value: network
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_a75e9a8a
       value: info
       allow_duplicates: false
   - set:
       field: event.kind
-      tag: set_event_to_event_kind
+      tag: set_event_to_event_kind_d452ef2c
       value: event
   - script:
       description: Drops null/empty/na values recursively.
-      tag: script_to_remove_na_values
+      tag: script_to_remove_na_values_5051990a
       lang: painless
       source: |-
         boolean dropEmptyFields(Object object) {
@@ -117,69 +107,71 @@ processors:
         dropEmptyFields(ctx);
   - rename:
       field: json.Recordtype
-      tag: rename_Recordtype
+      tag: rename_Recordtype_975bfc6a
       target_field: zscaler_zia.tunnel.action.type
       ignore_missing: true
   - rename:
       field: json.authentication
-      tag: rename_authentication
+      tag: rename_authentication_5a267768
       target_field: zscaler_zia.tunnel.authentication.algorithm
       ignore_missing: true
   - rename:
       field: json.authtype
-      tag: rename_authtype
+      tag: rename_authtype_2c885605
       target_field: zscaler_zia.tunnel.authentication.type
       ignore_missing: true
   - convert:
       field: json.rxbytes
-      tag: convert_rxbytes_to_long
+      tag: convert_rxbytes_to_long_c267cb15
       target_field: zscaler_zia.tunnel.bytes.received
       type: long
       if: ctx.json?.rxbytes != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8602fb2d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.bytes
-      tag: set_destination_bytes_from_tunnel_bytes_received
+      tag: set_destination_bytes_from_tunnel_bytes_received_14772153
       copy_from: zscaler_zia.tunnel.bytes.received
       ignore_empty_value: true
   - convert:
       field: json.txbytes
-      tag: convert_txbytes_to_long
+      tag: convert_txbytes_to_long_5c698a65
       target_field: zscaler_zia.tunnel.bytes.sent
       type: long
       if: ctx.json?.txbytes != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_54b82d86
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.bytes
-      tag: set_source_bytes_from_tunnel_bytes_sent
+      tag: set_source_bytes_from_tunnel_bytes_sent_373907b0
       copy_from: zscaler_zia.tunnel.bytes.sent
       ignore_empty_value: true
   - rename:
       field: json.timezone
-      tag: rename_timezone
+      tag: rename_timezone_482f64dc
       target_field: zscaler_zia.tunnel.timezone
       ignore_missing: true
   - set:
       field: event.timezone
-      tag: set_event_timezone_from_tunnel_timezone
+      tag: set_event_timezone_from_tunnel_timezone_273f7bf0
       copy_from: zscaler_zia.tunnel.timezone
       ignore_empty_value: true
   - set:
       field: event.timezone
-      tag: set_event_timezone_to_utc
+      tag: set_event_timezone_to_utc_ae1d82ba
       value: UTC
       if: ctx.event?.timezone == null
   - date:
       field: json.datetime
-      tag: date_datetime
+      tag: date_datetime_561b0f4d
       target_field: zscaler_zia.tunnel.datetime
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -190,471 +182,496 @@ processors:
       if: ctx.json?.datetime != null && ctx.json.datetime != ''
       on_failure:
         - append:
+            tag: append_error_message_41f27d83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_tunnel_datetime
+      tag: set_@timestamp_from_tunnel_datetime_0d188902
       copy_from: zscaler_zia.tunnel.datetime
       ignore_empty_value: true
   - rename:
       field: json.day
-      tag: rename_day
+      tag: rename_day_d03a208e
       target_field: zscaler_zia.tunnel.day
       ignore_missing: true
   - convert:
       field: json.dd
-      tag: convert_dd_to_long
+      tag: convert_dd_to_long_c9d4755c
       target_field: zscaler_zia.tunnel.day_of_month
       type: long
       if: ctx.json?.dd != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fa06b30a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.destinationipend
-      tag: convert_destinationipend_to_ip
+      tag: convert_destinationipend_to_ip_af64538f
       target_field: zscaler_zia.tunnel.destination.end.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.destinationipend != ''
       on_failure:
         - append:
+            tag: append_error_message_80f6f0a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_destination_end_ip_into_related_ip
+      tag: append_destination_end_ip_into_related_ip_375c1364
       value: '{{{zscaler_zia.tunnel.destination.end.ip}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.tunnel?.destination?.end?.ip != null
   - convert:
       field: json.destinationport
-      tag: convert_destinationport_to_long
+      tag: convert_destinationport_to_long_69959226
       target_field: zscaler_zia.tunnel.destination.port
       type: long
       if: ctx.json?.destinationport != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aff7bed1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port_from_tunnel_destination_port
+      tag: set_destination_port_from_tunnel_destination_port_30b3e8cd
       copy_from: zscaler_zia.tunnel.destination.port
       ignore_empty_value: true
   - convert:
       field: json.destinationipstart
-      tag: convert_destinationipstart_to_ip
+      tag: convert_destinationipstart_to_ip_d46625d2
       target_field: zscaler_zia.tunnel.destination.start.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.destinationipstart != ''
       on_failure:
         - append:
+            tag: append_error_message_55182bc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_destination_start_ip_into_related_ip
+      tag: append_destination_start_ip_into_related_ip_f7328d9b
       value: '{{{zscaler_zia.tunnel.destination.start.ip}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.tunnel?.destination?.start?.ip != null
   - convert:
       field: json.destinationportstart
-      tag: convert_destinationportstart_to_long
+      tag: convert_destinationportstart_to_long_bc687c60
       target_field: zscaler_zia.tunnel.destination.start.port
       type: long
       if: ctx.json?.destinationportstart != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_24614335
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.destinationip
-      tag: convert_destinationip_to_ip
+      tag: convert_destinationip_to_ip_f6266a72
       target_field: zscaler_zia.tunnel.destination.vip.address
       type: ip
       ignore_missing: true
       if: ctx.json?.destinationip != ''
       on_failure:
         - append:
+            tag: append_error_message_ddb0a687
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_tunnel_destination_vip_address
+      tag: set_destination_ip_from_tunnel_destination_vip_address_e005eca5
       copy_from: zscaler_zia.tunnel.destination.vip.address
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_destination_ip_into_related_ip
+      tag: append_destination_ip_into_related_ip_44bf5f52
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - convert:
       field: json.dpdrec
-      tag: convert_dpdrec_to_long
+      tag: convert_dpdrec_to_long_50ac8624
       target_field: zscaler_zia.tunnel.dpd_packets
       type: long
       if: ctx.json?.dpdrec != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9a9da863
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.algo
-      tag: rename_algo
+      tag: rename_algo_b800f8d9
       target_field: zscaler_zia.tunnel.encryption.algorithm
       ignore_missing: true
   - rename:
       field: json.event
-      tag: rename_event
+      tag: rename_event_9580df87
       target_field: zscaler_zia.tunnel.event
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_tunnel_event
+      tag: set_event_action_from_tunnel_event_64e600ec
       copy_from: zscaler_zia.tunnel.event
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - gsub:
       field: event.action
-      tag: gsub_event_action
+      tag: gsub_event_action_71b6632a
       pattern: ' '
       replacement: '-'
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_c5f32020
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.eventreason
-      tag: rename_eventreason
+      tag: rename_eventreason_3aee660b
       target_field: zscaler_zia.tunnel.event_reason
       ignore_missing: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_tunnel_event_reason
+      tag: set_event_reason_from_tunnel_event_reason_80f85060
       copy_from: zscaler_zia.tunnel.event_reason
       ignore_empty_value: true
   - convert:
       field: json.hh
-      tag: convert_hh_to_long
+      tag: convert_hh_to_long_d901485d
       target_field: zscaler_zia.tunnel.hour
       type: long
       if: ctx.json?.hh != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4581ae95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ikeversion
-      tag: rename_ikeversion
+      tag: rename_ikeversion_26e154c3
       target_field: zscaler_zia.tunnel.ikeversion
       ignore_missing: true
   - convert:
       field: json.lifebytes
-      tag: convert_lifebytes_to_long
+      tag: convert_lifebytes_to_long_31e0a072
       target_field: zscaler_zia.tunnel.life.bytes
       type: long
       if: ctx.json?.lifebytes != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_371b8b7b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.lifetime
-      tag: convert_lifetime_to_long
+      tag: convert_lifetime_to_long_75abe13e
       target_field: zscaler_zia.tunnel.life.time
       type: long
       if: ctx.json?.lifetime != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_02c7633e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - urldecode:
       field: json.locationname
-      tag: urldecode_locationname
+      tag: urldecode_locationname_46f5b1b9
       target_field: zscaler_zia.tunnel.locationname
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a05e2141
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.mm
-      tag: convert_mm_to_long
+      tag: convert_mm_to_long_11233772
       target_field: zscaler_zia.tunnel.minute
       type: long
       if: ctx.json?.mm != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_25d475cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.mon
-      tag: rename_mon
+      tag: rename_mon_f74c918c
       target_field: zscaler_zia.tunnel.month
       ignore_missing: true
   - convert:
       field: json.mth
-      tag: convert_mth_to_long
+      tag: convert_mth_to_long_01260e05
       target_field: zscaler_zia.tunnel.month_of_year
       type: long
       if: ctx.json?.mth != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b46b8c59
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.olocationname
-      tag: rename_olocationname
+      tag: rename_olocationname_239d08b4
       target_field: zscaler_zia.tunnel.obfuscated.location_name
       ignore_missing: true
   - rename:
       field: json.ovpncredentialname
-      tag: rename_ovpncredentialname
+      tag: rename_ovpncredentialname_c86aef49
       target_field: zscaler_zia.tunnel.obfuscated.vpn_credential_name
       ignore_missing: true
   - convert:
       field: json.rxpackets
-      tag: convert_rxpackets_to_long
+      tag: convert_rxpackets_to_long_27e51925
       target_field: zscaler_zia.tunnel.packets.received
       type: long
       if: ctx.json?.rxpackets != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ab2358fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.packets
-      tag: set_destination_packets_from_tunnel_packets_received
+      tag: set_destination_packets_from_tunnel_packets_received_0dedfccb
       copy_from: zscaler_zia.tunnel.packets.received
       ignore_empty_value: true
   - convert:
       field: json.txpackets
-      tag: convert_txpackets_to_long
+      tag: convert_txpackets_to_long_44e6bf29
       target_field: zscaler_zia.tunnel.packets.sent
       type: long
       if: ctx.json?.txpackets != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e8b49151
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.packets
-      tag: set_source_packets_from_tunnel_packets_sent
+      tag: set_source_packets_from_tunnel_packets_sent_cf722f2d
       copy_from: zscaler_zia.tunnel.packets.sent
       ignore_empty_value: true
   - rename:
       field: json.protocol
-      tag: rename_protocol
+      tag: rename_protocol_38dc15b5
       target_field: zscaler_zia.tunnel.policy.protocol
       ignore_missing: true
   - set:
       field: network.transport
-      tag: set_network_transport_from_tunnel_policy_protocol
+      tag: set_network_transport_from_tunnel_policy_protocol_ecc04a30
       copy_from: zscaler_zia.tunnel.policy.protocol
       if: ctx.zscaler_zia?.tunnel?.policy?.protocol != 'Any'
       ignore_empty_value: true
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_if_network_transport_is_tcp
+      tag: set_network_iana_number_if_network_transport_is_tcp_e6dc54be
       value: '6'
       if: ctx.network?.transport == 'tcp'
       ignore_failure: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_if_network_transport_is_tcp
+      tag: set_network_iana_number_if_network_transport_is_tcp_26e5aa65
       value: '17'
       if: ctx.network?.transport == 'udp'
       ignore_failure: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_if_network_transport_is_tcp
+      tag: set_network_iana_number_if_network_transport_is_tcp_e220aa72
       value: '1'
       if: ctx.network?.transport == 'icmp'
       ignore_failure: true
   - rename:
       field: json.tunnelprotocol
-      tag: rename_tunnelprotocol
+      tag: rename_tunnelprotocol_6ec895fe
       target_field: zscaler_zia.tunnel.protocol
       ignore_missing: true
   - rename:
       field: json.recordid
-      tag: rename_recordid
+      tag: rename_recordid_ef9e2c11
       target_field: zscaler_zia.tunnel.record.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_tunnel_record_id
+      tag: set_event_id_from_tunnel_record_id_8add051b
       copy_from: zscaler_zia.tunnel.record.id
       ignore_empty_value: true
   - convert:
       field: json.ss
-      tag: convert_ss_to_long
+      tag: convert_ss_to_long_497e3e1a
       target_field: zscaler_zia.tunnel.second
       type: long
       if: ctx.json?.ss != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cffb8278
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.srcipend
-      tag: convert_srcipend_to_ip
+      tag: convert_srcipend_to_ip_19e16df0
       target_field: zscaler_zia.tunnel.source.end.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.srcipend != ''
       on_failure:
         - append:
+            tag: append_error_message_38f616be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_source_end_ip_into_related_ip
+      tag: append_source_end_ip_into_related_ip_d55672e0
       value: '{{{zscaler_zia.tunnel.source.end.ip}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.tunnel?.source?.end?.ip != null
   - convert:
       field: json.sourceip
-      tag: convert_sourceip_to_ip
+      tag: convert_sourceip_to_ip_678cd6eb
       target_field: zscaler_zia.tunnel.source.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.sourceip != ''
       on_failure:
         - append:
+            tag: append_error_message_e669de5f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_tunnel_source_ip
+      tag: set_source_ip_from_tunnel_source_ip_6fc72654
       copy_from: zscaler_zia.tunnel.source.ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_723473d3
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - convert:
       field: json.sourceport
-      tag: convert_sourceport_to_long
+      tag: convert_sourceport_to_long_21969783
       target_field: zscaler_zia.tunnel.source.port
       type: long
       if: ctx.json?.sourceport != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c151c722
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
-      tag: set_source_port_from_tunnel_source_port
+      tag: set_source_port_from_tunnel_source_port_46c092a2
       copy_from: zscaler_zia.tunnel.source.port
       ignore_empty_value: true
   - convert:
       field: json.srcipstart
-      tag: convert_srcipstart_to_ip
+      tag: convert_srcipstart_to_ip_ac1a382e
       target_field: zscaler_zia.tunnel.source.start.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.srcipstart != ''
       on_failure:
         - append:
+            tag: append_error_message_7fd3ed01
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_source_start_ip_into_related_ip
+      tag: append_source_start_ip_into_related_ip_9fb3634e
       value: '{{{zscaler_zia.tunnel.source.start.ip}}}'
       allow_duplicates: false
       if: ctx.zscaler_zia?.tunnel?.source?.start?.ip != null
   - convert:
       field: json.sourceportstart
-      tag: convert_sourceportstart_to_long
+      tag: convert_sourceportstart_to_long_bab4c7d1
       target_field: zscaler_zia.tunnel.source.start.port
       type: long
       if: ctx.json?.sourceportstart != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_97d27a60
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.spi
-      tag: rename_spi
+      tag: rename_spi_63bb5a0f
       target_field: zscaler_zia.tunnel.spi
       ignore_missing: true
   - rename:
       field: json.spi_in
-      tag: rename_spi_in
+      tag: rename_spi_in_a70361cf
       target_field: zscaler_zia.tunnel.spi_in
       ignore_missing: true
   - rename:
       field: json.spi_out
-      tag: rename_spi_out
+      tag: rename_spi_out_9942b220
       target_field: zscaler_zia.tunnel.spi_out
       ignore_missing: true
   - rename:
       field: json.tunneltype
-      tag: rename_tunneltype
+      tag: rename_tunneltype_3c04529f
       target_field: zscaler_zia.tunnel.type
       ignore_missing: true
   - set:
       field: network.transport
-      tag: set_network_transport_from_tunnel_type
+      tag: set_network_transport_from_tunnel_type_e23ffc95
       copy_from: zscaler_zia.tunnel.type
       if: ctx.zscaler_zia?.tunnel?.type == 'GRE'
       ignore_failure: true
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_93d21acf
       ignore_missing: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_if_network_transport_is_gre
+      tag: set_network_iana_number_if_network_transport_is_gre_887098c0
       value: '47'
       if: ctx.network?.transport == 'gre'
       ignore_failure: true
   - rename:
       field: json.vendorname
-      tag: rename_vendorname
+      tag: rename_vendorname_e2b66ec6
       target_field: zscaler_zia.tunnel.vendor.name
       ignore_missing: true
   - urldecode:
       field: json.user
-      tag: urldecode_user
+      tag: urldecode_user_fac49328
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_614d0e81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_user_to_zscaler_zia_tunnel_user_ip_156805ae
       field: json.user
       target_field: zscaler_zia.tunnel.user_ip
       type: ip
@@ -662,53 +679,55 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_zscaler_zia_tunnel_vpn_credential_name_3c8b2c4a
             field: zscaler_zia.tunnel.vpn_credential_name
             value: '{{{json.user}}}'
             ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_tunnel_vpn_credential_name
+      tag: set_user_email_from_tunnel_vpn_credential_name_cbcfcfe2
       copy_from: zscaler_zia.tunnel.vpn_credential_name
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_user_ip_into_related_ip
+      tag: append_user_ip_into_related_ip_884f5059
       value: '{{{zscaler_zia.tunnel.user_ip}}}'
       if: ctx.user?.email == null
       allow_duplicates: false
       ignore_failure: true
   - dissect:
       field: user.email
-      tag: create_user_name_and_user_domain
+      tag: create_user_name_and_user_domain_114f070e
       pattern: '%{user.name}@%{user.domain}'
       ignore_missing: true
       if: ctx.user?.email != ''
       ignore_failure: true
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_user_email_to_related_user
+      tag: append_user_email_to_related_user_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - convert:
       field: json.yyyy
-      tag: convert_yyyy_to_long
+      tag: convert_yyyy_to_long_0e0446a4
       target_field: zscaler_zia.tunnel.year
       type: long
       if: ctx.json?.yyyy != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e986a6eb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - community_id:
-      tag: set_community_id
+      tag: set_community_id_05b4fe50
       ignore_failure: true
   - remove:
       field:
@@ -725,19 +744,19 @@ processors:
         - zscaler_zia.tunnel.source.ip
         - zscaler_zia.tunnel.source.port
         - zscaler_zia.tunnel.vpn_credential_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_3f953a5b
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
         - _conf
-      tag: remove_unused
+      tag: remove_unused_5de97710
       ignore_missing: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -755,22 +774,25 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
