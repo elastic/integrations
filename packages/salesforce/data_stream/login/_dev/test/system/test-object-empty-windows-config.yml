@@ -1,4 +1,5 @@
-# SUCCESS: empty initial_interval → one 5m window, one event.
+# EDGE: quiet windows must not stop catch-up. Mock (API v57.0) returns two empty
+# windows, then one LoginEvent, then nine more empty windows.
 input: salesforce
 service: salesforce
 vars:
@@ -11,10 +12,12 @@ vars:
   token_url: http://{{Hostname}}:{{Port}}
 data_stream:
   vars:
-    initial_interval: ""
+    api_version: "57.0"
+    initial_interval: 1h
+    real_time_period: 5m
+    real_time_batch_max_windows: 12
     preserve_original_event: true
     event_log_file: false
     object: true
 assert:
   hit_count: 1
-
