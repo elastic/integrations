@@ -20,124 +20,186 @@ inputs:
                     id: "574734885120952459"
                     name: myproject
                 target: project
-          program: |-
-            state.with(
-              state.?api_type.orValue("community") == "commercial" ?
-                (
-                  !has(state.username) || !has(state.password) ?
+          program: |
+            state.?commercial_url.orValue(state.url).trim_right("/").as(base_url,
+              (
+                has(state.?cursor.after) ?
+                  state.cursor.since
+                :
+                  state.?cursor.first_seen.orValue(
+                    state.?cursor.since.orValue(
+                      (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                    )
+                  )
+              ).as(since,
+                state.with(
+                  state.?api_type.orValue("community") == "commercial" ?
+                    (
+                      !has(state.username) || !has(state.password) ?
+                        {
+                          "events": {
+                            "error": {
+                              "code": "400",
+                              "id": "configuration_error",
+                              "message": "api_type is 'commercial' but username/password are not configured",
+                            },
+                          },
+                          "want_more": false,
+                        }
+                      :
+                        (
+                          has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
+                            state.token
+                          :
+                            request(
+                              "POST",
+                              base_url + "/v1/login",
+                              {
+                                "username": state.username,
+                                "password": state.password,
+                                "realm": "abusech",
+                              }.encode_json()
+                            ).with(
+                              {
+                                "Header": {
+                                  "Content-Type": ["application/json"],
+                                },
+                              }
+                            ).do_request().as(auth_resp, auth_resp.StatusCode == 200 ?
+                              auth_resp.Body.decode_json().as(auth_body,
+                                {
+                                  "access_token": auth_body.token,
+                                  "expires": auth_body.expires,
+                                }
+                              )
+                            :
+                              {
+                                "events": {
+                                  "error": {
+                                    "code": string(auth_resp.StatusCode),
+                                    "id": auth_resp.Status,
+                                    "message": "POST " + base_url + "/v1/login: " + (
+                                      size(auth_resp.Body) != 0 ?
+                                        string(auth_resp.Body)
+                                      :
+                                        auth_resp.Status + " (" + string(auth_resp.StatusCode) + ")"
+                                    ),
+                                  },
+                                },
+                                "want_more": false,
+                              }
+                            )
+                        ).as(token, !has(token.access_token) ?
+                          token
+                        :
+                          request(
+                            "GET",
+                            base_url + "/yaraify/v1/rules?" + {
+                              "since": [since],
+                              "page_size": [string(state.page_size)],
+                              ?"after": state.?cursor.after.optMap(v, [v]),
+                            }.format_query()
+                          ).with(
+                            {
+                              "Header": {
+                                "Authorization": ["Bearer " + token.access_token],
+                              },
+                            }
+                          ).do_request().as(resp, resp.StatusCode == 200 ?
+                            resp.Body.decode_json().as(body,
+                              {
+                                "events": body.items.map(ind,
+                                  {
+                                    "message": ind.encode_json(),
+                                  }
+                                ),
+                                "want_more": has(body.?meta.next_cursor),
+                                "cursor": {
+                                  "since": since,
+                                  ?"after": has(body.?meta.next_cursor) ? optional.of(body.meta.next_cursor) : optional.none(),
+                                  ?"first_seen": (
+                                    body.items.size() > 0 ?
+                                      optional.of(
+                                        (
+                                          has(state.?cursor.first_seen) ?
+                                            max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max())
+                                          :
+                                            body.items.map(ind, timestamp(ind.first_seen)).max()
+                                        ).format(time_layout.RFC3339)
+                                      )
+                                    :
+                                      state.?cursor.first_seen
+                                  ),
+                                },
+                                "token": {
+                                  "access_token": token.access_token,
+                                  "expires": token.expires,
+                                },
+                              }
+                            )
+                          :
+                            {
+                              "events": {
+                                "error": {
+                                  "code": string(resp.StatusCode),
+                                  "id": resp.Status,
+                                  "message": "GET " + base_url + "/yaraify/v1/rules: " + (
+                                    size(resp.Body) != 0 ?
+                                      string(resp.Body)
+                                    :
+                                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                                  ),
+                                },
+                              },
+                              "want_more": false,
+                            }
+                          )
+                        )
+                    )
+                  : !has(state.auth_key) ?
                     {
                       "events": {
                         "error": {
-                          "message": "api_type is 'commercial' but username/password are not configured",
+                          "code": "400",
+                          "id": "configuration_error",
+                          "message": "api_type is 'community' but auth_key is not configured",
                         },
                       },
                       "want_more": false,
                     }
-                  : has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
-                    state.token
                   :
-                    request(
-                      "POST",
-                      state.url.trim_right("/") + "/v1/login",
-                      {
-                        "username": state.username,
-                        "password": state.password,
-                        "realm": "abusech",
-                      }.encode_json()
-                    ).with(
+                    request("POST", state.url, "{\"query\":\"recent_yararules\"}").with(
                       {
                         "Header": {
                           "Content-Type": ["application/json"],
-                        },
-                      }
-                    ).do_request().as(auth_resp, (auth_resp.StatusCode == 200) ?
-                      auth_resp.Body.decode_json().as(auth_body,
-                        {
-                          "access_token": auth_body.token,
-                          "expires": auth_body.expires,
-                        }
-                      )
-                    :
-                      {
-                        "events": {
-                          "error": {
-                            "code": string(auth_resp.StatusCode),
-                            "id": auth_resp.Status,
-                            "message": "POST " + state.url.trim_right("/") + "/v1/login: " + (
-                              size(auth_resp.Body) != 0 ?
-                                string(auth_resp.Body)
-                              :
-                                auth_resp.Status + " (" + string(auth_resp.StatusCode) + ")"
-                            ),
-                          },
-                        },
-                        "want_more": false,
-                      }
-                    )
-                ).as(token, !has(token.access_token) ?
-                  token
-                :
-                  (
-                    has(state.?cursor.after) ?
-                      state.cursor.since
-                    :
-                      state.?cursor.first_seen.orValue(
-                        state.?cursor.since.orValue(
-                          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-                        )
-                      )
-                  ).as(since,
-                    request(
-                      "GET",
-                      state.url.trim_right("/") + "/yaraify/v1/rules?" + {
-                        "since": [since],
-                        "page_size": [string(int(state.page_size))],
-                        ?"after": state.?cursor.after.optMap(v, [v]),
-                      }.format_query()
-                    ).with(
-                      {
-                        "Header": {
-                          "Authorization": ["Bearer " + token.access_token],
+                          "Auth-Key": [state.auth_key],
                         },
                       }
                     ).do_request().as(resp, resp.StatusCode == 200 ?
-                      resp.Body.decode_json().as(body,
+                      resp.Body.decode_json().as(body, body.?query_status == optional.of("ok") ?
                         {
-                          "events": body.items.map(item,
-                            {
-                              "message": item.encode_json(),
-                            }
-                          ),
-                          "want_more": has(body.?meta.next_cursor),
-                          "cursor": (
-                            body.items.size() > 0 ?
-                              optional.of(
-                                (
-                                  has(state.?cursor.first_seen) ?
-                                    max(timestamp(state.cursor.first_seen), body.items.map(item, timestamp(item.first_seen)).max())
-                                  :
-                                    body.items.map(item, timestamp(item.first_seen)).max()
-                                ).format(time_layout.RFC3339)
-                              )
-                            :
-                              state.?cursor.first_seen
-                          ).as(first_seen,
-                            has(body.?meta.next_cursor) ?
-                              {
-                                "since": since,
-                                "after": body.meta.next_cursor,
-                                ?"first_seen": first_seen,
-                              }
-                            :
-                              {
-                                "since": since,
-                                ?"first_seen": first_seen,
-                              }
-                          ),
-                          "token": {
-                            "access_token": token.access_token,
-                            "expires": token.expires,
+                          "events": body.data.map(item, {"message": item.encode_json()}),
+                          "want_more": false,
+                        }
+                      : body.?query_status == optional.of("no_results") ?
+                        {
+                          "events": [],
+                          "want_more": false,
+                        }
+                      :
+                        {
+                          "events": {
+                            "error": {
+                              ?"id": body.?query_status,
+                              "message": "POST " + state.url.trim_right("/") + ": " + (
+                                size(resp.Body) != 0 ?
+                                  string(resp.Body)
+                                :
+                                  resp.Status + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
                           },
+                          "want_more": false,
                         }
                       )
                     :
@@ -146,7 +208,7 @@ inputs:
                           "error": {
                             "code": string(resp.StatusCode),
                             "id": resp.Status,
-                            "message": "GET " + state.url.trim_right("/") + "/yaraify/v1/rules: " + (
+                            "message": "POST " + state.url.trim_right("/") + ": " + (
                               size(resp.Body) != 0 ?
                                 string(resp.Body)
                               :
@@ -157,69 +219,8 @@ inputs:
                         "want_more": false,
                       }
                     )
-                  )
                 )
-              : !has(state.auth_key) ?
-                {
-                  "events": {
-                    "error": {
-                      "message": "auth_key is required for the YARAify Community API",
-                    },
-                  },
-                  "want_more": false,
-                }
-              :
-                request("POST", state.url, "{\"query\":\"recent_yararules\"}").with(
-                  {
-                    "Header": {
-                      "Content-Type": ["application/json"],
-                      "Auth-Key": [state.auth_key],
-                    },
-                  }
-                ).do_request().as(resp, (resp.StatusCode == 200) ?
-                  resp.Body.decode_json().as(body, body.?query_status == optional.of("ok") ?
-                    {
-                      "events": body.data.map(item, { "message": item.encode_json() }),
-                      "want_more": false,
-                    }
-                  : body.?query_status == optional.of("no_results") ?
-                    {
-                      "events": [],
-                      "want_more": false,
-                    }
-                  :
-                    {
-                      "events": {
-                        "error": {
-                          ?"id": body.?query_status,
-                          "message": "POST " + state.url.trim_right("/") + ": " + (
-                            size(resp.Body) != 0 ?
-                              string(resp.Body)
-                            :
-                              resp.Status + " (" + string(resp.StatusCode) + ")"
-                          ),
-                        },
-                      },
-                      "want_more": false,
-                    }
-                  )
-                :
-                  {
-                    "events": {
-                      "error": {
-                        "code": string(resp.StatusCode),
-                        "id": resp.Status,
-                        "message": "POST " + state.url.trim_right("/") + ": " + (
-                          size(resp.Body) != 0 ?
-                            string(resp.Body)
-                          :
-                            resp.Status + " (" + string(resp.StatusCode) + ")"
-                        ),
-                      },
-                    },
-                    "want_more": false,
-                  }
-                )
+              )
             )
           publisher_pipeline.disable_host: true
           redact:
@@ -236,10 +237,11 @@ inputs:
           resource.url: https://api.example.com
           state:
             api_type: commercial
-            auth_key: ${SECRET_0}
+            auth_key: ${SECRET_1}
+            commercial_url: https://api.spamhaus.com
             initial_interval: 48h
             page_size: 50
-            password: ${SECRET_1}
+            password: ${SECRET_0}
             username: test@example.com
           tags:
             - preserve_original_event
