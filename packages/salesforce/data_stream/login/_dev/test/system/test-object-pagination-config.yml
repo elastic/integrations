@@ -1,4 +1,4 @@
-# SUCCESS: empty initial_interval → one 5m window, one event.
+# SUCCESS: a dense window follows nextRecordsUrl and ingests every page (API v59.0).
 input: salesforce
 service: salesforce
 vars:
@@ -11,10 +11,13 @@ vars:
   token_url: http://{{Hostname}}:{{Port}}
 data_stream:
   vars:
+    api_version: "59.0"
     initial_interval: ""
+    real_time_period: 1h
     preserve_original_event: true
     event_log_file: false
     object: true
 assert:
-  hit_count: 1
-
+  hit_count: 2
+  fields_present:
+    - event.id

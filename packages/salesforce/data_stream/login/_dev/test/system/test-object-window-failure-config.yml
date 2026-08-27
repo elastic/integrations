@@ -1,4 +1,5 @@
-# SUCCESS: empty initial_interval → one 5m window, one event.
+# FAILURE: first bounded window succeeds, the next window returns HTTP 500.
+# The successful window must still be ingested (cursor does not skip past it).
 input: salesforce
 service: salesforce
 vars:
@@ -11,10 +12,12 @@ vars:
   token_url: http://{{Hostname}}:{{Port}}
 data_stream:
   vars:
-    initial_interval: ""
+    api_version: "58.0"
+    initial_interval: 1h
+    real_time_period: 5m
+    real_time_batch_max_windows: 12
     preserve_original_event: true
     event_log_file: false
     object: true
 assert:
   hit_count: 1
-
