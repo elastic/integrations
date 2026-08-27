@@ -40,22 +40,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "eb6b5bb1-49db-4a17-b37d-5a88478b8144",
-        "id": "a2e85794-f17c-4166-81b6-b746512d1ffd",
-        "name": "elastic-agent-22925",
+        "ephemeral_id": "f7c9ed4a-2f7e-44b0-8b64-a860ca47b6de",
+        "id": "b1537110-453a-4e7a-9523-15d60cb34be2",
+        "name": "elastic-agent-35846",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.events",
-        "namespace": "13725",
+        "namespace": "19971",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a2e85794-f17c-4166-81b6-b746512d1ffd",
+        "id": "b1537110-453a-4e7a-9523-15d60cb34be2",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -65,7 +65,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_sc.events",
-        "ingested": "2026-08-18T11:28:22Z",
+        "ingested": "2026-08-27T07:08:39Z",
         "kind": "event",
         "module": "sailpoint_identity_sc",
         "type": [
@@ -279,22 +279,22 @@ An example event for `identities` looks as following:
 {
     "@timestamp": "2025-01-10T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "e13e1ef1-a239-4a28-85ee-5e9be118277e",
-        "id": "d37cea46-0ea1-4bce-9d5e-208d6625c6eb",
-        "name": "elastic-agent-55410",
+        "ephemeral_id": "75822001-4ff1-4f0c-8749-cb9b61a28b51",
+        "id": "18bf65b0-7070-442d-a068-6d326c139556",
+        "name": "elastic-agent-99659",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.identities",
-        "namespace": "32529",
+        "namespace": "94826",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "d37cea46-0ea1-4bce-9d5e-208d6625c6eb",
+        "id": "18bf65b0-7070-442d-a068-6d326c139556",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -303,9 +303,8 @@ An example event for `identities` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2024-04-04T21:36:00.000Z",
         "dataset": "sailpoint_identity_sc.identities",
-        "ingested": "2026-08-18T11:30:12Z",
+        "ingested": "2026-08-27T07:10:28Z",
         "kind": "asset",
         "module": "sailpoint_identity_sc",
         "original": "{\"_type\":\"identity\",\"created\":\"2024-04-04T21:36:00.000Z\",\"disabled\":false,\"displayName\":\"Alice Johnson\",\"email\":\"alice.johnson@example.com\",\"firstName\":\"Alice\",\"id\":\"identity-id-001\",\"inactive\":false,\"isManager\":true,\"lastName\":\"Johnson\",\"locked\":false,\"modified\":\"2025-01-10T00:00:00.000Z\",\"name\":\"alice.johnson\",\"protected\":false,\"status\":\"ACTIVE\",\"synced\":\"2025-01-10T01:00:00.000Z\",\"type\":\"identity\"}",
@@ -324,6 +323,7 @@ An example event for `identities` looks as following:
     },
     "sailpoint_identity_sc": {
         "identity": {
+            "created": "2024-04-04T21:36:00.000Z",
             "disabled": false,
             "inactive": false,
             "is_manager": true,
@@ -371,7 +371,6 @@ The following non-ECS fields are used in identities documents:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
@@ -425,6 +424,7 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.apps.source.id | ID of the source associated with this application. | keyword |
 | sailpoint_identity_sc.identity.apps.source.name | Name of the source associated with this application. | keyword |
 | sailpoint_identity_sc.identity.attributes | Free-form identity attributes from the authoritative source (tenant-specific keys). | flattened |
+| sailpoint_identity_sc.identity.created | When the identity was created in SailPoint Identity Security Cloud. | date |
 | sailpoint_identity_sc.identity.disabled | Indicates whether this identity is disabled. | boolean |
 | sailpoint_identity_sc.identity.employee_number | Employee number assigned to the identity. | keyword |
 | sailpoint_identity_sc.identity.entitlement_count | Number of entitlements assigned to this identity. | long |
