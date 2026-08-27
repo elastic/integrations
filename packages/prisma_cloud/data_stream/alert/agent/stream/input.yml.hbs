@@ -28,14 +28,14 @@ redact:
     - access_token
 program: |
   (
-    state.with(!has(state.access_token) || !has(state.token_expiry) || now >= timestamp(state.token_expiry) ?
+    state.with(!has(state.access_token) || state.access_token == "" || !has(state.token_expiry) || now() >= timestamp(state.token_expiry) ?
       post_request(
         state.url + "/login",
         "application/json",
         {"username":state.user,"password":state.password}.encode_json()
       ).do_request().as(resp, resp.Body.decode_json().as(body, {
           "access_token": body.token,
-          "token_expiry": string(now + duration("9m")),
+          "token_expiry": string(now() + duration("9m")),
       }))
     :
       {}
@@ -67,68 +67,68 @@ program: |
           is_error(inner_body) ?
             {"events": []}
           :
-          {
-          "events": inner_body.items.map(e, {
-            "message": e.encode_json(),
-          }),
-          "url": state.url,
-          "page_token": has(inner_body.nextPageToken) ? inner_body.nextPageToken : "",
-          "cursor": {
-            "last_time_amount": (
-              has(inner_body.items) && inner_body.items.size() > 0 ?
-                (
-                  has(state.cursor) && has(state.cursor.last_time_amount) &&
-                  inner_body.items.map(e, e.lastUpdated).max() < state.cursor.last_time_amount ?
-                    state.cursor.last_time_amount
+            {
+              "events": inner_body.items.map(e, {
+                "message": e.encode_json(),
+              }),
+              "url": state.url,
+              "page_token": has(inner_body.nextPageToken) ? inner_body.nextPageToken : "",
+              "cursor": {
+                "last_time_amount": (
+                  has(inner_body.items) && inner_body.items.size() > 0 ?
+                    (
+                      has(state.cursor) && has(state.cursor.last_time_amount) &&
+                      inner_body.items.map(e, e.lastUpdated).max() < state.cursor.last_time_amount ?
+                        state.cursor.last_time_amount
+                      :
+                        inner_body.items.map(e, e.lastUpdated).max()
+                    )
                   :
-                    inner_body.items.map(e, e.lastUpdated).max()
-                )
-              :
-                (
-                  has(state.cursor) && has(state.cursor.last_time_amount) ?
-                    state.cursor.last_time_amount
-                  :
-                    null
-                )
-              ),
-              "first_time_amount": (
-                 has(state.cursor) && has(state.cursor.first_time_amount) &&
-                 state.cursor.first_time_amount != null && has(inner_body.items) ?
-                   (
-                     ((int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows) && state.want_more ?
-                       state.cursor.first_time_amount
+                    (
+                      has(state.cursor) && has(state.cursor.last_time_amount) ?
+                        state.cursor.last_time_amount
+                      :
+                        null
+                    )
+                  ),
+                  "first_time_amount": (
+                     has(state.cursor) && has(state.cursor.first_time_amount) &&
+                     state.cursor.first_time_amount != null && has(inner_body.items) ?
+                       (
+                         ((int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows) && state.want_more ?
+                           state.cursor.first_time_amount
+                         :
+                           state.cursor.last_time_amount
+                       )
                      :
-                       state.cursor.last_time_amount
-                   )
-                 :
-                   int(timestamp(now)-duration(string(
-                     state.time_unit == "year" ?
-                       int(state.time_amount)*365*24*60
-                     : state.time_unit == "month" ?
-                       int(state.time_amount)*30*24*60
-                     : state.time_unit == "week" ?
-                       int(state.time_amount)*7*24*60
-                     : state.time_unit == "day" ?
-                       int(state.time_amount)*24*60
-                     : state.time_unit == "hour" ?
-                       int(state.time_amount)*60
-                     : int(state.time_amount)
-                   )+"m"))*1000
-              ),
-            },
-            "want_more": (int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows,
-            "user": state.user,
-            "password": state.password,
-            "batch_size": string(state.batch_size),
-            "time_amount": string(state.time_amount),
-            "time_unit": state.time_unit,
-            "total_rows": (int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows ?
-              int(state.total_rows) + size(inner_body.items)
-            :
-              0,
-          })
+                       int(timestamp(now)-duration(string(
+                         state.time_unit == "year" ?
+                           int(state.time_amount)*365*24*60
+                         : state.time_unit == "month" ?
+                           int(state.time_amount)*30*24*60
+                         : state.time_unit == "week" ?
+                           int(state.time_amount)*7*24*60
+                         : state.time_unit == "day" ?
+                           int(state.time_amount)*24*60
+                         : state.time_unit == "hour" ?
+                           int(state.time_amount)*60
+                         : int(state.time_amount)
+                       )+"m"))*1000
+                  ),
+                },
+                "want_more": (int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows,
+                "user": state.user,
+                "password": state.password,
+                "batch_size": string(state.batch_size),
+                "time_amount": string(state.time_amount),
+                "time_unit": state.time_unit,
+                "total_rows": (int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows ?
+                  int(state.total_rows) + size(inner_body.items)
+                :
+                  0,
+            })
         :
-          {"events": [], "token_expiry": string(now - duration("1m"))}
+          {"events": [], "access_token": ""}
       )
     )
   ))
