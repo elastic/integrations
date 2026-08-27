@@ -32,7 +32,7 @@ program: |-
   // to keep the want_more chain alive during accumulation.
   //
   // NOTE: Only the first 100 members per team are collected (GraphQL limit).
-  // Teams with members.pageInfo.hasNextPage == true produce a warning event.
+  // Teams with more than 100 members are silently truncated at 100.
   //
   // Pre-bind context map from session state to keep HTTP handling at <=2 levels inside state.with()
   {
@@ -117,6 +117,8 @@ program: |-
   									"phase": "members",
   									"member_edges": [],
   									"team_memberships": [],
+  									"members_cursor": null,
+  									"teams_cursor": null,
   									"events": ctx.member_edges.filter(e,
   										state.include_bots || !e.node.login.endsWith("[bot]")
   									).map(member,
