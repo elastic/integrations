@@ -1,0 +1,27 @@
+wait_for_data_timeout: 1m
+service: mqtt-broker
+input: mqtt
+policy_template: mqtt_metrics
+# Ingestion itself works — a run against a 9.4.3 stack produced
+# .ds-metrics-mqtt.generic-<ns> holding all five sample messages. What fails is
+# the runner's mapping check: it simulates an index template *by name*
+# (metrics-mqtt.generic), and Fleet does not create a named template for the
+# metrics type of an input package. The documents land through the built-in
+# generic metrics-*-* template instead, so there is nothing for the runner to
+# simulate. Re-enable if Fleet starts materialising per-dataset templates for
+# non-logs input packages.
+skip:
+  link: https://github.com/elastic/elastic-package/issues
+  reason: "elastic-package cannot validate mappings for a metrics input package: Fleet creates no metrics-<dataset> index template. Ingestion is verified manually."
+vars:
+  hosts:
+    - "tcp://{{Hostname}}:{{Port}}"
+  topics:
+    - sensors/#
+  # MQTT caps client identifiers at 23 characters.
+  client_id: ep-mqtt-metrics
+  qos: "1"
+  data_stream.dataset: mqtt.generic
+  preserve_original_event: true
+assert:
+  hit_count: 5

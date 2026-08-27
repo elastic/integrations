@@ -1,3 +1,5 @@
+data_stream:
+  dataset: {{data_stream.dataset}}
 hosts:
 {{#each hosts}}
   - {{this}}
@@ -28,7 +30,8 @@ connect_timeout: {{connect_timeout}}
 connect_backoff: {{connect_backoff}}
 {{/if}}
 {{#if ssl}}
-ssl: {{ssl}}
+ssl:
+  {{ssl}}
 {{/if}}
 {{#if keep_null}}
 keep_null: {{keep_null}}
@@ -36,20 +39,36 @@ keep_null: {{keep_null}}
 {{#if pipeline}}
 pipeline: {{pipeline}}
 {{/if}}
+{{#if tags}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag|}}
+{{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{else if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if processors}}
 processors:
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
 {{processors}}
+{{else if preserve_original_event}}
+processors:
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
 {{/if}}
-{{#if custom}}
+
 {{custom}}
-{{/if}}
