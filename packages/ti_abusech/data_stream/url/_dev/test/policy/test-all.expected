@@ -171,44 +171,61 @@ inputs:
                         "message": "the polling interval (" + state.interval_value + ") exceeds the 3-day window of the URLhaus recent API. Reduce the interval to 72h or less to avoid missing data.",
                       },
                     },
-                    "want_more": false,
-                  }
-                :
-                  request("GET", state.url).with({
-                    "Header":{
+                  },
+                  "want_more": false,
+                }
+              : !has(state.auth_key) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": "400",
+                      "id": "configuration_error",
+                      "message": "auth_key is not configured. The URLhaus API rejects unauthenticated requests. Generate an Auth Key in the abuse.ch authentication portal (https://auth.abuse.ch) and set the Auth Key (Community) setting.",
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                request("GET", state.url).with(
+                  {
+                    "Header": {
                       "Content-Type": ["application/json"],
-                      ?"Auth-Key": has(state.auth_key) ?
-                        optional.of([state.auth_key])
-                      :
-                        optional.none(),
-                    }
-                  }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?
-                    resp.Body.decode_json().as(body, {
-                      "events": has(body.urls) ?
-                        body.urls.map(u, {
-                          "message": u.encode_json()
-                        })
-                      :
-                        [],
-                      "url": state.url
-                    })
+                      "Auth-Key": [state.auth_key],
+                    },
+                  }
+                ).as(req,
+                  req.do_request().as(resp, resp.StatusCode == 200 ?
+                    resp.Body.decode_json().as(body,
+                      {
+                        "events": has(body.urls) ?
+                          body.urls.map(u,
+                            {
+                              "message": u.encode_json(),
+                            }
+                          )
+                        :
+                          [],
+                        "url": state.url,
+                      }
+                    )
                   :
                     {
                       "events": {
                         "error": {
                           "code": string(resp.StatusCode),
-                          "id": resp.Status,
-                          "message": "GET "+ state.url.trim_right("/") + ":" + (
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url.trim_right("/") + ":" + (
                             size(resp.Body) != 0 ?
                               string(resp.Body)
                             :
-                              resp.Status + ' (' + string(resp.StatusCode) + ')'
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                           ),
                         },
                       },
                       "want_more": false,
                     }
-                  ))
+                  )
+                )
             )
           publisher_pipeline.disable_host: true
           redact:
