@@ -28,13 +28,14 @@ redact:
     - access_token
 program: |
   (
-    state.with(has(state.want_more) && !(state.want_more) ?
+    state.with(!has(state.access_token) || !has(state.token_expiry) || now >= timestamp(state.token_expiry) ?
       post_request(
         state.url + "/login",
         "application/json",
         {"username":state.user,"password":state.password}.encode_json()
-      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+      ).do_request().as(resp, resp.Body.decode_json().as(body, {
           "access_token": body.token,
+          "token_expiry": string(now + duration("25m")),
       }))
     :
       {}
@@ -61,10 +62,9 @@ program: |
          "Header":{
            "x-redlock-auth": [state.access_token],
          }
-      }).do_request().as(resp,
-        (resp.StatusCode == 200) ?
-        try(bytes(resp.Body).decode_json()).as(inner_body,
-          is_error(inner_body.with({})) ?
+      }).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(inner_body,
+          is_error(inner_body) ?
             {"events": []}
           :
           {
