@@ -1,0 +1,398 @@
+rules:
+  # Members query — page 1 (no cursor: null)
+  # Matches when OrgMembers query with cursor:null in the body
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*OrgMembers.*"cursor":null.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "membersWithRole": {
+                  "totalCount": 4,
+                  "pageInfo": {
+                    "hasNextPage": true,
+                    "endCursor": "members-page1-cursor"
+                  },
+                  "edges": [
+                    {
+                      "role": "ADMIN",
+                      "hasTwoFactorEnabled": true,
+                      "node": {
+                        "id": "U_kgDOABCDEF",
+                        "databaseId": 12345678,
+                        "login": "alice-example",
+                        "name": "Alice Example",
+                        "email": "alice@example.com",
+                        "company": "Example Corp",
+                        "location": "San Francisco, CA",
+                        "bio": "Software engineer",
+                        "pronouns": "she/her",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/12345678?v=4",
+                        "url": "https://github.com/alice-example",
+                        "websiteUrl": "https://alice.example.com",
+                        "twitterUsername": "aliceexample",
+                        "createdAt": "2018-03-15T09:00:00Z",
+                        "updatedAt": "2026-01-01T12:00:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": true,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    },
+                    {
+                      "role": "MEMBER",
+                      "hasTwoFactorEnabled": null,
+                      "node": {
+                        "id": "U_kgDOGHIJKL",
+                        "databaseId": 23456789,
+                        "login": "bob-example",
+                        "name": "Bob Example",
+                        "email": "",
+                        "company": null,
+                        "location": "New York, NY",
+                        "bio": null,
+                        "pronouns": null,
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/23456789?v=4",
+                        "url": "https://github.com/bob-example",
+                        "websiteUrl": null,
+                        "twitterUsername": null,
+                        "createdAt": "2020-06-01T08:00:00Z",
+                        "updatedAt": "2025-12-15T16:30:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": false,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "rateLimit": {"cost": 1, "remaining": 4999, "resetAt": "2026-08-13T21:00:00Z"}
+          }
+  # Members query — page 2 (cursor = "members-page1-cursor")
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*OrgMembers.*"cursor":"members-page1-cursor".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "membersWithRole": {
+                  "totalCount": 4,
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "endCursor": "members-page2-cursor"
+                  },
+                  "edges": [
+                    {
+                      "role": "MEMBER",
+                      "hasTwoFactorEnabled": false,
+                      "node": {
+                        "id": "U_kgDOMNOPQR",
+                        "databaseId": 34567890,
+                        "login": "carol-example",
+                        "name": "Carol Example",
+                        "email": "carol@example.com",
+                        "company": "@example-org",
+                        "location": null,
+                        "bio": "DevOps lead",
+                        "pronouns": null,
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/34567890?v=4",
+                        "url": "https://github.com/carol-example",
+                        "websiteUrl": null,
+                        "twitterUsername": null,
+                        "createdAt": "2019-11-10T10:00:00Z",
+                        "updatedAt": "2026-07-01T09:00:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": false,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    },
+                    {
+                      "role": "MEMBER",
+                      "hasTwoFactorEnabled": null,
+                      "node": {
+                        "id": "U_kgDOSTUVWX",
+                        "databaseId": 45678901,
+                        "login": "example-bot[bot]",
+                        "name": "Example Bot",
+                        "email": "",
+                        "company": null,
+                        "location": null,
+                        "bio": null,
+                        "pronouns": null,
+                        "avatarUrl": "https://avatars.githubusercontent.com/in/12345?v=4",
+                        "url": "https://github.com/apps/example-bot",
+                        "websiteUrl": null,
+                        "twitterUsername": null,
+                        "createdAt": "2022-01-01T00:00:00Z",
+                        "updatedAt": "2026-08-01T00:00:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": false,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "rateLimit": {"cost": 1, "remaining": 4998, "resetAt": "2026-08-13T21:00:00Z"}
+          }
+  # Members query — page 3 / cycle 2 (cursor = "members-page2-cursor")
+  # Used when the CEL program correctly saves endCursor from the last members page.
+  # Returns three new members so that cycle 2 contributes 3 events, for a total of 6.
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*OrgMembers.*"cursor":"members-page2-cursor".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "membersWithRole": {
+                  "totalCount": 6,
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "endCursor": "members-page3-cursor"
+                  },
+                  "edges": [
+                    {
+                      "role": "MEMBER",
+                      "hasTwoFactorEnabled": false,
+                      "node": {
+                        "id": "U_kgDOQRSTUV",
+                        "databaseId": 56789012,
+                        "login": "dave-example",
+                        "name": "Dave Example",
+                        "email": "dave@example.com",
+                        "company": null,
+                        "location": "Austin, TX",
+                        "bio": null,
+                        "pronouns": null,
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/56789012?v=4",
+                        "url": "https://github.com/dave-example",
+                        "websiteUrl": null,
+                        "twitterUsername": null,
+                        "createdAt": "2021-05-20T14:00:00Z",
+                        "updatedAt": "2026-03-10T11:00:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": false,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    },
+                    {
+                      "role": "MEMBER",
+                      "hasTwoFactorEnabled": null,
+                      "node": {
+                        "id": "U_kgDOWXYZAB",
+                        "databaseId": 67890123,
+                        "login": "eve-example",
+                        "name": "Eve Example",
+                        "email": "",
+                        "company": "@example-org",
+                        "location": null,
+                        "bio": "Platform engineer",
+                        "pronouns": "they/them",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/67890123?v=4",
+                        "url": "https://github.com/eve-example",
+                        "websiteUrl": null,
+                        "twitterUsername": null,
+                        "createdAt": "2022-09-01T08:30:00Z",
+                        "updatedAt": "2026-06-15T10:00:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": true,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    },
+                    {
+                      "role": "ADMIN",
+                      "hasTwoFactorEnabled": true,
+                      "node": {
+                        "id": "U_kgDOCDEFGH",
+                        "databaseId": 78901234,
+                        "login": "frank-example",
+                        "name": "Frank Example",
+                        "email": "frank@example.com",
+                        "company": "Example Corp",
+                        "location": "Seattle, WA",
+                        "bio": "Infrastructure lead",
+                        "pronouns": null,
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/78901234?v=4",
+                        "url": "https://github.com/frank-example",
+                        "websiteUrl": "https://frank.example.com",
+                        "twitterUsername": null,
+                        "createdAt": "2017-11-30T16:00:00Z",
+                        "updatedAt": "2026-07-20T09:00:00Z",
+                        "isSiteAdmin": false,
+                        "isEmployee": false,
+                        "isViewer": false,
+                        "isHireable": false,
+                        "isDeveloperProgramMember": false,
+                        "isGitHubStar": false,
+                        "isBountyHunter": false,
+                        "isCampusExpert": false
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "rateLimit": {"cost": 1, "remaining": 4996, "resetAt": "2026-08-13T21:00:00Z"}
+          }
+  # Members query — end-of-pagination sentinel (cursor = "members-page3-cursor")
+  # Returns an empty page so that cycles 3+ emit no events and hit_count stabilises at 6.
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*OrgMembers.*"cursor":"members-page3-cursor".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "membersWithRole": {
+                  "totalCount": 6,
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "endCursor": "members-page3-cursor"
+                  },
+                  "edges": []
+                }
+              }
+            },
+            "rateLimit": {"cost": 1, "remaining": 4995, "resetAt": "2026-08-13T21:00:00Z"}
+          }
+  # Teams query — single page (no next page)
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*OrgTeamsWithMembers.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "totalCount": 2,
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "endCursor": "teams-page1-cursor"
+                  },
+                  "edges": [
+                    {
+                      "node": {
+                        "id": "T_kgDOAABBCC",
+                        "databaseId": 1001,
+                        "name": "Backend Team",
+                        "slug": "backend-team",
+                        "combinedSlug": "example-org/backend-team",
+                        "privacy": "VISIBLE",
+                        "parentTeam": null,
+                        "members": {
+                          "totalCount": 1,
+                          "pageInfo": {"hasNextPage": false, "endCursor": "abc123="},
+                          "edges": [
+                            {
+                              "role": "MAINTAINER",
+                              "node": {"id": "U_kgDOABCDEF", "login": "alice-example"}
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "node": {
+                        "id": "T_kgDOAADDEE",
+                        "databaseId": 1002,
+                        "name": "Frontend Team",
+                        "slug": "frontend-team",
+                        "combinedSlug": "example-org/frontend-team",
+                        "privacy": "SECRET",
+                        "parentTeam": null,
+                        "members": {
+                          "totalCount": 2,
+                          "pageInfo": {"hasNextPage": false, "endCursor": "def456="},
+                          "edges": [
+                            {
+                              "role": "MEMBER",
+                              "node": {"id": "U_kgDOABCDEF", "login": "alice-example"}
+                            },
+                            {
+                              "role": "MAINTAINER",
+                              "node": {"id": "U_kgDOGHIJKL", "login": "bob-example"}
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "rateLimit": {"cost": 1, "remaining": 4997, "resetAt": "2026-08-13T21:00:00Z"}
+          }
