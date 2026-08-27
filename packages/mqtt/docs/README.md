@@ -177,49 +177,49 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-27T07:28:50.184Z",
+    "@timestamp": "2026-08-27T08:22:29.523Z",
     "agent": {
-        "ephemeral_id": "d3250145-7947-4605-8d7a-48bfba936ce0",
-        "id": "2568d18b-9dd0-41b6-8d19-13bc8e4dda79",
-        "name": "elastic-agent-83378",
+        "ephemeral_id": "da87986d-a950-4395-98d3-421e960d0c07",
+        "id": "85728dd6-8f65-4777-90ee-d1e4410e5857",
+        "name": "elastic-agent-21441",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "mqtt.logs",
-        "namespace": "62807",
+        "namespace": "46765",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "2568d18b-9dd0-41b6-8d19-13bc8e4dda79",
+        "id": "85728dd6-8f65-4777-90ee-d1e4410e5857",
         "snapshot": false,
         "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mqtt.logs",
-        "ingested": "2026-08-27T07:28:53Z",
+        "ingested": "2026-08-27T08:22:32Z",
         "module": "mqtt",
         "original": "{\"device_id\":\"sensor-01\",\"location\":\"warehouse-a\",\"temperature\":21.4,\"humidity\":47,\"timestamp\":\"2026-08-27T09:00:00Z\"}"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-83378",
+        "hostname": "elastic-agent-21441",
         "ip": [
             "10.89.2.2",
-            "fe80::6892:1bff:fee5:1094",
-            "10.89.1.37",
-            "fe80::f88b:a1ff:fe22:44f7"
+            "fe80::85b:7fff:fe51:5ea3",
+            "10.89.1.51",
+            "fe80::40cc:53ff:fe2f:2567"
         ],
         "mac": [
-            "6A-92-1B-E5-10-94",
-            "FA-8B-A1-22-44-F7"
+            "0A-5B-7F-51-5E-A3",
+            "42-CC-53-2F-25-67"
         ],
-        "name": "elastic-agent-83378",
+        "name": "elastic-agent-21441",
         "os": {
             "family": "",
             "kernel": "6.15.10-200.fc42.aarch64",
@@ -274,48 +274,48 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-27T07:29:47.142Z",
+    "@timestamp": "2026-08-27T08:23:26.636Z",
     "agent": {
-        "ephemeral_id": "9cd2e92e-27a4-4e5e-8d53-f3f48d03e6ae",
-        "id": "8604931d-be66-4094-b66c-531704416ae7",
-        "name": "elastic-agent-52028",
+        "ephemeral_id": "d31f27bc-8f4b-4b6f-ab09-72b567252d1e",
+        "id": "35b73e65-3f89-40a1-b89e-d5c4b944f856",
+        "name": "elastic-agent-47120",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "mqtt.metrics",
-        "namespace": "59066",
+        "namespace": "46017",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "8604931d-be66-4094-b66c-531704416ae7",
+        "id": "35b73e65-3f89-40a1-b89e-d5c4b944f856",
         "snapshot": false,
         "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mqtt.metrics",
-        "ingested": "2026-08-27T07:29:50Z",
+        "ingested": "2026-08-27T08:23:29Z",
         "original": "{\"device_id\":\"sensor-01\",\"location\":\"warehouse-a\",\"temperature\":21.4,\"humidity\":47,\"timestamp\":\"2026-08-27T09:00:00Z\"}"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-52028",
+        "hostname": "elastic-agent-47120",
         "ip": [
             "10.89.2.2",
-            "fe80::2475:79ff:fe79:f0e9",
-            "10.89.1.38",
-            "fe80::48ad:bcff:fe17:43b3"
+            "fe80::78a5:fdff:fefd:db96",
+            "10.89.1.52",
+            "fe80::7cc3:b0ff:fe65:c21d"
         ],
         "mac": [
-            "26-75-79-79-F0-E9",
-            "4A-AD-BC-17-43-B3"
+            "7A-A5-FD-FD-DB-96",
+            "7E-C3-B0-65-C2-1D"
         ],
-        "name": "elastic-agent-52028",
+        "name": "elastic-agent-47120",
         "os": {
             "family": "",
             "kernel": "6.15.10-200.fc42.aarch64",
@@ -370,48 +370,48 @@ An example event for `traces` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-27T07:30:45.141Z",
+    "@timestamp": "2026-08-27T08:24:24.869Z",
     "agent": {
-        "ephemeral_id": "ce0f6aa3-6a40-44bb-a295-be18f2bf8f3b",
-        "id": "e22b31fa-5ad4-4957-a710-e48c09312788",
-        "name": "elastic-agent-70934",
+        "ephemeral_id": "eedab199-6793-48c6-a5b4-3ff169dcdffd",
+        "id": "c82c2606-e3fb-40df-b17c-e6b3fed0b35d",
+        "name": "elastic-agent-78355",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "mqtt.traces",
-        "namespace": "98788",
+        "namespace": "85512",
         "type": "traces"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "e22b31fa-5ad4-4957-a710-e48c09312788",
+        "id": "c82c2606-e3fb-40df-b17c-e6b3fed0b35d",
         "snapshot": false,
         "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mqtt.traces",
-        "ingested": "2026-08-27T07:30:48Z",
+        "ingested": "2026-08-27T08:24:27Z",
         "original": "{\"device_id\":\"sensor-01\",\"location\":\"warehouse-a\",\"temperature\":21.4,\"humidity\":47,\"timestamp\":\"2026-08-27T09:00:00Z\"}"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-70934",
+        "hostname": "elastic-agent-78355",
         "ip": [
             "10.89.2.2",
-            "fe80::6cb1:44ff:fed3:b045",
-            "10.89.1.39",
-            "fe80::f407:dff:fe04:9ece"
+            "fe80::e86d:b0ff:fead:36bd",
+            "10.89.1.53",
+            "fe80::3814:caff:fefb:375a"
         ],
         "mac": [
-            "6E-B1-44-D3-B0-45",
-            "F6-07-0D-04-9E-CE"
+            "3A-14-CA-FB-37-5A",
+            "EA-6D-B0-AD-36-BD"
         ],
-        "name": "elastic-agent-70934",
+        "name": "elastic-agent-78355",
         "os": {
             "family": "",
             "kernel": "6.15.10-200.fc42.aarch64",
