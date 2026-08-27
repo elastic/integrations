@@ -234,8 +234,6 @@ Fields that are common to all assertions are mapped to ECS. Evidence supplied by
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.code | Error code describing the error. | keyword |
-| error.id | Unique identifier for the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
@@ -249,7 +247,6 @@ Fields that are common to all assertions are mapped to ECS. Evidence supplied by
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -272,9 +269,9 @@ An example event for `kev` looks as following:
 {
     "@timestamp": "2026-01-27T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "47c57008-4dc7-445d-be42-d34ed5bfa9ee",
-        "id": "dca241de-9845-4808-8381-b0185ac4a809",
-        "name": "elastic-agent-74181",
+        "ephemeral_id": "24614bc7-5712-45f7-ab5d-fe3f1abcecd8",
+        "id": "d21602b7-f203-4541-a542-2295f3636bbe",
+        "name": "elastic-agent-56260",
         "type": "filebeat",
         "version": "9.5.2"
     },
@@ -319,14 +316,14 @@ An example event for `kev` looks as following:
     },
     "data_stream": {
         "dataset": "circl.kev",
-        "namespace": "93339",
+        "namespace": "85042",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "dca241de-9845-4808-8381-b0185ac4a809",
+        "id": "d21602b7-f203-4541-a542-2295f3636bbe",
         "snapshot": false,
         "version": "9.5.2"
     },
@@ -338,7 +335,7 @@ An example event for `kev` looks as following:
         "created": "2026-06-05T16:57:54.000Z",
         "dataset": "circl.kev",
         "id": "4b8f2a90-6d15-4c3e-b7a2-9e04c1d85f36",
-        "ingested": "2026-08-20T21:36:03Z",
+        "ingested": "2026-08-27T21:12:02Z",
         "kind": "enrichment",
         "module": "circl",
         "provider": "enisa-cnw-kev",
