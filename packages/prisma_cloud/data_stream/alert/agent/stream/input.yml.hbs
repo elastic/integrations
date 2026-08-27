@@ -35,7 +35,7 @@ program: |
         {"username":state.user,"password":state.password}.encode_json()
       ).do_request().as(resp, resp.Body.decode_json().as(body, {
           "access_token": body.token,
-          "token_expiry": string(now + duration("25m")),
+          "token_expiry": string(now + duration("9m")),
       }))
     :
       {}
@@ -128,7 +128,7 @@ program: |
               0,
           })
         :
-          {"events": []}
+          {"events": [], "token_expiry": string(now - duration("1m"))}
       )
     )
   ))
