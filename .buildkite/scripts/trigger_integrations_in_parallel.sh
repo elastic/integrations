@@ -51,7 +51,7 @@ export COMMIT_MERGE
 changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
 
 if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
-    echo "Non-package files changed or force-check enabled: scanning all packages"
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
     PACKAGE_LIST=$(list_all_directories)
 else
     PACKAGE_LIST=$(
