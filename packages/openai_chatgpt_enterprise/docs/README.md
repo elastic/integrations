@@ -2,7 +2,7 @@
 
 ## Overview
 
-[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including authentication activity such as user logins, token issuance, and logouts, and application authentication activity such as connecting (linking) and disconnecting (unlinking) apps and connectors.
+[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including authentication activity such as user logins, token issuance, and logouts; application authentication activity such as connecting (linking) and disconnecting (unlinking) apps and connectors; and application (connector) activity such as in-app requests and responses to connected apps.
 
 This integration for Elastic allows you to collect ChatGPT Enterprise compliance logs using the OpenAI Compliance Logs Platform API, then visualize the data in Kibana.
 
@@ -12,7 +12,7 @@ This integration collects data from the [OpenAI Compliance Logs Platform API](ht
 
 ### How it works
 
-This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication and application authentication logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
+This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, and application (connector) logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
 
 1. The integration calls the list endpoint (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs`) with the `event_type`, and paginates forward using the `last_end_time` cursor and `has_more` flag returned by the API. This returns metadata for each available log file.
 2. For each listed file, the integration downloads its contents (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`). This endpoint redirects to a signed download URL that serves the log file as JSON Lines, and each line is ingested as a separate event.
@@ -27,14 +27,17 @@ This integration collects log messages of the following types:
 
 - `Authentication Log`: Collect ChatGPT Enterprise `AUTH_LOG` events, covering user authentication activity such as logins, token issuance, and logouts, along with the client and request context (IP, geo, user agent, and TLS fingerprints) associated with each action (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 - `Application Authentication Log`: Collect ChatGPT Enterprise `APP_AUTH_LOG` events, covering application authentication activity such as linking and unlinking apps and connectors (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Application Log`: Collects ChatGPT Enterprise `APP_LOG` events — in-app connector requests and responses, including the app/connector identity and type, the acting user, the conversation, the request input, any returned result items, and client context such as user agent and source geolocation (endpoints: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs` and `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 
 ### Supported use cases
 
-Bringing ChatGPT Enterprise authentication and application authentication activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in and app-connection activity in one place instead of moving between separate tools.
+Bringing ChatGPT Enterprise authentication, application authentication, and application (connector) activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, and in-app connector activity in one place instead of moving between separate tools.
 
 The **Authentication Log** data stream provides visibility into who signed in, when, from where, and with what client, including the action outcome and source geolocation. Use it to monitor login, token issuance, and logout activity, detect sign-ins from unexpected locations, and surface anomalous or high-risk authentication behavior to support security oversight and auditing.
 
 The **Application Authentication Log** data stream provides visibility into which apps and connectors are linked or unlinked, who performed the action, and the client and request context associated with it. Use it to audit connector lifecycle changes, monitor app-authorization activity, and surface anomalous or high-risk link/unlink actions to support security oversight and auditing.
+
+The **Application Log** data stream provides visibility into how connected apps and connectors are used inside ChatGPT Enterprise. Use it to monitor which apps users invoke and how often, review the requests sent to connectors and the responses returned, attribute connector activity to specific users and conversations, and add source geolocation and user-agent context to investigations.
 
 ## What do I need to use this integration?
 
@@ -352,6 +355,168 @@ An example event for `app_auth_log` looks as following:
 }
 ```
 
+### App Log
+
+The `app_log` data stream captures ChatGPT Enterprise `APP_LOG` events (in-app connector requests and responses).
+
+#### App Log fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| openai_chatgpt_enterprise.app_log.actor.type | Type of actor that performed the action (e.g. ACCOUNT_USER, API_KEY). | keyword |
+| openai_chatgpt_enterprise.app_log.app_id | Identifier of the connected app / connector. | keyword |
+| openai_chatgpt_enterprise.app_log.app_name | Friendly name of the app / connector. | keyword |
+| openai_chatgpt_enterprise.app_log.app_type | App backend type (e.g. SERVICE, MCP, FIRST_PARTY_ECOSYSTEM, OPEN_API). | keyword |
+| openai_chatgpt_enterprise.app_log.conversation_id | Conversation in which the app was invoked. | keyword |
+| openai_chatgpt_enterprise.app_log.input | Raw, free-form request input arguments sent to the app. | flattened |
+| openai_chatgpt_enterprise.app_log.log_type | APP_LOG sub-type (request or response). | keyword |
+| openai_chatgpt_enterprise.app_log.meta.locale | Locale of the client that issued the request. | keyword |
+| openai_chatgpt_enterprise.app_log.meta.organization | Opaque organization identifier of the client that issued the request. | keyword |
+| openai_chatgpt_enterprise.app_log.meta.session | Opaque session identifier of the client that issued the request. | keyword |
+| openai_chatgpt_enterprise.app_log.meta.subject | Opaque subject identifier of the client that issued the request. | keyword |
+| openai_chatgpt_enterprise.app_log.meta.timezone | Timezone reported by the client that issued the request. | keyword |
+| openai_chatgpt_enterprise.app_log.output | Raw, free-form response output returned by the app. | flattened |
+| openai_chatgpt_enterprise.app_log.principal.type | Principal that owns the event (e.g. CHATGPT_WORKSPACE). | keyword |
+| openai_chatgpt_enterprise.app_log.query | Query/input sent to the app on a request log. | keyword |
+| openai_chatgpt_enterprise.app_log.type | Top-level event category (e.g. APP_LOG). | keyword |
+
+
+### Example event
+
+#### App Log
+
+An example event for `app_log` looks as following:
+
+```json
+{
+    "@timestamp": "2026-07-15T15:39:18.154Z",
+    "agent": {
+        "ephemeral_id": "7e6eae22-73d9-4583-9118-52bd111c571c",
+        "id": "a55b9626-c44b-4de5-9bf6-0d9935deeaef",
+        "name": "elastic-agent-16522",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "openai_chatgpt_enterprise.app_log",
+        "namespace": "99788",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "a55b9626-c44b-4de5-9bf6-0d9935deeaef",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "api"
+        ],
+        "dataset": "openai_chatgpt_enterprise.app_log",
+        "id": "3f1a9c02-1111-4a11-8b11-000000000001",
+        "ingested": "2026-08-26T06:44:59Z",
+        "kind": "event",
+        "original": "{\"event_id\":\"3f1a9c02-1111-4a11-8b11-000000000001\",\"type\":\"APP_LOG\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"timestamp\":\"2026-07-15T15:39:18.154524Z\",\"app_id\":\"asdk_app_1111111111111111aaaa\",\"app_name\":\"Slack\",\"app_type\":\"MCP\",\"conversation_id\":\"c-1111-aaaa-2222-bbbb\",\"log_type\":\"request\",\"input\":{\"query\":\"in:general after:2026-07-14\",\"limit\":20,\"include_bots\":true,\"sort\":\"timestamp\",\"sort_dir\":\"desc\",\"response_format\":\"concise\",\"_meta\":{\"openai/userAgent\":\"ChatGPT/1.2026.183 (Mac OS X 26.5.2; arm64; build 1783607847)\",\"openai/locale\":\"en-GB\",\"openai/userLocation\":{\"city\":\"London\",\"region\":\"England\",\"country\":\"GB\",\"timezone\":\"Europe/London\",\"latitude\":\"51.50853\",\"longitude\":\"-0.12574\"},\"timezone\":\"Europe/London\",\"openai/subject\":\"v1/mock-subject-aaaaaaaaaaaaaaaa\",\"openai/session\":\"v1/mock-session-aaaaaaaaaaaaaaaa\",\"openai/organization\":\"v1/mock-org-aaaaaaaaaaaaaaaa\"}}}",
+        "type": [
+            "access"
+        ]
+    },
+    "gen_ai": {
+        "provider": {
+            "name": "openai"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "openai_chatgpt_enterprise": {
+        "app_log": {
+            "actor": {
+                "type": "ACCOUNT_USER"
+            },
+            "app_id": "asdk_app_1111111111111111aaaa",
+            "app_name": "Slack",
+            "app_type": "MCP",
+            "conversation_id": "c-1111-aaaa-2222-bbbb",
+            "input": {
+                "include_bots": true,
+                "limit": 20,
+                "query": "in:general after:2026-07-14",
+                "response_format": "concise",
+                "sort": "timestamp",
+                "sort_dir": "desc"
+            },
+            "log_type": "request",
+            "meta": {
+                "locale": "en-GB",
+                "organization": "v1/mock-org-aaaaaaaaaaaaaaaa",
+                "session": "v1/mock-session-aaaaaaaaaaaaaaaa",
+                "subject": "v1/mock-subject-aaaaaaaaaaaaaaaa",
+                "timezone": "Europe/London"
+            },
+            "principal": {
+                "type": "CHATGPT_WORKSPACE"
+            },
+            "query": "in:general after:2026-07-14",
+            "type": "APP_LOG"
+        }
+    },
+    "organization": {
+        "id": "11111111-2222-3333-4444-555555555555"
+    },
+    "related": {
+        "user": [
+            "alice.martin@example.org",
+            "user-Aaaaaaaaaaaaaaaaaaaaaaa1"
+        ]
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "country_iso_code": "GB",
+            "location": "51.50853,-0.12574",
+            "region_name": "England"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "openai_chatgpt_enterprise-app_log"
+    ],
+    "user": {
+        "domain": "example.org",
+        "email": "alice.martin@example.org",
+        "id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Other",
+        "original": "ChatGPT/1.2026.183 (Mac OS X 26.5.2; arm64; build 1783607847)",
+        "os": {
+            "full": "Mac OS X 26.5.2",
+            "name": "Mac OS X",
+            "version": "26.5.2"
+        }
+    }
+}
+```
+
 ### Inputs used
 
 These inputs can be used with this integration:
@@ -389,5 +554,8 @@ These APIs are used with this integration:
     * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
     * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Application Authentication Log:
+    * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
+    * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Application Log:
     * List log files (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs`)
     * Download log file (endpoint: `/v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
