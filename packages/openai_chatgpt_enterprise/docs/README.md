@@ -565,7 +565,7 @@ The `codex_log` data stream captures ChatGPT Enterprise `CODEX_LOG` events.
 | openai_chatgpt_enterprise.codex_log.event_details.environment_fields.permissions.network_access | Environment network-access permission. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.environment_fields.repos | Repositories attached to the environment. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.environment_id | Codex environment identifier. | keyword |
-| openai_chatgpt_enterprise.codex_log.event_details.expires_at | Expiration time, e.g. for access tokens. Format assumed RFC3339 (verify). | date |
+| openai_chatgpt_enterprise.codex_log.event_details.expires_at | Expiration time, e.g. for access tokens (RFC3339). | date |
 | openai_chatgpt_enterprise.codex_log.event_details.marketplace_name | Marketplace source for a plugin. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.phase | Turn phase (e.g. prompt). | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.plugin_creator_account_user_id | Account user ID that created the plugin. | keyword |
@@ -577,15 +577,15 @@ The `codex_log` data stream captures ChatGPT Enterprise `CODEX_LOG` events.
 | openai_chatgpt_enterprise.codex_log.event_details.plugin_version | Plugin version. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.previous_settings.default_model | Default model before the change. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.previous_settings.network_access | Network-access policy before the change. | keyword |
-| openai_chatgpt_enterprise.codex_log.event_details.prompt_text | Prompt text submitted by the user (sensitive content). | keyword |
+| openai_chatgpt_enterprise.codex_log.event_details.prompt_text | Prompt text submitted by the user (sensitive content). | text |
 | openai_chatgpt_enterprise.codex_log.event_details.reasoning_effort | Reasoning effort setting (e.g. low/medium/high). | keyword |
-| openai_chatgpt_enterprise.codex_log.event_details.response_text | Model response text (sensitive content). | keyword |
+| openai_chatgpt_enterprise.codex_log.event_details.response_text | Model response text (sensitive content). | text |
 | openai_chatgpt_enterprise.codex_log.event_details.service_tier | Service tier used for the request. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.session_id | Codex session identifier. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.status | Outcome status (e.g. success, error). | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.token_usage.cached_input_tokens | Cached input tokens used. | long |
 | openai_chatgpt_enterprise.codex_log.event_details.token_usage.reasoning_output_tokens | Reasoning output tokens generated. | long |
-| openai_chatgpt_enterprise.codex_log.event_details.tool_input | Input passed to the tool (shape varies). | keyword |
+| openai_chatgpt_enterprise.codex_log.event_details.tool_input | Input passed to the tool (shape varies). | text |
 | openai_chatgpt_enterprise.codex_log.event_details.tool_meta.connector_id | Connector identifier associated with the tool. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.tool_meta.resource_id | Resource identifier associated with the tool. | keyword |
 | openai_chatgpt_enterprise.codex_log.event_details.turn_id | Identifier of the conversation turn. | keyword |
