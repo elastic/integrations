@@ -41,21 +41,32 @@ program: |
             "Authorization": ["Basic " + base64(state.username + ":" + state.password)],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-          resp.Body.decode_json().as(body, {
-            "events": body.result.map(e, {
-              "message": e.encode_json(),
-            }),
-            "want_more": body.?result.hasValue() && size(body.result) >= state.batch_size,
-            "page": body.?result.hasValue() && size(body.result) >= state.batch_size ? int(state.?page.orValue(1)) + 1 : 1,
-            "start_time": start_time,
-            "cursor": {
-              ?"last_timestamp": has(body.result) && size(body.result) > 0 ?
-                optional.of(string(int(body.result[size(body.result) - 1].last_activity_time)))
-              :
-                state.?cursor.last_timestamp
-            },
-          }
-        )
+          resp.Body.decode_json().as(body,
+            body.?error.orValue("") != "" ?
+              {
+                "events": {
+                  "error": {
+                    "message": "Nozomi query rejected: " + body.error,
+                  },
+                },
+                "want_more": false,
+              }
+            :
+              {
+                "events": body.result.map(e, {
+                  "message": e.encode_json(),
+                }),
+                "want_more": body.?result.hasValue() && size(body.result) >= state.batch_size,
+                "page": body.?result.hasValue() && size(body.result) >= state.batch_size ? int(state.?page.orValue(1)) + 1 : 1,
+                "start_time": start_time,
+                "cursor": {
+                  ?"last_timestamp": has(body.result) && size(body.result) > 0 ?
+                    optional.of(string(int(body.result[size(body.result) - 1].last_activity_time)))
+                  :
+                    state.?cursor.last_timestamp
+                },
+              }
+            )
       :
         {
           "events": {
