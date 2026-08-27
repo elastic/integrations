@@ -9,9 +9,6 @@ add_bin_path
 with_yq
 with_mage
 
-echo "--- List all directories"
-PACKAGE_LIST=$(list_all_directories)
-
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
 
@@ -46,6 +43,25 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
     STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
     export STACK_VERSION
     echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
+fi
+
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or force-check enabled: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            echo "${changed_files}" | grep -oE '^packages/[^/]+' | sort -u || true
+            echo "${changed_files}" | grep -oE '^\.buildkite/scripts/packages/[^/]+\.sh' \
+                | sed 's|^\.buildkite/scripts/||; s|\.sh$||' || true
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
 fi
 
 packages_to_test=0
