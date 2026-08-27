@@ -38,6 +38,10 @@ program: |-
     :
       optional.none(),
     "page": int(state.?cursor.page.orValue(1)),
+    "walk_date": (int(state.?cursor.page.orValue(1)) == 1) ?
+      now.format("2006-01-02")
+    :
+      state.cursor.walk_date,
   }.as(poll,
     state.with(
       request(
@@ -93,10 +97,11 @@ program: |-
                   "cursor": more ?
                     {
                       "page": poll.page + 1,
+                      "walk_date": poll.walk_date,
                       ?"date_from": poll.?date_from,
                     }
                   :
-                    {"date_from": now.format("2006-01-02")},
+                    {"date_from": poll.walk_date},
                   "want_more": more,
                 }
               )
