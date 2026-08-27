@@ -1,0 +1,57 @@
+title: "Temporal SDK Metrics"
+type: metrics
+dataset: temporal.sdk_metrics
+streams:
+  - package: prometheus_input_otel
+    enabled: false
+    title: Temporal SDK Metrics
+    description: >
+      Worker and Temporal SDK metrics scraped from the application's Prometheus
+      endpoint (schedule-to-start latency, activity execution, sticky cache,
+      worker slots, and related tallies). Enable this stream and set Worker
+      scrape targets after the Worker exposes a Prometheus /metrics endpoint.
+    vars:
+      - name: targets
+        type: text
+        title: SDK Metrics Endpoint
+        required: true
+        multi: true
+        description: >
+          Worker Prometheus scrape target in host:port format. Use one row per Worker. Example for a local Worker reached from Docker Agent:
+          host.docker.internal:8077.
+        default:
+          - "localhost:8077"
+        show_user: true
+      - name: scrape_interval
+        type: duration
+        title: Scrape Interval
+        required: false
+        description: How frequently to scrape Worker/SDK metrics.
+        default: 15s
+        show_user: true
+      - name: scrape_timeout
+        type: duration
+        title: Scrape Timeout
+        required: false
+        description: Timeout for scraping (must be less than scrape_interval).
+        default: 10s
+        show_user: false
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        required: false
+        description: HTTP path exposed by the Temporal SDK Prometheus reporter.
+        default: /metrics
+        show_user: true
+      - name: scheme
+        type: select
+        title: Scheme
+        required: false
+        description: Protocol scheme for the Worker metrics endpoint.
+        default: http
+        show_user: true
+        options:
+          - text: HTTP
+            value: http
+          - text: HTTPS
+            value: https
