@@ -1,0 +1,98 @@
+title: Codex Security Logs
+type: logs
+streams:
+  - input: cel
+    title: Codex Security Logs
+    enabled: true
+    description: Collect Codex Security Logs from the OpenAI ChatGPT Enterprise Compliance Logs Platform.
+    template_path: cel.yml.hbs
+    vars:
+      - name: scope
+        type: select
+        title: Scope
+        description: >-
+          Whether to collect compliance logs at the `workspace` or `organization` level.
+        multi: false
+        required: true
+        show_user: true
+        default: workspace
+        options:
+          - value: workspace
+            text: Workspace
+          - value: organization
+            text: Organization
+      - name: resource_id
+        type: text
+        title: Workspace / Organization ID
+        description: >-
+          The ChatGPT Enterprise workspace ID (when Scope is `workspace`) or the organization ID (when Scope is `organization`) whose compliance logs will be collected.
+        multi: false
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull compliance logs on first run. Supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the OpenAI Compliance Logs Platform API. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of log files to request per listing page. This should be between 1 and 100.
+        default: 100
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data-stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - openai_chatgpt_enterprise-codex_security_log
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

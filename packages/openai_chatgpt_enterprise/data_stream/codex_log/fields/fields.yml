@@ -1,3 +1,11 @@
+# Explicit flattened mappings required so nested gen_ai values are not dynamically
+# mapped as object sub-fields (which fails system test mapping validation).
+- name: gen_ai.output.messages
+  type: flattened
+  description: Messages returned by the model where each message represents a specific model response.
+- name: gen_ai.tool.call.arguments
+  type: flattened
+  description: Arguments passed to the tool call.
 - name: openai_chatgpt_enterprise.codex_log
   type: group
   description: OpenAI ChatGPT Enterprise Codex Logs event fields.
@@ -26,12 +34,6 @@
         - name: access_token_name
           type: keyword
           description: User-provided access token name.
-        - name: arguments
-          type: group
-          fields:
-            - name: jql
-              type: keyword
-              description: Arguments passed to an app/MCP call (shape varies; example is a Jira JQL query).
         - name: call_id
           type: keyword
           description: Identifier of the MCP/tool call.
@@ -140,9 +142,6 @@
         - name: response_text
           type: keyword
           description: Model response text (sensitive content).
-        - name: result_preview
-          type: keyword
-          description: Preview of a tool/call result.
         - name: service_tier
           type: keyword
           description: Service tier used for the request.

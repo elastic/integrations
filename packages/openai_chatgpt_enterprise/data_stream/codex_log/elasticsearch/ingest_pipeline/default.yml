@@ -46,8 +46,8 @@ processors:
       ignore_missing: true
       tag: fingerprint_event_id
   - set:
-      field: gen_ai.system
-      tag: set_gen_ai_system
+      field: gen_ai.provider.name
+      tag: set_gen_ai_provider_name
       value: openai
   - set:
       field: event.id
@@ -146,6 +146,67 @@ processors:
       copy_from: openai_chatgpt_enterprise.codex_log.event_details.model
       ignore_empty_value: true
   - set:
+      field: gen_ai.response.model
+      tag: set_gen_ai_response_model
+      copy_from: openai_chatgpt_enterprise.codex_log.event_details.model
+      ignore_empty_value: true
+  - set:
+      field: gen_ai.operation.name
+      tag: set_gen_ai_operation_name_chat
+      value: chat
+      if: "['PROMPT_RESPONSE_RECEIVED', 'TOOL_CALL_COMPLETED', 'APP_MCP_CALL'].contains(ctx.openai_chatgpt_enterprise?.codex_log?.event_type)"
+  - set:
+      field: gen_ai.output.type
+      tag: set_gen_ai_output_type_text
+      value: text
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.prompt_text != null || ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.response_text != null
+  - script:
+      lang: painless
+      tag: set_gen_ai_input_messages_from_prompt_text
+      description: Map Codex prompt_text into ECS gen_ai.input.messages.
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.prompt_text != null && ctx.openai_chatgpt_enterprise.codex_log.event_details.prompt_text != ''
+      source: |-
+        if (ctx.gen_ai == null) {
+          ctx.gen_ai = new HashMap();
+        }
+        if (ctx.gen_ai.input == null) {
+          ctx.gen_ai.input = new HashMap();
+        }
+        def parts = new ArrayList();
+        def part = new HashMap();
+        part.put('type', 'text');
+        part.put('content', ctx.openai_chatgpt_enterprise.codex_log.event_details.prompt_text);
+        parts.add(part);
+        def message = new HashMap();
+        message.put('role', 'user');
+        message.put('parts', parts);
+        def messages = new ArrayList();
+        messages.add(message);
+        ctx.gen_ai.input.messages = messages;
+  - script:
+      lang: painless
+      tag: set_gen_ai_output_messages_from_response_text
+      description: Map Codex response_text into ECS gen_ai.output.messages.
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.response_text != null && ctx.openai_chatgpt_enterprise.codex_log.event_details.response_text != ''
+      source: |-
+        if (ctx.gen_ai == null) {
+          ctx.gen_ai = new HashMap();
+        }
+        if (ctx.gen_ai.output == null) {
+          ctx.gen_ai.output = new HashMap();
+        }
+        def parts = new ArrayList();
+        def part = new HashMap();
+        part.put('type', 'text');
+        part.put('content', ctx.openai_chatgpt_enterprise.codex_log.event_details.response_text);
+        parts.add(part);
+        def message = new HashMap();
+        message.put('role', 'assistant');
+        message.put('parts', parts);
+        def messages = new ArrayList();
+        messages.add(message);
+        ctx.gen_ai.output.messages = messages;
+  - set:
       field: gen_ai.tool.name
       tag: set_gen_ai_tool_name_from_tool_name
       copy_from: openai_chatgpt_enterprise.codex_log.event_details.tool_name
@@ -171,6 +232,37 @@ processors:
       field: gen_ai.tool.type
       tag: set_gen_ai_tool_type
       copy_from: openai_chatgpt_enterprise.codex_log.event_details.tool_type
+      ignore_empty_value: true
+  - set:
+      field: gen_ai.tool.call.arguments
+      tag: set_gen_ai_tool_call_arguments
+      copy_from: openai_chatgpt_enterprise.codex_log.event_details.arguments
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: set_gen_ai_tool_call_arguments_from_tool_input
+      description: Map tool_input into gen_ai.tool.call.arguments when arguments are absent.
+      if: >-
+        ctx.gen_ai?.tool?.call?.arguments == null &&
+        ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.tool_input != null &&
+        ctx.openai_chatgpt_enterprise.codex_log.event_details.tool_input != ''
+      source: |-
+        if (ctx.gen_ai == null) {
+          ctx.gen_ai = new HashMap();
+        }
+        if (ctx.gen_ai.tool == null) {
+          ctx.gen_ai.tool = new HashMap();
+        }
+        if (ctx.gen_ai.tool.call == null) {
+          ctx.gen_ai.tool.call = new HashMap();
+        }
+        def args = new HashMap();
+        args.put('input', ctx.openai_chatgpt_enterprise.codex_log.event_details.tool_input);
+        ctx.gen_ai.tool.call.arguments = args;
+  - set:
+      field: gen_ai.tool.call.result
+      tag: set_gen_ai_tool_call_result_from_preview
+      copy_from: openai_chatgpt_enterprise.codex_log.event_details.result_preview
       ignore_empty_value: true
   - set:
       field: url.full
@@ -293,6 +385,8 @@ processors:
         - openai_chatgpt_enterprise.codex_log.event_details.tool_name
         - openai_chatgpt_enterprise.codex_log.event_details.tool_call_id
         - openai_chatgpt_enterprise.codex_log.event_details.tool_type
+        - openai_chatgpt_enterprise.codex_log.event_details.arguments
+        - openai_chatgpt_enterprise.codex_log.event_details.result_preview
         - openai_chatgpt_enterprise.codex_log.event_details.token_usage.input_tokens
         - openai_chatgpt_enterprise.codex_log.event_details.token_usage.output_tokens
         - openai_chatgpt_enterprise.codex_log.event_details.error_code
