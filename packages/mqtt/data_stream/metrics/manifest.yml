@@ -1,0 +1,98 @@
+title: "MQTT metrics"
+type: metrics
+streams:
+  - input: mqtt
+    title: "MQTT metrics"
+    description: Collect metrics from an MQTT broker.
+    template_path: mqtt.yml.hbs
+    vars:
+      - name: topics
+        type: text
+        title: Topics
+        description: |
+          Topics to subscribe to. Wildcards are supported, for example `sensors/#`.
+        required: true
+        multi: true
+        show_user: true
+        default:
+          - "#"
+      - name: client_id
+        type: text
+        title: Client ID
+        description: |
+          Client identifier used when connecting to the broker. Must be unique per agent and per enabled data stream, and at most 23 characters long — the broker rejects longer identifiers.
+        required: false
+        show_user: true
+        default: elastic-agent-metrics
+      - name: qos
+        type: select
+        title: QoS
+        description: |
+          Quality of service level for the subscription.
+        required: false
+        show_user: true
+        options:
+          - value: "0"
+            text: 0 - At most once
+          - value: "1"
+            text: 1 - At least once
+          - value: "2"
+            text: 2 - Exactly once
+        default: "1"
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index.
+        required: true
+        show_user: true
+        default: mqtt.metrics
+      - name: clean_session
+        type: bool
+        title: Clean Session
+        description: |
+          Whether the broker should discard any previously held session state for this client on connect.
+        required: false
+        show_user: false
+        default: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: |
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: |
+          Tags to include in the published event.
+        required: false
+        multi: true
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+        required: false
+        show_user: false
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        description: |
+          Additional YAML configuration merged into the input.
+        required: false
+        show_user: false
+        default: ""
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true

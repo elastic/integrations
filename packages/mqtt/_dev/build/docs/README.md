@@ -28,7 +28,7 @@ Typical payloads include:
 - Line-delimited values from embedded hardware
 
 The integration writes to a data stream you name yourself. You choose both parts:
-- The **type**, by selecting one of the three integration options: `logs`, `metrics`, or `traces`.
+- The **type**, by enabling one of the three data streams the integration ships: `logs`, `metrics` or `traces`. Each writes to its own index type.
 - The **dataset**, through the Dataset name setting, which defaults to `mqtt.generic`.
 
 ### Supported use cases
@@ -82,10 +82,12 @@ Before adding the integration in Kibana, prepare the broker:
 
 2. Search for **Custom MQTT** and select it.
 
-3. Choose the integration option matching the data stream type you want:
-   - **Custom MQTT Logs** writes to `logs-*`.
-   - **Custom MQTT Metrics** writes to `metrics-*`.
-   - **Custom MQTT Traces** writes to `traces-*`.
+3. Enable the data streams you want. The integration ships three, and you can enable any combination:
+   - **MQTT logs** writes to `logs-*`.
+   - **MQTT metrics** writes to `metrics-*`.
+   - **MQTT traces** writes to `traces-*`.
+
+   Each enabled data stream opens its own MQTT connection, so give each one a distinct **Client ID** — a broker evicts an existing client when a second one connects with the same identifier.
 
 4. Configure the required settings:
     - **Broker Hosts**: One or more broker URIs. The default is `tcp://localhost:1883`.
@@ -146,6 +148,24 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - Horizontal scaling: A single agent handles one MQTT client connection. To spread load, run several agents that each subscribe to a disjoint set of topics, and give each one a distinct client identifier. Note that plain MQTT subscriptions are not load balanced — every subscriber to a topic receives every message — so splitting by topic, not by adding subscribers to the same topic, is what distributes work. Brokers that support shared subscriptions (`$share/`) can balance a single topic across several clients.
 
 ## Reference
+
+### logs
+
+{{fields "logs"}}
+
+{{event "logs"}}
+
+### metrics
+
+{{fields "metrics"}}
+
+{{event "metrics"}}
+
+### traces
+
+{{fields "traces"}}
+
+{{event "traces"}}
 
 ### Vendor documentation links
 
