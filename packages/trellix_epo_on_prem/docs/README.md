@@ -236,19 +236,19 @@ The `web_control` data stream provides Trellix ePO On-Prem web control logs coll
 | input.type | Type of filebeat input. | keyword |
 | observer.product | Product name of the observer that generated the event. | constant_keyword |
 | observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
-| trellix_epo_on_prem.web_control.wp_event_info.action_id | Inferred: Numeric action identifier associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.bad_link_rating_id | Inferred: Numeric identifier for the bad-link rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.content_id | Inferred: Numeric content identifier associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.count | Inferred: Count recorded for the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.download_rating_id | Inferred: Numeric identifier for the download rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.exploit_rating_id | Inferred: Numeric identifier for the exploit rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.list_id | Inferred: Numeric identifier of a list associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.observer_mode | Inferred: Boolean indicating whether observer mode was active for the web-control event. | boolean |
-| trellix_epo_on_prem.web_control.wp_event_info.phishing_rating_id | Inferred: Numeric identifier for the phishing rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.popup_rating_id | Inferred: Numeric identifier for the pop-up rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.rating_id | Inferred: Numeric identifier for the overall web-control rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.reason_id | Inferred: Numeric identifier for the reason associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.spam_rating_id | Inferred: Numeric identifier for the spam rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.action_id | Numeric action identifier associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.bad_link_rating_id | Numeric identifier for the bad-link rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.content_id | Numeric content identifier associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.count | Count recorded for the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.download_rating_id | Numeric identifier for the download rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.exploit_rating_id | Numeric identifier for the exploit rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.list_id | Numeric identifier of a list associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.observer_mode | Boolean indicating whether observer mode was active for the web-control event. | boolean |
+| trellix_epo_on_prem.web_control.wp_event_info.phishing_rating_id | Numeric identifier for the phishing rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.popup_rating_id | Numeric identifier for the pop-up rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.rating_id | Numeric identifier for the overall web-control rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.reason_id | Numeric identifier for the reason associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.spam_rating_id | Numeric identifier for the spam rating associated with the event. | long |
 
 
 ### Example event
@@ -259,24 +259,24 @@ An example event for `web_control` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-01T03:01:12.614Z",
+    "@timestamp": "2026-08-27T12:04:24.300Z",
     "agent": {
-        "ephemeral_id": "878e5299-b760-41c9-925d-000327e82659",
-        "id": "69143969-12a7-46e1-8d56-cad4e2270da6",
-        "name": "elastic-agent-59201",
+        "ephemeral_id": "2ed948bc-3492-4327-817e-83b23c898f5d",
+        "id": "97440a4e-3cc5-4d38-be68-1645da3ab54d",
+        "name": "elastic-agent-41151",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.web_control",
-        "namespace": "40679",
+        "namespace": "21957",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "69143969-12a7-46e1-8d56-cad4e2270da6",
+        "id": "97440a4e-3cc5-4d38-be68-1645da3ab54d",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -287,7 +287,7 @@ An example event for `web_control` looks as following:
         ],
         "dataset": "trellix_epo_on_prem.web_control",
         "id": "494",
-        "ingested": "2026-08-01T03:01:15Z",
+        "ingested": "2026-08-27T12:04:27Z",
         "kind": "event",
         "original": "{\"WP_EventInfo.BadLinkRatingID\":4,\"WP_EventInfo.ContentID\":0,\"WP_EventInfo.Count\":1,\"WP_EventInfo.DomainName\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.DownloadRatingID\":4,\"WP_EventInfo.EventAutoID\":494,\"WP_EventInfo.ExploitRatingID\":4,\"WP_EventInfo.ListID\":1,\"WP_EventInfo.ObserverMode\":true,\"WP_EventInfo.PhishingRatingID\":4,\"WP_EventInfo.PopupRatingID\":4,\"WP_EventInfo.RatingID\":6,\"WP_EventInfo.ReasonID\":7,\"WP_EventInfo.SpamRatingID\":4,\"WP_EventInfo.URL\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.UserName\":null}",
         "type": [

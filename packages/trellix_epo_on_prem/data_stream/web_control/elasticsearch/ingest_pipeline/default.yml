@@ -37,45 +37,12 @@ processors:
       tag: json_event_original
       target_field: trellix_epo_on_prem.web_control
       if: ctx.event?.original != null
-  - fingerprint:
-      tag: fingerprint_event_auto_id
-      fields:
-        - trellix_epo_on_prem.web_control.WP_EventInfo.EventAutoID
-      target_field: _id
-      ignore_missing: true
-  - script:
-      description: Nest flat fields with dots into objects.
-      tag: script_nest_flat_fields
-      lang: painless
-      source: |-
-        Map nested = [:];
-        List keysToRemove = [];
-        for (entry in ctx.trellix_epo_on_prem.web_control.entrySet()) {
-          String key = entry.getKey();
-          Object value = entry.getValue();
-          if (key.contains(".")) {
-            int dotIndex = key.indexOf(".");
-            String objName = key.substring(0, dotIndex);
-            String fieldName = key.substring(dotIndex + 1);
-            if (!nested.containsKey(objName)) {
-              nested[objName] = [:];
-            }
-            nested[objName][fieldName] = value;
-            keysToRemove.add(key);
-          }
-        }
-        // Add nested objects
-        for (entry in nested.entrySet()) {
-          ctx.trellix_epo_on_prem.web_control[entry.getKey()] = entry.getValue();
-        }
-        // Remove flat fields
-        for (key in keysToRemove) {
-          ctx.trellix_epo_on_prem.web_control.remove(key);
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_web_control
+      path: trellix_epo_on_prem.web_control
+      if: ctx.trellix_epo_on_prem?.web_control != null
+      description: Expands the dotted JSON keys (for example `WP_EventInfo.EventAutoID`) into nested objects.
   - script:
       description: >
         Convert field names from camelCase to snake_case recursively.
@@ -123,6 +90,17 @@ processors:
             tag: append_script_convert_camelcase_to_snake_case_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.web_control.wp_event_info.event_auto_id
+      tag: convert_WP_EventInfo_EventAutoID_to_string
+      type: string
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - trellix_epo_on_prem.web_control.wp_event_info.event_auto_id
+      tag: fingerprint_with_id
+      target_field: _id
+      ignore_missing: true
   - set:
       field: event.kind
       tag: set_event_kind
@@ -210,11 +188,6 @@ processors:
             field: error.message
             tag: append_convert_wp_event_info_download_rating_id_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: trellix_epo_on_prem.web_control.wp_event_info.event_auto_id
-      tag: convert_WP_EventInfo_EventAutoID_to_long
-      type: string
-      ignore_missing: true
   - set:
       field: event.id
       tag: set_event_id_from_web_control_wp_event_info_event_auto_id
@@ -394,21 +367,19 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
-  - set:
-      field: event.kind
-      tag: set_pipeline_error_to_event_kind
-      value: pipeline_error
-      if: ctx.error?.message != null
   - append:
-      tag: append_pipeline_failure_message
       field: error.message
+      tag: append_pipeline_failure_message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
   - append:
       field: tags
       tag: append_preserve_original_event
       value: preserve_original_event
       allow_duplicates: false
-      if: ctx.error?.message != null
