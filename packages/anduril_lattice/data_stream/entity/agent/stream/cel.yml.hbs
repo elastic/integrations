@@ -59,7 +59,7 @@ program: |-
               {
                 "error": {
                   "code": string(tok_resp.StatusCode),
-                  "id": string(tok_resp.Status),
+                  "id": tok_resp.Status,
                   "message": "POST /api/v1/oauth/token: " + string(tok_resp.Body),
                 },
               }
@@ -96,9 +96,7 @@ program: |-
         ).with(
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              (
-                type(body.?entityEvents.orValue(null)) == list && size(body.entityEvents) > 0
-              ) ?
+              (type(body.?entityEvents.orValue(null)) == list) ?
                 {
                   "events": body.entityEvents.map(e, {"message": e.encode_json()}),
                   "cursor": {"session_token": body.sessionToken},
@@ -116,7 +114,7 @@ program: |-
               "events": {
                 "error": {
                   "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
+                  "id": resp.Status,
                   "message": "POST /api/v1/entities/events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
                 },
               },
