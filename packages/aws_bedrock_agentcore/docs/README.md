@@ -41,7 +41,7 @@ Elastic Agent is required to collect metrics and logs from CloudWatch and ship t
 
 Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. Elastic Managed deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an Elastic Managed deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
 
-For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 ### How to find the `log_group_arn` (for log-based datasets)
 
