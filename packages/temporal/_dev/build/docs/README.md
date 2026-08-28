@@ -1,6 +1,6 @@
 # Temporal (OpenTelemetry)
 
-Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) and optionally from Temporal Worker Prometheus endpoints using the Temporal (OpenTelemetry) integration.
+Collect [Temporal Cloud](https://temporal.io/cloud/) metrics and Worker/SDK metrics using the Temporal (OpenTelemetry) integration.
 
 ## Overview
 
