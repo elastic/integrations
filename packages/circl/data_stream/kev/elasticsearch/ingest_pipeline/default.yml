@@ -709,6 +709,12 @@ processors:
         - json
       tag: remove_temporary_fields
       ignore_missing: true
+  - remove:
+    field: event.original
+    tag: remove_event_original
+    if: (ctx.tags == null || !ctx.tags.contains('preserve_original_event')) && ctx.error?.message == null
+    description: Removes the copy of the original message unless the user opted in to preserve it.
+    ignore_missing: true
   - append:
       field: tags
       tag: append_preserve_original_event_on_error
