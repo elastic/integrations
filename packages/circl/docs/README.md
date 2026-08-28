@@ -365,9 +365,3 @@ An example event for `kev` looks as following:
     }
 }
 ```
-
-
-### Data streams using ILM policies
-
-
-
