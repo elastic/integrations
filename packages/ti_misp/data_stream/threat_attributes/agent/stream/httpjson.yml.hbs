@@ -49,15 +49,15 @@ request.transforms:
     target: body.returnFormat
     value: json
 {{#if daily_refetch}}
-# Daily refetch mode: every 24 hours, reset the request window to initial_interval to re-fetch all
-# attributes (picking up current decay scores). The decision is made here in the request transform,
+# Refetch mode: every refetch_interval, reset the request window to initial_interval to re-fetch
+# all attributes (picking up current decay scores). The decision is made here in the request transform,
 # where the cursor state is readable. The chosen refetch marker is echoed through url.params so the
 # cursor value template can persist it: httpjson evaluates cursor templates with an empty .cursor, so
 # the cursor field cannot read its own previous value, but it can read .last_response.url.params.
 - set:
     target: body.timestamp
     value: |-
-      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- $dailyRefetchDuration := (parseDuration "{{refetch_interval}}") -]]
       [[- $initialInterval := (parseDuration "-{{initial_interval}}") -]]
       [[- $initialTimestamp := (now $initialInterval).Unix -]]
       [[- $isDailyRefetch := true -]]
@@ -94,7 +94,7 @@ request.transforms:
     # parameter is ignored by the server. This mirrors the existing url.params.timestamp workaround.
     target: url.params.daily_refetch_at
     value: |-
-      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- $dailyRefetchDuration := (parseDuration "{{refetch_interval}}") -]]
       [[- $isDailyRefetch := true -]]
       [[- if index .cursor "last_daily_refetch" -]]
         [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]

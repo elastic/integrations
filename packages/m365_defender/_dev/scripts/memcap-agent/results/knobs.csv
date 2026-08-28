@@ -1,0 +1,18 @@
+# Knob ladder, 2026-08-12, agent 9.6.0-SNAPSHOT, emitted by bin/sweep.sh:
+#   AXIS=knob ALERTS_PER_INCIDENT=400 DRAIN=1 INTERVAL=10s HOLD_S=300 SWEEP_CAP=3g bin/sweep.sh
+# Host: no other stack running, ~7 GiB free in the Docker VM.
+#
+# Every row is the same sustained worst case (shipped pages, 400 alerts/incident) with one
+# thing changed, so a row reads as a delta from row 1. Rows 2 and 3 run at a 1Gi cap: the
+# question they answer is whether the mitigation holds the worst case inside 1Gi, and both
+# do. Row 2's peak is exactly its cap because a soft memory limit lets Go run right up to
+# it - the run survived on reclaim, which is a mechanism working, not a margin to ship on.
+#
+# Row 1 is a fourth sample of the same configuration as the 400 point in sustained.csv.
+# Across all four it is the highest (2,135 MB against 1,835-1,915 MB), so the published
+# worst case comes from here. That 16% spread over identical inputs is why the ORR sizes on
+# the maximum of repeated runs rather than on any single number.
+axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,workingset_peak_bytes,anon_bytes,oom,agent_image,run_log
+knob,1,baseline (nothing changed),alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,3221225472,,300,129863880,2239582208,1631989760,2026150821,1122881536,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+knob,2,GOMEMLIMIT=850MiB (nothing else),alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,1073741824,850MiB,300,129863880,1073741824,954142720,996461772,929816576,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+knob,3,incident batch_size 50->10 + vulnerability pageSize 10000->1000,alert+incident+vulnerability,alert=1000 incident=10 vulnerability=1000 alerts_per_incident=400,sustained,1073741824,,300,29892343,683003904,642957312,670878924,449400832,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
