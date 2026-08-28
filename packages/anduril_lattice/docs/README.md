@@ -205,8 +205,8 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.location.acceleration_enu.e | East component of acceleration in m/s². | float |
 | anduril_lattice.entity.location.acceleration_enu.n | North component of acceleration in m/s². | float |
 | anduril_lattice.entity.location.acceleration_enu.u | Up component of acceleration in m/s². | float |
-| anduril_lattice.entity.location.altitude_agl_meters | Altitude above ground level in meters. | float |
-| anduril_lattice.entity.location.altitude_asf_meters | Altitude above sea floor in meters. | float |
+| anduril_lattice.entity.location.altitude_agl_meters | Altitude above ground level in meters. | double |
+| anduril_lattice.entity.location.altitude_asf_meters | Altitude above sea floor in meters. | double |
 | anduril_lattice.entity.location.altitude_hae_meters | Altitude above WGS-84 ellipsoid in meters. | double |
 | anduril_lattice.entity.location.attitude_enu.w | W (scalar) component of attitude quaternion. | float |
 | anduril_lattice.entity.location.attitude_enu.x | X component of attitude quaternion. | float |
@@ -215,7 +215,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.location.geo | Geographic position of the entity as a geo_point derived from latitudeDegrees and longitudeDegrees. | geo_point |
 | anduril_lattice.entity.location.geo.coordinates | Coordinates of the geo_point as [lon, lat]. | object |
 | anduril_lattice.entity.location.geo.type | GeoJSON type of the geo_point (always "Point"). | keyword |
-| anduril_lattice.entity.location.pressure_depth_meters | Depth derived from pressure in meters. | float |
+| anduril_lattice.entity.location.pressure_depth_meters | Depth derived from pressure in meters. | double |
 | anduril_lattice.entity.location.speed_mps | Speed over ground in meters per second. | double |
 | anduril_lattice.entity.location.velocity_enu.e | East component of velocity in m/s. | double |
 | anduril_lattice.entity.location.velocity_enu.n | North component of velocity in m/s. | double |
@@ -265,6 +265,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.provenance.data_type | Data type or sensor type of the entity source. | keyword |
 | anduril_lattice.entity.provenance.source_description | Human-readable description of the source. | keyword |
 | anduril_lattice.entity.provenance.source_id | Source system identifier. | keyword |
+| anduril_lattice.entity.provenance.source_update_time | Time when the source system last updated the entity. | date |
 | anduril_lattice.entity.relationships | Entity relationship data stored as a flattened object. | flattened |
 | anduril_lattice.entity.route_details.destination_name | Name of the destination waypoint or location. | keyword |
 | anduril_lattice.entity.route_details.estimated_arrival_time | Estimated time of arrival at the destination. | date |
@@ -325,7 +326,6 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |

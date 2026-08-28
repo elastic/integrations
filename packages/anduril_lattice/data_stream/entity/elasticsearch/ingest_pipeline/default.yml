@@ -44,12 +44,6 @@ processors:
       target_field: json
       tag: parse_json
       if: ctx.event?.original != null
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_parse_json
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - date:
       field: json.time
       target_field: '@timestamp'
@@ -68,15 +62,15 @@ processors:
             allow_duplicates: false
   - date:
       field: json.entity.provenance.sourceUpdateTime
-      target_field: event.created
+      target_field: anduril_lattice.entity.provenance.source_update_time
       formats:
         - ISO8601
-      tag: parse_event_created
+      tag: parse_provenance_source_update_time
       if: ctx.json?.entity?.provenance?.sourceUpdateTime != null
       on_failure:
         - append:
             field: error.message
-            tag: append_error_parse_event_created
+            tag: append_error_parse_provenance_source_update_time
             value: >-
               Processor {{{_ingest.on_failure_processor_type}}}
               with tag '{{{_ingest.on_failure_processor_tag}}}'
@@ -131,146 +125,56 @@ processors:
       tag: set_event_kind_created
       value: event
       if: ctx.json?.eventType == 'EVENT_TYPE_CREATED'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_set_event_kind_created
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - append:
       field: event.type
       tag: append_event_type_created
       value: start
       allow_duplicates: false
       if: ctx.json?.eventType == 'EVENT_TYPE_CREATED'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_type_created
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - set:
       field: event.kind
       tag: set_event_kind_update
       value: event
       if: ctx.json?.eventType == 'EVENT_TYPE_UPDATE'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_set_event_kind_update
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - append:
       field: event.type
       tag: append_event_type_update
       value: change
       allow_duplicates: false
       if: ctx.json?.eventType == 'EVENT_TYPE_UPDATE'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_type_update
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - set:
       field: event.kind
       tag: set_event_kind_deleted
       value: event
       if: ctx.json?.eventType == 'EVENT_TYPE_DELETED'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_set_event_kind_deleted
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - append:
       field: event.type
       tag: append_event_type_deleted
       value: end
       allow_duplicates: false
       if: ctx.json?.eventType == 'EVENT_TYPE_DELETED'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_type_deleted
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - set:
       field: event.kind
       tag: set_event_kind_preexisting
       value: state
       if: ctx.json?.eventType == 'EVENT_TYPE_PREEXISTING'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_set_event_kind_preexisting
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - append:
       field: event.type
       tag: append_event_type_preexisting
       value: info
       allow_duplicates: false
       if: ctx.json?.eventType == 'EVENT_TYPE_PREEXISTING'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_type_preexisting
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - set:
       field: event.kind
       tag: set_event_kind_post_expiry
       value: event
       if: ctx.json?.eventType == 'EVENT_TYPE_POST_EXPIRY_OVERRIDE'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_set_event_kind_post_expiry
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - append:
       field: event.type
       tag: append_event_type_post_expiry
       value: change
       allow_duplicates: false
       if: ctx.json?.eventType == 'EVENT_TYPE_POST_EXPIRY_OVERRIDE'
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_event_type_post_expiry
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-            allow_duplicates: false
   - rename:
       field: json.eventType
       target_field: anduril_lattice.entity.event_type
