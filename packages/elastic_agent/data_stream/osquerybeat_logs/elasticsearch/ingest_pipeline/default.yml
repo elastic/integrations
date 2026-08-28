@@ -1,0 +1,27 @@
+---
+description: Pipeline for Elastic Agent osquerybeat logs.
+processors:
+  - script:
+      tag: rename_string_component
+      description: |
+        Rename osquerybeat's string component field (introduced in
+        9.5) to log.logger to prevent mapping conflicts.
+      lang: painless
+      if: ctx.component instanceof String
+      source: |-
+        if (ctx.log == null) {
+          ctx.log = new HashMap();
+        }
+        ctx.log.logger = ctx.component;
+        ctx.remove('component');
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag}}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline}}}'
+        failed with message '{{{ _ingest.on_failure_message}}}'
