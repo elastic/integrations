@@ -153,7 +153,3 @@ Fields that are common to all assertions are mapped to ECS. Evidence supplied by
 ##### kev sample event
 
 {{ event "kev" }}
-
-{{ ilm }}
-
-{{ transform }}
