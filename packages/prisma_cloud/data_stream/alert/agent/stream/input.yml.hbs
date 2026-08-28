@@ -22,20 +22,22 @@ state:
   time_amount: {{time_amount}}
   time_unit: {{time_unit}}
   want_more: false
+  # Re-authenticate before the Prisma Cloud CSPM JWT expires (~10m TTL).
+  token_ttl: "9m"
 redact:
   fields:
     - password
     - access_token
 program: |
   (
-    state.with(!has(state.access_token) || state.access_token == "" || !has(state.token_expiry) || now() >= timestamp(state.token_expiry) ?
+    state.with(state.?access_token.orValue("") == "" || state.?token_expiry.optMap(t, now() >= timestamp(t)).orValue(true) ?
       post_request(
         state.url + "/login",
         "application/json",
         {"username":state.user,"password":state.password}.encode_json()
       ).do_request().as(resp, resp.Body.decode_json().as(body, {
           "access_token": body.token,
-          "token_expiry": string(now() + duration("9m")),
+          "token_expiry": string(now() + duration(state.token_ttl)),
       }))
     :
       {}
