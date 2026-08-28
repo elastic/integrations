@@ -31,12 +31,34 @@ The Box Web Application does not feature version numbers, see this [Community Po
 
 ## Upgrading to version 4.x
 
-Version 4.0.0 replaces the HTTPJSON input with the CEL input. This fixes a bug where large `next_stream_position` values returned by the Box API could be rounded, causing data gaps. The CEL input preserves the exact stream position.
+Version 4.0.0 changes the code used to collect events from Box. This update fixes a bug that could occasionally cause small gaps in your data.
 
-Be aware of the following when upgrading:
+### Before you upgrade
 
-- **Credentials must be re-entered.** Because the input type has changed, existing integration policies must be updated and the Client ID, Client Secret, and Box Subject ID re-entered.
-- **The stored stream position is reset.** The cursor saved by the HTTPJSON input does not carry over to the CEL input, so after the upgrade the integration restarts collection from the beginning of the event stream that the Box API makes available. The maximum time range depends on the stream type used. This causes a one-time, bounded re-ingest of events that were already collected — expect some reprocessing and additional Box API calls. If you're collecting the stream type `admin_logs`, you can re-ingest less history (14 days rather than 365 days) by switching to `admin_logs_streaming`. Re-ingested events won't create duplicates in a single backing index because there they are deduplicated by document ID (`_id`). However, a new backing index will allow re-ingestion of earlier document IDs.
+- **Check your `stream_type` setting**  
+  This determines how far back events may temporarily reappear after upgrading - see the table below. If you're not sure what yours is set to, check your integration policies before upgrading.
+- **No other action is required**  
+  The upgrade is safe to run as-is once you know what to expect for your setup. It's most noticeable if you're on `admin_logs`, where events from up to a year back may be collected again.
+
+### What happens after you upgrade
+
+- **You'll need to re-enter your Box credentials**  
+  Go to your integration policy and re-enter your Client ID, Client Secret, and Box Subject ID. This is a one-time step.
+- **You'll see some old events collected again**  
+  The integration will briefly restart collection from further back in your Box history, so events you've already ingested may be requested a second time. This is expected and temporary - it won't create duplicate records in your data (see below).
+- **How far back it goes depends on your stream type**  
+  If you're using `admin_logs`, the type with the longest history available, expect the collection to take longer to finish processing. If you don't need to fill a data gap older than 14 days, it's recommended you switch from `admin_logs` to `admin_logs_streaming`.
+
+  | Stream Type            | Maximum Data |
+  |------------------------|-------------:|
+  | `all` (default)        |      21 days |
+  | `admin_logs_streaming` |      14 days |
+  | `admin_logs`           |     365 days |
+  | `changes`              |      21 days |
+  | `sync`                 |      31 days |
+
+- **You won't end up with duplicate events**  
+  As long as you keep using the same setup you have today and don't manually roll over the data stream to a new backing index.
 
 ## Box Events
 
