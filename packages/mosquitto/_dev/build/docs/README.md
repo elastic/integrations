@@ -3,7 +3,7 @@
 
 ## Overview
 
-[Eclipse Mosquitto](https://mosquitto.org/) is an open source MQTT broker used to move telemetry and command messages between devices, gateways and applications. The Mosquitto integration for Elastic collects the broker's own log file and parses it into ECS fields, so that client connections, subscriptions, published messages and broker errors become searchable and can be charted or alerted on.
+[Eclipse Mosquitto](https://mosquitto.org/) is an open source MQTT broker used to move telemetry and command messages between devices, gateways, and applications. The Mosquitto integration for Elastic collects the broker's own log file and parses it into ECS fields, so that client connections, subscriptions, published messages, and broker errors become searchable and can be charted or alerted on.
 
 ### Compatibility
 
@@ -33,7 +33,7 @@ log_timestamp_format %Y-%m-%dT%H:%M:%S
 2026-08-24T16:26:07: New connection from 192.0.2.24:43985 on port 1883.
 ```
 
-Configuring the ISO format is recommended. The resulting log is far easier to read directly on the broker host — with epoch seconds, a human reading the raw file cannot tell when anything happened without converting each value first. Both formats produce exactly the same fields in Elasticsearch, so the choice only affects readability on the broker itself.
+Configuring the ISO format is recommended. The resulting log is far easier to read directly on the broker host — epoch seconds must be converted value by value to reveal when each event occurred. Both formats produce exactly the same fields in Elasticsearch, so the choice only affects readability on the broker itself.
 
 One caveat applies to the formatted variant: Mosquitto renders it in the broker host's local time and writes no UTC offset, whereas the epoch default is always UTC. If Elastic Agent runs in a different timezone than the broker, set the **Timezone Offset** option on the integration policy to the broker's timezone so timestamps are interpreted correctly. Adding `%z` to the format, for example `%Y-%m-%dT%H:%M:%S%z`, makes the broker emit an explicit offset, which removes the ambiguity entirely.
 
@@ -77,7 +77,7 @@ Elastic Agent is required to stream data from the log file receiver and ship the
 
    When the broker runs in a container, keep `log_dest stdout` and collect the container log file instead.
 
-2. Optionally switch to the more readable ISO 8601 timestamp format described above:
+2. Optionally switch to the more readable ISO 8601 timestamp format:
 
    ```
    log_timestamp_format %Y-%m-%dT%H:%M:%S
@@ -94,7 +94,7 @@ Elastic Agent is required to stream data from the log file receiver and ship the
 
 ### Set up steps in Kibana
 
-1. In Kibana, go to **Management** > **Integrations**, search for **Mosquitto** and select **Add Mosquitto**.
+1. In Kibana, go to **Management** → **Integrations**, search for **Mosquitto** and select **Add Mosquitto**.
 2. Set **Paths** to the location of the broker log, for example `/var/log/mosquitto/mosquitto.log`. Container deployments typically use `/var/log/containers/*mosquitto*.log`.
 3. Enable **Parse Container Logs** when the paths point at container log files, so the CRI or Docker JSON envelope is removed before parsing.
 4. Set **Timezone Offset** if the broker uses `log_timestamp_format` and runs in a different timezone than Elastic Agent. Both a canonical ID such as `Europe/Amsterdam` and an offset such as `-05:00` are accepted.
