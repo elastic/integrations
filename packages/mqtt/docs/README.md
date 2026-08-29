@@ -29,7 +29,7 @@ Typical payloads include:
 
 The integration writes to a data stream you name yourself. You choose both parts:
 - The **type**, by enabling one of the three data streams the integration ships: `logs`, `metrics` or `traces`. Each writes to its own index type.
-- The **dataset**, through the Dataset name setting, which defaults to `mqtt.generic`.
+- The **dataset**, through the Dataset name setting. Each data stream defaults to its own: `mqtt.logs`, `mqtt.metrics` or `mqtt.traces`.
 
 ### Supported use cases
 
@@ -92,7 +92,7 @@ Before adding the integration in Kibana, prepare the broker:
 4. Configure the required settings:
     - **Broker Hosts**: One or more broker URIs. The default is `tcp://localhost:1883`.
     - **Topics**: One or more topic filters. The default is `#`, which subscribes to every topic on the broker.
-    - **Dataset name**: The dataset to write to. The default is `mqtt.generic`.
+    - **Dataset name**: The dataset to write to. The default matches the data stream you enabled: `mqtt.logs`, `mqtt.metrics` or `mqtt.traces`.
 
 5. Configure the optional settings as needed:
     - **Client ID**, **QoS**, **Username**, and **Password** for the broker connection.
@@ -118,7 +118,7 @@ To confirm the integration is working:
 4. Filter on your dataset:
 
    ```
-   data_stream.dataset : "mqtt.generic"
+   data_stream.dataset : "mqtt.logs"
    ```
 
 5. Confirm that a document appears with `hello from mqtt` in the `message` field.
