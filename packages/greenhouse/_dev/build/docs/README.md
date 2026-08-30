@@ -114,7 +114,7 @@ If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and
 1. Verify the OAuth credential has been granted all three required read permissions: **Rejection details** (*List rejection details*), **Rejection reasons** (*Show rejection reason*), and **Notes** (*List notes*)
 2. Check that the authorizing user has permission to view the affected application
 3. If the error mentions no matching `RejectionDetails` event was found, try increasing **Batch Size** so the two related audit events are less likely to land on different pages
-4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action; `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
+4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action. `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
 
 ## Logs reference
 

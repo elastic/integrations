@@ -114,7 +114,7 @@ If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and
 1. Verify the OAuth credential has been granted all three required read permissions: **Rejection details** (*List rejection details*), **Rejection reasons** (*Show rejection reason*), and **Notes** (*List notes*)
 2. Check that the authorizing user has permission to view the affected application
 3. If the error mentions no matching `RejectionDetails` event was found, try increasing **Batch Size** so the two related audit events are less likely to land on different pages
-4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action; `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
+4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action. `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
 
 ## Logs reference
 
@@ -131,7 +131,7 @@ If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | greenhouse.audit.event.meta | The before and after values from data change events, or other relevant data for the event. | flattened |
-| greenhouse.audit.event.rejection.ambiguous_application_ids | When more than one "RejectionDetails" audit event shares the rejection event's request.id (for example, a bulk rejection), the Application IDs of all. No reason or notes are attached in this case, since it is impossible to tell which one corresponds to this rejection event. | keyword |
+| greenhouse.audit.event.rejection.ambiguous_application_ids | When more than one "RejectionDetails" audit event shares the rejection event's request.id (for example, a bulk rejection), the Application IDs of all the matching "RejectionDetails" events. No reason or notes are attached in this case, since it is impossible to tell which one corresponds to this rejection event. | keyword |
 | greenhouse.audit.event.rejection.application_id | The ID of the Application matched to this rejection event via its sibling "RejectionDetails" audit event. | keyword |
 | greenhouse.audit.event.rejection.candidate_id | The ID of the candidate whose application was rejected. | keyword |
 | greenhouse.audit.event.rejection.error | Error message if the rejection enrichment lookup against the Harvest API failed. | keyword |

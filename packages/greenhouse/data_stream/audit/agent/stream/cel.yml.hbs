@@ -97,7 +97,7 @@ program: |-
   state.with(
     (
       (
-        state.?auth_token.token.hasValue() && state.?auth_token.expires.optMap(expires, timestamp(expires) >= now - duration("30s")).orValue(false)
+        state.?auth_token.token.hasValue() && state.?auth_token.expires.optMap(expires, timestamp(expires) >= now + duration("30s")).orValue(false)
       ) ?
         {"auth_token": state.auth_token}
       :
@@ -194,26 +194,28 @@ program: |-
                       :
                         prev_max
                     ),
-                    "correlations": page.results.map(
-                      e,
-                      !(
-                        state.enrich_rejections && e.?event.type.orValue("") == "action" &&
-                        e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
-                      ) ?
-                        {"n": -1, "app_id": "", "ambiguous_ids": []}
-                      :
-                        page.results.filter(rd,
-                          rd.?event.target_type.orValue("") == "RejectionDetails" &&
-                          rd.?event.type.orValue("") == "data_change_create" && has(rd.?event.meta.application_id)
-                        ).filter(rde,
-                          rde.?request.id.orValue("") == e.?request.id.orValue("")
-                        ).as(matches,
-                          {
-                            "n": matches.size(),
-                            "app_id": (matches.size() == 1) ? string(int(matches[0].event.meta.application_id)) : "",
-                            "ambiguous_ids": (matches.size() > 1) ? matches.map(m, string(int(m.event.meta.application_id))) : [],
-                          }
-                        )
+                    "correlations": page.results.filter(rd,
+                      rd.?event.target_type.orValue("") == "RejectionDetails" &&
+                      rd.?event.type.orValue("") == "data_change_create" && has(rd.?event.meta.application_id)
+                    ).as(rd_events,
+                      page.results.map(
+                        e,
+                        !(
+                          state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                          e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                        ) ?
+                          {"n": -1, "app_id": "", "ambiguous_ids": []}
+                        :
+                          rd_events.filter(rde,
+                            rde.?request.id.orValue("") == e.?request.id.orValue("")
+                          ).as(matches,
+                            {
+                              "n": matches.size(),
+                              "app_id": (matches.size() == 1) ? string(int(matches[0].event.meta.application_id)) : "",
+                              "ambiguous_ids": (matches.size() > 1) ? matches.map(m, string(int(m.event.meta.application_id))) : [],
+                            }
+                          )
+                      )
                     ),
                   }.as(ctx,
                     ctx.correlations.map(c, c.n == 1, c.app_id).as(app_ids,
@@ -325,7 +327,10 @@ program: |-
                                           {
                                             "event": e.event.with(
                                               {
-                                                "rejection": {"application_id": app_id},
+                                                "rejection": {
+                                                  "application_id": app_id,
+                                                  "error": "no rejection_details record returned for application_id " + app_id,
+                                                },
                                               }
                                             ),
                                           }
