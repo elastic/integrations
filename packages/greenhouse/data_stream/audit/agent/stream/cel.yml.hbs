@@ -236,10 +236,7 @@ program: |-
                           :
                             {},
                           "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(all_rr_ids,
-                            all_rr_ids.transformList(i, id,
-                              all_rr_ids.transformList(j, prev, j < i && prev == id, prev).size() == 0,
-                              id
-                            )
+                            all_rr_ids.zip(all_rr_ids).keys()
                           ).as(unique_rr_ids,
                             (size(unique_rr_ids) > 0) ?
                               unique_rr_ids.map(id,
