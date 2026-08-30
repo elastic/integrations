@@ -2,15 +2,18 @@
 description: Pipeline of ActiveMQ metrics
 processors:
   - dot_expander:
+      tag: dot_expander_1
       field: "*"
       ignore_failure: true
   - drop:
+      tag: drop_2
       description: "To drop the documents having RabbitMQ metrics"
       if: >
         ctx.aws?.amazonmq?.metrics?.size() == 1 &&
         ctx.aws.amazonmq.metrics.ConsumerCount?.max != null
       ignore_failure: true
   - rename:
+      tag: rename_3
       field: "aws.amazonmq.metrics"
       target_field: "aws.amazonmq.metrics.activemq.broker"
       ignore_missing: true
@@ -18,6 +21,7 @@ processors:
         ctx.aws?.dimensions?.Broker != null &&
         (ctx.aws?.dimensions?.Topic == null && ctx.aws?.dimensions?.Queue == null )
   - rename:
+      tag: rename_4
       field: "aws.amazonmq.metrics"
       target_field: "aws.amazonmq.metrics.activemq.destination"
       ignore_missing: true
@@ -27,12 +31,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_on_failure_1
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_on_failure_2
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - set:
+      tag: set_on_failure_3
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

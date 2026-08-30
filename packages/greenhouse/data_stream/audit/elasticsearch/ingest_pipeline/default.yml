@@ -2,17 +2,20 @@
 description: Pipeline for Greenhouse Audit Logs
 processors:
   - terminate:
-      tag: terminate_agent_error
+      tag: terminate_agent_error_d5c66e22
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
@@ -20,11 +23,13 @@ processors:
   - json:
       field: event.original
       target_field: json
-      tag: parse_json
+      tag: parse_json_74d23cc2
   - fail:
+      tag: fail_missing_json_object_input_document_970014bf
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: Missing JSON object in input document
   - fingerprint:
+      tag: fingerprint_to_id_8645335e
       fields:
         - json.organization_id
         - json.request.id
@@ -33,6 +38,7 @@ processors:
       target_field: _id
       ignore_missing: true
   - rename:
+      tag: rename_json_to_greenhouse_audit_41e670b6
       field: json
       target_field: greenhouse.audit
       ignore_missing: true
@@ -45,83 +51,99 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
         - ISO8601
-      tag: parse_timestamp
+      tag: parse_timestamp_f4775e34
       on_failure:
         - append:
+            tag: append_error_message_a30c2847
             field: error.message
             value: 'Failed to parse timestamp from greenhouse.audit.event_time: {{{ _ingest.on_failure_message }}}'
 
   # Event fields
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_id_8953a766
       field: event.id
       copy_from: greenhouse.audit.request.id
       ignore_empty_value: true
   - set:
+      tag: set_event_action_8eabdebd
       field: event.action
       copy_from: greenhouse.audit.event.type
       ignore_empty_value: true
 
   # Event type categorization based on Greenhouse event types
   - append:
+      tag: append_event_type_6b5cb0e5
       field: event.type
       value: creation
       if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'data_change_create'
       allow_duplicates: false
   - append:
+      tag: append_event_type_6d53c86d
       field: event.type
       value: change
       if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'data_change_update'
       allow_duplicates: false
   - append:
+      tag: append_event_type_59f63d12
       field: event.type
       value: deletion
       if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'data_change_destroy'
       allow_duplicates: false
   - append:
+      tag: append_event_type_72c5552a
       field: event.type
       value: access
       if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'harvest_access'
       allow_duplicates: false
   - append:
+      tag: append_event_type_d9d89ce6
       field: event.type
       value: info
       if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'action'
       allow_duplicates: false
   - set:
+      tag: set_event_type_e4a41200
       field: event.type
       value: [info]
       if: ctx.event?.type == null
 
   # Event category
   - append:
+      tag: append_event_category_893e6a4f
       field: event.category
       value: configuration
       if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type.startsWith('data_change')
       allow_duplicates: false
   - append:
+      tag: append_event_category_38235bd4
       field: event.category
       value: iam
       if: ctx.greenhouse?.audit?.performer?.type != null && ctx.greenhouse.audit.performer.type == 'user'
       allow_duplicates: false
   - set:
+      tag: set_event_category_87dd0ae8
       field: event.category
       value: [configuration]
       if: ctx.event?.category == null
 
   # User fields from performer
   - convert:
+      tag: convert_greenhouse_audit_performer_id_to_user_id_d0c2835d
       field: greenhouse.audit.performer.id
       type: string
       target_field: user.id
       ignore_missing: true
   - set:
+      tag: set_user_email_e65619b3
       field: user.email
       copy_from: greenhouse.audit.performer.meta.username
       ignore_empty_value: true
   - set:
+      tag: set_user_full_name_1702943f
       field: user.full_name
       copy_from: greenhouse.audit.performer.meta.name
       ignore_empty_value: true
@@ -132,9 +154,10 @@ processors:
       type: ip
       target_field: source.ip
       ignore_missing: true
-      tag: convert_ip_address
+      tag: convert_ip_address_62c100f2
       on_failure:
         - append:
+            tag: append_error_message_ebffbae2
             field: error.message
             value: 'Failed to convert performer.ip_address to IP: {{{ _ingest.on_failure_message }}}'
 
@@ -144,7 +167,7 @@ processors:
       target_field: source.geo
       if: ctx.source?.ip != null
       ignore_missing: true
-      tag: geoip_source_geo
+      tag: geoip_source_geo_4f232eee
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -154,12 +177,14 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-      tag: geoip_source_asn
+      tag: geoip_source_asn_82b99b2e
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -170,9 +195,10 @@ processors:
       type: string
       target_field: organization.id
       ignore_missing: true
-      tag: convert_organization_id
+      tag: convert_organization_id_34f0adea
       on_failure:
         - append:
+            tag: append_error_message_6172a02a
             field: error.message
             value: 'Failed to convert organization_id to string: {{{ _ingest.on_failure_message }}}'
 
@@ -181,9 +207,10 @@ processors:
       field: greenhouse.audit.event.target_id
       type: string
       ignore_missing: true
-      tag: convert_target_id
+      tag: convert_target_id_ee5cd28b
       on_failure:
         - append:
+            tag: append_error_message_d3bb095c
             field: error.message
             value: 'Failed to convert target_id to string: {{{ _ingest.on_failure_message }}}'
 
@@ -200,16 +227,19 @@ processors:
 
   # Related fields
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
@@ -217,6 +247,7 @@ processors:
 
   # Cleanup null/empty values
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -244,6 +275,7 @@ processors:
 
   # Remove temporary fields
   - remove:
+      tag: remove_temporary_fields_122ff8dd
       field:
         - greenhouse.audit.event_time
         - greenhouse.audit.performer.id
@@ -256,12 +288,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_93d7c91a
       field: error.message
       value: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} failed: {{{ _ingest.on_failure_message }}}'
