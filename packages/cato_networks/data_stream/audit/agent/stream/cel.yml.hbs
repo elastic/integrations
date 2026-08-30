@@ -100,7 +100,7 @@ program: |
                     // auditFeed.to may echo back the non-RFC3339 request layout, so guard the
                     // parse and fall back to window_to instead of aborting the final page.
                     "last_timestamp": body.data.auditFeed.?to.optMap(v,
-                      try(timestamp(v), "error").as(t, !has(t.error) ?
+                      timestamp(v).as(t, !is_error(t) ?
                         t.format("2006-01-02/15:04:05")
                       :
                         window_to
