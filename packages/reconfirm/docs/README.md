@@ -74,7 +74,7 @@ Because ReConfirm requires the destination to be reachable over HTTPS from the p
 
 - No data is being collected: Confirm ReConfirm can reach the endpoint over HTTPS from the public internet, that the Agent is healthy, and that the listener address/port/path match the ReConfirm webhook configuration.
 - All requests are rejected (401): Verify the Authorization Token in Kibana exactly matches the `Authorization` header value configured in ReConfirm, including the `Bearer ` prefix.
-- `reconfirm.associated_domains`, `reconfirm.cred_leaks`, or a `vulns` array is empty: these sections are only populated when the corresponding ReConfirm module was enabled and found something during that scan; an empty array here does not indicate an ingest issue.
+- `reconfirm.associated_domains`, `reconfirm.cred_leaks`, or a `vulns` array is missing from a document: these sections only appear when the corresponding ReConfirm module was enabled and found something during that scan; empty sections are dropped before indexing, so a missing field here does not indicate an ingest issue.
 
 ## Performance and scaling
 
