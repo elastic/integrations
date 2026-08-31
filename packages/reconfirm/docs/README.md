@@ -6,10 +6,6 @@
 
 [ReConfirm](https://reconfirm.com/) is an attack-surface and vulnerability scanning service. The ReConfirm integration for Elastic collects scan result webhooks (assets, open ports, lookalike/typosquat domains, subdomain exposure, and email security posture), normalizes the scan envelope to the Elastic Common Schema (ECS), and ships it to Elasticsearch so security teams can track their external attack surface over time.
 
-### Compatibility
-
-This integration is compatible with ReConfirm's webhook notifications and Elastic Stack 8.19 and later.
-
 ### How it works
 
 ReConfirm delivers a scan result by POSTing a single JSON document to a user-configured HTTPS webhook URL when a scan completes. This integration stands up an HTTP endpoint (the Elastic Agent `http_endpoint` input) that receives that document. Incoming requests are authenticated with a static `Authorization` header, then reshaped and mapped to ECS.
