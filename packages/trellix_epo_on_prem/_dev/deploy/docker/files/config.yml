@@ -29,3 +29,120 @@ rules:
               "OrionAuditLog.UserName": "admin"
             }
           ]
+
+  # web_control page 1: a full page (== page_size), so the program sets
+  # want_more and pages again from the last EventAutoID it saw.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "(where (gt WP_EventInfo.EventAutoID 0))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "WP_EventInfo.BadLinkRatingID": 4,
+              "WP_EventInfo.ContentID": 0,
+              "WP_EventInfo.Count": 1,
+              "WP_EventInfo.DomainName": "reports.blockedSiteDSSError",
+              "WP_EventInfo.DownloadRatingID": 4,
+              "WP_EventInfo.EventAutoID": 494,
+              "WP_EventInfo.ExploitRatingID": 4,
+              "WP_EventInfo.ListID": 1,
+              "WP_EventInfo.ObserverMode": true,
+              "WP_EventInfo.PhishingRatingID": 4,
+              "WP_EventInfo.PopupRatingID": 4,
+              "WP_EventInfo.RatingID": 6,
+              "WP_EventInfo.ReasonID": 7,
+              "WP_EventInfo.SpamRatingID": 4,
+              "WP_EventInfo.URL": "reports.blockedSiteDSSError",
+              "WP_EventInfo.UserName": null
+            },
+            {
+              "WP_EventInfo.BadLinkRatingID": 4,
+              "WP_EventInfo.ContentID": 0,
+              "WP_EventInfo.Count": 1,
+              "WP_EventInfo.DomainName": "reports.blockedSiteDSSError",
+              "WP_EventInfo.DownloadRatingID": 4,
+              "WP_EventInfo.EventAutoID": 497,
+              "WP_EventInfo.ExploitRatingID": 4,
+              "WP_EventInfo.ListID": 1,
+              "WP_EventInfo.ObserverMode": true,
+              "WP_EventInfo.PhishingRatingID": 4,
+              "WP_EventInfo.PopupRatingID": 4,
+              "WP_EventInfo.RatingID": 6,
+              "WP_EventInfo.ReasonID": 7,
+              "WP_EventInfo.SpamRatingID": 4,
+              "WP_EventInfo.URL": "reports.blockedSiteDSSError",
+              "WP_EventInfo.UserName": null
+            }
+          ]
+
+  # web_control page 2: a short page, which clears want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "(where (gt WP_EventInfo.EventAutoID 497))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "WP_EventInfo.BadLinkRatingID": 4,
+              "WP_EventInfo.ContentID": 0,
+              "WP_EventInfo.Count": 1,
+              "WP_EventInfo.DomainName": "reports.blockedSiteDSSError",
+              "WP_EventInfo.DownloadRatingID": 4,
+              "WP_EventInfo.EventAutoID": 500,
+              "WP_EventInfo.ExploitRatingID": 4,
+              "WP_EventInfo.ListID": 1,
+              "WP_EventInfo.ObserverMode": true,
+              "WP_EventInfo.PhishingRatingID": 4,
+              "WP_EventInfo.PopupRatingID": 4,
+              "WP_EventInfo.RatingID": 6,
+              "WP_EventInfo.ReasonID": 7,
+              "WP_EventInfo.SpamRatingID": 4,
+              "WP_EventInfo.URL": "reports.blockedSiteDSSError",
+              "WP_EventInfo.UserName": null
+            }
+          ]
+
+  # web_control catchall: any cursor beyond the seeded rows is exhausted, so a
+  # later poll re-collects nothing and hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: 'OK: []'
