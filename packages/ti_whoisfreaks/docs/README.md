@@ -16,9 +16,9 @@ Subscription** and an API key from the WhoisFreaks billing dashboard.
 
 ### How it works
 
-The `whois` data stream uses the Elastic Agent **CEL input** to:
+The `nrd_with_whois` data stream uses the Elastic Agent **CEL input** to:
 
-1. Query the public WhoisFreaks **status endpoint** (`/v3.1/status`) and read
+1. Query the public WhoisFreaks **status endpoint** (`/v3.3/status`) and read
    `newly.gtld.last_update` and `newly.cctld.last_update`. These hold the
    dates of the latest available gTLD and ccTLD files.
 2. Compare each date against the last file of that type already ingested, which
@@ -92,14 +92,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Validation
 
-Open Discover on `logs-ti_whoisfreaks.whois-*` and confirm documents with
+Open Discover on `logs-ti_whoisfreaks.nrd_with_whois-*` and confirm documents with
 populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 ## Troubleshooting
 
 - No data is being collected: confirm the API key and Domainer Subscription are valid; check `error.message` on `pipeline_error` events for the upstream HTTP status.
 - Empty or unexpectedly small CSV: the pinned date may not have a published file yet; leave File Date empty.
-- Requests time out: increase `resource.timeout` for slow links or very large files.
+- Requests time out: set Page Size to `500` and Request Timeout to at least `10m` for large daily WHOIS files.
 
 ## Performance and scaling
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -144,11 +144,11 @@ These APIs are used with this integration:
 
 ### Data streams
 
-#### whois
+#### nrd_with_whois
 
-The `whois` data stream provides WHOIS domain intelligence records.
+The `nrd_with_whois` data stream provides Newly Registered Domains with WHOIS records.
 
-##### whois fields
+##### nrd_with_whois fields
 **Exported fields**
 
 | Field | Description | Type |
@@ -263,8 +263,8 @@ The `whois` data stream provides WHOIS domain intelligence records.
 | whoisfreaks.update_date | Date when the domain record was last updated. | date |
 
 
-##### whois sample event
-An example event for `whois` looks as following:
+##### nrd_with_whois sample event
+An example event for `nrd_with_whois` looks as following:
 
 ```json
 {
@@ -281,7 +281,7 @@ An example event for `whois` looks as following:
         "type": [
             "info"
         ],
-        "dataset": "ti_whoisfreaks.whois"
+        "dataset": "ti_whoisfreaks.nrd_with_whois"
     },
     "domain": {
         "registered_domain": "driveigo.world",
@@ -318,6 +318,231 @@ An example event for `whois` looks as following:
         "feed": {
             "name": "WhoisFreaks",
             "dashboard_id": "ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150"
+        }
+    }
+}
+```
+
+#### threat_feed_malware
+
+The `threat_feed_malware` data stream provides WhoisFreaks malware domain indicators.
+
+##### threat_feed_malware fields
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of input used to ingest the logs (e.g., cel). | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.indicator.domain | Duplicate copy of the indicator domain for SIEM compatibility. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| whoisfreaks.threat_feed.confidence | Numeric confidence score from the threat feed. | float |
+| whoisfreaks.threat_feed.no_of_threat_matched_pivots | Number of matched pivots for the threat indicator. | integer |
+
+
+##### threat_feed_malware sample event
+An example event for `threat_feed_malware` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-25T00:16:20.975Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_whoisfreaks.threat_feed_malware",
+        "kind": "enrichment",
+        "type": [
+            "indicator"
+        ]
+    },
+    "threat": {
+        "feed": {
+            "name": "WhoisFreaks"
+        },
+        "indicator": {
+            "domain": "027168.com",
+            "first_seen": "2026-06-25T13:45:35.401Z",
+            "last_seen": "2026-08-25T00:16:20.975Z",
+            "provider": "WhoisFreaks",
+            "reference": "https://whoisfreaks.com/",
+            "type": "domain-name",
+            "url": {
+                "domain": "027168.com"
+            }
+        }
+    },
+    "whoisfreaks": {
+        "threat_feed": {
+            "confidence": 1.0,
+            "no_of_threat_matched_pivots": 1
+        }
+    }
+}
+```
+
+#### threat_feed_spam
+
+The `threat_feed_spam` data stream provides WhoisFreaks spam domain indicators.
+
+##### threat_feed_spam fields
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of input used to ingest the logs (e.g., cel). | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.indicator.domain | Duplicate copy of the indicator domain for SIEM compatibility. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| whoisfreaks.threat_feed.confidence | Numeric confidence score from the threat feed. | float |
+| whoisfreaks.threat_feed.no_of_threat_matched_pivots | Number of matched pivots for the threat indicator. | integer |
+
+
+##### threat_feed_spam sample event
+An example event for `threat_feed_spam` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-25T00:16:20.975Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_whoisfreaks.threat_feed_spam",
+        "kind": "enrichment",
+        "type": [
+            "indicator"
+        ]
+    },
+    "threat": {
+        "feed": {
+            "name": "WhoisFreaks"
+        },
+        "indicator": {
+            "domain": "027168.com",
+            "first_seen": "2026-06-25T13:45:35.401Z",
+            "last_seen": "2026-08-25T00:16:20.975Z",
+            "provider": "WhoisFreaks",
+            "reference": "https://whoisfreaks.com/",
+            "type": "domain-name",
+            "url": {
+                "domain": "027168.com"
+            }
+        }
+    },
+    "whoisfreaks": {
+        "threat_feed": {
+            "confidence": 1.0,
+            "no_of_threat_matched_pivots": 1
+        }
+    }
+}
+```
+
+#### threat_feed_phishing
+
+The `threat_feed_phishing` data stream provides WhoisFreaks phishing domain indicators.
+
+##### threat_feed_phishing fields
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of input used to ingest the logs (e.g., cel). | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.indicator.domain | Duplicate copy of the indicator domain for SIEM compatibility. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| whoisfreaks.threat_feed.confidence | Numeric confidence score from the threat feed. | float |
+| whoisfreaks.threat_feed.no_of_threat_matched_pivots | Number of matched pivots for the threat indicator. | integer |
+
+
+##### threat_feed_phishing sample event
+An example event for `threat_feed_phishing` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-25T00:16:20.975Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_whoisfreaks.threat_feed_phishing",
+        "kind": "enrichment",
+        "type": [
+            "indicator"
+        ]
+    },
+    "threat": {
+        "feed": {
+            "name": "WhoisFreaks"
+        },
+        "indicator": {
+            "domain": "027168.com",
+            "first_seen": "2026-06-25T13:45:35.401Z",
+            "last_seen": "2026-08-25T00:16:20.975Z",
+            "provider": "WhoisFreaks",
+            "reference": "https://whoisfreaks.com/",
+            "type": "domain-name",
+            "url": {
+                "domain": "027168.com"
+            }
+        }
+    },
+    "whoisfreaks": {
+        "threat_feed": {
+            "confidence": 1.0,
+            "no_of_threat_matched_pivots": 1
         }
     }
 }

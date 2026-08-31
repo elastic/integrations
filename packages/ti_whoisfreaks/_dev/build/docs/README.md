@@ -15,9 +15,9 @@ Subscription** and an API key from the WhoisFreaks billing dashboard.
 
 ### How it works
 
-The `whois` data stream uses the Elastic Agent **CEL input** to:
+The `nrd_with_whois` data stream uses the Elastic Agent **CEL input** to:
 
-1. Query the public WhoisFreaks **status endpoint** (`/v3.1/status`) and read
+1. Query the public WhoisFreaks **status endpoint** (`/v3.3/status`) and read
    `newly.gtld.last_update` and `newly.cctld.last_update`. These hold the
    dates of the latest available gTLD and ccTLD files.
 2. Compare each date against the last file of that type already ingested, which
@@ -91,14 +91,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Validation
 
-Open Discover on `logs-ti_whoisfreaks.whois-*` and confirm documents with
+Open Discover on `logs-ti_whoisfreaks.nrd_with_whois-*` and confirm documents with
 populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 ## Troubleshooting
 
 - No data is being collected: confirm the API key and Domainer Subscription are valid; check `error.message` on `pipeline_error` events for the upstream HTTP status.
 - Empty or unexpectedly small CSV: the pinned date may not have a published file yet; leave File Date empty.
-- Requests time out: increase `resource.timeout` for slow links or very large files.
+- Requests time out: set Page Size to `500` and Request Timeout to at least `10m` for large daily WHOIS files.
 
 ## Performance and scaling
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -118,15 +118,45 @@ These APIs are used with this integration:
 
 ### Data streams
 
-#### whois
+#### nrd_with_whois
 
-The `whois` data stream provides WHOIS domain intelligence records.
+The `nrd_with_whois` data stream provides Newly Registered Domains with WHOIS records.
 
-##### whois fields
-{{ fields "whois" }}
+##### nrd_with_whois fields
+{{ fields "nrd_with_whois" }}
 
-##### whois sample event
-{{ event "whois" }}
+##### nrd_with_whois sample event
+{{ event "nrd_with_whois" }}
+
+#### threat_feed_malware
+
+The `threat_feed_malware` data stream provides WhoisFreaks malware domain indicators.
+
+##### threat_feed_malware fields
+{{ fields "threat_feed_malware" }}
+
+##### threat_feed_malware sample event
+{{ event "threat_feed_malware" }}
+
+#### threat_feed_spam
+
+The `threat_feed_spam` data stream provides WhoisFreaks spam domain indicators.
+
+##### threat_feed_spam fields
+{{ fields "threat_feed_spam" }}
+
+##### threat_feed_spam sample event
+{{ event "threat_feed_spam" }}
+
+#### threat_feed_phishing
+
+The `threat_feed_phishing` data stream provides WhoisFreaks phishing domain indicators.
+
+##### threat_feed_phishing fields
+{{ fields "threat_feed_phishing" }}
+
+##### threat_feed_phishing sample event
+{{ event "threat_feed_phishing" }}
 
 {{ ilm }}
 

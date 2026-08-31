@@ -1,4 +1,4 @@
-"""Mock of the WhoisFreaks status and v3.3 domainer stream endpoints for system tests."""
+"""Mock of the WhoisFreaks v3.3 and v3.4 stream endpoints for system tests."""
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 import json
@@ -35,6 +35,12 @@ DATA = {
     ],
 }
 
+THREAT_DATA = {
+    "malware": "027168.com,malware,1.0,2026-06-25 13:45:35.401434+00,2026-08-25 00:16:20.97521+00,1\n",
+    "spam": "027168.com,spam,1.0,2026-06-25 13:45:35.401434+00,2026-08-25 00:16:20.97521+00,1\n",
+    "phishing": "027168.com,phishing,1.0,2026-06-25 13:45:35.401434+00,2026-08-25 00:16:20.97521+00,1\n",
+}
+
 
 def csv_page(feed, offset):
     header = ",".join(COLS)
@@ -52,7 +58,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_HEAD(self):
         parsed = urlparse(self.path)
-        if parsed.path in ("/", "/healthcheck", "/v3.1/status"):
+        if parsed.path in ("/", "/healthcheck", "/v3.3/status"):
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
@@ -69,7 +75,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, "application/json", b'{"status":"ok"}')
             return
 
-        if parsed.path == "/v3.1/status":
+        if parsed.path == "/v3.3/status":
             body = json.dumps({
                 "newly": {
                     "gtld": {"last_update": "2026-08-04", "available_from": "2026-05-01"},
@@ -83,6 +89,14 @@ class Handler(BaseHTTPRequestHandler):
             feed = parsed.path.rsplit("/", 1)[1]
             offset = int(qs.get("offset", ["0"])[0])
             self._send(200, "text/plain; charset=UTF-8", csv_page(feed, offset).encode())
+            return
+
+        threat_prefix = "/v3.4/stream/threat-feed/"
+        if parsed.path.startswith(threat_prefix):
+            feed = parsed.path[len(threat_prefix):]
+            offset = int(qs.get("offset", ["0"])[0])
+            body = b"" if offset != 0 else THREAT_DATA.get(feed, "").encode()
+            self._send(200, "text/plain; charset=UTF-8", body)
             return
 
         self._send(404, "application/json", b'{"status":404}')

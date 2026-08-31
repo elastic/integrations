@@ -1,5 +1,5 @@
 ---
-description: "Ingest pipeline for WhoisFreaks Threat Feed (Dynamic CSV Mapping)"
+description: Ingest pipeline for WhoisFreaks Phishing Threat Feed
 processors:
   - set:
       tag: set_event_dataset
@@ -20,121 +20,93 @@ processors:
   - set:
       tag: set_event_kind
       field: event.kind
-      value: "enrichment"
-
+      value: enrichment
   - trim:
-      tag: pre_sanitize_message_whitespace
+      tag: trim_message
       field: message
       ignore_missing: true
-
-  # Drop raw header lines if they pass through individually
   - drop:
-      tag: drop_header_event
+      tag: drop_header
       if: "ctx.message != null && ctx.message.startsWith('domain,')"
-
-  # Parse CSV dynamically based on column names in the message
   - csv:
-      tag: parse_csv_message_fields
+      tag: parse_csv
       field: message
       target_fields:
-        - _temp.parsed_csv
+        - threat.indicator.url.domain
+        - _temp.threat_type
+        - whoisfreaks.threat_feed.confidence
+        - _temp.first_seen
+        - _temp.last_seen
+        - whoisfreaks.threat_feed.no_of_threat_matched_pivots
       ignore_missing: true
-
-  # Map extracted CSV header fields to ECS fields dynamically regardless of column order
-  - rename:
-      tag: map_domain
-      field: _temp.parsed_csv.domain
-      target_field: threat.indicator.url.domain
-      ignore_missing: true
-
-  - rename:
-      tag: map_threat_type
-      field: _temp.parsed_csv.threat_type
-      target_field: threat.feed.name
-      ignore_missing: true
-
-  - rename:
-      tag: map_confidence
-      field: _temp.parsed_csv.confidence
-      target_field: threat.indicator.confidence
-      ignore_missing: true
-
-  - rename:
-      tag: map_pivots
-      field: _temp.parsed_csv.No_of_threat_matched_pivots
-      target_field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
-      ignore_missing: true
-
-  # Duplicate domain to nested ECS indicator for SIEM compatibility (FIXED: replaced ignore_missing with if guard)
   - set:
-      tag: set_indicator_nested_domain
+      tag: set_indicator_domain
       field: threat.indicator.domain
-      value: "{{threat.indicator.url.domain}}"
-      if: "ctx.threat?.indicator?.url?.domain != null"
-
-  # Convert data types
+      copy_from: threat.indicator.url.domain
+      ignore_empty_value: true
+  - set:
+      tag: set_feed_name
+      field: threat.feed.name
+      value: WhoisFreaks
+  - set:
+      tag: set_indicator_type
+      field: threat.indicator.type
+      value: domain-name
+  - set:
+      tag: set_indicator_provider
+      field: threat.indicator.provider
+      value: WhoisFreaks
+  - set:
+      tag: set_indicator_reference
+      field: threat.indicator.reference
+      value: https://whoisfreaks.com/
   - convert:
-      tag: convert_confidence_to_float
-      field: threat.indicator.confidence
+      tag: convert_confidence
+      field: whoisfreaks.threat_feed.confidence
       type: float
       ignore_missing: true
-
   - convert:
-      tag: convert_pivots_to_integer
+      tag: convert_pivots
       field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
       type: integer
       ignore_missing: true
-
-  # Timestamps
   - date:
-      tag: set_main_event_timestamp
-      field: _temp.parsed_csv.last_seen
-      target_field: "@timestamp"
-      formats:
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSX"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSXX"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSZZ"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
-        - "ISO8601"
+      tag: set_timestamp
+      field: _temp.last_seen
+      target_field: '@timestamp'
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSXXX", "yyyy-MM-dd HH:mm:ss.SSXXX", "yyyy-MM-dd HH:mm:ss.SXXX", "yyyy-MM-dd HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSX", "yyyy-MM-dd HH:mm:ss.SSSX", "yyyy-MM-dd HH:mm:ss.SSX", "yyyy-MM-dd HH:mm:ss.SX", "yyyy-MM-dd HH:mm:ssX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSS", "yyyy-MM-dd HH:mm:ss.SSSS", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "ISO8601"]
       ignore_failure: true
-
   - date:
-      tag: set_threat_first_seen
-      field: _temp.parsed_csv.first_seen
+      tag: set_first_seen
+      field: _temp.first_seen
       target_field: threat.indicator.first_seen
-      formats:
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSX"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSXX"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSZZ"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
-        - "ISO8601"
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSXXX", "yyyy-MM-dd HH:mm:ss.SSXXX", "yyyy-MM-dd HH:mm:ss.SXXX", "yyyy-MM-dd HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSX", "yyyy-MM-dd HH:mm:ss.SSSX", "yyyy-MM-dd HH:mm:ss.SSX", "yyyy-MM-dd HH:mm:ss.SX", "yyyy-MM-dd HH:mm:ssX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSS", "yyyy-MM-dd HH:mm:ss.SSSS", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "ISO8601"]
       ignore_failure: true
-
   - date:
-      tag: set_threat_last_seen
-      field: _temp.parsed_csv.last_seen
+      tag: set_last_seen
+      field: _temp.last_seen
       target_field: threat.indicator.last_seen
-      formats:
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSX"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSXX"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSSZZ"
-        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
-        - "ISO8601"
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSXXX", "yyyy-MM-dd HH:mm:ss.SSXXX", "yyyy-MM-dd HH:mm:ss.SXXX", "yyyy-MM-dd HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSX", "yyyy-MM-dd HH:mm:ss.SSSX", "yyyy-MM-dd HH:mm:ss.SSX", "yyyy-MM-dd HH:mm:ss.SX", "yyyy-MM-dd HH:mm:ssX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSS", "yyyy-MM-dd HH:mm:ss.SSSS", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "ISO8601"]
       ignore_failure: true
-
-  # Drop temporary working objects
+  - fingerprint:
+      tag: fingerprint_for_dedup
+      fields:
+        - threat.indicator.url.domain
+        - threat.indicator.last_seen
+      target_field: _id
+      if: "ctx.threat?.indicator?.url?.domain != null && ctx.threat?.indicator?.last_seen != null"
+      ignore_missing: true
   - remove:
-      tag: drop_temporary_working_fields
+      tag: drop_temporary_fields
       field: _temp
       ignore_missing: true
-
 on_failure:
   - set:
-      tag: handle_pipeline_failure_metadata
+      tag: set_error_message
       field: error.message
       value: >-
         Processor '{{ _ingest.on_failure_processor_type }}' with tag '{{ _ingest.on_failure_processor_tag }}' in pipeline '{{ _ingest.pipeline }}' failed with message '{{ _ingest.on_failure_message }}'
   - set:
-      tag: marking_failure_state
+      tag: set_pipeline_error
       field: event.kind
       value: pipeline_error

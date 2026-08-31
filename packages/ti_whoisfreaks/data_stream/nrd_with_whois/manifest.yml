@@ -1,8 +1,8 @@
-title: "WHOIS"
+title: "Newly Registered Domains with WHOIS"
 type: logs
 streams:
   - input: cel
-    title: "WhoisFreaks Domainer WHOIS (gTLD + ccTLD) via CEL"
+    title: "WhoisFreaks Newly Registered Domains with WHOIS (gTLD + ccTLD) via CEL"
     description: |-
       Page through the daily WhoisFreaks gTLD and ccTLD domainer WHOIS stream feeds via the CEL input.
     template_path: cel.yml.hbs
@@ -38,10 +38,11 @@ streams:
           endpoint). The feed is paged with a dynamic `offset` until a page comes
           back short, so this only controls memory and request count per poll, not
           how much data is ingested. Larger pages mean fewer requests but more
-          memory per request. 5000 is a safe default; lower it on small agents.
+          memory per request. 500 is a safe default for the large WHOIS response
+          rows; increase it only when the endpoint responds within the timeout.
         required: true
         show_user: true
-        default: 5000
+        default: 500
       - name: resource_date
         type: text
         title: "File Date (optional)"
@@ -70,7 +71,7 @@ streams:
           Timeout for a single page request.
         required: false
         show_user: false
-        default: 2m
+        default: 10m
 elasticsearch:
   index_template:
     mappings:
