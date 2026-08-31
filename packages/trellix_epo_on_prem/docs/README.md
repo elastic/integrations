@@ -407,22 +407,22 @@ An example event for `product_event` looks as following:
 {
     "@timestamp": "2026-07-21T09:23:20.000Z",
     "agent": {
-        "ephemeral_id": "e1e54549-783c-40e3-93ca-36e984765625",
-        "id": "4c11c108-bcfe-4f2f-89cc-6242af97b0de",
-        "name": "elastic-agent-23379",
+        "ephemeral_id": "100596c0-8c0b-44c1-ad10-fc4d64fcedac",
+        "id": "ef2f9073-0a87-489c-8d6e-109796bf3114",
+        "name": "elastic-agent-60788",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.product_event",
-        "namespace": "78525",
+        "namespace": "41814",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "4c11c108-bcfe-4f2f-89cc-6242af97b0de",
+        "id": "ef2f9073-0a87-489c-8d6e-109796bf3114",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -444,7 +444,7 @@ An example event for `product_event` looks as following:
         "created": "2026-07-21T09:23:47.000Z",
         "dataset": "trellix_epo_on_prem.product_event",
         "id": "1",
-        "ingested": "2026-08-28T10:27:11Z",
+        "ingested": "2026-08-31T09:01:05Z",
         "kind": "event",
         "original": "{\"EPOProductEvents.AgentGUID\":\"89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B\",\"EPOProductEvents.AutoID\":1,\"EPOProductEvents.DetectedUTC\":\"2026-07-21T14:53:20+05:30\",\"EPOProductEvents.Error\":0,\"EPOProductEvents.ExtraDATNames\":null,\"EPOProductEvents.HostName\":\"DESKTOP-K3QM7XP\",\"EPOProductEvents.IPV6\":\"2001:DB8:85A3:0:8A2E:370:7334:1\",\"EPOProductEvents.InitiatorID\":null,\"EPOProductEvents.InitiatorType\":\"CommandLine\",\"EPOProductEvents.Locale\":1033,\"EPOProductEvents.NodeID\":1,\"EPOProductEvents.ProductCode\":\"EPOAGENT3000\",\"EPOProductEvents.ReceivedUTC\":\"2026-07-21T14:53:47+05:30\",\"EPOProductEvents.SPHotFix\":null,\"EPOProductEvents.SiteName\":null,\"EPOProductEvents.TVDEventID\":2411,\"EPOProductEvents.TVDSeverity\":0,\"EPOProductEvents.TenantId\":1,\"EPOProductEvents.Type\":\"Install\",\"EPOProductEvents.UserName\":\"SYSTEM\"}",
         "outcome": "success",
@@ -509,15 +509,15 @@ An example event for `device_event` looks as following:
 {
     "@timestamp": "2026-07-31T08:15:42.000Z",
     "agent": {
-        "ephemeral_id": "57916f43-c0c7-430f-a7cb-67668f46df8f",
+        "ephemeral_id": "5fae879f-2621-4388-a120-0f5530dce15d",
         "id": "11111111-2222-4333-8444-555555555555",
-        "name": "elastic-agent-72028",
+        "name": "elastic-agent-47551",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.device_event",
-        "namespace": "90284",
+        "namespace": "75703",
         "type": "logs"
     },
     "device": {
@@ -531,7 +531,7 @@ An example event for `device_event` looks as following:
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "f23ae146-5759-43ed-a647-e151e229426b",
+        "id": "e4e23a3c-dffd-4b8e-a7ef-45a62db09748",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -545,7 +545,7 @@ An example event for `device_event` looks as following:
         "created": "2026-07-31T08:16:03.000Z",
         "dataset": "trellix_epo_on_prem.device_event",
         "id": "1048576",
-        "ingested": "2026-08-28T11:04:31Z",
+        "ingested": "2026-08-31T09:00:19Z",
         "kind": "event",
         "original": "{\"EEFFDeviceAllEventsView.AgentGUID\":\"11111111-2222-4333-8444-555555555555\",\"EEFFDeviceAllEventsView.AutoID\":1048576,\"EEFFDeviceAllEventsView.BackupSize\":1024.5,\"EEFFDeviceAllEventsView.BackupState\":\"Completed\",\"EEFFDeviceAllEventsView.BackupTime\":18.75,\"EEFFDeviceAllEventsView.CredentialType\":1,\"EEFFDeviceAllEventsView.DeviceSN\":\"EXAMPLE-DEVICE-SN-001\",\"EEFFDeviceAllEventsView.DeviceSize\":64000,\"EEFFDeviceAllEventsView.EventGeneratedTime\":\"2026-07-31T08:15:42.000Z\",\"EEFFDeviceAllEventsView.EventID\":3001,\"EEFFDeviceAllEventsView.EventReportedTime\":\"2026-07-31T08:16:03.000Z\",\"EEFFDeviceAllEventsView.Exempted\":\"No\",\"EEFFDeviceAllEventsView.FileSystem\":\"NTFS\",\"EEFFDeviceAllEventsView.FileSystemVersion\":\"3.1\",\"EEFFDeviceAllEventsView.InitializationState\":\"Initialized\",\"EEFFDeviceAllEventsView.InitializationTime\":12.25,\"EEFFDeviceAllEventsView.Key\":\"example-removable-media-key-001\",\"EEFFDeviceAllEventsView.MediaType\":2,\"EEFFDeviceAllEventsView.ProductName\":\"Example Secure USB\",\"EEFFDeviceAllEventsView.Protected\":\"Yes\",\"EEFFDeviceAllEventsView.ProtectedSize\":62000,\"EEFFDeviceAllEventsView.UserName\":\"EXAMPLE\\\\analyst\",\"EEFFDeviceAllEventsView.UserResponse\":\"Approved\",\"EEFFDeviceAllEventsView.VendorName\":\"Example Vendor\"}",
         "type": [
