@@ -127,6 +127,16 @@ The `nrd_with_whois` data stream provides Newly Registered Domains with WHOIS re
 ##### nrd_with_whois sample event
 {{ event "nrd_with_whois" }}
 
+#### nrd_without_whois
+
+The `nrd_without_whois` data stream provides Newly Registered Domains without WHOIS records.
+
+##### nrd_without_whois fields
+{{ fields "nrd_with_whois" }}
+
+##### nrd_without_whois sample event
+{{ event "nrd_with_whois" }}
+
 #### threat_feed_malware
 
 The `threat_feed_malware` data stream provides WhoisFreaks malware domain indicators.
