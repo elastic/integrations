@@ -1,10 +1,10 @@
-title: "Newly Registered Domains with WHOIS"
+title: "Newly Registered Domains without WHOIS"
 type: logs
 streams:
   - input: cel
-    title: "WhoisFreaks Newly Registered Domains with WHOIS (gTLD + ccTLD) via CEL"
+    title: "WhoisFreaks Newly Registered Domains without WHOIS (gTLD + ccTLD) via CEL"
     description: |-
-      Page through the daily WhoisFreaks gTLD and ccTLD domainer WHOIS stream feeds via the CEL input.
+      Page through the daily WhoisFreaks gTLD and ccTLD newly registered domain feeds without WHOIS enrichment via the CEL input.
     template_path: cel.yml.hbs
     vars:
       - name: resource_url
@@ -13,7 +13,7 @@ streams:
         description: |-
           The base HTTPS URL of the WhoisFreaks domainer stream endpoint, without
           a TLD segment or query parameters. The input appends `/gtld` and
-          `/cctld` and builds the query string itself (`date`, `whois`, `limit`,
+          `/cctld` and builds the query string itself (`date`, `whois=false`, `limit`,
           `offset`, and `apiKey`).
         required: true
         show_user: true
@@ -34,12 +34,10 @@ streams:
         type: integer
         title: "Page Size"
         description: |-
-          Number of records requested per page (the `limit` sent to the stream
-          endpoint). The feed is paged with a dynamic `offset` until a page comes
-          back short, so this only controls memory and request count per poll, not
-          how much data is ingested. Larger pages mean fewer requests but more
-          memory per request. 5000 is a safe default for the large WHOIS response
-          rows; increase it only when the endpoint responds within the timeout.
+          Number of domain names requested per page. The feed is paged with a dynamic
+          `offset` until a page comes back short, so this only controls memory and
+          request count per poll, not how much data is ingested. 5000 is a safe
+          default; increase it only when the endpoint responds within the timeout.
         required: true
         show_user: true
         default: 5000

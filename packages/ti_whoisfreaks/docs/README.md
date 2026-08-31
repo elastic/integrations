@@ -99,7 +99,6 @@ populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 - No data is being collected: confirm the API key and Domainer Subscription are valid; check `error.message` on `pipeline_error` events for the upstream HTTP status.
 - Empty or unexpectedly small CSV: the pinned date may not have a published file yet; leave File Date empty.
-- Requests time out: set Page Size to `500` and Request Timeout to at least `10m` for large daily WHOIS files.
 
 ## Performance and scaling
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
