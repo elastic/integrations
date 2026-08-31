@@ -20,7 +20,7 @@ redact:
 program: |
   (has(state.cursor) ? state.cursor : {}).as(c,
   (has(c.phase) ? c.phase : "").as(phase,
-  (has(c.cur_offset) ? c.cur_offset : 0).as(cur_offset,
+  (has(c.cur_offset) ? int(c.cur_offset) : 0).as(cur_offset,
   (has(c.gtld_date) ? c.gtld_date : "").as(gtld_date,
   (has(c.cctld_date) ? c.cctld_date : "").as(cctld_date,
   (has(c.last_gtld_date) ? c.last_gtld_date : "").as(last_gtld_date,
@@ -31,7 +31,7 @@ program: |
           "apiKey": [state.api_key],
           "whois": ["true"],
           "date": [gtld_date],
-          "limit": [string(state.page_limit)],
+          "limit": [string(int(state.page_limit))],
           "offset": [string(cur_offset)],
       }.format_query()).do_request().as(resp,
           resp.StatusCode != 200 ?
@@ -58,7 +58,7 @@ program: |
               }
           :
               resp.Body.mime("text/csv; header=present").as(rows,
-                  size(rows) < state.page_limit ?
+                  size(rows) < int(state.page_limit) ?
                       {
                           "events": rows.map(row, {"whoisfreaks": row, "_tld": "gtld"}),
                           "url": state.url,
@@ -86,7 +86,7 @@ program: |
                           "pinned_date": state.pinned_date,
                           "cursor": {
                               "phase": "gtld",
-                              "cur_offset": cur_offset + state.page_limit,
+                              "cur_offset": cur_offset + int(state.page_limit),
                               "gtld_date": gtld_date,
                               "cctld_date": cctld_date,
                               "last_gtld_date": last_gtld_date,
@@ -101,7 +101,7 @@ program: |
           "apiKey": [state.api_key],
           "whois": ["true"],
           "date": [cctld_date],
-          "limit": [string(state.page_limit)],
+          "limit": [string(int(state.page_limit))],
           "offset": [string(cur_offset)],
       }.format_query()).do_request().as(resp,
           resp.StatusCode != 200 ?
@@ -128,7 +128,7 @@ program: |
               }
           :
               resp.Body.mime("text/csv; header=present").as(rows,
-                  size(rows) < state.page_limit ?
+                  size(rows) < int(state.page_limit) ?
                       {
                           "events": rows.map(row, {"whoisfreaks": row, "_tld": "cctld"}),
                           "url": state.url,
@@ -156,7 +156,7 @@ program: |
                           "pinned_date": state.pinned_date,
                           "cursor": {
                               "phase": "cctld",
-                              "cur_offset": cur_offset + state.page_limit,
+                              "cur_offset": cur_offset + int(state.page_limit),
                               "gtld_date": gtld_date,
                               "cctld_date": cctld_date,
                               "last_gtld_date": last_gtld_date,

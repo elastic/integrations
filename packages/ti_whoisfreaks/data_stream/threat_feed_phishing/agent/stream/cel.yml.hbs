@@ -11,8 +11,8 @@ redact:
   fields:
     - api_key
 program: |
-  (has(state.cur_offset) ? state.cur_offset : 0).as(offset,
-  (has(state.page_limit) ? state.page_limit : {{limit}}).as(limit,
+  (has(state.cur_offset) ? int(state.cur_offset) : 0).as(offset,
+  (has(state.page_limit) ? int(state.page_limit) : {{limit}}).as(limit,
   (has(state.url) ? state.url : "{{resource_url}}").as(req_url,
   (has(state.api_key) ? state.api_key : "{{api_key}}").as(key,
     request("GET", req_url + "?" + {"apiKey": [key], "offset": [string(offset)], "limit": [string(limit)]}.format_query()).do_request().as(resp,

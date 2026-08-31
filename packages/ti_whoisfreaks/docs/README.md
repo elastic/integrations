@@ -549,8 +549,6 @@ An example event for `threat_feed_phishing` looks as following:
 ```
 
 
-### Data streams using ILM policies
-
 
 
 
