@@ -478,22 +478,22 @@ An example event for `ldap_access` looks as following:
 {
     "@timestamp": "2026-05-25T18:30:48.688+05:30",
     "agent": {
-        "ephemeral_id": "bf6ff11b-d051-4ba3-90f1-b8f949438588",
-        "id": "0ae347d5-b19b-4560-bcc6-96a3313015ee",
-        "name": "elastic-agent-22240",
+        "ephemeral_id": "357506d5-e0f1-438e-bd84-da9c0e1d6d9a",
+        "id": "623d7637-2f20-4e6c-b1c2-61e4d91f9b24",
+        "name": "elastic-agent-14043",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ping_directory.ldap_access",
-        "namespace": "29370",
+        "namespace": "56552",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "0ae347d5-b19b-4560-bcc6-96a3313015ee",
+        "id": "623d7637-2f20-4e6c-b1c2-61e4d91f9b24",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -505,7 +505,7 @@ An example event for `ldap_access` looks as following:
         ],
         "dataset": "ping_directory.ldap_access",
         "duration": 24567000,
-        "ingested": "2026-08-13T11:16:53Z",
+        "ingested": "2026-08-28T09:56:21Z",
         "kind": "event",
         "original": "[25/May/2026:18:30:48.688 +0530] ADD RESULT instanceName=\"pingdirectory-elastic-test\" threadID=9 conn=4 op=1 msgID=2 requesterIP=\"127.0.0.1\" requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\" dn=\"ou=People,dc=example,dc=com\" resultCode=0 resultCodeName=\"Success\" qtime=0 etime=24.567 usedPrivileges=\"bypass-acl\"",
         "outcome": "success",
@@ -520,7 +520,7 @@ An example event for `ldap_access` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1982602",
+            "inode": "2663369",
             "path": "/tmp/service_logs/test-ldap_access.log"
         },
         "offset": 0
@@ -543,12 +543,14 @@ An example event for `ldap_access` looks as following:
         }
     },
     "related": {
+        "hosts": [
+            "pingdirectory-elastic-test"
+        ],
         "ip": [
             "127.0.0.1"
         ],
         "user": [
-            "ou=People,dc=example,dc=com",
-            "cn=Directory Manager,cn=Root DNs,cn=config"
+            "Directory Manager"
         ]
     },
     "source": {
@@ -558,7 +560,11 @@ An example event for `ldap_access` looks as following:
         "preserve_original_event",
         "forwarded",
         "ping_directory-ldap_access"
-    ]
+    ],
+    "user": {
+        "id": "cn=Directory Manager,cn=Root DNs,cn=config",
+        "name": "Directory Manager"
+    }
 }
 ```
 

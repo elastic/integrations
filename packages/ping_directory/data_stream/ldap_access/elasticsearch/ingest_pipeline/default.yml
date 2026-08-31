@@ -22,13 +22,11 @@ processors:
   - script:
       lang: painless
       tag: trim_header
+      if: ctx.event?.original != null && ctx.event.original.startsWith("<")
       source: >
-        if (ctx.event?.original != null &&
-            ctx.event.original.startsWith("<")) {
-            int idx = ctx.event.original.indexOf('[');
-            if (idx > -1) {
-            ctx.event.original = ctx.event.original.substring(idx);
-            }
+        int idx = ctx.event.original.indexOf('[');
+        if (idx > -1) {
+          ctx.event.original = ctx.event.original.substring(idx);
         }
   - drop:
       tag: drop_empty_lines
@@ -221,17 +219,39 @@ processors:
       value: info
       allow_duplicates: false
       if: "['SEARCH RESULT', 'EXTENDED RESULT', 'BIND RESULT'].contains(ctx.ping_directory?.ldap_access?.operation_type)"
+  - set:
+      field: user.id
+      tag: set_user_id_from_ldap_access_requester_dn
+      copy_from: ping_directory.ldap_access.requester_dn
+      ignore_empty_value: true
+      description: >-
+        The requester DN uniquely identifies the account that performed the
+        operation, which is what ECS `user.id` records.
+  - set:
+      field: user.id
+      tag: set_user_id_from_ldap_access_auth_dn
+      copy_from: ping_directory.ldap_access.auth_dn
+      ignore_empty_value: true
+      override: false
+      description: >-
+        Falls back to the authenticated DN on records that carry no requester DN,
+        such as Bind results.
+  - grok:
+      field: user.id
+      tag: grok_user_name_from_user_id
+      if: ctx.user?.id != null && ctx.user.id != ''
+      patterns:
+        - '^%{DATA}=%{DATA:user.name},%{GREEDYDATA}$'
+        - '^%{DATA}=%{GREEDYDATA:user.name}$'
+      ignore_failure: true
+      description: >-
+        Extracts the leftmost RDN value of the DN (for example `Directory Manager`
+        from `cn=Directory Manager,cn=Root DNs,cn=config`) as the user name.
   - append:
       field: related.user
-      tag: append_ldap_access_auth_dn_into_related_user
-      if: ctx.ping_directory?.ldap_access?.auth_dn != null
-      value: '{{{ping_directory.ldap_access.auth_dn}}}'
-      allow_duplicates: false
-  - append:
-      field: related.user
-      tag: append_ldap_access_dn_into_related_user
-      if: ctx.ping_directory?.ldap_access?.dn != null
-      value: '{{{ping_directory.ldap_access.dn}}}'
+      tag: append_user_name_into_related_user
+      if: ctx.user?.name != null && ctx.user.name != ''
+      value: '{{{user.name}}}'
       allow_duplicates: false
   - set:
       field: tls.cipher
@@ -245,6 +265,10 @@ processors:
       type: float
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.client_server_handshake_time_millis
+            tag: remove_client_server_handshake_time_millis_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_clientServerHandshakeTimeMillis_to_float
@@ -255,6 +279,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.conn
+            tag: remove_conn_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_conn_to_long
@@ -265,6 +293,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.entries_returned
+            tag: remove_entries_returned_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_entriesReturned_to_long
@@ -276,6 +308,10 @@ processors:
       type: double
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.etime
+            tag: remove_etime_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_etime_to_float
@@ -299,6 +335,10 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.from
+            tag: remove_from_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_from_to_ip
@@ -355,6 +395,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.from_port
+            tag: remove_from_port_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_fromPort_to_long
@@ -369,6 +413,12 @@ processors:
       tag: set_observer_name_from_ldap_access_instance_name
       copy_from: ping_directory.ldap_access.instance_name
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_observer_name_into_related_hosts
+      if: ctx.observer?.name != null && ctx.observer.name != ''
+      value: '{{{observer.name}}}'
+      allow_duplicates: false
   - rename:
       field: ping_directory.ldap_access.msg
       tag: rename_msg_to_message
@@ -380,6 +430,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.msg_id
+            tag: remove_msg_id_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_msgID_to_long
@@ -400,6 +454,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.op
+            tag: remove_op_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_op_to_long
@@ -411,22 +469,24 @@ processors:
       type: float
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.qtime
+            tag: remove_qtime_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_qtime_to_float
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.user
-      tag: append_ldap_access_requester_dn_into_related_user
-      if: ctx.ping_directory?.ldap_access?.requester_dn != null
-      value: '{{{ping_directory.ldap_access.requester_dn}}}'
-      allow_duplicates: false
   - convert:
       field: ping_directory.ldap_access.result_code
       tag: convert_resultCode_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.result_code
+            tag: remove_result_code_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_resultCode_to_long
@@ -438,6 +498,10 @@ processors:
       type: float
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.server_only_handshake_time_millis
+            tag: remove_server_only_handshake_time_millis_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_serverOnlyHandshakeTimeMillis_to_float
@@ -448,6 +512,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.thread_id
+            tag: remove_thread_id_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_threadID_to_long
@@ -505,6 +573,10 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.to
+            tag: remove_to_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_to_to_ip
@@ -526,6 +598,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.to_port
+            tag: remove_to_port_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_toPort_to_long
@@ -553,6 +629,10 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.use_dedicated_thread_pool
+            tag: remove_use_dedicated_thread_pool_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_use_dedicated_thread_pool_to_boolean
@@ -569,6 +649,10 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
+        - remove:
+            field: ping_directory.ldap_access.via_detail.client_ip
+            tag: remove_via_detail_client_ip_on_convert_failure
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_error_message_for_convert_via_detail_client_ip_to_ip
@@ -579,6 +663,30 @@ processors:
       if: ctx.ping_directory?.ldap_access?.via_detail?.client_ip != null
       value: '{{{ping_directory.ldap_access.via_detail.client_ip}}}'
       allow_duplicates: false
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_asn
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn_to_source_as_number
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name_to_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - set:
       field: event.action
       tag: set_event_action_from_operation_type
@@ -602,6 +710,16 @@ processors:
       copy_from: ping_directory.ldap_access.protocol
       if: ctx.ping_directory?.ldap_access?.operation_type == 'CONNECT'
       ignore_empty_value: true
+  - gsub:
+      field: network.protocol
+      tag: gsub_network_protocol_strip_security_layer
+      pattern: '\+.*$'
+      replacement: ''
+      ignore_missing: true
+      description: >-
+        PingDirectory reports the security layer alongside the application
+        protocol (for example `LDAP+TLS`). ECS `network.protocol` holds the
+        application protocol only, so the suffix is dropped.
   - lowercase:
       field: network.protocol
       tag: lowercase_network_protocol
