@@ -250,6 +250,16 @@ The `vulnerability` data stream contains ReConfirm scan result events — discov
 | reconfirm.summary.similar_domains_count | Number of similar/lookalike domains found by the scan. Derived at ingest time. | long |
 | reconfirm.summary.subdomains_active_count | Number of active subdomains found by the scan. Derived at ingest time. | long |
 | reconfirm.summary.subdomains_unresolved_count | Number of unresolved subdomains found by the scan. Derived at ingest time. | long |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 
 
 ##### vulnerability sample event
