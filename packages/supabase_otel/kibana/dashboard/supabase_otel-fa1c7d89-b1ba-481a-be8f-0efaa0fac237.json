@@ -100,7 +100,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "### 📋 Service logs overview\n\nDeep monitoring for Supabase service log streams via OpenTelemetry. This dashboard provides a single-pane health view across every log stream in your Supabase deployment:\n\n- **🗄️ Database** - Postgres severity breakdown, SQLSTATE errors, backend activity, and top SQL operations\n- **🔌 Connection Pooling** - Supavisor handler events, connection churn \u0026 errors, and PgBouncer login/close activity\n- **🔐 PostgREST** - Schema cache and config lifecycle events, plus raw log entries\n- **🌐 API Gateway** - Request volume by status code, HTTP methods, user agents, and per-path request table\n- **⚡ Edge Functions** - Invocation status codes, execution time percentiles, runtime severity, and per-function performance\n- **📦 Storage** - Request status codes, response time percentiles, HTTP method mix, and object lifecycle events\n- **📡 Realtime** - Severity trends, connection count vs limit, peak utilisation, and recent warnings/errors",
+                    "content": "### 📋 Service logs overview\n\nDeep monitoring for Supabase service log streams via OpenTelemetry. This dashboard provides a single-pane health view across every log stream in your Supabase deployment:\n\n- **🗄️ Database** - Postgres severity breakdown, SQLSTATE errors, backend activity, and top SQL operations\n- **🔌 Connection Pooling** - Supavisor handler events and PgBouncer login/close activity\n- **🌐 API Gateway** - Request volume by status code, HTTP methods, user agents, and per-path request table\n- **⚡ Edge Functions** - Invocation status codes, execution time percentiles, runtime severity, and per-function performance\n- **📦 Storage** - Request status codes, response time percentiles, HTTP method mix, and object lifecycle events\n- **📡 Realtime** - Severity trends, connection count vs limit, peak utilisation, and recent warnings/errors\n- **🔐 PostgREST** - Recent PostgREST log entries",
                     "settings": {
                         "open_links_in_new_tab": true
                     }
@@ -2636,163 +2636,6 @@
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "line_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "line_0_x",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "line_0_y_0",
-                                                    "fieldName": "Connection Churn (Auth)",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "line_0_y_1",
-                                                    "fieldName": "Lifecycle Events",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "line_0_y_2",
-                                                    "fieldName": "Errors",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "logs-supabase.otel-*-@timestamp",
-                                            "query": {
-                                                "esql": "FROM logs-supabase.otel-*\n| WHERE attributes.supabase.service IN (\"supavisor\", \"supavisor_logs\")\n| EVAL is_auth = CASE(body.text LIKE \"*handle_auth_success*\" OR message LIKE \"*handle_auth_success*\", 1, 0), is_lifecycle = CASE(body.text LIKE \"*ClientHandler.handle_event*\" OR message LIKE \"*ClientHandler.handle_event*\", 1, 0), is_error = CASE(body.text LIKE \"*Error.terminate_with_error*\" OR message LIKE \"*Error.terminate_with_error*\", 1, 0)\n| STATS `Connection Churn (Auth)` = SUM(is_auth), `Lifecycle Events` = SUM(is_lifecycle), `Errors` = SUM(is_error) BY `Time Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| SORT `Time Bucket`"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "logs-supabase.otel-*-@timestamp",
-                                    "name": "indexpattern-datasource-layer-line_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "FROM logs-supabase.otel-*\n| WHERE attributes.supabase.service IN (\"supavisor\", \"supavisor_logs\")\n| EVAL is_auth = CASE(body.text LIKE \"*handle_auth_success*\" OR message LIKE \"*handle_auth_success*\", 1, 0), is_lifecycle = CASE(body.text LIKE \"*ClientHandler.handle_event*\" OR message LIKE \"*ClientHandler.handle_event*\", 1, 0), is_error = CASE(body.text LIKE \"*Error.terminate_with_error*\" OR message LIKE \"*Error.terminate_with_error*\", 1, 0)\n| STATS `Connection Churn (Auth)` = SUM(is_auth), `Lifecycle Events` = SUM(is_lifecycle), `Errors` = SUM(is_error) BY `Time Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| SORT `Time Bucket`"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "curveType": "LINEAR",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "hideEndzones": true,
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "line_0_y_0",
-                                            "line_0_y_1",
-                                            "line_0_y_2"
-                                        ],
-                                        "layerId": "line_0",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "xAccessor": "line_0_x",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "line_0_y_0"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "line_0_y_1"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "line_0_y_2"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom"
-                                },
-                                "pointVisibility": "auto",
-                                "preferredSeriesType": "line",
-                                "showCurrentTimeMarker": false,
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "xExtent": {
-                                    "mode": "dataBounds",
-                                    "niceValues": false
-                                },
-                                "yLeftExtent": {
-                                    "mode": "full",
-                                    "niceValues": true
-                                },
-                                "yLeftScale": "linear"
-                            }
-                        },
-                        "title": "Supavisor Connection Churn \u0026 Errors Over Time",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "title": "Supavisor Connection Churn \u0026 Errors Over Time"
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "6d14b984-6fa5-470b-963d-31dd185d9e9a",
-                    "sectionId": "8a297799-1c95-49f8-99f7-dbe310f670cb",
-                    "w": 24,
-                    "x": 24,
-                    "y": 2
-                },
-                "panelIndex": "6d14b984-6fa5-470b-963d-31dd185d9e9a",
-                "type": "vis"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "logs-supabase.otel-*-@timestamp": {
-                                    "allowNoIndex": false,
-                                    "id": "logs-supabase.otel-*-@timestamp",
-                                    "name": "logs-supabase.otel-*",
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-supabase.otel-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
                                         "bar_stacked_0": {
                                             "columns": [
                                                 {
@@ -2930,174 +2773,11 @@
                     "h": 10,
                     "i": "1f90bfc1-571c-4fc4-bc0d-577c2396d592",
                     "sectionId": "8a297799-1c95-49f8-99f7-dbe310f670cb",
-                    "w": 48,
-                    "x": 0,
-                    "y": 9
-                },
-                "panelIndex": "1f90bfc1-571c-4fc4-bc0d-577c2396d592",
-                "type": "vis"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "logs-supabase.otel-*-@timestamp": {
-                                    "allowNoIndex": false,
-                                    "id": "logs-supabase.otel-*-@timestamp",
-                                    "name": "logs-supabase.otel-*",
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-supabase.otel-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "bar_stacked_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "bar_stacked_0_x",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "bar_stacked_0_y_0",
-                                                    "fieldName": "count",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "bar_stacked_0_breakdown",
-                                                    "fieldName": "Event Type",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "logs-supabase.otel-*-@timestamp",
-                                            "query": {
-                                                "esql": "FROM logs-supabase.otel-*\n| WHERE attributes.supabase.service == \"postgrest_logs\" AND @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| EVAL `Event Type` = CASE(\n    body.text LIKE \"*Schema cache loaded*\", \"Schema cache loaded\",\n    body.text LIKE \"*Schema cache queried*\", \"Schema cache queried\",\n    body.text LIKE \"*schema cache reload message*\", \"Schema reload requested\",\n    body.text LIKE \"*Config reloaded*\", \"Config reloaded\",\n    body.text LIKE \"*Successfully connected*\", \"Connected to PostgreSQL\",\n    \"Other\"\n  )\n| STATS count = COUNT(*) BY `Time Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend), `Event Type`\n| SORT `Time Bucket`, `Event Type`"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "logs-supabase.otel-*-@timestamp",
-                                    "name": "indexpattern-datasource-layer-bar_stacked_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "FROM logs-supabase.otel-*\n| WHERE attributes.supabase.service == \"postgrest_logs\" AND @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| EVAL `Event Type` = CASE(\n    body.text LIKE \"*Schema cache loaded*\", \"Schema cache loaded\",\n    body.text LIKE \"*Schema cache queried*\", \"Schema cache queried\",\n    body.text LIKE \"*schema cache reload message*\", \"Schema reload requested\",\n    body.text LIKE \"*Config reloaded*\", \"Config reloaded\",\n    body.text LIKE \"*Successfully connected*\", \"Connected to PostgreSQL\",\n    \"Other\"\n  )\n| STATS count = COUNT(*) BY `Time Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend), `Event Type`\n| SORT `Time Bucket`, `Event Type`"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "hideEndzones": true,
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "bar_stacked_0_y_0"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "default",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "bar_stacked_0",
-                                        "layerType": "data",
-                                        "seriesType": "bar_stacked",
-                                        "splitAccessors": [
-                                            "bar_stacked_0_breakdown"
-                                        ],
-                                        "xAccessor": "bar_stacked_0_x",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "bar_stacked_0_y_0"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "bottom"
-                                },
-                                "minBarHeight": 1,
-                                "preferredSeriesType": "bar_stacked",
-                                "showCurrentTimeMarker": false,
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "xExtent": {
-                                    "mode": "dataBounds",
-                                    "niceValues": false
-                                },
-                                "yLeftExtent": {
-                                    "mode": "full",
-                                    "niceValues": true
-                                },
-                                "yLeftScale": "linear"
-                            }
-                        },
-                        "title": "PostgREST Schema Cache \u0026 Config Events Over Time",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "title": "PostgREST Schema Cache \u0026 Config Events Over Time"
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "1ba71bf4-d1b3-4635-8b91-dfa39fb66bd0",
-                    "sectionId": "3a3a4285-5aaa-4499-837c-a5edf2a0bdd3",
-                    "w": 48,
-                    "x": 0,
+                    "w": 24,
+                    "x": 24,
                     "y": 2
                 },
-                "panelIndex": "1ba71bf4-d1b3-4635-8b91-dfa39fb66bd0",
+                "panelIndex": "1f90bfc1-571c-4fc4-bc0d-577c2396d592",
                 "type": "vis"
             },
             {
@@ -3191,7 +2871,7 @@
                     "sectionId": "3a3a4285-5aaa-4499-837c-a5edf2a0bdd3",
                     "w": 48,
                     "x": 0,
-                    "y": 9
+                    "y": 2
                 },
                 "panelIndex": "60149a8e-3ecd-4921-94d4-8760e44cfd7c",
                 "type": "vis"
@@ -7314,16 +6994,8 @@
             {
                 "collapsed": false,
                 "gridData": {
-                    "i": "3a3a4285-5aaa-4499-837c-a5edf2a0bdd3",
-                    "y": 36
-                },
-                "title": "PostgREST — postgrest_logs"
-            },
-            {
-                "collapsed": false,
-                "gridData": {
                     "i": "257e0005-cda3-4686-82b7-1c9282f83dba",
-                    "y": 37
+                    "y": 36
                 },
                 "title": "API Gateway — edge_logs"
             },
@@ -7331,7 +7003,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "dbcde65d-df57-48f7-ae2e-4a6916195130",
-                    "y": 38
+                    "y": 37
                 },
                 "title": "Edge Functions — invocation + runtime logs"
             },
@@ -7339,7 +7011,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "205d7bc7-001d-4ad0-9979-34bf6cdc3dcd",
-                    "y": 39
+                    "y": 38
                 },
                 "title": "Storage — storage_logs"
             },
@@ -7347,9 +7019,17 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "fb7a08c9-41c6-4b52-85a4-b643bba507e0",
-                    "y": 40
+                    "y": 39
                 },
                 "title": "Realtime — realtime_logs"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "3a3a4285-5aaa-4499-837c-a5edf2a0bdd3",
+                    "y": 40
+                },
+                "title": "PostgREST — postgrest_logs"
             }
         ],
         "timeFrom": "now-3h",
