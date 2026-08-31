@@ -1,0 +1,541 @@
+---
+description: Pipeline for processing product event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: trellix_epo_on_prem.product_event
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_product_event
+      path: trellix_epo_on_prem.product_event
+      override: true
+      if: ctx.trellix_epo_on_prem?.product_event instanceof Map
+      description: Expands the dotted source field names into objects.
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1))
+                        || (i + 1 < str.length() && Character.isLowerCase(str.charAt(i + 1))))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.trellix_epo_on_prem?.product_event != null) {
+          ctx.trellix_epo_on_prem.product_event = convertToSnakeCase(ctx.trellix_epo_on_prem.product_event);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.auto_id
+      tag: convert_EPOProductEvents_AutoID_to_string
+      type: string
+      ignore_missing: true
+  - fingerprint:
+      tag: fingerprint_with_id
+      fields:
+        - trellix_epo_on_prem.product_event.epo_product_events.auto_id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: entity.type
+      tag: append_host_into_entity_type
+      value: host
+  - script:
+      lang: painless
+      tag: script_set_ecs_categorization
+      description: Maps the source product event type to ECS action and categorization fields.
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.type instanceof String
+      params:
+        install:
+          action: install
+          category:
+            - package
+          type:
+            - installation
+        uninstall:
+          action: uninstall
+          category:
+            - package
+          type:
+            - deletion
+        update:
+          action: update
+          category:
+            - package
+          type:
+            - change
+        amcore:
+          action: am_core
+          category:
+            - package
+          type:
+            - change
+        property collection:
+          action: property_collection
+          category:
+            - host
+          type:
+            - info
+        policy enforcement:
+          action: policy_enforcement
+          category:
+            - configuration
+          type:
+            - change
+      source: |-
+        def mapping = params[ctx.trellix_epo_on_prem.product_event.epo_product_events.type.toLowerCase()];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        ctx.event.category = mapping.category;
+        ctx.event.type = mapping.type;
+      on_failure:
+        - append:
+            tag: append_script_set_ecs_categorization_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: entity.id
+      tag: set_entity_id_from_product_event_epo_product_events_agent_guid
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.agent_guid
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_product_event_epo_product_events_agent_guid
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.agent_guid
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_product_event_epo_product_events_agent_guid_into_related_hosts
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.agent_guid != null
+      value: '{{{trellix_epo_on_prem.product_event.epo_product_events.agent_guid}}}'
+      allow_duplicates: false
+  - set:
+      field: event.id
+      tag: set_event_id_from_product_event_epo_product_events_auto_id
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.auto_id
+      ignore_empty_value: true
+  - date:
+      field: trellix_epo_on_prem.product_event.epo_product_events.detected_utc
+      tag: date_EPOProductEvents_DetectedUTC
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.detected_utc != null && ctx.trellix_epo_on_prem.product_event.epo_product_events.detected_utc != ''
+      target_field: trellix_epo_on_prem.product_event.epo_product_events.detected_utc
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_detected_utc_on_date_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.detected_utc
+            ignore_missing: true
+        - append:
+            tag: append_date_detected_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_product_event_epo_product_events_detected_utc
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.detected_utc
+      ignore_empty_value: true
+  - date:
+      field: trellix_epo_on_prem.product_event.epo_product_events.received_utc
+      tag: date_EPOProductEvents_ReceivedUTC
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.received_utc != null && ctx.trellix_epo_on_prem.product_event.epo_product_events.received_utc != ''
+      target_field: trellix_epo_on_prem.product_event.epo_product_events.received_utc
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_received_utc_on_date_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.received_utc
+            ignore_missing: true
+        - append:
+            tag: append_date_received_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_product_event_epo_product_events_received_utc
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.received_utc
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.error == 0
+      value: success
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.error != null && ctx.trellix_epo_on_prem.product_event.epo_product_events.error != 0
+      value: failure
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.error
+      tag: convert_EPOProductEvents_Error_to_string
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.error != null && ctx.trellix_epo_on_prem.product_event.epo_product_events.error != 0
+      type: string
+  - set:
+      field: error.code
+      tag: set_error_code_from_product_event_epo_product_events_error
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.error instanceof String
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.error
+      ignore_empty_value: true
+  - set:
+      field: entity.name
+      tag: set_entity_name_from_product_event_epo_product_events_host_name
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.host_name
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_product_event_epo_product_events_host_name
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.host_name
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_product_event_epo_product_events_host_name
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.host_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_product_event_epo_product_events_host_name_into_related_hosts
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.host_name != null
+      value: '{{{trellix_epo_on_prem.product_event.epo_product_events.host_name}}}'
+      allow_duplicates: false
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.ipv6
+      tag: convert_EPOProductEvents_IPV6_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_ipv6_on_convert_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.ipv6
+            ignore_missing: true
+        - append:
+            tag: append_convert_ipv6_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_product_event_epo_product_events_ipv6_into_host_ip
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.ipv6 != null
+      value: '{{{trellix_epo_on_prem.product_event.epo_product_events.ipv6}}}'
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_product_event_epo_product_events_ipv6_into_related_ip
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.ipv6 != null
+      value: '{{{trellix_epo_on_prem.product_event.epo_product_events.ipv6}}}'
+      allow_duplicates: false
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.locale
+      tag: convert_EPOProductEvents_Locale_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_locale_on_convert_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.locale
+            ignore_missing: true
+        - append:
+            tag: append_convert_locale_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.node_id
+      tag: convert_EPOProductEvents_NodeID_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_node_id_on_convert_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.node_id
+            ignore_missing: true
+        - append:
+            tag: append_convert_node_id_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.name
+      tag: set_package_name_from_product_event_epo_product_events_product_code
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.product_code
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.tvd_event_id
+      tag: convert_EPOProductEvents_TVDEventID_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.code
+      tag: set_event_code_from_product_event_epo_product_events_tvd_event_id
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.tvd_event_id
+      ignore_empty_value: true
+  # Augment the generic Type/Error-derived categorization with customer-verified TVDEventID mappings.
+  - set:
+      field: event.action
+      tag: set_event_action_update_successful_for_code_2401
+      if: ctx.event?.code == '2401'
+      value: update-successful
+  - set:
+      field: event.action
+      tag: set_event_action_update_failed_for_code_2402
+      if: ctx.event?.code == '2402'
+      value: update-failed
+  - set:
+      field: event.action
+      tag: set_event_action_deployment_successful_for_code_2411
+      if: ctx.event?.code == '2411'
+      value: deployment-successful
+  - set:
+      field: event.action
+      tag: set_event_action_deployment_failed_for_code_2412
+      if: ctx.event?.code == '2412'
+      value: deployment-failed
+  - set:
+      field: event.action
+      tag: set_event_action_policy_retrieval_failed_for_code_2422
+      if: ctx.event?.code == '2422'
+      value: policy-retrieval-from-datastore-failed
+  - set:
+      field: event.action
+      tag: set_event_action_property_collection_failed_for_code_2427
+      if: ctx.event?.code == '2427'
+      value: agent-failed-to-collect-properties
+  - append:
+      field: event.category
+      tag: append_event_category_configuration_for_verified_codes
+      if: >-
+        ['2401', '2402', '2411', '2412', '2422', '2427'].contains(ctx.event?.code)
+      value: configuration
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind_event_for_verified_codes
+      if: >-
+        ['2401', '2402', '2411', '2422', '2427'].contains(ctx.event?.code)
+      value: event
+  - set:
+      field: event.kind
+      tag: set_event_kind_alert_for_code_2412
+      if: ctx.event?.code == '2412'
+      value: alert
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success_for_verified_codes
+      if: >-
+        ['2401', '2411'].contains(ctx.event?.code)
+      value: success
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure_for_verified_codes
+      if: >-
+        ['2402', '2412', '2422', '2427'].contains(ctx.event?.code)
+      value: failure
+  - append:
+      field: event.type
+      tag: append_event_type_change_for_verified_codes
+      if: >-
+        ['2401', '2402', '2411', '2412'].contains(ctx.event?.code)
+      value: change
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_deletion_for_code_2411
+      if: ctx.event?.code == '2411' && ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.type?.equalsIgnoreCase('Uninstall') == true
+      value: deletion
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_info_for_code_2422
+      if: ctx.event?.code == '2422'
+      value: info
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_info_for_code_2427
+      if: ctx.event?.code == '2427'
+      value: info
+      allow_duplicates: false
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.tvd_severity
+      tag: convert_EPOProductEvents_TVDSeverity_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_tvd_severity_on_convert_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.tvd_severity
+            ignore_missing: true
+        - append:
+            tag: append_convert_tvd_severity_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_product_event_epo_product_events_tvd_severity
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.tvd_severity
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.product_event.epo_product_events.tenant_id
+      tag: convert_EPOProductEvents_TenantId_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_tenant_id_on_convert_failure
+            field: trellix_epo_on_prem.product_event.epo_product_events.tenant_id
+            ignore_missing: true
+        - append:
+            tag: append_convert_tenant_id_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.name
+      tag: set_user_name_from_product_event_epo_product_events_user_name
+      copy_from: trellix_epo_on_prem.product_event.epo_product_events.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_product_event_epo_product_events_user_name_into_related_user
+      if: ctx.trellix_epo_on_prem?.product_event?.epo_product_events?.user_name != null
+      value: '{{{trellix_epo_on_prem.product_event.epo_product_events.user_name}}}'
+      allow_duplicates: false
+  - remove:
+      field:
+        - trellix_epo_on_prem.product_event.epo_product_events.agent_guid
+        - trellix_epo_on_prem.product_event.epo_product_events.auto_id
+        - trellix_epo_on_prem.product_event.epo_product_events.detected_utc
+        - trellix_epo_on_prem.product_event.epo_product_events.error
+        - trellix_epo_on_prem.product_event.epo_product_events.host_name
+        - trellix_epo_on_prem.product_event.epo_product_events.ipv6
+        - trellix_epo_on_prem.product_event.epo_product_events.product_code
+        - trellix_epo_on_prem.product_event.epo_product_events.received_utc
+        - trellix_epo_on_prem.product_event.epo_product_events.tvd_event_id
+        - trellix_epo_on_prem.product_event.epo_product_events.tvd_severity
+        - trellix_epo_on_prem.product_event.epo_product_events.type
+        - trellix_epo_on_prem.product_event.epo_product_events.user_name
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

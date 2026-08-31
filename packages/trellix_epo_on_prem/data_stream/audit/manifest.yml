@@ -1,16 +1,16 @@
-title: Device Event Logs
+title: Audit Logs
 type: logs
 streams:
   - input: cel
-    title: Trellix ePO Device Event Logs
-    description: Collect device event logs with CEL input.
+    title: Trellix ePO On-Prem Audit Logs
+    description: Collect audit logs with CEL input.
     enabled: false
     template_path: cel.yml.hbs
     vars:
       - name: initial_event_auto_id
         type: text
-        title: Initial Event Auto ID
-        description: The starting AutoID from which to begin querying device events. Subsequent collections will resume from the last persisted AutoID. Set to '0' to start from the beginning.
+        title: Initial Event Auto Id
+        description: The starting EventAutoID from which to begin querying events. Subsequent collections will resume from the last persisted EventAutoID. Set to '0' to start from the beginning.
         multi: false
         required: true
         show_user: true
@@ -19,7 +19,7 @@ streams:
       - name: interval
         type: text
         title: Interval
-        description: Duration between Device Event collection requests. Supported units are h/m/s.
+        description: Duration between requests to the Trellix ePO audit log API. Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -28,7 +28,7 @@ streams:
       - name: max_executions
         type: integer
         title: Maximum Pages Per Interval
-        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval. It must be greater than zero.
+        description: Maximum number of pages collected per polling interval. Must be greater than zero.
         default: 1000
         multi: false
         required: false
@@ -36,7 +36,7 @@ streams:
       - name: page_size
         type: integer
         title: Page Size
-        description: Number of device event log records fetched per API request. Maps to the page_size parameter.
+        description: Number of audit records fetched per API request.
         multi: false
         required: true
         show_user: false
@@ -79,7 +79,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - trellix_epo_on_prem-device_event
+          - trellix_epo_on_prem-audit
         secret: false
       - name: processors
         type: yaml

@@ -20,27 +20,21 @@ auth.basic:
   user: {{username}}
   password: {{password}}
 state:
-  # EEFFDeviceAllEventsView.AutoID is a unique ascending column, so it is used
-  # as the keyset cursor instead of EventGeneratedTime. The first poll starts
-  # after this AutoID; subsequent polls resume from the persisted cursor.
+  # EPOProductEvents.AutoID is a unique ascending column, so it is used as the
+  # keyset cursor instead of ReceivedUTC. The first poll starts after this
+  # AutoID; subsequent polls resume from the persisted cursor.
   initial_event_auto_id: "{{initial_event_auto_id}}"
   page_size: {{page_size}}
   columns: >-
-    EEFFDeviceAllEventsView.AutoID EEFFDeviceAllEventsView.AgentGUID
-    EEFFDeviceAllEventsView.BackupSize EEFFDeviceAllEventsView.BackupState
-    EEFFDeviceAllEventsView.BackupTime EEFFDeviceAllEventsView.DeviceSize
-    EEFFDeviceAllEventsView.DeviceSN EEFFDeviceAllEventsView.Exempted
-    EEFFDeviceAllEventsView.EventID EEFFDeviceAllEventsView.FileSystem
-    EEFFDeviceAllEventsView.FileSystemVersion
-    EEFFDeviceAllEventsView.InitializationState
-    EEFFDeviceAllEventsView.InitializationTime
-    EEFFDeviceAllEventsView.ProductName EEFFDeviceAllEventsView.Protected
-    EEFFDeviceAllEventsView.ProtectedSize EEFFDeviceAllEventsView.UserName
-    EEFFDeviceAllEventsView.UserResponse EEFFDeviceAllEventsView.VendorName
-    EEFFDeviceAllEventsView.EventGeneratedTime
-    EEFFDeviceAllEventsView.EventReportedTime EEFFDeviceAllEventsView.Key
-    EEFFDeviceAllEventsView.CredentialType
-    EEFFDeviceAllEventsView.MediaType
+    EPOProductEvents.AutoID EPOProductEvents.AgentGUID
+    EPOProductEvents.NodeID EPOProductEvents.TVDEventID
+    EPOProductEvents.TVDSeverity EPOProductEvents.DetectedUTC
+    EPOProductEvents.ReceivedUTC EPOProductEvents.HostName
+    EPOProductEvents.UserName EPOProductEvents.IPV6
+    EPOProductEvents.ProductCode EPOProductEvents.SPHotFix
+    EPOProductEvents.ExtraDATNames EPOProductEvents.Type
+    EPOProductEvents.Error EPOProductEvents.SiteName EPOProductEvents.InitiatorID
+    EPOProductEvents.InitiatorType EPOProductEvents.Locale EPOProductEvents.TenantId
 redact:
   fields: ~
 program: |-
@@ -59,11 +53,11 @@ program: |-
     state.with(
       get(
         state.url.trim_right("/") + "/remote/core.executeQuery?" + {
-          "target": ["EEFFDeviceAllEventsView"],
+          "target": ["EPOProductEvents"],
           // (top N) keyset page ordered by the unique AutoID.
           "select": ["(select (top " + string(int(state.page_size)) + ") " + state.columns + ")"],
-          "where": ["(where (gt EEFFDeviceAllEventsView.AutoID " + state.event_auto_id + "))"],
-          "order": ["(order (asc EEFFDeviceAllEventsView.AutoID))"],
+          "where": ["(where (gt EPOProductEvents.AutoID " + state.event_auto_id + "))"],
+          "order": ["(order (asc EPOProductEvents.AutoID))"],
         }.format_query() + "&:output=json"
       ).as(resp,
         (resp.StatusCode == 200) ?
@@ -71,10 +65,10 @@ program: |-
             // Advance to the greatest AutoID returned by this page. The ID is
             // routed through int() before string(): JSON numbers arrive as float64,
             // and string() of a float64 >= 1e6 renders as scientific notation, which
-            // is not a valid operand for the (gt EEFFDeviceAllEventsView.AutoID ...) query.
+            // is not a valid operand for the (gt EPOProductEvents.AutoID ...) query.
             string(
               int(
-                rows.last()["EEFFDeviceAllEventsView.AutoID"].orValue(state.event_auto_id)
+                rows.last()["EPOProductEvents.AutoID"].orValue(state.event_auto_id)
               )
             ).as(new_event_auto_id,
               {

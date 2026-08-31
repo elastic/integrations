@@ -37,46 +37,13 @@ processors:
       tag: json_event_original
       target_field: trellix_epo_on_prem.device_event
       if: ctx.event?.original != null
-  - fingerprint:
-      tag: fingerprint_with_auto_id
-      fields:
-        - trellix_epo_on_prem.device_event.EEFFDeviceAllEventsView.AutoID
-      target_field: _id
-      ignore_missing: true
-  - script:
-      description: Nest flat fields with dots into objects.
-      tag: script_nest_flat_fields
-      lang: painless
-      source: |-
-        Map nested = [:];
-        List keysToRemove = [];
-        for (entry in ctx.trellix_epo_on_prem.device_event.entrySet()) {
-          String key = entry.getKey();
-          Object value = entry.getValue();
-          if (key.contains(".")) {
-            int dotIndex = key.indexOf(".");
-            String objName = key.substring(0, dotIndex);
-            String fieldName = key.substring(dotIndex + 1);
-            if (!nested.containsKey(objName)) {
-              nested[objName] = [:];
-            }
-            nested[objName][fieldName] = value;
-            keysToRemove.add(key);
-          }
-        }
-        // Add nested objects
-        for (entry in nested.entrySet()) {
-          ctx.trellix_epo_on_prem.device_event[entry.getKey()] = entry.getValue();
-        }
-        // Remove flat fields
-        for (key in keysToRemove) {
-          ctx.trellix_epo_on_prem.device_event.remove(key);
-        }
-      on_failure:
-        - append:
-            tag: append_script_nest_flat_fields_error
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_device_event
+      path: trellix_epo_on_prem.device_event
+      override: true
+      if: ctx.trellix_epo_on_prem?.device_event instanceof Map
+      description: Expands the dotted source field names into objects.
   - script:
       description: >
         Convert field names from camelCase to snake_case recursively.
@@ -129,6 +96,17 @@ processors:
       target_field: trellix_epo_on_prem.device_event.eeff_device_all_events_view
       tag: rename_eeffdevice_all_events_view_to_eeff_device_all_events_view
       if: ctx.trellix_epo_on_prem?.device_event?.eeffdevice_all_events_view != null
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
+      tag: convert_eeff_device_all_events_view_auto_id_to_string
+      type: string
+      ignore_missing: true
+  - fingerprint:
+      tag: fingerprint_with_auto_id
+      fields:
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
+      target_field: _id
+      ignore_missing: true
   - set:
       field: event.kind
       tag: set_event_kind
@@ -141,11 +119,6 @@ processors:
       field: event.type
       tag: append_info_into_event_type
       value: info
-  - convert:
-      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
-      tag: convert_eeff_device_all_events_view_auto_id_to_string
-      type: string
-      ignore_missing: true
   - set:
       field: event.id
       tag: set_event_id_from_device_event_eeff_device_all_events_view_auto_id
@@ -321,12 +294,6 @@ processors:
       tag: set_user_name_from_device_event_eeff_device_all_events_view_user_name
       copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_name
       ignore_empty_value: true
-  - dissect:
-      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_name
-      pattern: '%{user.domain}\%{user.name}'
-      tag: dissect_user_name_domain
-      if: ctx.trellix_epo_on_prem?.device_event?.eeff_device_all_events_view?.user_name != null
-      description: Splits a domain-qualified user account (DOMAIN\user) into user.domain and user.name.'
   - append:
       field: related.user
       tag: append_device_event_eeff_device_all_events_view_user_name_into_related_user
