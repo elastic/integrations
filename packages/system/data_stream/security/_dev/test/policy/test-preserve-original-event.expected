@@ -4,13 +4,13 @@ inputs:
       meta:
         package:
             name: system
-      name: test-custom-processors-system
+      name: test-preserve-original-event-system
       streams:
-        - batch_read_size: 50
-          condition: ${host.platform} == 'windows'
+        - condition: ${host.platform} == 'windows'
           data_stream:
             dataset: system.security
           ignore_older: 72h
+          include_xml: true
           name: Security
           processors:
             - decode_xml:
@@ -37,11 +37,8 @@ inputs:
                             - winlog.event_data.TaskContentNew
                         - equals:
                             winlog.provider_name: Microsoft-Windows-Security-Auditing
-            - add_fields:
-                fields:
-                    processors: preserved
-                target: winlog._tmp.policy_test
-          tags: null
+          tags:
+            - preserve_original_event
       type: winlog
       use_output: default
 output_permissions:
