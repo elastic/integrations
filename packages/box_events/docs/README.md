@@ -6,10 +6,10 @@ Use the Box Events integration to ingest the activity logs which are generated e
 
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `box_events.events` when troubleshooting an issue.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 For example, if you wanted to set up notifications for incoming Box Shield alerts you could verify that this data is being ingested from the `Box Shield Alerts` Dashboard. Then, go to `Alerts and Insights / Rules and Connectors` in the sidebar and set up a Rule using an Elasticsearch Query against index `*box*alert*` with time field `@timestamp` and DSL 
 
@@ -28,6 +28,37 @@ to match incoming box alerts during your desired timeframe and notify you using 
 ## Compatibility
 
 The Box Web Application does not feature version numbers, see this [Community Post](https://support.box.com/hc/en-us/community/posts/1500000033881/comments/1500000038001). This integration was configured and tested against Box in the second quarter of 2022.
+
+## Upgrading to version 4.x
+
+Version 4.0.0 changes the code used to collect events from Box. This update fixes a bug that could occasionally cause small gaps in your data.
+
+### Before you upgrade
+
+- **Check your `stream_type` setting**  
+  This determines how far back events may temporarily reappear after upgrading - see the table below. If you're not sure what yours is set to, check your integration policies before upgrading.
+- **No other action is required**  
+  The upgrade is safe to run as-is once you know what to expect for your setup. It's most noticeable if you're on `admin_logs`, where events from up to a year back may be collected again.
+
+### What happens after you upgrade
+
+- **You'll need to re-enter your Box credentials**  
+  Go to your integration policy and re-enter your Client ID, Client Secret, and Box Subject ID. This is a one-time step.
+- **You'll see some old events collected again**  
+  The integration will briefly restart collection from further back in your Box history, so events you've already ingested may be requested a second time. This is expected and temporary - it won't create duplicate records in your data (see below).
+- **How far back it goes depends on your stream type**  
+  If you're using `admin_logs`, the type with the longest history available, expect the collection to take longer to finish processing. If you don't need to fill a data gap older than 14 days, it's recommended you switch from `admin_logs` to `admin_logs_streaming`.
+
+  | Stream Type            | Maximum Data |
+  |------------------------|-------------:|
+  | `all` (default)        |      21 days |
+  | `admin_logs_streaming` |      14 days |
+  | `admin_logs`           |     365 days |
+  | `changes`              |      21 days |
+  | `sync`                 |      31 days |
+
+- **You won't end up with duplicate events**  
+  As long as you keep using the same setup you have today and don't manually roll over the data stream to a new backing index.
 
 ## Box Events
 

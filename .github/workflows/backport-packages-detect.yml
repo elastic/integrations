@@ -1,0 +1,60 @@
+---
+name: Backport — detect packages
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+jobs:
+  detect-packages:
+    runs-on: ubuntu-latest
+    # Skip PRs created by the sync-changelog workflow — those backport changelog
+    # entries back to main and do not need a backport checklist of their own.
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'backport:sync-changelog') }}
+    # No permissions — this job runs in the restricted pull_request context
+    # and must be fork-safe. Write permissions live in post-backport-checklist.yml
+    # which is triggered via workflow_run and runs in the base repository context.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # Full history is required so that git diff can resolve both the PR
+          # base SHA and the head SHA, which may not be present in a shallow clone.
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          # Use the backport tool's own Go version (pinned to main's version).
+          go-version-file: cmd/backport/.go-version
+
+      - name: Build backport tool
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
+
+      - name: Detect packages touched by this PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          PACKAGES_JSON=$("$GITHUB_WORKSPACE/build/backport" detect-packages --json "$BASE_SHA" "$HEAD_SHA")
+
+          jq -n \
+            --argjson pkgs "$PACKAGES_JSON" \
+            --argjson pr "$PR_NUMBER" \
+            '{"pr_number": $pr, "packages": $pkgs}' > pr-packages.json
+
+          echo "Detected packages: $PACKAGES_JSON"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-packages-${{ github.run_id }}
+          path: pr-packages.json
+          if-no-files-found: ignore
+          retention-days: 1

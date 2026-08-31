@@ -1,5 +1,5 @@
 source:
-  index: "logs-*"
+  index: "logs-endpoint.events.process-*"
   query:
     bool:
       must_not:
@@ -23,6 +23,9 @@ source:
         - term:
             'process.Ext.session_info.logon_type':
               value: RemoteInteractive
+        - term:
+            'host.os.type':
+              value: windows
   runtime_mappings:
         'destination.ip':
           type: ip
@@ -86,5 +89,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 3.2.0
+  fleet_transform_version: 3.4.1
   run_as_kibana_system: false

@@ -1,0 +1,197 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{audit_url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  api_url: {{url}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+redact:
+  fields:
+    - client_id
+    - client_secret
+    - token
+program: |-
+  (
+    (has(state.?token.expiry) && timestamp(state.token.expiry) > now) ?
+      // The cached token is still valid.
+      state.token
+    :
+      post_request(
+        state.api_url.trim_right("/") + "/v1/login",
+        "",
+        {
+          "clientId": state.client_id,
+          "secret": state.client_secret,
+        }.encode_json()
+      ).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          {
+            "access_token": body.jwt,
+            // Attempt to parse the expiry from the absolute value.
+            "expiry": body.expires.parse_time(
+              [
+                time_layout.RFC1123,
+                time_layout.RFC1123Z,
+              ]
+            ).as(t, !is_error(t) ?
+              t
+            :
+              // But fall back to the relative time if that fails.
+              now + duration(string(body.expiresIn) + "s")
+            ).format(time_layout.RFC3339),
+          }
+        )
+      :
+        {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": resp.Status,
+            "message": "POST " + state.api_url.trim_right("/") + "/v1/login " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                resp.Status + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        }
+      )
+  ).as(token, has(token.error) ?
+    state.with(
+      {
+        "events": {"error": token.error},
+        "want_more": false,
+      }
+    )
+  :
+    (
+      state.?want_more.orValue(false) ?
+        // Mid-pagination: keep the window and offsets from the previous evaluation.
+        state
+      :
+        state.with(
+          {
+            "start_time": state.?cursor.updated_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+            "counter": 0,
+            "offset": 0,
+          }
+        )
+    ).as(state,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/audits/resources/audits/v2?" + {
+            "count": [string(state.batch_size)],
+            "offset": [string(state.offset)],
+            "created_from": [state.start_time],
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + token.access_token],
+              "Accept": ["application/json"],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            (
+              has(body.data) && body.data.size() > 0 && int(state.counter) + size(body.data) < int(body.?total.orValue(-1))
+            ).as(more,
+              {
+                "events": (has(body.data) && body.data.size() > 0) ?
+                  body.data.map(e, {"message": e.encode_json()})
+                :
+                  [],
+                "offset": more ?
+                  (int(state.offset) + int(size(body.data)))
+                :
+                  0,
+                "counter": more ?
+                  (int(state.counter) + int(size(body.data)))
+                :
+                  0,
+                "want_more": more,
+                "token": token,
+                "cursor": {
+                  ?"max_date_time": more ?
+                    (
+                      has(state.?cursor.max_date_time) ?
+                        optional.of(string(max(timestamp(state.cursor.max_date_time), body.data.map(e, timestamp(e.createdAt)).max())))
+                      :
+                        optional.of(string(body.data.map(e, timestamp(e.createdAt)).max()))
+                    )
+                  :
+                    optional.none(),
+                  ?"updated_timestamp": more ?
+                    state.?cursor.updated_timestamp
+                  : (has(body.data) && body.data.size() > 0) ?
+                    (
+                      has(state.?cursor.max_date_time) ?
+                        optional.of(string(max(timestamp(state.cursor.max_date_time), body.data.map(e, timestamp(e.createdAt)).max())))
+                      :
+                        optional.of(string(body.data.map(e, timestamp(e.createdAt)).max()))
+                    )
+                  : has(state.?cursor.max_date_time) ?
+                    optional.of(string(state.cursor.max_date_time))
+                  :
+                    state.?cursor.updated_timestamp,
+                },
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/audits/resources/audits/v2 " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+            "token": token,
+          }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

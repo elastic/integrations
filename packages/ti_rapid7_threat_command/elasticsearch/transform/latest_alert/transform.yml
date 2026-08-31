@@ -14,12 +14,14 @@ source:
 # us that ability in order to prevent having duplicate data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_rapid7_threat_command_latest.dest_alert-2"
+  index: "logs-ti_rapid7_threat_command_latest.dest_alert-3"
   aliases:
     - alias: "logs-ti_rapid7_threat_command_latest.alert"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - event.id
   sort: "@timestamp"
@@ -37,6 +39,6 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.4.0
+  fleet_transform_version: 0.5.0
 settings:
   num_failure_retries: -1

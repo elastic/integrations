@@ -1,7 +1,7 @@
-format_version: 3.3.1
+format_version: 3.6.4
 name: aws_mq
 title: "Amazon MQ"
-version: "1.0.0"
+version: "2.0.0"
 description: "Collect Amazon MQ metrics and logs with Elastic Agent"
 type: integration
 categories:
@@ -11,9 +11,12 @@ categories:
   - observability
 conditions:
   kibana:
-    version: "^8.16.5 || ^9.0.0"
+    version: "^9.6.0"
   elastic:
     subscription: "basic"
+  # auth.aws.use_cloud_connectors (Identity Federation) requires Elastic Agent 9.6.0+.
+  agent:
+    version: "^9.6.0"
 screenshots:
   - src: /img/amazonmq-activemq-dashboard.png
     title: ActiveMQ overview dashboard
@@ -28,17 +31,6 @@ icons:
     title: Amazon MQ logo
     size: 32x32
     type: image/svg+xml
-policy_templates:
-  - name: amazon_mq
-    title: Amazon MQ
-    description: Collect Amazon MQ metrics and logs
-    inputs:
-      - type: aws/metrics
-        title: Collect Amazon MQ metrics
-        description: Collect Amazon MQ metrics using AWS CloudWatch.
-      - type: aws-cloudwatch
-        title: Collect Amazon MQ Logs from CloudWatch
-        description: Collect Amazon MQ logs from CloudWatch with Elastic Agent.
 vars:
   - name: shared_credential_file
     type: text
@@ -80,6 +72,12 @@ vars:
     multi: false
     required: false
     show_user: false
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
   - name: endpoint
     type: text
     title: Endpoint
@@ -103,6 +101,69 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
+policy_templates:
+  - name: amazon_mq
+    title: Amazon MQ
+    description: Collect Amazon MQ metrics and logs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    inputs:
+      - type: aws/metrics
+        title: Collect Amazon MQ metrics
+        description: Collect Amazon MQ metrics using AWS CloudWatch.
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch metrics read access for Amazon MQ monitoring.
+            permissions:
+              - name: cloudwatch:GetMetricData
+              - name: cloudwatch:ListMetrics
+              - name: tag:GetResources
+      - type: aws-cloudwatch
+        title: Collect Amazon MQ Logs from CloudWatch
+        description: Collect Amazon MQ logs from CloudWatch with Elastic Agent.
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch Logs read access for Amazon MQ log collection.
+            permissions:
+              - name: logs:DescribeLogGroups
+              - name: logs:DescribeLogStreams
+              - name: logs:FilterLogEvents
+              - name: logs:GetLogEvents
+              - name: logs:GetLogGroupFields
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic
