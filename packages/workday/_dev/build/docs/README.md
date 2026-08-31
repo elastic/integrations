@@ -136,12 +136,13 @@ Use this base URL (with `?format=json` only) as the **Report URL** in the integr
 2. In the Workday search bar, search for **Create Custom Report**.
 3. Create an Advanced report on a data source that exposes worker attributes (for example, `All Workers`).
 4. Add the columns required for worker inventory and Entity Analytics.
-
 5. Optionally filter terminated workers to a recent window (for example, the last ~30 days) to keep inventory volume manageable while still capturing leavers.
 6. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
 7. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
 
-**Note:** Unlike Sign-on, the User inventory report does not use **From Moment** / **To Moment** prompts. Each poll downloads the full report result set configured in Workday.
+:::{note}
+Unlike Sign-on, the User inventory report does not use **From Moment** / **To Moment** prompts. Each poll downloads the full report result set configured in Workday.
+:::
 
 ##### Create the Integration System User (ISU)
 

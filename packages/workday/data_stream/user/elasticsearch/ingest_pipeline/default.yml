@@ -5,6 +5,15 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 9.5.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
   - terminate:
       tag: data_collection_error
       description: error message set and no data to process.
@@ -47,11 +56,6 @@ processors:
       field: event.type
       tag: append_user_into_event_type
       value: user
-      allow_duplicates: false
-  - append:
-      field: event.type
-      tag: append_info_into_event_type
-      value: info
       allow_duplicates: false
   - rename:
       field: workday.user.Employee_ID
@@ -104,6 +108,12 @@ processors:
       value: '{{{workday.user.Manager_Email}}}'
       allow_duplicates: false
       if: ctx.workday?.user?.Manager_Email != null && ctx.workday.user.Manager_Email != ''
+  - append:
+      field: related.user
+      tag: append_manager_name_into_related_user
+      value: '{{{workday.user.Worker_s_Manager}}}'
+      allow_duplicates: false
+      if: ctx.workday?.user?.Worker_s_Manager != null && ctx.workday.user.Worker_s_Manager != ''
   - set:
       field: workday.user.WorkerIsManager
       tag: set_worker_is_manager_true

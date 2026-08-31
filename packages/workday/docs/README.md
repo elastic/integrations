@@ -136,12 +136,13 @@ Use this base URL (with `?format=json` only) as the **Report URL** in the integr
 2. In the Workday search bar, search for **Create Custom Report**.
 3. Create an Advanced report on a data source that exposes worker attributes (for example, `All Workers`).
 4. Add the columns required for worker inventory and Entity Analytics.
-
 5. Optionally filter terminated workers to a recent window (for example, the last ~30 days) to keep inventory volume manageable while still capturing leavers.
 6. On the **Advanced** tab, select **Enable As Web Service** so the report is exposed as Reports as a Service (RaaS).
 7. Save the report and note the **Report Name** and the **Report Owner** (the Workday account that owns the report).
 
-**Note:** Unlike Sign-on, the User inventory report does not use **From Moment** / **To Moment** prompts. Each poll downloads the full report result set configured in Workday.
+:::{note}
+Unlike Sign-on, the User inventory report does not use **From Moment** / **To Moment** prompts. Each poll downloads the full report result set configured in Workday.
+:::
 
 ##### Create the Integration System User (ISU)
 
@@ -561,8 +562,7 @@ An example event for `user` looks as following:
         "kind": "asset",
         "original": "{\"Cost_Center\":\"Support\",\"Employee_ID\":\"007066\",\"Hire_Date\":\"2024-03-19\",\"Job_Title\":\"Customer Support Representative I\",\"Last_Account_or_Proxy_Login_Moment\":\"2024-12-24T00:44:07.572-08:00\",\"Manager_Email\":\"manager1@example.com\",\"Manager_ID\":\"000687\",\"Organization_Roles\":\"Cost Center Manager; Manager\",\"User-Based_Security_Groups_for_User\":\"Report Writer\",\"User_Name\":\"jdoe\",\"WorkerIsManager\":\"1\",\"Worker_Type\":\"Employee\",\"Worker_s_Manager\":\"Alex Manager (000687)\",\"location\":\"Mexico - Distributed\",\"primaryWorkEmail\":\"jdoe@example.com\"}",
         "type": [
-            "user",
-            "info"
+            "user"
         ]
     },
     "input": {
@@ -574,7 +574,8 @@ An example event for `user` looks as following:
             "jdoe",
             "jdoe@example.com",
             "000687",
-            "manager1@example.com"
+            "manager1@example.com",
+            "Alex Manager (000687)"
         ]
     },
     "tags": [

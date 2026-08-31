@@ -23,7 +23,7 @@ program: |-
   state.with(
     get(state.url).as(resp,
       (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
+        resp.Body.decode_json().as(body,
           {
             "events": body.Report_Entry.orValue([]).map(e, {"message": e.encode_json()}),
             "want_more": false,
