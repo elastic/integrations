@@ -3,34 +3,34 @@ description: Pipeline for processing device logs.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_14959316
       value: ['host']
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       value: ['info']
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_4e6085d8
       value: activedirectory_device
 
   - pipeline:
       name: '{{ IngestPipeline "common" }}'
-      tag: pipeline_entity
+      tag: pipeline_entity_e2cc926a
       ignore_missing_pipeline: true
 
   - script:
       lang: painless
       ignore_failure: false
-      tag: Set User Account Control
+      tag: set_user_account_control_4a718619
       description: script_set_user_account_control
       # USER_ACCOUNT Codes
       # https://learn.microsoft.com/en-us/windows/win32/adschema/a-useraccountcontrol
@@ -75,149 +75,149 @@ processors:
   - date:
       field: activedirectory.device.when_created
       target_field: asset.create_date
-      tag: date_device_created
+      tag: date_device_created_530aa9e6
       formats:
         - ISO8601
       if: ctx.activedirectory?.device?.when_created != null && ctx.activedirectory.device.when_created != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_device_created
+            tag: on_failure_remove_date_device_created_1f0761ef
             field: activedirectory.device.when_created
         - append:
-            tag: on_failure_append_date_device_created
+            tag: on_failure_append_date_device_created_218c59a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.device.when_changed
       target_field: asset.last_updated
-      tag: date_device_changed
+      tag: date_device_changed_a37e1bf2
       formats:
         - ISO8601
       if: ctx.activedirectory?.device?.when_changed != null && ctx.activedirectory.device.when_changed != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_device_changed
+            tag: on_failure_remove_date_device_changed_1d9aaa9e
             field: activedirectory.device.when_changed
         - append:
-            tag: on_failure_append_date_device_changed
+            tag: on_failure_append_date_device_changed_002ff39d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.device.pwd_last_set
       target_field: user.account.password_change_date
-      tag: date_user_password_changed
+      tag: date_user_password_changed_1136b220
       formats:
         - ISO8601
       if: ctx.activedirectory?.device?.pwd_last_set != null && ctx.activedirectory.device.pwd_last_set != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_device_pwd_last_set
+            tag: on_failure_remove_date_device_pwd_last_set_9ba177ac
             field: activedirectory.device.pwd_last_set
         - append:
-            tag: on_failure_append_date_device_pwd_last_set
+            tag: on_failure_append_date_device_pwd_last_set_e984ed38
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.device.last_logon_timestamp
       target_field: host.entity.lifecycle.last_activity
-      tag: date_device_last_logon_timestamp
+      tag: date_device_last_logon_timestamp_22f64d9a
       formats:
         - ISO8601
       if: ctx.activedirectory?.device?.last_logon_timestamp != null && ctx.activedirectory.device.last_logon_timestamp != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_device_last_logon_timestamp
+            tag: on_failure_remove_date_device_last_logon_timestamp_5de0b531
             field: activedirectory.device.last_logon_timestamp
         - append:
-            tag: on_failure_append_date_device_last_logon_timestamp
+            tag: on_failure_append_date_device_last_logon_timestamp_dad757d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - lowercase:
-      tag: lowercase_device_dns_to_asset_name
+      tag: lowercase_device_dns_to_asset_name_285d8bfd
       field: activedirectory.device.dns_host_name
       target_field: asset.name
       ignore_missing: true
   - set:
-      tag: set_user_name_from_sam
+      tag: set_user_name_from_sam_0a2b121b
       field: user.name
       copy_from: activedirectory.device.sam_account_name
       ignore_empty_value: true
   - set:
-      tag: set_device_asset_id
+      tag: set_device_asset_id_3351c216
       field: asset.id
       copy_from: activedirectory.device.object_sid
   - set:
-      tag: set_device_id
+      tag: set_device_id_02c47d9f
       field: device.id
       copy_from: activedirectory.device.object_sid
 
   - set:
-      tag: set_device_logon_script_enabled
+      tag: set_device_logon_script_enabled_6f7d7308
       field: activedirectory.device.logon_script_enabled
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('SCRIPT') == true
   - set:
-      tag: set_device_enabled_true
+      tag: set_device_enabled_true_389d972e
       field: activedirectory.device.enabled
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('ACCOUNTDISABLE') == false
   - set:
-      tag: set_device_enabled_false
+      tag: set_device_enabled_false_5ad7db06
       field: activedirectory.device.enabled
       value: false
       if: ctx.activedirectory?.device?.uac_list?.contains('ACCOUNTDISABLE') == true
 
   - set:
-      tag: set_device_locked
+      tag: set_device_locked_a70ae855
       field: activedirectory.device.locked
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('LOCKOUT') == true
 
   - set:
-      tag: set_device_password_not_required
+      tag: set_device_password_not_required_bccf5197
       field: activedirectory.device.password_not_required
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('PASSWD_NOTREQD') == true
 
   - set:
-      tag: set_device_reversible_encryption_password
+      tag: set_device_reversible_encryption_password_6557fcc6
       field: activedirectory.device.reversible_encryption_password
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED') == true
 
   - set:
-      tag: set_device_unconstrained_delegation
+      tag: set_device_unconstrained_delegation_f143e8a0
       field: activedirectory.device.unconstrained_delegation
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('TRUSTED_FOR_DELEGATION') == true
 
   - set:
-      tag: set_device_sensitive_object
+      tag: set_device_sensitive_object_198df410
       field: activedirectory.device.sensitive_object
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('NOT_DELEGATED') == true
 
   - set:
-      tag: set_device_use_des_key_only
+      tag: set_device_use_des_key_only_28d8af94
       field: activedirectory.device.use_des_key_only
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('USE_DES_KEY_ONLY') == true
 
   - set:
-      tag: set_device_dont_require_preauth
+      tag: set_device_dont_require_preauth_eaf77224
       field: activedirectory.device.dont_require_preauth
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('DONT_REQUIRE_PREAUTH') == true
 
   - set:
-      tag: set_device_constrained_delegation
+      tag: set_device_constrained_delegation_7db7e994
       field: activedirectory.device.constrained_delegation
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
 
   - set:
-      tag: set_device_managed
+      tag: set_device_managed_bbe6e53c
       field: host.entity.attributes.managed
       value: true
       if: ctx.activedirectory?.device?.uac_list?.contains('WORKSTATION_TRUST_ACCOUNT') == true || ctx.activedirectory?.device?.uac_list?.contains('SERVER_TRUST_ACCOUNT') == true
@@ -225,7 +225,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
-      tag: handle_user_group_details
+      tag: handle_user_group_details_b7fa9967
       description: Collect user's group details and set privileged_group_member flag based on group membership.
       if: ctx.activedirectory?.groups instanceof List
       # Well-known SIDs - Name to SID mapping
@@ -277,7 +277,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
-      tag: set_device_relationships
+      tag: set_device_relationships_f1d3e2c7
       description: Build host.entity.relationships from managedObjects (administers) and directReports (supervises).
       if: ctx.activedirectory?.device?.managed_objects != null || ctx.activedirectory?.device?.direct_reports != null
       source: |-
@@ -363,23 +363,23 @@ processors:
         }
 
   - set:
-      tag: set_device_account_never_expires
+      tag: set_device_account_never_expires_43b923ba
       field: activedirectory.device.account_never_expires
       value: true
       if: ctx.activedirectory?.device?.account_expires == "0" || ctx.activedirectory?.device?.account_expires == "9223372036854775807"
 
   - set:
-      tag: set_host_hostname
+      tag: set_host_hostname_98e5262f
       field: host.hostname
       copy_from: activedirectory.device.cn
       ignore_empty_value: true
   - lowercase:
-      tag: lowercase_dns_to_host_name
+      tag: lowercase_dns_to_host_name_462b5546
       field: activedirectory.device.dns_host_name
       target_field: host.name
       ignore_missing: true
   - dissect:
-      tag: dissect_host_domain
+      tag: dissect_host_domain_1513a0a4
       field: host.name
       pattern: '%{}.%{host.domain}'
       if: >-
@@ -387,14 +387,13 @@ processors:
         ctx.host?.hostname instanceof String &&
         ctx.host.name.contains('.') &&
         ctx.host.name.startsWith(ctx.host.hostname.toLowerCase()+'.')
-
   - set:
-      tag: set_host_os_full
+      tag: set_host_os_full_bbff0bbd
       field: host.os.full
       copy_from: activedirectory.device.operating_system
       ignore_empty_value: true
   - set:
-      tag: set_host_os_version
+      tag: set_host_os_version_ece8e842
       field: host.os.version
       copy_from: activedirectory.device.operating_system_version
       ignore_empty_value: true
@@ -402,49 +401,49 @@ processors:
   - append:
       field: related.user
       value: "{{{activedirectory.device.sam_account_name}}}"
-      tag: append_name_into_related_user
+      tag: append_name_into_related_user_38110433
       allow_duplicates: false
       if: ctx.activedirectory?.device?.sam_account_name != null
   - append:
       field: related.hosts
       value: "{{{host.name}}}"
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       allow_duplicates: false
       if: ctx.host?.name != null
   - append:
       field: related.hosts
       value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_hosts
+      tag: append_id_into_related_hosts_72bb11ae
       allow_duplicates: false
       if: ctx.activedirectory?.id != null
   - append:
       field: related.hosts
       value: "{{{activedirectory.device.object_guid}}}"
-      tag: append_object_guid_into_related_hosts
+      tag: append_object_guid_into_related_hosts_d934a6e0
       allow_duplicates: false
       if: ctx.activedirectory?.device?.object_guid != null
 
   - rename:
-      tag: rename_activedirectory_id_to_device_object_dn
+      tag: rename_activedirectory_id_to_device_object_dn_6999b36f
       field: activedirectory.id
       target_field: activedirectory.device.object_dn
 
   - rename:
-      tag: rename_activedirectory_to_entityanalytics_ad
+      tag: rename_activedirectory_to_entityanalytics_ad_3c2c8fd4
       field: activedirectory
       target_field: entityanalytics_ad
 
 on_failure:
   - append:
-      tag: pipeline_error
+      tag: pipeline_error_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: pipeline_error_kind
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_error_preserve_original_event
+      tag: pipeline_error_preserve_original_event_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

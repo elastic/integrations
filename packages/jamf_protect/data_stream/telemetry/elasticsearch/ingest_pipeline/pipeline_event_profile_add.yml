@@ -2,39 +2,47 @@
 description: Pipeline for parsing specific fields related to profile added events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - set:
+        tag: set_event_reason_7186cf49
         field: event.reason
         value: A configuration profile is installed on the system
     - append:
+        tag: append_event_type_fbbdb681
         field: event.type
         value: creation
     - append:
+        tag: append_event_category_1c667e2c
         field: event.category
-        value: configuration 
+        value: configuration
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_profile_scope_to_jamf_protect_telemetry_profile_scope_c4d1e50a
         field: jamf_protect.telemetry.event.profile_add.profile.scope
         target_field: jamf_protect.telemetry.profile_scope
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_profile_identifier_to_jamf_protect_telemetry_profile_identifier_0f462820
         field: jamf_protect.telemetry.event.profile_add.profile.identifier
         target_field: jamf_protect.telemetry.profile_identifier
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_profile_uuid_to_jamf_protect_telemetry_profile_uuid_45c07284
         field: jamf_protect.telemetry.event.profile_add.profile.uuid
         target_field: jamf_protect.telemetry.profile_uuid
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_profile_display_name_to_jamf_protect_telemetry_profile_display_name_7caf4706
         field: jamf_protect.telemetry.event.profile_add.profile.display_name
         target_field: jamf_protect.telemetry.profile_display_name
         type: string
         ignore_missing: true
     - script:
+        tag: script_9218c097
         lang: painless
         params:
             itemTypeMap:
@@ -48,108 +56,131 @@ processors:
                 ctx.jamf_protect.telemetry.profile_install_source = itemTypeString;
             }
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_profile_organization_to_jamf_protect_telemetry_profile_organization_edf3c4f8
         field: jamf_protect.telemetry.event.profile_add.profile.organization
         target_field: jamf_protect.telemetry.profile_organization
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_is_update_to_jamf_protect_telemetry_profile_is_updated_c87444f5
         field: jamf_protect.telemetry.event.profile_add.is_update
         target_field: jamf_protect.telemetry.profile_is_updated
         type: boolean
         ignore_missing: true
         ignore_failure: true
-##########################
-## ECS Process ##
-##########################
+    ##########################
+    ## ECS Process ##
+    ##########################
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_start_time_to_process_start_c60159e3
         field: jamf_protect.telemetry.event.profile_add.instigator.start_time
         target_field: process.start
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_audit_token_egid_to_jamf_protect_telemetry_event_profile_add_instigator_audit_token_egid_4b73be06
         field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.egid
         target_field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.egid
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_audit_token_euid_to_jamf_protect_telemetry_event_profile_add_instigator_audit_token_euid_50352d02
         field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.euid
         target_field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.euid
         type: string
         ignore_missing: true
     - append:
+        tag: append_user_effective_id_f4b846ab
         field: user.effective.id
         value: '{{{jamf_protect.telemetry.event.profile_add.instigator.audit_token.euid}}}'
         if: ctx.jamf_protect.telemetry?.event?.profile_add?.instigator?.audit_token?.euid != null
         allow_duplicates: false
         ignore_failure: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_audit_token_e_username_to_process_user_name_18440f6a
         field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.e_username
         target_field: process.user.name
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_is_platform_binary_to_process_platform_binary_994334da
         field: jamf_protect.telemetry.event.profile_add.instigator.is_platform_binary
         target_field: process.platform_binary
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_is_es_client_to_process_endpoint_security_client_0fc5edc0
         field: jamf_protect.telemetry.event.profile_add.instigator.is_es_client
         target_field: process.endpoint_security_client
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_cdhash_to_process_hash_cdhash_802ca9a7
         field: jamf_protect.telemetry.event.profile_add.instigator.cdhash
         target_field: process.hash.cdhash
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_executable_sha1_to_process_hash_sha1_843962a7
         field: jamf_protect.telemetry.event.profile_add.instigator.executable.sha1
         target_field: process.hash.sha1
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_executable_sha256_to_process_hash_sha256_1c63cb3f
         field: jamf_protect.telemetry.event.profile_add.instigator.executable.sha256
         target_field: process.hash.sha256
         ignore_missing: true
     - append:
+        tag: append_related_hash_96df867f
         field: related.hash
         value: '{{{process.hash.sha1}}}'
         if: ctx.process?.hash?.sha1 != null
         allow_duplicates: false
     - append:
+        tag: append_related_hash_239dcc07
         field: related.hash
         value: '{{{process.hash.sha256}}}'
         if: ctx.process?.hash?.sha256 != null
         allow_duplicates: false
     - append:
+        tag: append_related_hash_f4079ea4
         field: related.hash
         value: '{{{process.hash.cdhash}}}'
         if: ctx.process?.hash?.cdhash != null && ctx.process.hash.cdhash != ''
         allow_duplicates: false
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_tty_path_to_jamf_protect_telemetry_tty_922eeb54
         field: jamf_protect.telemetry.event.profile_add.instigator.tty.path
         target_field: jamf_protect.telemetry.tty
         ignore_missing: true
     - set:
+        tag: set_process_interactive_2b95c25f
         field: process.interactive
         value: true
         if: ctx.jamf_protect.telemetry?.event?.profile_add?.instigator?.tty != null
     - set:
+        tag: set_process_interactive_75ca09c2
         field: process.interactive
         value: false
         if: ctx.jamf_protect.telemetry?.event?.profile_add?.instigator?.tty == null
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_audit_token_pid_to_process_pid_076e2db6
         field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.pid
         target_field: process.pid
         type: long
         ignore_missing: true
         on_failure:
         - append:
+            tag: append_error_message_9a1108d1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_audit_token_uuid_to_process_entity_id_9de8f03a
         field: jamf_protect.telemetry.event.profile_add.instigator.audit_token.uuid
         target_field: process.entity_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_executable_path_to_process_executable_f9271844
         field: jamf_protect.telemetry.event.profile_add.instigator.executable.path
         target_field: process.executable
         ignore_missing: true
     - script:
+        tag: script_f232bce3
         lang: painless
         source: >
             if (ctx.process?.executable != null) {
@@ -161,102 +192,123 @@ processors:
                 }
             }
     - rename:
+        tag: rename_jamf_protect_telemetry_thread_thread_id_to_process_thread_id_3987a29f
         field: jamf_protect.telemetry.thread.thread_id
         target_field: process.thread.id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_db_path_to_process_working_directory_d7622b4d
         field: jamf_protect.telemetry.event.profile_add.db_path
         target_field: process.working_directory
         ignore_missing: true
         if: ctx.jamf_protect?.telemetry?.event?.profile_add?.db_path != null
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_signing_id_to_process_code_signature_signing_id_613e9063
         field: jamf_protect.telemetry.event.profile_add.instigator.signing_id
         target_field: process.code_signature.signing_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_team_id_to_process_code_signature_team_id_13d9623d
         field: jamf_protect.telemetry.event.profile_add.instigator.team_id
         target_field: process.code_signature.team_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_codesigning_flags_to_process_code_signature_flags_ce9bd1d0
         field: jamf_protect.telemetry.event.profile_add.instigator.codesigning_flags
         target_field: process.code_signature.flags
         ignore_missing: true
 
-##########################
-## ECS Parent Process ##
-##########################
 
+    ##########################
+    ## ECS Parent Process ##
+    ##########################
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_uuid_to_process_parent_entity_id_f010f5ff
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.uuid
         target_field: process.parent.entity_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_pid_to_process_parent_pid_708c777b
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.pid
         target_field: process.parent.pid
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_euid_to_process_parent_user_id_cb6e47ca
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.euid
         target_field: process.parent.user.id
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_e_username_to_process_parent_user_name_fac69de1
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.e_username
         target_field: process.parent.user.name
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_ruid_to_process_parent_real_user_id_c06955f6
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.ruid
         target_field: process.parent.real_user.id
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_rgid_to_process_parent_real_group_id_33a5afb2
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.rgid
         target_field: process.parent.real_group.id
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_signing_id_to_process_parent_code_signature_signing_id_1e40407f
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.signing_id
         target_field: process.parent.code_signature.signing_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_parent_audit_token_exec_path_to_process_parent_executable_7c7d5fe0
         field: jamf_protect.telemetry.event.profile_add.instigator.parent_audit_token.exec_path
         target_field: process.parent.executable
         ignore_missing: true
-##########################
-## ECS Responsible Process ##
-##########################
 
+    ##########################
+    ## ECS Responsible Process ##
+    ##########################
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_uuid_to_process_responsible_entity_id_f52aea71
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.uuid
         target_field: process.responsible.entity_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_pid_to_process_responsible_pid_dfd37609
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.pid
         target_field: process.responsible.pid
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_euid_to_process_responsible_user_id_200e93b8
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.euid
         target_field: process.responsible.user.id
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_e_username_to_process_responsible_user_name_5e0d3529
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.e_username
         target_field: process.responsible.user.name
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_ruid_to_process_responsible_real_user_id_2de6399e
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.ruid
         target_field: process.responsible.real_user.id
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_rgid_to_process_responsible_real_group_id_51d2e6d6
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.rgid
         target_field: process.responsible.real_group.id
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_signing_id_to_process_responsible_code_signature_signing_id_a20c53b5
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.signing_id
         target_field: process.responsible.code_signature.signing_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_profile_add_instigator_responsible_audit_token_exec_path_to_process_responsible_executable_029e3e4a
         field: jamf_protect.telemetry.event.profile_add.instigator.responsible_audit_token.exec_path
         target_field: process.responsible.executable
         ignore_missing: true
