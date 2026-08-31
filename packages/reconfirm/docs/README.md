@@ -270,24 +270,24 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2026-07-29T19:46:14.000Z",
     "agent": {
-        "ephemeral_id": "25e289a7-81c5-44df-806c-43f2ff2b3004",
-        "id": "cf691d79-3ed0-48d1-b77b-c6bdd312a549",
-        "name": "elastic-agent-96133",
+        "ephemeral_id": "c52d88f1-e42e-49f6-8564-de0b42f1fcf3",
+        "id": "87120250-4c8e-417a-a2b4-b587f9714556",
+        "name": "elastic-agent-30212",
         "type": "filebeat",
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "reconfirm.vulnerability",
-        "namespace": "31949",
+        "namespace": "93810",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "cf691d79-3ed0-48d1-b77b-c6bdd312a549",
+        "id": "87120250-4c8e-417a-a2b4-b587f9714556",
         "snapshot": false,
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -297,7 +297,7 @@ An example event for `vulnerability` looks as following:
         "dataset": "reconfirm.vulnerability",
         "end": "2026-07-29T19:46:14.000Z",
         "id": "579dcddc",
-        "ingested": "2026-08-04T10:07:01Z",
+        "ingested": "2026-08-31T10:19:19Z",
         "kind": "event",
         "module": "reconfirm",
         "original": "{\"info\":{\"desc\":\"\",\"end\":\"2026-07-29T19:46:14+00:00\",\"name\":\"weekly scan\",\"start\":\"2026-07-29T19:21:55+00:00\",\"success\":true},\"issuer\":{\"email\":\"jane.doe@example.com\",\"ip\":\"203.0.113.10\",\"name\":\"Jane Doe\"},\"results\":{\"assets\":{\"198.51.100.10\":{\"ports\":{\"443\":{\"description\":\"http protocol over TLS/SSL\",\"name\":\"https\",\"service\":{\"name\":\"nginx\",\"version\":\"1.18.0\"}},\"80\":{\"description\":\"World Wide Web HTTP\",\"name\":\"www-http\",\"service\":{\"name\":\"nginx\",\"version\":\"1.18.0\"}}},\"user_tags\":[],\"vulns\":{}},\"198.51.100.11\":{\"ports\":{\"22\":{\"description\":\"Secure Shell\",\"name\":\"ssh\",\"service\":{\"name\":\"OpenSSH\",\"version\":null}}},\"user_tags\":[\"monitored\"],\"vulns\":{\"CVE-2023-1234\":{\"cpe\":\"cpe:2.3:a:openbsd:openssh:8.0:*:*:*:*:*:*:*\",\"cve_id\":\"CVE-2023-1234\",\"cvss_metrics\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N\",\"cvss_score\":5.9,\"cwe_id\":\"CWE-327\",\"desc\":\"The SSH server supports weak key exchange algorithms.\",\"epss_percentile\":0.81,\"epss_score\":0.023,\"mitigation\":\"Disable weak KEX algorithms in sshd_config.\",\"name\":\"OpenSSH weak KEX algorithms\",\"references\":[\"https://nvd.nist.gov/vuln/detail/CVE-2023-1234\"],\"result\":[\"diffie-hellman-group1-sha1\"],\"severity\":3,\"url\":null,\"user_tags\":[]}}}},\"associated_domains\":{\"cdn.example.net\":{\"page_title\":\"Example CDN\",\"status_code\":200,\"time_seen\":3,\"url\":\"https://cdn.example.net/assets/main.js\"}},\"cred_leaks\":{\"jane.doe@example.com\":[{\"last_breach\":\"2023-11-02\",\"password\":\"REDACTED\",\"sources\":[\"ExampleBreachCo\"]}]},\"email_security\":{\"dkim\":{\"remark\":\"DKIM is setup for this email server.\",\"value\":\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB...\"},\"dmarc\":{\"remark\":\"You are at the highest level!\",\"value\":\"v=DMARC1; p=reject; rua=mailto:soc@example.com\"},\"mx\":{\"remark\":\"You have a single mail server setup.\",\"value\":[\"mail.example.com.\"]},\"spf\":{\"remark\":\"SPF seems to be setup correctly!\",\"value\":\"v=spf1 a mx ip4:203.0.113.0/24 ~all\"}},\"similar_domains\":{\"examp1e.com\":{\"dns\":{\"a\":[\"198.51.100.20\"],\"mx\":[\"mailx.example-registrar.com\"],\"ns\":[\"ns1.example-registrar.com\",\"ns2.example-registrar.com\"]},\"geoip\":\"Germany\",\"mx_ssl\":{\"mailx.example-registrar.com\":{\"expiration\":\"2029-09-14T15:09:55+00:00\",\"issuer_cn\":\"\\u003cNot Part Of Certificate\\u003e\",\"issuer_o\":\"ExampleCA\",\"issuer_ou\":\"\\u003cNot Part Of Certificate\\u003e\",\"self_signed\":true,\"subject_cn\":\"\\u003cNot Part Of Certificate\\u003e\",\"subject_o\":\"ExampleCA\",\"subject_ou\":\"\\u003cNot Part Of Certificate\\u003e\",\"tls_version\":\"TLSv1.3\"}},\"page_title\":\"Domain for sale\",\"ssl\":{\"expiration\":\"2026-10-14T11:47:08+00:00\",\"issuer_cn\":\"R11\",\"issuer_o\":\"Let's Encrypt\",\"issuer_ou\":\"\\u003cNot Part Of Certificate\\u003e\",\"self_signed\":false,\"subject_cn\":\"examp1e.com\",\"subject_o\":\"\\u003cNot Part Of Certificate\\u003e\",\"subject_ou\":\"\\u003cNot Part Of Certificate\\u003e\",\"tls_version\":\"TLSv1.3\"},\"status_code\":200},\"exampl3.com\":{\"dns\":{\"a\":null,\"mx\":null,\"ns\":null},\"geoip\":null,\"mx_ssl\":null,\"page_title\":null,\"ssl\":null,\"status_code\":null}},\"subdomains\":{\"active\":{\"api.example.com\":{\"headers\":{\"found\":{},\"missing\":{\"grade\":\"F\",\"headers\":[\"Content-Security-Policy\",\"X-Frame-Options\"]}},\"ips\":[\"203.0.113.51\"],\"page_title\":null,\"ports\":{},\"ssl\":{\"grade\":null,\"info\":{}},\"status_code\":404,\"suffixes\":{},\"url\":\"https://api.example.com\",\"user_tags\":[],\"vulns\":{\"finding-xyz\":{\"cpe\":null,\"cve_id\":null,\"cvss_metrics\":null,\"cvss_score\":null,\"cwe_id\":\"CWE-306\",\"desc\":\"An administrative interface is exposed without authentication.\",\"epss_percentile\":null,\"epss_score\":null,\"ip\":\"203.0.113.51\",\"mitigation\":\"Restrict access to the admin panel by IP allowlist.\",\"name\":\"Exposed admin panel\",\"references\":[],\"result\":[\"HTTP 200 on /admin\"],\"severity\":4,\"url\":\"https://api.example.com/admin\",\"user_tags\":[\"reviewed\"]}}},\"portal.example.com\":{\"headers\":{\"found\":{\"Content-Type\":{\"security_impact\":0,\"value\":\"text/html; charset=utf-8\"},\"X-Frame-Options\":{\"security_impact\":1,\"value\":\"DENY\"}},\"missing\":{\"grade\":null,\"headers\":[]}},\"ips\":[\"203.0.113.50\"],\"page_title\":\"Example Portal\",\"ports\":{\"443\":{\"description\":\"http protocol over TLS/SSL\",\"name\":\"https\",\"service\":null},\"80\":{\"description\":\"World Wide Web HTTP\",\"name\":\"www-http\",\"service\":\"nginx\",\"version\":\"1.25.3\"}},\"ssl\":{\"grade\":\"A\",\"info\":{\"expiration\":\"2026-11-01T08:00:00+00:00\",\"issuer_cn\":\"R11\",\"issuer_o\":\"Let's Encrypt\",\"issuer_ou\":null,\"self_signed\":false,\"subject_cn\":\"portal.example.com\",\"subject_o\":null,\"subject_ou\":null,\"tls_version\":\"TLSv1.3\"}},\"status_code\":200,\"suffixes\":{\"/admin\":{\"size\":\"4.2 KB\",\"status_code\":403},\"/backup.zip\":{\"size\":\"1.1 MB\",\"status_code\":200}},\"url\":\"https://portal.example.com\",\"user_tags\":[],\"vulns\":{}}},\"offline\":[\"old.example.com\"],\"unresolved\":[\"staging.example.com\",\"dev.example.com\"]}},\"scan_id\":\"579dcddc\",\"target\":{\"domain\":\"example.com\"}}",
@@ -583,61 +583,6 @@ An example event for `vulnerability` looks as following:
         "subdomains": {
             "active": [
                 {
-                    "headers_missing": [
-                        "Content-Security-Policy",
-                        "X-Frame-Options"
-                    ],
-                    "headers_missing_grade": [
-                        "F"
-                    ],
-                    "hostname": [
-                        "api.example.com"
-                    ],
-                    "ips": [
-                        "203.0.113.51"
-                    ],
-                    "status_code": [
-                        404
-                    ],
-                    "url": [
-                        "https://api.example.com"
-                    ],
-                    "vulns": [
-                        {
-                            "cwe_id": [
-                                "CWE-306"
-                            ],
-                            "description": [
-                                "An administrative interface is exposed without authentication."
-                            ],
-                            "finding_id": [
-                                "finding-xyz"
-                            ],
-                            "ip": [
-                                "203.0.113.51"
-                            ],
-                            "mitigation": [
-                                "Restrict access to the admin panel by IP allowlist."
-                            ],
-                            "name": [
-                                "Exposed admin panel"
-                            ],
-                            "result": [
-                                "HTTP 200 on /admin"
-                            ],
-                            "severity": [
-                                "Critical"
-                            ],
-                            "url": [
-                                "https://api.example.com/admin"
-                            ],
-                            "user_tags": [
-                                "reviewed"
-                            ]
-                        }
-                    ]
-                },
-                {
                     "headers_found": [
                         {
                             "name": [
@@ -752,6 +697,61 @@ An example event for `vulnerability` looks as following:
                     "url": [
                         "https://portal.example.com"
                     ]
+                },
+                {
+                    "headers_missing": [
+                        "Content-Security-Policy",
+                        "X-Frame-Options"
+                    ],
+                    "headers_missing_grade": [
+                        "F"
+                    ],
+                    "hostname": [
+                        "api.example.com"
+                    ],
+                    "ips": [
+                        "203.0.113.51"
+                    ],
+                    "status_code": [
+                        404
+                    ],
+                    "url": [
+                        "https://api.example.com"
+                    ],
+                    "vulns": [
+                        {
+                            "cwe_id": [
+                                "CWE-306"
+                            ],
+                            "description": [
+                                "An administrative interface is exposed without authentication."
+                            ],
+                            "finding_id": [
+                                "finding-xyz"
+                            ],
+                            "ip": [
+                                "203.0.113.51"
+                            ],
+                            "mitigation": [
+                                "Restrict access to the admin panel by IP allowlist."
+                            ],
+                            "name": [
+                                "Exposed admin panel"
+                            ],
+                            "result": [
+                                "HTTP 200 on /admin"
+                            ],
+                            "severity": [
+                                "Critical"
+                            ],
+                            "url": [
+                                "https://api.example.com/admin"
+                            ],
+                            "user_tags": [
+                                "reviewed"
+                            ]
+                        }
+                    ]
                 }
             ],
             "offline": "old.example.com",
@@ -771,8 +771,8 @@ An example event for `vulnerability` looks as following:
     },
     "related": {
         "hosts": [
-            "api.example.com",
             "portal.example.com",
+            "api.example.com",
             "cdn.example.net",
             "example.com"
         ],
@@ -780,8 +780,8 @@ An example event for `vulnerability` looks as following:
             "198.51.100.11",
             "198.51.100.10",
             "198.51.100.20",
-            "203.0.113.51",
             "203.0.113.50",
+            "203.0.113.51",
             "203.0.113.10"
         ],
         "user": [
@@ -789,6 +789,27 @@ An example event for `vulnerability` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 64502,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Madrid",
+            "continent_name": "Europe",
+            "country_iso_code": "ES",
+            "country_name": "Spain",
+            "location": {
+                "coordinates": [
+                    -3.702500034123659,
+                    40.416389987803996
+                ],
+                "type": "Point"
+            },
+            "region_iso_code": "ES-M",
+            "region_name": "Madrid"
+        },
         "ip": "203.0.113.10"
     },
     "tags": [
