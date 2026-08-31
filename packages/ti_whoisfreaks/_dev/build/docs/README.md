@@ -98,6 +98,8 @@ populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 - No data is being collected: confirm the API key and Domainer Subscription are valid; check `error.message` on `pipeline_error` events for the upstream HTTP status.
 - Empty or unexpectedly small CSV: the pinned date may not have a published file yet; leave File Date empty.
+- An upstream API failure (non-200 response) on any of the five data streams is indexed as a single `event.kind: pipeline_error` document with `error.code`/`error.message` populated and no `event.category`, `event.type`, or `threat.*` fields set, so it is not mistaken for a normal indicator or WHOIS record.
+- **Security note:** the WhoisFreaks API requires the API key to be sent as an `apiKey` query parameter. The key is redacted wherever this integration logs its internal `state`, but if Elastic Agent's HTTP client logging is raised to `debug` level (for example while troubleshooting), the outgoing request URL — including the API key — may appear in agent logs in cleartext. Avoid enabling debug-level logging for this integration unless necessary, and treat agent debug logs as sensitive while doing so.
 
 ## Performance and scaling
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.

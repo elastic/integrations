@@ -1,6 +1,17 @@
 ---
 description: Ingest pipeline for WhoisFreaks Phishing Threat Feed
 processors:
+  # Preserve upstream API errors without treating them as threat indicators.
+  - set:
+      tag: set_event_kind_error
+      field: event.kind
+      value: enrichment
+      if: "ctx.error != null"
+  - set:
+      tag: set_event_kind_default
+      field: event.kind
+      value: enrichment
+      if: "ctx.error == null"
   - set:
       tag: set_event_dataset
       field: event.dataset
@@ -13,21 +24,20 @@ processors:
       tag: set_event_category
       field: event.category
       value: ["threat"]
+      if: "ctx.error == null"
   - set:
       tag: set_event_type
       field: event.type
       value: ["indicator"]
-  - set:
-      tag: set_event_kind
-      field: event.kind
-      value: enrichment
+      if: "ctx.error == null"
   - trim:
       tag: trim_message
       field: message
       ignore_missing: true
+      if: "ctx.error == null"
   - drop:
       tag: drop_header
-      if: "ctx.message != null && ctx.message.startsWith('domain,')"
+      if: "ctx.error == null && ctx.message != null && ctx.message.startsWith('domain,')"
   - csv:
       tag: parse_csv
       field: message
@@ -39,62 +49,73 @@ processors:
         - _temp.last_seen
         - whoisfreaks.threat_feed.no_of_threat_matched_pivots
       ignore_missing: true
+      if: "ctx.error == null"
   - set:
       tag: set_indicator_domain
       field: threat.indicator.domain
       copy_from: threat.indicator.url.domain
       ignore_empty_value: true
+      if: "ctx.error == null"
   - set:
       tag: set_feed_name
       field: threat.feed.name
       value: WhoisFreaks
+      if: "ctx.error == null"
   - set:
       tag: set_indicator_type
       field: threat.indicator.type
       value: domain-name
+      if: "ctx.error == null"
   - set:
       tag: set_indicator_provider
       field: threat.indicator.provider
       value: WhoisFreaks
+      if: "ctx.error == null"
   - set:
       tag: set_indicator_reference
       field: threat.indicator.reference
       value: https://whoisfreaks.com/
+      if: "ctx.error == null"
   - convert:
       tag: convert_confidence
       field: whoisfreaks.threat_feed.confidence
       type: float
       ignore_missing: true
+      if: "ctx.error == null"
   - convert:
       tag: convert_pivots
       field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
       type: integer
       ignore_missing: true
+      if: "ctx.error == null"
   - date:
       tag: set_timestamp
       field: _temp.last_seen
       target_field: '@timestamp'
       formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSXXX", "yyyy-MM-dd HH:mm:ss.SSXXX", "yyyy-MM-dd HH:mm:ss.SXXX", "yyyy-MM-dd HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSX", "yyyy-MM-dd HH:mm:ss.SSSX", "yyyy-MM-dd HH:mm:ss.SSX", "yyyy-MM-dd HH:mm:ss.SX", "yyyy-MM-dd HH:mm:ssX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSS", "yyyy-MM-dd HH:mm:ss.SSSS", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "ISO8601"]
       ignore_failure: true
+      if: "ctx.error == null"
   - date:
       tag: set_first_seen
       field: _temp.first_seen
       target_field: threat.indicator.first_seen
       formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSXXX", "yyyy-MM-dd HH:mm:ss.SSXXX", "yyyy-MM-dd HH:mm:ss.SXXX", "yyyy-MM-dd HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSX", "yyyy-MM-dd HH:mm:ss.SSSX", "yyyy-MM-dd HH:mm:ss.SSX", "yyyy-MM-dd HH:mm:ss.SX", "yyyy-MM-dd HH:mm:ssX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSS", "yyyy-MM-dd HH:mm:ss.SSSS", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "ISO8601"]
       ignore_failure: true
+      if: "ctx.error == null"
   - date:
       tag: set_last_seen
       field: _temp.last_seen
       target_field: threat.indicator.last_seen
       formats: ["yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSSXXX", "yyyy-MM-dd HH:mm:ss.SSSXXX", "yyyy-MM-dd HH:mm:ss.SSXXX", "yyyy-MM-dd HH:mm:ss.SXXX", "yyyy-MM-dd HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSSX", "yyyy-MM-dd HH:mm:ss.SSSSX", "yyyy-MM-dd HH:mm:ss.SSSX", "yyyy-MM-dd HH:mm:ss.SSX", "yyyy-MM-dd HH:mm:ss.SX", "yyyy-MM-dd HH:mm:ssX", "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSS", "yyyy-MM-dd HH:mm:ss.SSSS", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "ISO8601"]
       ignore_failure: true
+      if: "ctx.error == null"
   - fingerprint:
       tag: fingerprint_for_dedup
       fields:
         - threat.indicator.url.domain
         - threat.indicator.last_seen
       target_field: _id
-      if: "ctx.threat?.indicator?.url?.domain != null && ctx.threat?.indicator?.last_seen != null"
+      if: "ctx.error == null && ctx.threat?.indicator?.url?.domain != null && ctx.threat?.indicator?.last_seen != null"
       ignore_missing: true
   - remove:
       tag: drop_temporary_fields

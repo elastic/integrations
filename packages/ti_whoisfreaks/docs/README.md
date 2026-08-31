@@ -99,6 +99,8 @@ populated `whoisfreaks.domain_name` and a parsed `@timestamp` are arriving.
 
 - No data is being collected: confirm the API key and Domainer Subscription are valid; check `error.message` on `pipeline_error` events for the upstream HTTP status.
 - Empty or unexpectedly small CSV: the pinned date may not have a published file yet; leave File Date empty.
+- An upstream API failure (non-200 response) on any of the five data streams is indexed as a single `event.kind: pipeline_error` document with `error.code`/`error.message` populated and no `event.category`, `event.type`, or `threat.*` fields set, so it is not mistaken for a normal indicator or WHOIS record.
+- **Security note:** the WhoisFreaks API requires the API key to be sent as an `apiKey` query parameter. The key is redacted wherever this integration logs its internal `state`, but if Elastic Agent's HTTP client logging is raised to `debug` level (for example while troubleshooting), the outgoing request URL — including the API key — may appear in agent logs in cleartext. Avoid enabling debug-level logging for this integration unless necessary, and treat agent debug logs as sensitive while doing so.
 
 ## Performance and scaling
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -263,6 +265,185 @@ The `nrd_with_whois` data stream provides Newly Registered Domains with WHOIS re
 
 
 ##### nrd_with_whois sample event
+An example event for `nrd_with_whois` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-04T09:54:02.000Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "kind": "enrichment",
+        "category": [
+            "threat",
+            "network"
+        ],
+        "type": [
+            "info"
+        ],
+        "dataset": "ti_whoisfreaks.nrd_with_whois"
+    },
+    "domain": {
+        "registered_domain": "driveigo.world",
+        "registrar": {
+            "name": "Dynadot Inc"
+        }
+    },
+    "whoisfreaks": {
+        "tld_type": "gtld",
+        "num": 1,
+        "domain_name": "driveigo.world",
+        "query_time": "2026-08-04 09:54:02",
+        "create_date": "2026-08-03T00:00:00.000Z",
+        "update_date": "2026-08-03T00:00:00.000Z",
+        "expiry_date": "2027-08-03T00:00:00.000Z",
+        "domain_registrar_id": "472",
+        "domain_registrar_name": "Dynadot Inc",
+        "domain_registrar_whois": "whois.dynadot.com",
+        "domain_registrar_url": "http://www.dynadot.com",
+        "name_server_1": "gabriella.ns.cloudflare.com",
+        "name_server_2": "cris.ns.cloudflare.com",
+        "domain_status_1": "addperiod",
+        "domain_status_2": "clienttransferprohibited",
+        "days_until_expiry": 363,
+        "is_newly_registered": false
+    },
+    "threat": {
+        "indicator": {
+            "type": "domain-name",
+            "domain": "driveigo.world",
+            "provider": "WhoisFreaks",
+            "reference": "https://whoisfreaks.com/"
+        },
+        "feed": {
+            "name": "WhoisFreaks",
+            "dashboard_id": "ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150"
+        }
+    }
+}
+```
+
+#### nrd_without_whois
+
+The `nrd_without_whois` data stream provides Newly Registered Domains without WHOIS records.
+
+##### nrd_without_whois fields
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| domain.registered_domain | The highest registered domain, stripped of any subdomains. | keyword |
+| domain.registrar.name | Name of the domain registrar. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of input. | keyword |
+| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.indicator.domain | Domain name related to a threat indicator. | keyword |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| whoisfreaks.administrative_address | Street address of the administrative contact. | text |
+| whoisfreaks.administrative_city | City of the administrative contact. | keyword |
+| whoisfreaks.administrative_company | Company of the administrative contact. | keyword |
+| whoisfreaks.administrative_country | Country name of the administrative contact. | keyword |
+| whoisfreaks.administrative_country_code | Country code of the administrative contact. | keyword |
+| whoisfreaks.administrative_email | Email of the administrative contact. | keyword |
+| whoisfreaks.administrative_fax | Fax number of the administrative contact. | keyword |
+| whoisfreaks.administrative_handle | Administrative contact handle. | keyword |
+| whoisfreaks.administrative_id | Administrative contact identifier. | keyword |
+| whoisfreaks.administrative_id_type | Type of the administrative contact identifier. | keyword |
+| whoisfreaks.administrative_name | Name of the administrative contact. | text |
+| whoisfreaks.administrative_name.keyword | Multi-field of `whoisfreaks.administrative_name`. | keyword |
+| whoisfreaks.administrative_phone | Phone number of the administrative contact. | keyword |
+| whoisfreaks.administrative_state | State or province of the administrative contact. | keyword |
+| whoisfreaks.administrative_zip | ZIP or postal code of the administrative contact. | keyword |
+| whoisfreaks.billing_address | Street address of the billing contact. | text |
+| whoisfreaks.billing_city | City of the billing contact. | keyword |
+| whoisfreaks.billing_company | Company of the billing contact. | keyword |
+| whoisfreaks.billing_country | Country name of the billing contact. | keyword |
+| whoisfreaks.billing_country_code | Country code of the billing contact. | keyword |
+| whoisfreaks.billing_email | Email of the billing contact. | keyword |
+| whoisfreaks.billing_fax | Fax number of the billing contact. | keyword |
+| whoisfreaks.billing_handle | Billing contact handle. | keyword |
+| whoisfreaks.billing_id | Billing contact identifier. | keyword |
+| whoisfreaks.billing_id_type | Type of the billing contact identifier. | keyword |
+| whoisfreaks.billing_name | Name of the billing contact. | text |
+| whoisfreaks.billing_name.keyword | Multi-field of `whoisfreaks.billing_name`. | keyword |
+| whoisfreaks.billing_phone | Phone number of the billing contact. | keyword |
+| whoisfreaks.billing_state | State or province of the billing contact. | keyword |
+| whoisfreaks.billing_zip | ZIP or postal code of the billing contact. | keyword |
+| whoisfreaks.create_date | Date when the domain was originally registered. | date |
+| whoisfreaks.days_until_expiry | Days between the record's query_time and its expiry_date. Negative once the domain has already expired. Computed by the ingest pipeline. | long |
+| whoisfreaks.domain_name | The primary domain name associated with the WHOIS record. | keyword |
+| whoisfreaks.domain_registrar_authoritative_registry_name | Name of the authoritative registry for the domain. | keyword |
+| whoisfreaks.domain_registrar_email_address | Abuse or contact email address of the registrar. | keyword |
+| whoisfreaks.domain_registrar_id | Unique identifier of the registrar. | keyword |
+| whoisfreaks.domain_registrar_name | Name of the domain registrar. | keyword |
+| whoisfreaks.domain_registrar_phone | Contact phone number of the registrar. | keyword |
+| whoisfreaks.domain_registrar_url | Registrar website URL. | keyword |
+| whoisfreaks.domain_registrar_whois | Registrar WHOIS server details. | text |
+| whoisfreaks.domain_status_1 | Primary domain status flag. | keyword |
+| whoisfreaks.domain_status_2 | Secondary domain status flag. | keyword |
+| whoisfreaks.domain_status_3 | Third domain status flag. | keyword |
+| whoisfreaks.domain_status_4 | Fourth domain status flag. | keyword |
+| whoisfreaks.eligibility_id | Eligibility identifier for restricted TLDs. | keyword |
+| whoisfreaks.eligibility_name | Eligibility name for restricted TLDs. | keyword |
+| whoisfreaks.eligibility_type | Eligibility type for restricted TLDs. | keyword |
+| whoisfreaks.expiry_date | Date when the domain registration expires. | date |
+| whoisfreaks.is_newly_registered | True when create_date falls on the same day as query_time, i.e. the domain was registered the day it was captured in this feed. Computed by the ingest pipeline. | boolean |
+| whoisfreaks.name_server_1 | Primary name server. | keyword |
+| whoisfreaks.name_server_2 | Secondary name server. | keyword |
+| whoisfreaks.name_server_3 | Third name server. | keyword |
+| whoisfreaks.name_server_4 | Fourth name server. | keyword |
+| whoisfreaks.num | Record row number or index. | long |
+| whoisfreaks.query_time | Original query timestamp string from the feed (yyyy-MM-dd HH:mm:ss). Parsed into @timestamp by the ingest pipeline. | keyword |
+| whoisfreaks.registrant_address | Street address of the registrant. | text |
+| whoisfreaks.registrant_city | City of the registrant. | keyword |
+| whoisfreaks.registrant_company | Company or organization that registered the domain. | keyword |
+| whoisfreaks.registrant_country | Country name of the registrant. | keyword |
+| whoisfreaks.registrant_country_code | Two-letter country code of the registrant. | keyword |
+| whoisfreaks.registrant_email | Contact email address of the registrant. | keyword |
+| whoisfreaks.registrant_fax | Contact fax number of the registrant. | keyword |
+| whoisfreaks.registrant_handle | Registrant contact handle. | keyword |
+| whoisfreaks.registrant_id | Registrant contact identifier. | keyword |
+| whoisfreaks.registrant_id_type | Type of the registrant contact identifier. | keyword |
+| whoisfreaks.registrant_name | Name of the domain registrant. | text |
+| whoisfreaks.registrant_name.keyword | Multi-field of `whoisfreaks.registrant_name`. | keyword |
+| whoisfreaks.registrant_phone | Contact phone number of the registrant. | keyword |
+| whoisfreaks.registrant_state | State or province of the registrant. | keyword |
+| whoisfreaks.registrant_zip | Postal code or ZIP of the registrant. | keyword |
+| whoisfreaks.reseller_email | Email of the domain reseller. | keyword |
+| whoisfreaks.reseller_name | Name of the domain reseller. | keyword |
+| whoisfreaks.reseller_phone | Phone number of the domain reseller. | keyword |
+| whoisfreaks.technical_address | Street address of the technical contact. | text |
+| whoisfreaks.technical_city | City of the technical contact. | keyword |
+| whoisfreaks.technical_company | Company of the technical contact. | keyword |
+| whoisfreaks.technical_country | Country name of the technical contact. | keyword |
+| whoisfreaks.technical_country_code | Country code of the technical contact. | keyword |
+| whoisfreaks.technical_email | Email of the technical contact. | keyword |
+| whoisfreaks.technical_fax | Fax number of the technical contact. | keyword |
+| whoisfreaks.technical_handle | Technical contact handle. | keyword |
+| whoisfreaks.technical_id | Technical contact identifier. | keyword |
+| whoisfreaks.technical_id_type | Type of the technical contact identifier. | keyword |
+| whoisfreaks.technical_name | Name of the technical contact. | text |
+| whoisfreaks.technical_name.keyword | Multi-field of `whoisfreaks.technical_name`. | keyword |
+| whoisfreaks.technical_phone | Phone number of the technical contact. | keyword |
+| whoisfreaks.technical_state | State or province of the technical contact. | keyword |
+| whoisfreaks.technical_zip | ZIP or postal code of the technical contact. | keyword |
+| whoisfreaks.tld_type | Which WhoisFreaks newly-registered feed this record came from: "gtld" or "cctld". | keyword |
+| whoisfreaks.update_date | Date when the domain record was last updated. | date |
+
+
+##### nrd_without_whois sample event
 An example event for `nrd_with_whois` looks as following:
 
 ```json
