@@ -28,9 +28,9 @@ program: |
       "GET",
       state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id
     ).with({
-      "Header": {
-        "Authorization": ["Bearer " + state.api_key],
-      },
+        "Header": {
+          "Authorization": ["Bearer " + state.api_key],
+        },
     }).do_request().as(get_resp, get_resp.StatusCode == 200 ?
       get_resp.Body.decode_json().as(body,
         body.count != 0 ?
@@ -42,7 +42,7 @@ program: |
         :
           {
             "events": [{
-              "message": "retry",
+                "message": "retry",
             }],
             "page_id": null,
             "audits": null,
@@ -54,12 +54,12 @@ program: |
         "events": {
           "error": {
             "code": string(get_resp.StatusCode),
-            "id": string(get_resp.Status),
+            "id": get_resp.Status,
             "message": "GET " + state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id + ": " + (
               size(get_resp.Body) != 0 ?
                 string(get_resp.Body)
               :
-                string(get_resp.Status) + ' (' + string(get_resp.StatusCode) + ')'
+                get_resp.Status + " (" + string(get_resp.StatusCode) + ")"
             ),
           },
         },
@@ -69,44 +69,48 @@ program: |
       }
     )
   ).as(state,
-    has(state.page_id) ?
+    state.page_id != null ?
       post_request(
         state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id,
         "application/json",
         {"pageId": state.page_id}.encode_json()
       ).with({
-        "Header": {
-          "Authorization": ["Bearer " + state.api_key],
-          "Content-Type": ["application/json"],
-        },
+          "Header": {
+            "Authorization": ["Bearer " + state.api_key],
+            "Content-Type": ["application/json"],
+          },
       }).do_request().as(post_resp,
         (post_resp.StatusCode == 204 || post_resp.StatusCode == 200) ?
           // Events are only emitted after a successful acknowledgment.
           {
             "events": state.audits.split("\n").filter(line, line != "").map(line, {
-              "message": line,
+                "message": line,
             }),
             "page_id": null,
             "audits": null,
             "want_more": state.want_more,
+            "api_key": state.api_key,
+            "audit_id": state.audit_id,
           }
         :
           {
             "events": {
               "error": {
                 "code": string(post_resp.StatusCode),
-                "id": string(post_resp.Status),
+                "id": post_resp.Status,
                 "message": "POST " + state.url.trim_right("/") + "/services/siem/api/v1/Audits/" + state.audit_id + ": " + (
                   size(post_resp.Body) != 0 ?
                     string(post_resp.Body)
                   :
-                    string(post_resp.Status) + ' (' + string(post_resp.StatusCode) + ')'
+                    post_resp.Status + " (" + string(post_resp.StatusCode) + ")"
                 ),
               },
             },
             "page_id": null,
             "audits": null,
             "want_more": false,
+            "api_key": state.api_key,
+            "audit_id": state.audit_id,
           }
       )
     :
