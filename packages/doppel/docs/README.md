@@ -34,14 +34,17 @@ Elastic Agent must be installed on a host with outbound internet access to reach
 
 The agent will act as a centralized poller, fetching data from the API and shipping it to your Elastic cluster.
 
-### Agentless deployment
-This integration supports **Agentless (BETA)** deployment in Elastic Cloud environments. When using Agentless mode, Elastic manages the polling infrastructure for you, eliminating the need to install or maintain a local Elastic Agent.
+### Elastic Managed enabled integration
+
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Onboard / configure
 1. Navigate to **Management > Integrations** in Kibana.
 2. Search for **Doppel** and click **Add Doppel**.
 3. Enter your **API Key** and configure the **Polling Interval**.
-4. Choose your deployment mode (Agent-based or Agentless).
+4. Choose your deployment mode (Agent-based or Elastic Managed).
 5. Save the integration to begin ingesting data.
 
 ## Reference

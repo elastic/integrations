@@ -59,13 +59,13 @@ The instructions above assume that you wish to collect data from your own tenant
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -107,7 +107,7 @@ When debugging a permissions issue or unexpected API responses, it can be useful
 
 For the full list of API error codes and their meanings, see the official [Office 365 Management Activity API — Errors](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#errors).
 
-**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
+**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On Elastic Managed deployments this setting is not user-configurable.
 
 #### Authentication failures
 
