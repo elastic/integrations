@@ -1,0 +1,160 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Java process that accepts an inbound network connection and then spawns a suspicious child process. This may indicate exploitation of a Java service that runs attacker-controlled code, such as one that deserializes untrusted objects.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Java Service Exploitation via Suspicious Child Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Java Service Exploitation via Suspicious Child Process\n\nSome Java services accept inbound connections and deserialize untrusted objects, such as a leftover Log4j socket or collector that rebuilds serialized `LogEvent` objects through `FilteredObjectInputStream`. If that path can be reached, an attacker can send a crafted payload to the listening port and get the JVM to run attacker-controlled code. This rule looks for a Java process that accepts an inbound connection on a service port from an ephemeral source port, then quickly starts a suspicious child process (shell, interpreter, curl, or wget) whose working directory is under `/opt`. That sequence is consistent with remote code execution against a Java listener rather than a normal outbound application callback.\n\n### Possible investigation steps\n\n- Confirm the inbound `connection_accepted` event: Java was the accepting process, `network.direction` is ingress, the destination port is a service port (below 49152), and the source port is ephemeral (32768 or higher on Linux; 49152 or higher is typical on macOS).\n- Identify the source IP and determine whether it is expected to talk to this Java service. Internal sources still matter; a collector or socket server exposed only on a private network can still be used for lateral movement.\n- Review the child process that started within a few seconds of the accepted connection. Check `process.name`, `process.command_line`, `process.working_directory`, and the parent/child PID relationship to Java.\n- Inspect the Java process command line and working directory to see which application accepted the connection (for example a service under `/opt`) and whether it is a known listener that deserializes input.\n- Look for follow-on activity on the same host after the child process: additional shells, file writes under `/tmp` or `/opt`, new outbound connections, or persistence changes.\n- Correlate with other alerts on the same host or user around the same time to see whether this is isolated or part of a broader intrusion.\n\n### False positive analysis\n\n- Java services installed may spawn shells or interpreters during install, upgrade, health checks, or administrative scripts. Confirm whether the child command line matches a known maintenance pattern before treating the alert as malicious.\n- Some already-excluded patterns include Flutter tooling, Jira helper scripts, and trivial `bash -c` probes such as `ulimit` or `echo $$`. Add similar exceptions for other trusted `/opt` applications when the parent Java process and command line are stable.\n- Development or lab collectors that intentionally accept serialized Java objects will match this rule if they also start a shell. Restrict those hosts or exclude the specific service path if that activity is expected.\n- Containerized or non-`/opt` Java applications are outside this rule's working-directory constraint and should not be tuned here; investigate those with a broader hunt if needed.\n\n### Response and remediation\n\n- Isolate the affected host from the network to stop further inbound exploitation and limit lateral movement.\n- Stop the suspicious child processes and, if exploitation is confirmed, stop the Java listener that accepted the connection until it can be patched or removed.\n- Capture the Java process command line, listening port, child process command line, and inbound source IP for scoping.\n- Hunt for the same source IP, the same Java service path, and similar child processes on other hosts.\n- Remove or disable unused Java socket servers, collectors, or sample bridges that deserialize untrusted input. Patch remaining Java applications and apply a JVM-wide serialization filter where deserialization cannot be avoided.\n- Restore from a known-good backup if unauthorized files, persistence, or additional malware are found.\n- Escalate to the security operations center or incident response team if the inbound source, child process, or follow-on activity indicates a successful compromise.",
+        "query": "sequence by host.id with maxspan=5s\n [network where event.action == \"connection_accepted\" and network.direction == \"ingress\" and\n\n  process.name : \"java\" and\n  destination.port < 49152  and source.port >= 32768] by process.pid\n [process where event.type == \"start\" and\n\n  /* Suspicious JAVA child process */\n  process.parent.name : \"java\" and\n  process.name : (\n    \"sh\", \"bash\", \"dash\", \"ksh\", \"tcsh\", \"zsh\", \"ash\",  \"mksh\", \"busybox\",\n    \"curl\", \"wget\", \"perl*\", \"python*\", \"ruby*\", \"php*\", \"lua*\", \"socat\",\n    \"nc\", \"ncat\", \"netcat\", \"netcat.openbsd\", \"netcat.traditional\", \"nc.openbsd\",\n    \"nc.traditional\", \"nohup\", \"setsid\", \"disown\", \"hostname\", \"whoami\", \"id\"\n  ) and\n    not process.command_line like~ (\n      \"bash -c ulimit -u\",\n      \"bash /opt/flutter/bin/flutter*\",\n      \"bash -c echo $$\",\n      \"/bin/bash /opt/python3/bin/jira*\",\n      \"/bin/sh -c env LC_ALL=C /usr/sbin/lpc status*\"\n    )] by process.parent.pid\n",
+        "references": [
+            "https://www.lunasec.io/docs/blog/log4j-zero-day/",
+            "https://github.com/christophetd/log4shell-vulnerable-app",
+            "https://www.blackhat.com/docs/us-16/materials/us-16-Munoz-A-Journey-From-JNDI-LDAP-Manipulation-To-RCE.pdf",
+            "https://www.elastic.co/security-labs/detecting-log4j2-with-elastic-security",
+            "https://www.elastic.co/security-labs/analysis-of-log4shell-cve-2021-45046",
+            "https://archive.ph/Xowgn"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c3f5e1d8-910e-43b4-8d44-d748e498ca86",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            },
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 109
+    },
+    "id": "c3f5e1d8-910e-43b4-8d44-d748e498ca86_109",
+    "type": "security-rule"
+}
