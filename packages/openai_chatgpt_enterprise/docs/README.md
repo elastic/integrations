@@ -539,6 +539,7 @@ The `codex_log` data stream captures ChatGPT Enterprise `CODEX_LOG` events.
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gen_ai.input.messages | Messages passed to the model where each message represents a specific input from the user. | flattened |
 | gen_ai.output.messages | Messages returned by the model where each message represents a specific model response. | flattened |
 | gen_ai.tool.call.arguments | Arguments passed to the tool call. | flattened |
 | input.type | Type of filebeat input. | keyword |
@@ -805,7 +806,7 @@ An example event for `codex_security_log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "e19bfbce-9441-45e8-abef-bdcace007442",
