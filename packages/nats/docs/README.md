@@ -905,9 +905,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | nats.jetstream.category | The category of metrics represented in this event (stats, account, stream, or consumer). | keyword |  |
 | nats.jetstream.consumer.account.id | The ID of the account. | keyword |  |
 | nats.jetstream.consumer.account.name | The name of the account. | keyword |  |
-| nats.jetstream.consumer.ack_floor.consumer_seq | The lowest contiguous consumer sequence number that has been acknowledged. | long | gauge |
+| nats.jetstream.consumer.ack_floor.consumer_seq | The highest contiguous consumer sequence number that has been acknowledged. | long | gauge |
 | nats.jetstream.consumer.ack_floor.last_active | The timestamp of the last acknowledged message. | date |  |
-| nats.jetstream.consumer.ack_floor.stream_seq | The lowest contiguous stream sequence number that has been acknowledged by the consumer. | long | gauge |
+| nats.jetstream.consumer.ack_floor.stream_seq | The highest contiguous stream sequence number that has been acknowledged by the consumer. | long | gauge |
 | nats.jetstream.consumer.cluster.leader | The ID of the leader in the cluster. | keyword |  |
 | nats.jetstream.consumer.config.ack_policy | The configured ack policy for the consumer. | keyword |  |
 | nats.jetstream.consumer.config.ack_wait | The duration (in nanoseconds) that the server will wait for an acknowledgment for any individual message once it has been delivered to a consumer. If an acknowledgment is not received in time, the message will be redelivered. | long | gauge |

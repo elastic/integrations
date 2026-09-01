@@ -95,7 +95,9 @@ func main() {
 	for i := 0; i < 20; i++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		msg := fmt.Sprintf("order data %d", i)
-		_, _ = js.Publish(ctx, "orders.created", []byte(msg))
+		if _, err := js.Publish(ctx, "orders.created", []byte(msg)); err != nil {
+			log.Printf("Initial publish error for message %d: %v", i, err)
+		}
 		cancel()
 	}
 
@@ -109,6 +111,7 @@ func main() {
 		_, err := js.Publish(ctx, "orders.created", []byte(msg))
 		cancel()
 		if err != nil {
+			log.Printf("Publish error: %v", err)
 			continue
 		}
 
