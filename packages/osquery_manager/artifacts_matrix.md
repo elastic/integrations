@@ -2,10 +2,11 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-05-28
-**Total Core Artifacts**: 57 available + 3 in progress = 60 total variants
-**Total Queries**: 79
-**Completion Rate**: 95.0% (57/60 core artifacts fully supported)
+**Last Updated**: 2026-08-10
+**Total Core Artifacts**: 60 available + 2 in progress = 62 total variants
+**Total Queries**: 82
+**Completion Rate**: 96.8% (60/62 core artifacts fully supported)
+**Shadow AI Discovery Packs**: 3 platform packs (Windows 17, macOS 19, Linux 18 queries) — see [Shadow AI Discovery Packs](#shadow-ai-discovery-packs)
 
 ---
 
@@ -22,8 +23,8 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 
 | Status                             | Count | Percentage |
 |------------------------------------|-------|------------|
-| ✅ Available (Fully Supported)      | 57    | 95.0%      |
-| ⚠️ In Progress (Needs Validation)  | 3     | 5.0%       |
+| ✅ Available (Fully Supported)      | 60    | 96.8%      |
+| ⚠️ In Progress (Needs Validation)  | 2     | 3.2%       |
 
 ---
 
@@ -83,7 +84,9 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | 22  | User Assist                           | ✅ | Win   | userassist_windows_elastic                 | [e9e5](kibana/osquery_saved_query/osquery_manager-e9e51a33-b2a2-47b4-a00e-7de8a205d55b.json)     | userassist table with user resolution and hash enrichment                                                                                                                                                                                  |
 | 23  | WMI Config & Used Apps                | ✅ | Win   | wmi_persistence_event_subscriptions_windows_elastic | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json)     | wmi_cli_event_consumers, wmi_script_event_consumers - Combined with #24 into single comprehensive query                                                                                                                                    |
 | 24  | WMI Providers & Filters               | ✅ | Win   | wmi_persistence_event_subscriptions_windows_elastic | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json)     | wmi_event_filters, wmi_filter_consumer_binding - Combined with #23 into single comprehensive query                                                                                                                                         |
-| 25  | MFT                                   | ⚠️  | Win   | -                                          | -                                                                                                | In progress                                                                                                                                                                                                                                |
+| 25  | MFT                                   | ✅ | Win   | ntfs_mft_windows_elastic                   | [d90c](kibana/osquery_saved_query/osquery_manager-d90c2cb6-9d10-486d-a0db-fd7ea0a3bc1f.json)     | `elastic_ntfs_file` extension table (requires osquerybeat 9.5.0+ with the NTFS extension, [beats#50641](https://github.com/elastic/beats/pull/50641)). `$MFT` forensic sweep over high-signal directories via `UNION ALL` of bounded, non-recursive `directory=` blocks (Startup, Windows\Temp, ProgramData, Users\Public, System32\Tasks, default-profile AppData). Returns both `$SI` and `$FN` timestamp sets plus NTFS metadata (inode, parent_inode, sequence, hard links, ADS, allocation). `active=0` surfaces deleted/unallocated entries; `si_lt_fn=1` flags timestomping. Triage hints only — corroborate with `ntfs_usn_journal_events_windows_elastic`. |
+| 25a | Disk Volumes                          | ✅ | Win   | disk_volumes_windows_elastic               | [1d7e](kibana/osquery_saved_query/osquery_manager-1d7ee6b5-ac81-4cc0-aff1-69e972b51199.json)     | `elastic_ntfs_volumes` extension table (requires osquerybeat 9.5.0+ with the NTFS extension). Inventory of all volumes (NTFS, CDFS, RAW, etc.): device, device type, drive letter, volume label, file system name. Used to correlate `$MFT`/USN findings with specific volumes.                                                    |
+| 25b | Disk Partitions                       | ✅ | Win   | disk_partitions_windows_elastic            | [f785](kibana/osquery_saved_query/osquery_manager-f785dc96-bd2d-4d7f-97d0-a5b77d78f111.json)     | `elastic_ntfs_partitions` extension table (requires osquerybeat 9.5.0+ with the NTFS extension). Partition-level inventory: device, drive letter, partition id/number, style (MBR/GPT/RAW), type, offset, length, attributes, name. Determines volumes available for `ntfs_mft_windows_elastic`.                                     |
 | 26  | Remote Desktop Protocol               | ✅ | Win   | rdp_authentication_windows_elastic         | [d8d7](kibana/osquery_saved_query/osquery_manager-d8d79510-6f58-44e1-b7fc-63a073158096.json)     | Comprehensive RDP authentication and session lifecycle events via windows_eventlog (Security + TerminalServices + System channels)                                                                                                         |
 | 27  | DNS Cache                             | ✅ | Win   | dns_cache_snapshot_windows_elastic         | [ae61](kibana/osquery_saved_query/osquery_manager-ae619588-47a8-4ba8-a378-375244fbef23.json)     | dns_cache table - enumerates cached DNS queries for threat hunting, C2 detection. Filters reverse lookups and AD noise                                                                                                                     |
 | 27a | DNS Event Log                         | ✅ | Win   | dns_event_log_windows_elastic              | [66ee](kibana/osquery_saved_query/osquery_manager-66ee8c5f-7030-4641-a14b-f4a45d1edd6a.json)     | windows_eventlog (DNS Client Operational, Event ID 3008) with process context via LEFT JOIN. Requires DNS logging enabled                                                                                                                  |
@@ -132,13 +135,44 @@ listed above.
 
 ---
 
-## Pending Pack Inclusions
+## Shadow AI Discovery Packs
 
-Tracks saved queries that exist but are not yet wired into their target pack(s).
+Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_query/*.json` saved objects), Shadow AI discovery ships as three canonical **osquery packs** in `kibana/osquery_pack_asset/`. Assign the pack matching each agent's OS to the Osquery Manager policy in Fleet. See [`docs/README.md`](docs/README.md) for which queries run in snapshot versus differential mode, and for the metadata-only privacy boundary.
 
-| Saved Query | Target Pack | Reason / Blocker |
-|---|---|---|
-| _(none — `open_handles_suspicious_windows_elastic` was wired into `forensic-malware-execution` on 2026-05-28)_ | | |
+| Pack | OS | Queries | File |
+|------|:--:|:-------:|:----:|
+| `ai-asset-discovery-windows` | Windows | 15 | [win0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-macos` | macOS | 17 | [mac0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-linux` | Linux | 16 | [lin0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+
+### Query coverage matrix
+
+Pack `id`s are platform-suffixed (`_windows`, `_macos`, `_linux`); the shared `event.action` (`osquery.<base>`) is the cross-platform field to correlate on in hunts and detections. `_*` below means the query runs on more than one OS with per-OS ids. Interval `1h` = 3600s, `24h` = 86400s.
+
+| #  | Query (pack `id`) | `event.action` | Category | Interval | Win | macOS | Linux | Description |
+|:--:|-------------------|----------------|----------|:--------:|:--:|:-----:|:-----:|-------------|
+| 1  | `ai_processes_*` | `osquery.ai_processes` | process | 1h | ✅ | ✅ | ✅ | Running AI processes — LLM runtimes, coding agents, MCP servers; slice on `labels.process_category` (`llm_runtime`, `agent`, `mcp`) |
+| 2  | `ai_process_envs_*` | `osquery.ai_process_envs` | process | 1h | — | ✅ | ✅ | Processes whose environment exposes known AI/LLM provider API-key variable names (names only, values never collected) |
+| 3  | `ai_listening_ports_*` | `osquery.ai_listening_ports` | network | 1h | ✅ | ✅ | ✅ | AI services listening on non-loopback addresses |
+| 4  | `ai_process_network_summary_*` | `osquery.ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | Outbound sockets for classified AI processes; `network.direction` (internal/egress); slice on `labels.process_category` |
+| 5  | `ai_dns_cache_windows` | `osquery.ai_dns_cache` | network | 1h | ✅ | — | — | AI service DNS lookups (Windows) |
+| 6  | `ai_programs_windows` / `ai_apps_macos` / `ai_packages_linux` | `osquery.ai_programs` / `osquery.ai_apps` / `osquery.ai_packages` | package | 24h | ✅ | ✅ | ✅ | Installed AI desktop applications / OS packages |
+| 7  | `ai_python_packages_*` | `osquery.ai_python_packages` | package | 24h | ✅ | ✅ | ✅ | AI/ML Python packages (torch, transformers, langchain, openai, …) |
+| 8  | `ai_npm_packages_*` | `osquery.ai_npm_packages` | package | 24h | ✅ | ✅ | ✅ | Globally installed AI/MCP npm packages (LLM SDKs, agent CLIs, MCP) |
+| 9  | `ai_chrome_extensions_*` | `osquery.ai_chrome_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Chrome/Chromium/Edge) |
+| 10 | `ai_firefox_extensions_*` | `osquery.ai_firefox_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Firefox) |
+| 11 | `ai_safari_extensions` | `osquery.ai_safari_extensions` | package | 24h | — | ✅ | — | AI browser extensions (Safari) |
+| 12 | `ai_vscode_extensions_*` | `osquery.ai_vscode_extensions` | package | 24h | ✅ | ✅ | ✅ | AI VS Code / editor extensions |
+| 13 | `ai_homebrew_packages` | `osquery.ai_homebrew_packages` | package | 24h | — | ✅ | — | AI Homebrew packages (macOS) |
+| 14 | `ai_config_files_*` | `osquery.ai_config_files` | file | 24h | ✅ | ✅ | ✅ | AI/MCP config files and tool directories; slice on `labels.config_kind` |
+| 15 | `ai_config_file_changes_*` | `osquery.ai_config_file_changes` | file | 1h | ✅ | ✅ | ✅ | MCP/AI config files added or changed since the previous run (metadata only, differential mode) |
+| 16 | `ai_docker_containers_*` | `osquery.ai_docker_containers` | host | 1h | — | ✅ | ✅ | Docker containers running AI workloads |
+| 17 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to credential-adjacent paths (metadata only); slice on `labels.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
+| 18 | `ai_windows_services` | `osquery.ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
+| 19 | `ai_scheduled_tasks_windows` | `osquery.ai_scheduled_tasks` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
+| 20 | `ai_launchd_services` | `osquery.ai_launchd_services` | configuration | 24h | — | ✅ | — | AI auto-start macOS launchd services |
+| 21 | `ai_systemd_services_linux` | `osquery.ai_systemd_services` | configuration | 24h | — | — | ✅ | AI auto-start Linux systemd services |
+| 22 | `ai_crontab_linux` | `osquery.ai_crontab` | configuration | 24h | — | — | ✅ | AI cron jobs (Linux) |
 
 ---
 
@@ -227,7 +261,7 @@ Queries are organized by investigative goal to support both **scheduled monitori
 
 - ✅ **Disabled Security Tools** (Windows) - Detects stopped/paused security services across major vendors and Windows Defender registry tampering (12 values). Query: `security_products_disabled_windows_elastic` ([a8f3](kibana/osquery_saved_query/osquery_manager-a8f3c5e7-d9b4-4a21-8f6c-2e9d1b3a5c7e.json))
 - ✅ **Cleared Event Logs** (Windows) - Detects Security/System event log clearing via Event IDs 1102 and 104 (windows_eventlog). Query: `event_log_cleared_windows_elastic` ([f2a9](kibana/osquery_saved_query/osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c.json))
-- ⚠️ **Timestomping Detection** - In Progress
+- ✅ **Timestomping Detection** (Windows) - `$MFT` sweep compares `$STANDARD_INFORMATION` vs `$FILE_NAME` creation times (`si_lt_fn=1`) as a timestomping triage hint; corroborate with USN journal. Query: `ntfs_mft_windows_elastic`
 
 ### File System Forensics (Supporting)
 
@@ -237,7 +271,8 @@ These queries provide cross-cutting forensic support used across multiple invest
 - ✅ **File System Events** (Linux/macOS) - Real-time file monitoring via inotify/FSEvents. Queries: `file_system_events_linux_elastic`, `file_system_events_darwin_elastic`
 - ✅ **File Hash Info** (All) - File hashing with signature validation. Queries: `file_hash_info_windows_elastic`, `file_hash_info_linux_elastic`, `file_hash_info_darwin_elastic`
 - ✅ **Disks & Volumes** (All) - Storage device enumeration. Queries: `disk_info_windows_elastic`, `disk_info_linux_darwin_elastic`
-- ⚠️ **MFT** (Windows) - In Progress
+- ✅ **Disk Volumes / Partitions** (Windows) - Inventory of all volumes and partitions via the `elastic_ntfs_volumes` / `elastic_ntfs_partitions` extension tables (requires osquerybeat 9.5.0+ with the NTFS extension). Used to correlate `$MFT`/USN findings with specific volumes. Queries: `disk_volumes_windows_elastic`, `disk_partitions_windows_elastic`
+- ✅ **MFT** (Windows) - `$MFT` forensic sweep over high-signal directories via the `elastic_ntfs_file` extension table (requires osquerybeat 9.5.0+ with the NTFS extension). Returns `$SI`/`$FN` timestamp sets, deleted/unallocated entries (`active=0`), and a timestomping hint (`si_lt_fn=1`). Query: `ntfs_mft_windows_elastic`
 
 ### System Information (Supporting)
 

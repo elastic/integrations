@@ -1,0 +1,59 @@
+{
+    "id": "supabase_otel-host-oom-kill",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the kernel OOM killer terminates a process on the project node. A single occurrence means a component was killed rather than degraded, and is never expected in normal operation.",
+        "name": "[Supabase OTel] Host OOM kill detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "host",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                },
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Host OOM Kill\n\nThe kernel killed a process to reclaim memory. Because every service in a Supabase project shares one node, the victim may not be the process that caused the pressure.\n\n### Triage Steps\n1. Work out what was killed by looking for a component that restarted or went unavailable at the same time: `postgresql_restarts_total` increasing, `gotrue_running` dipping, or `runtime_uptime_milliseconds_total` resetting.\n2. Check what was consuming memory beforehand: `process_resident_memory_bytes` and `go_memstats_heap_inuse_bytes` by `attributes.service_type`.\n3. Check whether swap was in use before the kill (`node_vmstat_pswpin` / `pswpout`) — sustained swapping immediately before an OOM kill points at genuine over-commitment rather than a single runaway allocation.\n4. Expect a cold buffer cache and elevated disk IO afterwards if PostgreSQL was the victim.\n\n### Escalation\nIf OOM kills repeat, the project is under-provisioned for its workload; a compute tier change is usually required rather than tuning.\n\n### Tuning\n`node_vmstat_oom_kill` is a monotonic kernel counter that the exporter publishes as a gauge, so `DELTA()` counts new kills inside the window. The threshold is above zero because a single kill is always actionable.\n\nA node reboot resets the counter, which would otherwise hide a kill that happened before it — including one that caused it. The rule falls back to `Peak Kill Count` in that case. The trade-off is that a reboot on a node with historical kills fires even when nothing new happened: if `Counter Reset` is true, read `Peak Kill Count` as \"kills seen at some point\" rather than \"kills in this window\"."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// node_vmstat_oom_kill is a monotonic kernel counter published as a gauge, so DELTA()\n// gives the number of new kills inside the window.\n| STATS\n    `OOM Kills` = SUM(DELTA(node_vmstat_oom_kill)),\n    `Peak Kill Count` = MAX(MAX_OVER_TIME(node_vmstat_oom_kill)),\n    `Available Memory Bytes` = MIN(MIN_OVER_TIME(node_memory_MemAvailable_bytes))\n  BY resource.attributes.supabase_project_ref\n// A node reboot zeroes the counter, making DELTA negative; fall back to the peak so a kill\n// that preceded the reboot is not missed.\n| EVAL `Counter Reset` = `OOM Kills` < 0\n// A single OOM kill means the kernel terminated a process; never expected in normal operation.\n| WHERE `OOM Kills` > 0 OR (`Counter Reset` AND `Peak Kill Count` > 0)"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

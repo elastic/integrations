@@ -1,21 +1,129 @@
 rules:
+  - path: /v1/login
+    methods: ["POST"]
+    request_headers:
+      Content-Type: "application/json"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "code": 200,
+            "token": "test-commercial-token",
+            "expires": 4102444800
+          }
+  - path: /malwarebazaar/v1/samples
+    methods: ["GET"]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+    request_headers:
+      Authorization:
+        - "Bearer test-commercial-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "items": [
+              {
+                "anonymous": false,
+                "comment": "Before token refresh",
+                "delivery_method": "email_attachment",
+                "file_name": "before-refresh.exe",
+                "file_size": 432640,
+                "file_type": "exe",
+                "file_type_mime": "application/x-dosexec",
+                "first_seen": "2021-10-05T14:02:45Z",
+                "imphash": "f34d5f2d4577ed6d9ceec516c1f5a744",
+                "intelligence": {
+                  "clamav": ["Win.Trojan.RedLineStealer.UNOFFICIAL"],
+                  "downloads": 11,
+                  "uploads": 1
+                },
+                "magika": "pebin",
+                "md5_hash": "1fc1c2997c8f55ac10496b88e23f5320",
+                "origin_country": "FR",
+                "reporter": "abuse_ch",
+                "sha1_hash": "42c7153680d7402e56fe022d1024aab49a9901a0",
+                "sha256_hash": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28",
+                "sha3_384_hash": "d63e73b68973bc73ab559549aeee2141a48b8a3724aabc0d81fb14603c163a098a5a10be9f6d33b888602906c0d89955",
+                "signature": "RedLineStealer",
+                "ssdeep": "12288:jhhl1Eo+iEXvpb1C7drqAd1uUaJvzXGyO2F5V3bS1jsTacr:7lL",
+                "tags": ["exe", "RedLineStealer"],
+                "tlsh": "T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479"
+              },
+              {
+                "anonymous": false,
+                "comment": "After token refresh",
+                "delivery_method": "web_download",
+                "file_name": "after-refresh.exe",
+                "file_size": 414720,
+                "file_type": "exe",
+                "file_type_mime": "application/x-dosexec",
+                "first_seen": "2021-10-05T14:00:50Z",
+                "imphash": "f34d5f2d4577ed6d9ceec516c1f5a744",
+                "intelligence": {
+                  "downloads": 11,
+                  "uploads": 1
+                },
+                "md5_hash": "657edf01cd9100a52abd7a9d8e585a28",
+                "origin_country": "FR",
+                "reporter": "test_reporter_2",
+                "sha1_hash": "47da737c89777cd1d08c5427d08ec3e77ef0da2c",
+                "sha256_hash": "670e59f677706e51b84984f42f8f89229e294e4c482dfa4fc72964def42a3626",
+                "sha3_384_hash": "60b388f9e2d0e24328af41421cc71f6cf097a432b7393e122c1f2103a4be0c1f1ab8b3e0a61a4393ac4eb27716e4bab2",
+                "signature": "Loki",
+                "ssdeep": "6144:FQq8qc0WpMge4UPvaMmdtq1a/tZFJYhVFyWpEGDNi0x7ynZPppgjQ+3HwO/A:FQq8qc0WfqaFq8tfJWVFL1Ri0x453o4",
+                "tags": ["32", "exe", "Loki", "trojan"],
+                "tlsh": "T1C7949D69322F5917CE288EF5185EA1C183F90C3B155AE7E85DCAF1FA65C3FB01A81493"
+              },
+              {
+                "anonymous": false,
+                "delivery_method": "web_download",
+                "file_name": "dummy_malware.exe",
+                "file_size": 512345,
+                "file_type": "exe",
+                "file_type_mime": "application/x-dosexec",
+                "first_seen": "2023-06-15T10:30:45Z",
+                "imphash": "e1f2a3b4567890abcdef1234567890ab",
+                "intelligence": {
+                  "downloads": 25,
+                  "uploads": 3
+                },
+                "md5_hash": "d1e2f3a4567890123456789abcdef01",
+                "origin_country": "US",
+                "reporter": "dummy_researcher",
+                "sha1_hash": "c1d2e3f4a567890123456789abcdef012345678",
+                "sha256_hash": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef",
+                "sha3_384_hash": "b1c2d3e4f5a67890123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                "signature": "FakeSignature",
+                "ssdeep": "6144:ABCDEF0123456789abcdefABCDEF0123456789abcdefABCDEF0123456789abcdef:A1B2C3D4E5F6G7H8",
+                "tags": ["64", "exe", "FakeSignature", "ransomware"],
+                "tlsh": "F1E2D3C4B5A67890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF12"
+              }
+            ],
+            "meta": {
+              "page_size": 100,
+              "total_items": 3
+            }
+          }
   - path: /api/v1/
     methods: ["POST"]
     request_headers:
       Content-Type: "application/json"
       Auth-Key: "test_auth_key"
-    body:
-      query: "get_iocs"
-      days: /[1-7]+/
+    request_body: '/.*"query": "get_iocs".*"days": [1-7]+.*/'
     responses:
       - status_code: 200
         body: |-
           {
             "query_status": "ok",
             "data": [
-              {"id":"841537","ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"domain","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"2022-08-05 19:43:08 UTC","last_seen":null,"reference":"https://tria.ge/220805-w57pxsgae2","reporter":"AndreGironda","tags":["asyncrat"]},
-              {"id":"839586","ioc":"872ff530d50579ae6bdc7cb4d658324b1d0e7a3e","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.vidar","malware_printable":"Vidar","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.vidar","confidence_level":75,"first_seen":"2022-07-25 22:27:09 UTC","last_seen":null,"reference":"","reporter":"crep1x","tags":["Vidar"]},
-              {"id":"839587","ioc":"a3b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.redline","malware_printable":"RedLine","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.redline","confidence_level":80,"first_seen":"2025-03-15 10:15:00 UTC","last_seen":null,"reference":"","reporter":"cyberhunter","tags":["RedLine"]}
+              {"id":"841537","ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"domain","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"2022-08-05 19:43:08 UTC","last_seen":null,"reference":"https://tria.ge/220805-w57pxsgae2","reporter":"test_reporter","tags":["asyncrat"]},
+              {"id":"839586","ioc":"872ff530d50579ae6bdc7cb4d658324b1d0e7a3e","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.vidar","malware_printable":"Vidar","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.vidar","confidence_level":75,"first_seen":"2022-07-25 22:27:09 UTC","last_seen":null,"reference":"","reporter":"test_reporter_2","tags":["Vidar"]},
+              {"id":"839587","ioc":"a3b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.redline","malware_printable":"RedLine","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.redline","confidence_level":80,"first_seen":"2025-03-15 10:15:00 UTC","last_seen":null,"reference":"","reporter":"test_reporter_3","tags":["RedLine"]}
             ]
           }
   - path: /v1/payloads/recent/
@@ -91,7 +199,7 @@ rules:
                   "spamhaus_dbl": "not listed",
                   "surbl": "not listed"
                 },
-                "reporter": "tammeto",
+                "reporter": "test_reporter",
                 "larted": "true",
                 "tags": null
               },
@@ -107,7 +215,7 @@ rules:
                   "spamhaus_dbl": "not listed",
                   "surbl": "not listed"
                 },
-                "reporter": "geenensp",
+                "reporter": "test_reporter_2",
                 "larted": "true",
                 "tags": [
                   "32-bit",
@@ -133,8 +241,8 @@ rules:
       Content-Type: "application/x-www-form-urlencoded"
       Auth-Key: "test_auth_key"
     query_params:
-      query: "get_recent"
-      selector: "time"
+      query: ["get_recent"]
+      selector: ["time"]
     responses:
       - status_code: 200
         body: |-
@@ -183,7 +291,7 @@ rules:
                 "file_size": 414720,
                 "file_type_mime": "application/x-dosexec",
                 "file_type": "exe",
-                "reporter": "zbetcheckin",
+                "reporter": "test_reporter_2",
                 "origin_country": "FR",
                 "anonymous": 0,
                 "signature": "Loki",
@@ -291,3 +399,25 @@ rules:
           d6f04b5a910115f4b50ecec09d40a1df,2017-07-15 19:42:24,2018-10-14 08:12:51,Dridex
           35c0a31c481927f022a3b530255ac080,2017-07-15 19:43:19,2021-04-10 12:54:04,Tofsee
           e330bca99c8a5256ae126a55c4c725c5,2017-07-15 19:59:29,2021-01-13 00:29:37,Adware
+  - path: /threatfox/v1/iocs
+    methods: ["GET"]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+    request_headers:
+      Authorization:
+        - "Bearer test-commercial-token"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "items": [
+              {"id":841537,"ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"domain","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"2022-08-05T19:43:08Z","last_seen":"2022-08-05T19:43:08Z","reference":"https://example.com/ref/1","reporter":"test_reporter","tags":["asyncrat"]},
+              {"id":839586,"ioc":"872ff530d50579ae6bdc7cb4d658324b1d0e7a3e","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.vidar","malware_printable":"Vidar","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.vidar","confidence_level":75,"first_seen":"2022-07-25T22:27:09Z","last_seen":"2022-07-25T22:27:09Z","reference":"","reporter":"test_reporter_2","tags":["Vidar"]},
+              {"id":839587,"ioc":"a3b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.redline","malware_printable":"RedLine","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.redline","confidence_level":80,"first_seen":"2025-03-15T10:15:00Z","last_seen":"2025-03-15T10:15:00Z","reference":"","reporter":"test_reporter_3","tags":["RedLine"]}
+            ],
+            "meta": {
+              "page_size": 100,
+              "total_items": 3
+            }
+          }

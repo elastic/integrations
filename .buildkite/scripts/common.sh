@@ -13,6 +13,7 @@ SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 readonly LONG_RUNNING_BRANCH_PATTERN="^(backport-|feature/)"
 
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
+export BACKPORT_BIN=${WORKSPACE}/build/backport
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
@@ -125,6 +126,31 @@ with_mage() {
     go install "github.com/magefile/mage"
 
     mage --version
+}
+
+with_backport() {
+    create_bin_folder
+    echo "--- Building backport tool..."
+    check_platform_architecture
+    if [[ ! -x "${BIN_FOLDER}/gvm" ]]; then
+        echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type})"
+        retry 5 curl -sL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+        chmod +x "${BIN_FOLDER}/gvm"
+    fi
+    # Build inside a subshell so the Go version switch (cmd/backport/.go-version,
+    # pinned to main's version) does not leak into the caller's shell.
+    # This is important for scripts like backport_branch.sh that run `go mod tidy`
+    # on the root module afterwards and must use the branch's own .go-version.
+    mkdir -p "${WORKSPACE}/build"
+    (
+        eval "$("${BIN_FOLDER}/gvm" "$(cat "${WORKSPACE}/cmd/backport/.go-version")")"
+        go version
+        go build -C "${WORKSPACE}/cmd/backport" -o "${BACKPORT_BIN}" .
+    )
+    # Add build/ to PATH so callers can invoke `backport` by name.
+    # The Go toolchain itself is NOT added — the subshell above kept it isolated.
+    PATH="${PATH}:${WORKSPACE}/build"
+    export PATH
 }
 
 with_docker() {
@@ -781,7 +807,7 @@ is_pr_affected() {
         return 0
     fi
 
-    commit_merge=$(git merge-base "${from}" "${to}")
+    commit_merge="${COMMIT_MERGE:-$(git merge-base "${from}" "${to}")}"
     echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
     # .github/CODEOWNERS must not be added to "skip_ci_on_only_changed" in ".buildkite/pull-requests.json".
     # When this file is updated, the Buildkite build must be triggered to run the "mage check" step.
