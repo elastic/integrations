@@ -1,0 +1,727 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects pod or attach exec API calls where the decoded request query implies curl or wget fetching an https URL. Attackers with permission to exec into workloads often run one-liners to stage tooling, pull scripts or binaries, or exfiltrate data over HTTPS\u2014activity that should be rare compared to shells, debuggers, or expected health checks. The rule decodes the audit requestURI, reconstructs a readable command string from repeated command parameters, and applies noise filters for common cluster health and OIDC/JWKS endpoints so benign automation is less likely to alert.",
+        "from": "now-6m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Pod Exec with Curl or Wget to HTTPS",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes Pod Exec with Curl or Wget to HTTPS\n\nKubernetes audit logs record exec (and similar attach) calls on requestURI, including URL-encoded\ncommand segments. This rule URL-decodes the URI, extracts the query portion into a single string, and \nflags curl or wget combined with https, excluding several common health, localhost, and OIDC/JWKS patterns.\n\n### Possible investigation steps\n\n- Confirm who may exec into the target namespace: review kubernetes.audit.user.username, groups, impersonation, and\n  source.ip / user_agent.original (kubectl, CI, webhooks).\n- Map the pod (kubernetes.audit.objectRef.name) and workload owner; retrieve the decoded URI from\n  Esql.decoded_uri and the reconstructed Esql.executed_command in the alert.\n- Search for adjacent audit events from the same identity: secret reads, additional execs, RBAC changes, or anonymous\n  access.\n- If malicious, revoke credentials used for exec, review RoleBindings for **`pods/exec`**, and inspect the pod\n  filesystem or snapshot for dropped artifacts.\n\n### False positive analysis\n\n- Approved runbooks or support sessions may use kubectl exec with curl/wget to test egress or download vendor tools;\n  document break-glass identities and tune exclusions.\n- Some cluster components use HTTPS to **kubernetes.default.svc** or **.well-known** endpoints; the rule attempts to\n  filter those\u2014expand the exclusion list if your platform uses additional first-party URLs.\n\n### Response and remediation\n\n- Rotate any secrets accessible from the pod, cordon or delete the workload if compromised, and tighten RBAC so only\n  required principals retain **`pods/exec`** on sensitive namespaces.\n",
+        "query": "FROM logs-kubernetes.audit_logs-* metadata _id, _index, _version\n| WHERE kubernetes.audit.objectRef.subresource == \"exec\"\n  AND kubernetes.audit.requestURI LIKE \"*command=*\"\n| EVAL Esql.decoded_uri = URL_DECODE(kubernetes.audit.requestURI)\n| GROK Esql.decoded_uri \"%{DATA}/exec\\\\?%{DATA:raw_commands}&(?:container|stdin|stdout|stderr)=%{GREEDYDATA}\"\n| EVAL command = REPLACE(raw_commands, \"command=\", \"\")\n| EVAL command = REPLACE(command, \"&\", \" \")\n| EVAL Esql.executed_command = REPLACE(command, \"\\\\+\", \" \")\n| WHERE Esql.executed_command IS NOT NULL \n  AND Esql.executed_command RLIKE \"\"\".*(curl.*https|wget.*https).*\"\"\"\n  AND NOT Esql.executed_command RLIKE \"\"\".*(/api/v1/health|/healthz|/readyz|/livez|127\\.0\\.0\\.1|localhost|/openid/v1/jwks|/openid-connect/certs|/.well-known/openid-configuration|/.well-known/jwks\\.json|kubernetes\\.default\\.svc).*\"\"\"\n| KEEP Esql.*, user.name, user_agent.original, event.*, source.ip, kubernetes.audit.*, _id, _version, _index, data_stream.namespace\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1609/",
+            "https://attack.mitre.org/techniques/T1105/"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.4.1"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.duration",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.end",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.severity",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.timezone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.url",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.container_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.pod",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.resource_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.service_build",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.stream",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.aks_metadata.time",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.pod-security_kubernetes_io/audit-violations",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.apiVersion",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.auditID",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.impersonatedUser.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.impersonatedUser.uid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.impersonatedUser.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.level",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.logName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.apiGroup",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.apiVersion",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.namespace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resourceVersion",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.serviceAccountName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.subresource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.uid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.operation.first",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.operation.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.operation.last",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.operation.producer",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.@type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.authenticationInfo.principalEmail",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.authorizationInfo.granted",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.authorizationInfo.permission",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.authorizationInfo.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.methodName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.requestMetadata.callerIp",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.requestMetadata.callerSuppliedUserAgent",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.resourceName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.protoPayload.serviceName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.roleRef.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.rules.resources",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.rules.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.command",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.image",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.allowPrivilegeEscalation",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.capabilities.add",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.privileged",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.procMount",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.runAsGroup",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.runAsNonRoot",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.runAsUser",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.seccompProfile.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.volumeMounts",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.hostIPC",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.hostNetwork",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.hostPID",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.restartPolicy",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.securityContext.runAsGroup",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.securityContext.runAsNonRoot",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.securityContext.runAsUser",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.serviceAccountName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.volumes.hostPath",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.volumes.hostPath.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestReceivedTimestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.resource.labels.cluster_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.resource.labels.location",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.resource.labels.project_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.resource.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.roleRef.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.containers.securityContext.allowPrivilegeEscalation",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.containers.securityContext.privileged",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.containers.securityContext.runAsUser",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.containers.volumeMounts",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.hostIPC",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.hostNetwork",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.hostPID",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.restartPolicy",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseObject.spec.volumes.hostPath",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseStatus.code",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseStatus.message",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseStatus.reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.responseStatus.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.sourceIPs",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.stage",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.stageTimestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.extra.authentication.kubernetes.io/pod-name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.uid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.userAgent",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c9d4e8f1-2a3b-4c5d-8e9f-0a1b2c3d4e5f",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Domain: Kubernetes",
+            "Platform: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "c9d4e8f1-2a3b-4c5d-8e9f-0a1b2c3d4e5f_2",
+    "type": "security-rule"
+}
