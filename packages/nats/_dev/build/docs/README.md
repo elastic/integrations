@@ -96,7 +96,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### jetstream
 
 This is the `jetstream` dataset of the Nats package, in charge of retrieving
-JetStream metrics from a NATS server. It collects data from the [/jsz](https://docs.nats.io/running-a-nats-service/nats_admin/monitoring#jetstream-information-jsz) monitoring endpoint.
+JetStream metrics from a NATS server. It collects data from the [/jsz](https://docs.nats.io/learn/monitoring/monitoring-endpoints#jsz-reports-jetstream-state) monitoring endpoint.
 
 The `jetstream` dataset supports four categories of metrics that can be enabled independently:
 
