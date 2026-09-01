@@ -44,9 +44,9 @@ The `nrd_with_whois` data stream uses the Elastic Agent **CEL input** to:
 
 A pinned **File Date** overrides steps 1 and 2 and pages that specific date once
 for both feeds. Because the status check gates each feed's paging, you can safely
-set a short **Resource Interval** (for example `1h`) without repeatedly re-paging
-the daily files: only the poll that first sees a new date for a feed triggers
-paging for it.
+use a daily **Resource Interval** such as `24h` without repeatedly re-paging the
+daily files: only the poll that first sees a new date for a feed triggers paging
+for it.
 
 #### `nrd_without_whois`
 
@@ -125,7 +125,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. Add the WhoisFreaks integration to an Agent policy.
 2. For each data stream, configure the correct base resource URL:
    - `nrd_with_whois` and `nrd_without_whois`: use the base domainer stream endpoint
-     (for example `https://api.whoisfreaks.com/v3.3/stream/domainer`), without
+     (for example `https://files.whoisfreaks.com/v3.3/stream/domainer`), without
      the `gtld`/`cctld` suffix or query string.
    - `threat_feed_malware`, `threat_feed_phishing`, `threat_feed_spam`: use the
      corresponding threat-feed base URL provided by WhoisFreaks for that feed.
