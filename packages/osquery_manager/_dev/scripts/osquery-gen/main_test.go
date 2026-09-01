@@ -60,15 +60,15 @@ func TestUpdatePackageMetadata(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte("# newer versions go on top\n- version: \"1.33.2\"\n  changes: []\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/issues/123", "~9.4.6 || ^9.5.2"); err != nil {
+	if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/issues/123", "~9.4.6 || ^9.5.3"); err != nil {
 		t.Fatal(err)
 	}
 	manifest, _ := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
 	changelog, _ := os.ReadFile(filepath.Join(packageDir, "changelog.yml"))
-	if !strings.Contains(string(manifest), "version: 1.34.0") || !strings.Contains(string(manifest), `version: "~9.4.6 || ^9.5.2"`) || !strings.Contains(string(manifest), `version: "^9.4.0"`) || !strings.Contains(string(changelog), `version: "1.34.0"`) || !strings.Contains(string(changelog), "5.23.1") || strings.Contains(string(changelog), "security-fixed") {
+	if !strings.Contains(string(manifest), "version: 1.34.0") || !strings.Contains(string(manifest), `version: "~9.4.6 || ^9.5.3"`) || !strings.Contains(string(manifest), `version: "^9.4.0"`) || !strings.Contains(string(changelog), `version: "1.34.0"`) || !strings.Contains(string(changelog), "5.23.1") || strings.Contains(string(changelog), "security-fixed") {
 		t.Fatalf("unexpected metadata:\n%s\n%s", manifest, changelog)
 	}
-	if err := updatePackageMetadata(root, "5.23.1", "", "~9.4.6 || ^9.5.2"); err != nil {
+	if err := updatePackageMetadata(root, "5.23.1", "", "~9.4.6 || ^9.5.3"); err != nil {
 		t.Fatalf("idempotent update failed: %v", err)
 	}
 	changelog, _ = os.ReadFile(filepath.Join(packageDir, "changelog.yml"))
@@ -89,7 +89,7 @@ func TestUpdatePackageMetadataQuotedVersion(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte("# newer versions go on top\n- version: \"1.33.2\"\n  changes: []\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/pull/1", "~9.4.6 || ^9.5.2"); err != nil {
+	if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/pull/1", "~9.4.6 || ^9.5.3"); err != nil {
 		t.Fatal(err)
 	}
 	manifest, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
@@ -107,7 +107,7 @@ func TestChangelogHasOsquerySchemaVersion(t *testing.T) {
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	changelog := "# newer versions go on top\n- version: \"1.34.0\"\n  changes:\n    - description: Upgrade osquery schema artifacts to version 5.23.1; require Kibana ~9.4.6 || ^9.5.2 so the upgraded runtime is available\n      type: enhancement\n      link: https://github.com/elastic/integrations/pull/1\n"
+	changelog := "# newer versions go on top\n- version: \"1.34.0\"\n  changes:\n    - description: Upgrade osquery schema artifacts to version 5.23.1; require Kibana ~9.4.6 || ^9.5.3 so the upgraded runtime is available\n      type: enhancement\n      link: https://github.com/elastic/integrations/pull/1\n"
 	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte(changelog), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +177,7 @@ func TestUpdatePackageMetadataSyncsManifestWhenChangelogExists(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(packageDir, "manifest.yml"), []byte("name: osquery_manager\nversion: 1.33.2\nconditions:\n  kibana:\n    version: \"^9.4.2\"\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	changelog := "# newer versions go on top\n- version: \"1.34.0\"\n  changes:\n    - description: Upgrade osquery schema artifacts to version 5.23.1; require Kibana ~9.4.6 || ^9.5.2 so the upgraded runtime is available\n      type: enhancement\n      link: https://github.com/elastic/integrations/pull/1\n"
+	changelog := "# newer versions go on top\n- version: \"1.34.0\"\n  changes:\n    - description: Upgrade osquery schema artifacts to version 5.23.1; require Kibana ~9.4.6 || ^9.5.3 so the upgraded runtime is available\n      type: enhancement\n      link: https://github.com/elastic/integrations/pull/1\n"
 	if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte(changelog), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -220,14 +220,14 @@ func TestUpdatePackageMetadataKibanaVersionFormats(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(packageDir, "changelog.yml"), []byte("# newer versions go on top\n- version: \"1.33.2\"\n  changes: []\n"), 0o644); err != nil {
 				t.Fatal(err)
 			}
-			if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/pull/1", "~9.4.6 || ^9.5.2"); err != nil {
+			if err := updatePackageMetadata(root, "5.23.1", "https://github.com/elastic/integrations/pull/1", "~9.4.6 || ^9.5.3"); err != nil {
 				t.Fatal(err)
 			}
 			updated, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !strings.Contains(string(updated), `version: "~9.4.6 || ^9.5.2"`) {
+			if !strings.Contains(string(updated), `version: "~9.4.6 || ^9.5.3"`) {
 				t.Fatalf("kibana version not updated:\n%s", updated)
 			}
 		})

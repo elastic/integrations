@@ -64,7 +64,9 @@ func ImportBeats() error {
 // UpdateOsqueryManager regenerates osquery_manager schemas for the latest
 // stable osquery release. Set OSQUERY_VERSION to select a specific release and
 // BEATS_PATH to read extension specs from an unreleased local Beats checkout.
-// KIBANA_VERSION sets the stack versions containing the upgraded runtime.
+// KIBANA_VERSION is required when the resolved osquery version is new (not yet
+// in the changelog); it must list only stack releases that contain the upgraded
+// runtime. CHANGELOG_LINK is also required for that bump.
 func UpdateOsqueryManager() error {
 	const toolDir = "packages/osquery_manager/_dev/scripts/osquery-gen"
 	version := os.Getenv("OSQUERY_VERSION")

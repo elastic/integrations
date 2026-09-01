@@ -228,6 +228,8 @@ func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersio
 				return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
 			}
 			manifest = kibanaVersionRE.ReplaceAll(manifest, []byte(`${1} "`+kibanaVersion+`"`))
+		} else {
+			log.Printf("warning: syncing manifest version from changelog without updating the Kibana constraint; re-run with -kibana-version if this recovery follows an interrupted bump")
 		}
 		topVersion := changelogTopVersionRE.FindSubmatch(changelog)
 		if topVersion == nil {

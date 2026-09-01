@@ -92,7 +92,7 @@ From the integrations repository root, run:
 
 ```bash
 CHANGELOG_LINK=https://github.com/elastic/integrations/issues/12345 \
-KIBANA_VERSION='~9.4.6 || ^9.5.2' mage updateOsqueryManager
+KIBANA_VERSION='~9.4.6 || ^9.5.3' mage updateOsqueryManager
 ```
 
 This resolves the latest stable release, regenerates and validates the package,
@@ -107,7 +107,7 @@ local Beats checkout:
 
 ```bash
 CHANGELOG_LINK=https://github.com/elastic/integrations/issues/12345 \
-KIBANA_VERSION='~9.4.6 || ^9.5.2' OSQUERY_VERSION=5.23.1 \
+KIBANA_VERSION='~9.4.6 || ^9.5.3' OSQUERY_VERSION=5.23.1 \
 BEATS_PATH=../beats mage updateOsqueryManager
 ```
 
