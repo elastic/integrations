@@ -6,7 +6,7 @@ The integration collects metrics from [NATS monitoring server APIs](https://docs
 
 ## Compatibility
 
-The Nats package is tested with NATS 2.10.27. The `jetstream` dataset requires NATS with JetStream enabled (NATS 2.2+) and Elastic Agent 9.1+. Consumer metrics require NATS 2.9+.
+The NATS package is tested with NATS 2.10.27 and requires Elastic Agent 9.1+. The `jetstream` dataset requires NATS with JetStream enabled (NATS 2.2+), and consumer metrics require NATS 2.9+.
 
 ## Logs
 
