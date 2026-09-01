@@ -1,0 +1,78 @@
+format_version: "3.6.3"
+name: anduril_lattice
+title: "Anduril Lattice"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect entity events from Anduril Lattice — a software-defined command and control platform — using Elastic Agent for real-time situational awareness, threat monitoring, and asset tracking.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/entity-dashboard-map_kpis.png
+    title: Entity map and key metrics
+    size: 600x600
+    type: image/png
+  - src: /img/entity-dashboard-distributions.png
+    title: Entity disposition and platform type distributions
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/anduril-logo.svg
+    title: Anduril logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: anduril_lattice
+    title: Anduril Lattice
+    description: Collect entity events from Anduril Lattice
+    inputs:
+      - type: cel
+        title: Collect entity events via REST API
+        description: Collect entity events from the Anduril Lattice long-poll API
+        vars:
+          - name: url
+            type: url
+            title: Lattice API URL
+            description: Base URL of the Anduril Lattice API (for example, https://lattice.example.com)
+            required: true
+            show_user: true
+          - name: token
+            type: password
+            title: Lattice Bearer Token
+            description: >-
+              Static bearer token for authentication. Used as Authorization: Bearer <token>. Provide client_id and client_secret instead for OAuth2.
+            required: false
+            show_user: true
+            secret: true
+          - name: client_id
+            type: text
+            title: OAuth2 Client ID
+            description: >-
+              OAuth2 client ID for automatic token management (30-minute tokens, auto-refreshed). Use instead of token for OAuth2.
+            required: false
+            show_user: true
+          - name: client_secret
+            type: password
+            title: OAuth2 Client Secret
+            description: OAuth2 client secret for automatic token management.
+            required: false
+            show_user: true
+            secret: true
+          - name: sandbox_token
+            type: password
+            title: Sandbox Authorization Token
+            description: >-
+              Token for Anduril sandbox environments. Sent as Anduril-Sandbox-Authorization: Bearer <token>. Leave empty for production.
+            required: false
+            show_user: true
+            secret: true
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
