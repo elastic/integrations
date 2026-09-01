@@ -605,22 +605,22 @@ An example event for `codex_log` looks as following:
 {
     "@timestamp": "2026-07-09T10:08:44.000Z",
     "agent": {
-        "ephemeral_id": "096cbe4b-c3d2-4e2b-8ccf-1b622b77f266",
-        "id": "9477887c-4be9-4d36-b79c-b8f7ff49b7bd",
-        "name": "elastic-agent-91546",
+        "ephemeral_id": "a008f177-0182-44a4-b588-825173b158c7",
+        "id": "c4b63df2-57fb-4e39-b2a2-78e669298eec",
+        "name": "elastic-agent-58530",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.codex_log",
-        "namespace": "56933",
+        "namespace": "74702",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "9477887c-4be9-4d36-b79c-b8f7ff49b7bd",
+        "id": "c4b63df2-57fb-4e39-b2a2-78e669298eec",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -632,7 +632,7 @@ An example event for `codex_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.codex_log",
         "id": "cd000000-0000-0000-0000-000000000006",
-        "ingested": "2026-08-27T10:45:45Z",
+        "ingested": "2026-09-01T07:35:28Z",
         "kind": "event",
         "original": "{\"event_id\":\"cd000000-0000-0000-0000-000000000006\",\"type\":\"CODEX_LOG\",\"timestamp\":\"2026-07-09T10:08:44.000000Z\",\"principal\":{\"id\":\"be545252-ad04-4cfa-9ca5-deca58416151\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-TUvqhBX7HbQPRgHyEBt5WRcI\",\"user_email\":\"user@example.org\"},\"event_type\":\"PROMPT_RESPONSE_RECEIVED\",\"client_id\":\"CODEX_CLI\",\"workspace_id\":\"be545252-ad04-4cfa-9ca5-deca58416151\",\"event_details\":{\"detail_type\":\"PROMPT_RESPONSE_RECEIVED\",\"session_id\":\"session-123\",\"response_text\":\"Refactored timeline.tsx and split the remediation view.\",\"status\":\"success\",\"turn_id\":\"turn-1\",\"call_id\":\"call-1\",\"model\":\"gpt-5.1-codex-max\",\"service_tier\":\"default\",\"reasoning_effort\":\"medium\",\"token_usage\":{\"input_tokens\":4200,\"output_tokens\":1800,\"cached_input_tokens\":900,\"reasoning_output_tokens\":600},\"environment_id\":\"env-123\"}}",
         "outcome": "success",
