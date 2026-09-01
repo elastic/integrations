@@ -88,7 +88,15 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path in ("/v3.3/stream/domainer/gtld", "/v3.3/stream/domainer/cctld"):
             feed = parsed.path.rsplit("/", 1)[1]
             offset = int(qs.get("offset", ["0"])[0])
-            self._send(200, "text/plain; charset=UTF-8", csv_page(feed, offset).encode())
+            whois_flag = qs.get("whois", ["true"])[0]
+            if whois_flag == "false":
+                rows = [r.get("domain_name", "") for r in DATA.get(feed, [])]
+                body = ("\n".join(rows) + "\n").encode()
+                if offset != 0:
+                    body = b""
+            else:
+                body = csv_page(feed, offset).encode()
+            self._send(200, "text/plain; charset=UTF-8", body)
             return
 
         threat_prefix = "/v3.4/stream/threat-feed/"
