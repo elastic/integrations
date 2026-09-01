@@ -1,0 +1,158 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  bind_dn: {{bind_dn}}
+  password: {{password}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - bind_dn
+    - password
+program: |
+      state.url.trim_right("/").as(base,
+        state.with(
+          (
+            state.?cursor.access_token.orValue("") == "" ||
+            state.?cursor.need_reauth.orValue(false)
+          ) ?
+            post_request(
+              base + "/directory/v1/authenticate",
+              "application/json",
+              {
+                "credentials": {
+                  "authenticationType": "password",
+                  "dn": state.bind_dn,
+                  "staticPassword": state.password,
+                },
+              }.encode_json()
+            ).do_request().as(auth_resp,
+              (auth_resp.StatusCode == 200) ?
+                auth_resp.Body.decode_json().as(auth, {
+                  "ok": true,
+                  "access": string(auth.accessToken),
+                })
+              :
+                {
+                  "ok": false,
+                  "err_code": string(auth_resp.StatusCode),
+                  "err_status": string(auth_resp.Status),
+                  "err_body": (size(auth_resp.Body) != 0) ? string(auth_resp.Body) : string(auth_resp.Status),
+                }
+            )
+          :
+            {
+              "ok": true,
+              "access": state.?cursor.access_token.orValue(""),
+            }
+        ).as(tok,
+          !tok.ok ?
+            {
+              "events": [{
+                "error": {
+                  "code": tok.err_code,
+                  "id": tok.err_status,
+                  "message": "POST " + base + "/directory/v1/authenticate: " + tok.err_body,
+                }
+              }],
+              "want_more": false,
+              "cursor": {
+                "need_reauth": true,        // First reauth, true
+              },
+              "bind_dn": state.bind_dn,
+              "password": state.password,
+              "batch_size": state.batch_size,
+            }
+          :
+            request(
+              "GET",
+              base + "/scim/v2/Groups?" + {
+                "startIndex": [string(state.?start_index.orValue(1))],
+                "count": [string(state.batch_size)],
+              }.format_query()
+            ).with({
+              "Header": {
+                "Authorization": ["Bearer " + tok.access],
+                "Accept": ["application/json"],
+              },
+            }).do_request().as(resp,
+              (resp.StatusCode == 200) ?
+                resp.Body.decode_json().as(data,
+                  (int(data.startIndex) + size(data.Resources)).as(next_idx, {
+                    "events": data.?Resources.orValue([]).map(u, {"message": u.encode_json()}),
+                    "cursor": {
+                      "access_token": tok.access,
+                      "need_reauth": false,   // ← all good
+                    },
+                    "want_more": next_idx <= int(data.totalResults),
+                    "start_index": next_idx <= int(data.totalResults) ? next_idx : 1,
+                    "bind_dn": state.bind_dn,
+                    "password": state.password,
+                    "batch_size": state.batch_size,
+                  })
+                )
+              : (resp.StatusCode == 401 || resp.StatusCode == 419) ?
+                {
+                  "events": [{
+                    "message": "retry"}],
+                  "cursor": {
+                    "need_reauth": true,     // Second reauth, true
+                  },
+                  "want_more": true,         // ← retry immediately
+                  "start_index": state.?start_index.orValue(1),
+                  "bind_dn": state.bind_dn,
+                  "password": state.password,
+                  "batch_size": state.batch_size,
+                }
+              :
+                {
+                  "events": [{
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET " + base + "/scim/v2/Groups: " + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    }
+                  }],
+                  "want_more": false,
+                  "start_index": state.?start_index.orValue(1),
+                  "cursor": {
+                    "access_token": tok.access,
+                    "need_reauth": false,    // ← third reauth, false
+                  },
+
+                  "batch_size": state.batch_size,
+                }
+            )
+        )
+      )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
