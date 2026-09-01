@@ -20,25 +20,24 @@ auth.basic:
   user: {{username}}
   password: {{password}}
 state:
-  # OrionAuditLog.AutoId is a unique ascending column, so it is used as the
-  # keyset cursor instead of StartTime. The first poll starts after this
-  # AutoId; subsequent polls resume from the persisted cursor.
-  initial_event_auto_id: {{initial_event_auto_id}}
+  initial_interval: {{initial_interval}}
   page_size: {{page_size}}
+  tz_offset: {{tz_offset}}
   columns: >-
     OrionAuditLog.AutoId OrionAuditLog.UserId OrionAuditLog.UserName
     OrionAuditLog.Priority OrionAuditLog.CmdName OrionAuditLog.Message
     OrionAuditLog.Success OrionAuditLog.StartTime OrionAuditLog.EndTime
 redact:
-  fields: ~
+  fields:
+    - password
 program: |
   (
     state.?want_more.orValue(false) ?
       state
     :
       state.with({
-        "event_auto_id": state.?cursor.last_event_auto_id.orValue(
-          string(state.initial_event_auto_id)
+        "start_time": state.?cursor.last_start_time.orValue(
+          (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
         )
       })
   ).as(state,
@@ -47,26 +46,32 @@ program: |
         state.url.trim_right("/") + "/remote/core.executeQuery?" +
         {
           "target": ["OrionAuditLog"],
-          // (top N) keyset page ordered by the unique AutoId.
+          // (top N) keyset page ordered by StartTime ascending.
           "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
-          "where": ['(where (gt OrionAuditLog.AutoId ' + state.event_auto_id + '))'],
-          "order": ["(order (asc OrionAuditLog.AutoId))"]
+          // ge (inclusive) so same-second ties on the boundary are not skipped;
+          "where": ['(where (ge OrionAuditLog.StartTime "' + state.start_time + '"))'],
+          "order": ["(order (asc OrionAuditLog.StartTime))"]
         }.format_query() + "&:output=json"
       ).as(resp,
         resp.StatusCode == 200 ?
-          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
-            // Advance to the greatest AutoId returned by this page. The ID is
-            // routed through int() before string(): JSON numbers arrive as float64,
-            // and string() of a float64 >= 1e6 renders as scientific notation, which
-            // is not a valid operand for the (gt OrionAuditLog.AutoId ...) query.
-            string(int(
-              rows.last()["OrionAuditLog.AutoId"].orValue(state.event_auto_id)
-            )).as(new_event_auto_id, {
+          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
+            // Advance the cursor using the wall-clock the API itself returned.
+            // The API's OrionAuditLog.StartTime comes back with a UTC offset (e.g.
+            // "+05:30"), but the API rejects that same offset when it's echoed back
+            // in the next page's where clause and instead interprets a bare
+            // timestamp as UTC — so the offset has to be subtracted here or every
+            // page transition silently skips tz_offset worth of records.
+            (size(rows) > 0 ?
+              (timestamp(string(rows[size(rows)-1]["OrionAuditLog.StartTime"])) -
+                state.tz_offset.split(":").as(tz, duration(tz[0] + "h" + tz[1] + "m"))
+              ).format("2006-01-02T15:04:05")
+            :
+              state.start_time
+            ).as(new_start_time, {
               "events": rows.map(e, {"message": e.encode_json()}),
-              "event_auto_id": new_event_auto_id,
-              "cursor": {"last_event_auto_id": new_event_auto_id},
-              "want_more": size(rows) == int(state.page_size) &&
-                new_event_auto_id != state.event_auto_id
+              "start_time": new_start_time,
+              "cursor": {"last_start_time": new_start_time},
+              "want_more": size(rows) == int(state.page_size)
             })
           )
         :
@@ -74,12 +79,8 @@ program: |
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": resp.Status,
-                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    resp.Status + ' (' + string(resp.StatusCode) + ')'
+                "message": "GET core.executeQuery failed: " + (
+                  size(resp.Body) != 0 ? string(resp.Body) : string(resp.StatusCode)
                 )
               }
             },

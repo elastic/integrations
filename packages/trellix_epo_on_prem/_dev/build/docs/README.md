@@ -80,19 +80,19 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure the collection methods you need:
 
     * For **audit** logs:
-        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set the **URL** to the base URL of your Trellix ePO server (for example `https://epo.example.com:2400`).
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
-        * Set **Initial Event Auto Id** to the starting `EventAutoID` from which to begin querying events. Subsequent collections resume from the last persisted `EventAutoID`. Set to `0` to start from the beginning (default: `0`).        
-        * Set **Interval** to the polling frequency. The default is `5m`.
-        * Set **Page Size** to the number of audit log records to retrieve per API request. The default is `500`.
-        * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+        * **Initial Interval**: The lookback period for the first API request (default: `24h`).
+        * **Timezone Offset**: The UTC offset the ePO server returns in `StartTime`, as an `HH:mm` value such as `+05:30` or `-08:00` (default: `+5:30`).
+        * **Page Size**: Number of audit log records to retrieve per API call (default: `500`).
+        * Optionally adjust **Interval** and **HTTP Client Timeout** as needed.
     * For **web control** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set **Username** for the ePO user account with `WP_EventInfo` query permissions.
         * Set **Password** for the ePO user account.
         * Set **Initial Event Auto Id** to the starting `EventAutoID` from which to begin querying events. Subsequent collections resume from the last persisted `EventAutoID`. Set to `0` to start from the beginning (default: `0`).
-        * Set **Interval** to the polling frequency. The default is `5m`.
+        * Set **Interval** to the polling frequency. The default is `24h`.
         * Set **Page Size** to the number of web control log records to retrieve per API request. The default is `500`.
         * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
     * For **DLP incident** logs:

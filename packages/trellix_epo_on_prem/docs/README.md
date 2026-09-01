@@ -80,19 +80,19 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure the collection methods you need:
 
     * For **audit** logs:
-        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set the **URL** to the base URL of your Trellix ePO server (for example `https://epo.example.com:2400`).
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
-        * Set **Initial Event Auto Id** to the starting `EventAutoID` from which to begin querying events. Subsequent collections resume from the last persisted `EventAutoID`. Set to `0` to start from the beginning (default: `0`).        
-        * Set **Interval** to the polling frequency. The default is `5m`.
-        * Set **Page Size** to the number of audit log records to retrieve per API request. The default is `500`.
-        * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+        * **Initial Interval**: The lookback period for the first API request (default: `24h`).
+        * **Timezone Offset**: The UTC offset the ePO server returns in `StartTime`, as an `HH:mm` value such as `+05:30` or `-08:00` (default: `+5:30`).
+        * **Page Size**: Number of audit log records to retrieve per API call (default: `500`).
+        * Optionally adjust **Interval** and **HTTP Client Timeout** as needed.
     * For **web control** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set **Username** for the ePO user account with `WP_EventInfo` query permissions.
         * Set **Password** for the ePO user account.
         * Set **Initial Event Auto Id** to the starting `EventAutoID` from which to begin querying events. Subsequent collections resume from the last persisted `EventAutoID`. Set to `0` to start from the beginning (default: `0`).
-        * Set **Interval** to the polling frequency. The default is `5m`.
+        * Set **Interval** to the polling frequency. The default is `24h`.
         * Set **Page Size** to the number of web control log records to retrieve per API request. The default is `500`.
         * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
     * For **DLP incident** logs:
@@ -188,22 +188,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-16T13:45:04+05:30",
     "agent": {
-        "ephemeral_id": "8bab3f46-9bfb-4e2c-b414-4e5016a0160b",
-        "id": "10d9eee8-54d7-48c6-977e-36eb7c4e8355",
-        "name": "elastic-agent-28367",
+        "ephemeral_id": "72fdf282-d4b1-4149-ae89-25d48bcb2a24",
+        "id": "525170d9-a573-4e56-9131-d4d51fa5e465",
+        "name": "elastic-agent-81415",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.audit",
-        "namespace": "17517",
+        "namespace": "80949",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "10d9eee8-54d7-48c6-977e-36eb7c4e8355",
+        "id": "525170d9-a573-4e56-9131-d4d51fa5e465",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -216,7 +216,7 @@ An example event for `audit` looks as following:
         "dataset": "trellix_epo_on_prem.audit",
         "end": "2026-07-16T13:45:05+05:30",
         "id": "1943",
-        "ingested": "2026-09-01T09:47:15Z",
+        "ingested": "2026-08-19T10:36:44Z",
         "kind": "event",
         "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"tempuser\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
         "outcome": "success",
@@ -297,24 +297,24 @@ An example event for `web_control` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-01T09:49:32.556Z",
+    "@timestamp": "2026-08-27T12:04:24.300Z",
     "agent": {
-        "ephemeral_id": "2f43dd84-eade-4a38-9a1a-6810057047b8",
-        "id": "3d3a63d3-586b-4710-815d-7b304db1af9e",
-        "name": "elastic-agent-45122",
+        "ephemeral_id": "2ed948bc-3492-4327-817e-83b23c898f5d",
+        "id": "97440a4e-3cc5-4d38-be68-1645da3ab54d",
+        "name": "elastic-agent-41151",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.web_control",
-        "namespace": "45814",
+        "namespace": "21957",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "3d3a63d3-586b-4710-815d-7b304db1af9e",
+        "id": "97440a4e-3cc5-4d38-be68-1645da3ab54d",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -325,7 +325,7 @@ An example event for `web_control` looks as following:
         ],
         "dataset": "trellix_epo_on_prem.web_control",
         "id": "494",
-        "ingested": "2026-09-01T09:49:35Z",
+        "ingested": "2026-08-27T12:04:27Z",
         "kind": "event",
         "original": "{\"WP_EventInfo.BadLinkRatingID\":4,\"WP_EventInfo.ContentID\":0,\"WP_EventInfo.Count\":1,\"WP_EventInfo.DomainName\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.DownloadRatingID\":4,\"WP_EventInfo.EventAutoID\":494,\"WP_EventInfo.ExploitRatingID\":4,\"WP_EventInfo.ListID\":1,\"WP_EventInfo.ObserverMode\":true,\"WP_EventInfo.PhishingRatingID\":4,\"WP_EventInfo.PopupRatingID\":4,\"WP_EventInfo.RatingID\":6,\"WP_EventInfo.ReasonID\":7,\"WP_EventInfo.SpamRatingID\":4,\"WP_EventInfo.URL\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.UserName\":null}",
         "type": [

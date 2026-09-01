@@ -7,14 +7,14 @@ streams:
     enabled: false
     template_path: cel.yml.hbs
     vars:
-      - name: initial_event_auto_id
+      - name: initial_interval
         type: text
-        title: Initial Event Auto Id
-        description: The starting EventAutoID from which to begin querying events. Subsequent collections will resume from the last persisted EventAutoID. Set to '0' to start from the beginning.
+        title: Initial Interval
+        description: How far back to pull the logs from the audit API. Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
-        default: '0'
+        default: 24h
         secret: false
       - name: interval
         type: text
@@ -23,8 +23,19 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 5m
+        default: 24h
         secret: false
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        description: >-
+          Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes in cursor used for interval calls are appropriately interpreted.
+          Accepts an HH:mm offset such as "+05:30" or "-08:00".
+        multi: false
+        required: true
+        show_user: true
+        secret: false
+        default: "+5:30"
       - name: max_executions
         type: integer
         title: Maximum Pages Per Interval
