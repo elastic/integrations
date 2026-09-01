@@ -4,17 +4,19 @@ processors:
   - script:
       description: |-
         Split Event 4103 event data fields.
-        ContextInfo is a block of indented "<Key> = <Value>" lines. A value can span several lines,
-        and those lines can themselves be indented, for example when 'Host Application' holds a
-        multi-line script passed to powershell.exe -Command. A KV processor splits on those indented
-        lines and then fails on the ones that hold no key/value separator, so the lines are matched
-        against the key pattern instead and anything else is appended to the previous value.
+        ContextInfo is a block of "<Key> = <Value>" lines indented by at least eight spaces.
+        A value can span several lines, and those lines can themselves be indented, for example
+        when 'Host Application' holds a multi-line script passed to powershell.exe -Command.
+        A KV processor splits on those indented lines and then fails on the ones that hold no
+        key/value separator, so a line is treated as a new key only when it has eight or more
+        leading spaces and matches the key pattern. Anything else is appended to the previous value.
+        Parse failures are recorded on error.message without stopping the rest of the pipeline,
+        including the @custom pipeline that Fleet adds.
       lang: painless
       tag: parse_context_info
       if: ctx.winlog?.event_id == "4103" && ctx.winlog?.event_data?.ContextInfo != null
-      ignore_failure: true
       source: |-
-        def keyPattern = /^\s+([A-Za-z][A-Za-z0-9 _.\-]*?)\s*[:=](.*)$/;
+        def keyPattern = /^\s{8,}([A-Za-z][A-Za-z0-9 _.\-]*?)\s*[:=](.*)$/;
         def key = null;
         def value = new StringBuilder();
         for (def line : /\r?\n/.split(ctx.winlog.event_data.ContextInfo)) {
@@ -32,6 +34,12 @@ processors:
         if (key != null) {
           ctx.winlog.event_data[key] = value.toString().trim();
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+            allow_duplicates: false
+            ignore_failure: true
   - script:
       description: Remove spaces from all event_data keys.
       lang: painless
