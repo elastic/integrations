@@ -2,6 +2,206 @@ rules:
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
+      target: 'OrionAuditLog'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "OrionAuditLog.AutoId": 1943,
+              "OrionAuditLog.CmdName": "Delete user",
+              "OrionAuditLog.EndTime": "2026-07-16T13:45:05+05:30",
+              "OrionAuditLog.Message": "User \"tempuser\" deleted from system",
+              "OrionAuditLog.Priority": 3,
+              "OrionAuditLog.StartTime": "2026-07-16T13:45:04+05:30",
+              "OrionAuditLog.Success": true,
+              "OrionAuditLog.UserId": 1,
+              "OrionAuditLog.UserName": "admin"
+            }
+          ]
+
+  # web_control page 1: a full page (== page_size), so the program sets
+  # want_more and pages again from the last EventAutoID it saw.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "(where (gt WP_EventInfo.EventAutoID 0))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "WP_EventInfo.BadLinkRatingID": 4,
+              "WP_EventInfo.ContentID": 0,
+              "WP_EventInfo.Count": 1,
+              "WP_EventInfo.DomainName": "reports.blockedSiteDSSError",
+              "WP_EventInfo.DownloadRatingID": 4,
+              "WP_EventInfo.EventAutoID": 494,
+              "WP_EventInfo.ExploitRatingID": 4,
+              "WP_EventInfo.ListID": 1,
+              "WP_EventInfo.ObserverMode": true,
+              "WP_EventInfo.PhishingRatingID": 4,
+              "WP_EventInfo.PopupRatingID": 4,
+              "WP_EventInfo.RatingID": 6,
+              "WP_EventInfo.ReasonID": 7,
+              "WP_EventInfo.SpamRatingID": 4,
+              "WP_EventInfo.URL": "reports.blockedSiteDSSError",
+              "WP_EventInfo.UserName": null
+            },
+            {
+              "WP_EventInfo.BadLinkRatingID": 4,
+              "WP_EventInfo.ContentID": 0,
+              "WP_EventInfo.Count": 1,
+              "WP_EventInfo.DomainName": "reports.blockedSiteDSSError",
+              "WP_EventInfo.DownloadRatingID": 4,
+              "WP_EventInfo.EventAutoID": 497,
+              "WP_EventInfo.ExploitRatingID": 4,
+              "WP_EventInfo.ListID": 1,
+              "WP_EventInfo.ObserverMode": true,
+              "WP_EventInfo.PhishingRatingID": 4,
+              "WP_EventInfo.PopupRatingID": 4,
+              "WP_EventInfo.RatingID": 6,
+              "WP_EventInfo.ReasonID": 7,
+              "WP_EventInfo.SpamRatingID": 4,
+              "WP_EventInfo.URL": "reports.blockedSiteDSSError",
+              "WP_EventInfo.UserName": null
+            }
+          ]
+
+  # web_control page 2: a short page, which clears want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "(where (gt WP_EventInfo.EventAutoID 497))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "WP_EventInfo.BadLinkRatingID": 4,
+              "WP_EventInfo.ContentID": 0,
+              "WP_EventInfo.Count": 1,
+              "WP_EventInfo.DomainName": "reports.blockedSiteDSSError",
+              "WP_EventInfo.DownloadRatingID": 4,
+              "WP_EventInfo.EventAutoID": 500,
+              "WP_EventInfo.ExploitRatingID": 4,
+              "WP_EventInfo.ListID": 1,
+              "WP_EventInfo.ObserverMode": true,
+              "WP_EventInfo.PhishingRatingID": 4,
+              "WP_EventInfo.PopupRatingID": 4,
+              "WP_EventInfo.RatingID": 6,
+              "WP_EventInfo.ReasonID": 7,
+              "WP_EventInfo.SpamRatingID": 4,
+              "WP_EventInfo.URL": "reports.blockedSiteDSSError",
+              "WP_EventInfo.UserName": null
+            }
+          ]
+
+  # web_control catchall: any cursor beyond the seeded rows is exhausted, so a
+  # later poll re-collects nothing and hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: 'OK: []'
+
+  # dlp_incident: a single incident page; the catchall where clause also
+  # answers the follow-up poll, so hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'UDLP_EPD_Incidents'
+      select: '{select:.*}'
+      where: '{where:.*}'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "UDLP_EPD_Incidents.IncidentId": 100006,
+              "UDLP_EPD_Incidents.OriginalIncidentId": 100005,
+              "UDLP_EPD_Incidents.IncidentType": 1,
+              "UDLP_EPD_Incidents.ViolationLocalTime": "2026-01-15T15:30:05+05:30",
+              "UDLP_EPD_Incidents.ViolationTimezone": "Asia/Kolkata",
+              "UDLP_EPD_Incidents.ViolationUTCTime": "2026-01-15T10:00:05Z",
+              "UDLP_EPD_Incidents.ViolationCustomTime": "2026-01-15T15:30:05+05:30",
+              "UDLP_EPD_Incidents.Severity": 2,
+              "UDLP_EPD_Incidents.StatusId": 1,
+              "UDLP_EPD_Incidents.ResolutionId": 0,
+              "UDLP_EPD_Incidents.Reviewer": "reviewer@example.com",
+              "UDLP_EPD_Incidents.McAfeeAgentGuid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b",
+              "UDLP_EPD_Incidents.DlpAgentVersion": "11.10.0.456",
+              "UDLP_EPD_Incidents.EvidenceCount": 1,
+              "UDLP_EPD_Incidents.TotalMatchCount": 1,
+              "UDLP_EPD_Incidents.TotalContentSize": 2048,
+              "UDLP_EPD_Incidents.ClassificationsToDisplay": "Restricted Data",
+              "UDLP_EPD_Incidents.RulesToDisplay": "Block restricted upload",
+              "UDLP_EPD_Incidents.ConnectivityState": 1,
+              "UDLP_EPD_Incidents.ActualAction": 2,
+              "UDLP_EPD_Incidents.ExpectedAction": 2,
+              "UDLP_EPD_Incidents.FailureReason": 0,
+              "UDLP_EPD_Incidents.LastUpdateTimestamp": "2026-01-15T10:00:05Z",
+              "UDLP_EPD_Incidents.ReportingProduct": 1,
+              "UDLP_EPD_Incidents.ShortMatchString": "Sample restricted identifier: ***-**-5678",
+              "UDLP_EPD_Incidents.RuleSetToDisplay": "Endpoint DLP Rules"
+            }
+          ]
+
+  # threat_event: one EPExtendedEvent row with full field coverage; the keyset
+  # cursor moves past it, so later polls return nothing new.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
       target: 'EPExtendedEvent'
       select: '{select:.*}'
       where: '{where:.*}'
@@ -9,7 +209,7 @@ rules:
       ':output': 'json'
     request_headers:
       Authorization:
-        - 'Basic eHh4eDp4eHh4'
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
     responses:
       - status_code: 200
         headers:

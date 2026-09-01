@@ -20,7 +20,10 @@ auth.basic:
   user: {{username}}
   password: {{password}}
 state:
-  initial_interval: {{initial_interval}}
+  # EPOEvents.AutoID is a unique ascending column, so it is used as the keyset
+  # cursor instead of ReceivedUTC. The first poll starts after this AutoID;
+  # subsequent polls resume from the persisted cursor.
+  initial_event_auto_id: {{initial_event_auto_id}}
   page_size: {{page_size}}
   columns: >-
     EPOEvents.AutoID EPOEvents.AutoGUID EPOEvents.ServerID
@@ -84,91 +87,63 @@ state:
     EPExtendedEvent.DurationBeforeDetection
     EPExtendedEvent.NaturalLangDescription EPExtendedEvent.Direction
 redact:
-  fields:
-    - password
-program: |-
+  fields: ~
+program: |
   (
     state.?want_more.orValue(false) ?
       state
     :
-      state.with(
-        {
-          "received_utc": state.?cursor.received_utc.orValue(
-            string(now - duration(state.initial_interval)).substring(0, 19)
-          ),
-        }
-      )
+      state.with({
+        // int() before string() for the same reason as below: the var arrives
+        // as a float64 and string() of a float64 >= 1e6 renders in scientific
+        // notation, which is not a valid query operand.
+        "event_auto_id": state.?cursor.last_event_auto_id.orValue(
+          string(int(state.initial_event_auto_id))
+        )
+      })
   ).as(state,
     state.with(
       get(
-        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
           "target": ["EPExtendedEvent"],
-          "select": [
-            "(select (top " + string(int(state.page_size)) + ") " + state.columns + ")",
-          ],
-          "where": [
-            "(where (ge EPOEvents.ReceivedUTC \"" + state.received_utc + "\"))",
-          ],
-          "order": [
-            "(order (asc EPOEvents.ReceivedUTC))",
-          ],
-          ":output": ["json"],
-        }.format_query()
+          // (top N) keyset page ordered by the unique AutoID.
+          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
+          "where": ['(where (gt EPOEvents.AutoID ' + state.event_auto_id + '))'],
+          "order": ["(order (asc EPOEvents.AutoID))"]
+        }.format_query() + "&:output=json"
       ).as(resp,
-        (resp.StatusCode == 200) ?
-          (
-            string(resp.Body).trim_space().startsWith("OK:") ?
-              string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(
-                rows,
-                (
-                  (size(rows) > 0) ?
-                    (string(
-                      timestamp(
-                        int(
-                          timestamp(
-                            string(rows[size(rows) - 1]["EPOEvents.ReceivedUTC"])
-                          )
-                        )
-                      )
-                    ).substring(0, 19))
-                  :
-                    state.received_utc
-                ).as(new_received_utc,
-                  {
-                    "events": rows.map(row, {"message": row.encode_json()}),
-                    "received_utc": new_received_utc,
-                    "cursor": {"received_utc": new_received_utc},
-                    "want_more": size(rows) == int(state.page_size),
-                  }
-                )
-              )
-            :
-              {
-                "events": {
-                  "error": {
-                    "code": "unexpected_response",
-                    "id": "missing_ok_prefix",
-                    "message": "GET /remote/core.executeQuery: " + string(resp.Body),
-                  },
-                },
-                "want_more": false,
-              }
+        resp.StatusCode == 200 ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // Advance to the greatest AutoID returned by this page. The ID is
+            // routed through int() before string(): JSON numbers arrive as float64,
+            // and string() of a float64 >= 1e6 renders as scientific notation, which
+            // is not a valid operand for the (gt EPOEvents.AutoID ...) query.
+            string(int(
+              rows.last()["EPOEvents.AutoID"].orValue(state.event_auto_id)
+            )).as(new_event_auto_id, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "event_auto_id": new_event_auto_id,
+              "cursor": {"last_event_auto_id": new_event_auto_id},
+              "want_more": size(rows) == int(state.page_size) &&
+                new_event_auto_id != state.event_auto_id
+            })
           )
         :
           {
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET /remote/core.executeQuery: " + (
-                  (size(resp.Body) != 0) ?
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
-                    string(resp.Status)
-                ),
-              },
+                    resp.Status + ' (' + string(resp.StatusCode) + ')'
+                )
+              }
             },
-            "want_more": false,
+            "want_more": false
           }
       )
     )

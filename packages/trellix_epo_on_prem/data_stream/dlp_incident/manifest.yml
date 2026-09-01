@@ -1,0 +1,93 @@
+title: DLP Incident Events
+type: logs
+streams:
+  - input: cel
+    title: Trellix ePO DLP Incident Logs
+    description: Collect DLP incident logs from the Trellix ePO REST API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull DLP incidents on the first run. Supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between DLP incident collection requests. Supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        description: >-
+           Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes in cursor used for interval calls are appropriately interpreted.
+           Accepts an HH:mm offset such as "+05:30" or "-08:00".
+        multi: false
+        required: true
+        show_user: true
+        default: "+05:30"
+        secret: false
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum number of pages collected per polling interval. Must be greater than zero.
+        default: 1000
+        multi: false
+        required: false
+        show_user: false
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of records fetched per request. Keep this value high (e.g. 500 or more). A low batch size can cause records with the same update time to be fetched repeatedly.
+        multi: false
+        required: true
+        show_user: false
+        default: 500
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - trellix_epo_on_prem-dlp_incident
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
