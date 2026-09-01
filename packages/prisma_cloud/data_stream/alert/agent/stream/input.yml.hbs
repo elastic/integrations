@@ -50,7 +50,7 @@ program: |
               "limit": int(state.batch_size),
               "timeRange": {
                 "type": "relative",
-                "value": has(state.cursor) && has(state.cursor.last_time_amount) && state.cursor.last_time_amount != null ?
+                "value": state.?cursor.last_time_amount.orValue(null) != null ?
                   {"amount": (now - timestamp(int(timestamp(0)+duration(string(int(state.cursor.last_time_amount))+"ms")))).getMinutes() + 1, "unit": "minute"}
                 :
                   {"amount": int(state.time_amount), "unit": state.time_unit},
@@ -68,19 +68,19 @@ program: |
             {"events": []}
           :
             {
-              "events": inner_body.items.map(e, {
+              "events": inner_body.?items.orValue([]).map(e, {
                 "message": e.encode_json(),
               }),
               "url": state.url,
               "page_token": inner_body.?nextPageToken.orValue(""),
               "cursor": {
-                "last_time_amount": has(inner_body.items) && inner_body.items.size() > 0 ?
-                  (
-                    has(state.cursor) && has(state.cursor.last_time_amount) && state.cursor.last_time_amount != null &&
-                    state.cursor.last_time_amount > inner_body.items.map(e, e.lastUpdated).max() ?
+                "last_time_amount": inner_body.?items.orValue([]).size() > 0 ?
+                  inner_body.items.map(e, e.lastUpdated).max().as(max_updated,
+                    state.?cursor.last_time_amount.orValue(null) != null &&
+                    state.cursor.last_time_amount > max_updated ?
                       state.cursor.last_time_amount
                     :
-                      inner_body.items.map(e, e.lastUpdated).max()
+                      max_updated
                   )
                 :
                   state.?cursor.last_time_amount.orValue(null),
