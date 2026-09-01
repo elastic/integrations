@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a client generating many unique, unusually long DNS query names to the same registered domain within a five-minute window. Malware DNS tunnels and DNS command-and-control commonly encode data in lengthy subdomain portions under one apex domain.",
+        "false_positives": [
+            "CDN, cloud load-balancer, software-update, and telemetry hostnames can be long and change often. Recursive resolvers, forwarders, NAT gateways, and localhost DNS listeners can also combine queries from many endpoints under one client address. Validate the apex domain and whether the source is an endpoint before treating the activity as tunneling."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.client_ip",
+                "Esql.dns_registered_domain",
+                "Esql.time_window",
+                "Esql.count_queries",
+                "Esql.count_distinct_names",
+                "Esql.unique_name_ratio",
+                "Esql.max_subdomain_length",
+                "Esql.avg_subdomain_length",
+                "Esql.dns_question_type_values",
+                "Esql.destination_ip_values",
+                "Esql.sample_names",
+                "Esql.dataset_values",
+                "Esql.observer_name_values",
+                "Esql.first_seen",
+                "Esql.last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential DNS Tunneling via Long and Unique Subdomains",
+        "note": "## Triage and analysis\n\n### Investigating Potential DNS Tunneling via Long and Unique Subdomains\n\nDNS tunneling encodes data in query labels and often produces many unique, unusually long subdomains under a single apex\ndomain. This rule aggregates network DNS telemetry for that behavioral pattern without relying on threat intelligence\nfeeds or machine learning jobs.\n\nCompare overlapping apex domains against the machine learning **DNS Tunneling** rule when that job is enabled.\n\n### Possible investigation steps\n\n- Review `Esql.dns_registered_domain`, `Esql.count_distinct_names`, `Esql.unique_name_ratio`,\n  `Esql.max_subdomain_length`, and sample values in `Esql.sample_names`.\n- Inspect `Esql.dns_question_type_values`. TXT, NULL, CNAME, or MX bursts increase confidence; A/AAAA-only activity can\n  still be tunneling and should not be dismissed on type alone.\n- Use `Esql.first_seen`, `Esql.last_seen`, `Esql.dataset_values`, and `Esql.observer_name_values` to establish the event\n  span and identify the integrations and sensors that contributed to the alert.\n- Confirm whether `Esql.client_ip` is a workstation, server, recursive resolver, forwarder, NAT address, or localhost\n  DNS service. Resolver and localhost sources merge many clients and are a common false-positive pattern.\n- Review `Esql.destination_ip_values` to identify the resolver or authoritative destination observed by the sensor.\n- Pivot on the same client and apex domain in raw DNS events and look for follow-on process, file, or additional C2\n  activity.\n\n### False positive analysis\n\n- CDN, cloud load-balancer, certificate, and software-update services often create long hostnames. Confirm the apex\n  domain reputation and whether the requesting host role normally uses that provider.\n- Security or network appliances performing DNS-based reachability or reputation checks can resemble tunneling. Exclude\n  confirmed appliance addresses after validation.\n- Do not create a global resolver exception until the originating endpoint is known; a shared `Esql.client_ip` can hide\n  a single infected host behind legitimate bulk lookups.\n\n### Response and remediation\n\n- Block the apex domain or forwarding from the affected host at recursive resolvers if malicious activity is confirmed.\n- Isolate the source host and inspect for tunneling tools or malware initiating the queries.\n- Add temporary blocks for the apex domain while scoping additional hosts querying the same name.\n",
+        "query": "from logs-network_traffic.dns-*, logs-fortinet_fortigate.log-*, logs-zeek.dns-*, packetbeat-*\n| where\n    (\n      data_stream.dataset in (\"network_traffic.dns\", \"fortinet_fortigate.log\", \"zeek.dns\")\n      or event.dataset == \"dns\"\n    )\n    and dns.question.name is not null\n    and dns.question.registered_domain is not null\n| eval\n    Esql.client_ip = COALESCE(client.ip, source.ip),\n    Esql.dataset = COALESCE(data_stream.dataset, event.dataset),\n    Esql.dns_question_name = TO_LOWER(dns.question.name),\n    Esql.dns_registered_domain = TO_LOWER(dns.question.registered_domain),\n    Esql.dns_question_type = TO_LOWER(dns.question.type),\n    Esql.subdomain_length = LENGTH(Esql.dns_question_name) - LENGTH(Esql.dns_registered_domain) - 1\n| where\n    Esql.client_ip is not null\n    and Esql.subdomain_length >= 50\n    and (Esql.dns_question_type is null or Esql.dns_question_type != \"ptr\")\n    and not ENDS_WITH(Esql.dns_question_name, \".arpa\")\n| eval Esql.time_window = DATE_TRUNC(5 minutes, @timestamp)\n| stats\n    Esql.count_queries = COUNT(*),\n    Esql.count_distinct_names = COUNT_DISTINCT(Esql.dns_question_name),\n    Esql.max_subdomain_length = MAX(Esql.subdomain_length),\n    Esql.avg_subdomain_length = AVG(Esql.subdomain_length),\n    Esql.dns_question_type_values = MV_SLICE(VALUES(Esql.dns_question_type), 0, 9),\n    Esql.destination_ip_values = MV_SLICE(VALUES(destination.ip), 0, 4),\n    Esql.sample_names = MV_SLICE(VALUES(Esql.dns_question_name), 0, 4),\n    Esql.dataset_values = MV_SLICE(VALUES(Esql.dataset), 0, 9),\n    Esql.observer_name_values = MV_SLICE(VALUES(observer.name), 0, 19),\n    Esql.first_seen = MIN(@timestamp),\n    Esql.last_seen = MAX(@timestamp)\n  by Esql.time_window, Esql.client_ip, Esql.dns_registered_domain\n| where Esql.count_queries >= 25 and Esql.count_distinct_names >= 15\n| eval Esql.unique_name_ratio = TO_DOUBLE(Esql.count_distinct_names) / Esql.count_queries\n| keep Esql.*\n",
+        "references": [
+            "https://unit42.paloaltonetworks.com/dns-tunneling-how-dns-can-be-abused-by-malicious-actors/"
+        ],
+        "related_integrations": [
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            },
+            {
+                "package": "zeek",
+                "version": "^5.0.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "89ed957d-609b-4b00-b8c6-a5cbd187632c",
+        "setup": "## Setup\n\nThis rule requires DNS transaction events from one of the following sources:\n\n- Elastic Network Packet Capture (`network_traffic.dns`) in `logs-network_traffic.dns-*`\n- Fortinet FortiGate DNS logs (`fortinet_fortigate.log`) in `logs-fortinet_fortigate.log-*`\n- Elastic Zeek (`zeek.dns`) in `logs-zeek.dns-*`\n- Legacy Packetbeat DNS events in `packetbeat-*` with `event.dataset` set to `dns`\n\nPlace the sensor where it observes endpoint-to-resolver DNS traffic. If the sensor is upstream of a recursive resolver,\nor if the captured client is a localhost listener such as `127.0.0.1`, `Esql.client_ip` may identify shared DNS\ninfrastructure instead of the originating endpoint.\n\nDNS-over-HTTPS (DoH), DNS-over-TLS (DoT), and other encrypted DNS traffic are not visible to packet capture unless the\nsensor receives decrypted DNS telemetry or equivalent resolver logs mapped to ECS.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Use Case: Network Security Monitoring",
+            "Rule Type: ESQL",
+            "Tactic: Command and Control",
+            "Tactic: Exfiltration",
+            "Data Source: Network Packet Capture",
+            "Data Source: Fortinet",
+            "Data Source: Network Traffic",
+            "Data Source: Zeek",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.004",
+                                "name": "DNS",
+                                "reference": "https://attack.mitre.org/techniques/T1071/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1572",
+                        "name": "Protocol Tunneling",
+                        "reference": "https://attack.mitre.org/techniques/T1572/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1048",
+                        "name": "Exfiltration Over Alternative Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1048/",
+                        "subtechnique": [
+                            {
+                                "id": "T1048.003",
+                                "name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+                                "reference": "https://attack.mitre.org/techniques/T1048/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "89ed957d-609b-4b00-b8c6-a5cbd187632c_1",
+    "type": "security-rule"
+}

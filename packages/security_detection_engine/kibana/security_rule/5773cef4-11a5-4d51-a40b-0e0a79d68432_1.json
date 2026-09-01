@@ -1,0 +1,168 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the macOS Screen Sharing file copy helper SSFileCopyReceiver creating or modifying files in common persistence locations, including system-wide and per-user LaunchDaemons/LaunchAgents, shell profiles, SSH authorized_keys, cron tabs, and hidden paths under root's home directory. SSFileCopyReceiver performs file writes with root authority on behalf of a remote viewer.Pre-authentication exploitation of the Screen Sharing service (CVE-2026-65400) abuses this write primitive to establish persistence; observed in-the-wild activity dropped LaunchDaemons and modified shell startup files to run a cryptocurrency miner as root.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "SSFileCopyReceiver Writing to Common Persistence Locations",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating SSFileCopyReceiver Writing to Common Persistence Locations\n\nThis rule spots the macOS Screen Sharing file copy helper writing into locations that commonly grant persistence, such as launch items, shell startup files, SSH access files, scheduled task tabs, and hidden directories under root\u2019s home. It matters because this helper performs writes as root for a remote session, so an attacker can exploit Screen Sharing and drop a LaunchDaemon plist or alter .zshrc to start a miner or backdoor every boot or login.\n\n### Possible investigation steps\n\n- Review the exact contents and recent versions of the written plist, shell startup file, cron tab, hidden root file, or SSH key file for persistence logic such as RunAtLoad or KeepAlive settings, embedded download commands, unexpected SSH public keys, or references to miner, shell, or staging paths.\n- Correlate the file write time with Screen Sharing and VNC access evidence in Unified Logs, authentication records, and inbound network activity to determine whether the change aligns with an approved remote support session or an unsolicited access attempt consistent with exploitation.\n- Confirm whether the persistence has executed by examining loaded launchd jobs, recent root-level child processes, and any binaries or scripts referenced by the modified artifact, prioritizing unknown executables, curl or bash chains, and long-running resource-intensive processes.\n- Validate the dropped or referenced payloads by collecting hashes, code-signing and notarization status, ownership and permissions, and comparing them to known-good administration tools, approved software, and recent change tickets.\n- Scope impact and remediate by hunting fleet-wide for the same plist labels, SSH keys, file hashes, payload paths, and Screen Sharing write patterns, then isolate affected hosts, remove unauthorized persistence, revoke added access, and update or disable exposed Screen Sharing services until patched.\n\n### False positive analysis\n\n- A legitimate administrator using macOS Screen Sharing may copy an approved LaunchDaemon or LaunchAgent plist during remote maintenance or software rollout; verify the session was expected and that the plist label, referenced executable, ownership, and signing details match authorized system changes.\n- A user support session can legitimately update a shell profile or SSH authorized_keys file to restore access or set environment defaults; confirm the request with the user or admin and review the added commands or keys to ensure they belong to known accounts and do not launch unexpected binaries.\n\n### Related Rules \n\n- SSFileCopySender Executed as Root - e54c3f36-e243-402d-9d44-8f7349eb8c88\n\n### Response and remediation\n\n- Isolate the affected Mac from the network, stop any malicious launchd job, miner, or shell started from the newly written LaunchDaemon, LaunchAgent, shell profile, cron tab, hidden root file, or added SSH key, and preserve the modified files and referenced payloads as evidence.\n- Remove attacker persistence by deleting unauthorized plist files from /Library/LaunchDaemons or LaunchAgents, reverting changes to .zshrc, .bash_profile, and other startup files, removing unapproved entries from authorized_keys and /var/at/tabs, and unloading any matching launchd services.\n- Restore the host to a known-good state by replacing altered configuration files from a trusted backup or gold image, reinstalling any trojanized binaries referenced by the persistence item, and validating ownership, permissions, and code-signing on the restored files.\n- Escalate to incident response immediately if the same plist label, SSH public key, payload hash, or Screen Sharing write pattern is found on additional systems, if root-level processes continue after cleanup, or if you identify signs of credential theft or lateral movement.\n- Harden the environment by patching or disabling Screen Sharing where it is not required, restricting remote management exposure with firewall and access controls, rotating credentials and SSH keys that may have been added or abused, and monitoring for new writes to LaunchDaemons, shell profiles, cron tabs, and hidden paths under root\u2019s home.\n",
+        "query": "from logs-endpoint.events.file-* METADATA _id, _index, _version\n| WHERE host.os.type == \"macos\"\n    AND event.type != \"deletion\"\n    AND process.name == \"SSFileCopyReceiver\"\n    AND (\n        file.path LIKE \"/Library/LaunchDaemons/*.plist\"\n        OR file.path LIKE \"/Library/LaunchAgents/*.plist\"\n        OR file.path LIKE \"/Users/*/Library/LaunchAgents/*.plist\"\n        OR file.path LIKE \"/private/var/*/Library/LaunchAgents/*.plist\"\n        OR file.name IN (\".zshenv\", \".zshrc\", \".zprofile\", \".zlogin\", \".bashrc\", \".bash_profile\", \".bash_login\", \".profile\", \"config.fish\", \"environment.plist\")\n        OR file.path LIKE \"/Users/*/.ssh/authorized_keys\"\n        OR file.path LIKE \"/private/var/root/.ssh/authorized_keys\"\n        OR file.path LIKE \"/private/etc/ssh/sshd_config*\"\n        OR file.path LIKE \"/private/var/at/tabs/*\"\n        OR file.path LIKE \"/var/at/tabs/*\"\n        OR file.path LIKE \"/private/var/root/.*/*\"\n        OR file.path LIKE \"/var/root/.*/*\"\n        OR file.path LIKE \"/private/var/root/.*\"\n        OR file.path LIKE \"/var/root/.*\"\n    )\n| KEEP _id, _index, _version, \n    @timestamp, host.name, host.id, user.id, user.name, process.name, \n    event.action, event.type, file.path, file.name, data_stream.namespace\n",
+        "references": [
+            "https://www.huntress.com/blog/macos-screen-sharing-rce-patched",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-65400",
+            "https://support.apple.com/en-us/HT201222"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "5773cef4-11a5-4d51-a40b-0e0a79d68432",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.001",
+                                "name": "Launch Agent",
+                                "reference": "https://attack.mitre.org/techniques/T1543/001/"
+                            },
+                            {
+                                "id": "T1543.004",
+                                "name": "Launch Daemon",
+                                "reference": "https://attack.mitre.org/techniques/T1543/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.004",
+                                "name": "Unix Shell Configuration Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1546/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.004",
+                                "name": "SSH Authorized Keys",
+                                "reference": "https://attack.mitre.org/techniques/T1098/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "5773cef4-11a5-4d51-a40b-0e0a79d68432_1",
+    "type": "security-rule"
+}
