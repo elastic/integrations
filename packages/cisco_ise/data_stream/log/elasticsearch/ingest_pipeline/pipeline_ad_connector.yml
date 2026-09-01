@@ -9,7 +9,9 @@ processors:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
-        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
+        - '^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{NONNEGINT:event.sequence:long} %{NOTSPACE:cisco_ise.log.message.code} %{NOTSPACE:log.syslog.severity.name}%{SPACE}%{DATA:cisco_ise.log.message.description},%{SPACE}%{GREEDYDATA:cisco_ise.log.log_details_raw},$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{NONNEGINT:event.sequence:long} %{NOTSPACE:cisco_ise.log.message.code} %{NOTSPACE:log.syslog.severity.name}%{SPACE}%{DATA:cisco_ise.log.message.description},%{SPACE}%{GREEDYDATA:cisco_ise.log.log_details_raw}$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{NONNEGINT:event.sequence:long} %{NOTSPACE:cisco_ise.log.message.code} %{NOTSPACE:log.syslog.severity.name}%{SPACE}%{GREEDYDATA:cisco_ise.log.message.description}$'
   - grok:
       tag: grok_message_c232cfac
       field: message
@@ -41,13 +43,13 @@ processors:
       tag: append_event_category_33323154
       field: event.category
       value: configuration
-      if: ctx.cisco_ise?.log?.message?.code != null && ['25037','25041','25046','25058'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['25032','25037','25041','25046','25058'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_c6f3a1fc
       field: event.type
       value: info
-      if: ctx.cisco_ise?.log?.message?.code != null && ['25012','25013','25015','25016','25017','25018','25033','25037','25041','25046','25058'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['25012','25013','25015','25016','25017','25018','25032','25033','25037','25041','25046','25058'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_2aaa5c92
@@ -60,6 +62,7 @@ processors:
       field: cisco_ise.log.log_details_raw
       pattern: \\,
       replacement: ''
+      ignore_missing: true
   - kv:
       tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
