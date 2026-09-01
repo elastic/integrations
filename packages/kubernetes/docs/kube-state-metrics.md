@@ -183,6 +183,7 @@ An example event for `state_container` looks as following:
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
 | kubernetes.container.status.reason | The reason the container is currently in waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or terminated (Completed, ContainerCannotRun, Error, OOMKilled) state. | keyword |  |  |
 | kubernetes.container.status.restarts | Container restarts count | integer |  | counter |
+| kubernetes.container.type | Container type (container or init) | keyword |  |  |
 | kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
