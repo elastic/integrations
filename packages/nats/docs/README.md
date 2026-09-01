@@ -892,7 +892,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
-| nats.jetstream.account.accounts | The number of accounts using JetStream on the server. | integer | gauge |
+| nats.jetstream.account.accounts | The number of accounts using JetStream on the server. | long | gauge |
 | nats.jetstream.account.api.errors | The total number of JetStream API errors encountered by this account. | long | counter |
 | nats.jetstream.account.api.total | The total number of JetStream API calls made by this account. | long | counter |
 | nats.jetstream.account.high_availability_assets | Indicates the number of JetStream high-availability (HA) assets allocated for an account. | integer | gauge |
@@ -940,7 +940,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | nats.jetstream.stats.consumers | The total number of consumers on the JetStream server. | long | gauge |
 | nats.jetstream.stats.memory | The total amount of memory (bytes) used by the JetStream server. | long | gauge |
 | nats.jetstream.stats.messages | The total number of messages on the JetStream server. | long | gauge |
-| nats.jetstream.stats.reserved_memory | The of memory (bytes) reserved by the JetStream server. | long | gauge |
+| nats.jetstream.stats.reserved_memory | The amount of memory (bytes) reserved by the JetStream server. | long | gauge |
 | nats.jetstream.stats.reserved_storage | The total amount of storage (bytes) reserved by the JetStream server. | long | gauge |
 | nats.jetstream.stats.storage | The total amount of storage (bytes) used by the JetStream server. | long | gauge |
 | nats.jetstream.stats.streams | The total number of streams on the JetStream server. | long | gauge |
@@ -954,7 +954,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | nats.jetstream.stream.config.max_msg_size | The largest message (bytes) that will be accepted by the stream. The size of a message is a sum of payload and headers. | long | gauge |
 | nats.jetstream.stream.config.max_msgs | Maximum number of messages stored in the stream. Adheres to Discard Policy, removing oldest or refusing new messages if the Stream exceeds this number of messages. | long | gauge |
 | nats.jetstream.stream.config.max_msgs_per_subject | Limits maximum number of messages in the stream to retain per subject. | long | gauge |
-| nats.jetstream.stream.config.num_replicas | How many replicas to keep for each message in a clustered JetStream. | integer | gauge |
+| nats.jetstream.stream.config.num_replicas | How many replicas to keep for each message in a clustered JetStream. | long | gauge |
 | nats.jetstream.stream.config.retention | The retention policy for the stream. | keyword |  |
 | nats.jetstream.stream.config.storage | The storage type for stream data. | keyword |  |
 | nats.jetstream.stream.config.subjects | The list of subjects bound to the stream. | keyword |  |
