@@ -1,0 +1,1252 @@
+---
+description: Parse Trellix ePO on-prem threat event records.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original message field to event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is no longer required if the document has an event.original field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - dot_expander:
+      field: '*'
+      path: json
+      tag: dot_expander_json
+      if: ctx.json != null
+  - rename:
+      field: json.EPOEvents
+      target_field: trellix_epo_on_prem.threat_event.EPOEvents
+      ignore_missing: true
+      tag: rename_epoevents_to_vendor_namespace
+      if: ctx.json?.EPOEvents != null
+  - rename:
+      field: json.EPExtendedEvent
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent
+      ignore_missing: true
+      tag: rename_epextendedevent_to_vendor_namespace
+      if: ctx.json?.EPExtendedEvent != null
+  - fingerprint:
+      fields:
+        - trellix_epo_on_prem.threat_event.EPOEvents.AutoGUID
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_AutoGUID
+  - set:
+      field: event.kind
+      tag: set_event_kind_alert
+      value: alert
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.ThreatHandled
+      type: boolean
+      ignore_missing: true
+      tag: convert_threat_handled
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatHandled != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.ThreatHandled
+            ignore_missing: true
+            tag: remove_convert_threat_handled_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerGTIQuery
+      type: boolean
+      ignore_missing: true
+      tag: convert_analyzer_gti_query
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.AnalyzerGTIQuery != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerGTIQuery
+            ignore_missing: true
+            tag: remove_convert_analyzer_gti_query_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.Cleanable
+      type: boolean
+      ignore_missing: true
+      tag: convert_cleanable
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.Cleanable != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.Cleanable
+            ignore_missing: true
+            tag: remove_convert_cleanable_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.Direction
+      type: long
+      ignore_missing: true
+      tag: convert_direction
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.Direction != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.Direction
+            ignore_missing: true
+            tag: remove_convert_direction_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.FirstActionStatus
+      type: boolean
+      ignore_missing: true
+      tag: convert_first_action_status
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.FirstActionStatus != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.FirstActionStatus
+            ignore_missing: true
+            tag: remove_convert_first_action_status_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SecondActionStatus
+      type: boolean
+      ignore_missing: true
+      tag: convert_second_action_status
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SecondActionStatus != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SecondActionStatus
+            ignore_missing: true
+            tag: remove_convert_second_action_status_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessSigned
+      type: boolean
+      ignore_missing: true
+      tag: convert_source_parent_process_signed
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceParentProcessSigned != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessSigned
+            ignore_missing: true
+            tag: remove_convert_source_parent_process_signed_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessSigned
+      type: boolean
+      ignore_missing: true
+      tag: convert_source_process_signed
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceProcessSigned != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessSigned
+            ignore_missing: true
+            tag: remove_convert_source_process_signed_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceSigned
+      type: boolean
+      ignore_missing: true
+      tag: convert_source_signed
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceSigned != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceSigned
+            ignore_missing: true
+            tag: remove_convert_source_signed_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessSigned
+      type: boolean
+      ignore_missing: true
+      tag: convert_target_parent_process_signed
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetParentProcessSigned != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessSigned
+            ignore_missing: true
+            tag: remove_convert_target_parent_process_signed_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetSigned
+      type: boolean
+      ignore_missing: true
+      tag: convert_target_signed
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetSigned != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetSigned
+            ignore_missing: true
+            tag: remove_convert_target_signed_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.ThreatDetectedOnCreation
+      type: boolean
+      ignore_missing: true
+      tag: convert_threat_detected_on_creation
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.ThreatDetectedOnCreation != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.ThreatDetectedOnCreation
+            ignore_missing: true
+            tag: remove_convert_threat_detected_on_creation_on_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceFileSize
+      type: double
+      ignore_missing: true
+      tag: convert_source_file_size_to_double
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceFileSize != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_source_file_size_conversion_failure
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceFileSize
+            ignore_missing: true
+            tag: remove_source_file_size_on_conversion_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetFileSize
+      type: double
+      ignore_missing: true
+      tag: convert_target_file_size_to_double
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetFileSize != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_target_file_size_conversion_failure
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetFileSize
+            ignore_missing: true
+            tag: remove_target_file_size_on_conversion_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AttackVectorType
+      type: long
+      ignore_missing: true
+      tag: convert_attack_vector_type_to_long
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.AttackVectorType != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AttackVectorType
+            ignore_missing: true
+            tag: remove_attack_vector_type_on_conversion_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.DurationBeforeDetection
+      type: long
+      ignore_missing: true
+      tag: convert_duration_before_detection_to_long
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.DurationBeforeDetection != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.DurationBeforeDetection
+            ignore_missing: true
+            tag: remove_duration_before_detection_on_conversion_failure
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.ThreatSeverity
+      type: long
+      ignore_missing: true
+      tag: convert_threat_severity_to_long
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatSeverity != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.ThreatSeverity
+            ignore_missing: true
+            tag: remove_threat_severity_on_conversion_failure
+  - set:
+      field: observer.product
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerName
+      ignore_empty_value: true
+      tag: set_observer_product
+  - set:
+      field: observer.version
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerVersion
+      ignore_empty_value: true
+      tag: set_observer_version
+  - set:
+      field: observer.hostname
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerHostName
+      ignore_empty_value: true
+      tag: set_observer_hostname
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.DetectedUTC
+      target_field: trellix_epo_on_prem.threat_event.EPOEvents.DetectedUTC
+      formats:
+        - ISO8601
+      tag: date_detected_utc
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.DetectedUTC != null && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.DetectedUTC != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.DetectedUTC
+            ignore_missing: true
+            tag: remove_date_detected_utc_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.ReceivedUTC
+      target_field: trellix_epo_on_prem.threat_event.EPOEvents.ReceivedUTC
+      formats:
+        - ISO8601
+      tag: date_received_utc
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ReceivedUTC != null && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ReceivedUTC != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.ReceivedUTC
+            ignore_missing: true
+            tag: remove_date_received_utc_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.EventTimeLocal
+      target_field: trellix_epo_on_prem.threat_event.EPOEvents.EventTimeLocal
+      formats:
+        - ISO8601
+      tag: date_event_time_local
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.EventTimeLocal != null && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.EventTimeLocal != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.EventTimeLocal
+            ignore_missing: true
+            tag: remove_date_event_time_local_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerContentCreationDate
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerContentCreationDate
+      formats:
+        - ISO8601
+      tag: date_analyzer_content_creation_date
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.AnalyzerContentCreationDate != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.AnalyzerContentCreationDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerContentCreationDate
+            ignore_missing: true
+            tag: remove_date_analyzer_content_creation_date_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceAccessTime
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceAccessTime
+      formats:
+        - ISO8601
+      tag: date_source_access_time
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceAccessTime != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceAccessTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceAccessTime
+            ignore_missing: true
+            tag: remove_date_source_access_time_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceCreateTime
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceCreateTime
+      formats:
+        - ISO8601
+      tag: date_source_create_time
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceCreateTime != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceCreateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceCreateTime
+            ignore_missing: true
+            tag: remove_date_source_create_time_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceModifyTime
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceModifyTime
+      formats:
+        - ISO8601
+      tag: date_source_modify_time
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceModifyTime != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceModifyTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceModifyTime
+            ignore_missing: true
+            tag: remove_date_source_modify_time_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetAccessTime
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetAccessTime
+      formats:
+        - ISO8601
+      tag: date_target_access_time
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetAccessTime != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetAccessTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetAccessTime
+            ignore_missing: true
+            tag: remove_date_target_access_time_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetCreateTime
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetCreateTime
+      formats:
+        - ISO8601
+      tag: date_target_create_time
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetCreateTime != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetCreateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetCreateTime
+            ignore_missing: true
+            tag: remove_date_target_create_time_on_failure
+  - date:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetModifyTime
+      target_field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetModifyTime
+      formats:
+        - ISO8601
+      tag: date_target_modify_time
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetModifyTime != null && ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetModifyTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetModifyTime
+            ignore_missing: true
+            tag: remove_date_target_modify_time_on_failure
+  - set:
+      field: '@timestamp'
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.ReceivedUTC
+      ignore_empty_value: true
+      tag: set_timestamp_from_received_utc
+  - set:
+      field: event.created
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceCreateTime
+      ignore_empty_value: true
+      tag: set_event_created_from_source_create_time
+  - set:
+      field: event.id
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AutoGUID
+      ignore_empty_value: true
+      tag: set_event_id
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.AutoID
+      type: long
+      ignore_missing: true
+      tag: convert_auto_id_to_long
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AutoID != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.AutoID
+            ignore_missing: true
+            tag: remove_auto_id_on_conversion_failure
+  - set:
+      field: event.sequence
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AutoID
+      ignore_empty_value: true
+      tag: set_event_sequence
+  - set:
+      field: event.provider
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerDetectionMethod
+      ignore_empty_value: true
+      tag: set_event_provider
+  - set:
+      field: event.reason
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.ThreatName
+      ignore_empty_value: true
+      tag: set_event_reason
+  - set:
+      field: host.hostname
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerHostName
+      ignore_empty_value: true
+      tag: set_host_hostname
+  - set:
+      field: message
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.NaturalLangDescription
+      ignore_empty_value: true
+      tag: set_message
+  - set:
+      field: rule.id
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerRuleID
+      ignore_empty_value: true
+      tag: set_rule_id
+  - set:
+      field: rule.name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerRuleName
+      ignore_empty_value: true
+      tag: set_rule_name
+  - set:
+      field: rule.version
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerContentVersion
+      ignore_empty_value: true
+      tag: set_rule_version
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourcePort
+      type: long
+      ignore_missing: true
+      tag: convert_source_port_to_long
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourcePort != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourcePort
+            ignore_missing: true
+            tag: remove_source_port_on_conversion_failure
+  - set:
+      field: source.port
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourcePort
+      ignore_empty_value: true
+      tag: set_source_port
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.TargetPort
+      type: long
+      ignore_missing: true
+      tag: convert_target_port_to_long
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetPort != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: trellix_epo_on_prem.threat_event.EPOEvents.TargetPort
+            ignore_missing: true
+            tag: remove_target_port_on_conversion_failure
+  - set:
+      field: destination.port
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.TargetPort
+      ignore_empty_value: true
+      tag: set_destination_port
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.ThreatEventID
+      type: string
+      ignore_missing: true
+      tag: convert_threat_event_id_to_string
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPExtendedEvent.EventAutoID
+      type: string
+      ignore_missing: true
+      tag: convert_event_auto_id_to_string
+  - convert:
+      field: trellix_epo_on_prem.threat_event.EPOEvents.TenantId
+      type: string
+      ignore_missing: true
+      tag: convert_tenant_id_to_string
+  - set:
+      field: event.code
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.ThreatEventID
+      ignore_empty_value: true
+      tag: set_event_code
+  - set:
+      field: event.severity
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.ThreatSeverity
+      ignore_empty_value: true
+      tag: set_event_severity
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind_for_18054
+      if: ctx.event?.code == '18054'
+  - set:
+      field: event.action
+      value: access-protection-rule-violation-detected-and-blocked
+      tag: set_event_action_for_1092
+      if: ctx.event?.code == '1092'
+  - set:
+      field: event.action
+      value: access-protection-event
+      tag: set_event_action_for_18054
+      if: ctx.event?.code == '18054'
+  - set:
+      field: event.action
+      value: traffic-allowed-by-firewall
+      tag: set_event_action_for_35000
+      if: ctx.event?.code == '35000'
+  - set:
+      field: event.risk_score_norm
+      value: 21
+      tag: set_event_risk_score_norm_for_customer_mapped_codes
+      if: ctx.event?.code == '1092' || ctx.event?.code == '18054' || ctx.event?.code == '18059' || ctx.event?.code == '18060'
+  - append:
+      field: event.category
+      value: intrusion_detection
+      allow_duplicates: false
+      tag: append_intrusion_detection_category
+      if: ctx.event?.code != '35000'
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+      tag: append_network_category_for_18059_and_35000
+      if: ctx.event?.code == '18059' || ctx.event?.code == '35000'
+  - append:
+      field: event.category
+      value: file
+      allow_duplicates: false
+      tag: append_file_category_for_18060
+      if: ctx.event?.code == '18060' && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatCategory == 'hip.file'
+  - append:
+      field: event.category
+      value: process
+      allow_duplicates: false
+      tag: append_process_category_for_18060
+      if: ctx.event?.code == '18060' && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatCategory == 'hip.process'
+  - append:
+      field: event.category
+      value: registry
+      allow_duplicates: false
+      tag: append_registry_category_for_18060
+      if: ctx.event?.code == '18060' && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatCategory == 'hip.registry'
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+      tag: append_network_category_for_18060
+      if: ctx.event?.code == '18060' && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatCategory == 'hip.nips'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      tag: append_fallback_event_type
+      if: ctx.event?.code != '1092' && ctx.event?.code != '18059' && ctx.event?.code != '18060' && ctx.event?.code != '35000'
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      tag: append_denied_event_type_for_1092
+      if: ctx.event?.code == '1092'
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
+      tag: append_allowed_event_type_for_customer_exception
+      if: (ctx.event?.code == '18059' || ctx.event?.code == '18060') && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatActionTaken instanceof String && ctx.trellix_epo_on_prem.threat_event.EPOEvents.ThreatActionTaken.equalsIgnoreCase('IDS_ACTION_WOULD_BLOCK')
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      tag: append_denied_event_type_for_customer_exception
+      if: (ctx.event?.code == '18059' || ctx.event?.code == '18060') && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatActionTaken instanceof String && ctx.trellix_epo_on_prem.threat_event.EPOEvents.ThreatActionTaken.equalsIgnoreCase('blocked')
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
+      tag: append_allowed_event_type_for_35000
+      if: ctx.event?.code == '35000'
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_event_outcome_success_for_1092_and_35000
+      if: ctx.event?.code == '1092' || ctx.event?.code == '35000'
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set_event_outcome_unknown_for_customer_exception
+      if: ctx.event?.code == '18059' || ctx.event?.code == '18060'
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_event_outcome_success_for_customer_exception
+      if: (ctx.event?.code == '18059' || ctx.event?.code == '18060') && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatHandled == true
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_event_outcome_failure_for_customer_exception
+      if: (ctx.event?.code == '18059' || ctx.event?.code == '18060') && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatHandled == false
+  - set:
+      field: network.transport
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.TargetProtocol
+      ignore_empty_value: true
+      tag: set_network_transport
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      if: ctx.network?.transport != null
+  - set:
+      field: host.target.hostname
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.TargetHostName
+      ignore_empty_value: true
+      tag: set_host_target_hostname
+  - set:
+      field: threat.indicator.file.accessed
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetAccessTime
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_accessed
+  - set:
+      field: threat.indicator.file.size
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetFileSize
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_size
+  - set:
+      field: threat.indicator.file.name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetName
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_name
+  - set:
+      field: threat.indicator.file.directory
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_directory
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetPath instanceof String && !ctx.trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath.startsWith('HK')
+  - set:
+      field: file.directory
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath
+      ignore_empty_value: true
+      tag: set_file_directory_from_target_path
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetPath instanceof String && !ctx.trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath.startsWith('HK')
+  - set:
+      field: threat.indicator.file.path
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.TargetFileName
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_path
+  - set:
+      field: threat.indicator.file.code_signature.exists
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetSigned
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_code_signature_exists
+  - set:
+      field: threat.indicator.file.code_signature.subject_name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetSigner
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_code_signature_subject_name
+  - set:
+      field: process.parent.hash.md5
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessHash
+      ignore_empty_value: true
+      tag: set_process_parent_hash_md5
+  - set:
+      field: process.name
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.SourceProcessName
+      ignore_empty_value: true
+      tag: set_process_name_source_process_name
+  - set:
+      field: process.parent.name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessName
+      ignore_empty_value: true
+      tag: set_process_parent_name_source_parent_process_name
+  - set:
+      field: process.parent.code_signature.exists
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessSigned
+      ignore_empty_value: true
+      tag: set_process_parent_code_signature_exists_source_parent_process_signed
+  - set:
+      field: process.parent.code_signature.subject_name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessSigner
+      ignore_empty_value: true
+      tag: set_process_parent_code_signature_subject_name_source_parent_process_signer
+  - set:
+      field: process.code_signature.exists
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessSigned
+      ignore_empty_value: true
+      tag: set_process_code_signature_exists_source_process_signed
+  - set:
+      field: process.code_signature.subject_name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessSigner
+      ignore_empty_value: true
+      tag: set_process_code_signature_subject_name_source_process_signer
+  - set:
+      field: registry.path
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath
+      ignore_empty_value: true
+      tag: set_registry_path
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetPath instanceof String && ctx.trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath.startsWith('HK')
+  - set:
+      field: file.accessed
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceAccessTime
+      ignore_empty_value: true
+      tag: set_file_accessed_fw
+  - set:
+      field: file.created
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceCreateTime
+      ignore_empty_value: true
+      tag: set_file_created_fw
+  - set:
+      field: file.mtime
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceModifyTime
+      ignore_empty_value: true
+      tag: set_file_mtime_fw
+  - set:
+      field: file.size
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceFileSize
+      ignore_empty_value: true
+      tag: set_file_size_fw
+  - set:
+      field: file.path
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceFilePath
+      ignore_empty_value: true
+      tag: set_file_path_fw
+  - set:
+      field: file.code_signature.exists
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceSigned
+      ignore_empty_value: true
+      tag: set_file_code_signature_exists_fw
+  - set:
+      field: file.code_signature.subject_name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceSigner
+      ignore_empty_value: true
+      tag: set_file_code_signature_subject_name_fw
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatType == 'IDS_FW_THREAT_TYPE_TRAFFIC'
+  - set:
+      field: device.product.name
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceDeviceDisplayName
+      ignore_empty_value: true
+      tag: set_device_product_name_fw
+  - script:
+      lang: painless
+      tag: normalize_signed_ipv4_addresses
+      description: Decode signed database IPv4 integers to dotted-decimal strings for vendor and ECS fields.
+      source: |
+        String formatIpv4(long unsigned) {
+          return ((unsigned >> 24) & 0xFF) + '.' + ((unsigned >> 16) & 0xFF) + '.' + ((unsigned >> 8) & 0xFF) + '.' + (unsigned & 0xFF);
+        }
+        String decodeSignedIpv4(def value) {
+          if (value == null) return null;
+          try {
+            long encoded = ((Number) value).longValue();
+            long unsigned = (encoded + 2147483648L) & 0xFFFFFFFFL;
+            return formatIpv4(unsigned);
+          } catch (Exception e) {
+            return null;
+          }
+        }
+        if (ctx.trellix_epo_on_prem != null && ctx.trellix_epo_on_prem.threat_event != null && ctx.trellix_epo_on_prem.threat_event.EPOEvents != null) {
+          def epo = ctx.trellix_epo_on_prem.threat_event.EPOEvents;
+          if (epo.AnalyzerIPV4 != null) {
+            epo.AnalyzerIPV4 = decodeSignedIpv4(epo.AnalyzerIPV4);
+          }
+          if (epo.SourceIPV4 != null) {
+            epo.SourceIPV4 = decodeSignedIpv4(epo.SourceIPV4);
+          }
+          if (epo.TargetIPV4 != null) {
+            epo.TargetIPV4 = decodeSignedIpv4(epo.TargetIPV4);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_local_failure_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerIPV4 != null
+      tag: append_host_ip_analyzer_ipv4
+  - append:
+      field: host.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerIPV6 != null
+      tag: append_host_ip_analyzer_ipv6
+  - append:
+      field: observer.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerIPV4 != null
+      tag: append_observer_ip_analyzer_ipv4
+  - append:
+      field: observer.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerIPV6 != null
+      tag: append_observer_ip_analyzer_ipv6
+  - append:
+      field: source.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.SourceIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.SourceIPV4 != null
+      tag: append_source_ip_source_ipv4
+  - append:
+      field: source.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.SourceIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.SourceIPV6 != null
+      tag: append_source_ip_source_ipv6
+  - append:
+      field: destination.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.TargetIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetIPV4 != null
+      tag: append_destination_ip_target_ipv4
+  - append:
+      field: destination.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.TargetIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetIPV6 != null
+      tag: append_destination_ip_target_ipv6
+  - script:
+      lang: painless
+      tag: normalize_mac_addresses
+      description: Normalize compact 12-hex-character vendor MAC values to RFC 7042 uppercase hyphen notation.
+      source: |
+        String normalizeMac(String mac) {
+          if (mac == null || mac.length() != 12) return mac;
+          StringBuilder hex = new StringBuilder();
+          for (int i = 0; i < 12; i++) {
+            int ci = (int) mac.charAt(i);
+            if (ci >= 48 && ci <= 57) {
+              hex.append((char) ci);
+            } else if (ci >= 65 && ci <= 70) {
+              hex.append((char) ci);
+            } else if (ci >= 97 && ci <= 102) {
+              hex.append(Character.toUpperCase((char) ci));
+            } else {
+              return mac;
+            }
+          }
+          String hexStr = hex.toString();
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < 12; i += 2) {
+            if (i > 0) sb.append('-');
+            sb.append(hexStr.substring(i, i + 2));
+          }
+          return sb.toString();
+        }
+        if (ctx.trellix_epo_on_prem == null || ctx.trellix_epo_on_prem.threat_event == null || ctx.trellix_epo_on_prem.threat_event.EPOEvents == null) return;
+        def epo = ctx.trellix_epo_on_prem.threat_event.EPOEvents;
+        if (epo.AnalyzerMAC != null) {
+          epo.AnalyzerMAC = normalizeMac(epo.AnalyzerMAC);
+        }
+        if (epo.SourceMAC != null) {
+          epo.SourceMAC = normalizeMac(epo.SourceMAC);
+        }
+        if (epo.TargetMAC != null) {
+          epo.TargetMAC = normalizeMac(epo.TargetMAC);
+        }
+  - append:
+      field: host.mac
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerMAC}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerMAC != null
+      tag: set_host_mac_from_analyzer_mac
+  - append:
+      field: observer.mac
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerMAC}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerMAC != null
+      tag: set_observer_mac_from_analyzer_mac
+  - set:
+      field: source.mac
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.SourceMAC
+      ignore_empty_value: true
+      tag: set_source_mac_from_source_mac
+  - set:
+      field: destination.mac
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.TargetMAC
+      ignore_empty_value: true
+      tag: set_destination_mac_from_target_mac
+  - set:
+      field: process.hash.md5
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessHash
+      ignore_empty_value: true
+      tag: set_process_hash_md5_from_source_process_hash
+  - set:
+      field: file.hash.md5
+      copy_from: trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetHash
+      ignore_empty_value: true
+      tag: set_file_hash_md5_from_target_hash
+  - append:
+      field: related.hash
+      value: '{{{trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessHash}}}'
+      allow_duplicates: false
+      tag: append_related_hash_source_process_hash
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceProcessHash != null
+  - append:
+      field: related.hash
+      value: '{{{trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetHash}}}'
+      allow_duplicates: false
+      tag: append_related_hash_target_hash
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetHash != null
+  - append:
+      field: related.hash
+      value: '{{{trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessHash}}}'
+      allow_duplicates: false
+      tag: append_related_hash_target_parent_process_hash
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.TargetParentProcessHash != null
+  - append:
+      field: related.hash
+      value: '{{{trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceHash}}}'
+      allow_duplicates: false
+      tag: append_related_hash_source_hash
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceHash != null
+  - append:
+      field: related.hash
+      value: '{{{trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessHash}}}'
+      allow_duplicates: false
+      tag: append_related_hash_source_parent_process_hash
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPExtendedEvent?.SourceParentProcessHash != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_source_user_name
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.SourceUserName
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.SourceUserName}}}'
+      allow_duplicates: false
+      tag: append_related_user_source_user_name
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.SourceUserName != null
+  - set:
+      field: user.target.name
+      tag: set_user_target_name_from_target_user_name
+      copy_from: trellix_epo_on_prem.threat_event.EPOEvents.TargetUserName
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.TargetUserName}}}'
+      allow_duplicates: false
+      tag: append_related_user_target_user_name
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetUserName != null
+  - append:
+      field: related.hosts
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerHostName}}}'
+      allow_duplicates: false
+      tag: append_analyzer_hostname_to_related_hosts
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerHostName != null
+  - append:
+      field: related.hosts
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.ServerID}}}'
+      allow_duplicates: false
+      tag: append_server_id_to_related_hosts
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ServerID != null
+  - append:
+      field: related.hosts
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.TargetHostName}}}'
+      allow_duplicates: false
+      tag: append_target_hostname_to_related_hosts
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.ThreatType == 'IDS_THREAT_TYPE_VALUE_NIPS' && ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetHostName != null
+  - append:
+      field: related.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerIPV4 != null
+      tag: append_related_ip_analyzer_ipv4
+  - append:
+      field: related.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.AnalyzerIPV6 != null
+      tag: append_related_ip_analyzer_ipv6
+  - append:
+      field: related.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.SourceIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.SourceIPV4 != null
+      tag: append_related_ip_source_ipv4
+  - append:
+      field: related.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.SourceIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.SourceIPV6 != null
+      tag: append_related_ip_source_ipv6
+  - append:
+      field: related.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.TargetIPV4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetIPV4 != null
+      tag: append_related_ip_target_ipv4
+  - append:
+      field: related.ip
+      value: '{{{trellix_epo_on_prem.threat_event.EPOEvents.TargetIPV6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.threat_event?.EPOEvents?.TargetIPV6 != null
+      tag: append_related_ip_target_ipv6
+  - remove:
+      field:
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerDetectionMethod
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerHostName
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV4
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerIPV6
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerMAC
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerName
+        - trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerVersion
+        - trellix_epo_on_prem.threat_event.EPOEvents.AutoGUID
+        - trellix_epo_on_prem.threat_event.EPOEvents.AutoID
+        - trellix_epo_on_prem.threat_event.EPOEvents.ReceivedUTC
+        - trellix_epo_on_prem.threat_event.EPOEvents.SourceIPV4
+        - trellix_epo_on_prem.threat_event.EPOEvents.SourceIPV6
+        - trellix_epo_on_prem.threat_event.EPOEvents.SourceMAC
+        - trellix_epo_on_prem.threat_event.EPOEvents.SourceProcessName
+        - trellix_epo_on_prem.threat_event.EPOEvents.SourceUserName
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetFileName
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetHostName
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetIPV4
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetIPV6
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetMAC
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetPort
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetProtocol
+        - trellix_epo_on_prem.threat_event.EPOEvents.TargetUserName
+        - trellix_epo_on_prem.threat_event.EPOEvents.ThreatEventID
+        - trellix_epo_on_prem.threat_event.EPOEvents.ThreatName
+        - trellix_epo_on_prem.threat_event.EPOEvents.ThreatSeverity
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerContentVersion
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerRuleID
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerRuleName
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.NaturalLangDescription
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceAccessTime
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceCreateTime
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceDeviceDisplayName
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceFilePath
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceFileSize
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceModifyTime
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessHash
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessName
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessSigned
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceParentProcessSigner
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourcePort
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessHash
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessSigned
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceProcessSigner
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceSigned
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceSigner
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetAccessTime
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetFileSize
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetHash
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetName
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetPath
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetSigned
+        - trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetSigner
+      ignore_missing: true
+      tag: remove_mapped_ecs_source_fields
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0);
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0);
+          });
+        }
+        handleMap(ctx);
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+      tag: remove_json
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,164 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  # EPOEvents.AutoID is a unique ascending column, so it is used as the keyset
+  # cursor instead of ReceivedUTC. The first poll starts after this AutoID;
+  # subsequent polls resume from the persisted cursor.
+  initial_event_auto_id: {{initial_event_auto_id}}
+  page_size: {{page_size}}
+  columns: >-
+    EPOEvents.AutoID EPOEvents.AutoGUID EPOEvents.ServerID
+    EPOEvents.ReceivedUTC EPOEvents.DetectedUTC EPOEvents.EventTimeLocal
+    EPOEvents.AgentGUID EPOEvents.Analyzer EPOEvents.AnalyzerName
+    EPOEvents.AnalyzerVersion EPOEvents.AnalyzerHostName
+    EPOEvents.AnalyzerIPV4 EPOEvents.AnalyzerIPV6 EPOEvents.AnalyzerMAC
+    EPOEvents.AnalyzerDATVersion EPOEvents.AnalyzerEngineVersion
+    EPOEvents.AnalyzerDetectionMethod EPOEvents.SourceHostName
+    EPOEvents.SourceIPV4 EPOEvents.SourceIPV6 EPOEvents.SourceMAC
+    EPOEvents.SourceUserName EPOEvents.SourceProcessName EPOEvents.SourceURL
+    EPOEvents.TargetHostName EPOEvents.TargetIPV4 EPOEvents.TargetIPV6
+    EPOEvents.TargetMAC EPOEvents.TargetUserName EPOEvents.TargetPort
+    EPOEvents.TargetProtocol EPOEvents.TargetProcessName
+    EPOEvents.TargetFileName EPOEvents.ThreatCategory
+    EPOEvents.ThreatEventID EPOEvents.ThreatSeverity EPOEvents.ThreatName
+    EPOEvents.ThreatType EPOEvents.ThreatActionTaken
+    EPOEvents.ThreatHandled EPOEvents.TenantId
+    EPExtendedEvent.EventAutoID EPExtendedEvent.Location
+    EPExtendedEvent.BladeName EPExtendedEvent.AnalyzerTechnologyVersion
+    EPExtendedEvent.AnalyzerContentCreationDate
+    EPExtendedEvent.AnalyzerContentVersion
+    EPExtendedEvent.AMCoreContentVersion EPExtendedEvent.AnalyzerRuleID
+    EPExtendedEvent.AnalyzerRuleName EPExtendedEvent.AnalyzerRegInfo
+    EPExtendedEvent.AnalyzerGTIQuery
+    EPExtendedEvent.ThreatDetectedOnCreation EPExtendedEvent.ThreatImpact
+    EPExtendedEvent.SourcePort EPExtendedEvent.SourceShareName
+    EPExtendedEvent.SourceProcessHash EPExtendedEvent.SourceProcessSigned
+    EPExtendedEvent.SourceProcessSigner
+    EPExtendedEvent.SourceParentProcessName
+    EPExtendedEvent.SourceParentProcessHash
+    EPExtendedEvent.SourceParentProcessSigned
+    EPExtendedEvent.SourceParentProcessSigner
+    EPExtendedEvent.SourceFilePath EPExtendedEvent.SourceFileSize
+    EPExtendedEvent.SourceHash EPExtendedEvent.SourceSigned
+    EPExtendedEvent.SourceSigner EPExtendedEvent.SourceModifyTime
+    EPExtendedEvent.SourceAccessTime EPExtendedEvent.SourceCreateTime
+    EPExtendedEvent.SourceDeviceDisplayName
+    EPExtendedEvent.SourceDeviceSerialNumber EPExtendedEvent.SourceDeviceVID
+    EPExtendedEvent.SourceDevicePID EPExtendedEvent.SourceDescription
+    EPExtendedEvent.SourceURLRatingCode
+    EPExtendedEvent.SourceURLWebCategory EPExtendedEvent.TargetURL
+    EPExtendedEvent.TargetShareName EPExtendedEvent.TargetHash
+    EPExtendedEvent.TargetSigned EPExtendedEvent.TargetSigner
+    EPExtendedEvent.TargetParentProcessSigned
+    EPExtendedEvent.TargetParentProcessSigner
+    EPExtendedEvent.TargetParentProcessName
+    EPExtendedEvent.TargetParentProcessHash EPExtendedEvent.TargetName
+    EPExtendedEvent.TargetPath EPExtendedEvent.TargetFileSize
+    EPExtendedEvent.TargetModifyTime EPExtendedEvent.TargetAccessTime
+    EPExtendedEvent.TargetCreateTime
+    EPExtendedEvent.TargetDeviceDisplayName
+    EPExtendedEvent.TargetDeviceSerialNumber EPExtendedEvent.TargetDeviceVID
+    EPExtendedEvent.TargetDevicePID EPExtendedEvent.TargetDescription
+    EPExtendedEvent.Cleanable EPExtendedEvent.TaskName
+    EPExtendedEvent.APIName EPExtendedEvent.FirstAttemptedAction
+    EPExtendedEvent.FirstActionStatus
+    EPExtendedEvent.SecondAttemptedAction
+    EPExtendedEvent.SecondActionStatus EPExtendedEvent.Topic
+    EPExtendedEvent.AttackVectorType EPExtendedEvent.AccessRequested
+    EPExtendedEvent.DurationBeforeDetection
+    EPExtendedEvent.NaturalLangDescription EPExtendedEvent.Direction
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        // int() before string() for the same reason as below: the var arrives
+        // as a float64 and string() of a float64 >= 1e6 renders in scientific
+        // notation, which is not a valid query operand.
+        "event_auto_id": state.?cursor.last_event_auto_id.orValue(
+          string(int(state.initial_event_auto_id))
+        )
+      })
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
+          "target": ["EPExtendedEvent"],
+          // (top N) keyset page ordered by the unique AutoID.
+          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
+          "where": ['(where (gt EPOEvents.AutoID ' + state.event_auto_id + '))'],
+          "order": ["(order (asc EPOEvents.AutoID))"]
+        }.format_query() + "&:output=json"
+      ).as(resp,
+        resp.StatusCode == 200 ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // Advance to the greatest AutoID returned by this page. The ID is
+            // routed through int() before string(): JSON numbers arrive as float64,
+            // and string() of a float64 >= 1e6 renders as scientific notation, which
+            // is not a valid operand for the (gt EPOEvents.AutoID ...) query.
+            string(int(
+              rows.last()["EPOEvents.AutoID"].orValue(state.event_auto_id)
+            )).as(new_event_auto_id, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "event_auto_id": new_event_auto_id,
+              "cursor": {"last_event_auto_id": new_event_auto_id},
+              "want_more": size(rows) == int(state.page_size) &&
+                new_event_auto_id != state.event_auto_id
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + ' (' + string(resp.StatusCode) + ')'
+                )
+              }
+            },
+            "want_more": false
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
