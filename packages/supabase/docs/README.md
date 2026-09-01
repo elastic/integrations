@@ -1,6 +1,6 @@
 # Supabase OpenTelemetry Integration
 
-Collect metrics and logs from [Supabase](https://supabase.com) using the OpenTelemetry Prometheus receiver and [Supabase Log Drains](https://supabase.com/docs/guides/monitoring-and-debugging/log-drains).
+[Supabase](https://supabase.com) is an open-source Firebase alternative built on PostgreSQL. It bundles a managed Postgres database with authentication, auto-generated REST APIs, realtime subscriptions, file storage, and connection pooling.
 
 ## Overview
 
@@ -90,7 +90,7 @@ Create an API key in the same view, or follow the [Send data to Elastic Cloud](h
 5. Add header `Authorization: ApiKey <your-api-key>`.
 6. Save the drain.
 
-> **Note**: The managed endpoint URL for Supabase is always your Elastic Cloud public endpoint plus `/inputs/supabase/_default_/v1/logs`. Do not point the drain at a self-hosted collector; the supported path is the Elastic Cloud managed endpoint.
+> **Note**: The managed endpoint URL for logs from Supabase is always your Elastic Cloud public endpoint plus `/inputs/supabase/_default_/v1/logs`. Do not point the drain at a self-hosted collector; the supported path is the Elastic Cloud managed endpoint.
 
 ### Verify data
 
