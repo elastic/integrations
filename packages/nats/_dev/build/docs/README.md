@@ -6,7 +6,7 @@ The integration collects metrics from [NATS monitoring server APIs](https://docs
 
 ## Compatibility
 
-The Nats package is tested with NATS 2.10.27. The `jetstream` dataset requires NATS with JetStream enabled (NATS 2.2+) and Elastic Agent 9.1+. Consumer metrics require JetStream 2.9+.
+The Nats package is tested with NATS 2.10.27. The `jetstream` dataset requires NATS with JetStream enabled (NATS 2.2+) and Elastic Agent 9.1+. Consumer metrics require NATS 2.9+.
 
 ## Logs
 
@@ -103,7 +103,7 @@ The `jetstream` dataset supports four categories of metrics that can be enabled 
 * `stats` — General JetStream server stats (streams, consumers, messages, memory, storage).
 * `account` — Per-account JetStream metrics (memory, storage, API stats).
 * `stream` — Per-stream metrics (state, config, cluster info).
-* `consumer` — Per-consumer metrics (delivered, ack floor, pending, config). Requires JetStream 2.9+.
+* `consumer` — Per-consumer metrics (delivered, ack floor, pending, config). Requires NATS 2.9+.
 
 Account, stream, and consumer metrics can be filtered by name. Filters are cumulative and apply even if a category is not enabled but name filters are configured. When no names are configured, all entities are reported.
 
