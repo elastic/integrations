@@ -46,8 +46,8 @@ processors:
       ignore_missing: true
       tag: fingerprint_event_id
   - set:
-      field: gen_ai.system
-      tag: set_gen_ai_system
+      field: gen_ai.provider.name
+      tag: set_gen_ai_provider_name
       value: openai
   - set:
       field: event.id
@@ -96,10 +96,15 @@ processors:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
   - set:
       field: organization.id
-      tag: set_organization_id_from_principal
-      copy_from: openai_chatgpt_enterprise.audit_log.principal.id
+      tag: set_organization_id_from_workspace_id
+      copy_from: openai_chatgpt_enterprise.audit_log.workspace_id
       ignore_empty_value: true
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.principal?.id != null
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_action_data_workspace_id
+      copy_from: openai_chatgpt_enterprise.audit_log.action_data.workspace_id
+      ignore_empty_value: true
+      if: ctx.organization?.id == null
   - convert:
       field: openai_chatgpt_enterprise.audit_log.request_metadata.client_ip
       tag: convert_client_ip_to_ip
@@ -165,47 +170,32 @@ processors:
         } else {
           ctx.event.outcome = 'unknown';
         }
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.user_id
-      ignore_empty_value: true
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_added_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.added_user_id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id == null
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_allowed_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.allowed_user_id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id == null
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_deleted_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.deleted_user_id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id == null
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_disallowed_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.disallowed_user_id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id == null
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_removed_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.removed_user_id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id == null
-  - set:
-      field: user.target.id
-      tag: set_user_target_id_from_logged_out_user_id
-      copy_from: openai_chatgpt_enterprise.audit_log.action_data.logged_out_user_id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id == null
+  - script:
+      lang: painless
+      tag: set_gen_ai_agent_id
+      description: Set gen_ai.agent.id from agent_id, gpt_id, or third_party_gizmo_id in precedence order.
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data != null
+      source: |-
+        def actionData = ctx.openai_chatgpt_enterprise.audit_log.action_data;
+        def agentId = null;
+        if (actionData.agent_id != null && actionData.agent_id != '') {
+          agentId = actionData.agent_id;
+        } else if (actionData.gpt_id != null && actionData.gpt_id != '') {
+          agentId = actionData.gpt_id;
+        } else if (actionData.third_party_gizmo_id != null && actionData.third_party_gizmo_id != '') {
+          agentId = actionData.third_party_gizmo_id;
+        }
+        if (agentId != null) {
+          ctx.gen_ai = ctx.gen_ai != null ? ctx.gen_ai : new HashMap();
+          ctx.gen_ai.agent = ctx.gen_ai.agent != null ? ctx.gen_ai.agent : new HashMap();
+          ctx.gen_ai.agent.id = agentId;
+        }
+  - append:
+      field: group.id
+      tag: append_group_id_from_action_data
+      value: '{{{openai_chatgpt_enterprise.audit_log.action_data.group_id}}}'
+      allow_duplicates: false
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.group_id != null
   - set:
       field: user.target.email
       tag: set_user_target_email_from_new_owner_email
@@ -223,22 +213,99 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_target_id_to_related
-      value: '{{{user.target.id}}}'
-      allow_duplicates: false
-      if: ctx.user?.target?.id != null
-  - append:
-      field: related.user
-      tag: append_user_target_email_to_related
-      value: '{{{user.target.email}}}'
-      allow_duplicates: false
-      if: ctx.user?.target?.email != null
-  - append:
-      field: related.user
       tag: append_action_data_email_address_to_related
       value: '{{{openai_chatgpt_enterprise.audit_log.action_data.email_address}}}'
       allow_duplicates: false
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.email_address != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.email_address != ''
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.email_address != null
+  - append:
+      field: related.user
+      tag: append_auth_user_id_to_related
+      value: '{{{openai_chatgpt_enterprise.audit_log.action_data.auth_user_id}}}'
+      allow_duplicates: false
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.auth_user_id != null
+  - append:
+      field: related.user
+      tag: append_created_by_user_id_to_related
+      value: '{{{openai_chatgpt_enterprise.audit_log.action_data.created_by_user_id}}}'
+      allow_duplicates: false
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.created_by_user_id != null
+  - append:
+      field: related.user
+      tag: append_owner_id_to_related
+      value: '{{{openai_chatgpt_enterprise.audit_log.action_data.owner_id}}}'
+      allow_duplicates: false
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.owner_id != null
+  - append:
+      field: related.user
+      tag: append_owner_user_id_to_related
+      value: '{{{openai_chatgpt_enterprise.audit_log.action_data.owner_user_id}}}'
+      allow_duplicates: false
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.owner_user_id != null
+  - script:
+      lang: painless
+      tag: append_access_change_users_to_related
+      description: Append requested access removal and update user IDs to related.user.
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data != null
+      source: |-
+        def actionData = ctx.openai_chatgpt_enterprise.audit_log.action_data;
+        def userIds = new ArrayList();
+        if (actionData.requested_access_removals instanceof List) {
+          for (def entry : actionData.requested_access_removals) {
+            if (entry != null && entry instanceof Map && entry.containsKey('user_id') && entry.user_id != null && entry.user_id != '') {
+              userIds.add(entry.user_id);
+            }
+          }
+        }
+        if (actionData.requested_access_updates instanceof List) {
+          for (def entry : actionData.requested_access_updates) {
+            if (entry != null && entry instanceof Map && entry.containsKey('user_id') && entry.user_id != null && entry.user_id != '') {
+              userIds.add(entry.user_id);
+            }
+          }
+        }
+        if (!userIds.isEmpty()) {
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          if (ctx.related.user == null) {
+            ctx.related.user = new ArrayList();
+          } else if (!(ctx.related.user instanceof List)) {
+            ctx.related.user = new ArrayList([ctx.related.user]);
+          }
+          for (def userId : userIds) {
+            if (!ctx.related.user.contains(userId)) {
+              ctx.related.user.add(userId);
+            }
+          }
+        }
+  - script:
+      lang: painless
+      tag: append_alert_recipient_emails_to_related
+      description: Append alert recipient emails to related.user.
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.alert_recipients instanceof List
+      source: |-
+        def recipients = ctx.openai_chatgpt_enterprise.audit_log.action_data.alert_recipients;
+        def emails = new ArrayList();
+        for (def entry : recipients) {
+          if (entry != null && entry instanceof Map && entry.containsKey('email') && entry.email != null && entry.email != '') {
+            emails.add(entry.email);
+          }
+        }
+        if (!emails.isEmpty()) {
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          if (ctx.related.user == null) {
+            ctx.related.user = new ArrayList();
+          } else if (!(ctx.related.user instanceof List)) {
+            ctx.related.user = new ArrayList([ctx.related.user]);
+          }
+          for (def email : emails) {
+            if (!ctx.related.user.contains(email)) {
+              ctx.related.user.add(email);
+            }
+          }
+        }
   - foreach:
       field: openai_chatgpt_enterprise.audit_log.action_data.email_addresses
       ignore_missing: true
@@ -247,6 +314,28 @@ processors:
       processor:
         append:
           field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_destination_domain_to_related_hosts
+      value: '{{{destination.domain}}}'
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - append:
+      field: related.hosts
+      tag: append_action_data_hostname_to_related_hosts
+      value: '{{{openai_chatgpt_enterprise.audit_log.action_data.hostname}}}'
+      allow_duplicates: false
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.hostname != null
+  - foreach:
+      field: openai_chatgpt_enterprise.audit_log.action_data.domains
+      ignore_missing: true
+      tag: foreach_append_domains_to_related_hosts
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.domains instanceof List
+      processor:
+        append:
+          field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
@@ -303,66 +392,6 @@ processors:
             field: openai_chatgpt_enterprise.audit_log.action_data.since_timestamp
             ignore_missing: true
             tag: remove_action_data_since_timestamp_on_failure
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: openai_chatgpt_enterprise.audit_log.action_data.created_at
-      target_field: openai_chatgpt_enterprise.audit_log.action_data.created_at
-      formats:
-        - UNIX
-      tag: date_action_data_created_at
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.created_at != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.created_at != ''
-      on_failure:
-        - remove:
-            field: openai_chatgpt_enterprise.audit_log.action_data.created_at
-            ignore_missing: true
-            tag: remove_action_data_created_at_on_failure
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: openai_chatgpt_enterprise.audit_log.action_data.deactivated_at
-      target_field: openai_chatgpt_enterprise.audit_log.action_data.deactivated_at
-      formats:
-        - UNIX
-      tag: date_action_data_deactivated_at
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.deactivated_at != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.deactivated_at != ''
-      on_failure:
-        - remove:
-            field: openai_chatgpt_enterprise.audit_log.action_data.deactivated_at
-            ignore_missing: true
-            tag: remove_action_data_deactivated_at_on_failure
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: openai_chatgpt_enterprise.audit_log.action_data.expires_at
-      target_field: openai_chatgpt_enterprise.audit_log.action_data.expires_at
-      formats:
-        - UNIX
-      tag: date_action_data_expires_at
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.expires_at != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.expires_at != ''
-      on_failure:
-        - remove:
-            field: openai_chatgpt_enterprise.audit_log.action_data.expires_at
-            ignore_missing: true
-            tag: remove_action_data_expires_at_on_failure
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: openai_chatgpt_enterprise.audit_log.action_data.revoked_at
-      target_field: openai_chatgpt_enterprise.audit_log.action_data.revoked_at
-      formats:
-        - UNIX
-      tag: date_action_data_revoked_at
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.revoked_at != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.revoked_at != ''
-      on_failure:
-        - remove:
-            field: openai_chatgpt_enterprise.audit_log.action_data.revoked_at
-            ignore_missing: true
-            tag: remove_action_data_revoked_at_on_failure
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -511,21 +540,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      field:
-        - openai_chatgpt_enterprise.audit_log.action_data.added_user_id
-        - openai_chatgpt_enterprise.audit_log.action_data.allowed_user_id
-        - openai_chatgpt_enterprise.audit_log.action_data.deleted_user_id
-        - openai_chatgpt_enterprise.audit_log.action_data.disallowed_user_id
-        - openai_chatgpt_enterprise.audit_log.action_data.removed_user_id
-        - openai_chatgpt_enterprise.audit_log.action_data.logged_out_user_id
-        - openai_chatgpt_enterprise.audit_log.action_data.new_owner_email
-        - openai_chatgpt_enterprise.audit_log.action_data.file_name
-        - openai_chatgpt_enterprise.audit_log.action_data.mime_type
-        - openai_chatgpt_enterprise.audit_log.request_metadata.client_ja3
-        - openai_chatgpt_enterprise.audit_log.request_metadata.destination_hostname
-      tag: remove_audit_custom_fields_mapped_to_ecs
-      ignore_missing: true
   - user_agent:
       field: user_agent.original
       ignore_missing: true
@@ -577,16 +591,19 @@ processors:
       if: ctx.user?.id != null
   - remove:
       field:
+        - openai_chatgpt_enterprise.audit_log.action_data.new_owner_email
+        - openai_chatgpt_enterprise.audit_log.action_data.file_name
+        - openai_chatgpt_enterprise.audit_log.action_data.mime_type
         - openai_chatgpt_enterprise.audit_log.event_id
         - openai_chatgpt_enterprise.audit_log.timestamp
         - openai_chatgpt_enterprise.audit_log.actor.user_id
         - openai_chatgpt_enterprise.audit_log.actor.user_email
-        - openai_chatgpt_enterprise.audit_log.principal.id
         - openai_chatgpt_enterprise.audit_log.request_metadata.client_ip
         - openai_chatgpt_enterprise.audit_log.request_metadata.client_user_agent
+        - openai_chatgpt_enterprise.audit_log.request_metadata.client_ja3
+        - openai_chatgpt_enterprise.audit_log.request_metadata.destination_hostname
         - openai_chatgpt_enterprise.audit_log.action
-        - openai_chatgpt_enterprise.audit_log.action_data.action
-        - openai_chatgpt_enterprise.audit_log.event_type
+        - openai_chatgpt_enterprise.audit_log.action_data.group_id
       tag: remove_custom_fields_mapped_to_ecs
       ignore_missing: true
       description: Remove custom fields that were copied to ECS fields.

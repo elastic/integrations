@@ -1,0 +1,155 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  admin_token: {{admin_token}}
+  scope: {{scope}}
+  resource_id: {{resource_id}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - admin_token
+program: |-
+  (
+    // PHASE 1 — list files (only when the worklist is empty). This is the only
+    // paginated call: it pages forward with `after` = last_end_time (ascending).
+    (has(state.worklist) && size(state.worklist) > 0) ?
+      state
+    :
+      state.?cursor.last_end_time.orValue(string(now - duration(state.initial_interval))).as(after,
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + string(state.resource_id) + "/logs?" + {
+              "event_type": ["CUSTOM_AGENTS_LOG"],
+              "after": [after],
+              "limit": [string(int(state.batch_size))],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["Bearer " + state.admin_token],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            bytes(resp.Body).decode_json().as(body,
+              {
+                "worklist": body.?data.orValue([]),
+                "cursor": {
+                  // Empty pages return last_end_time: null; keep the current
+                  // `after` in that case so the cursor never becomes null.
+                  "last_end_time": (has(body.last_end_time) && body.last_end_time != null) ?
+                    body.last_end_time
+                  :
+                    after,
+                },
+                // Termination is driven by has_more, not by an empty page: this
+                // API re-returns the boundary record when re-queried with the same
+                // `after`, so an empty response is never observed on has_more=false.
+                "list_has_more": body.?has_more.orValue(false),
+                "want_more": size(body.?data.orValue([])) > 0,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+          )
+        )
+      )
+  ).as(state,
+    // PHASE 2 — download the first queued file, then drop it from the worklist.
+    // This endpoint 307-redirects to a signed URL serving the JSON Lines body
+    // (redirect auto-followed). It has no pagination of its own.
+    !has(state.worklist) ?
+      state
+    : (size(state.worklist) > 0) ?
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + string(state.resource_id) + "/logs/" + string(state.worklist[0].id)
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.admin_token],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          {
+            "events": string(resp.Body).split("\n").map(l, l.trim(" \r\n\t")).filter(l, l != "").map(l,
+              {
+                "message": l,
+              }
+            ),
+            "worklist": tail(state.worklist),
+            // Keep going while files remain in this page, or the list reported
+            // more pages. Stops right after the last file of the last page.
+            "want_more": size(state.worklist) > 1 || state.?list_has_more.orValue(false),
+          }
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs/" + string(state.worklist[0].id) + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "worklist": tail(state.worklist),
+            "want_more": size(state.worklist) > 1 || state.?list_has_more.orValue(false),
+          }
+        )
+      )
+    :
+      state.with(
+        {
+          "events": [],
+          "want_more": false,
+        }
+      )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
