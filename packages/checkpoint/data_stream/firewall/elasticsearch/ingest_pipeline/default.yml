@@ -1461,14 +1461,6 @@ processors:
       formats: ["UNIX", "ISO8601"]
       target_field: checkpoint.login_timestamp
       if: "ctx.checkpoint?.login_timestamp != null"
-      on_failure:
-        # checkpoint.login_timestamp is mapped as a date and is not dropped by
-        # the cleanup below, so an unparseable value would be rejected at index
-        # time. Drop it instead, as done for checkpoint.subs_exp above.
-        - remove:
-            tag: remove_checkpoint_login_timestamp
-            field: checkpoint.login_timestamp
-            ignore_missing: true
   - rename:
       tag: rename_checkpoint_duration_to_event_duration_f53d9a8c
       field: checkpoint.duration
