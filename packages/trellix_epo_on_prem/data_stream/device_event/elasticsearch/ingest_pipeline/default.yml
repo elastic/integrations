@@ -1,0 +1,395 @@
+---
+description: Pipeline for processing device_event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: trellix_epo_on_prem.device_event
+      if: ctx.event?.original != null
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_device_event
+      path: trellix_epo_on_prem.device_event
+      override: true
+      if: ctx.trellix_epo_on_prem?.device_event instanceof Map
+      description: Expands the dotted source field names into objects.
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.trellix_epo_on_prem?.device_event != null) {
+          ctx.trellix_epo_on_prem.device_event = convertToSnakeCase(ctx.trellix_epo_on_prem.device_event);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: trellix_epo_on_prem.device_event.eeffdevice_all_events_view
+      target_field: trellix_epo_on_prem.device_event.eeff_device_all_events_view
+      tag: rename_eeffdevice_all_events_view_to_eeff_device_all_events_view
+      if: ctx.trellix_epo_on_prem?.device_event?.eeffdevice_all_events_view != null
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
+      tag: convert_eeff_device_all_events_view_auto_id_to_string
+      type: string
+      ignore_missing: true
+  - fingerprint:
+      tag: fingerprint_with_auto_id
+      fields:
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_host_into_event_category
+      value: host
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: event.id
+      tag: set_event_id_from_device_event_eeff_device_all_events_view_auto_id
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
+      ignore_empty_value: true
+  - set:
+      field: agent.id
+      tag: set_agent_id_from_device_event_eeff_device_all_events_view_agent_guid
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.agent_guid
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_size
+      tag: convert_eeff_device_all_events_view_backup_size_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_size
+            tag: remove_eeff_device_all_events_view_backup_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_backup_size_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_time
+      tag: convert_eeff_device_all_events_view_backup_time_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_time
+            tag: remove_eeff_device_all_events_view_backup_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_backup_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.credential_type
+      tag: convert_eeff_device_all_events_view_credential_type_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.credential_type
+            tag: remove_eeff_device_all_events_view_credential_type
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_credential_type_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.device_size
+      tag: convert_eeff_device_all_events_view_device_size_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.device_size
+            tag: remove_eeff_device_all_events_view_device_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_device_size_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: device.serial_number
+      tag: set_device_serial_number_from_device_event_eeff_device_all_events_view_device_sn
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.device_sn
+      ignore_empty_value: true
+  - date:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_generated_time
+      tag: date_eeff_device_all_events_view_event_generated_time
+      if: ctx.trellix_epo_on_prem?.device_event?.eeff_device_all_events_view?.event_generated_time != null && ctx.trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_generated_time != ''
+      target_field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_generated_time
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_generated_time
+            tag: remove_eeff_device_all_events_view_event_generated_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_date_eeff_device_all_events_view_event_generated_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_device_event_eeff_device_all_events_view_event_generated_time
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_generated_time
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_id
+      tag: convert_eeff_device_all_events_view_event_id_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.code
+      tag: set_event_code_from_device_event_eeff_device_all_events_view_event_id
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_id
+      ignore_empty_value: true
+  - date:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_reported_time
+      tag: date_eeff_device_all_events_view_event_reported_time
+      if: ctx.trellix_epo_on_prem?.device_event?.eeff_device_all_events_view?.event_reported_time != null && ctx.trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_reported_time != ''
+      target_field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_reported_time
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_reported_time
+            tag: remove_eeff_device_all_events_view_event_reported_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_date_eeff_device_all_events_view_event_reported_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_device_event_eeff_device_all_events_view_event_reported_time
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_reported_time
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.initialization_time
+      tag: convert_eeff_device_all_events_view_initialization_time_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.initialization_time
+            tag: remove_eeff_device_all_events_view_initialization_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_initialization_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.media_type
+      tag: convert_eeff_device_all_events_view_media_type_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.media_type
+            tag: remove_eeff_device_all_events_view_media_type
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_media_type_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: device.model.name
+      tag: set_device_model_name_from_device_event_eeff_device_all_events_view_product_name
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.product_name
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.protected_size
+      tag: convert_eeff_device_all_events_view_protected_size_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.device_event.eeff_device_all_events_view.protected_size
+            tag: remove_eeff_device_all_events_view_protected_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_convert_eeff_device_all_events_view_protected_size_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.name
+      tag: set_user_name_from_device_event_eeff_device_all_events_view_user_name
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_device_event_eeff_device_all_events_view_user_name_into_related_user
+      if: ctx.trellix_epo_on_prem?.device_event?.eeff_device_all_events_view?.user_name != null
+      value: '{{{trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_name}}}'
+      allow_duplicates: false
+  - set:
+      field: event.action
+      tag: set_event_action_from_device_event_eeff_device_all_events_view_user_response
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_response
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action_whitespace_to_hyphen
+      pattern: \s+
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_gsub_event_action
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: device.manufacturer
+      tag: set_device_manufacturer_from_device_event_eeff_device_all_events_view_vendor_name
+      copy_from: trellix_epo_on_prem.device_event.eeff_device_all_events_view.vendor_name
+      ignore_empty_value: true
+  - remove:
+      field:
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.agent_guid
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.auto_id
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.device_sn
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_generated_time
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_id
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.event_reported_time
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.product_name
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_name
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.user_response
+        - trellix_epo_on_prem.device_event.eeff_device_all_events_view.vendor_name
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

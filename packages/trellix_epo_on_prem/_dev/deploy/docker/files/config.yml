@@ -32,6 +32,7 @@ rules:
 
   # web_control page 1: a full page (== page_size), so the program sets
   # want_more and pages again from the last EventAutoID it saw.
+
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
@@ -89,6 +90,7 @@ rules:
           ]
 
   # web_control page 2: a short page, which clears want_more and ends the cycle.
+
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
@@ -129,10 +131,194 @@ rules:
 
   # web_control catchall: any cursor beyond the seeded rows is exhausted, so a
   # later poll re-collects nothing and hit_count stays deterministic.
+
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
       target: 'WP_EventInfo'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: 'OK: []'
+
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPOProductEvents'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EPOProductEvents.AgentGUID": "89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B",
+              "EPOProductEvents.AutoID": 1,
+              "EPOProductEvents.DetectedUTC": "2026-07-21T14:53:20+05:30",
+              "EPOProductEvents.Error": 0,
+              "EPOProductEvents.ExtraDATNames": null,
+              "EPOProductEvents.HostName": "DESKTOP-K3QM7XP",
+              "EPOProductEvents.IPV6": "2001:DB8:85A3:0:8A2E:370:7334:1",
+              "EPOProductEvents.InitiatorID": null,
+              "EPOProductEvents.InitiatorType": "CommandLine",
+              "EPOProductEvents.Locale": 1033,
+              "EPOProductEvents.NodeID": 1,
+              "EPOProductEvents.ProductCode": "EPOAGENT3000",
+              "EPOProductEvents.ReceivedUTC": "2026-07-21T14:53:47+05:30",
+              "EPOProductEvents.SPHotFix": null,
+              "EPOProductEvents.SiteName": null,
+              "EPOProductEvents.TVDEventID": 2411,
+              "EPOProductEvents.TVDSeverity": 0,
+              "EPOProductEvents.TenantId": 1,
+              "EPOProductEvents.Type": "Install",
+              "EPOProductEvents.UserName": "SYSTEM"
+            }
+          ]
+
+  # device_event page 1: a full page (== page_size), so the program sets
+  # want_more and pages again from the last AutoID it saw.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EEFFDeviceAllEventsView'
+      select: "{select:.*}"
+      where: "(where (gt EEFFDeviceAllEventsView.AutoID 0))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EEFFDeviceAllEventsView.AgentGUID": "11111111-2222-4333-8444-555555555555",
+              "EEFFDeviceAllEventsView.AutoID": 1048576,
+              "EEFFDeviceAllEventsView.BackupSize": 1024.50,
+              "EEFFDeviceAllEventsView.BackupState": "Completed",
+              "EEFFDeviceAllEventsView.BackupTime": 18.75,
+              "EEFFDeviceAllEventsView.CredentialType": 1,
+              "EEFFDeviceAllEventsView.DeviceSN": "EXAMPLE-DEVICE-SN-001",
+              "EEFFDeviceAllEventsView.DeviceSize": 64000.00,
+              "EEFFDeviceAllEventsView.EventGeneratedTime": "2026-07-31T08:15:42.000Z",
+              "EEFFDeviceAllEventsView.EventID": 3001,
+              "EEFFDeviceAllEventsView.EventReportedTime": "2026-07-31T08:16:03.000Z",
+              "EEFFDeviceAllEventsView.Exempted": "No",
+              "EEFFDeviceAllEventsView.FileSystem": "NTFS",
+              "EEFFDeviceAllEventsView.FileSystemVersion": "3.1",
+              "EEFFDeviceAllEventsView.InitializationState": "Initialized",
+              "EEFFDeviceAllEventsView.InitializationTime": 12.25,
+              "EEFFDeviceAllEventsView.Key": "example-removable-media-key-001",
+              "EEFFDeviceAllEventsView.MediaType": 2,
+              "EEFFDeviceAllEventsView.ProductName": "Example Secure USB",
+              "EEFFDeviceAllEventsView.Protected": "Yes",
+              "EEFFDeviceAllEventsView.ProtectedSize": 62000.00,
+              "EEFFDeviceAllEventsView.UserName": "EXAMPLE\\analyst",
+              "EEFFDeviceAllEventsView.UserResponse": "Approved",
+              "EEFFDeviceAllEventsView.VendorName": "Example Vendor"
+            },
+            {
+              "EEFFDeviceAllEventsView.AgentGUID": "22222222-3333-4444-8555-666666666666",
+              "EEFFDeviceAllEventsView.AutoID": 1048577,
+              "EEFFDeviceAllEventsView.BackupSize": 2048.00,
+              "EEFFDeviceAllEventsView.BackupState": "Completed",
+              "EEFFDeviceAllEventsView.BackupTime": 20.00,
+              "EEFFDeviceAllEventsView.CredentialType": 1,
+              "EEFFDeviceAllEventsView.DeviceSN": "EXAMPLE-DEVICE-SN-002",
+              "EEFFDeviceAllEventsView.DeviceSize": 128000.00,
+              "EEFFDeviceAllEventsView.EventGeneratedTime": "2026-07-31T09:15:42.000Z",
+              "EEFFDeviceAllEventsView.EventID": 3002,
+              "EEFFDeviceAllEventsView.EventReportedTime": "2026-07-31T09:16:03.000Z",
+              "EEFFDeviceAllEventsView.Exempted": "No",
+              "EEFFDeviceAllEventsView.FileSystem": "NTFS",
+              "EEFFDeviceAllEventsView.FileSystemVersion": "3.1",
+              "EEFFDeviceAllEventsView.InitializationState": "Initialized",
+              "EEFFDeviceAllEventsView.InitializationTime": 13.00,
+              "EEFFDeviceAllEventsView.Key": "example-removable-media-key-002",
+              "EEFFDeviceAllEventsView.MediaType": 2,
+              "EEFFDeviceAllEventsView.ProductName": "Example Secure USB",
+              "EEFFDeviceAllEventsView.Protected": "Yes",
+              "EEFFDeviceAllEventsView.ProtectedSize": 126000.00,
+              "EEFFDeviceAllEventsView.UserName": "EXAMPLE\\analyst",
+              "EEFFDeviceAllEventsView.UserResponse": "Approved",
+              "EEFFDeviceAllEventsView.VendorName": "Example Vendor"
+            }
+          ]
+
+  # device_event page 2: a short page, which clears want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EEFFDeviceAllEventsView'
+      select: "{select:.*}"
+      where: "(where (gt EEFFDeviceAllEventsView.AutoID 1048577))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EEFFDeviceAllEventsView.AgentGUID": "33333333-4444-4555-8666-777777777777",
+              "EEFFDeviceAllEventsView.AutoID": 1048578,
+              "EEFFDeviceAllEventsView.BackupSize": 512.00,
+              "EEFFDeviceAllEventsView.BackupState": "Completed",
+              "EEFFDeviceAllEventsView.BackupTime": 10.00,
+              "EEFFDeviceAllEventsView.CredentialType": 1,
+              "EEFFDeviceAllEventsView.DeviceSN": "EXAMPLE-DEVICE-SN-003",
+              "EEFFDeviceAllEventsView.DeviceSize": 32000.00,
+              "EEFFDeviceAllEventsView.EventGeneratedTime": "2026-07-31T10:15:42.000Z",
+              "EEFFDeviceAllEventsView.EventID": 3003,
+              "EEFFDeviceAllEventsView.EventReportedTime": "2026-07-31T10:16:03.000Z",
+              "EEFFDeviceAllEventsView.Exempted": "No",
+              "EEFFDeviceAllEventsView.FileSystem": "exFAT",
+              "EEFFDeviceAllEventsView.FileSystemVersion": "1.0",
+              "EEFFDeviceAllEventsView.InitializationState": "Initialized",
+              "EEFFDeviceAllEventsView.InitializationTime": 8.00,
+              "EEFFDeviceAllEventsView.Key": "example-removable-media-key-003",
+              "EEFFDeviceAllEventsView.MediaType": 2,
+              "EEFFDeviceAllEventsView.ProductName": "Example Secure USB",
+              "EEFFDeviceAllEventsView.Protected": "Yes",
+              "EEFFDeviceAllEventsView.ProtectedSize": 31000.00,
+              "EEFFDeviceAllEventsView.UserName": "EXAMPLE\\analyst",
+              "EEFFDeviceAllEventsView.UserResponse": "Approved",
+              "EEFFDeviceAllEventsView.VendorName": "Example Vendor"
+            }
+          ]
+
+  # device_event catchall: any cursor beyond the seeded rows is exhausted, so a
+  # later poll re-collects nothing and hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EEFFDeviceAllEventsView'
       select: "{select:.*}"
       where: "{where:.*}"
       order: "{order:.*}"

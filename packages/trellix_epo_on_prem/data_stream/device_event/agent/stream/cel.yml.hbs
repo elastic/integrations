@@ -1,0 +1,120 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  # EEFFDeviceAllEventsView.AutoID is a unique ascending column, so it is used
+  # as the keyset cursor instead of EventGeneratedTime. The first poll starts
+  # after this AutoID; subsequent polls resume from the persisted cursor.
+  initial_event_auto_id: "{{initial_event_auto_id}}"
+  page_size: {{page_size}}
+  columns: >-
+    EEFFDeviceAllEventsView.AutoID EEFFDeviceAllEventsView.AgentGUID
+    EEFFDeviceAllEventsView.BackupSize EEFFDeviceAllEventsView.BackupState
+    EEFFDeviceAllEventsView.BackupTime EEFFDeviceAllEventsView.DeviceSize
+    EEFFDeviceAllEventsView.DeviceSN EEFFDeviceAllEventsView.Exempted
+    EEFFDeviceAllEventsView.EventID EEFFDeviceAllEventsView.FileSystem
+    EEFFDeviceAllEventsView.FileSystemVersion
+    EEFFDeviceAllEventsView.InitializationState
+    EEFFDeviceAllEventsView.InitializationTime
+    EEFFDeviceAllEventsView.ProductName EEFFDeviceAllEventsView.Protected
+    EEFFDeviceAllEventsView.ProtectedSize EEFFDeviceAllEventsView.UserName
+    EEFFDeviceAllEventsView.UserResponse EEFFDeviceAllEventsView.VendorName
+    EEFFDeviceAllEventsView.EventGeneratedTime
+    EEFFDeviceAllEventsView.EventReportedTime EEFFDeviceAllEventsView.Key
+    EEFFDeviceAllEventsView.CredentialType
+    EEFFDeviceAllEventsView.MediaType
+redact:
+  fields: ~
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "event_auto_id": state.?cursor.last_event_auto_id.orValue(
+            string(state.initial_event_auto_id)
+          ),
+        }
+      )
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+          "target": ["EEFFDeviceAllEventsView"],
+          // (top N) keyset page ordered by the unique AutoID.
+          "select": ["(select (top " + string(int(state.page_size)) + ") " + state.columns + ")"],
+          "where": ["(where (gt EEFFDeviceAllEventsView.AutoID " + state.event_auto_id + "))"],
+          "order": ["(order (asc EEFFDeviceAllEventsView.AutoID))"],
+        }.format_query() + "&:output=json"
+      ).as(resp,
+        (resp.StatusCode == 200) ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // Advance to the greatest AutoID returned by this page. The ID is
+            // routed through int() before string(): JSON numbers arrive as float64,
+            // and string() of a float64 >= 1e6 renders as scientific notation, which
+            // is not a valid operand for the (gt EEFFDeviceAllEventsView.AutoID ...) query.
+            string(
+              int(
+                rows.last()["EEFFDeviceAllEventsView.AutoID"].orValue(state.event_auto_id)
+              )
+            ).as(new_event_auto_id,
+              {
+                "events": rows.map(e, {"message": e.encode_json()}),
+                "event_auto_id": new_event_auto_id,
+                "cursor": {"last_event_auto_id": new_event_auto_id},
+                "want_more": size(rows) == int(state.page_size) && new_event_auto_id != state.event_auto_id,
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
