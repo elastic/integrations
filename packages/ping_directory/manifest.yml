@@ -1,18 +1,33 @@
-format_version: '3.3.2'
+format_version: 3.3.2
 name: ping_directory
 title: PingDirectory
-version: '0.1.0'
-description: 'Collect user logs from PingDirectory via SCIM v2 REST API.'
+version: 0.1.0
+source:
+  license: 'Elastic-2.0'
+description: 'Collect logs and user identity data from PingDirectory with Elastic Agent.'
 type: integration
 categories:
   - security
+  - authentication
   - iam
 conditions:
   kibana:
-    version: '^8.18.0 || ^9.1.0'
+    version: '^8.19.0 || ^9.5.0'
   elastic:
     subscription: 'basic'
 screenshots:
+  - src: /img/ping_directory-http-access-dashboard.png
+    title: HTTP Access Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/ping_directory-audit-dashboard.png
+    title: Audit Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/ping_directory-ldap_access-dashboard.png
+    title: LDAP Access Dashboard
+    size: 600x600
+    type: image/png
   - src: /img/ping_directory-user-dashboard.png
     title: User Directory Dashboard
     size: 600x600
@@ -25,7 +40,7 @@ icons:
 policy_templates:
   - name: ping_directory
     title: PingDirectory
-    description: Collect user data from PingDirectory via SCIM v2 REST API.
+    description: Collect PingDirectory logs via filestream/UDP and user identity data via SCIM v2 REST API.
     deployment_modes:
       default:
         enabled: true
@@ -35,6 +50,12 @@ policy_templates:
         division: engineering
         team: security-service-integrations
     inputs:
+      - type: filestream
+        title: Collect PingDirectory logs via Filestream
+        description: Collecting logs from PingDirectory via File.
+      - type: udp
+        title: Collect PingDirectory logs via UDP
+        description: Collecting logs from PingDirectory via UDP.
       - type: cel
         title: Collect PingDirectory log via SCIM v2 API
         description: Collecting user log from PingDirectory via SCIM v2 REST API.

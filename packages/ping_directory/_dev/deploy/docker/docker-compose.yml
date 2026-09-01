@@ -1,5 +1,36 @@
-version: '3.8'
+version: '2.3'
 services:
+  ping_directory-logfile-http:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: >
+      /bin/sh -c "
+        cp /sample_logs/test-http-access.log /var/log/ &&
+        tail -f /dev/null
+      "
+  ping_directory-logfile-audit:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: >
+      /bin/sh -c "
+        cp /sample_logs/test-audit.log /var/log/ &&
+        tail -f /dev/null
+      "
+  ping_directory-udp-ldap_access:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9599 -p=udp /sample_logs/test-ldap_access.log
+  ping_directory-logfile-ldap_access:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
   ping_directory:
     image: docker.elastic.co/observability/stream:v0.21.0
     hostname: ping_directory
