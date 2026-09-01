@@ -50,7 +50,7 @@ For the `device_check` and `issues` data streams, `event.outcome` reflects the d
 
 ### Host correlation for device checks
 
-Check-run results identify the device only by its numeric Kolide device ID, which maps to `host.id`. The payload carries no hostname, so the integration does not set `host.name` on this data stream. You can correlate check runs with the `device`, `auth`, and `issues` data streams using the shared `host.id`. If you need `host.name` directly on check-run documents, you must enrich them at ingest time with an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment) that maps `host.id` to `host.name` from the `device` data stream. This setup requires you to enable the `device` data stream and periodically refresh the enrich policy so new or renamed devices resolve correctly.
+Check-run results identify the device only by its numeric Kolide device ID, which maps to `host.id`. The payload carries no hostname, so the integration does not set `host.name` on this data stream. You can correlate check runs with the `device`, `auth`, and `issues` data streams using the shared `host.id`. If you need `host.name` directly on check-run documents, you must enrich them at ingest time with an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment) that maps `host.id` to `host.name` from the `device` data stream. This setup requires you to enable the `device` data stream and periodically refresh the enrich policy so new or renamed devices resolve correctly. The `logs-kolide_latest.device` index described in [Latest device and people snapshots](#latest-device-and-people-snapshots) is a convenient source for such a policy, since it already holds exactly one document per device.
 
 ### Document identity for requests
 
@@ -59,6 +59,23 @@ The Kolide REST API endpoints `GET /exemption_requests` and `GET /registration_r
 ### Document identity for people
 
 The endpoint `GET /people` returns a full-table snapshot with no modified-since filter, so the integration re-fetches every person on every poll. To prevent unnecessary indexing, the integration deduplicates documents using a fingerprint of the entire raw record, excluding `last_authenticated_at`. This exclusion prevents a new document from being created every time an active person authenticates. A change to any other field (such as name, email, registered-device status, or SCIM usernames) produces a new document, while unchanged records are deduplicated across polls.
+
+### Latest device and people snapshots
+
+The `device` and `people` data streams keep a document per distinct state of each device and person, so querying them for "what does this device look like right now" means sorting and collapsing on every search. The integration ships two transforms that maintain that current-state view for you:
+
+| Transform | Source | Destination alias | Entity key |
+| --- | --- | --- | --- |
+| `latest_device` | `logs-kolide.device-*` | `logs-kolide_latest.device` | `host.id` |
+| `latest_people` | `logs-kolide.people-*` | `logs-kolide_latest.people` | `user.id` |
+
+Each destination index holds exactly one document per device or person, containing its most recently collected state. When a record changes, the transform replaces the previous document rather than adding to it. These indices are well suited as the source for an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment): because the entity key only determines document identity, any field on the document can serve as the policy's match field. For example, you can enrich on `host.hostname` or `host.name` from `logs-kolide_latest.device`, or on `user.email` from `logs-kolide_latest.people`.
+
+Both transforms key on the stable Kolide identifier (`host.id` for devices, `user.id` for people) rather than on a display name, so renaming a device or changing a person's email updates the existing document instead of creating a second entity.
+
+The `latest_device` transform reads only the full inventory snapshots collected from the REST API (`event.kind: state`). Device webhook deliveries carry only a few fields, and because a transform replaces the whole destination document, including them would overwrite a complete snapshot with a sparse one. Webhook events remain fully queryable in `logs-kolide.device-*`.
+
+Neither transform applies a retention policy. An unchanged device or person is deduplicated at ingest, so the timestamps on its newest source document reflect the last time its content changed, not the last time it was seen. A time-based retention policy would therefore evict entities that are still active in Kolide but have not changed recently. The trade-off is that devices and people deleted in Kolide remain in the destination indices until you remove them.
 
 ### Supported use cases
 
@@ -1970,7 +1987,127 @@ An example event for `osquery_status` looks as following:
 ```
 
 
-### Data streams using ILM policies
 
 
+### Transforms used
+
+#### latest_device
+* Description: Latest devices from Kolide. As devices get updated, this transform stores only the latest state of each device inside the destination index. Thus the transform's destination index contains only the latest state of the device.
+* Source Index: logs-kolide.device-\*
+* Destination Index: logs-kolide_latest.dest_device-1
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| agent.ephemeral_id | Ephemeral identifier of this agent (if one exists). This id normally changes across restarts, but `agent.id` does not. | keyword |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
+| agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
+| agent.version | Version of the agent. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| kolide.device.auth_configuration.authentication_mode | Authentication mode, for example `only_registered_owner` or `any_registered_person`. | keyword |
+| kolide.device.auth_configuration.device_id | Identifier of the device the configuration applies to. | keyword |
+| kolide.device.auth_configuration.person_groups | Person groups permitted to authenticate the device. | flattened |
+| kolide.device.auth_state | Raw authentication state of the device reported by the API, for example `Good` or `Blocked` (API only). | keyword |
+| kolide.device.device_status | Raw device status reported by the `device_trust.status_changed` webhook, for example `blocked` (webhook only). | keyword |
+| kolide.device.device_url | API URL of the device record (webhook only). | keyword |
+| kolide.device.form_factor | Form factor of the device, for example `Computer`. | keyword |
+| kolide.device.hardware_model | Hardware model identifier, for example `MacBookPro18,1`. | keyword |
+| kolide.device.hardware_uuid | Hardware UUID of the device. | keyword |
+| kolide.device.last_authenticated_at | Timestamp at which the device last authenticated. | date |
+| kolide.device.last_seen_at | Timestamp at which the device was last seen. | date |
+| kolide.device.note | Free-form note associated with the device. | text |
+| kolide.device.product_image_url | URL of the product image for the device hardware. | keyword |
+| kolide.device.registered_at | Timestamp at which the device was registered. | date |
+| kolide.device.registered_owner_info.identifier | Identifier of the registered owner. | keyword |
+| kolide.device.registered_owner_info.location | API URL of the registered owner resource. | keyword |
+| kolide.device.serial | Hardware serial number of the device. | keyword |
+| kolide.device.status | Normalized (lowercase) device status, derived from the webhook `device_status` or the API `auth_state`. | keyword |
+| kolide.device.type | Type of device, one of `Mac`, `Linux`, `Windows`, `iOS`, or `Android`. | keyword |
+| kolide.device.will_block_at | Timestamp at which the device will be blocked, if any. | date |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+#### latest_people
+* Description: Latest people from Kolide. As people get updated, this transform stores only the latest state of each person inside the destination index. Thus the transform's destination index contains only the latest state of the person.
+* Source Index: logs-kolide.people-\*
+* Destination Index: logs-kolide_latest.dest_people-1
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| agent.ephemeral_id | Ephemeral identifier of this agent (if one exists). This id normally changes across restarts, but `agent.id` does not. | keyword |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
+| agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
+| agent.version | Version of the agent. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| kolide.people.created_at | Timestamp at which the person record was created. | date |
+| kolide.people.has_registered_device | Whether the person has at least one registered device. | boolean |
+| kolide.people.id | Kolide person identifier. | keyword |
+| kolide.people.last_authenticated_at | When the person last authenticated with Kolide. | date |
+| kolide.people.usernames | Usernames imported from the SCIM provider associated with this person. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 

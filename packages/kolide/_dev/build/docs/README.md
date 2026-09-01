@@ -49,7 +49,7 @@ For the `device_check` and `issues` data streams, `event.outcome` reflects the d
 
 ### Host correlation for device checks
 
-Check-run results identify the device only by its numeric Kolide device ID, which maps to `host.id`. The payload carries no hostname, so the integration does not set `host.name` on this data stream. You can correlate check runs with the `device`, `auth`, and `issues` data streams using the shared `host.id`. If you need `host.name` directly on check-run documents, you must enrich them at ingest time with an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment) that maps `host.id` to `host.name` from the `device` data stream. This setup requires you to enable the `device` data stream and periodically refresh the enrich policy so new or renamed devices resolve correctly.
+Check-run results identify the device only by its numeric Kolide device ID, which maps to `host.id`. The payload carries no hostname, so the integration does not set `host.name` on this data stream. You can correlate check runs with the `device`, `auth`, and `issues` data streams using the shared `host.id`. If you need `host.name` directly on check-run documents, you must enrich them at ingest time with an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment) that maps `host.id` to `host.name` from the `device` data stream. This setup requires you to enable the `device` data stream and periodically refresh the enrich policy so new or renamed devices resolve correctly. The `logs-kolide_latest.device` index described in [Latest device and people snapshots](#latest-device-and-people-snapshots) is a convenient source for such a policy, since it already holds exactly one document per device.
 
 ### Document identity for requests
 
@@ -58,6 +58,23 @@ The Kolide REST API endpoints `GET /exemption_requests` and `GET /registration_r
 ### Document identity for people
 
 The endpoint `GET /people` returns a full-table snapshot with no modified-since filter, so the integration re-fetches every person on every poll. To prevent unnecessary indexing, the integration deduplicates documents using a fingerprint of the entire raw record, excluding `last_authenticated_at`. This exclusion prevents a new document from being created every time an active person authenticates. A change to any other field (such as name, email, registered-device status, or SCIM usernames) produces a new document, while unchanged records are deduplicated across polls.
+
+### Latest device and people snapshots
+
+The `device` and `people` data streams keep a document per distinct state of each device and person, so querying them for "what does this device look like right now" means sorting and collapsing on every search. The integration ships two transforms that maintain that current-state view for you:
+
+| Transform | Source | Destination alias | Entity key |
+| --- | --- | --- | --- |
+| `latest_device` | `logs-kolide.device-*` | `logs-kolide_latest.device` | `host.id` |
+| `latest_people` | `logs-kolide.people-*` | `logs-kolide_latest.people` | `user.id` |
+
+Each destination index holds exactly one document per device or person, containing its most recently collected state. When a record changes, the transform replaces the previous document rather than adding to it. These indices are well suited as the source for an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment): because the entity key only determines document identity, any field on the document can serve as the policy's match field. For example, you can enrich on `host.hostname` or `host.name` from `logs-kolide_latest.device`, or on `user.email` from `logs-kolide_latest.people`.
+
+Both transforms key on the stable Kolide identifier (`host.id` for devices, `user.id` for people) rather than on a display name, so renaming a device or changing a person's email updates the existing document instead of creating a second entity.
+
+The `latest_device` transform reads only the full inventory snapshots collected from the REST API (`event.kind: state`). Device webhook deliveries carry only a few fields, and because a transform replaces the whole destination document, including them would overwrite a complete snapshot with a sparse one. Webhook events remain fully queryable in `logs-kolide.device-*`.
+
+Neither transform applies a retention policy. An unchanged device or person is deduplicated at ingest, so the timestamps on its newest source document reflect the last time its content changed, not the last time it was seen. A time-based retention policy would therefore evict entities that are still active in Kolide but have not changed recently. The trade-off is that devices and people deleted in Kolide remain in the destination indices until you remove them.
 
 ### Supported use cases
 
