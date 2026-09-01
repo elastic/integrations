@@ -9,17 +9,20 @@ mkdir -p /var/log/nats
 
 # NATS 2.X
 if [ -x /opt/nats/nats-server ]; then
-    if [[ -z "${ROUTES}" ]]; then
+    if [ -z "${ROUTES}" ]; then
         (/opt/nats/nats-server -DV -js --server_name nats --cluster_name nats-cluster -l /var/log/nats/nats.log --cluster nats://0.0.0.0:6222 --http_port 8222 --port 4222 --routes nats://nats-routes:6222) &
     else
         (/opt/nats/nats-server -DV -js --server_name nats-routes --cluster_name nats-cluster -l /var/log/nats/nats.log --cluster nats://0.0.0.0:6222 --http_port 8222 --port 4222 --routes nats://nats:6222) &
+    fi
+    if [ -x /jetstream-traffic ]; then
+        /jetstream-traffic &
     fi
     while true; do /nats-bench -np 1 -n 100000000 -ms 16 foo; done
 fi
 
 # NATS 1.X
 if [ -x /opt/nats/gnatsd ]; then
-    if [[ -z "${ROUTES}" ]]; then
+    if [ -z "${ROUTES}" ]; then
         (/opt/nats/gnatsd -DV -l /var/log/nats/nats.log --cluster nats://0.0.0.0:6222 --http_port 8222 --port 4222) &
     else
         (/opt/nats/gnatsd -DV -l /var/log/nats/nats.log --cluster nats://0.0.0.0:6222 --http_port 8222 --port 4222 --routes nats://nats:6222) &
