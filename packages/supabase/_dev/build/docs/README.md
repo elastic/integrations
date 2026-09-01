@@ -108,16 +108,6 @@ Supabase metrics are scraped by this integration. Log drain payloads are decoded
 |--------|-------------|--------|
 | Metrics | `metrics-supabase.metrics.otel-*` | [Supabase Metrics documentation](https://supabase.com/docs/guides/telemetry/metrics) |
 
-### Logs
-
-| Signal | Data stream | Fields |
-|--------|-------------|--------|
-| Logs | `logs-supabase.otel-*` | [Supabase Log Drains](https://supabase.com/docs/guides/monitoring-and-debugging/log-drains) |
-
-The Logs data stream holds every service forwarded by the drain. Use the **Service** filter on the Service logs overview dashboard to focus on a single service.
-
-## Metrics Reference
-
 Metrics are scraped from the Supabase Metrics API endpoint:
 
 ```
@@ -128,7 +118,7 @@ Authentication uses HTTP Basic Auth with `service_role` as the username and the 
 
 See the [Supabase Metrics documentation](https://supabase.com/docs/guides/telemetry/metrics) for full details on available metrics.
 
-### Metric Categories
+#### Metric Categories
 
 | Category | Prefix | Examples |
 |---|---|---|
@@ -142,3 +132,11 @@ See the [Supabase Metrics documentation](https://supabase.com/docs/guides/teleme
 | HTTP | `http_*` | `http_server_request_duration_seconds_total`, `http_status_codes_total` |
 
 All metrics are stored under the `metrics.*` field namespace with their original Prometheus names (e.g., `metrics.node_load5`, `metrics.pg_stat_database_xact_commit_total`).
+
+### Logs
+
+| Signal | Data stream | Fields |
+|--------|-------------|--------|
+| Logs | `logs-supabase.otel-*` | [Supabase Log Drains](https://supabase.com/docs/guides/monitoring-and-debugging/log-drains) |
+
+The Logs data stream holds every service forwarded by the drain. Use the **Service** filter on the Service logs overview dashboard to focus on a single service.
