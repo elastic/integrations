@@ -7,7 +7,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.16.0
+      value: 9.4.0
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -1162,19 +1162,21 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
-      tag: append_preserve_original_event_into_tags
+      tag: append_preserve_on_collector_error
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
+      tag: append_error_message_on_pipeline_error
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
       field: tags
+      tag: append_preserve_on_pipeline_error
       value: preserve_original_event
       allow_duplicates: false
   - set:

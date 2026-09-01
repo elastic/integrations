@@ -10,6 +10,25 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
+                "2b3064a3-f8ca-47b0-b0a5-ae6eb7ec0ee8": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "user.email",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "User Email"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
                 "f25ecbe3-b4e0-41e5-8381-15777595f589": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
@@ -243,7 +262,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "0abb7987-9714-4e76-ba30-50d726a8eaaf",
+                                "name": "e98020c4-f376-4255-a106-a56f6dc05ded",
                                 "type": "index-pattern"
                             }
                         ],
@@ -264,7 +283,7 @@
                                                     "label": "Total Payload Size",
                                                     "operationType": "sum",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "sourceField": "google_workspace.gmail_reports.message_info.payload_size"
                                                 }
@@ -291,7 +310,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "0abb7987-9714-4e76-ba30-50d726a8eaaf",
+                                        "index": "e98020c4-f376-4255-a106-a56f6dc05ded",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -339,7 +358,7 @@
                                 "alias": null,
                                 "disabled": false,
                                 "field": "data_stream.dataset",
-                                "index": "0abb7987-9714-4e76-ba30-50d726a8eaaf",
+                                "index": "e98020c4-f376-4255-a106-a56f6dc05ded",
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
@@ -381,17 +400,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-3d6447b6-f36c-4d3b-91e3-87f5ddd39fff",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "35a4bb5b-df5a-4130-a253-6ea6786031a5",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "3d6447b6-f36c-4d3b-91e3-87f5ddd39fff": {
                                             "columnOrder": [
@@ -400,9 +415,10 @@
                                             ],
                                             "columns": {
                                                 "12418841-9295-4026-aca0-cb9344bfce27": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "Timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": false,
@@ -425,14 +441,23 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -570,6 +595,11 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-72e8b1c8-4613-4fdc-abad-724a941d4407",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "81c5e951-c6a5-4fc5-aa78-6ba00b2a399e",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -633,7 +663,30 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "81c5e951-c6a5-4fc5-aa78-6ba00b2a399e",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "google_workspace.gmail_reports"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "google_workspace.gmail_reports"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -657,6 +710,7 @@
                             }
                         },
                         "title": "Top Recipients by Message Count",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
@@ -664,7 +718,30 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "81c5e951-c6a5-4fc5-aa78-6ba00b2a399e",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_workspace.gmail_reports"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_workspace.gmail_reports"
+                                }
+                            }
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -860,6 +937,72 @@
             },
             {
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "grid": {
+                        "columns": {
+                            "event.outcome": {
+                                "width": 168
+                            }
+                        }
+                    },
+                    "savedObjectId": "google_workspace-70c6a036-1b5a-4d8f-9918-36ce6365d6a2"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "22c1ef12-325c-45f5-afe2-e51e5ed9976e",
+                    "w": 48,
+                    "x": 0,
+                    "y": 41
+                },
+                "panelIndex": "22c1ef12-325c-45f5-afe2-e51e5ed9976e",
+                "panelRefName": "panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "#### Overview\n\nThis dashboard gives visibility into the Gmail Reports data stream of Google Workspace, showing how message delivery and SMTP activity are recorded across the domain. It highlights the total number of Gmail events and the total message payload volume, along with the trend of events over time. It surfaces top users by activity, top recipients, and top source IPs. Use the controls above to filter by event action, event outcome, and user email. Together, these panels offer a mail-flow view to support security oversight, auditing, and usage analysis.\n\n**[Integration Page](/app/integrations/detail/google_workspace/overview)**",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 25,
+                    "i": "20574a77-8203-4c6d-b75d-65ab58cd438d",
+                    "w": 13,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "20574a77-8203-4c6d-b75d-65ab58cd438d",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
@@ -1023,68 +1166,14 @@
                     "title": "Top Source IPs"
                 },
                 "gridData": {
-                    "h": 7,
+                    "h": 16,
                     "i": "559841ca-6572-4198-9282-0e74a2660b59",
-                    "w": 35,
-                    "x": 13,
+                    "w": 48,
+                    "x": 0,
                     "y": 25
                 },
                 "panelIndex": "559841ca-6572-4198-9282-0e74a2660b59",
                 "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "savedObjectId": "70c6a036-1b5a-4d8f-9918-36ce6365d6a2"
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "22c1ef12-325c-45f5-afe2-e51e5ed9976e",
-                    "w": 48,
-                    "x": 0,
-                    "y": 32
-                },
-                "panelIndex": "22c1ef12-325c-45f5-afe2-e51e5ed9976e",
-                "panelRefName": "panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
-                "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "#### Overview\n\nThis dashboard gives visibility into the Gmail Reports data stream of Google Workspace, showing how message delivery and SMTP activity are recorded across the domain. It highlights the total number of Gmail events and the total message payload volume, along with the trend of events over time. It surfaces top users by activity, top recipients, and top source IPs. Use the controls above to filter by event action, event outcome, and user email. Together, these panels offer a mail-flow view to support security oversight, auditing, and usage analysis.\n\n**[Integration Page](/app/integrations/detail/google_workspace/overview)**",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 32,
-                    "i": "20574a77-8203-4c6d-b75d-65ab58cd438d",
-                    "w": 13,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "20574a77-8203-4c6d-b75d-65ab58cd438d",
-                "type": "visualization"
             }
         ],
         "timeRestore": false,
@@ -1092,7 +1181,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-08-17T10:37:02.297Z",
+    "created_at": "2026-09-01T12:52:29.017Z",
     "id": "google_workspace-33944b82-4d35-4123-8005-3c4916c4512e",
     "references": [
         {
@@ -1117,7 +1206,7 @@
         },
         {
             "id": "logs-*",
-            "name": "e5e48923-5033-4df8-a3d0-25215b14c92e:0abb7987-9714-4e76-ba30-50d726a8eaaf",
+            "name": "e5e48923-5033-4df8-a3d0-25215b14c92e:e98020c4-f376-4255-a106-a56f6dc05ded",
             "type": "index-pattern"
         },
         {
@@ -1127,12 +1216,12 @@
         },
         {
             "id": "logs-*",
-            "name": "d2ab510b-bab9-4172-baef-d5dd68f56605:35a4bb5b-df5a-4130-a253-6ea6786031a5",
+            "name": "2596c231-88ce-4d9f-8e5b-c7a80973e12d:indexpattern-datasource-layer-72e8b1c8-4613-4fdc-abad-724a941d4407",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "2596c231-88ce-4d9f-8e5b-c7a80973e12d:indexpattern-datasource-layer-72e8b1c8-4613-4fdc-abad-724a941d4407",
+            "name": "2596c231-88ce-4d9f-8e5b-c7a80973e12d:81c5e951-c6a5-4fc5-aa78-6ba00b2a399e",
             "type": "index-pattern"
         },
         {
@@ -1146,6 +1235,21 @@
             "type": "index-pattern"
         },
         {
+            "id": "google_workspace-70c6a036-1b5a-4d8f-9918-36ce6365d6a2",
+            "name": "22c1ef12-325c-45f5-afe2-e51e5ed9976e:panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
+            "type": "search"
+        },
+        {
+            "id": "google_workspace-70c6a036-1b5a-4d8f-9918-36ce6365d6a2",
+            "name": "22c1ef12-325c-45f5-afe2-e51e5ed9976e:panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
+            "type": "search"
+        },
+        {
+            "id": "google_workspace-70c6a036-1b5a-4d8f-9918-36ce6365d6a2",
+            "name": "22c1ef12-325c-45f5-afe2-e51e5ed9976e:panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
+            "type": "search"
+        },
+        {
             "id": "logs-*",
             "name": "559841ca-6572-4198-9282-0e74a2660b59:indexpattern-datasource-layer-262da7ae-70bf-4ce6-8ca3-b96ec901f225",
             "type": "index-pattern"
@@ -1154,21 +1258,6 @@
             "id": "logs-*",
             "name": "559841ca-6572-4198-9282-0e74a2660b59:fff5137a-b6a4-47c9-953e-c38b4447d7a7",
             "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "22c1ef12-325c-45f5-afe2-e51e5ed9976e:kibanaSavedObjectMeta.searchSourceJSON.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "google_workspace-70c6a036-1b5a-4d8f-9918-36ce6365d6a2",
-            "name": "22c1ef12-325c-45f5-afe2-e51e5ed9976e:panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
-            "type": "search"
-        },
-        {
-            "id": "google_workspace-70c6a036-1b5a-4d8f-9918-36ce6365d6a2",
-            "name": "22c1ef12-325c-45f5-afe2-e51e5ed9976e:panel_22c1ef12-325c-45f5-afe2-e51e5ed9976e",
-            "type": "search"
         },
         {
             "id": "logs-*",
@@ -1182,10 +1271,16 @@
         },
         {
             "id": "logs-*",
+            "name": "controlGroup_2b3064a3-f8ca-47b0-b0a5-ae6eb7ec0ee8:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0"
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
