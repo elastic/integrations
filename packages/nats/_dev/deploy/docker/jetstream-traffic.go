@@ -58,6 +58,9 @@ func main() {
 		log.Printf("CreateOrUpdateStream attempt %d failed: %v, retrying...", i+1, err)
 		time.Sleep(1 * time.Second)
 	}
+	if err != nil {
+		log.Fatalf("Failed to create stream after retries: %v", err)
+	}
 
 	consumerCfg := jetstream.ConsumerConfig{
 		Name:          "PROCESSOR",
@@ -83,6 +86,9 @@ func main() {
 		}
 		log.Printf("CreateOrUpdateConsumer attempt %d failed: %v, retrying...", i+1, err)
 		time.Sleep(1 * time.Second)
+	}
+	if err != nil {
+		log.Fatalf("Failed to create consumer after retries: %v", err)
 	}
 
 	// Initial batch of messages
