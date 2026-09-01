@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a client resolving the same public registered domain to both a public IP address and a private, loopback, link-local, unique-local IPv6, or shared address. This includes both address classes being observed at the same timestamp, and a public answer followed within five minutes by a private answer where the minimum TTL across all answer records in the private-answer events is 60 seconds or less. Either pattern is consistent with DNS rebinding that pivots browser or application trust to internal resources.",
+        "false_positives": [
+            "Split-horizon DNS, VPN transitions, service discovery, failover, hairpin NAT, and dual-stack names that publish a public A record with a unique-local AAAA record can legitimately produce public and private answers for the same name. Recursive resolvers, DNS forwarders, and localhost listeners can also aggregate many endpoints under one client address. Security products may sinkhole suspicious domains to loopback or private addresses with short TTLs. Confirm the domain, resolver placement, and client identity before adding an exception, and scope exceptions by registered domain or client rather than globally."
+        ],
+        "from": "now-15m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.client_ip",
+                "dns.question.name",
+                "dns.question.registered_domain",
+                "Esql.resolved_ip_observation_count",
+                "Esql.resolved_ip_count",
+                "Esql.first_public_answer",
+                "Esql.first_private_answer",
+                "Esql.transition_seconds",
+                "Esql.same_timestamp",
+                "Esql.min_private_event_ttl",
+                "Esql.public_ips",
+                "Esql.private_ips",
+                "Esql.dataset_values",
+                "Esql.observer_name_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential DNS Rebinding from Public to Private Address",
+        "note": "## Triage and analysis\n\n### Investigating Potential DNS Rebinding from Public to Private Address\n\nDNS rebinding uses attacker-controlled public names that resolve to internal addresses so a victim browser or client\nreaches RFC1918, loopback, link-local, unique-local IPv6, or shared-address targets. This rule alerts on two patterns\nfor the same client and fully qualified domain name: public and internal addresses whose first observations have the\nsame timestamp, or a public answer followed by an internal answer within five minutes. Sequential transitions also\nrequire the minimum TTL across all DNS answer records in the private-answer events to be 60 seconds or less. Equal\ntimestamps often represent a mixed-answer response, but do not prove that the addresses came from one DNS transaction;\nparallel A and AAAA events can share a timestamp. Equal-timestamp matches do not require the TTL or five-minute gates.\n\n`Esql.client_ip` is `client.ip` when present and otherwise `source.ip`. Depending on sensor placement this value may\nidentify an endpoint, a recursive resolver, a forwarder, or a localhost DNS listener such as `127.0.0.1`. Resolver or\nloopback identities can merge many hosts into one bucket.\n\n### Possible investigation steps\n\n- Review `dns.question.name`, `dns.question.registered_domain`, `Esql.public_ips`, and `Esql.private_ips` to confirm the\n  same name resolved to both a public and an internal address.\n- Check `Esql.same_timestamp`. A value of `true` means both address classes were first observed at the same timestamp,\n  but does not establish that they came from one DNS transaction. Compare `Esql.first_public_answer`,\n  `Esql.first_private_answer`, `Esql.transition_seconds`, and `Esql.min_private_event_ttl` for sequential transitions.\n  Short transitions and TTL values near zero increase confidence.\n- Use `Esql.resolved_ip_observation_count`, `Esql.resolved_ip_count`, `Esql.dataset_values`, and\n  `Esql.observer_name_values` to assess observation volume, distinct IP cardinality, and the integrations and sensors\n  that contributed to the alert.\n- Identify the requesting client using `Esql.client_ip`. Confirm whether that address is an endpoint rather than a\n  recursive resolver, forwarder, or localhost DNS service before attributing the activity to one host.\n- Determine whether the registered domain is attacker-controlled or a legitimate split-horizon or failover domain.\n- Check the requesting host for browser or application connections to the resolved private address immediately after\n  the private answer.\n- Review the targeted internal service for requests carrying the public domain in the HTTP Host header or TLS SNI and\n  for unauthorized access, state changes, or sensitive-data retrieval.\n\n### False positive analysis\n\n- Split-horizon DNS, VPN transitions, service discovery, failover, and hairpin NAT can legitimately cause a public\n  registered domain to alternate between public and private answers. Confirm the domain and resolver behavior with DNS\n  administrators.\n- Dual-stack names may publish a public IPv4 address and a unique-local IPv6 address under the same question name.\n- Security products may intentionally sinkhole suspicious domains to loopback or private addresses with short TTLs.\n- Exclude confirmed internal domains, approved sinkholes, and controlled security-testing infrastructure by registered\n  domain or client only after validation. Do not exclude a resolver address until the originating endpoint is known.\n\n### Response and remediation\n\n- Block or sinkhole the queried name at recursive resolvers if it is confirmed malicious.\n- Patch or isolate affected internal services reached through the rebound name.\n- Restrict outbound DNS for clients that should not resolve arbitrary external names directly.\n",
+        "query": "from logs-network_traffic.dns-*, logs-zeek.dns-*, packetbeat-*\n| where\n    (\n      data_stream.dataset in (\"network_traffic.dns\", \"zeek.dns\") or\n      event.dataset == \"dns\"\n    ) and\n    dns.question.name is not null and\n    dns.question.registered_domain is not null and\n    dns.resolved_ip is not null and\n    TO_UPPER(dns.response_code) == \"NOERROR\" and\n    TO_UPPER(dns.question.type) in (\"A\", \"AAAA\")\n| eval\n    Esql.client_ip = COALESCE(client.ip, source.ip),\n    Esql.dataset = COALESCE(data_stream.dataset, event.dataset)\n| where Esql.client_ip is not null\n| mv_expand dns.resolved_ip\n| eval Esql.is_private = CIDR_MATCH(\n    dns.resolved_ip,\n    \"0.0.0.0/32\",\n    \"10.0.0.0/8\",\n    \"100.64.0.0/10\",\n    \"127.0.0.0/8\",\n    \"169.254.0.0/16\",\n    \"172.16.0.0/12\",\n    \"192.168.0.0/16\",\n    \"::1/128\",\n    \"fc00::/7\",\n    \"fe80::/10\"\n  )\n| eval\n    Esql.private_time = CASE(Esql.is_private, @timestamp, null),\n    Esql.public_time = CASE(not Esql.is_private, @timestamp, null),\n    Esql.private_event_ttl = CASE(Esql.is_private, MV_MIN(dns.answers.ttl), null),\n    Esql.private_ip = CASE(Esql.is_private, dns.resolved_ip, null),\n    Esql.public_ip = CASE(not Esql.is_private, dns.resolved_ip, null)\n| stats\n    Esql.resolved_ip_observation_count = COUNT(*),\n    Esql.resolved_ip_count = COUNT_DISTINCT(dns.resolved_ip),\n    Esql.first_public_answer = MIN(Esql.public_time),\n    Esql.first_private_answer = MIN(Esql.private_time),\n    Esql.min_private_event_ttl = MIN(Esql.private_event_ttl),\n    Esql.public_ips = MV_SLICE(VALUES(Esql.public_ip), 0, 100),\n    Esql.private_ips = MV_SLICE(VALUES(Esql.private_ip), 0, 100),\n    Esql.dataset_values = MV_SLICE(VALUES(Esql.dataset), 0, 10),\n    Esql.observer_name_values = MV_SLICE(VALUES(observer.name), 0, 20)\n  by Esql.client_ip, dns.question.name, dns.question.registered_domain\n| eval\n    Esql.same_timestamp = Esql.first_public_answer == Esql.first_private_answer,\n    Esql.transition_seconds = DATE_DIFF(\"seconds\", Esql.first_public_answer, Esql.first_private_answer)\n| where\n    Esql.first_public_answer is not null and\n    Esql.first_private_answer is not null and\n    (\n        Esql.same_timestamp or\n        (\n            Esql.first_public_answer < Esql.first_private_answer and\n            Esql.min_private_event_ttl is not null and\n            Esql.min_private_event_ttl <= 60 and\n            Esql.transition_seconds <= 300\n        )\n    )\n| keep Esql.*, dns.*\n",
+        "references": [
+            "https://owasp.org/www-community/attacks/DNS_Rebinding",
+            "https://portswigger.net/web-security/ssrf"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            },
+            {
+                "package": "zeek",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "dns.question.registered_domain",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c485ceb7-b0e3-4540-9e8c-e9c655406e68",
+        "setup": "## Setup\n\nThis rule requires DNS transaction events from one of the following passive network integrations:\n\n- Elastic Network Packet Capture (`network_traffic.dns`) in `logs-network_traffic.dns-*`\n- Zeek (`zeek.dns`) in `logs-zeek.dns-*`\n- Legacy Packetbeat DNS events in `packetbeat-*`\n\nEnable DNS logging so that `dns.question.registered_domain` and `dns.resolved_ip` are populated. Populate\n`dns.answers.ttl` to detect sequential public-to-private transitions; equal-timestamp matches do not require TTL data.\n\nPlace the sensor where it observes endpoint-to-resolver DNS traffic. If the sensor is upstream of a recursive resolver,\nor if the captured client is a localhost listener such as `127.0.0.1`, `Esql.client_ip` may identify shared DNS\ninfrastructure instead of the originating endpoint and can merge answers from many hosts.\n\nDNS-over-HTTPS (DoH), DNS-over-TLS (DoT), and other encrypted DNS traffic are not visible to packet capture unless the\nsensor receives decrypted DNS telemetry or equivalent resolver logs mapped to ECS.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Initial Access",
+            "Rule Type: ESQL",
+            "Data Source: Network Packet Capture",
+            "Data Source: Network Traffic",
+            "Data Source: Zeek",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1189",
+                        "name": "Drive-by Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1189/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c485ceb7-b0e3-4540-9e8c-e9c655406e68_1",
+    "type": "security-rule"
+}
