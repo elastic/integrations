@@ -3,7 +3,7 @@ description: Pipeline for processing IOC logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - remove:
       field:
@@ -12,174 +12,183 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_3410a97a
       value: enrichment
   - append:
       field: event.category
-      tag: append_threat_into_event_category
+      tag: append_threat_into_event_category_8e392818
       value: threat
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_indicator_into_event_type
+      tag: append_indicator_into_event_type_d9f6d523
       value: indicator
       allow_duplicates: false
   - set:
       field: threat.indicator.provider
-      tag: set_threat_indicator_provider
+      tag: set_threat_indicator_provider_c76aab6c
       value: crowdstrike
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action
-      tag: rename_action
+      tag: rename_action_951700b4
       target_field: ti_crowdstrike.ioc.action
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_ioc_action
+      tag: set_event_action_from_ioc_action_b868e59f
       copy_from: ti_crowdstrike.ioc.action
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_40560a09
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_1b3a653e
       separator: '-'
       if: ctx.event?.action != null
       on_failure:
         - append:
+            tag: append_error_message_a9668992
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.applied_globally
-      tag: convert_applied_globally_to_boolean
+      tag: convert_applied_globally_to_boolean_201bc6a9
       target_field: ti_crowdstrike.ioc.applied_globally
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c1d4aa2b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.created_by
-      tag: rename_created_by
+      tag: rename_created_by_b180ac58
       target_field: ti_crowdstrike.ioc.created_by
       ignore_missing: true
   - dissect:
       if: ctx.ti_crowdstrike?.ioc?.created_by != null && ctx.ti_crowdstrike.ioc.created_by.contains('@')
-      tag: dissect_ioc_created_by
+      tag: dissect_ioc_created_by_f3f9888f
       field: ti_crowdstrike.ioc.created_by
       pattern: '%{user.name}@%{user.domain}'
   - date:
       field: json.created_on
-      tag: date_created_on
+      tag: date_created_on_37e8dcdd
       target_field: ti_crowdstrike.ioc.created_on
       formats:
         - ISO8601
       if: ctx.json?.created_on != null && ctx.json.created_on != ''
       on_failure:
         - append:
+            tag: append_error_message_31c511ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.first_seen
-      tag: set_threat_indicator_first_seen_from_ioc_created_on
+      tag: set_threat_indicator_first_seen_from_ioc_created_on_289a33ea
       copy_from: ti_crowdstrike.ioc.created_on
       ignore_empty_value: true
   - convert:
       field: json.deleted
-      tag: convert_deleted_to_boolean
+      tag: convert_deleted_to_boolean_92caddd1
       target_field: ti_crowdstrike.ioc.deleted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_41126017
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_97f48dda
       target_field: ti_crowdstrike.ioc.description
       ignore_missing: true
   - set:
       field: threat.indicator.description
-      tag: set_threat_indicator_description_from_ioc_description
+      tag: set_threat_indicator_description_from_ioc_description_e66fbd26
       copy_from: ti_crowdstrike.ioc.description
       ignore_empty_value: true
   - convert:
       field: json.expired
-      tag: convert_expired_to_boolean
+      tag: convert_expired_to_boolean_28585229
       target_field: ti_crowdstrike.ioc.expired
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cb70d996
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.from_parent
-      tag: convert_from_parent_to_boolean
+      tag: convert_from_parent_to_boolean_6eb94a99
       target_field: ti_crowdstrike.ioc.from_parent
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e2b8328d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_829b1961
       target_field: ti_crowdstrike.ioc.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_ioc_id
+      tag: set_event_id_from_ioc_id_cc92a45c
       copy_from: ti_crowdstrike.ioc.id
       ignore_empty_value: true
   - rename:
       field: json.metadata
-      tag: rename_metadata
+      tag: rename_metadata_128025f8
       target_field: ti_crowdstrike.ioc.metadata
       ignore_missing: true
   - script:
       lang: painless
-      tag: script-default-deleted_at
+      tag: script-default-deleted_at_7fba9df7
       if: ctx.json?.deleted_at == null && ctx.json?.modified_on != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
       description: Add default deleted_at field.
       source: >
@@ -200,11 +209,12 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_d02dbea0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.deleted_at
-      tag: date_deleted_at
+      tag: date_deleted_at_b7a1b051
       target_field: ti_crowdstrike.ioc.deleted_at
       formats:
         - ISO8601
@@ -212,86 +222,89 @@ processors:
       if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
       on_failure:
         - append:
+            tag: append_error_message_7b35108f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _conf.ioc_expiration_duration
-      tag: rename_conf_ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration_48596f53
       target_field: ti_crowdstrike.ioc.expiration_duration
       ignore_missing: true
   - set:
       field: file.name
-      tag: set_file_name
+      tag: set_file_name_cd1cccfd
       copy_from: ti_crowdstrike.ioc.metadata.filename
       ignore_empty_value: true
   - rename:
       field: json.modified_by
-      tag: rename_modified_by
+      tag: rename_modified_by_ad3174fd
       target_field: ti_crowdstrike.ioc.modified_by
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_modified_by_into_related_user
+      tag: append_modified_by_into_related_user_8134285f
       value: '{{{ti_crowdstrike.ioc.modified_by}}}'
       allow_duplicates: false
   - append:
       field: related.user
-      tag: append_ioc_created_by_into_related_user
+      tag: append_ioc_created_by_into_related_user_4a97cdb8
       value: '{{{ti_crowdstrike.ioc.created_by}}}'
       if: ctx.related?.user == null
       allow_duplicates: false
   - date:
       field: json.modified_on
-      tag: date_modified_on
+      tag: date_modified_on_ed996c8d
       target_field: ti_crowdstrike.ioc.modified_on
       formats:
         - ISO8601
       if: ctx.json?.modified_on != null && ctx.json.modified_on != ''
       on_failure:
         - append:
+            tag: append_error_message_b7d2bdac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_ioc_modified_on
+      tag: set_@timestamp_from_ioc_modified_on_3604a085
       copy_from: ti_crowdstrike.ioc.modified_on
       ignore_empty_value: true
   - set:
       field: threat.indicator.modified_at
-      tag: set_threat_indicator_modified_at_from_ioc_modified_on
+      tag: set_threat_indicator_modified_at_from_ioc_modified_on_5030f77f
       copy_from: ti_crowdstrike.ioc.modified_on
       ignore_empty_value: true
   - rename:
       field: json.platforms
-      tag: rename_platforms
+      tag: rename_platforms_b0958365
       target_field: ti_crowdstrike.ioc.platforms
       ignore_missing: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_e241fddb
       target_field: ti_crowdstrike.ioc.severity
       ignore_missing: true
   - rename:
       field: json.tags
-      tag: rename_tags
+      tag: rename_tags_08ff93b4
       target_field: ti_crowdstrike.ioc.tags
       ignore_missing: true
   - rename:
       field: json.value
-      tag: rename_value
+      tag: rename_value_452d477c
       target_field: ti_crowdstrike.ioc.value
       ignore_missing: true
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name
+      tag: set_threat_indicator_name_3d0a797b
       copy_from: ti_crowdstrike.ioc.value
       ignore_empty_value: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_30a288b2
       target_field: ti_crowdstrike.ioc.type
       ignore_missing: true
   - script:
+      tag: script_map_ioc_type_field_f3168511
       lang: painless
       if: ctx.ti_crowdstrike?.ioc?.type != null
       description: >
@@ -325,33 +338,35 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c4beea18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ti_crowdstrike.ioc.value
-      tag: convert_ioc_value_to_ip
+      tag: convert_ioc_value_to_ip_d7b63ff6
       type: ip
       ignore_missing: true
       if: ctx.ti_crowdstrike?.ioc?.value != '' && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
       on_failure:
         - append:
+            tag: append_error_message_56d00004
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_ioc_value_to_related_ip
+      tag: append_ioc_value_to_related_ip_8900f0a4
       value: '{{{ti_crowdstrike.ioc.value}}}'
       if: ctx.ti_crowdstrike?.ioc?.value != null && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
       allow_duplicates: false
   - set:
       field: threat.indicator.ip
-      tag: set_threat_indicator_ip_from_ioc_value
+      tag: set_threat_indicator_ip_from_ioc_value_79f1c756
       copy_from: ti_crowdstrike.ioc.value
       if: ctx.ti_crowdstrike?.ioc?.value != null && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_ioc_value_to_related_hash
+      tag: append_ioc_value_to_related_hash_3339f96d
       value: '{{{ti_crowdstrike.ioc.value}}}'
       if: ctx.ti_crowdstrike?.ioc?.value != null && ctx.ti_crowdstrike?.ioc?.type != null && ['md5', 'sha256', 'sha1'].contains(ctx.ti_crowdstrike.ioc.type)
       allow_duplicates: false
@@ -361,15 +376,15 @@ processors:
         - ti_crowdstrike.ioc.id
         - ti_crowdstrike.ioc.description
         - ti_crowdstrike.ioc.created_on
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_c17e0b3a
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_1f3b1d54
       lang: painless
       source: |-
         boolean drop(Object object) {
@@ -388,27 +403,32 @@ processors:
       description: Drops null/empty values recursively.
       on_failure:
         - append:
+            tag: append_error_message_c818c82e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
-      tag: append_pipeline_error_into_event_kind
+      tag: append_pipeline_error_into_event_kind_acc297e3
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -4342,10 +4342,12 @@ processors:
               }
             }
             if (Character.isWhitespace(ctx.winlog.event_data.CommandLine.charAt(i)) && !in_quote) {
-              al.add(ctx.winlog.event_data.CommandLine.substring(start, end));
+              if (end > start) {
+                al.add(ctx.winlog.event_data.CommandLine.substring(start, end));
+              }
               start = i + 1;
             }
-            if (i == ctx.winlog.event_data.CommandLine.length() - 1) {
+            if (i == ctx.winlog.event_data.CommandLine.length() - 1 && start <= end) {
               al.add(ctx.winlog.event_data.CommandLine.substring(start, end + 1));
             }
           }
