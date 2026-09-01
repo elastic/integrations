@@ -156,22 +156,22 @@ An example event for `auth_log` looks as following:
 {
     "@timestamp": "2026-07-15T10:53:18.000Z",
     "agent": {
-        "ephemeral_id": "13e4961b-e4e8-44ac-8040-2bff2fd346ea",
-        "id": "b8c0578e-cac8-40e6-94e3-7af8e050e7c4",
-        "name": "elastic-agent-79615",
+        "ephemeral_id": "03b4317f-6a52-48cb-82f8-402d2313f632",
+        "id": "a9d36c11-eb76-4ca7-bdfe-cb2efa8983d1",
+        "name": "elastic-agent-27693",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.auth_log",
-        "namespace": "68316",
+        "namespace": "34298",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b8c0578e-cac8-40e6-94e3-7af8e050e7c4",
+        "id": "a9d36c11-eb76-4ca7-bdfe-cb2efa8983d1",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -183,7 +183,7 @@ An example event for `auth_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.auth_log",
         "id": "9532e1b4-e44a-42c7-a52a-083c345e0001",
-        "ingested": "2026-08-28T07:59:43Z",
+        "ingested": "2026-08-17T07:22:49Z",
         "kind": "event",
         "original": "{\"event_id\":\"9532e1b4-e44a-42c7-a52a-083c345e0001\",\"type\":\"AUTH_LOG\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"timestamp\":\"2026-07-15T10:53:18Z\",\"request_metadata\":{\"client_ip\":\"81.2.69.142\",\"client_ip_details\":{\"country\":\"GB\",\"city\":\"London\",\"region\":\"England\",\"region_code\":\"ENG\",\"latitude\":\"51.50853\",\"longitude\":\"-0.12574\"},\"client_ja3\":\"f90ffded875933863a95a1a84285c922\",\"client_ja4\":\"q13d0311h3_55b375c5d22e_653d80c3fe9d\"},\"action_data\":{\"action\":\"login_success\",\"role\":\"standard-user\"}}",
         "outcome": "success",
@@ -292,22 +292,22 @@ An example event for `app_auth_log` looks as following:
 {
     "@timestamp": "2026-07-09T10:10:00.000Z",
     "agent": {
-        "ephemeral_id": "3aac4993-9973-4d81-886e-2468af3f6987",
-        "id": "eee3a131-d42f-4d2b-9396-ac846466fef2",
-        "name": "elastic-agent-48287",
+        "ephemeral_id": "03182296-6d5f-4442-89dd-da2397e66cf1",
+        "id": "3bd38571-a0e8-43a1-a4fe-9d096f66718d",
+        "name": "elastic-agent-93262",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.app_auth_log",
-        "namespace": "30515",
+        "namespace": "51708",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "eee3a131-d42f-4d2b-9396-ac846466fef2",
+        "id": "3bd38571-a0e8-43a1-a4fe-9d096f66718d",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -319,7 +319,7 @@ An example event for `app_auth_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.app_auth_log",
         "id": "7b3e4de1-2219-4d6c-9d6e-8f4d40c7c001",
-        "ingested": "2026-08-28T07:57:13Z",
+        "ingested": "2026-08-17T07:22:00Z",
         "kind": "event",
         "original": "{\"event_id\":\"7b3e4de1-2219-4d6c-9d6e-8f4d40c7c001\",\"type\":\"APP_AUTH_LOG\",\"timestamp\":\"2026-07-09T10:10:00.000000Z\",\"principal\":{\"id\":\"be545252-ad04-4cfa-9ca5-deca58416151\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-AbCdEf1234567890\",\"user_email\":\"user@example.org\"},\"app_id\":\"asdk_app_0123456789abcdef0123456789abcdef\",\"link_id\":\"link_00112233445566778899aabbccddeeff\",\"action\":\"link\"}",
         "type": [
@@ -416,22 +416,22 @@ An example event for `app_log` looks as following:
 {
     "@timestamp": "2026-07-15T15:39:18.154Z",
     "agent": {
-        "ephemeral_id": "28bbdd6e-e786-411d-8be8-a3b046df38f4",
-        "id": "71aa0384-200e-4029-9666-7bf89920cf21",
-        "name": "elastic-agent-31255",
+        "ephemeral_id": "7e6eae22-73d9-4583-9118-52bd111c571c",
+        "id": "a55b9626-c44b-4de5-9bf6-0d9935deeaef",
+        "name": "elastic-agent-16522",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.app_log",
-        "namespace": "58967",
+        "namespace": "99788",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "71aa0384-200e-4029-9666-7bf89920cf21",
+        "id": "a55b9626-c44b-4de5-9bf6-0d9935deeaef",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -442,7 +442,7 @@ An example event for `app_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.app_log",
         "id": "3f1a9c02-1111-4a11-8b11-000000000001",
-        "ingested": "2026-08-28T07:58:02Z",
+        "ingested": "2026-08-26T06:44:59Z",
         "kind": "event",
         "original": "{\"event_id\":\"3f1a9c02-1111-4a11-8b11-000000000001\",\"type\":\"APP_LOG\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"timestamp\":\"2026-07-15T15:39:18.154524Z\",\"app_id\":\"asdk_app_1111111111111111aaaa\",\"app_name\":\"Slack\",\"app_type\":\"MCP\",\"conversation_id\":\"c-1111-aaaa-2222-bbbb\",\"log_type\":\"request\",\"input\":{\"query\":\"in:general after:2026-07-14\",\"limit\":20,\"include_bots\":true,\"sort\":\"timestamp\",\"sort_dir\":\"desc\",\"response_format\":\"concise\",\"_meta\":{\"openai/userAgent\":\"ChatGPT/1.2026.183 (Mac OS X 26.5.2; arm64; build 1783607847)\",\"openai/locale\":\"en-GB\",\"openai/userLocation\":{\"city\":\"London\",\"region\":\"England\",\"country\":\"GB\",\"timezone\":\"Europe/London\",\"latitude\":\"51.50853\",\"longitude\":\"-0.12574\"},\"timezone\":\"Europe/London\",\"openai/subject\":\"v1/mock-subject-aaaaaaaaaaaaaaaa\",\"openai/session\":\"v1/mock-session-aaaaaaaaaaaaaaaa\",\"openai/organization\":\"v1/mock-org-aaaaaaaaaaaaaaaa\"}}}",
         "type": [
