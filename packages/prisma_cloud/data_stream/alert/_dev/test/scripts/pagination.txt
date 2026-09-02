@@ -1,0 +1,91 @@
+# Test that alerts spanning multiple pages are all collected. The mock
+# returns a first page with a nextPageToken and a second page without one.
+# The CEL program must POST to /v2/alert, follow the pageToken in the request
+# body (not the URL), and collect alerts from every page. Regression guard for
+# the pageToken pagination fix (switch GET query-string pagination -> POST body
+# pagination), which previously dropped paged data (414 / empty pages).
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} page-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# All three alerts across the two pages should be collected. The pipeline
+# fingerprints _id, so re-collection on later polls deduplicates to three
+# documents; -confirm guards against duplicates or missed pages.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq -r '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs.json
+stdout '^P-1,P-2,P-3$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down page-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  username: xxxx
+  password: xxxx
+data_stream:
+  vars:
+    url: http://page-mock:8080
+    interval: 30s
+    time_amount: 1
+    time_unit: hour
+    batch_size: 2
+    preserve_original_event: true
+
+-- page-mock/docker-compose.yml --
+version: '2.3'
+services:
+  page-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: page-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- page-mock/config.yml --
+rules:
+  - path: /login
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"message":"login_successful","token":"xxxx"}
+
+  # /v2/alert (POST): page 1 carries a nextPageToken, page 2 does not.
+  - path: /v2/alert
+    methods: ['POST']
+    request_headers:
+      x-redlock-auth:
+        - 'xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"totalRows": 3, "items": [{"id": "P-1", "alertAdditionalInfo": {"scannerVersion": "CS_2.0"}, "alertAttribution": {"attributionEventList": [{"event": "first_event", "event_ts": 1694003441966, "username": "alex123"}], "resourceCreatedBy": "string", "resourceCreatedOn": 0}, "status": "open", "reason": "NEW_ALERT", "firstSeen": 1694003441966, "history": [{"modifiedOn": "1694003441966", "modifiedBy": "alex123", "reason": "Reason1", "status": "OPEN"}], "lastSeen": 1694003441966, "alertTime": 1694003441966, "lastUpdated": 1694003441000, "policyId": "ad23603d-754e-4499-8988-b801xxx85898", "metadata": null, "policy": {"policyId": "ad23603d-754e-4499-8988-b8017xxxx98", "name": "AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)", "policyType": "network", "systemDefault": true, "complianceMetadata": [{"complianceId": "qwer345bv", "customAssigned": true, "policyId": "werf435tr", "requirementDescription": "Description of policy compliance.", "requirementId": "req-123-xyz", "requirementName": "rigidity", "sectionDescription": "Description of section.", "sectionId": "sect-453-abc", "sectionLabel": "label-1", "standardDescription": "Description of standard.", "standardId": "stand-543-pqr", "standardName": "Class 1"}], "description": "This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0).", "severity": "high", "recommendation": "Restrict traffic from unknown IP addresses.", "labels": ["Prisma_Cloud", "Attack Path Rule"], "lastModifiedOn": 1687474999057, "lastModifiedBy": "template@redlock.io", "deleted": false, "findingTypes": [], "remediable": false, "remediation": {"actions": [{"operation": "buy", "payload": "erefwsdf"}], "cliScriptTemplate": "temp1", "description": "Description of CLI Script Template."}}, "alertRules": [], "resource": {"rrn": "rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947", "id": "i-04578exxxx8100947", "name": "IS-37133", "account": "AWS Cloud Account", "accountId": "710002259376", "cloudAccountGroups": ["Default Account Group"], "region": "AWS Virginia", "regionId": "us-east-1", "resourceType": "INSTANCE", "resourceApiName": "aws-ec2-describe-instances", "cloudServiceName": "Amazon EC2", "url": "https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947", "data": null, "additionalInfo": null, "cloudType": "aws", "resourceTs": 1694003441915, "unifiedAssetId": "66c543b6261c4d9edxxxxxb42e15f4", "resourceConfigJsonAvailable": false, "resourceDetailsAvailable": true}, "investigateOptions": {"alertId": "P-1"}}, {"id": "P-2", "alertAdditionalInfo": {"scannerVersion": "CS_2.0"}, "alertAttribution": {"attributionEventList": [{"event": "first_event", "event_ts": 1694003441966, "username": "alex123"}], "resourceCreatedBy": "string", "resourceCreatedOn": 0}, "status": "open", "reason": "NEW_ALERT", "firstSeen": 1694003441966, "history": [{"modifiedOn": "1694003441966", "modifiedBy": "alex123", "reason": "Reason1", "status": "OPEN"}], "lastSeen": 1694003441966, "alertTime": 1694003441966, "lastUpdated": 1694003442000, "policyId": "ad23603d-754e-4499-8988-b801xxx85898", "metadata": null, "policy": {"policyId": "ad23603d-754e-4499-8988-b8017xxxx98", "name": "AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)", "policyType": "network", "systemDefault": true, "complianceMetadata": [{"complianceId": "qwer345bv", "customAssigned": true, "policyId": "werf435tr", "requirementDescription": "Description of policy compliance.", "requirementId": "req-123-xyz", "requirementName": "rigidity", "sectionDescription": "Description of section.", "sectionId": "sect-453-abc", "sectionLabel": "label-1", "standardDescription": "Description of standard.", "standardId": "stand-543-pqr", "standardName": "Class 1"}], "description": "This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0).", "severity": "high", "recommendation": "Restrict traffic from unknown IP addresses.", "labels": ["Prisma_Cloud", "Attack Path Rule"], "lastModifiedOn": 1687474999057, "lastModifiedBy": "template@redlock.io", "deleted": false, "findingTypes": [], "remediable": false, "remediation": {"actions": [{"operation": "buy", "payload": "erefwsdf"}], "cliScriptTemplate": "temp1", "description": "Description of CLI Script Template."}}, "alertRules": [], "resource": {"rrn": "rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947", "id": "i-04578exxxx8100947", "name": "IS-37133", "account": "AWS Cloud Account", "accountId": "710002259376", "cloudAccountGroups": ["Default Account Group"], "region": "AWS Virginia", "regionId": "us-east-1", "resourceType": "INSTANCE", "resourceApiName": "aws-ec2-describe-instances", "cloudServiceName": "Amazon EC2", "url": "https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947", "data": null, "additionalInfo": null, "cloudType": "aws", "resourceTs": 1694003441915, "unifiedAssetId": "66c543b6261c4d9edxxxxxb42e15f4", "resourceConfigJsonAvailable": false, "resourceDetailsAvailable": true}, "investigateOptions": {"alertId": "P-2"}}], "nextPageToken": "PAGE2TOKEN"}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"totalRows": 3, "items": [{"id": "P-3", "alertAdditionalInfo": {"scannerVersion": "CS_2.0"}, "alertAttribution": {"attributionEventList": [{"event": "first_event", "event_ts": 1694003441966, "username": "alex123"}], "resourceCreatedBy": "string", "resourceCreatedOn": 0}, "status": "open", "reason": "NEW_ALERT", "firstSeen": 1694003441966, "history": [{"modifiedOn": "1694003441966", "modifiedBy": "alex123", "reason": "Reason1", "status": "OPEN"}], "lastSeen": 1694003441966, "alertTime": 1694003441966, "lastUpdated": 1694003443000, "policyId": "ad23603d-754e-4499-8988-b801xxx85898", "metadata": null, "policy": {"policyId": "ad23603d-754e-4499-8988-b8017xxxx98", "name": "AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)", "policyType": "network", "systemDefault": true, "complianceMetadata": [{"complianceId": "qwer345bv", "customAssigned": true, "policyId": "werf435tr", "requirementDescription": "Description of policy compliance.", "requirementId": "req-123-xyz", "requirementName": "rigidity", "sectionDescription": "Description of section.", "sectionId": "sect-453-abc", "sectionLabel": "label-1", "standardDescription": "Description of standard.", "standardId": "stand-543-pqr", "standardName": "Class 1"}], "description": "This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0).", "severity": "high", "recommendation": "Restrict traffic from unknown IP addresses.", "labels": ["Prisma_Cloud", "Attack Path Rule"], "lastModifiedOn": 1687474999057, "lastModifiedBy": "template@redlock.io", "deleted": false, "findingTypes": [], "remediable": false, "remediation": {"actions": [{"operation": "buy", "payload": "erefwsdf"}], "cliScriptTemplate": "temp1", "description": "Description of CLI Script Template."}}, "alertRules": [], "resource": {"rrn": "rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947", "id": "i-04578exxxx8100947", "name": "IS-37133", "account": "AWS Cloud Account", "accountId": "710002259376", "cloudAccountGroups": ["Default Account Group"], "region": "AWS Virginia", "regionId": "us-east-1", "resourceType": "INSTANCE", "resourceApiName": "aws-ec2-describe-instances", "cloudServiceName": "Amazon EC2", "url": "https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947", "data": null, "additionalInfo": null, "cloudType": "aws", "resourceTs": 1694003441915, "unifiedAssetId": "66c543b6261c4d9edxxxxxb42e15f4", "resourceConfigJsonAvailable": false, "resourceDetailsAvailable": true}, "investigateOptions": {"alertId": "P-3"}}]}
