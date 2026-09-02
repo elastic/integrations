@@ -61,35 +61,6 @@ func ImportBeats() error {
 	return sh.Run("go", args...)
 }
 
-// UpdateOsqueryManager regenerates osquery_manager schemas for the latest
-// stable osquery release. Set OSQUERY_VERSION to select a specific release and
-// BEATS_PATH to read extension specs from an unreleased local Beats checkout.
-// KIBANA_VERSION is required when the resolved osquery version is new (not yet
-// in the changelog); it must list only stack releases that contain the upgraded
-// runtime. CHANGELOG_LINK is also required for that bump.
-func UpdateOsqueryManager() error {
-	const toolDir = "packages/osquery_manager/_dev/scripts/osquery-gen"
-	version := os.Getenv("OSQUERY_VERSION")
-	if version == "" {
-		version = "latest"
-	}
-	args := []string{"-C", toolDir, "run", ".", "-config", "./config.yml", "-osquery-version", version, "-update-config", "-update-package"}
-	if changelogLink := os.Getenv("CHANGELOG_LINK"); changelogLink != "" {
-		args = append(args, "-changelog-link", changelogLink)
-	}
-	if kibanaVersion := os.Getenv("KIBANA_VERSION"); kibanaVersion != "" {
-		args = append(args, "-kibana-version", kibanaVersion)
-	}
-	if beatsPath := os.Getenv("BEATS_PATH"); beatsPath != "" {
-		absolutePath, err := filepath.Abs(beatsPath)
-		if err != nil {
-			return fmt.Errorf("resolve BEATS_PATH: %w", err)
-		}
-		args = append(args, "-beats-path", absolutePath)
-	}
-	return sh.RunV("go", args...)
-}
-
 func MergeCoverage() error {
 	coverageFiles, err := filepath.Glob("build/test-coverage/coverage-*.xml")
 	if err != nil {

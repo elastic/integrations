@@ -88,11 +88,12 @@ go run . -config ./config.yml -skip-package-check
 
 ## Upgrade Osquery
 
-From the integrations repository root, run:
+From this directory (or from the integrations repository root with
+`mage -d packages/osquery_manager/_dev/scripts/osquery-gen`), run:
 
 ```bash
 CHANGELOG_LINK=https://github.com/elastic/integrations/issues/12345 \
-KIBANA_VERSION='~9.4.6 || ^9.5.3' mage updateOsqueryManager
+KIBANA_VERSION='~9.4.6 || ^9.5.3' mage Update
 ```
 
 This resolves the latest stable release, regenerates and validates the package,
@@ -108,7 +109,7 @@ local Beats checkout:
 ```bash
 CHANGELOG_LINK=https://github.com/elastic/integrations/issues/12345 \
 KIBANA_VERSION='~9.4.6 || ^9.5.3' OSQUERY_VERSION=5.23.1 \
-BEATS_PATH=../beats mage updateOsqueryManager
+BEATS_PATH=/path/to/beats mage Update
 ```
 
 1. Review all generated fields, schemas, and `schemas/metadata.json`.
