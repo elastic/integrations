@@ -2,94 +2,125 @@
 description: Pipeline for parsing GCP Compute metrics.
 processors:
   - fingerprint:
+      tag: fingerprint_to_gcp_labels_fingerprint_5c1d1252
       fields:
         - gcp.labels
       target_field: gcp.labels_fingerprint
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_firewall_dropped_bytes_to_gcp_compute_firewall_dropped_bytes_bf5202b8
       field: gcp.metrics.firewall.dropped.bytes
       target_field: gcp.compute.firewall.dropped.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_firewall_dropped_packets_count_value_to_gcp_compute_firewall_dropped_packets_count_value_ff2d8334
       field: gcp.metrics.firewall.dropped_packets_count.value
       target_field: gcp.compute.firewall.dropped_packets_count.value
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_cpu_reserved_cores_value_to_gcp_compute_instance_cpu_reserved_cores_value_782b480a
       field: gcp.metrics.instance.cpu.reserved_cores.value
       target_field: gcp.compute.instance.cpu.reserved_cores.value
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_cpu_usage_time_sec_to_gcp_compute_instance_cpu_usage_time_sec_e1f1f736
       field: gcp.metrics.instance.cpu.usage_time.sec
       target_field: gcp.compute.instance.cpu.usage_time.sec
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_cpu_usage_pct_to_gcp_compute_instance_cpu_usage_pct_080854f4
       field: gcp.metrics.instance.cpu.usage.pct
       target_field: gcp.compute.instance.cpu.usage.pct
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_disk_read_bytes_to_gcp_compute_instance_disk_read_bytes_6332c2e8
       field: gcp.metrics.instance.disk.read.bytes
       target_field: gcp.compute.instance.disk.read.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_disk_read_ops_count_value_to_gcp_compute_instance_disk_read_ops_count_value_2db757e8
       field: gcp.metrics.instance.disk.read_ops_count.value
       target_field: gcp.compute.instance.disk.read_ops_count.value
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_disk_write_bytes_to_gcp_compute_instance_disk_write_bytes_45faa37c
       field: gcp.metrics.instance.disk.write.bytes
       target_field: gcp.compute.instance.disk.write.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_disk_write_ops_count_value_to_gcp_compute_instance_disk_write_ops_count_value_067284de
       field: gcp.metrics.instance.disk.write_ops_count.value
       target_field: gcp.compute.instance.disk.write_ops_count.value
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_memory_balloon_ram_size_value_to_gcp_compute_instance_memory_balloon_ram_size_value_d61ef8c8
       field: gcp.metrics.instance.memory.balloon.ram_size.value
       target_field: gcp.compute.instance.memory.balloon.ram_size.value
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_memory_balloon_ram_used_value_to_gcp_compute_instance_memory_balloon_ram_used_value_0426f174
       field: gcp.metrics.instance.memory.balloon.ram_used.value
       target_field: gcp.compute.instance.memory.balloon.ram_used.value
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_memory_balloon_swap_in_bytes_to_gcp_compute_instance_memory_balloon_swap_in_bytes_dbb886aa
       field: gcp.metrics.instance.memory.balloon.swap_in.bytes
       target_field: gcp.compute.instance.memory.balloon.swap_in.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_memory_balloon_swap_out_bytes_to_gcp_compute_instance_memory_balloon_swap_out_bytes_bf7e9868
       field: gcp.metrics.instance.memory.balloon.swap_out.bytes
       target_field: gcp.compute.instance.memory.balloon.swap_out.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_network_ingress_bytes_to_gcp_compute_instance_network_ingress_bytes_1a0a1ec4
       field: gcp.metrics.instance.network.ingress.bytes
       target_field: gcp.compute.instance.network.ingress.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_network_ingress_packets_count_to_gcp_compute_instance_network_ingress_packets_count_598bf998
       field: gcp.metrics.instance.network.ingress.packets.count
       target_field: gcp.compute.instance.network.ingress.packets.count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_network_egress_bytes_to_gcp_compute_instance_network_egress_bytes_c6529ef2
       field: gcp.metrics.instance.network.egress.bytes
       target_field: gcp.compute.instance.network.egress.bytes
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_network_egress_packets_count_to_gcp_compute_instance_network_egress_packets_count_55c0ba5c
       field: gcp.metrics.instance.network.egress.packets.count
       target_field: gcp.compute.instance.network.egress.packets.count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_uptime_sec_to_gcp_compute_instance_uptime_sec_456b8270
       field: gcp.metrics.instance.uptime.sec
       target_field: gcp.compute.instance.uptime.sec
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_instance_uptime_total_sec_to_gcp_compute_instance_uptime_total_sec_10fa98b6
       field: gcp.metrics.instance.uptime_total.sec
       target_field: gcp.compute.instance.uptime_total.sec
       ignore_missing: true
   - remove:
+      tag: remove_ab6e04c7
       field:
         - gcp.metrics
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

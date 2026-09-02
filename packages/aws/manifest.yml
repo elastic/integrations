@@ -1,7 +1,7 @@
-format_version: 3.6.1
+format_version: 3.6.4
 name: aws
 title: AWS
-version: 7.2.0
+version: 8.2.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -21,8 +21,8 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "^9.4.0"
-  # auth.aws support in CEL and HTTPJSON inputs requires Elastic Agent 9.4.0+.
+    version: "^9.6.0"
+  # auth.aws + libbeat cloud connectors on the current ExternalID contract ship in Elastic Agent 9.4.0 (elastic/beats#47260, #47587, #48956).
   agent:
     version: "^9.4.0"
 screenshots:
@@ -76,14 +76,6 @@ vars:
     multi: false
     required: false
     show_user: false
-  - name: external_id
-    type: text
-    title: External ID
-    multi: false
-    required: false
-    show_user: false
-    secret: true
-    description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
   - name: assume_role_duration
     type: duration
     title: Assume Role Duration
@@ -127,10 +119,10 @@ var_groups:
     options:
       - name: identity_federation
         title: Identity Federation
-        vars: [role_arn, external_id, supports_identity_federation]
+        vars: [role_arn, supports_identity_federation]
         hide_in_deployment_modes: [default]
         provider: aws
-        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cloud-connectors-guardduty-9.4.0.yml&param_ElasticResourceId=RESOURCE_ID
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
       - name: direct_access_key
         title: Direct Access Keys
         vars: [access_key_id, secret_access_key]
@@ -141,10 +133,6 @@ var_groups:
       - name: assume_role
         title: Assume Role
         vars: [role_arn]
-        hide_in_deployment_modes: [agentless]
-      - name: assume_role_external_id
-        title: Assume Role with External ID
-        vars: [role_arn, external_id]
         hide_in_deployment_modes: [agentless]
       - name: shared_credentials
         title: Shared Credentials
@@ -163,8 +151,6 @@ policy_templates:
         title: Collect AWS Health metrics (experimental)
         description: Collect AWS Health metrics (experimental).
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -196,8 +182,6 @@ policy_templates:
         title: Collect billing metrics
         description: Collect billing metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -257,14 +241,10 @@ policy_templates:
         title: Collect logs from CloudWatch
         description: Collecting logs using aws-cloudwatch input
         input_group: logs
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
       - type: aws/metrics
         title: Collect metrics from CloudWatch
         description: Collecting metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -301,8 +281,6 @@ policy_templates:
       - type: cel
         title: Collect AWS Config logs via API
         description: Collecting AWS Config logs via API.
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     icons:
       - src: /img/logo-aws-config.svg
         title: AWS Config logo
@@ -326,8 +304,6 @@ policy_templates:
         title: Collect dynamodb metrics
         description: Collect dynamodb metrics
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -360,8 +336,6 @@ policy_templates:
         title: Collect EBS metrics
         description: Collect EBS metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -398,14 +372,10 @@ policy_templates:
         title: Collect EC2 logs from CloudWatch
         description: Collecting logs from EC2 using aws-cloudwatch input
         input_group: logs
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
       - type: aws/metrics
         title: Collect EC2 metrics
         description: Collecting EC2 metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -438,8 +408,6 @@ policy_templates:
         title: Collect ECS metrics
         description: Collecting ECS metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -497,20 +465,14 @@ policy_templates:
         title: Collect ELB logs from S3
         description: Collecting logs from ELB using aws-s3 input
         input_group: logs
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
       - type: aws-cloudwatch
         title: Collect ELB logs from CloudWatch
         description: Collecting logs from ELB using aws-cloudwatch input
         input_group: logs
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
       - type: aws/metrics
         title: Collect ELB metrics
         description: Collecting ELB metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -563,14 +525,10 @@ policy_templates:
         title: Collect Lambda metrics
         description: Collect Lambda metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
       - type: aws-cloudwatch
         title: Collect lambda logs from CloudWatch
         description: Collecting AWS lambda logs using aws-cloudwatch input
         input_group: logs
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -669,8 +627,6 @@ policy_templates:
         title: Collect RDS metrics
         description: Collect RDS metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -709,8 +665,6 @@ policy_templates:
         title: Collect S3 metrics
         description: Collecting S3 metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -769,8 +723,6 @@ policy_templates:
         title: Collect SNS metrics
         description: Collect SNS metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -802,8 +754,6 @@ policy_templates:
         title: Collect SQS metrics
         description: Collect SQS metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -835,8 +785,6 @@ policy_templates:
         title: Collect Transit Gateway metrics
         description: Collect Transit Gateway metrics using AWS CloudWatch
         input_group: metrics
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     deployment_modes:
       default:
         enabled: true
@@ -1046,8 +994,12 @@ policy_templates:
       - type: httpjson
         title: Collect AWS Security Hub CSPM logs via API
         description: Collecting AWS Security Hub CSPM logs via API.
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Security Hub read access for findings and insights collection.
+            permissions:
+              - name: securityhub:GetFindings
+              - name: securityhub:GetInsights
     screenshots:
       - src: /img/securityhub_cspm_findings_insights_dashboard.png
         title: Security Hub CSPM Findings and Insights dashboard screenshot
@@ -1084,8 +1036,6 @@ policy_templates:
       - type: httpjson
         title: Collect Amazon Inspector logs via API
         description: Collecting Amazon Inspector logs via API.
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     screenshots:
       - src: /img/inspector-findings-overview-dashboard.png
         title: Inspector Findings Overview dashboard
@@ -1131,8 +1081,6 @@ policy_templates:
       - type: aws-s3
         title: Collect Amazon GuardDuty logs via AWS S3 or SQS
         description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
     screenshots:
       - src: /img/guardduty-findings-overview.png
         title: GuardDuty Findings Overview dashboard screenshot

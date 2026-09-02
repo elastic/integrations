@@ -1,7 +1,7 @@
-format_version: 3.5.0
+format_version: 3.6.4
 name: aws_securityhub
 title: "AWS Security Hub"
-version: 1.2.2
+version: 2.0.1
 source:
   license: "Elastic-2.0"
 description: Collect logs from AWS Security Hub with Elastic Agent.
@@ -13,9 +13,12 @@ categories:
   - vulnerability_workflow
 conditions:
   kibana:
-    version: "^9.3.0"
+    version: "^9.6.0"
   elastic:
     subscription: "basic"
+  # auth.aws + libbeat cloud connectors on the current ExternalID contract ship in Elastic Agent 9.4.0 (elastic/beats#47260, #47587, #48956).
+  agent:
+    version: "^9.4.0"
 icons:
   - src: /img/logo_securityhub.svg
     title: AWS Security Hub logo
@@ -26,6 +29,101 @@ screenshots:
     title: AWS Security Hub Findings Overview Dashboard
     size: 600x600
     type: image/png
+vars:
+  - name: shared_credential_file
+    type: text
+    title: Shared Credential File
+    multi: false
+    required: false
+    show_user: false
+    description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - `Secret Access Key` and `Access Key ID`.
+  - name: credential_profile_name
+    type: text
+    title: Credential Profile Name
+    multi: false
+    required: false
+    show_user: false
+    description: Profile name in shared credentials file.
+  - name: access_key_id
+    type: password
+    title: Access Key ID
+    secret: true
+    multi: false
+    required: false
+    show_user: false
+    description: First part of access key. This parameter along with the `Secret Access Key` parameter is required if we are not providing `Shared Credential File`.
+  - name: secret_access_key
+    type: password
+    title: Secret Access Key
+    secret: true
+    multi: false
+    required: false
+    show_user: false
+    description: Second part of access key. This parameter along with the `Access Key ID` parameter is required if we are not providing `Shared Credential File`.
+  - name: session_token
+    type: password
+    title: Session Token
+    secret: true
+    multi: false
+    required: false
+    show_user: false
+    description: Required when using temporary security credentials.
+  - name: role_arn
+    type: text
+    title: Role ARN
+    multi: false
+    required: false
+    show_user: false
+    description: AWS IAM Role to assume.
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
+  - name: assume_role_duration
+    type: duration
+    title: Assume Role Duration
+    multi: false
+    required: false
+    show_user: false
+    max_duration: 12h
+    min_duration: 15m
+    description: Specifies the duration of the credentials retrieved by the IAM assume-role. It is optional and can be used when `Role ARN` is configured.
+  - name: assume_role_expiry_window
+    type: duration
+    title: Assume Role Expiry Window
+    multi: false
+    required: false
+    show_user: false
+    description: Specifies the credentials retrieved by the IAM assume-role to trigger refreshing prior to the credentials actually expiring. It is optional and can be used when `Role ARN` is configured.
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 policy_templates:
   - name: aws_securityhub
     title: AWS Security Hub logs
@@ -43,75 +141,14 @@ policy_templates:
       - type: cel
         title: Collect AWS Security Hub logs via API
         description: Collecting AWS Security Hub logs via API.
+        provider_permissions:
+          - provider: aws
+            description: Read access to Security Hub findings via the GetFindingsV2 API.
+            permissions:
+              # GetFindings and GetFindingsV2 both use securityhub:GetFindings in
+              # the Action element of an IAM policy statement (AWS API reference).
+              - name: securityhub:GetFindings
         vars:
-          - name: access_key_id
-            type: password
-            title: Access Key ID
-            multi: false
-            required: false
-            show_user: true
-            description: First part of access key. This parameter along with the `Secret Access Key` parameter is required if we are not providing `Shared Credential File`.
-            secret: true
-          - name: secret_access_key
-            type: password
-            title: Secret Access Key
-            multi: false
-            required: false
-            show_user: true
-            description: Second part of access key. This parameter along with the `Access Key ID` parameter is required if we are not providing `Shared Credential File`.
-            secret: true
-          - name: session_token
-            type: password
-            title: Session Token
-            multi: false
-            required: false
-            show_user: true
-            description: Required when using temporary security credentials.
-            secret: true
-          - name: shared_credential_file
-            type: text
-            title: Shared Credential File
-            multi: false
-            required: false
-            show_user: false
-            description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - `Secret Access Key` and `Access Key ID`.
-          - name: credential_profile_name
-            type: text
-            title: Credential Profile Name
-            multi: false
-            required: false
-            show_user: false
-            description: Profile name in shared credentials file.
-          - name: role_arn
-            type: text
-            title: Role ARN
-            multi: false
-            required: false
-            show_user: false
-            description: AWS IAM Role to assume.
-          - name: external_id
-            type: text
-            title: External ID
-            multi: false
-            required: false
-            show_user: false
-            description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
-          - name: assume_role_duration
-            type: duration
-            title: Assume Role Duration
-            multi: false
-            required: false
-            show_user: false
-            max_duration: 12h
-            min_duration: 15m
-            description: Specifies the duration of the credentials retrieved by the IAM assume-role. It is optional and can be used when `Role ARN` is configured.
-          - name: assume_role_expiry_window
-            type: duration
-            title: Assume Role Expiry Window
-            multi: false
-            required: false
-            show_user: false
-            description: Specifies the credentials retrieved by the IAM assume-role to trigger refreshing prior to the credentials actually expiring. It is optional and can be used when `Role ARN` is configured.
           - name: proxy_url
             type: text
             title: Proxy URL
