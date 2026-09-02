@@ -959,6 +959,7 @@ The `device` data stream provides Kolide device inventory records and device-tru
 | kolide.device.status | Normalized (lowercase) device status, derived from the webhook `device_status` or the API `auth_state`. | keyword |
 | kolide.device.type | Type of device, one of `Mac`, `Linux`, `Windows`, `iOS`, or `Android`. | keyword |
 | kolide.device.will_block_at | Timestamp at which the device will be blocked, if any. | date |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
@@ -1097,6 +1098,7 @@ The `people` data stream provides Kolide identity records for active people usin
 | kolide.people.id | Kolide person identifier. | keyword |
 | kolide.people.last_authenticated_at | When the person last authenticated with Kolide. | date |
 | kolide.people.usernames | Usernames imported from the SCIM provider associated with this person. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
