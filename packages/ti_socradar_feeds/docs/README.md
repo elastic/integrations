@@ -29,7 +29,7 @@ The integration also installs a `latest_ioc` transform that deduplicates the sou
 ## What do I need to use this integration?
 
 - A self-managed or Cloud Elastic deployment with Elastic Stack 8.18.0 or later.
-- An Elastic Agent enrolled in Fleet (Fleet-managed deployment is recommended; agentless deployment is also supported).
+- An Elastic Agent enrolled in Fleet (Fleet-managed deployment is recommended; Elastic Managed deployment is also supported).
 - A SOCRadar Platform account with API access.
 - A SOCRadar Platform API key (obtainable from **Settings → API Key** in the SOCRadar Platform).
 
@@ -50,7 +50,7 @@ This integration is deployed using the Elastic Agent. See the general [Observabi
    - **IOC Expiration Duration**: How long indicators remain valid after their last seen timestamp (default `90d`).
    - **Proxy URL** (optional): If you need to connect through a proxy.
    - **SSL Configuration** (optional): Custom SSL settings if needed.
-4. Both Fleet-managed and agentless deployment modes are supported.
+4. Both Fleet-managed and Elastic Managed deployment modes are supported.
 5. Click **Save and continue** to deploy the integration.
 
 ### Validation

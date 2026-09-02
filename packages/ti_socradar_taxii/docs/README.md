@@ -29,7 +29,7 @@ The integration also installs a `latest_ioc` transform that deduplicates the sou
 ## What do I need to use this integration?
 
 - A self-managed or Cloud Elastic deployment with Elastic Stack 8.18.0 or later.
-- An Elastic Agent enrolled in Fleet (Fleet-managed deployment is recommended; agentless deployment is also supported).
+- An Elastic Agent enrolled in Fleet (Fleet-managed deployment is recommended; Elastic Managed deployment is also supported).
 - A SOCRadar Platform account with TAXII 2.1 access (contact SOCRadar support to enable it).
 - TAXII credentials (username and password) issued by SOCRadar.
 - The API root(s) and collection ID(s) you want to ingest from. SOCRadar provides three API roots: `radar_alpha`, `radar_gamma`, and `radar_premium`. Collection IDs can be discovered via the SOCRadar Platform UI under **Threat Intelligence → TAXII Collections**.
@@ -62,7 +62,7 @@ This integration is deployed using the Elastic Agent. See the general [Observabi
    - **Limit**: Max STIX objects per TAXII request (default `1000`). The agent paginates a single collection using the TAXII `next` cursor before round-robin advances to the next collection.
    - **Proxy URL** (optional): If you need to connect through a proxy.
    - **SSL Configuration** (optional): Custom SSL settings if needed.
-4. Both Fleet-managed and agentless deployment modes are supported.
+4. Both Fleet-managed and Elastic Managed deployment modes are supported.
 5. Click **Save and continue** to deploy the integration.
 
 ### Validation

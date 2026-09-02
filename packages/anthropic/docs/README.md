@@ -83,11 +83,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent polls the Anthropic Compliance API and ships collected events to Elasticsearch, where they are processed by the integration's ingest pipeline.
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Refer to [Elastic Managed integrations](https://www.elastic.co/docs/reference/fleet/agentless-integrations) for more information.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the underlying agent infrastructure.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 To use an Elastic Managed deployment, select **Anthropic** in **Management → Integrations**, click **Add Anthropic**, and choose the Elastic Managed option when configuring the integration. Provide the Compliance Access Key or Admin API Key as described in [Onboard / configure](#onboard--configure); Elastic manages the underlying collection infrastructure for you.
 

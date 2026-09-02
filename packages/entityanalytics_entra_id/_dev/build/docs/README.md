@@ -18,9 +18,13 @@ Elastic Agent must be installed for standard deployments. For more details, chec
 
 ### Elastic Managed deployment
 
-This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-When using Elastic Managed deployment, the **request tracer** option is not available because it writes to the agent's local filesystem.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When using an Elastic Managed integration, the **request tracer** option is not available because it writes to the agent's local filesystem.
 
 ### Collect data from Microsoft Graph REST API
 
