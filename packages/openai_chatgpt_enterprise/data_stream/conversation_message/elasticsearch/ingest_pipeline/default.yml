@@ -60,7 +60,7 @@ processors:
       formats:
         - ISO8601
       tag: date_timestamp
-      if: ctx.openai_chatgpt_enterprise.conversation_message?.timestamp != null && ctx.openai_chatgpt_enterprise.conversation_message.timestamp != ''
+      if: ctx.openai_chatgpt_enterprise?.conversation_message?.timestamp != null && ctx.openai_chatgpt_enterprise?.conversation_message.timestamp != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.conversation_message.timestamp
@@ -109,7 +109,7 @@ processors:
       formats:
         - ISO8601
       tag: date_message_created_at
-      if: ctx.openai_chatgpt_enterprise.conversation_message?.message?.created_at != null && ctx.openai_chatgpt_enterprise.conversation_message.message.created_at != ''
+      if: ctx.openai_chatgpt_enterprise?.conversation_message?.message?.created_at != null && ctx.openai_chatgpt_enterprise?.conversation_message.message.created_at != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.conversation_message.message.created_at
@@ -124,7 +124,7 @@ processors:
       formats:
         - ISO8601
       tag: date_conversation_created_at
-      if: ctx.openai_chatgpt_enterprise.conversation_message?.conversation?.created_at != null && ctx.openai_chatgpt_enterprise.conversation_message.conversation.created_at != ''
+      if: ctx.openai_chatgpt_enterprise?.conversation_message?.conversation?.created_at != null && ctx.openai_chatgpt_enterprise?.conversation_message.conversation.created_at != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.conversation_message.conversation.created_at
@@ -133,6 +133,14 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      tag: append_event_category_conversation_message
+      value: session
+  - append:
+      field: event.type
+      tag: append_event_type_conversation_message
+      value: info
   - set:
       field: gen_ai.operation.name
       tag: set_gen_ai_operation_name_chat
@@ -167,28 +175,22 @@ processors:
         ctx.openai_chatgpt_enterprise.conversation_message.message.content.value != '' &&
         ctx.openai_chatgpt_enterprise?.conversation_message?.message?.author?.type != null
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        def parts = new ArrayList();
-        def part = new HashMap();
-        part.put('type', 'text');
-        part.put('content', ctx.openai_chatgpt_enterprise.conversation_message.message.content.value);
-        parts.add(part);
-        def message = new HashMap();
-        message.put('parts', parts);
-        def messages = new ArrayList();
         def authorType = ctx.openai_chatgpt_enterprise.conversation_message.message.author.type;
+        def part = [:];
+        part.type = 'text';
+        part.content = ctx.openai_chatgpt_enterprise.conversation_message.message.content.value;
+        def message = [:];
+        message.parts = [part];
         if (authorType == 'user') {
-          message.put('role', 'user');
-          messages.add(message);
-          ctx.gen_ai.input = ctx.gen_ai.input != null ? ctx.gen_ai.input : new HashMap();
-          ctx.gen_ai.input.messages = messages;
+          message.role = 'user';
+          ctx.gen_ai = ctx.gen_ai ?: [:];
+          ctx.gen_ai.input = ctx.gen_ai.input ?: [:];
+          ctx.gen_ai.input.messages = [message];
         } else if (authorType == 'assistant') {
-          message.put('role', 'assistant');
-          messages.add(message);
-          ctx.gen_ai.output = ctx.gen_ai.output != null ? ctx.gen_ai.output : new HashMap();
-          ctx.gen_ai.output.messages = messages;
+          message.role = 'assistant';
+          ctx.gen_ai = ctx.gen_ai ?: [:];
+          ctx.gen_ai.output = ctx.gen_ai.output ?: [:];
+          ctx.gen_ai.output.messages = [message];
         }
   - script:
       lang: painless
@@ -198,12 +200,8 @@ processors:
         ctx.openai_chatgpt_enterprise?.conversation_message?.message?.author?.tools_used instanceof List &&
         ctx.openai_chatgpt_enterprise.conversation_message.message.author.tools_used.size() > 0
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        if (ctx.gen_ai.tool == null) {
-          ctx.gen_ai.tool = new HashMap();
-        }
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.tool = ctx.gen_ai.tool ?: [:];
         ctx.gen_ai.tool.name = ctx.openai_chatgpt_enterprise.conversation_message.message.author.tools_used;
   - convert:
       field: openai_chatgpt_enterprise.conversation_message.conversation.is_pinned
@@ -290,17 +288,19 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - append:
       field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
       value: preserve_original_event
       allow_duplicates: false

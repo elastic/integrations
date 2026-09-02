@@ -60,7 +60,7 @@ processors:
       formats:
         - ISO8601
       tag: date_timestamp
-      if: ctx.openai_chatgpt_enterprise?.codex_security_log?.timestamp != null && ctx.openai_chatgpt_enterprise.codex_security_log.timestamp != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_security_log?.timestamp != null && ctx.openai_chatgpt_enterprise?.codex_security_log.timestamp != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_security_log.timestamp
@@ -108,14 +108,37 @@ processors:
       field: event.action
       tag: lowercase_event_action
       ignore_missing: true
-  - append:
-      field: event.category
-      tag: append_event_category_codex_security_log
-      value: vulnerability
-  - append:
-      field: event.type
-      tag: append_event_type_codex_security_log
-      value: info
+  - script:
+      lang: painless
+      tag: set_event_category_and_type_from_action
+      description: >-
+        Derive event.category/type from Codex security event actions. Scan-configuration
+        events use configuration+creation/change; finding/PR events stay vulnerability+info
+        (ECS allows only info under vulnerability).
+      if: ctx.event?.action != null && ctx.event.action != ''
+      source: |-
+        def a = ctx.event.action;
+        if (ctx.event.category == null) {
+          ctx.event.category = new ArrayList();
+        }
+        if (ctx.event.type == null) {
+          ctx.event.type = new ArrayList();
+        }
+        if (a.contains('scan_configuration')) {
+          ctx.event.category.add('configuration');
+          if (a.contains('create')) {
+            ctx.event.type.add('creation');
+          } else if (a.contains('update') || a.contains('change')) {
+            ctx.event.type.add('change');
+          } else if (a.contains('delete')) {
+            ctx.event.type.add('deletion');
+          } else {
+            ctx.event.type.add('info');
+          }
+        } else {
+          ctx.event.category.add('vulnerability');
+          ctx.event.type.add('info');
+        }
   - set:
       field: vulnerability.id
       tag: set_vulnerability_id_from_finding_id
@@ -363,17 +386,19 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - append:
       field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
       value: preserve_original_event
       allow_duplicates: false

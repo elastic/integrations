@@ -60,7 +60,7 @@ processors:
       formats:
         - ISO8601
       tag: date_timestamp
-      if: ctx.openai_chatgpt_enterprise.codex_log?.timestamp != null && ctx.openai_chatgpt_enterprise.codex_log.timestamp != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.timestamp != null && ctx.openai_chatgpt_enterprise?.codex_log.timestamp != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.timestamp
@@ -98,13 +98,13 @@ processors:
       tag: set_organization_id_from_principal
       copy_from: openai_chatgpt_enterprise.codex_log.principal.id
       ignore_empty_value: true
-      if: ctx.openai_chatgpt_enterprise.codex_log?.principal?.id != null
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.principal?.id != null
   - convert:
       field: openai_chatgpt_enterprise.codex_log.request_metadata.client_ip
       tag: convert_client_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.openai_chatgpt_enterprise.codex_log?.request_metadata?.client_ip != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.request_metadata?.client_ip != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.request_metadata.client_ip
@@ -136,10 +136,25 @@ processors:
       field: event.category
       tag: append_event_category_codex_log
       value: api
-  - append:
-      field: event.type
-      tag: append_event_type_codex_log
-      value: info
+  - script:
+      lang: painless
+      tag: set_event_type_from_action
+      description: Derive event.type from action/event_type names (creation/change/deletion/info).
+      if: ctx.event?.action != null && ctx.event.action != ''
+      source: |-
+        def a = ctx.event.action;
+        def type = 'info';
+        if (a.contains('delete') || a.contains('deleted') || a.contains('revoke') || a.contains('remove')) {
+          type = 'deletion';
+        } else if (a.contains('create') || a.contains('created') || a.endsWith('_send') || a.contains('invite')) {
+          type = 'creation';
+        } else if (a.contains('update') || a.contains('updated') || a.contains('toggle') || a.contains('share') || a.contains('publish') || a.contains('change')) {
+          type = 'change';
+        }
+        if (ctx.event.type == null) {
+          ctx.event.type = new ArrayList();
+        }
+        ctx.event.type.add(type);
   - set:
       field: gen_ai.request.model
       tag: set_gen_ai_request_model
@@ -164,48 +179,32 @@ processors:
       lang: painless
       tag: set_gen_ai_input_messages_from_prompt_text
       description: Map Codex prompt_text into ECS gen_ai.input.messages.
-      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.prompt_text != null && ctx.openai_chatgpt_enterprise.codex_log.event_details.prompt_text != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.prompt_text != null && ctx.openai_chatgpt_enterprise?.codex_log.event_details.prompt_text != ''
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        if (ctx.gen_ai.input == null) {
-          ctx.gen_ai.input = new HashMap();
-        }
-        def parts = new ArrayList();
-        def part = new HashMap();
-        part.put('type', 'text');
-        part.put('content', ctx.openai_chatgpt_enterprise.codex_log.event_details.prompt_text);
-        parts.add(part);
-        def message = new HashMap();
-        message.put('role', 'user');
-        message.put('parts', parts);
-        def messages = new ArrayList();
-        messages.add(message);
-        ctx.gen_ai.input.messages = messages;
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.input = ctx.gen_ai.input ?: [:];
+        def part = [:];
+        part.type = 'text';
+        part.content = ctx.openai_chatgpt_enterprise.codex_log.event_details.prompt_text;
+        def message = [:];
+        message.role = 'user';
+        message.parts = [part];
+        ctx.gen_ai.input.messages = [message];
   - script:
       lang: painless
       tag: set_gen_ai_output_messages_from_response_text
       description: Map Codex response_text into ECS gen_ai.output.messages.
-      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.response_text != null && ctx.openai_chatgpt_enterprise.codex_log.event_details.response_text != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.response_text != null && ctx.openai_chatgpt_enterprise?.codex_log.event_details.response_text != ''
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        if (ctx.gen_ai.output == null) {
-          ctx.gen_ai.output = new HashMap();
-        }
-        def parts = new ArrayList();
-        def part = new HashMap();
-        part.put('type', 'text');
-        part.put('content', ctx.openai_chatgpt_enterprise.codex_log.event_details.response_text);
-        parts.add(part);
-        def message = new HashMap();
-        message.put('role', 'assistant');
-        message.put('parts', parts);
-        def messages = new ArrayList();
-        messages.add(message);
-        ctx.gen_ai.output.messages = messages;
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.output = ctx.gen_ai.output ?: [:];
+        def part = [:];
+        part.type = 'text';
+        part.content = ctx.openai_chatgpt_enterprise.codex_log.event_details.response_text;
+        def message = [:];
+        message.role = 'assistant';
+        message.parts = [part];
+        ctx.gen_ai.output.messages = [message];
   - set:
       field: gen_ai.tool.name
       tag: set_gen_ai_tool_name_from_tool_name
@@ -247,23 +246,26 @@ processors:
         ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.tool_input != null &&
         ctx.openai_chatgpt_enterprise.codex_log.event_details.tool_input != ''
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        if (ctx.gen_ai.tool == null) {
-          ctx.gen_ai.tool = new HashMap();
-        }
-        if (ctx.gen_ai.tool.call == null) {
-          ctx.gen_ai.tool.call = new HashMap();
-        }
-        def args = new HashMap();
-        args.put('input', ctx.openai_chatgpt_enterprise.codex_log.event_details.tool_input);
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.tool = ctx.gen_ai.tool ?: [:];
+        ctx.gen_ai.tool.call = ctx.gen_ai.tool.call ?: [:];
+        def args = [:];
+        args.input = ctx.openai_chatgpt_enterprise.codex_log.event_details.tool_input;
         ctx.gen_ai.tool.call.arguments = args;
-  - set:
-      field: gen_ai.tool.call.result
+  - script:
+      lang: painless
       tag: set_gen_ai_tool_call_result_from_preview
-      copy_from: openai_chatgpt_enterprise.codex_log.event_details.result_preview
-      ignore_empty_value: true
+      description: Wrap result_preview as an object for ECS gen_ai.tool.call.result (flattened).
+      if: >-
+        ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.result_preview != null &&
+        ctx.openai_chatgpt_enterprise.codex_log.event_details.result_preview != ''
+      source: |-
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.tool = ctx.gen_ai.tool ?: [:];
+        ctx.gen_ai.tool.call = ctx.gen_ai.tool.call ?: [:];
+        def result = [:];
+        result.preview = ctx.openai_chatgpt_enterprise.codex_log.event_details.result_preview;
+        ctx.gen_ai.tool.call.result = result;
   - set:
       field: url.full
       tag: set_url_full_from_event_details
@@ -273,7 +275,7 @@ processors:
       lang: painless
       tag: set_event_outcome_from_status
       description: Normalize CODEX_LOG status into event.outcome.
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.status != null && ctx.openai_chatgpt_enterprise.codex_log.event_details.status != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.status != null && ctx.openai_chatgpt_enterprise?.codex_log.event_details.status != ''
       source: |-
         def s = ctx.openai_chatgpt_enterprise.codex_log.event_details.status;
         if (s == 'success') {
@@ -289,7 +291,7 @@ processors:
       formats:
         - ISO8601
       tag: date_event_details_expires_at
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.expires_at != null && ctx.openai_chatgpt_enterprise.codex_log.event_details.expires_at != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.expires_at != null && ctx.openai_chatgpt_enterprise?.codex_log.event_details.expires_at != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.event_details.expires_at
@@ -303,7 +305,7 @@ processors:
       type: long
       ignore_missing: true
       tag: convert_event_details_token_usage_cached_input_tokens
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.token_usage?.cached_input_tokens != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.token_usage?.cached_input_tokens != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.event_details.token_usage.cached_input_tokens
@@ -314,10 +316,10 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: openai_chatgpt_enterprise.codex_log.event_details.token_usage.input_tokens
-      type: integer
+      type: long
       ignore_missing: true
       tag: convert_event_details_token_usage_input_tokens
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.token_usage?.input_tokens != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.token_usage?.input_tokens != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.event_details.token_usage.input_tokens
@@ -333,10 +335,10 @@ processors:
       ignore_empty_value: true
   - convert:
       field: openai_chatgpt_enterprise.codex_log.event_details.token_usage.output_tokens
-      type: integer
+      type: long
       ignore_missing: true
       tag: convert_event_details_token_usage_output_tokens
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.token_usage?.output_tokens != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.token_usage?.output_tokens != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.event_details.token_usage.output_tokens
@@ -355,7 +357,7 @@ processors:
       type: long
       ignore_missing: true
       tag: convert_event_details_token_usage_reasoning_output_tokens
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.token_usage?.reasoning_output_tokens != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.token_usage?.reasoning_output_tokens != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.event_details.token_usage.reasoning_output_tokens
@@ -369,7 +371,7 @@ processors:
       type: boolean
       ignore_missing: true
       tag: convert_event_details_environment_fields_cache_settings_enabled
-      if: ctx.openai_chatgpt_enterprise.codex_log?.event_details?.environment_fields?.cache_settings?.enabled != ''
+      if: ctx.openai_chatgpt_enterprise?.codex_log?.event_details?.environment_fields?.cache_settings?.enabled != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.codex_log.event_details.environment_fields.cache_settings.enabled
@@ -487,17 +489,19 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - append:
       field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
       value: preserve_original_event
       allow_duplicates: false

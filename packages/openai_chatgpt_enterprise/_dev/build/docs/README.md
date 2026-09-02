@@ -12,7 +12,7 @@ This integration collects data from the [OpenAI Compliance Logs Platform API](ht
 
 ### How it works
 
-This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, application (connector), Codex, Codex security, audit, Custom Agents, and conversation message logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
+This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, application, codex, codex security, audit, custom agents, and conversation message logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
 
 1. The integration calls the list endpoint (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs`) with the `event_type`, and paginates forward using the `last_end_time` cursor and `has_more` flag returned by the API. This returns metadata for each available log file.
 2. For each listed file, the integration downloads its contents (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`). This endpoint redirects to a signed download URL that serves the log file as JSON Lines, and each line is ingested as a separate event.
@@ -38,7 +38,7 @@ This integration collects log messages of the following types:
 
 ### Supported use cases
 
-Bringing ChatGPT Enterprise authentication, application authentication, application (connector), Codex, Codex security, audit, Custom Agents, and conversation activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, in-app connector, AI-assisted development, administrative, agent, conversation, and Codex security-scanning activity in one place instead of moving between separate tools.
+Bringing ChatGPT Enterprise authentication, application authentication, application, codex, codex security, audit, custom agents, and conversation activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, in-app connector, AI-assisted development, administrative, agent, conversation, and Codex security-scanning activity in one place instead of moving between separate tools.
 
 The **Authentication Log** data stream provides visibility into who signed in, when, from where, and with what client, including the action outcome and source geolocation. Use it to monitor login, token issuance, and logout activity, detect sign-ins from unexpected locations, and surface anomalous or high-risk authentication behavior to support security oversight and auditing.
 
@@ -258,4 +258,13 @@ These APIs are used with this integration:
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Codex Security Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_SECURITY_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Audit Log:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=AUDIT_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Custom Agents Log:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CUSTOM_AGENTS_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Conversation Messages:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CONVERSATION_MESSAGE`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)

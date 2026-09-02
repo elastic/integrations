@@ -60,7 +60,7 @@ processors:
       formats:
         - ISO8601
       tag: date_timestamp
-      if: ctx.openai_chatgpt_enterprise.custom_agents_log?.timestamp != null && ctx.openai_chatgpt_enterprise.custom_agents_log.timestamp != ''
+      if: ctx.openai_chatgpt_enterprise?.custom_agents_log?.timestamp != null && ctx.openai_chatgpt_enterprise?.custom_agents_log.timestamp != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.custom_agents_log.timestamp
@@ -110,13 +110,13 @@ processors:
       tag: set_organization_id_from_principal
       copy_from: openai_chatgpt_enterprise.custom_agents_log.principal.id
       ignore_empty_value: true
-      if: ctx.openai_chatgpt_enterprise.custom_agents_log?.principal?.id != null
+      if: ctx.openai_chatgpt_enterprise?.custom_agents_log?.principal?.id != null
   - convert:
       field: openai_chatgpt_enterprise.custom_agents_log.request_metadata.client_ip
       tag: convert_client_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.openai_chatgpt_enterprise.custom_agents_log?.request_metadata?.client_ip != ''
+      if: ctx.openai_chatgpt_enterprise?.custom_agents_log?.request_metadata?.client_ip != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.custom_agents_log.request_metadata.client_ip
@@ -148,10 +148,47 @@ processors:
       field: event.category
       tag: append_event_category_custom_agents_log
       value: api
-  - append:
-      field: event.type
-      tag: append_event_type_custom_agents_log
-      value: info
+  - script:
+      lang: painless
+      tag: set_event_type_from_action
+      description: Derive event.type from action/event_type names (creation/change/deletion/info).
+      if: ctx.event?.action != null && ctx.event.action != ''
+      source: |-
+        def a = ctx.event.action;
+        def type = 'info';
+        if (a.contains('delete') || a.contains('deleted') || a.contains('revoke') || a.contains('remove')) {
+          type = 'deletion';
+        } else if (a.contains('create') || a.contains('created') || a.endsWith('_send') || a.contains('invite')) {
+          type = 'creation';
+        } else if (a.contains('update') || a.contains('updated') || a.contains('toggle') || a.contains('share') || a.contains('publish') || a.contains('change')) {
+          type = 'change';
+        }
+        if (ctx.event.type == null) {
+          ctx.event.type = new ArrayList();
+        }
+        ctx.event.type.add(type);
+  - script:
+      lang: painless
+      tag: set_event_outcome_from_event_type_or_status
+      description: Derive event.outcome from run event_type and CONNECTOR_CALL_COMPLETED status.
+      source: |-
+        def et = ctx.openai_chatgpt_enterprise?.custom_agents_log?.event_type;
+        def status = ctx.openai_chatgpt_enterprise?.custom_agents_log?.event_details?.status;
+        if (et == 'AGENT_RUN_FAILED') {
+          ctx.event.outcome = 'failure';
+        } else if (et == 'AGENT_RUN_COMPLETED') {
+          ctx.event.outcome = 'success';
+        } else if (et == 'CONNECTOR_CALL_COMPLETED') {
+          if (status == 'success') {
+            ctx.event.outcome = 'success';
+          } else if (status == 'error' || status == 'failed' || status == 'failure') {
+            ctx.event.outcome = 'failure';
+          }
+        } else if (status == 'success') {
+          ctx.event.outcome = 'success';
+        } else if (status == 'error' || status == 'failed' || status == 'failure') {
+          ctx.event.outcome = 'failure';
+        }
   - set:
       field: gen_ai.agent.id
       tag: set_gen_ai_agent_id_from_agent_id
@@ -189,15 +226,11 @@ processors:
         ctx.openai_chatgpt_enterprise?.custom_agents_log?.event_details?.agent_fields?.prompt != null &&
         ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.agent_fields.prompt != ''
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        def instruction = new HashMap();
-        instruction.put('type', 'text');
-        instruction.put('content', ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.agent_fields.prompt);
-        def instructions = new ArrayList();
-        instructions.add(instruction);
-        ctx.gen_ai.system_instructions = instructions;
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        def instruction = [:];
+        instruction.type = 'text';
+        instruction.content = ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.agent_fields.prompt;
+        ctx.gen_ai.system_instructions = [instruction];
   - script:
       lang: painless
       tag: set_gen_ai_input_messages_from_user_message_text
@@ -206,23 +239,15 @@ processors:
         ctx.openai_chatgpt_enterprise?.custom_agents_log?.event_details?.invoker?.user_message_text != null &&
         ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.invoker.user_message_text != ''
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        if (ctx.gen_ai.input == null) {
-          ctx.gen_ai.input = new HashMap();
-        }
-        def parts = new ArrayList();
-        def part = new HashMap();
-        part.put('type', 'text');
-        part.put('content', ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.invoker.user_message_text);
-        parts.add(part);
-        def message = new HashMap();
-        message.put('role', 'user');
-        message.put('parts', parts);
-        def messages = new ArrayList();
-        messages.add(message);
-        ctx.gen_ai.input.messages = messages;
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.input = ctx.gen_ai.input ?: [:];
+        def part = [:];
+        part.type = 'text';
+        part.content = ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.invoker.user_message_text;
+        def message = [:];
+        message.role = 'user';
+        message.parts = [part];
+        ctx.gen_ai.input.messages = [message];
   - script:
       lang: painless
       tag: set_gen_ai_output_messages_from_run_text
@@ -232,23 +257,15 @@ processors:
         ctx.openai_chatgpt_enterprise?.custom_agents_log?.event_details?.text != null &&
         ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.text != ''
       source: |-
-        if (ctx.gen_ai == null) {
-          ctx.gen_ai = new HashMap();
-        }
-        if (ctx.gen_ai.output == null) {
-          ctx.gen_ai.output = new HashMap();
-        }
-        def parts = new ArrayList();
-        def part = new HashMap();
-        part.put('type', 'text');
-        part.put('content', ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.text);
-        parts.add(part);
-        def message = new HashMap();
-        message.put('role', 'assistant');
-        message.put('parts', parts);
-        def messages = new ArrayList();
-        messages.add(message);
-        ctx.gen_ai.output.messages = messages;
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.output = ctx.gen_ai.output ?: [:];
+        def part = [:];
+        part.type = 'text';
+        part.content = ctx.openai_chatgpt_enterprise.custom_agents_log.event_details.text;
+        def message = [:];
+        message.role = 'assistant';
+        message.parts = [part];
+        ctx.gen_ai.output.messages = [message];
   - set:
       field: gen_ai.tool.name
       tag: set_gen_ai_tool_name_from_connector_name
@@ -379,17 +396,19 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - append:
       field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
       value: preserve_original_event
       allow_duplicates: false

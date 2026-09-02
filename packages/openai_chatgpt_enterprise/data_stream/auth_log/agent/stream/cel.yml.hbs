@@ -106,9 +106,9 @@ program: |-
           }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
           {
-            "events": string(resp.Body).split("\n").map(l, l.trim(" \r\n\t")).map(l, l != "",
+            "events": string(resp.Body).split("\n").map(l, l.trim_space() != "",
               {
-                "message": l,
+                "message": l.trim_space(),
               }
             ),
             "cursor": {

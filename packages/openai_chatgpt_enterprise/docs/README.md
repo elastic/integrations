@@ -12,7 +12,7 @@ This integration collects data from the [OpenAI Compliance Logs Platform API](ht
 
 ### How it works
 
-This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, application (connector), Codex, Codex security, audit, Custom Agents, and conversation message logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
+This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, application, codex, codex security, audit, custom agents, and conversation message logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
 
 1. The integration calls the list endpoint (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs`) with the `event_type`, and paginates forward using the `last_end_time` cursor and `has_more` flag returned by the API. This returns metadata for each available log file.
 2. For each listed file, the integration downloads its contents (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`). This endpoint redirects to a signed download URL that serves the log file as JSON Lines, and each line is ingested as a separate event.
@@ -38,7 +38,7 @@ This integration collects log messages of the following types:
 
 ### Supported use cases
 
-Bringing ChatGPT Enterprise authentication, application authentication, application (connector), Codex, Codex security, audit, Custom Agents, and conversation activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, in-app connector, AI-assisted development, administrative, agent, conversation, and Codex security-scanning activity in one place instead of moving between separate tools.
+Bringing ChatGPT Enterprise authentication, application authentication, application, codex, codex security, audit, custom agents, and conversation activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, in-app connector, AI-assisted development, administrative, agent, conversation, and Codex security-scanning activity in one place instead of moving between separate tools.
 
 The **Authentication Log** data stream provides visibility into who signed in, when, from where, and with what client, including the action outcome and source geolocation. Use it to monitor login, token issuance, and logout activity, detect sign-ins from unexpected locations, and surface anomalous or high-risk authentication behavior to support security oversight and auditing.
 
@@ -551,9 +551,10 @@ The `codex_log` data stream captures ChatGPT Enterprise `CODEX_LOG` events.
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| gen_ai.input.messages | Messages passed to the model where each message represents a specific input from the user. | flattened |
-| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response. | flattened |
-| gen_ai.tool.call.arguments | Arguments passed to the tool call. | flattened |
+| gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
+| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
+| gen_ai.tool.call.arguments | Parameters passed to the tool call. | flattened |
+| gen_ai.tool.call.result | The result returned by the tool call (if any and if execution was successful). | flattened |
 | input.type | Type of filebeat input. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -806,22 +807,22 @@ An example event for `codex_security_log` looks as following:
 {
     "@timestamp": "2026-07-09T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "9eb9a308-ee62-4f0f-b7be-02a546f3619a",
-        "id": "3e1936d1-f4cb-4c3d-9eea-3815ddd1b25c",
-        "name": "elastic-agent-36867",
+        "ephemeral_id": "b16f9a77-673f-4b3f-b4e9-f4e388eefb23",
+        "id": "575ca69d-b4b7-494d-b7ae-aaf583042e9b",
+        "name": "elastic-agent-45242",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.codex_security_log",
-        "namespace": "25365",
+        "namespace": "48227",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "3e1936d1-f4cb-4c3d-9eea-3815ddd1b25c",
+        "id": "575ca69d-b4b7-494d-b7ae-aaf583042e9b",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -829,15 +830,15 @@ An example event for `codex_security_log` looks as following:
         "action": "scan_configuration_created",
         "agent_id_status": "verified",
         "category": [
-            "vulnerability"
+            "configuration"
         ],
         "dataset": "openai_chatgpt_enterprise.codex_security_log",
         "id": "cs000000-1111-4a11-8b11-000000000002",
-        "ingested": "2026-09-01T12:31:11Z",
+        "ingested": "2026-09-02T10:33:46Z",
         "kind": "event",
         "original": "{\"event_id\":\"cs000000-1111-4a11-8b11-000000000002\",\"type\":\"CODEX_SECURITY_LOG\",\"timestamp\":\"2026-07-09T12:00:00.000000Z\",\"principal\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"user_email\":\"alice.martin@example.org\"},\"event_type\":\"SCAN_CONFIGURATION_CREATED\",\"client_id\":\"CODEX_WEB\",\"workspace_id\":\"11111111-2222-3333-4444-555555555555\",\"event_details\":{\"detail_type\":\"SCAN_CONFIGURATION_CREATED\",\"scan_configuration_id\":\"scfg-mock-1\",\"scan_configuration_fields\":{\"scan_type\":\"secrets\",\"owner_id\":\"user-Aaaaaaaaaaaaaaaaaaaaaaa1\",\"workspace_id\":\"11111111-2222-3333-4444-555555555555\",\"repo_id\":\"repo-mock-9\",\"repo_url\":\"https://github.com/example-org/example-repo\",\"environment_id\":\"env-mock-123\",\"state\":\"active\",\"lookback_days\":30,\"notification_rules_created_count\":2,\"notification_rules_updated_count\":0,\"notification_rules_deleted_count\":0}}}",
         "type": [
-            "info"
+            "creation"
         ]
     },
     "gen_ai": {
@@ -1198,7 +1199,7 @@ The `custom_agents_log` data stream provides Workspace Agents (Custom Agents) ac
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
-| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response. | flattened |
+| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
 | gen_ai.system_instructions | The system message or instructions provided to the GenAI model separately from the chat history. | flattened |
 | input.type | Type of filebeat input. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
@@ -1300,22 +1301,22 @@ An example event for `custom_agents_log` looks as following:
 {
     "@timestamp": "2026-02-28T20:43:58.762Z",
     "agent": {
-        "ephemeral_id": "a14c1b7a-79ad-4cad-9c66-a22ca9f9db84",
-        "id": "da10ba84-1fff-402d-844d-4edb71b7c516",
-        "name": "elastic-agent-86182",
+        "ephemeral_id": "1b70cdd3-e56f-4fb7-a4c0-9322609449f9",
+        "id": "12740954-bcec-446a-bb26-d6f629875b5b",
+        "name": "elastic-agent-39152",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.custom_agents_log",
-        "namespace": "80365",
+        "namespace": "70090",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "da10ba84-1fff-402d-844d-4edb71b7c516",
+        "id": "12740954-bcec-446a-bb26-d6f629875b5b",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -1327,11 +1328,11 @@ An example event for `custom_agents_log` looks as following:
         ],
         "dataset": "openai_chatgpt_enterprise.custom_agents_log",
         "id": "ca000000-0000-0000-0000-000000000003",
-        "ingested": "2026-09-01T12:32:51Z",
+        "ingested": "2026-09-02T10:35:27Z",
         "kind": "event",
         "original": "{\"event_id\":\"ca000000-0000-0000-0000-000000000003\",\"type\":\"CUSTOM_AGENTS_LOG\",\"timestamp\":\"2026-02-28T20:43:58.762392Z\",\"principal\":{\"id\":\"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aa11QwErTyUiOp\",\"user_email\":\"alice.martin@example.com\"},\"event_type\":\"AGENT_PUBLISHED\",\"client_id\":\"AGENT_BUILDER_WEB\",\"workspace_id\":\"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa\",\"event_details\":{\"detail_type\":\"AGENT_PUBLISHED\",\"agent_id\":\"agent-123\",\"version_id\":\"version-7\",\"publish_type\":\"changes\",\"changes_count\":4,\"release_name\":\"v2\",\"release_description\":\"Workflow and connector updates\",\"agent_fields\":{\"model_spec\":{\"name\":\"gpt-5\",\"reasoning_effort\":\"medium\"},\"name\":\"Sales Ops Agent\",\"description\":\"Workspace sales assistant\",\"category\":\"operations\",\"workspace_capability\":\"discover\",\"store_visible\":true,\"skills\":[{\"id\":\"skill-1\",\"type\":\"uploaded_skill\",\"name\":\"crm-guide\"}],\"file_tree_id\":\"snapshot-99\",\"tools\":{\"image_generation_enabled\":false,\"widget_tools\":[],\"connectors\":[{\"connector_id\":\"salesforce\",\"auth_variant_type\":\"LINK\",\"link_id\":\"link-1\",\"allowed_tools\":[\"read\"],\"user_approvals\":\"never\"}]}}}}",
         "type": [
-            "info"
+            "change"
         ]
     },
     "gen_ai": {
@@ -1441,7 +1442,7 @@ The `conversation_message` data stream provides conversation message events from
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
-| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response. | flattened |
+| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
 | input.type | Type of filebeat input. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -1476,32 +1477,38 @@ An example event for `conversation_message` looks as following:
 {
     "@timestamp": "2026-07-15T15:29:00.243Z",
     "agent": {
-        "ephemeral_id": "04bc0a0d-062c-48ee-a94c-404be4374c12",
-        "id": "63d639dd-b1da-440a-8949-47544b5c6584",
-        "name": "elastic-agent-93854",
+        "ephemeral_id": "cc583746-a85d-48d4-8ad1-18d13a565839",
+        "id": "d29b6db9-5a21-4e65-9ddd-c5e889536df2",
+        "name": "elastic-agent-21577",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "openai_chatgpt_enterprise.conversation_message",
-        "namespace": "37381",
+        "namespace": "71711",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "63d639dd-b1da-440a-8949-47544b5c6584",
+        "id": "d29b6db9-5a21-4e65-9ddd-c5e889536df2",
         "snapshot": false,
         "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "session"
+        ],
         "dataset": "openai_chatgpt_enterprise.conversation_message",
         "id": "9d6bb4e9-3882-4dbe-9d4c-2668b692f9a1",
-        "ingested": "2026-09-01T12:32:01Z",
+        "ingested": "2026-09-02T10:34:36Z",
         "kind": "event",
-        "original": "{\"event_id\":\"9d6bb4e9-3882-4dbe-9d4c-2668b692f9a1\",\"type\":\"CONVERSATION_MESSAGE\",\"principal\":{\"id\":\"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aa11QwErTyUiOp\",\"user_email\":\"alice.martin@example.com\"},\"timestamp\":\"2026-07-15T15:29:00.243000Z\",\"message\":{\"id\":\"39adf8b1-e281-42c0-920b-9d8f63426fc8\",\"created_at\":\"2026-07-15T15:29:00.243000Z\",\"author\":{\"type\":\"user\",\"client_type\":\"desktop_web\"},\"content\":{\"type\":\"text\",\"value\":\"Draft a concise release note for v2.3.\"}},\"conversation\":{\"id\":\"6a57a2e4-ba84-832d-9604-9567f8223bc6\",\"title\":\"Release notes\",\"created_at\":\"2026-07-15T15:10:34.219710Z\",\"is_pinned\":false,\"is_temporary_chat\":false}}"
+        "original": "{\"event_id\":\"9d6bb4e9-3882-4dbe-9d4c-2668b692f9a1\",\"type\":\"CONVERSATION_MESSAGE\",\"principal\":{\"id\":\"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa\",\"type\":\"CHATGPT_WORKSPACE\"},\"actor\":{\"type\":\"ACCOUNT_USER\",\"user_id\":\"user-Aa11QwErTyUiOp\",\"user_email\":\"alice.martin@example.com\"},\"timestamp\":\"2026-07-15T15:29:00.243000Z\",\"message\":{\"id\":\"39adf8b1-e281-42c0-920b-9d8f63426fc8\",\"created_at\":\"2026-07-15T15:29:00.243000Z\",\"author\":{\"type\":\"user\",\"client_type\":\"desktop_web\"},\"content\":{\"type\":\"text\",\"value\":\"Draft a concise release note for v2.3.\"}},\"conversation\":{\"id\":\"6a57a2e4-ba84-832d-9604-9567f8223bc6\",\"title\":\"Release notes\",\"created_at\":\"2026-07-15T15:10:34.219710Z\",\"is_pinned\":false,\"is_temporary_chat\":false}}",
+        "type": [
+            "info"
+        ]
     },
     "gen_ai": {
         "input": {
@@ -1629,4 +1636,13 @@ These APIs are used with this integration:
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Codex Security Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_SECURITY_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Audit Log:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=AUDIT_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Custom Agents Log:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CUSTOM_AGENTS_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Conversation Messages:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CONVERSATION_MESSAGE`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)

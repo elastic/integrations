@@ -60,7 +60,7 @@ processors:
       formats:
         - ISO8601
       tag: date_timestamp
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.timestamp != null && ctx.openai_chatgpt_enterprise.audit_log.timestamp != ''
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.timestamp != null && ctx.openai_chatgpt_enterprise?.audit_log.timestamp != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.audit_log.timestamp
@@ -142,10 +142,25 @@ processors:
       field: event.category
       tag: append_event_category_audit_log
       value: iam
-  - append:
-      field: event.type
-      tag: append_event_type_audit_log
-      value: info
+  - script:
+      lang: painless
+      tag: set_event_type_from_action
+      description: Derive event.type from action/event_type names (creation/change/deletion/info).
+      if: ctx.event?.action != null && ctx.event.action != ''
+      source: |-
+        def a = ctx.event.action;
+        def type = 'info';
+        if (a.contains('delete') || a.contains('deleted') || a.contains('revoke') || a.contains('remove')) {
+          type = 'deletion';
+        } else if (a.contains('create') || a.contains('created') || a.endsWith('_send') || a.contains('invite')) {
+          type = 'creation';
+        } else if (a.contains('update') || a.contains('updated') || a.contains('toggle') || a.contains('share') || a.contains('publish') || a.contains('change')) {
+          type = 'change';
+        }
+        if (ctx.event.type == null) {
+          ctx.event.type = new ArrayList();
+        }
+        ctx.event.type.add(type);
   - set:
       field: tls.client.ja3
       tag: set_tls_client_ja3
@@ -160,7 +175,7 @@ processors:
       lang: painless
       tag: set_event_outcome_from_action_result
       description: Normalize AUDIT_LOG action_result into event.outcome.
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_result != null && ctx.openai_chatgpt_enterprise.audit_log.action_result != ''
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_result != null && ctx.openai_chatgpt_enterprise?.audit_log.action_result != ''
       source: |-
         def r = ctx.openai_chatgpt_enterprise.audit_log.action_result;
         if (r == 'SUCCESS') {
@@ -186,8 +201,8 @@ processors:
           agentId = actionData.third_party_gizmo_id;
         }
         if (agentId != null) {
-          ctx.gen_ai = ctx.gen_ai != null ? ctx.gen_ai : new HashMap();
-          ctx.gen_ai.agent = ctx.gen_ai.agent != null ? ctx.gen_ai.agent : new HashMap();
+          ctx.gen_ai = ctx.gen_ai ?: [:];
+          ctx.gen_ai.agent = ctx.gen_ai.agent ?: [:];
           ctx.gen_ai.agent.id = agentId;
         }
   - append:
@@ -264,14 +279,8 @@ processors:
           }
         }
         if (!userIds.isEmpty()) {
-          if (ctx.related == null) {
-            ctx.related = new HashMap();
-          }
-          if (ctx.related.user == null) {
-            ctx.related.user = new ArrayList();
-          } else if (!(ctx.related.user instanceof List)) {
-            ctx.related.user = new ArrayList([ctx.related.user]);
-          }
+          ctx.related = ctx.related ?: [:];
+          ctx.related.user = ctx.related.user ?: [];
           for (def userId : userIds) {
             if (!ctx.related.user.contains(userId)) {
               ctx.related.user.add(userId);
@@ -292,14 +301,8 @@ processors:
           }
         }
         if (!emails.isEmpty()) {
-          if (ctx.related == null) {
-            ctx.related = new HashMap();
-          }
-          if (ctx.related.user == null) {
-            ctx.related.user = new ArrayList();
-          } else if (!(ctx.related.user instanceof List)) {
-            ctx.related.user = new ArrayList([ctx.related.user]);
-          }
+          ctx.related = ctx.related ?: [:];
+          ctx.related.user = ctx.related.user ?: [];
           for (def email : emails) {
             if (!ctx.related.user.contains(email)) {
               ctx.related.user.add(email);
@@ -360,7 +363,7 @@ processors:
       formats:
         - ISO8601
       tag: date_action_data_after
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.after != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.after != ''
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.after != null && ctx.openai_chatgpt_enterprise?.audit_log.action_data.after != ''
       on_failure:
         - rename:
             field: openai_chatgpt_enterprise.audit_log.action_data.after
@@ -373,7 +376,7 @@ processors:
       formats:
         - ISO8601
       tag: date_action_data_before
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.before != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.before != ''
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.before != null && ctx.openai_chatgpt_enterprise?.audit_log.action_data.before != ''
       on_failure:
         - rename:
             field: openai_chatgpt_enterprise.audit_log.action_data.before
@@ -386,7 +389,7 @@ processors:
       formats:
         - ISO8601
       tag: date_action_data_since_timestamp
-      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.since_timestamp != null && ctx.openai_chatgpt_enterprise.audit_log.action_data.since_timestamp != ''
+      if: ctx.openai_chatgpt_enterprise?.audit_log?.action_data?.since_timestamp != null && ctx.openai_chatgpt_enterprise?.audit_log.action_data.since_timestamp != ''
       on_failure:
         - remove:
             field: openai_chatgpt_enterprise.audit_log.action_data.since_timestamp
@@ -642,6 +645,7 @@ processors:
 on_failure:
   - append:
       field: error.message
+      tag: append_pipeline_failure_message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -652,5 +656,6 @@ on_failure:
       value: pipeline_error
   - append:
       field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
       value: preserve_original_event
       allow_duplicates: false

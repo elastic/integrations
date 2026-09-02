@@ -102,9 +102,9 @@ program: |-
           }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
           {
-            "events": string(resp.Body).split("\n").map(l, l.trim_space()).map(l, l != "",
+            "events": string(resp.Body).split("\n").map(l, l.trim_space() != "",
               {
-                "message": l,
+                "message": l.trim_space(),
               }
             ),
             // Shallow-merge into the existing cursor so last_end_time and
