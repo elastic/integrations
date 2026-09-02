@@ -1970,7 +1970,5 @@ An example event for `osquery_status` looks as following:
 ```
 
 
-### Data streams using ILM policies
-
 
 
