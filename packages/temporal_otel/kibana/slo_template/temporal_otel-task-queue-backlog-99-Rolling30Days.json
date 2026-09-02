@@ -1,0 +1,55 @@
+{
+  "attributes": {
+    "name": "[Temporal OTel] Task queue backlog below threshold 99% rolling 30 days",
+    "description": "Tracks whether the approximate number of pending tasks in each task queue stays below 1000 tasks per 5-minute evaluation window. A growing backlog means tasks are arriving faster than worker processes can claim and execute them — this directly causes workflow and activity execution delays. Sustained backlog growth often indicates a worker outage, under-provisioned worker fleet, or a sudden traffic spike. Target: 99% of 5-minute timeslices show a healthy backlog across each namespace and task queue combination over a rolling 30-day window.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"temporal.cloud_metrics.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "metrics.temporal_cloud_v1_approximate_backlog_count",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.99,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "temporal",
+      "temporal-cloud",
+      "otel"
+    ],
+    "groupBy": [
+      "attributes.temporal_namespace",
+      "attributes.temporal_task_queue"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "temporal_otel-overview"
+        }
+      ]
+    }
+  },
+  "id": "temporal_otel-task-queue-backlog-99-Rolling30Days",
+  "type": "slo_template"
+}
