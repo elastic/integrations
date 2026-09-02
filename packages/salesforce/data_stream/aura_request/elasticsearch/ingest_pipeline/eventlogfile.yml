@@ -9,6 +9,15 @@ processors:
       source: |-
         ctx.json.values().removeIf(value -> value == null || value == '');
 
+  - fingerprint:
+      fields:
+        - json.REQUEST_ID
+        - json.TIMESTAMP_DERIVED
+        - json.ORGANIZATION_ID
+      target_field: _id
+      tag: fingerprint_event_log_file_id
+      ignore_missing: true
+
   # TIMESTAMP_DERIVED and TIMESTAMP encode the same instant. TIMESTAMP_DERIVED is
   # preferred because it is an explicit ISO 8601 instant, and TIMESTAMP is used as a
   # fallback so that a row carrying only the undelimited form still gets a timestamp.
