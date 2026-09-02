@@ -11,14 +11,14 @@ processors:
       target_field: json
       tag: json_parse_message
 
-  # event.original is populated agent-side by the .hbs copy_fields block in
-  # production. Setting it here as well — guarded, so production does not
-  # double-set — means pipeline tests exercise the real document shape,
-  # including the `remove: message` in the cleanup block. This mirrors
-  # cloudsmith, which does the same.
+  # event.original is populated here, not agent-side: aws-s3.yml.hbs emits no
+  # copy_fields processor. The copy is guarded on event.original == null so a
+  # future agent-side copy would not be overwritten, and so the `remove: message`
+  # in the cleanup block below has the same effect in tests as in production.
   #
-  # Retention is separately gated: .fleet_final_pipeline-1 strips
-  # event.original from any document whose tags lack preserve_original_event.
+  # Retention is gated separately: .fleet_final_pipeline-1 strips event.original
+  # from any document whose tags lack preserve_original_event, which the
+  # preserve_original_event stream variable controls.
   - set:
       field: event.original
       copy_from: message
@@ -438,10 +438,12 @@ processors:
   - append:
       field: event.category
       value: api
+      allow_duplicates: false
       tag: append_event_category_api
   - append:
       field: event.category
       value: web
+      allow_duplicates: false
       if: >-
         ctx.http?.request?.method != null &&
         ctx.http?.response?.status_code != null && ctx.url?.full != null
@@ -449,6 +451,7 @@ processors:
   - append:
       field: event.category
       value: configuration
+      allow_duplicates: false
       if: >-
         ['modified', 'created'].contains(ctx.json?.attributes?.action) ||
         ctx.json?.attributes?.asset?.type != null
@@ -456,6 +459,7 @@ processors:
   - append:
       field: event.category
       value: iam
+      allow_duplicates: false
       if: >-
         ctx.user?.name != null &&
         (ctx.json?.attributes?.evt?.name == 'Organization Management' ||
@@ -464,31 +468,37 @@ processors:
   - append:
       field: event.type
       value: access
+      allow_duplicates: false
       if: "['accessed', 'queried', 'authorized', 'executed'].contains(ctx.json?.attributes?.action)"
       tag: append_event_type_access
   - append:
       field: event.type
       value: change
+      allow_duplicates: false
       if: ctx.json?.attributes?.action == 'modified'
       tag: append_event_type_change
   - append:
       field: event.type
       value: creation
+      allow_duplicates: false
       if: ctx.json?.attributes?.action == 'created'
       tag: append_event_type_creation
   - append:
       field: event.type
       value: start
+      allow_duplicates: false
       if: ctx.json?.attributes?.action == 'started'
       tag: append_event_type_start
   - append:
       field: event.type
       value: end
+      allow_duplicates: false
       if: ctx.json?.attributes?.action == 'completed'
       tag: append_event_type_end
   - append:
       field: event.type
       value: error
+      allow_duplicates: false
       if: >-
         ctx.event?.category instanceof List && ctx.event.category.contains('web') &&
         ctx.event?.outcome == 'failure'
@@ -496,6 +506,7 @@ processors:
   - append:
       field: event.type
       value: info
+      allow_duplicates: false
       if: ctx.event?.type == null
       tag: append_event_type_info
 
