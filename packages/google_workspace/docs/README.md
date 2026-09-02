@@ -33,6 +33,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 | [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
 | [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
+| [Gmail Reports](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gmail) | The Gmail activity report returns information about message delivery, SMTP connections, spam classification and policy rule matches. |
 | [Gemini](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/gemini-in-workspace-apps) | The Gemini in Workspace Apps activity report returns information about generative AI feature usage across Workspace applications. |
 
 ## Requirements
@@ -67,11 +68,15 @@ This integration will use the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `gmail_reports`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 # Google Workspace Gmail Logs
+
+:::{note}
+The integration provides two Gmail data streams. This section is for `gmail`, which queries logs exported to Google BigQuery. If you prefer the Google Reports API, enable `gmail_reports` instead — it shares the service account and `admin.reports.audit.readonly` scope used by the other Reports API streams and skips the BigQuery configuration steps below.
+:::
 
 The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this feature. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
@@ -4160,6 +4165,298 @@ An example event for `keep` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
+
+### Gmail Reports
+
+This is the `gmail_reports` dataset. It is collected from the Google Reports API and emits one document per event, so a single activity record containing several events produces several documents.
+
+An example event for `gmail_reports` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-11T03:04:01.312Z",
+    "agent": {
+        "ephemeral_id": "e7854484-8d10-4b9c-afb2-9d371e758c25",
+        "id": "0ebf7cf2-28d4-4f40-9668-72fbfecdd63d",
+        "name": "elastic-agent-32601",
+        "type": "filebeat",
+        "version": "8.19.4"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.gmail_reports",
+        "namespace": "97879",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "0ebf7cf2-28d4-4f40-9668-72fbfecdd63d",
+        "snapshot": false,
+        "version": "8.19.4"
+    },
+    "email": {
+        "message_id": "000000000000f8bdf50658bcb834@mail.example.com",
+        "subject": "[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456",
+        "to": {
+            "address": [
+                "user1@example.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "delivery",
+        "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
+        "dataset": "google_workspace.gmail_reports",
+        "duration": 1645948000,
+        "id": "1193008247809429026",
+        "ingested": "2026-09-01T13:23:23Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"user1@example.com\",\"profileId\":\"109107487136189420589\"},\"etag\":\"\\\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\\\"\",\"events\":{\"name\":\"delivery\",\"parameters\":[{\"messageValue\":{\"parameter\":[{\"intValue\":\"1786417441312628\",\"name\":\"timestamp_usec\"},{\"intValue\":\"1645948\",\"name\":\"elapsed_time_usec\"},{\"boolValue\":true,\"name\":\"success\"},{\"intValue\":\"2\",\"name\":\"mail_event_type\"}]},\"name\":\"event_info\"},{\"messageValue\":{\"parameter\":[{\"intValue\":\"3\",\"name\":\"action_type\"},{\"name\":\"rfc2822_message_id\",\"value\":\"\\u003c000000000000f8bdf50658bcb834@mail.example.com\\u003e\"},{\"name\":\"subject\",\"value\":\"[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456\"},{\"intValue\":\"12179\",\"name\":\"payload_size\"},{\"name\":\"flattened_destinations\",\"value\":\"gmail-ui::user1@example.com\"},{\"name\":\"description\",\"value\":\"\"},{\"boolValue\":false,\"name\":\"is_spam\"},{\"boolValue\":false,\"name\":\"is_policy_check_for_sender\"},{\"intValue\":\"0\",\"name\":\"num_message_attachments\"},{\"intValue\":\"0\",\"name\":\"smime_content_type\"},{\"multiValue\":[\"example.com\",\"example.net\"],\"name\":\"link_domain\"}]},\"name\":\"message_info\"}],\"resourceIds\":[\"\\u003c000000000000f8bdf50658bcb834@mail.example.com\\u003e\"],\"type\":\"delivery_type\"},\"id\":{\"applicationName\":\"gmail\",\"customerId\":\"C00yte8g0\",\"time\":\"2026-08-11T03:04:01.312Z\",\"uniqueQualifier\":\"1193008247809429026\"},\"ipAddress\":\"81.2.69.142\",\"isAgenticAction\":false,\"kind\":\"admin#reports#activity\",\"networkInfo\":{\"ipAsn\":[0,15169],\"regionCode\":\"US\",\"subdivisionCode\":\"\"},\"resourceDetails\":[{\"id\":\"\\u003c000000000000f8bdf50658bcb834@mail.example.com\\u003e\",\"ownerDetails\":{\"ownerIdentity\":[{\"userIdentity\":{\"id\":\"0z337ya2lr9by9\",\"userEmail\":\"user1@example.com\"}}],\"ownerType\":\"USER\"},\"relation\":\"GMAIL_PRIMARY\",\"title\":\"[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456\",\"type\":\"EMAIL\"}]}",
+        "outcome": "success",
+        "provider": "gmail",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "gmail_reports": {
+            "actor": {
+                "caller_type": "USER"
+            },
+            "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+            "event_info": {
+                "mail_event_type": "2"
+            },
+            "event_type": "delivery_type",
+            "is_agentic_action": false,
+            "kind": "admin#reports#activity",
+            "message_info": {
+                "action_type": "3",
+                "is_policy_check_for_sender": false,
+                "is_spam": false,
+                "link_domain": [
+                    "example.com",
+                    "example.net"
+                ],
+                "num_message_attachments": 0,
+                "payload_size": 12179,
+                "smime_content_type": "0"
+            },
+            "network_info": {
+                "ip_asn": [
+                    0,
+                    15169
+                ]
+            },
+            "resource_details": [
+                {
+                    "id": "<000000000000f8bdf50658bcb834@mail.example.com>",
+                    "owner_details": {
+                        "owner_identity": [
+                            {
+                                "user_identity": {
+                                    "id": "0z337ya2lr9by9",
+                                    "user_email": "user1@example.com"
+                                }
+                            }
+                        ],
+                        "owner_type": "USER"
+                    },
+                    "relation": "GMAIL_PRIMARY",
+                    "title": "[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456",
+                    "type": "EMAIL"
+                }
+            ],
+            "resource_ids": [
+                "<000000000000f8bdf50658bcb834@mail.example.com>"
+            ]
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Gmail",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "C00yte8g0"
+    },
+    "related": {
+        "ip": [
+            "81.2.69.142"
+        ],
+        "user": [
+            "user1@example.com",
+            "109107487136189420589",
+            "user1"
+        ]
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142",
+        "user": {
+            "domain": "example.com",
+            "email": "user1@example.com",
+            "id": "109107487136189420589",
+            "name": "user1"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-gmail_reports"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "user1@example.com",
+        "id": "109107487136189420589",
+        "name": "user1"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| google_workspace.gmail_reports.actor.caller_type | The type of actor that performed the action. | keyword |
+| google_workspace.gmail_reports.actor.key | Only present when the actor is not a user, for requests made with an OAuth 2LO consumer key. | keyword |
+| google_workspace.gmail_reports.etag | ETag of the activity entry. | keyword |
+| google_workspace.gmail_reports.event_info.client_context.client_type | The type of client or device where the action occurred, including WEB, IOS, ANDROID, IMAP, POP3, and API. | keyword |
+| google_workspace.gmail_reports.event_info.client_context.session_context.dusi | Identifier for a user's session on a specific device. | keyword |
+| google_workspace.gmail_reports.event_info.mail_event_type | Logged event type. The event type corresponds to the Event attribute in Gmail log events in Security Investigation Tool. | keyword |
+| google_workspace.gmail_reports.event_type | Type of event. The Google Workspace service or feature that an administrator changes is identified in the type property which identifies an event using the eventName property. | keyword |
+| google_workspace.gmail_reports.has_sensitive_content | Indicates whether the event contains sensitive content. | boolean |
+| google_workspace.gmail_reports.is_agentic_action | Indicates whether the activity was performed by an AI agent on behalf of the user. | boolean |
+| google_workspace.gmail_reports.kind | The type of API resource. | keyword |
+| google_workspace.gmail_reports.message_info.action_type | The message delivery action that the event represents. | keyword |
+| google_workspace.gmail_reports.message_info.attachment.malware_family | Malware category, if detected when the message is handled. This field is unset if no malware is detected. | keyword |
+| google_workspace.gmail_reports.message_info.confidential_mode_info.is_confidential_mode | Indicates whether the message was sent in confidential mode. | boolean |
+| google_workspace.gmail_reports.message_info.connection_info.authenticated_domain.name | Authenticated domain name. | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.authenticated_domain.type | Message authentication type (for example, SPF, DKIM). | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.client_host_zone | Client host zone of the mail sender. | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.dkim_pass | Indicates if the message was authenticated using at least one DKIM signature. | boolean |
+| google_workspace.gmail_reports.message_info.connection_info.dmarc_pass | Indicates if the message passed DMARC policy evaluation. | boolean |
+| google_workspace.gmail_reports.message_info.connection_info.dmarc_published_domain | Domain name used to evaluate the DMARC policy. | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.failed_smtp_out_connect_ip | List of all IPs in the remote MX record that Gmail attempted to connect to but failed. | ip |
+| google_workspace.gmail_reports.message_info.connection_info.is_internal | Indicates if the message was sent within domains owned by the customer. | boolean |
+| google_workspace.gmail_reports.message_info.connection_info.is_intra_domain | Indicates if the message was sent within the same domain. | boolean |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_in_connect_ip | Remote IP address for MTA client connections (inbound SMTP to Gmail). | ip |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_out_connect_ip | Remote IP address for SMTP connections from Gmail. | ip |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_out_remote_host | For outgoing SMTP connections, the domain the message started from; the destination domain or the smarthost. | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_reply_code | SMTP reply code for inbound and outbound SMTP connections. Usually 2xx, 4xx, or 5xx. | long |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_response_reason | Detailed reason for the SMTP reply code for inbound connections. | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_tls_state | Type of connection made to the SMTP server. Only set for logs of events that explicitly handle SMTP connections. | keyword |
+| google_workspace.gmail_reports.message_info.connection_info.smtp_user_agent_ip | IP address of the mail user agent for inbound SMTP connections. | ip |
+| google_workspace.gmail_reports.message_info.connection_info.spf_pass | Indicates if the message was authenticated with SPF. | boolean |
+| google_workspace.gmail_reports.message_info.connection_info.tls_required_but_unavailable | TLS is required for an outbound SMTP connection, but no valid certificate was present. | boolean |
+| google_workspace.gmail_reports.message_info.description | Human-readable description of what happened to the message. | keyword |
+| google_workspace.gmail_reports.message_info.destination.rcpt_response | Response of the SMTP RCPT command. | keyword |
+| google_workspace.gmail_reports.message_info.destination.selector | Subcategory for each service. | keyword |
+| google_workspace.gmail_reports.message_info.destination.service | The service at the message destination. | keyword |
+| google_workspace.gmail_reports.message_info.destination.smime_decryption_success | For inbound messages only. When set, indicates that S/MIME decryption was attempted for this recipient.The value indicates the completion status. Not set if skipped. | boolean |
+| google_workspace.gmail_reports.message_info.destination.smime_extraction_success | For inbound messages only. When set, indicates that S/MIME extraction was attempted for this recipient. The value indicates the completion status. Not set if skipped. | boolean |
+| google_workspace.gmail_reports.message_info.destination.smime_parsing_success | For inbound messages only. When set, indicates that S/MIME parsing was attempted for this recipient. The value indicates the completion status. Not set if skipped. | boolean |
+| google_workspace.gmail_reports.message_info.destination.smime_signature_verification_success | For inbound messages only. When set, indicates that S/MIME signature verification was attempted for this recipient. The value indicates the completion status. Not set if skipped. | boolean |
+| google_workspace.gmail_reports.message_info.flattened_triggered_rule_info | String that has information of all triggered rules, in JSON format. | keyword |
+| google_workspace.gmail_reports.message_info.is_policy_check_for_sender | True if the policy rules were evaluated for the sender (the message was processed for outbound delivery). False if the policy rules were evaluated for the recipient (the message was processed for inbound delivery). | boolean |
+| google_workspace.gmail_reports.message_info.is_spam | True if the message was classified as spam. | boolean |
+| google_workspace.gmail_reports.message_info.link_domain | Domains extracted from link URLs in the message body. | keyword |
+| google_workspace.gmail_reports.message_info.message_set.type | Message set type that the message belongs to. | keyword |
+| google_workspace.gmail_reports.message_info.num_message_attachments | Number of message attachments. | long |
+| google_workspace.gmail_reports.message_info.payload_size | Size of the message payload, in bytes. | long |
+| google_workspace.gmail_reports.message_info.post_delivery_info.action_type | Post-delivery action type. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.data_classification.classified_entity | Entity type that was classified. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.data_classification.event_type | Classification event type. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.data_classification.labels.field_value_display_name | Label display name. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.data_classification.previous_labels.field_value_display_name | Previous label's display name. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.interaction.attachment.file_extension_type | File extension (not MIME part type), not including the period. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.interaction.attachment.file_name | Attachment file name. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.interaction.attachment.malware_family | Malware type, if malware is detected during message handling. If no malware is detected, this field is not set. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.interaction.attachment.sha256 | SHA256 hash of the attachment. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.interaction.drive_id | The unique ID of the Google Drive item associated with the interaction. This ID is used to access the item in Drive. This field is set only for Drive attachment interactions. | keyword |
+| google_workspace.gmail_reports.message_info.post_delivery_info.interaction.link_url | The URL associated with the interaction, which is set set only for link click interactions. | keyword |
+| google_workspace.gmail_reports.message_info.smime_content_type | The top-level S/MIME type of a message, indicated by the Content-Type: header. | keyword |
+| google_workspace.gmail_reports.message_info.smime_encrypt_message | For outbound messages only. When set and true, indicates the message should be encrypted. | boolean |
+| google_workspace.gmail_reports.message_info.smime_extraction_success | When set, indicates that inbound S/MIME processing occurred. Not set if skipped. The value indicates the completion status. | boolean |
+| google_workspace.gmail_reports.message_info.smime_packaging_success | For outbound messages only. When set, indicates that S/MIME packaging was attempted. Not set if skipped. The value indicates the completion status. | boolean |
+| google_workspace.gmail_reports.message_info.smime_sign_message | For outbound messages only. When set and true, indicates message should be signed. | boolean |
+| google_workspace.gmail_reports.message_info.source.from_header_address | From: header address as it appears in the message headers. | keyword |
+| google_workspace.gmail_reports.message_info.source.from_header_displayname | From: header display name as it appears in the message headers, for example, John Doe. This field might be truncated if the log is too long or if there are too many triggered rules (triggered_rule_info) in the log. | keyword |
+| google_workspace.gmail_reports.message_info.source.selector | A subcategory of the source server. For value descriptions, go to message_info.source.service. | keyword |
+| google_workspace.gmail_reports.message_info.source.service | The source service for the message. | keyword |
+| google_workspace.gmail_reports.message_info.spam_info.classification_reason | Reason the message was classified as spam, phishing, or other classification. | keyword |
+| google_workspace.gmail_reports.message_info.spam_info.classification_timestamp_usec | Message spam classification timestamp. | date |
+| google_workspace.gmail_reports.message_info.spam_info.disposition | The outcome of the Gmail spam classification. | keyword |
+| google_workspace.gmail_reports.message_info.spam_info.ip_whitelist_entry | The IP whitelist entry that informed the classification, when the message is classified by a custom rule in Gmail settings. | keyword |
+| google_workspace.gmail_reports.message_info.structured_policy_log_info.detected_file_types.category | MIME type category. | keyword |
+| google_workspace.gmail_reports.message_info.structured_policy_log_info.detected_file_types.mime_type | File MIME type. | keyword |
+| google_workspace.gmail_reports.message_info.structured_policy_log_info.exchange_journal_info.recipients | Domain recipients for the journaled message known to Google. | keyword |
+| google_workspace.gmail_reports.message_info.structured_policy_log_info.exchange_journal_info.rfc822_message_id | RFC 822 message ID of the journaled message. | keyword |
+| google_workspace.gmail_reports.message_info.structured_policy_log_info.exchange_journal_info.timestamp | The timestamp of the journaled message, in seconds. | date |
+| google_workspace.gmail_reports.message_info.structured_policy_log_info.exchange_journal_info.unknown_recipients | Domain recipients unknown to Google for the journaled message. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.consequence.action | Action taken for the consequence. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.consequence.reason | Reason the consequence was applied. Usually contains the unique description of a rule that triggered the consequence. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.consequence.subconsequence.action | Action taken for the sub-consequence. Go to consequence action for a description of possible values. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.consequence.subconsequence.reason | Reason the sub-consequence was applied. Usually contains the unique description of a rule that triggered the consequence. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.policy_holder_address | Email address of the policyholder whose policy triggered the rules. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.rule_name | Custom rule description entered in the Admin console. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.rule_type | Custom rule type. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.spam_label_modifier | Describes the custom rule spam classification results. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.string_match.attachment_name | Name of the attachment where a matching string was found in the text extracted from a binary file. Note: This field is currently not populated. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.string_match.match_expression | Match expression set in the Admin console. This field may be truncated if the log is too long, or the number of triggered rules (triggered_rule_info) in the log is too big. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.string_match.matched_string | String that triggered the rule. Sensitive information is hidden by \* or . This field might be truncated if the log is too long, or the number of triggered rules (triggered_rule_info) in the log is too large. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.string_match.predefined_detector_name | If this was a match of predefined detectors, indicates the name of the predefined detector. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.string_match.source | Location of the string matched in the message. | keyword |
+| google_workspace.gmail_reports.message_info.triggered_rule_info.string_match.type | Type of match. | keyword |
+| google_workspace.gmail_reports.message_info.upload_error_category | Error encountered while uploading the message to the destination. | keyword |
+| google_workspace.gmail_reports.network_info.ip_asn | The Autonomous System Numbers of the actor IP address. | long |
+| google_workspace.gmail_reports.resource_details.application_id | Application identifier associated with the resource. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.field_values.display_name | Field display name. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.field_values.id | Field ID. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.field_values.selection_value.badged | Indicates whether the choice is badged. | boolean |
+| google_workspace.gmail_reports.resource_details.applied_labels.field_values.selection_value.display_name | Choice display name. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.field_values.selection_value.id | Choice ID. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.field_values.type | Always SELECTION because Gmail currently supports only a selection field. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.id | Label ID. | keyword |
+| google_workspace.gmail_reports.resource_details.applied_labels.title | Label title. | keyword |
+| google_workspace.gmail_reports.resource_details.id | RFC 2822 message ID of the message. Set only when the message has labels. | keyword |
+| google_workspace.gmail_reports.resource_details.owner_details.owner_identity.user_identity.id | Obfuscated ID of the resource owner. | keyword |
+| google_workspace.gmail_reports.resource_details.owner_details.owner_identity.user_identity.user_email | Email address of the resource owner. | keyword |
+| google_workspace.gmail_reports.resource_details.owner_details.owner_type | The type of the resource owner. | keyword |
+| google_workspace.gmail_reports.resource_details.relation | Defines relationship of the resource to the events. | keyword |
+| google_workspace.gmail_reports.resource_details.title | Message subject. Set only set when the message has labels. | keyword |
+| google_workspace.gmail_reports.resource_details.type | Always EMAIL for Gmail events. | keyword |
+| google_workspace.gmail_reports.resource_ids | The IDs of the resources the event refers to. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 
 ### Gemini
 
