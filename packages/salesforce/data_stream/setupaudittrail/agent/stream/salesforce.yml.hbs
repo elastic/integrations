@@ -26,7 +26,7 @@ event_monitoring_method:
     interval: {{period}}
     query:
       default: SELECT FIELDS(STANDARD) FROM SetupAuditTrail{{#if initial_interval}} WHERE CreatedDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]]{{/if}} ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
-      value: SELECT FIELDS(STANDARD) FROM SetupAuditTrail WHERE (CreatedDate > [[ .cursor.object.last_event_time ]][[ if .cursor.object.last_event_id ]] OR (CreatedDate = [[ .cursor.object.last_event_time ]] AND Id > '[[ .cursor.object.last_event_id ]]')[[ end ]]) ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
+      value: SELECT FIELDS(STANDARD) FROM SetupAuditTrail WHERE (CreatedDate > [[ .cursor.object.last_event_time ]][[ if index .cursor.object "last_event_id" ]] OR (CreatedDate = [[ .cursor.object.last_event_time ]] AND Id > '[[ .cursor.object.last_event_id ]]')[[ end ]]) ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
     cursor:
       field: "CreatedDate"
 tags:

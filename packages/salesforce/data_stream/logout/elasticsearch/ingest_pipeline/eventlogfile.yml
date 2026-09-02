@@ -1,11 +1,18 @@
 ---
 description: Pipeline for parsing Salesforce Logout (EventLogFile) logs.
 processors:
+  # REQUEST_ID is not unique per logout row: a single request can log out
+  # multiple sessions (e.g. session-expiry sweeps), and it can be empty for
+  # events not tied to a user request. Include SESSION_KEY (the per-session
+  # discriminator) and USER_ID_DERIVED so same-millisecond logouts in the same
+  # org do not collide on _id and get silently dropped.
   - fingerprint:
       fields:
         - json.REQUEST_ID
         - json.TIMESTAMP_DERIVED
         - json.ORGANIZATION_ID
+        - json.USER_ID_DERIVED
+        - json.SESSION_KEY
       target_field: _id
       ignore_failure: true
       ignore_missing: true
