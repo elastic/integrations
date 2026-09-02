@@ -17,14 +17,14 @@ processors:
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*zone %{DATA:dns.question.name}/%{DATA:dns.question.class}: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*zone %{DATA:dns.question.name}/%{DATA:dns.question.class}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*zone %{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*zone %{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*validating %{DATA:dns.question.name}/%{WORD:dns.question.type}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
@@ -391,6 +391,14 @@ processors:
           - NXRRSET
           - NOTAUTH
           - NOTZONE
+          - BADVERS
+          - BADKEY
+          - BADTIME
+          - BADMODE
+          - BADNAME
+          - BADALG
+          - BADTRUNC
+          - BADCOOKIE
       source: |
         def dnsLog = ctx.infoblox_nios?.log?.dns;
         if (dnsLog == null) {
@@ -400,7 +408,11 @@ processors:
         if (candidate == null && dnsLog.transfer != null) {
           candidate = dnsLog.transfer.status;
         }
-        if (candidate == null || !params.rcodes.contains(candidate)) {
+        if (candidate == null) {
+          return;
+        }
+        candidate = candidate.toUpperCase();
+        if (!params.rcodes.contains(candidate)) {
           return;
         }
         if (ctx.dns == null) {

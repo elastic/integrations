@@ -290,7 +290,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.ecs_client_subnet.prefix_length | Source prefix length of the EDNS Client Subnet option, in bits. | long |
 | infoblox_nios.log.dns.ecs_client_subnet.scope_prefix_length | Scope prefix length of the EDNS Client Subnet option, in bits. | long |
 | infoblox_nios.log.dns.failed_message |  | text |
-| infoblox_nios.log.dns.failure_reason | Reason BIND reported for a failed query, verbatim. Usually a DNS RCODE such as `REFUSED`, but may be an internal result such as `timed out` or `failure`. | keyword |
+| infoblox_nios.log.dns.failure_reason | Reason BIND reported for a failed query, verbatim. Usually a DNS RCODE such as `REFUSED`, but can be an internal result such as `timed out` or `failure`. | keyword |
 | infoblox_nios.log.dns.header_flags |  | keyword |
 | infoblox_nios.log.dns.message |  | text |
 | infoblox_nios.log.dns.query_context | Source BIND answered the query from when logging a security decision, for example `cache`. | keyword |
