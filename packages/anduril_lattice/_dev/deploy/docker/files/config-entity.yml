@@ -1,0 +1,94 @@
+rules:
+  # OAuth2 token endpoint - validates Anduril's client credentials request.
+  - path: /api/v1/oauth/token
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
+    query_params:
+      client_id: test-client-id
+      client_secret: test-client-secret
+      grant_type: client_credentials
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: >-
+          {"access_token":"test-access-token-xxxx","token_type":"Bearer","expires_in":1800}
+  # Page 1: new session (empty sessionToken) — returns TEMPLATE_TRACK entity event
+  # Matches both Python json.dumps (space after colon) and CEL encode_json (no space)
+  - path: /api/v1/entities/events
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
+    request_body: '/.*"sessionToken":? *"".*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: >-
+          {"sessionToken":"mock-cursor-page-1","entityEvents":[{"eventType":"EVENT_TYPE_PREEXISTING","time":"2025-12-17T15:32:42Z","entity":{"entityId":"15af4024-05ac-44a3-a756-638e161bd977","description":"Sanctuary","isLive":true,"location":{"position":{"latitudeDegrees":42.35423678341084,"longitudeDegrees":-71.04721146609882,"altitudeHaeMeters":0},"velocityEnu":{"e":4.86,"n":-5.05,"u":-7.67e-07},"speedMps":7.005,"attitudeEnu":{"x":2.14e-08,"y":5.04e-08,"z":-0.391,"w":0.920}},"aliases":{"name":"Sanctuary Passenger Ship"},"milView":{"disposition":"DISPOSITION_ASSUMED_FRIENDLY","environment":"ENVIRONMENT_SURFACE"},"ontology":{"platformType":"SURFACE_VESSEL","template":"TEMPLATE_TRACK"},"provenance":{"integrationName":"legacy_integration","dataType":"ais","sourceUpdateTime":"2025-12-17T15:32:42Z"},"tracked":{"trackQualityWrapper":9,"sensorHits":1},"indicators":{"simulated":true},"signal":{"frequencyCenter":{"frequencyHz":{"value":9.4e9}},"frequencyRange":{"minimumFrequencyHz":{"frequencyHz":{"value":9.0e9}},"maximumFrequencyHz":{"frequencyHz":{"value":9.8e9}}},"bandwidthHz":8.0e8,"signalToNoiseRatio":14.5,"pulseWidthS":2.5e-6,"scanCharacteristics":{"scanType":"SCAN_TYPE_CIRCULAR","scanPeriodS":3.0},"emitterNotations":["EN-001","EN-002"]},"transponderCodes":{"mode3":5421,"modeS":{"id":"ABX1234","address":11189196}},"targetPriority":{"highValueTarget":{"isHighValueTarget":true,"targetPriority":2,"isHighPayoffTarget":false},"threat":{"isThreat":false}},"createdTime":"2025-12-17T14:51:52Z","expiryTime":"2025-12-17T15:32:52Z"}}]}
+  # Page 2: continuation with page-1 cursor — returns TEMPLATE_ASSET entity event
+  - path: /api/v1/entities/events
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
+    request_body: '/.*"sessionToken":? *"mock-cursor-page-1".*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: >-
+          {"sessionToken":"mock-cursor-page-2","entityEvents":[{"eventType":"EVENT_TYPE_UPDATE","time":"2025-12-17T15:30:00Z","entity":{"entityId":"tower-45d9bf21-0001-0001-0001-000000000001","isLive":true,"aliases":{"name":"Tower 45d9bf21"},"milView":{"disposition":"DISPOSITION_FRIENDLY","environment":"ENVIRONMENT_LAND"},"ontology":{"platformType":"FIXED_SENSOR","template":"TEMPLATE_ASSET"},"location":{"position":{"latitudeDegrees":34.05223,"longitudeDegrees":-118.24368,"altitudeHaeMeters":85.0}},"health":{"connectionStatus":"CONNECTION_STATUS_ONLINE","healthStatus":"HEALTH_STATUS_HEALTHY","updateTime":"2025-12-17T15:30:00Z","activeAlerts":[{"alertCode":"ALERT_LOW_STORAGE","level":"ALERT_LEVEL_WARNING","activatedTime":"2025-12-17T15:00:00Z","description":"Storage capacity below 15 percent"}]},"geoShape":{"polygon":{"rings":[{"positions":[{"position":{"latitudeDegrees":34.053,"longitudeDegrees":-118.245},"heightM":0},{"position":{"latitudeDegrees":34.053,"longitudeDegrees":-118.242},"heightM":0},{"position":{"latitudeDegrees":34.051,"longitudeDegrees":-118.242},"heightM":0},{"position":{"latitudeDegrees":34.051,"longitudeDegrees":-118.245},"heightM":0}]}]}},"sensors":{"sensors":[{"sensorId":"sensor-001","operationalState":"OPERATIONAL_STATE_OPERATIONAL","sensorType":"SENSOR_TYPE_EO","sensorDescription":"Electro-optical camera","lastDetectionTimestamp":"2025-12-17T15:29:55Z","fieldsOfView":[{"projectedFrustum":{"upperLeft":{"latitudeDegrees":34.060,"longitudeDegrees":-118.252},"upperRight":{"latitudeDegrees":34.060,"longitudeDegrees":-118.237},"bottomRight":{"latitudeDegrees":34.050,"longitudeDegrees":-118.237},"bottomLeft":{"latitudeDegrees":34.050,"longitudeDegrees":-118.252}}}]}]},"powerState":{"sourceIdToState":{"Battery":{"powerStatus":"POWER_STATUS_DISCHARGING","powerType":"POWER_TYPE_BATTERY","powerLevel":{"percentRemaining":87.5,"voltage":31.84}}}},"provenance":{"integrationName":"anduril_tower","dataType":"anduril","sourceUpdateTime":"2025-12-17T15:30:00Z"},"indicators":{"simulated":true},"createdTime":"2025-12-17T10:00:00Z"}}]}
+  # Terminal page: cursor-page-2 token — entityEvents is null (no more events)
+  - path: /api/v1/entities/events
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
+    request_body: '/.*"sessionToken":? *"mock-cursor-page-2".*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: >-
+          {"sessionToken":"mock-cursor-final","entityEvents":null}
+  # Second-round resume: same final cursor — returns null (simulates ongoing polling)
+  # Verifies cursor persistence: program must NOT reset sessionToken to "" between intervals
+  - path: /api/v1/entities/events
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer test-access-token-xxxx"
+      Anduril-Sandbox-Authorization:
+        - "Bearer test-sandbox-token-xxxx"
+    request_body: '/.*"sessionToken":? *"mock-cursor-final".*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: >-
+          {"sessionToken":"mock-cursor-final","entityEvents":null}
