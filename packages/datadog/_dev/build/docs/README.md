@@ -20,8 +20,8 @@ the AWS S3 input and sends one audit event per line to the `datadog.audit` data
 stream.
 
 S3 object-created notifications can be delivered to Amazon SQS for near-real-time
-collection. If no queue URL is configured, the integration polls the bucket at
-the configured interval.
+collection. In Polling mode, the integration polls the bucket at the configured
+interval.
 
 ## What data does this integration collect?
 
