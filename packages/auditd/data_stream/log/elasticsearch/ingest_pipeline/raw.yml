@@ -52,10 +52,11 @@ processors:
         # continuation record whose only key has a bracket suffix (e.g. a17[1]=<7.5KB hex>)
         # forces the lazy skip to retry the greedy key run at every offset of the value,
         # which is quadratic and can exceed the grok watchdog timeout. The skip is bounded
-        # to 512 characters so that any record with no parseable key after the prefix
-        # fails fast instead of scanning the whole line; in practice keys start within a
-        # few characters of the prefix.
-        AUDIT_KEY_VALUES: '(?:.{0,512}?)(?<auditd.log.kv>[A-Za-z0-9_]+(?:\[[0-9]+\])?=[\s\S]*)'
+        # to 128 characters: the longest no-key preamble in pipeline fixtures is 32 chars
+        # (DAEMON_END, unmatched AVC preamble), so 128 covers real shapes with headroom
+        # while capping O(n²) scan cost on malformed no-key lines below an unbounded
+        # (?:.*?).
+        AUDIT_KEY_VALUES: '(?:.{0,128}?)(?<auditd.log.kv>[A-Za-z0-9_]+(?:\[[0-9]+\])?=[\s\S]*)'
         AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
       patterns:
         - '%{AUDIT_PREFIX}\s*(?:user )?%{AVC_PREFIX}?%{AUDIT_KEY_VALUES}'
