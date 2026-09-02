@@ -1,0 +1,22 @@
+# SUCCESS: two EventLogFile rows share CreatedDate; the second poll resumes with the
+# (CreatedDate = ... AND Id > ...) tie-breaker and fetches the second row (api 67.0).
+input: salesforce
+service: salesforce
+vars:
+  instance_url: http://{{Hostname}}:{{Port}}
+  jwt_enabled: false
+  username: temp_user
+  client_id: temp_client_id
+  client_secret: forty_characters_long_secret_key
+  password: temp_password
+  token_url: http://{{Hostname}}:{{Port}}
+data_stream:
+  vars:
+    api_version: "67.0"
+    initial_interval: ""
+    elf_period: 10s
+    preserve_original_event: true
+    event_log_file: true
+    object: false
+assert:
+  hit_count: 2
