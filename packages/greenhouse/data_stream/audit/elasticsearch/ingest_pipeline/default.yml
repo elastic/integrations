@@ -214,6 +214,17 @@ processors:
             field: error.message
             value: 'Failed to convert target_id to string: {{{ _ingest.on_failure_message }}}'
 
+  # Rejection enrichment (Harvest API, requires enrich_rejections)
+  - set:
+      field: event.reason
+      copy_from: greenhouse.audit.event.rejection.notes
+      ignore_empty_value: true
+  - append:
+      field: tags
+      value: greenhouse-rejection-enrichment-failed
+      allow_duplicates: false
+      if: ctx.greenhouse?.audit?.event?.rejection?.error != null
+
   # Related fields
   - append:
       tag: append_related_user_7f407fef

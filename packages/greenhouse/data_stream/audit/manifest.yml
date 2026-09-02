@@ -45,6 +45,15 @@ streams:
         multi: false
         show_user: true
         required: false
+      - name: enrich_rejections
+        type: bool
+        title: Enrich rejected application events
+        multi: false
+        required: true
+        show_user: true
+        default: false
+        description: >-
+          When an audit event records a candidate or prospect being rejected, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event. This audit event does not include an application ID, but Greenhouse also audits a separate "RejectionDetails" event under the same request.id that does; the Application is identified by correlating the two via request.id, and if that correlation is not exact, the event is emitted with an error instead of a guess. This requires the OAuth client to have read access to the Harvest "Rejection details" (harvest:rejection_details:list), "Rejection reasons" (harvest:rejection_reasons:show), and "Notes" (harvest:notes:list) endpoints. Lookups are batched per page of events: one rejection details request, one notes request, and one request per distinct rejection reason.
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
