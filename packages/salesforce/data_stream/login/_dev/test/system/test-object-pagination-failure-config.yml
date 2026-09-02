@@ -1,4 +1,5 @@
-# SUCCESS: empty initial_interval → one 5m window, one event.
+# FAILURE: first SOQL page publishes, nextRecordsUrl returns HTTP 500 (API v61.0).
+# The window is not committed, but the first page must still be ingested.
 input: salesforce
 service: salesforce
 vars:
@@ -11,10 +12,11 @@ vars:
   token_url: http://{{Hostname}}:{{Port}}
 data_stream:
   vars:
+    api_version: "61.0"
     initial_interval: ""
+    real_time_period: 1h
     preserve_original_event: true
     event_log_file: false
     object: true
 assert:
   hit_count: 1
-

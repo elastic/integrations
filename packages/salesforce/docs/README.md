@@ -14,8 +14,7 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login`, `Logout`, and `AuraRequest` data streams can collect from either EventLogFile or the corresponding real-time object (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`). The `Apex` data stream reads EventLogFile records, and the `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
-
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login`, `Logout`, and `AuraRequest` data streams can collect from either EventLogFile or the corresponding real-time object (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`). The `Apex` data stream reads EventLogFile records, and the `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window. Real-time Login and Logout events are backfilled gradually in fixed-size windows so historical catch-up stays within Salesforce API limits. EventLogFile and Setup Audit Trail resume with a timestamp and Salesforce Id tie-breaker when several rows share the same time. Real-time Login and Logout windows are bounded by EventDate. An existing real-time cursor keeps moving forward from the last stored watermark. It does not replay *Initial Interval*.
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, and so on.
@@ -35,7 +34,7 @@ The Salesforce integration collects the following events using the Salesforce RE
 
 ## Compatibility
 
-This integration has been tested against the Salesforce Winter '26 (v65.0). The minimum supported version is v46.0.
+This integration requires Elastic Agent 9.5.0 and Kibana 9.5.0 (or later). It has been tested against the Salesforce Winter '26 (v65.0). The minimum supported Salesforce API version is v46.0.
 
 To determine your Salesforce instance version, use one of the following methods:
 
@@ -131,10 +130,10 @@ For step-by-step instructions on how to set up an integration, see [Getting star
    - EventLogFile (batch logs)
    - Real-time objects (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`)
 6. Optional tuning:
-   - Set an initial interval to backfill historical data.
-   - Adjust the collection interval per source.
+   - Set an **initial interval** to control how far back historical data is fetched on the first run.
+   - Adjust the **collection interval** for each source (EventLogFile and real-time events are polled independently).
    - Optionally filter EventLogFile by log file interval (for example, hourly).
-   - In Advanced options, adjust the request timeout if Salesforce responses are slow.
+   - In Advanced options, adjust the request timeout if Salesforce responses are slow. See [Performance and scaling](#performance-and-scaling) for guidance on real-time backfill and quota-friendly tuning.
 
 ### Configuration
 
@@ -345,11 +344,15 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 
 ## Performance and scaling
 
-- Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage.
-- Backfill: Use the initial interval to safely ingest historical data. Large backfills may consume significant Salesforce API quotas; consider staging by data stream.
-- Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower-latency signals but may have throughput and retention limits in your org.
-- AuraRequest volume: the `aura_request` data stream records every server-side Aura request, so it is by far the highest volume data stream in this integration. A single user loading one Lightning page can generate dozens of events. Size your storage accordingly, and consider enabling only one of the two collection methods rather than both, since they surface the same events.
-- Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large result sets are expected.
+- **Collection intervals**: Longer intervals reduce API usage and agent load; shorter intervals increase freshness. EventLogFile and real-time events are polled independently, so you can tune each.
+- **Real-time backfill**: When real-time Login or Logout collection is enabled, the agent catches up historical events in fixed-size windows equal to the *Real-Time Events Period* (5 minutes by default), processing up to 12 windows per poll. So each poll catches up at most ~1 hour of backlog by default, and a 7-day *Initial Interval* takes many polls to fully drain. This is intentional — it keeps each Salesforce query small and predictable. To catch up faster after downtime or a large initial interval, raise the advanced **Max Real-Time Catch-Up Windows Per Poll** setting. This increases Salesforce API usage, so tune it carefully. *Initial Interval* applies only when no real-time cursor exists yet. An upgrade that already stored `first_event_time` resumes from that watermark and does not re-scan the original lookback.
+- **Large backfills**: Setting a very large *Initial Interval* may consume significant Salesforce API quota. Consider staging by data stream, or add separate integration policies for EventLogFile and real-time collection.
+- **High-volume orgs**: If a single catch-up window still returns too many rows, reduce the *Real-Time Events Period* so each window covers a smaller time slice. To keep the same poll interval while shrinking the query, set the advanced **Real-Time Catch-Up Window** smaller than the period. Retried Login and Logout events use EventIdentifier as the document id so a failed page does not create duplicates. EventLogFile rows use request id, timestamp, and organization id.
+- **EventLogFile availability**: Salesforce hourly EventLogFile records are generated after the activity period and can arrive several hours later. The integration resumes reliably across these delays without missing or duplicating files.
+- **Login/Logout source choice**: EventLogFile is efficient for delayed batched reporting; real-time platform events provide lower-latency signals but may have throughput, license, and storage behavior that varies by org.
+- **AuraRequest volume**: the `aura_request` data stream records every server-side Aura request, so it is by far the highest volume data stream in this integration. A single user loading one Lightning page can generate dozens of events. Size your storage accordingly, and consider enabling only one of the two collection methods rather than both, since they surface the same events.
+- **Authentication scale**: Salesforce can revoke older OAuth access tokens when many inputs share the same user and connected app. For many agents or duplicated policies, distribute collection across multiple connected apps or integration users.
+- **Timeouts**: Increase the request timeout in Advanced options if Salesforce responses are slow or large EventLogFile downloads are expected.
 
 ## Reference
 

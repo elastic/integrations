@@ -35,16 +35,310 @@ rules:
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD"},"Id":"0AT5j00002GVrfnGAD","CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile"}]}'
         headers:
           content-type: ["text/json"]
-  # Login Object
+  # Login ELF same-timestamp resume (api 67.0): two EventLogFile rows share CreatedDate,
+  # so the second poll must use the (CreatedDate = ... AND Id > ...) tie-breaker to fetch the
+  # second row. The exact-match default rule handles poll 1; the regex rule matches every
+  # resumed query. Fingerprint dedup keeps re-served rows idempotent, so the count settles at 2.
+  - path: /services/data/v67.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY CreatedDate ASC NULLS FIRST, Id ASC"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v67.0/sobjects/EventLogFile/0AT5j00002RESUME1AAA"},"Id":"0AT5j00002RESUME1AAA","CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v67.0/sobjects/EventLogFile/0AT5j00002RESUME1AAA/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v67.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = ''Hourly'' AND EventType = ''Login'' AND \(CreatedDate > \S+ OR \(CreatedDate = \S+ AND Id > ''\S+''\)\) ORDER BY CreatedDate ASC NULLS FIRST, Id ASC}']
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v67.0/sobjects/EventLogFile/0AT5j00002RESUME2AAA"},"Id":"0AT5j00002RESUME2AAA","CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v67.0/sobjects/EventLogFile/0AT5j00002RESUME2AAA/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v67.0/sobjects/EventLogFile/0AT5j00002RESUME1AAA/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","DB_TOTAL_TIME","BROWSER_TYPE","API_TYPE","API_VERSION","USER_NAME","TLS_PROTOCOL","CIPHER_SUITE","AUTHENTICATION_METHOD_REFERENCE","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED","LOGIN_STATUS","SOURCE_IP"
+          "Login","20220914214341.001","RESUMEreqAAA1","00D5j000000VI3n","0055j000000utlP","83","30","/index.jsp","","QfNecrLXSII6fsBq","Standard","Success","52435102","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36","f","9998.0","user@elastic.co","TLSv1.2","ECDHE-RSA-AES256-GCM-SHA384","","2022-09-14T21:43:41.001Z","0055j000000utlPAAQ","81.2.69.142","s4heK3WbH-lcJIL3-n","LOGIN_NO_ERROR","81.2.69.142"
+  - path: /services/data/v67.0/sobjects/EventLogFile/0AT5j00002RESUME2AAA/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","DB_TOTAL_TIME","BROWSER_TYPE","API_TYPE","API_VERSION","USER_NAME","TLS_PROTOCOL","CIPHER_SUITE","AUTHENTICATION_METHOD_REFERENCE","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED","LOGIN_STATUS","SOURCE_IP"
+          "Login","20220914214342.002","RESUMEreqBBB2","00D5j000000VI3n","0055j000000utlP","83","30","/index.jsp","","QfNecrLXSII6fsBq","Standard","Success","52435102","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36","f","9998.0","user@elastic.co","TLSv1.2","ECDHE-RSA-AES256-GCM-SHA384","","2022-09-14T21:43:42.002Z","0055j000000utlPAAQ","81.2.69.142","s4heK3WbH-lcJIL3-n","LOGIN_NO_ERROR","81.2.69.142"
+  # Login Object (success: every bounded window returns one row)
   - path: /services/data/v56.0/query/
     methods: ["GET"]
     query_params:
-      q: ["SELECT FIELDS(STANDARD) FROM LoginEvent"]
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
     responses:
       - status_code: 200
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v58.0/sobjects/LoginEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f8c0ee8b-23a0-4c38-9c15-b054291d9a8b","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","RelatedEventIdentifier":null,"PolicyId":null,"PolicyOutcome":null,"EvaluationTime":0,"SessionKey":null,"LoginKey":"JpXdXgpRCtdCFkqA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","AdditionalInfo":"{}","ApiType":"N/A","ApiVersion":"N/A","Application":"elastic integration","AuthServiceId":null,"Browser":"Unknown","HttpMethod":"POST","CountryIso":"IN","LoginLatitude":21.9974,"LoginLongitude":79.0011,"Country":"India","City":null,"PostalCode":null,"Subdivision":null,"CipherSuite":"ECDHE-RSA-AES256-GCM-SHA384","ClientVersion":"N/A","LoginGeoId":"04FJ4000005zJdFMAA","LoginHistoryId":"0YaJ4000005wlPPKAA","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","Platform":"Unknown","Status":"Success","TlsProtocol":"TLS 1.2","UserType":"Standard","AuthMethodReference":null,"LoginSubType":"OAuth Username-Password"}]}'
         headers:
           content-type: ["text/json"]
+  # Login object: empty windows then one row (api 57.0). Sequence is 2 empty, 1 row, 9 empty.
+  - path: /services/data/v57.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - &sf_empty_soql
+        status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":0,"done":true,"records":[]}'
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v57.0/sobjects/LoginEvent/000000000000001AAA"},"Id":"000000000000001AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"a1b2c3d4-empty-windows-login-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object: first window succeeds, next window fails (api 58.0).
+  - path: /services/data/v58.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v58.0/sobjects/LoginEvent/000000000000002AAA"},"Id":"000000000000002AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"b2c3d4e5-window-failure-login-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # Login object: one bounded window, two SOQL pages (api 59.0).
+  - path: /services/data/v59.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":false,"nextRecordsUrl":"/nextRecords/LoginEvents/OBJECTBATCHPAGE","records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v59.0/sobjects/LoginEvent/000000000000011AAA"},"Id":"000000000000011AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"c3d4e5f6-pagination-login-event-page-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  - path: /nextRecords/LoginEvents/OBJECTBATCHPAGE
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v59.0/sobjects/LoginEvent/000000000000012AAA"},"Id":"000000000000012AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"c3d4e5f6-pagination-login-event-page-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  # Login object: three rows in one bounded window (api 60.0).
+  - path: /services/data/v60.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":3,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v60.0/sobjects/LoginEvent/000000000000021AAA"},"Id":"000000000000021AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"d4e5f6a7-multi-record-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"},{"attributes":{"type":"LoginEvent","url":"/services/data/v60.0/sobjects/LoginEvent/000000000000022AAA"},"Id":"000000000000022AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"d4e5f6a7-multi-record-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"},{"attributes":{"type":"LoginEvent","url":"/services/data/v60.0/sobjects/LoginEvent/000000000000023AAA"},"Id":"000000000000023AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"d4e5f6a7-multi-record-login-event-3","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:15.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  # Login object: first page succeeds, next page HTTP 500 (api 61.0).
+  - path: /services/data/v61.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":false,"nextRecordsUrl":"/nextRecords/LoginEvents/OBJECTBATCHFAIL","records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v61.0/sobjects/LoginEvent/000000000000031AAA"},"Id":"000000000000031AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"e5f6a7b8-pagination-failure-login-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+  - path: /nextRecords/LoginEvents/OBJECTBATCHFAIL
+    methods: ["GET"]
+    responses:
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # Login object: sparse catch-up (api 62.0). Sequence is empty, row, empty, row, then empties.
+  - path: /services/data/v62.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v62.0/sobjects/LoginEvent/000000000000041AAA"},"Id":"000000000000041AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f6a7b8c9-sparse-windows-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v62.0/sobjects/LoginEvent/000000000000042AAA"},"Id":"000000000000042AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f6a7b8c9-sparse-windows-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object: full catch-up drains 12 bounded windows, one distinct row each (api 63.0).
+  - path: /services/data/v63.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000201AAA"},"Id":"000000000000201AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-01","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000202AAA"},"Id":"000000000000202AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-02","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000203AAA"},"Id":"000000000000203AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-03","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:15.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000204AAA"},"Id":"000000000000204AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-04","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:14.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000205AAA"},"Id":"000000000000205AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-05","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:13.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000206AAA"},"Id":"000000000000206AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-06","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:12.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000207AAA"},"Id":"000000000000207AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-07","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:11.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000208AAA"},"Id":"000000000000208AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-08","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:10.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000209AAA"},"Id":"000000000000209AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-09","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:09.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000210AAA"},"Id":"000000000000210AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-10","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:08.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000211AAA"},"Id":"000000000000211AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-11","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:07.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v63.0/sobjects/LoginEvent/000000000000212AAA"},"Id":"000000000000212AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-login-event-12","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:06.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object: per-poll cap of 2 windows, one distinct row each (api 64.0).
+  - path: /services/data/v64.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v64.0/sobjects/LoginEvent/000000000000241AAA"},"Id":"000000000000241AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-capped-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v64.0/sobjects/LoginEvent/000000000000242AAA"},"Id":"000000000000242AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"catchup-capped-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object: window width follows the period, 4 windows over a 1h lookback (api 65.0).
+  - path: /services/data/v65.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v65.0/sobjects/LoginEvent/000000000000261AAA"},"Id":"000000000000261AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"window-size-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v65.0/sobjects/LoginEvent/000000000000262AAA"},"Id":"000000000000262AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"window-size-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v65.0/sobjects/LoginEvent/000000000000263AAA"},"Id":"000000000000263AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"window-size-login-event-3","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:15.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v65.0/sobjects/LoginEvent/000000000000264AAA"},"Id":"000000000000264AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"window-size-login-event-4","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:14.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object: window overridden below the poll period, 4 windows over a 1h lookback (api 66.0).
+  - path: /services/data/v66.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v66.0/sobjects/LoginEvent/000000000000281AAA"},"Id":"000000000000281AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"independent-window-login-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v66.0/sobjects/LoginEvent/000000000000282AAA"},"Id":"000000000000282AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"independent-window-login-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:16.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v66.0/sobjects/LoginEvent/000000000000283AAA"},"Id":"000000000000283AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"independent-window-login-event-3","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:15.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v66.0/sobjects/LoginEvent/000000000000284AAA"},"Id":"000000000000284AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"independent-window-login-event-4","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:14.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Login object dedup: two bounded windows in one poll return the SAME EventIdentifier,
+  # so the EventIdentifier _id fingerprint must collapse them into a single document (api 68.0).
+  - path: /services/data/v68.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v68.0/sobjects/LoginEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"dedup-login-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v68.0/sobjects/LoginEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"dedup-login-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
   # Setup Audit Trail
   - path: /services/data/v56.0/query/
     methods: ["GET"]
@@ -78,12 +372,168 @@ rules:
   - path: /services/data/v56.0/query/
     methods: ["GET"]
     query_params:
-      q: ["SELECT FIELDS(STANDARD) FROM LogoutEvent"]
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
     responses:
       - status_code: 200
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v58.0/sobjects/LogoutEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"6f86fbe7-17a3-4a02-8dfe-dee2a38ab73a","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
         headers:
           content-type: ["text/json"]
+  # Logout object: empty windows then one row (api 57.0). Sequence is 2 empty, 1 row, 9 empty.
+  - path: /services/data/v57.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v57.0/sobjects/LogoutEvent/000000000000001AAA"},"Id":"000000000000001AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"a1b2c3d4-empty-windows-logout-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Logout object: first window succeeds, next window fails (api 58.0).
+  - path: /services/data/v58.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v58.0/sobjects/LogoutEvent/000000000000002AAA"},"Id":"000000000000002AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"b2c3d4e5-window-failure-logout-event","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # Logout object: full catch-up drains 12 bounded windows, one distinct row each (api 63.0).
+  - path: /services/data/v63.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000221AAA"},"Id":"000000000000221AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-01","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000222AAA"},"Id":"000000000000222AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-02","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:40.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000223AAA"},"Id":"000000000000223AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-03","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:39.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000224AAA"},"Id":"000000000000224AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-04","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:38.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000225AAA"},"Id":"000000000000225AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-05","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:37.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000226AAA"},"Id":"000000000000226AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-06","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:36.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000227AAA"},"Id":"000000000000227AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-07","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:35.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000228AAA"},"Id":"000000000000228AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-08","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:34.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000229AAA"},"Id":"000000000000229AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-09","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:33.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000230AAA"},"Id":"000000000000230AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-10","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:32.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000231AAA"},"Id":"000000000000231AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-11","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:31.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v63.0/sobjects/LogoutEvent/000000000000232AAA"},"Id":"000000000000232AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-logout-event-12","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:30.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Logout object: per-poll cap of 2 windows, one distinct row each (api 64.0).
+  - path: /services/data/v64.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v64.0/sobjects/LogoutEvent/000000000000251AAA"},"Id":"000000000000251AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-capped-logout-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v64.0/sobjects/LogoutEvent/000000000000252AAA"},"Id":"000000000000252AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"catchup-capped-logout-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:40.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Logout object: window width follows the period, 4 windows over a 1h lookback (api 65.0).
+  - path: /services/data/v65.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v65.0/sobjects/LogoutEvent/000000000000271AAA"},"Id":"000000000000271AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"window-size-logout-event-1","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v65.0/sobjects/LogoutEvent/000000000000272AAA"},"Id":"000000000000272AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"window-size-logout-event-2","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:40.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v65.0/sobjects/LogoutEvent/000000000000273AAA"},"Id":"000000000000273AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"window-size-logout-event-3","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:39.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v65.0/sobjects/LogoutEvent/000000000000274AAA"},"Id":"000000000000274AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"window-size-logout-event-4","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:38.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Logout object dedup: two bounded windows in one poll return the SAME EventIdentifier,
+  # so the EventIdentifier _id fingerprint must collapse them into a single document (api 68.0).
+  - path: /services/data/v68.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v68.0/sobjects/LogoutEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"dedup-logout-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v68.0/sobjects/LogoutEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"dedup-logout-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
   # AuraRequest ELF
   - path: /services/data/v61.0/query/
     methods: ["GET"]

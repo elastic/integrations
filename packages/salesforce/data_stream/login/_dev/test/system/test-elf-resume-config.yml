@@ -1,4 +1,5 @@
-# SUCCESS: empty initial_interval → one 5m window, one event.
+# SUCCESS: two EventLogFile rows share CreatedDate; the second poll resumes with the
+# (CreatedDate = ... AND Id > ...) tie-breaker and fetches the second row (api 67.0).
 input: salesforce
 service: salesforce
 vars:
@@ -11,10 +12,11 @@ vars:
   token_url: http://{{Hostname}}:{{Port}}
 data_stream:
   vars:
+    api_version: "67.0"
     initial_interval: ""
+    elf_period: 10s
     preserve_original_event: true
-    event_log_file: false
-    object: true
+    event_log_file: true
+    object: false
 assert:
-  hit_count: 1
-
+  hit_count: 2
