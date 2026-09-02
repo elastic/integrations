@@ -76,8 +76,25 @@ echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
-echo "--- List all directories"
-PACKAGE_LIST=$(list_all_directories)
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            echo "${changed_files}" | grep -oE '^packages/[^/]+' | sort -u || true
+            echo "${changed_files}" | grep -oE '^\.buildkite/scripts/packages/[^/]+\.sh' \
+                | sed 's|^\.buildkite/scripts/||; s|\.sh$||' || true
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
+fi
+
 for package_path in ${PACKAGE_LIST}; do
     echo "--- [$package_path] check if it is required to be tested"
     if ! should_test_package "${package_path}" "${from}" "${to}"; then

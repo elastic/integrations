@@ -1996,6 +1996,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
 | crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
+| crowdstrike.CommandSequence |  | keyword |
 | crowdstrike.CompanyName |  | keyword |
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
@@ -3193,6 +3194,7 @@ An example event for `fdr` looks as following:
 | process.group.id |  | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
+| process.interactive | Whether the process is connected to an interactive shell. Process interactivity is inferred from the processes file descriptors. If the character device for the controlling tty is the same as stdin and stderr for the process, the process is considered interactive. Note: A non-interactive process can belong to an interactive session and is simply one that does not have open file descriptors reading the controlling TTY on FD 0 (stdin) or writing to the controlling TTY on FD 2 (stderr). A backgrounded process is still considered interactive if stdin and stderr are connected to the controlling TTY. | boolean |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
@@ -3206,6 +3208,8 @@ An example event for `fdr` looks as following:
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.title.text | Multi-field of `process.title`. | match_only_text |
 | process.uptime | Seconds the process has been up. | long |
+| process.user.name | Short name or login of the user. | keyword |
+| process.user.name.text | Multi-field of `process.user.name`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |

@@ -3,32 +3,32 @@ description: Pipeline for processing user dataset.
 processors:
   - append:
       field: event.category
-      tag: append_event_category_iam
+      tag: append_event_category_iam_0eb47497
       value: iam
   - append:
       field: event.type
-      tag: append_event_type_user_info
+      tag: append_event_type_user_info_3ed793ca
       value:
         - user
         - info
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_0140ae3f
       value: microsoft_entra_id_user
   - rename:
       field: azure_ad
-      tag: rename_azure_ad
+      tag: rename_azure_ad_c3c5e4b4
       target_field: entityanalytics_entra_id.user
       ignore_missing: true
   ##############################################################################
   # rename to snake case
   ##############################################################################
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_c9c8f7d4
       lang: painless
       description: Convert camelCase to snake_case
       source: |
@@ -83,159 +83,166 @@ processors:
         }
   - convert:
       field: entityanalytics_entra_id.user.account_enabled
-      tag: convert_accountEnabled_to_boolean
+      tag: convert_accountEnabled_to_boolean_81a40460
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: on_failure_remove_convert_accountEnabled_to_boolean_e7c043c3
             field: entityanalytics_entra_id.user.account_enabled
         - append:
+            tag: on_failure_append_convert_accountEnabled_to_boolean_f1f92023
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.enabled
       value: true
-      tag: set_user_enabled
+      tag: set_user_enabled_dbc7007a
       if: ctx.entityanalytics_entra_id?.user?.account_enabled == true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.mail}}}"
-      tag: append_mail_into_related_user
+      tag: append_mail_into_related_user_a71f4cae
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.mail != null
   - set:
       field: user.email
       copy_from: entityanalytics_entra_id.user.mail
-      tag: set_user_email
+      tag: set_user_email_68be2473
       ignore_empty_value: true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.user_principal_name}}}"
-      tag: append_user_principal_name_into_related_user
+      tag: append_user_principal_name_into_related_user_7321976f
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.user_principal_name != null
   - set:
       field: user.name
       copy_from: entityanalytics_entra_id.user.user_principal_name
-      tag: set_user_name
+      tag: set_user_name_51c33874
       ignore_empty_value: true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.display_name}}}"
-      tag: append_display_name_into_related_user
+      tag: append_display_name_into_related_user_da521e93
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.display_name != null
   - set:
       field: user.full_name
       copy_from: entityanalytics_entra_id.user.display_name
-      tag: set_user_full_name
+      tag: set_user_full_name_4d1028cf
       ignore_empty_value: true
   - set:
       field: user.first_name
       copy_from: entityanalytics_entra_id.user.given_name
-      tag: set_user_first_name
+      tag: set_user_first_name_07ee9e81
       ignore_empty_value: true
   - set:
       field: user.last_name
       copy_from: entityanalytics_entra_id.user.surname
-      tag: set_user_last_name
+      tag: set_user_last_name_c5f4f360
       ignore_empty_value: true
   - append:
       field: user.phone
       value: "{{{entityanalytics_entra_id.user.mobile_phone}}}"
-      tag: append_mobile_phone_into_user_phone
+      tag: append_mobile_phone_into_user_phone_206ea360
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.mobile_phone != null
   - append:
       field: user.phone
       value: "{{{entityanalytics_entra_id.user.business_phones}}}"
-      tag: append_business_phones_into_user_phone_if_string
+      tag: append_business_phones_into_user_phone_if_string_1076b297
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.business_phones instanceof String
   - foreach:
+      tag: foreach_append_business_phones_into_user_phone_824429d1
       field: entityanalytics_entra_id.user.business_phones
       if: ctx.entityanalytics_entra_id?.user?.business_phones instanceof List
       processor:
         append:
           field: user.phone
           value: "{{{_ingest._value}}}"
-          tag: append_business_phones_into_user_phone_if_list
+          tag: append_business_phones_into_user_phone_if_list_a81ae094
           allow_duplicates: false
   - set:
       field: user.job_title
       copy_from: entityanalytics_entra_id.user.job_title
-      tag: set_user_job_title
+      tag: set_user_job_title_b501af33
       ignore_empty_value: true
   - set:
       field: user.work.location_name
       copy_from: entityanalytics_entra_id.user.office_location
-      tag: set_user_work_location
+      tag: set_user_work_location_38fdcf13
       ignore_empty_value: true
   - set:
       field: entityanalytics_entra_id.user.id
       copy_from: user.id
-      tag: set_entityanalytics_entra_id_user_id
+      tag: set_entityanalytics_entra_id_user_id_153b4e4c
       ignore_empty_value: true
   - set:
       field: asset.id
       copy_from: user.id
-      tag: set_asset_id
+      tag: set_asset_id_7900d048
       ignore_empty_value: true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.id}}}"
-      tag: append_id_into_related_user
+      tag: append_id_into_related_user_14411680
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.user?.id != null
   - set:
       field: entityanalytics_entra_id.user.group
       copy_from: user.group
-      tag: set_entityanalytics_entra_id_user_group
+      tag: set_entityanalytics_entra_id_user_group_9c73f67a
       ignore_empty_value: true
   - set:
       field: asset.group
       copy_from: user.group
-      tag: set_asset_group
+      tag: set_asset_group_5c4e371c
       ignore_empty_value: true
   - date:
       field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
-      tag: date_sign_in_activity_last_sign_in_date_time
+      tag: date_sign_in_activity_last_sign_in_date_time_097c3f46
       target_field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
       formats:
         - ISO8601
       if: ctx.entityanalytics_entra_id?.user?.sign_in_activity?.last_sign_in_date_time != null && ctx.entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time != ''
       on_failure:
         - remove:
+            tag: on_failure_remove_date_sign_in_activity_last_sign_in_date_time_7d8d3cba
             field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
             ignore_missing: true
         - append:
+            tag: on_failure_append_date_sign_in_activity_last_sign_in_date_time_d69c9c31
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.entity.lifecycle.last_activity
       copy_from: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
-      tag: set_user_entity_lifecycle_last_activity
+      tag: set_user_entity_lifecycle_last_activity_edc7422d
       ignore_empty_value: true
   - convert:
       field: entityanalytics_entra_id.user.mfa.is_mfa_registered
-      tag: convert_isMfaRegistered_to_boolean
+      tag: convert_isMfaRegistered_to_boolean_577a9d36
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: on_failure_remove_convert_isMfaRegistered_to_boolean_b812c842
             field: entityanalytics_entra_id.user.mfa.is_mfa_registered
             ignore_missing: true
         - append:
+            tag: on_failure_append_convert_isMfaRegistered_to_boolean_71032de2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.entity.attributes.mfa_enabled
       copy_from: entityanalytics_entra_id.user.mfa.is_mfa_registered
-      tag: set_user_entity_attributes_mfa_enabled
+      tag: set_user_entity_attributes_mfa_enabled_7e2f29d6
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: script_set_user_entity_relationships_supervises
+      tag: script_set_user_entity_relationships_supervises_1d3a7615
       description: Build user.entity.relationships.supervises from direct reports list.
       if: ctx.entityanalytics_entra_id?.user?.direct_reports instanceof List
       source: |
@@ -259,6 +266,7 @@ processors:
           ctx.user.entity.relationships.put("supervises", ["user": userObj]);
         }
   - foreach:
+      tag: foreach_append_app_role_display_name_to_permissions_c21288f3
       field: entityanalytics_entra_id.user.app_role_assignments
       if: ctx.entityanalytics_entra_id?.user?.app_role_assignments instanceof List
       ignore_failure: true
@@ -266,13 +274,20 @@ processors:
         append:
           field: user.entity.attributes.permissions
           value: "{{{_ingest._value.app_role_display_name}}}"
-          tag: append_app_role_display_name_to_permissions
+          tag: append_app_role_display_name_to_permissions_39f2f211
           allow_duplicates: false
           ignore_empty_values: true
 on_failure:
   - append:
+      tag: pipeline_error_0841b325
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: pipeline_error_preserve_original_event_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

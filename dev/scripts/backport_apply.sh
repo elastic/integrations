@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# backport_apply.sh — thin CLI wrapper around `mage ApplyBackport`.
+# backport_apply.sh — thin shell wrapper around `backport apply`.
 #
 # Usage:
 #   dev/scripts/backport_apply.sh --sha <sha> --package <pkg> --target <target> \
@@ -11,12 +11,10 @@
 #   --package    Package name as it appears in manifest.yml.
 #   --target     Version series ("6.14") or full branch name ("backport-aws-6.14").
 #
-# Optional flags passed as mage *bool params:
+# Optional:
 #   --open-pr    Create a GitHub PR after pushing the working branch.
 #   --json       Emit JSON output (success/conflict schemas per issue spec).
 #   --dry-run    Commit locally but skip push and PR creation for local review.
-#
-# Optional strings passed as mage *string params:
 #   --remote       Git remote to fetch from and push to (default: origin).
 #   --repository   GitHub repository (org/repo) used in PR body and links.
 #   --packages-dir Path to packages directory (default: packages).
@@ -64,16 +62,22 @@ fi
 
 cd "${REPO_ROOT}"
 
-# *bool and *string params are all passed as -flagname [value]; omitting a
-# flag leaves the param nil in mage, which Apply() treats as "use default".
-flags=()
-[[ "$open_pr"     == "true" ]] && flags+=("-openPR")
-[[ "$as_json"     == "true" ]] && flags+=("-asJSON")
-[[ "$dry_run"     == "true" ]] && flags+=("-dryRun")
-[[ -n "$remote"       ]] && flags+=("-remote=$remote")
-[[ -n "$repository"   ]] && flags+=("-repository=$repository")
-[[ -n "$packages_dir" ]] && flags+=("-packagesDir=$packages_dir")
+# Use a pre-built binary when available (set by CI before calling this script).
+# For local development, build into build/backport which is gitignored.
+if [[ -z "${BACKPORT_BIN:-}" ]]; then
+    BACKPORT_BIN="${REPO_ROOT}/build/backport"
+    mkdir -p "${REPO_ROOT}/build"
+    go build -C "${REPO_ROOT}/cmd/backport" -o "${BACKPORT_BIN}" .
+fi
 
-exec mage ApplyBackport \
-    "$sha" "$pkg" "$target" \
-    "${flags[@]+"${flags[@]}"}"
+flags=()
+[[ "$open_pr"     == "true" ]] && flags+=("--open-pr")
+[[ "$as_json"     == "true" ]] && flags+=("--json")
+[[ "$dry_run"     == "true" ]] && flags+=("--dry-run")
+[[ -n "$remote"       ]] && flags+=("--remote=${remote}")
+[[ -n "$repository"   ]] && flags+=("--repository=${repository}")
+[[ -n "$packages_dir" ]] && flags+=("--packages-dir=${packages_dir}")
+
+exec "${BACKPORT_BIN}" apply \
+    "${flags[@]+"${flags[@]}"}" \
+    "$sha" "$pkg" "$target"

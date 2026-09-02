@@ -1,25 +1,14 @@
 ---
 description: Pipeline for processing Event logs.
 processors:
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_4217da53
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
@@ -31,7 +20,7 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -43,22 +32,22 @@ processors:
   - rename:
       field: json.category
       target_field: m365_defender.event.category
-      tag: rename_json_category
+      tag: rename_json_category_754f8521
       ignore_missing: true
   - rename:
       field: json.operationName
       target_field: m365_defender.event.operation_name
-      tag: rename_json_operationName
+      tag: rename_json_operationName_ff2f894c
       ignore_missing: true
   - rename:
       field: json.Tenant
       target_field: m365_defender.event.tenant.name
-      tag: rename_json_Tenant
+      tag: rename_json_Tenant_dde3e0c8
       ignore_missing: true
   - rename:
       field: json.tenantId
       target_field: m365_defender.event.tenant.id
-      tag: rename_json_tenantId
+      tag: rename_json_tenantId_2be87e29
       ignore_missing: true
 
   # Date processors
@@ -67,7 +56,7 @@ processors:
       target_field: m365_defender.event.time
       formats:
         - ISO8601
-      tag: date_json_time
+      tag: date_json_time_963adc31
       if: ctx.json?.time != null
       on_failure:
         - append:
@@ -79,7 +68,7 @@ processors:
       target_field: m365_defender.event.timestamp
       formats:
         - ISO8601
-      tag: date_json_properties_Timestamp
+      tag: date_json_properties_Timestamp_78004879
       if: ctx.json?.properties?.Timestamp != null
       on_failure:
         - append:
@@ -89,7 +78,7 @@ processors:
   - set:
       field: '@timestamp'
       copy_from: m365_defender.event.timestamp
-      tag: set_timestamp
+      tag: set_timestamp_4a881224
       ignore_empty_value: true
 
   # Pipeline Processors
@@ -99,12 +88,12 @@ processors:
   - append:
       field: error.message
       value: 'Missing required field: m365_defender.event.category.'
-      tag: append_missing_required_field_m365_defender_event_category
+      tag: append_missing_required_field_m365_defender_event_category_779bbd2e
       if: ctx.m365_defender?.event?.category == null || ctx.m365_defender?.event?.category == ""
   - append:
       field: error.message
       value: 'The event category {{{m365_defender.event.category}}} is not supported.'
-      tag: append_invalid_m365_defender_event_category
+      tag: append_invalid_m365_defender_event_category_a9397a0c
       if: ctx.m365_defender?.event?.category != null && ![
           'AdvancedHunting-AlertEvidence',
           'AdvancedHunting-AlertInfo',
@@ -139,53 +128,53 @@ processors:
           ].contains(ctx.m365_defender.event.category)
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alert" }}'
-      tag: pipeline_alert
+      tag: pipeline_alert_dbdd684b
       if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('alert') || ctx.m365_defender.event.category.toLowerCase().contains('behavior'))
   - pipeline:
       name: '{{ IngestPipeline "pipeline_device" }}'
-      tag: pipeline_device
+      tag: pipeline_device_cb7df201
       if: ctx.m365_defender?.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('device') || ctx.m365_defender.event.category.toLowerCase().contains('processevents')
   - pipeline:
       name: '{{ IngestPipeline "pipeline_email" }}'
-      tag: pipeline_email
+      tag: pipeline_email_d4f64ffd
       if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('email') || ctx.m365_defender.event.category.toLowerCase().contains('urlclickevents') || ctx.m365_defender.event.category.toLowerCase().contains('message'))
   - pipeline:
       name: '{{ IngestPipeline "pipeline_app_and_identity" }}'
-      tag: pipeline_app_and_identity
+      tag: pipeline_app_and_identity_e40ca7e7
       if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('identity') || ctx.m365_defender.event.category.toLowerCase().contains('cloudappevents') || ctx.m365_defender.event.category.toLowerCase().contains('cloudauditevents') || ctx.m365_defender.event.category.toLowerCase().contains('cloudstorageaggregatedevents'))
   - set:
       description: Build a joined string for fingerprinting, so it matches other data streams
       field: process.entity_id
-      tag: set_process_entity_id
+      tag: set_process_entity_id_648357dc
       value: '{{{process.pid}}}|{{{process.start}}}|{{{m365_defender.event.device.id}}}'
       if: ctx.process?.pid != null && ctx.process?.start != null && ctx.m365_defender?.event?.device?.id != null
   - fingerprint:
       fields:
         - process.entity_id
-      tag: fingerprint_process_entity_id
+      tag: fingerprint_process_entity_id_18086fa3
       target_field: process.entity_id
       ignore_missing: true
   - set:
       description: Build a joined string for fingerprinting, so it matches other data streams
       field: process.parent.entity_id
-      tag: set_process_parent_entity_id
+      tag: set_process_parent_entity_id_5fd5c814
       value: '{{{process.parent.pid}}}|{{{process.parent.start}}}|{{{m365_defender.event.device.id}}}'
       if: ctx.process?.parent?.pid != null && ctx.process?.parent?.start != null && ctx.m365_defender?.event?.device?.id != null
   - fingerprint:
       fields:
         - process.parent.entity_id
-      tag: fingerprint_process_parent_entity_id
+      tag: fingerprint_process_parent_entity_id_40ad6e24
       target_field: process.parent.entity_id
       ignore_missing: true
   - set:
       field: process.name
-      tag: set_process_name_from_executable
+      tag: set_process_name_from_executable_53a3b89d
       copy_from: process.executable
       if: ctx.process?.name == null
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: set_process_name_from_command_line
+      tag: set_process_name_from_command_line_2ee3cae0
       description: Set process.name from process.command_line.
       if: ctx.process?.name == null
       source: |
@@ -246,28 +235,28 @@ processors:
   - set:
       field: cloud.instance.id
       copy_from: m365_defender.event.device.id
-      tag: set_cloud_instance_id
+      tag: set_cloud_instance_id_8ddd6ed6
       override: false
       ignore_empty_value: true
       if: ctx.m365_defender?.event?.device?.id != null
   - set:
       field: device.id
       copy_from: m365_defender.event.device.id
-      tag: set_device_id
+      tag: set_device_id_964d7f93
       ignore_empty_value: true
   - set:
       field: application.name
       copy_from: m365_defender.event.application
-      tag: set_application_name
+      tag: set_application_name_bda11e7f
       ignore_empty_value: true
   # Cleanup
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
-      tag: script_drop_empty_fields
+      tag: script_drop_empty_fields_53dd9140
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
@@ -285,13 +274,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

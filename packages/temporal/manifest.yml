@@ -1,0 +1,55 @@
+format_version: "3.6.5"
+name: temporal
+title: "Temporal (OpenTelemetry)"
+version: 0.2.0
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect operational metrics from Temporal Cloud using the OTel Prometheus
+  receiver.
+type: integration
+
+categories:
+  - observability
+  - monitoring
+  - cloud
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.5.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/temporal-logo.svg
+    title: Temporal with OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+requires:
+  input:
+    - package: prometheus_input_otel
+      version: "0.2.0"
+policy_templates:
+  - name: temporal
+    title: Temporal Cloud Metrics
+    description: Collect Temporal Cloud OpenMetrics
+    data_streams:
+      - cloud_metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    inputs:
+      - package: prometheus_input_otel
+        title: Temporal Cloud Metrics
+        description: >
+          Scrape Temporal Cloud OpenMetrics using the OTel Collector Prometheus
+          receiver.
+owner:
+  type: elastic
+  github: elastic/obs-infraobs-integrations
