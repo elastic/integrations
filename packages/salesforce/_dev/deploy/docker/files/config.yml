@@ -319,6 +319,26 @@ rules:
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v66.0/sobjects/LoginEvent/000000000000284AAA"},"Id":"000000000000284AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"independent-window-login-event-4","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:14.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
       - *sf_empty_soql
       - *sf_empty_soql
+  # Login object dedup: two bounded windows in one poll return the SAME EventIdentifier,
+  # so the EventIdentifier _id fingerprint must collapse them into a single document (api 68.0).
+  - path: /services/data/v68.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LoginEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v68.0/sobjects/LoginEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"dedup-login-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v68.0/sobjects/LoginEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"dedup-login-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","Status":"Success","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","UserType":"Standard"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
+      - *sf_empty_soql
   # Setup Audit Trail
   - path: /services/data/v56.0/query/
     methods: ["GET"]
@@ -492,6 +512,26 @@ rules:
         headers:
           content-type: ["text/json"]
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v65.0/sobjects/LogoutEvent/000000000000274AAA"},"Id":"000000000000274AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"window-size-logout-event-4","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:38.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
+  # Logout object dedup: two bounded windows in one poll return the SAME EventIdentifier,
+  # so the EventIdentifier _id fingerprint must collapse them into a single document (api 68.0).
+  - path: /services/data/v68.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM LogoutEvent WHERE EventDate > \S+ AND EventDate <= \S+ ORDER BY EventDate DESC}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v68.0/sobjects/LogoutEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"dedup-logout-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v68.0/sobjects/LogoutEvent/000000000000301AAA"},"Id":"000000000000301AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"dedup-logout-event-shared-id","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+      - *sf_empty_soql
+      - *sf_empty_soql
       - *sf_empty_soql
       - *sf_empty_soql
   # AuraRequest ELF
