@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database. 
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members for entity analytics.
 
 ## Agentless Enabled Integration
 
@@ -221,24 +221,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "c09b35c2-fdcc-49ac-8a3a-6115c04e0ecc",
-        "id": "28342e9d-df80-4a76-b0ec-5d8aab2b7adc",
-        "name": "elastic-agent-20025",
+        "ephemeral_id": "df3107a1-9f4a-4336-ae3a-ecad098902d4",
+        "id": "5630df5f-562b-4c5a-bcc1-b151fbca02c4",
+        "name": "elastic-agent-43214",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "96282",
+        "namespace": "74498",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "28342e9d-df80-4a76-b0ec-5d8aab2b7adc",
+        "id": "5630df5f-562b-4c5a-bcc1-b151fbca02c4",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "9.4.4"
     },
     "event": {
         "action": "repo.destroy",
@@ -247,12 +247,13 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-11-24T10:06:23.406Z",
+        "created": "2026-08-26T18:19:24.835Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-11-24T10:06:24Z",
+        "ingested": "2026-08-26T18:19:25Z",
         "kind": "event",
-        "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
+        "module": "github",
+        "original": "{\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
             "change"
         ]
@@ -1269,6 +1270,246 @@ An example event for `security_advisories` looks as following:
         "enumeration": "CVE",
         "id": "CVE-2025-23096",
         "severity": "unknown"
+    }
+}
+```
+
+### Members
+
+The GitHub Members data stream collects a snapshot of all organization members and their security-relevant attributes using the [GitHub GraphQL API](https://docs.github.com/en/graphql). Each collection cycle produces one document per member, making this an entity inventory stream suited for identity analytics, entity risk scoring, and SIEM identity graphs.
+
+Data collected per member includes: organization role (MEMBER or ADMIN), two-factor authentication enrollment status (optional, see below), full profile attributes (name, email, company, location, bio), and team memberships including the member's role within each team (MAINTAINER or MEMBER).
+
+The data stream issues two GraphQL queries per collection cycle against `POST https://api.github.com/graphql`:
+
+1. **`organization.membersWithRole`** — paginated list of all org members with their role and 2FA status.
+2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership and entity relationship fields.
+
+**Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and must not be used.
+
+The required scopes depend on which fields you want to collect:
+
+| Scope | Required? | Data unlocked |
+|---|---|---|
+| `read:org` | **Required** | Member roster (`role`, member list) and team memberships |
+| `read:user` | **Required** | Profile fields: `name`, `email`, `company`, `location`, `bio`, `pronouns`, `avatarUrl`, `websiteUrl`, `twitterUsername`, `createdAt`, `updatedAt`, and boolean flags (`isSiteAdmin`, `isEmployee`, `isHireable`, etc.) |
+| `admin:org` | Optional | `hasTwoFactorEnabled` MFA status. The token holder must also be an **organization owner**. Without this scope the field is omitted rather than set to `false`. Enable the **Collect MFA Status** option in the integration config alongside this scope. |
+
+To generate a Classic PAT: navigate to **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**, select the scopes above, then paste the generated token into the **Personal Access Token** field of the integration.
+
+**SAML SSO organizations:** If the organization enforces SAML single sign-on, the token must be explicitly authorized for the organization after creation. On the token list page, click **Configure SSO** next to the token, then click **Authorize** next to the organization name. Without this step the API returns a SAML enforcement error regardless of which scopes are selected.
+
+Refer to [Creating a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) and [Scopes for OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps) for more details.
+
+**Note:** GitHub App bot accounts (login ending in `[bot]`) are excluded by default. Enable the **Include Bot Accounts** option to include them.
+
+**Note:** The `billing_manager` organization role is only available via the REST API (`GET /orgs/{org}/memberships/{username}`) and is not returned by the GraphQL `membersWithRole` query. Members with this role appear with role `MEMBER` in this data stream.
+
+**Note:** For GitHub Enterprise Server, override the **API URL** setting to point to your GHES instance (e.g. `https://github.example.com/api/v3`).
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| github.members.avatar_url | URL to the member's GitHub avatar image. | keyword |
+| github.members.bio | Short biography from the member's GitHub profile. | keyword |
+| github.members.company | Company listed on the member's GitHub profile. | keyword |
+| github.members.created_at | Timestamp when the GitHub account was created. | date |
+| github.members.database_id | Database (REST API) integer ID of the GitHub user. | long |
+| github.members.has_two_factor_enabled | Whether two-factor authentication is enabled for this member. Only present when collect_mfa_status is enabled and the token has admin:org scope. | boolean |
+| github.members.is_bounty_hunter | True if the user has participated in the GitHub Bug Bounty program. | boolean |
+| github.members.is_campus_expert | True if the user is a GitHub Campus Expert. | boolean |
+| github.members.is_developer_program_member | True if the user is a member of the GitHub Developer Program. | boolean |
+| github.members.is_employee | True if the user is a GitHub employee. | boolean |
+| github.members.is_github_star | True if the user is a GitHub Star. | boolean |
+| github.members.is_hireable | True if the user has indicated they are available for hire. | boolean |
+| github.members.is_site_admin | True if the user is a GitHub site administrator. | boolean |
+| github.members.location | Location listed on the member's GitHub profile. | keyword |
+| github.members.pronouns | Pronouns set on the member's GitHub profile. | keyword |
+| github.members.role | Organization membership role (ADMIN or MEMBER). | keyword |
+| github.members.teams.combined_slug | Combined slug in the form org/team-slug. | keyword |
+| github.members.teams.database_id | Database integer ID of the team. | long |
+| github.members.teams.id | GraphQL node ID of the team. | keyword |
+| github.members.teams.name | Display name of the team. | keyword |
+| github.members.teams.parent_team_id | GraphQL node ID of the parent team, if any. | keyword |
+| github.members.teams.parent_team_slug | Slug of the parent team, if any. | keyword |
+| github.members.teams.privacy | Team visibility: SECRET or VISIBLE. | keyword |
+| github.members.teams.role | The member's role in this team: MEMBER or MAINTAINER. | keyword |
+| github.members.teams.slug | URL-safe slug of the team name. | keyword |
+| github.members.twitter_username | Twitter/X username from the member's GitHub profile. | keyword |
+| github.members.updated_at | Timestamp of the most recent GitHub profile update. | date |
+| github.members.url | GitHub profile URL of the member. | keyword |
+| github.members.website_url | Personal website URL from the member's GitHub profile. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input Type. | keyword |
+| log.offset | Log Offset. | long |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| user.email | User email address. | keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| user.entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
+| user.entity.relationships.administers.service.id | Referenced service ids. | keyword |
+| user.entity.relationships.administers.service.name | Referenced service names. | keyword |
+| user.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
+
+
+An example event for `members` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-13T21:03:18.093Z",
+    "agent": {
+        "ephemeral_id": "81aa875e-32fe-4b83-af34-a74b15e58ef3",
+        "id": "24f47d98-c6be-402e-91a2-2f69cd9e3d29",
+        "name": "elastic-agent-94818",
+        "type": "filebeat",
+        "version": "9.4.4"
+    },
+    "data_stream": {
+        "dataset": "github.members",
+        "namespace": "48768",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "24f47d98-c6be-402e-91a2-2f69cd9e3d29",
+        "snapshot": false,
+        "version": "9.4.4"
+    },
+    "entity": {
+        "id": "U_kgDOABCDEF",
+        "last_seen_timestamp": "2026-08-13T21:03:18.093Z",
+        "name": "alice-example",
+        "source": "github",
+        "type": [
+            "user"
+        ]
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "github.members",
+        "ingested": "2026-08-13T21:03:21Z",
+        "kind": "asset",
+        "module": "github",
+        "type": [
+            "user",
+            "info"
+        ]
+    },
+    "github": {
+        "members": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/12345678?v=4",
+            "bio": "Software engineer",
+            "company": "Example Corp",
+            "created_at": "2018-03-15T09:00:00.000Z",
+            "database_id": 12345678,
+            "is_bounty_hunter": false,
+            "is_campus_expert": false,
+            "is_developer_program_member": false,
+            "is_employee": false,
+            "is_github_star": false,
+            "is_hireable": true,
+            "is_site_admin": false,
+            "location": "San Francisco, CA",
+            "pronouns": "she/her",
+            "role": "ADMIN",
+            "teams": {
+                "combined_slug": [
+                    "example-org/backend-team",
+                    "example-org/frontend-team"
+                ],
+                "database_id": [
+                    1001,
+                    1002
+                ],
+                "id": [
+                    "T_kgDOAABBCC",
+                    "T_kgDOAADDEE"
+                ],
+                "name": [
+                    "Backend Team",
+                    "Frontend Team"
+                ],
+                "parent_team_id": "",
+                "parent_team_slug": "",
+                "privacy": [
+                    "SECRET",
+                    "VISIBLE"
+                ],
+                "role": [
+                    "MAINTAINER",
+                    "MEMBER"
+                ],
+                "slug": [
+                    "backend-team",
+                    "frontend-team"
+                ]
+            },
+            "twitter_username": "aliceexample",
+            "updated_at": "2026-01-01T12:00:00.000Z",
+            "url": "https://github.com/alice-example",
+            "website_url": "https://alice.example.com"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "alice-example",
+            "Alice Example"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "github-members"
+    ],
+    "user": {
+        "email": "alice@example.com",
+        "entity": {
+            "relationships": {
+                "administers": {
+                    "entity": {
+                        "id": [
+                            "T_kgDOAABBCC"
+                        ]
+                    }
+                }
+            }
+        },
+        "full_name": "Alice Example",
+        "id": "U_kgDOABCDEF",
+        "name": "alice-example",
+        "roles": [
+            "ADMIN"
+        ]
     }
 }
 ```

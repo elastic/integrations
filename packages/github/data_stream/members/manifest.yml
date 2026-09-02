@@ -1,0 +1,107 @@
+title: GitHub Organization Members
+type: logs
+streams:
+  - input: cel
+    title: GitHub Organization Members
+    description: Collect GitHub organization member identity, roles, and team memberships via GraphQL API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: access_token
+        type: password
+        title: Personal Access Token
+        description: >-
+          GitHub Personal Access Token (PAT) with `read:org` and `read:user` scopes. Add `admin:org` scope and ensure the token holder is an org owner to collect MFA status.
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: owner
+        type: text
+        title: Organization
+        description: GitHub organization login name (e.g. `elastic`).
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Duration between collection cycles. Member rosters change infrequently. Supported units: h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: collect_mfa_status
+        type: bool
+        title: Collect MFA Status
+        description: >-
+          Collect two-factor authentication (2FA) enrollment status per member. Requires `admin:org` scope and the token holder must be an org owner. When disabled or when the token lacks sufficient permissions, the field is omitted.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: include_bots
+        type: bool
+        title: Include Bot Accounts
+        description: >-
+          Include GitHub App bot accounts (login ending in `[bot]`). Bot accounts do not represent human identities and are excluded by default.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: api_url
+        type: text
+        title: API URL
+        description: >-
+          GitHub API base URL. Override for GitHub Enterprise Server (e.g. `https://github.example.com/api/v3`).
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.github.com
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: >-
+          Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 60s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - github-members
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: false
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

@@ -1,0 +1,246 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{api_url}}
+state:
+  access_token: {{access_token}}
+  owner: {{owner}}
+  collect_mfa_status: {{collect_mfa_status}}
+  include_bots: {{include_bots}}
+redact:
+  fields:
+    - access_token
+max_executions: 5000
+program: |-
+  // Two-phase snapshot collection: Phase 1 fetches all organization members,
+  // Phase 2 fetches all organization teams to build team membership data.
+  // Results are emitted only at the end of Phase 2 as fully-enriched member documents.
+  //
+  // Intermediate evaluations emit {"retry": true} placeholder events (dropped by processor)
+  // to keep the want_more chain alive during accumulation.
+  //
+  // NOTE: Only the first 100 members per team are collected (GraphQL limit).
+  // Teams with more than 100 members are silently truncated at 100.
+  //
+  // Pre-bind context map from session state to keep HTTP handling at <=2 levels inside state.with()
+  {
+  	"phase": state.?phase.orValue("members"),
+  	"member_edges": state.?member_edges.orValue([]),
+  	"team_memberships": state.?team_memberships.orValue([]),
+  	"members_cursor": state.?members_cursor,
+  	"teams_cursor": state.?teams_cursor,
+  }.as(ctx,
+  	(ctx.phase == "teams") ?
+  		// Phase 2: fetch organization teams and build membership data
+  		state.with(
+  			request(
+  				"POST",
+  				state.url.trim_right("/") + "/graphql"
+  			).with(
+  				{
+  					"Header": {
+  						"Authorization": ["Bearer " + state.access_token],
+  						"Content-Type": ["application/json"],
+  						"Accept": ["application/vnd.github+json"],
+  						"X-GitHub-Api-Version": ["2022-11-28"],
+  					},
+  					"Body": {
+  						"query": "query OrgTeamsWithMembers($org: String!, $teamCursor: String) { organization(login: $org) { teams(first: 20, after: $teamCursor, orderBy: { field: NAME, direction: ASC }) { pageInfo { hasNextPage endCursor } totalCount edges { node { id databaseId name slug combinedSlug privacy parentTeam { id slug } members(first: 100, membership: IMMEDIATE) { pageInfo { hasNextPage endCursor } totalCount edges { role node { id login } } } } } } } rateLimit { cost remaining resetAt } }",
+  						"variables": {
+  							"org": state.owner,
+  							"teamCursor": ctx.teams_cursor.orValue(null),
+  						},
+  					}.encode_json(),
+  				}
+  			).do_request().as(resp,
+  				(resp.StatusCode == 200) ?
+  					resp.Body.decode_json().as(body,
+  						(body.?errors.orValue(null) != null || body.?data.?organization.?teams.orValue(null) == null) ?
+  							{
+  								"events": {
+  									"error": {
+  										"code": "GraphQLError",
+  										"id": "graphql_error",
+  										"message": "POST /graphql (teams): " + (body.?errors.orValue(null) != null ? (body.errors.size() > 0 ? body.errors[0].?message.orValue("GraphQL error") : "GraphQL error") : "missing organization.teams in response"),
+  									},
+  								},
+  								"want_more": false,
+  							}
+  						:
+  						// Extract flat list of (login, team) membership pairs from this page.
+  						// dyn() on the flatten result avoids a celfmt type-checker limitation
+  						// where list(list(map(string,dyn))).flatten() is not inferred as list(dyn).
+  						dyn(
+  							body.data.organization.teams.edges.map(te,
+  								te.node.members.edges.map(me,
+  									{
+  										"login": me.node.login,
+  										"id": te.node.id,
+  										"database_id": te.node.databaseId,
+  										"name": te.node.name,
+  										"slug": te.node.slug,
+  										"combined_slug": te.node.combinedSlug,
+  										"privacy": te.node.privacy,
+  										"role": me.role,
+  										"parent_team_id": te.node.?parentTeam.?id.orValue(""),
+  										"parent_team_slug": te.node.?parentTeam.?slug.orValue(""),
+  									}
+  								)
+  							).flatten()
+  						).as(new_memberships,
+  							body.data.organization.teams.pageInfo.hasNextPage ?
+  								// More teams pages: accumulate and continue
+  								{
+  									"phase": "teams",
+  									"member_edges": ctx.member_edges,
+  									"team_memberships": ctx.team_memberships + new_memberships,
+  									"teams_cursor": body.data.organization.teams.pageInfo.endCursor,
+  									"events": [{"retry": true}],
+  									"want_more": true,
+  								}
+  							:
+  								// Last teams page: emit all member events enriched with team data
+  								// (final_memberships and events inlined to keep nesting at depth 4)
+  								{
+  									"phase": "members",
+  									"member_edges": [],
+  									"team_memberships": [],
+  									"members_cursor": null,
+  									"teams_cursor": null,
+  									"events": ctx.member_edges.filter(e,
+  										state.include_bots || !e.node.login.endsWith("[bot]")
+  									).map(member,
+  										{
+  											"message": {
+  												"role": member.role,
+  												"node": member.node,
+  												"teams": (ctx.team_memberships + new_memberships).filter(
+  													t,
+  													t["login"] == member.node.login
+  												),
+  											}.with(
+  												(state.collect_mfa_status && member.?hasTwoFactorEnabled.orValue(null) != null) ?
+  													dyn({"hasTwoFactorEnabled": member.hasTwoFactorEnabled})
+  												:
+  													dyn({})
+  											).encode_json(),
+  										}
+  									),
+  									"want_more": false,
+  								}
+  						)
+  					)
+  				:
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "POST /graphql (teams): " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+  							},
+  						},
+  						"want_more": false,
+  					}
+  			)
+  		)
+  	:
+  		// Phase 1: fetch organization members (paginated)
+  		state.with(
+  			request(
+  				"POST",
+  				state.url.trim_right("/") + "/graphql"
+  			).with(
+  				{
+  					"Header": {
+  						"Authorization": ["Bearer " + state.access_token],
+  						"Content-Type": ["application/json"],
+  						"Accept": ["application/vnd.github+json"],
+  						"X-GitHub-Api-Version": ["2022-11-28"],
+  					},
+  					"Body": {
+  						"query": "query OrgMembers($org: String!, $cursor: String) { organization(login: $org) { membersWithRole(first: 100, after: $cursor) { totalCount pageInfo { hasNextPage endCursor } edges { role hasTwoFactorEnabled node { id databaseId login name email company location bio pronouns avatarUrl url websiteUrl twitterUsername createdAt updatedAt isSiteAdmin isEmployee isViewer isHireable isDeveloperProgramMember isGitHubStar isBountyHunter isCampusExpert } } } } rateLimit { cost remaining resetAt } }",
+  						"variables": {
+  							"org": state.owner,
+  							"cursor": ctx.members_cursor.orValue(null),
+  						},
+  					}.encode_json(),
+  				}
+  			).do_request().as(resp,
+  				(resp.StatusCode == 200) ?
+  					resp.Body.decode_json().as(body,
+  						(body.?errors.orValue(null) != null || body.?data.?organization.?membersWithRole.orValue(null) == null) ?
+  							{
+  								"events": {
+  									"error": {
+  										"code": "GraphQLError",
+  										"id": "graphql_error",
+  										"message": "POST /graphql (members): " + (body.?errors.orValue(null) != null ? (body.errors.size() > 0 ? body.errors[0].?message.orValue("GraphQL error") : "GraphQL error") : "missing organization.membersWithRole in response"),
+  									},
+  								},
+  								"want_more": false,
+  							}
+  						:
+  						body.data.organization.membersWithRole.pageInfo.hasNextPage ?
+  							// More pages: accumulate and continue members phase
+  							{
+  								"phase": "members",
+  								"member_edges": ctx.member_edges + body.data.organization.membersWithRole.edges,
+  								"team_memberships": [],
+  								"members_cursor": body.data.organization.membersWithRole.pageInfo.endCursor,
+  								"events": [{"retry": true}],
+  								"want_more": true,
+  							}
+  						:
+  							// Last members page: advance cursor and transition to teams phase.
+  							// Storing endCursor ensures next cycle starts from the correct page.
+  							{
+  								"phase": "teams",
+  								"member_edges": ctx.member_edges + body.data.organization.membersWithRole.edges,
+  								"team_memberships": [],
+  								"members_cursor": body.data.organization.membersWithRole.pageInfo.endCursor,
+  								"events": [{"retry": true}],
+  								"want_more": true,
+  							}
+  					)
+  				:
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "POST /graphql (members): " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+  							},
+  						},
+  						"want_more": false,
+  					}
+  			)
+  		)
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
