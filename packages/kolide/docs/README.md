@@ -75,6 +75,8 @@ Both transforms key on the stable Kolide identifier (`host.id` for devices, `use
 
 The `latest_device` transform reads only the full inventory snapshots collected from the REST API (`event.kind: state`). Device webhook deliveries carry only a few fields, and because a transform replaces the whole destination document, including them would overwrite a complete snapshot with a sparse one. Webhook events remain fully queryable in `logs-kolide.device-*`.
 
+Both transforms exclude the cold and frozen data tiers from their source query so they never scan searchable-snapshot storage. Existing destination documents are unaffected, but a device or person whose newest source document has aged into those tiers is not repopulated if the transform is ever reinstalled and rebuilt from scratch.
+
 Neither transform applies a retention policy. An unchanged device or person is deduplicated at ingest, so the timestamps on its newest source document reflect the last time its content changed, not the last time it was seen. A time-based retention policy would therefore evict entities that are still active in Kolide but have not changed recently. The trade-off is that devices and people deleted in Kolide remain in the destination indices until you remove them.
 
 ### Supported use cases

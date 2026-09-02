@@ -14,6 +14,12 @@ source:
       must_not:
         - exists:
             field: error.message
+        # The initial run scans the whole source index pattern, so without this
+        # guard it would read documents out of searchable-snapshot storage.
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
 dest:
   # The version suffix on the dest.index should be incremented if a breaking
   # change is made to the index mapping or settings (for example index.mode).
