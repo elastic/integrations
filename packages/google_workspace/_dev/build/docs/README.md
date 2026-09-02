@@ -33,6 +33,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 | [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
 | [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
+| [Gmail Reports](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gmail) | The Gmail activity report returns information about message delivery, SMTP connections, spam classification and policy rule matches. |
 | [Gemini](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/gemini-in-workspace-apps) | The Gemini in Workspace Apps activity report returns information about generative AI feature usage across Workspace applications. |
 
 ## Requirements
@@ -67,11 +68,15 @@ This integration will use the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `gmail_reports`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 # Google Workspace Gmail Logs
+
+:::{note}
+The integration provides two Gmail data streams. This section is for `gmail`, which queries logs exported to Google BigQuery. If you prefer the Google Reports API, enable `gmail_reports` instead — it shares the service account and `admin.reports.audit.readonly` scope used by the other Reports API streams and skips the BigQuery configuration steps below.
+:::
 
 The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this feature. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
@@ -425,6 +430,13 @@ This is the `keep` dataset.
 
 {{fields "keep"}}
 
+### Gmail Reports
+
+This is the `gmail_reports` dataset. It is collected from the Google Reports API and emits one document per event, so a single activity record containing several events produces several documents.
+
+{{event "gmail_reports"}}
+
+{{fields "gmail_reports"}}
 ### Gemini
 
 This is the `gemini` dataset.
