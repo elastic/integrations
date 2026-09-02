@@ -1,7 +1,7 @@
-format_version: 3.6.1
+format_version: 3.6.4
 name: aws
 title: AWS
-version: 7.3.0
+version: 8.1.1
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -22,9 +22,9 @@ conditions:
     subscription: basic
   kibana:
     version: "^9.6.0"
-  # auth.aws.use_cloud_connectors (Identity Federation) requires Elastic Agent 9.6.0+.
+  # auth.aws + libbeat cloud connectors on the current ExternalID contract ship in Elastic Agent 9.4.0 (elastic/beats#47260, #47587, #48956).
   agent:
-    version: "^9.6.0"
+    version: "^9.4.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -965,8 +965,12 @@ policy_templates:
       - type: httpjson
         title: Collect AWS Security Hub CSPM logs via API
         description: Collecting AWS Security Hub CSPM logs via API.
-        hide_in_var_group_options:
-          credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Security Hub read access for findings and insights collection.
+            permissions:
+              - name: securityhub:GetFindings
+              - name: securityhub:GetInsights
     screenshots:
       - src: /img/securityhub_cspm_findings_insights_dashboard.png
         title: Security Hub CSPM Findings and Insights dashboard screenshot

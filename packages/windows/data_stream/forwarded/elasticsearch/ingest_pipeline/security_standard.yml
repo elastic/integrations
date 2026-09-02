@@ -3434,7 +3434,7 @@ processors:
               "4750", "4751", "4752", "4753", "4754", "4755", "4756", "4757", "4758", "4759",
               "4760", "4761", "4762", "4763", "4764", "4767", "4781", "4797", "4798", "4799",
               "4817", "4904", "4905", "4907", "4912", "5136", "5140", "5145", "5379", "5380",
-              "5381", "5382"].contains(ctx.event.code)) {
+              "5381", "5382", "6272"].contains(ctx.event.code)) {
           return;
         }
         if (ctx.winlog?.event_data?.SubjectUserSid != null) {
@@ -3865,10 +3865,12 @@ processors:
               }
             }
             if (Character.isWhitespace(ctx.winlog.event_data.CommandLine.charAt(i)) && !in_quote) {
-              al.add(ctx.winlog.event_data.CommandLine.substring(start, end));
+              if (end > start) {
+                al.add(ctx.winlog.event_data.CommandLine.substring(start, end));
+              }
               start = i + 1;
             }
-            if (i == ctx.winlog.event_data.CommandLine.length() - 1) {
+            if (i == ctx.winlog.event_data.CommandLine.length() - 1 && start <= end) {
               al.add(ctx.winlog.event_data.CommandLine.substring(start, end + 1));
             }
           }
