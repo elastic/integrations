@@ -15,8 +15,6 @@ processors:
         }
         if (ctx.containsKey('process') && ctx['process'].containsKey('command_line') && !ctx['process']['command_line'].empty) {
           ctx.feature_command_line = ctx['process']['command_line']
-        } else if (ctx.containsKey('endgame') && ctx['endgame'].containsKey('command_line') && !ctx['endgame']['command_line'].empty) {
-          ctx.feature_command_line = ctx['endgame']['command_line']
         } else if (ctx.containsKey('process') && ctx['process'].containsKey('args') && !ctx['process']['args'].empty) {
           ctx.feature_command_line = ctx['process']['args'].join(" ")
         } else {
@@ -39,8 +37,6 @@ processors:
         }
         if (ctx.containsKey('process') && ctx['process'].containsKey('Ext') && ctx['process']['Ext'].containsKey('token') && ctx['process']['Ext']['token'].containsKey('elevation_type') && !ctx['process']['Ext']['token']['elevation_type'].empty) {
           ctx.feature_elevation_type = ctx['process']['Ext']['token']['elevation_type']
-        } else if (ctx.containsKey('endgame') && ctx['endgame'].containsKey('elevation_type') && !ctx['endgame']['elevation_type'].empty) {
-          ctx.feature_elevation_type = ctx['endgame']['elevation_type']
         } else if (ctx.containsKey('winlog') && ctx['winlog'].containsKey('event_data') && ctx['winlog']['event_data'].containsKey('TokenElevationType') && !ctx['winlog']['event_data']['TokenElevationType'].empty) {
           ctx.feature_elevation_type = ctx['winlog']['event_data']['TokenElevationType']
         } else {
@@ -48,8 +44,6 @@ processors:
         }
         if (ctx.containsKey('process') && ctx['process'].containsKey('Ext') && ctx['process']['Ext'].containsKey('token') && ctx['process']['Ext']['token'].containsKey('integrity_level_name') && !ctx['process']['Ext']['token']['integrity_level_name'].empty) {
           ctx.feature_integrity_level = ctx['process']['Ext']['token']['integrity_level_name']
-        } else if (ctx.containsKey('endgame') && ctx['endgame'].containsKey('integrity_level') && !ctx['endgame']['integrity_level'].empty) {
-          ctx.feature_integrity_level = ctx['endgame']['integrity_level']
         } else if (ctx.containsKey('winlog') && ctx['winlog'].containsKey('event_data') && ctx['winlog']['event_data'].containsKey('IntegrityLevel') && !ctx['winlog']['event_data']['IntegrityLevel'].empty) {
           ctx.feature_integrity_level = ctx['winlog']['event_data']['IntegrityLevel']
         } else {
@@ -71,8 +65,6 @@ processors:
         }
         if (ctx.containsKey('process') && ctx['process'].containsKey('Ext') && ctx['process']['Ext'].containsKey('token') && ctx['process']['Ext']['token'].containsKey('elevation')) {
           ctx.feature_elevated = ctx['process']['Ext']['token']['elevation']
-        } else if (ctx.containsKey('endgame') && ctx['endgame'].containsKey('elevated')) {
-          ctx.feature_elevated = ctx['endgame']['elevated']
         } else if (ctx.containsKey('winlog') && ctx['winlog'].containsKey('event_data') && ctx['winlog']['event_data'].containsKey('TokenElevationType') && !ctx['winlog']['event_data']['TokenElevationType'].empty) {
           ctx.feature_elevated = true;
         } else {
@@ -119,6 +111,23 @@ processors:
       field: feature_process_executable
   - lowercase:
       field: feature_process_parent_executable
+  - lowercase:
+      field: feature_integrity_level
+  - lowercase:
+      field: feature_elevation_type
+  - script:
+      lang: painless
+      source: |-
+        def cmd = ctx['feature_command_line'];
+        int carets = 0;
+        for (int i = 0; i < cmd.length(); i++) {
+          if (cmd.charAt(i) == (char)'^') carets++;
+        }
+        ctx['feature_cmd_obfuscation'] = (carets >= 2) ? 1 : 0;
+  - gsub:
+      field: feature_command_line
+      pattern: "\\^"
+      replacement: ""
   - script:
       lang: painless
       source: |
@@ -217,6 +226,56 @@ processors:
       field: feature_command_line
       pattern: "[0-9]{5,}"
       replacement: num
+  - script:
+      lang: painless
+      source: |-
+        def cmd = ctx['feature_command_line'];
+        ctx['feature_cmd_credential_access'] = (
+          cmd.contains('sekurlsa') || cmd.contains('mimikatz') ||
+          cmd.contains('logonpasswords') || cmd.contains('lsadump') ||
+          cmd.contains('dcsync') || cmd.contains('procdump') ||
+          cmd.contains('gsecdump') || cmd.contains('hashdump') ||
+          cmd.contains('wce.exe')
+        ) ? 1 : 0;
+        ctx['feature_cmd_download_cradle'] = (
+          cmd.contains('certutil') || cmd.contains('bitsadmin') ||
+          cmd.contains('invoke-webrequest') || cmd.contains('net.webclient') ||
+          cmd.contains('downloadstring') || cmd.contains('bitstransfer') ||
+          cmd.contains('desktopimgdownldr') || cmd.contains('urldownloadtofile')
+        ) ? 1 : 0;
+        ctx['feature_cmd_lateral_movement'] = (
+          cmd.contains('psexec') || cmd.contains('winrs') ||
+          cmd.contains('new-pssession') || cmd.contains('invoke-command') ||
+          (cmd.contains('wmic') && cmd.contains('node')) ||
+          (cmd.contains('schtasks') && cmd.contains('/s ')) ||
+          (cmd.contains('sc ') && cmd.contains('\\\\'))
+        ) ? 1 : 0;
+        ctx['feature_cmd_kerberoasting'] = (
+          cmd.contains('rubeus') || cmd.contains('kerberoast') ||
+          cmd.contains('asktgt') || cmd.contains('krbtgt') ||
+          cmd.contains('domainspnticket') || cmd.contains('asreproast')
+        ) ? 1 : 0;
+        ctx['feature_cmd_recon'] = (
+          cmd.contains('whoami') || cmd.contains('nltest') ||
+          (cmd.contains('net ') && (cmd.contains(' user') || cmd.contains(' group') || cmd.contains(' localgroup')))
+        ) ? 1 : 0;
+        ctx['feature_cmd_defense_evasion'] = (
+          cmd.contains('-exec bypass') || cmd.contains('-encodedcommand') ||
+          cmd.contains('iex ') || cmd.contains('iex(') ||
+          cmd.contains('invoke-expression') || cmd.contains('set-mppreference') ||
+          cmd.contains('disablerealtimemonitoring') || cmd.contains('-enc ')
+        ) ? 1 : 0;
+        ctx['feature_cmd_persistence'] = (
+          (cmd.contains('schtasks') && cmd.contains('/create')) ||
+          (cmd.contains('reg add') && (cmd.contains('hklm') || cmd.contains('hkcu'))) ||
+          cmd.contains('runonce') || cmd.contains('new-scheduledtask') ||
+          cmd.contains('register-scheduledtask')
+        ) ? 1 : 0;
+        ctx['feature_cmd_exfiltration'] = (
+          cmd.contains('writeallbytes') || cmd.contains('compress-archive') ||
+          cmd.contains('base64string') ||
+          (cmd.contains('certutil') && cmd.contains('-encode'))
+        ) ? 1 : 0;
   - script:
       lang: painless
       source: |-
@@ -339,57 +398,8 @@ processors:
           num_top_classes: 0
           num_top_feature_importance_values: 0
           results_field: prediction
-      model_id: problemchild_20210526_1.0
+      model_id: problemchild_20260821_1.0
       target_field: problemchild
-  - script:
-      lang: painless
-      source: |
-        for(item in params.blocklist){
-          if(ctx['feature_command_line'].contains(item)){
-            ctx.blocklist_label = 1
-          }
-        }
-      if:
-        ctx.containsKey('problemchild') && ctx['problemchild'].containsKey('prediction')
-        && ctx['problemchild']['prediction'] == '0'
-      params:
-        blocklist:
-          - dump
-          - privilege
-          - administrator
-          - password
-          - key
-          - shadowcopy
-          - delete
-          - masquerade
-          - evil
-          - bad
-          - anonymous
-          - allprofiles
-          - ".hta"
-          - createobject
-          - target
-          - suspicious
-          - obfuscated
-          - bypass
-          - bootstatuspolicy
-          - recoveryenabled
-          - systemstatebackup
-          - comspec
-          - base64string
-          - ".text.encoding"
-          - ".compression."
-          - memorystream
-          - writeallbytes
-          - webclient
-          - downloadfile
-          - downloadstring
-          - bitstransfer
-          - invoke-exp
-          - invoke-web
-          - reflection.assembly
-          - assembly.gettype
-          - sockets
   - script:
       lang: painless
       source: ctx.entrySet().removeIf(field -> field.getKey() =~ /feature_.*/);ctx['problemchild'].remove('prediction_score');ctx['problemchild'].remove('model_id');
