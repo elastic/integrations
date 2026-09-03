@@ -989,6 +989,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | system.auth.ssh.dropped_ip | The client IP from SSH connections that are open and immediately dropped. | ip |
 | system.auth.ssh.event | The SSH event as found in the logs (Accepted, Invalid, Failed, etc.) | keyword |
 | system.auth.ssh.method | The SSH authentication method. Can be one of "password" or "publickey". | keyword |

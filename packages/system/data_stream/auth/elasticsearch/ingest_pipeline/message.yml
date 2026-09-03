@@ -21,6 +21,8 @@ processors:
         - '^%{SPACE}%{DATA:user.name} :(?: ((?!TTY=)%{DATA:system.auth.sudo.error}) ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ; COMMAND=%{GREEDYDATA:system.auth.sudo.command}'
         - '^new group: name=%{DATA:group.name}, GID=%{NUMBER:group.id}'
         - '^new user: name=%{DATA:user.target.name}, UID=%{NUMBER:user.target.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
+        - '^group added to /etc/(?:group|gshadow): name=%{DATA:group.name}(?:, GID=%{NUMBER:group.id})?$'
+        - "^group '%{DATA:group.name}' removed(?: from /etc/(?:group|gshadow))?$"
   - set:
       description: >-
         Deprecated duplication of user.target.name for backward compatibility;
@@ -104,7 +106,7 @@ processors:
       patterns:
         - "^delete '%{USERNAME:_temp.userdel_user}' from (?:shadow )?group '%{DATA:_temp.userdel_group}'$"
         - "^delete user '%{USERNAME:_temp.userdel_user}'$"
-        - "^removed (?:shadow )?group '%{DATA:_temp.userdel_group}'"
+        - "^removed (?:shadow )?group '%{DATA:_temp.userdel_group}'(?: owned by '%{DATA:_temp.userdel_owner}')?"
   - grok:
       description: Grok usernames from PAM messages.
       tag: grok-pam-users
@@ -235,6 +237,12 @@ processors:
       copy_from: _temp.userdel_group
       ignore_empty_value: true
       if: ctx._temp?.userdel_group != null
+  - set:
+      tag: set_user_target_name_userdel_owner
+      field: user.target.name
+      copy_from: _temp.userdel_owner
+      ignore_empty_value: true
+      if: ctx._temp?.userdel_owner != null && (ctx.user?.target?.name == null || ctx.user.target.name == '')
   - set:
       tag: set_action_group_member_removed
       field: event.action
@@ -496,6 +504,65 @@ processors:
       type: string
       ignore_failure: true
       if: ctx.system?.auth?.sudo?.user != null
+  - script:
+      description: >-
+        Extract service.name and event.action from sudo systemctl start/stop/restart
+        commands so service lifecycle events match ECS (and system.syslog).
+      tag: script-categorize-sudo-systemctl
+      if: ctx.system?.auth?.sudo?.command != null
+      lang: painless
+      source: >-
+        def cmd = ctx.system.auth.sudo.command;
+        def matcher = /(?:^|\/)systemctl(?=\s|$)/.matcher(cmd);
+        if (!matcher.find()) {
+          return;
+        }
+        def rest = cmd.substring(matcher.end()).trim();
+        if (rest == '') {
+          return;
+        }
+        def parts = rest.splitOnToken(" ");
+        def verb = null;
+        def unit = null;
+        for (int i = 0; i < parts.length; i++) {
+          def part = parts[i];
+          if (part == '' || part.startsWith('-')) {
+            continue;
+          }
+          verb = part;
+          if (i + 1 < parts.length) {
+            unit = parts[i + 1];
+          }
+          break;
+        }
+        if (verb == null || unit == null || unit == '') {
+          return;
+        }
+        def action = null;
+        if (verb == 'start') {
+          action = 'service-start';
+        } else if (verb == 'stop') {
+          action = 'service-stop';
+        } else if (verb == 'restart') {
+          action = 'service-restart';
+        } else {
+          return;
+        }
+        if (unit.endsWith('.service')) {
+          unit = unit.substring(0, unit.length() - 8);
+        }
+        int slash = unit.lastIndexOf('/');
+        if (slash >= 0) {
+          unit = unit.substring(slash + 1);
+        }
+        if (ctx.service == null) {
+          ctx.service = [:];
+        }
+        ctx.service.name = unit;
+        if (ctx.event == null) {
+          ctx.event = [:];
+        }
+        ctx.event.action = action;
   - convert:
       tag: convert_dropped-ip
       field: system.auth.ssh.dropped_ip
@@ -621,6 +688,43 @@ processors:
       field: event.type
       value: change
       if: ctx.process?.name != null && ['usermod', 'groupmod'].contains(ctx.process.name)
+  - script:
+      description: >-
+        Set event.action for user/group management when a more specific action
+        (for example group-member-added) has not already been set.
+      tag: script-categorize-iam-action
+      if: ctx.event?.action == null && ctx.process?.name != null && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
+      lang: painless
+      source: >-
+        def msg = ctx.message;
+        def proc = ctx.process.name;
+        if (msg != null) {
+          if (msg.startsWith('new user:') || msg.startsWith('failed adding user ')) {
+            ctx.event.action = 'user-created';
+            return;
+          }
+          if (msg.startsWith('new group:') || msg.startsWith('group added to ')) {
+            ctx.event.action = 'group-created';
+            return;
+          }
+          if (msg.startsWith("delete user ")) {
+            ctx.event.action = 'user-deleted';
+            return;
+          }
+          if (msg.startsWith("group '") || msg.startsWith('removed group ') || msg.startsWith('removed shadow group ')) {
+            ctx.event.action = 'group-deleted';
+            return;
+          }
+        }
+        if (proc == 'useradd') {
+          ctx.event.action = 'user-created';
+        } else if (proc == 'userdel') {
+          ctx.event.action = 'user-deleted';
+        } else if (proc == 'groupadd') {
+          ctx.event.action = 'group-created';
+        } else if (proc == 'groupdel') {
+          ctx.event.action = 'group-deleted';
+        }
   - append:
       tag: append_related-user-name
       field: related.user
