@@ -506,8 +506,9 @@ processors:
       if: ctx.system?.auth?.sudo?.user != null
   - script:
       description: >-
-        Extract service.name and event.action from sudo systemctl start/stop/restart
-        commands so service lifecycle events match ECS (and system.syslog).
+        Extract service.name, event.action, and event.type from sudo systemctl
+        start/stop/restart commands so service lifecycle events match ECS (and
+        system.syslog).
       tag: script-categorize-sudo-systemctl
       if: ctx.system?.auth?.sudo?.command != null
       lang: painless
@@ -530,8 +531,13 @@ processors:
             continue;
           }
           verb = part;
-          if (i + 1 < parts.length) {
-            unit = parts[i + 1];
+          for (int j = i + 1; j < parts.length; j++) {
+            def candidate = parts[j];
+            if (candidate == '' || candidate.startsWith('-')) {
+              continue;
+            }
+            unit = candidate;
+            break;
           }
           break;
         }
@@ -539,12 +545,16 @@ processors:
           return;
         }
         def action = null;
+        def eventType = null;
         if (verb == 'start') {
           action = 'service-start';
+          eventType = 'start';
         } else if (verb == 'stop') {
           action = 'service-stop';
+          eventType = 'end';
         } else if (verb == 'restart') {
           action = 'service-restart';
+          eventType = 'change';
         } else {
           return;
         }
@@ -563,6 +573,7 @@ processors:
           ctx.event = [:];
         }
         ctx.event.action = action;
+        ctx.event.type = [eventType];
   - convert:
       tag: convert_dropped-ip
       field: system.auth.ssh.dropped_ip
