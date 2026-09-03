@@ -25,8 +25,8 @@ event_monitoring_method:
     enabled: {{#if event_log_file}}true{{else}}false{{/if}}
     interval: {{elf_period}}
     query:
-      default: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}CreatedDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]] AND {{/if}}{{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}EventType = 'AuraRequest' ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
-      value: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}EventType = 'AuraRequest' AND (CreatedDate > [[ .cursor.event_log_file.last_event_time ]][[ if .cursor.event_log_file.last_event_id ]] OR (CreatedDate = [[ .cursor.event_log_file.last_event_time ]] AND Id > '[[ .cursor.event_log_file.last_event_id ]]')[[ end ]]) ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
+      default: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}CreatedDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]] AND {{/if}}{{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{else}}Sequence = 0 AND {{/if}}EventType = 'AuraRequest' ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
+      value: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{else}}Sequence = 0 AND {{/if}}EventType = 'AuraRequest' AND (CreatedDate > [[ .cursor.event_log_file.last_event_time ]][[ if index .cursor.event_log_file "last_event_id" ]] OR (CreatedDate = [[ .cursor.event_log_file.last_event_time ]] AND Id > '[[ .cursor.event_log_file.last_event_id ]]')[[ end ]]) ORDER BY CreatedDate ASC NULLS FIRST, Id ASC
     cursor:
       field: "CreatedDate"
   object:

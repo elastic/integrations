@@ -1,6 +1,22 @@
 ---
 description: Pipeline for parsing Salesforce AuraRequest logs collected through the AuraRequestEventLog object.
 processors:
+  # AuraRequestEventLog.Id is always the "Empty Key" sentinel, so it cannot identify a
+  # row. RequestIdentifier is the per-transaction id and was distinct and non-null on
+  # every row of a ~3100 row sandbox pull, so it anchors the document id; Timestamp and
+  # UserIdentifier widen the key in case Salesforce ever reuses an identifier. A stable
+  # _id makes a retried or overlapping poll overwrite instead of inserting duplicates.
+  # This also protects same-millisecond Timestamp rows on resume, because keyset resume
+  # on Id is not possible for this object.
+  - fingerprint:
+      fields:
+        - json.RequestIdentifier
+        - json.Timestamp
+        - json.UserIdentifier
+      tag: fingerprint_object_id
+      target_field: _id
+      ignore_missing: true
+
   # Salesforce reports the "Empty Key" sentinel (`000000000000000AAA`) as the Id of
   # every AuraRequestEventLog record observed so far, but the value is carried through
   # so that a real record id is preserved if Salesforce ever populates it.
@@ -159,3 +175,8 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
