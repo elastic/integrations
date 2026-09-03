@@ -2,7 +2,6 @@ resource.url: "{{resource_url}}"
 resource.timeout: "{{resource_timeout}}"
 interval: "{{resource_interval}}"
 state:
-  url: "{{resource_url}}"
   api_key: "{{api_key}}"
   page_limit: {{page_limit}}
   cur_offset: 0
@@ -12,9 +11,9 @@ redact:
     - api_key
 program: |
   (has(state.cur_offset) ? int(state.cur_offset) : 0).as(offset,
-  (has(state.page_limit) ? int(state.page_limit) : {{page_limit}}).as(page_limit,
-  (has(state.url) ? state.url : "{{resource_url}}").as(req_url,
-  (has(state.api_key) ? state.api_key : "{{api_key}}").as(key,
+  int(state.page_limit).as(page_limit,
+  state.url.as(req_url,
+  state.api_key.as(key,
     request("GET", req_url + "?" + {"apiKey": [key], "offset": [string(offset)], "limit": [string(page_limit)]}.format_query()).do_request().as(resp,
       resp.StatusCode != 200 ?
         {"events": [{"error": {"code": string(resp.StatusCode), "message": "WhoisFreaks Spam failed at offset " + string(offset) + ": status " + string(resp.StatusCode) + " " + string(resp.Body)}}], "url": req_url, "api_key": key, "page_limit": page_limit, "cur_offset": 0, "want_more": false}
@@ -22,4 +21,4 @@ program: |
         {"events": rows.map(row, {"message": row}), "url": req_url, "api_key": key, "page_limit": page_limit, "cur_offset": size(rows) < page_limit ? 0 : offset + page_limit, "want_more": size(rows) >= page_limit}
       )
     )
-  )))
+  ))))

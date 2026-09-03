@@ -44,19 +44,13 @@ processors:
       tag: parse_csv
       field: message
       target_fields:
-        - threat.indicator.url.domain
+        - threat.indicator.domain
         - _temp.threat_type
         - whoisfreaks.threat_feed.confidence
         - _temp.first_seen
         - _temp.last_seen
         - whoisfreaks.threat_feed.no_of_threat_matched_pivots
       ignore_missing: true
-      if: "ctx.error == null"
-  - set:
-      tag: set_indicator_domain
-      field: threat.indicator.domain
-      copy_from: threat.indicator.url.domain
-      ignore_empty_value: true
       if: "ctx.error == null"
   - set:
       tag: set_feed_name
@@ -114,7 +108,7 @@ processors:
   - fingerprint:
       tag: fingerprint_for_dedup
       fields:
-        - threat.indicator.url.domain
+        - threat.indicator.domain
         - threat.indicator.last_seen
       target_field: _id
       if: "ctx.error == null && ctx.threat?.indicator?.url?.domain != null && ctx.threat?.indicator?.last_seen != null"
