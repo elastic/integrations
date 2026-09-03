@@ -1,0 +1,131 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  tz_offset: "{{tz_offset}}"
+  columns: >-
+    EPOLeafNode.AutoID EPOLeafNode.NodeName EPOLeafNode.Type
+    EPOLeafNode.ParentID EPOLeafNode.AgentGUID EPOLeafNode.LastUpdate
+    EPOLeafNode.AgentVersion EPOLeafNode.NodePath
+    EPOLeafNode.ServerKeyHash EPOLeafNode.TenantId
+    EPOLeafNode.LastCommSecure
+    EPOLeafNode.SequenceErrorCount EPOLeafNode.SequenceErrorCountLastUpdate
+    EPOLeafNode.TransferSiteListsID EPOLeafNode.ManagedState
+    EPOLeafNode.Tags EPOLeafNode.ExcludedTags
+redact:
+  fields:
+    - password
+program: |
+  (
+    state.?want_more.orValue(false)
+    ?
+      state
+    :
+      state.with(
+        {
+          "update_time": state.?cursor.last_update_time.orValue(
+            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
+          ),
+        }
+      )
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+          "target": ["EPOLeafNode"],
+          "select": [
+            "(select (top " + string(state.page_size) + ") " + state.columns + ")",
+          ],
+          // The inclusive time cursor intentionally overlaps the boundary
+          // timestamp so downstream fingerprinting can remove duplicates.
+          "where": [
+            "(where (ge EPOLeafNode.LastUpdate \"" +
+              state.update_time + "\"))",
+          ],
+          "order": [
+            "(order (asc EPOLeafNode.LastUpdate))",
+          ],
+        }.format_query() + "&:output=json"
+      ).as(resp,
+        (resp.StatusCode == 200)
+        ?
+          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
+            (
+              (size(rows) > 0)
+              ?
+                // Advance the cursor using the wall-clock the API itself returned.
+                // LastUpdate comes back with a UTC offset (e.g. "+05:30"), but the
+                // API interprets a bare timestamp in the where clause as UTC, so the
+                // offset has to be subtracted here. Echoing the returned wall clock
+                // back verbatim excludes the boundary record and silently skips
+                // tz_offset worth of records on every poll.
+                (
+                  timestamp(
+                    string(
+                      rows[size(rows) - 1]["EPOLeafNode.LastUpdate"]
+                    )
+                  ) - state.tz_offset.split(":").as(tz, duration(tz[0] + "h" + tz[1] + "m"))
+                ).format("2006-01-02T15:04:05")
+              :
+                state.update_time
+            ).as(new_update_time,
+              {
+                "events": rows.map(e, {"message": e.encode_json()}),
+                "update_time": new_update_time,
+                "cursor": {
+                  "last_update_time": new_update_time,
+                },
+                "want_more": size(rows) == int(state.page_size),
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /remote/core.executeQuery: " + (
+                  (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
