@@ -2,7 +2,7 @@
 
 ## Overview
 
-[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including Authentication Log activity such as user logins, token issuance, and logouts; Application Authentication Log activity such as connecting (linking) and disconnecting (unlinking) apps and connectors; Application Log activity such as in-app requests and responses to connected apps; Codex Log activity such as tool calls, prompts and responses, plugins, environments, and access tokens; Audit Log activity such as role changes, invitations, and workspace policy updates; Custom Agents Log (Workspace Agents) activity such as agent lifecycle changes, runs, memory access, connector calls, and trigger management; Conversation Messages exchanged between users and the assistant; and Codex Security Log findings and scan-configuration activity.
+[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including Authentication Log activity such as user logins, token issuance, and logouts; Application Authentication Log activity such as connecting (linking) and disconnecting (unlinking) apps and connectors; Application Log activity such as in-app requests and responses to connected apps; Codex Log activity such as tool calls, prompts and responses, plugins, environments, and access tokens; Audit Log activity such as role changes, invitations, and workspace policy updates; Custom Agents Log (Workspace Agents) activity such as agent lifecycle changes, runs, memory access, connector calls, and trigger management; Conversation Message exchanged between users and the assistant; and Codex Security Log findings and scan-configuration activity.
 
 This integration for Elastic allows you to collect ChatGPT Enterprise compliance logs using the OpenAI Compliance Logs Platform API, then visualize the data in Kibana.
 
@@ -1622,14 +1622,17 @@ To collect logs via API endpoint, configure the following parameters:
 
 These APIs are used with this integration:
 
-* Authentication Log:
-    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=AUTH_LOG`)
-    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Application Authentication Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=APP_AUTH_LOG`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Application Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=APP_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Audit Log:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=AUDIT_LOG`)
+    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
+* Authentication Log:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=AUTH_LOG`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Codex Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_LOG`)
@@ -1637,12 +1640,9 @@ These APIs are used with this integration:
 * Codex Security Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_SECURITY_LOG`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
-* Audit Log:
-    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=AUDIT_LOG`)
+* Conversation Message:
+    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CONVERSATION_MESSAGE`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
 * Custom Agents Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CUSTOM_AGENTS_LOG`)
-    * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
-* Conversation Message:
-    * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CONVERSATION_MESSAGE`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
