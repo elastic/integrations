@@ -1,0 +1,35 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: system
+      name: test-since-system
+      streams:
+        - condition: true
+          data_stream:
+            dataset: system.auth
+          include_matches:
+            - SYSLOG_FACILITY=4
+            - SYSLOG_FACILITY=10
+          seek: since
+          since: -24h
+          tags: null
+          type: journald
+      type: journald
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-system.auth-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
