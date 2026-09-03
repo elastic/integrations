@@ -2,9 +2,9 @@
 
 ## Overview
 
-[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions, and its Web Control component logs web browsing activity together with content and reputation ratings applied to each visited URL — combining authentication, authorization, detailed audit trails, and web usage monitoring into a unified platform for **critical security infrastructure monitoring and compliance**.
+[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions; its Web Control component logs web browsing activity together with content and reputation ratings applied to each visited URL; its System Tree maintains a record of every managed endpoint — agent identity and version, communication and managed state, node path, and tenant and tag assignment; and its compliance history reporting captures point-in-time snapshots of how many managed computers are compliant with policy and how that posture changes over time — combining authentication, authorization, detailed audit trails, web usage monitoring, endpoint inventory, agent health, and historical compliance measurement into a unified platform for **critical security infrastructure monitoring and compliance**.
 
-The Trellix ePO On-Prem integration for Elastic collects audit and web control logs using the **REST / Web API** via CEL input, and visualizes them in Kibana.
+The Trellix ePO On-Prem integration for Elastic collects audit logs, web control logs, endpoint compliance history records, and managed system (endpoint) records using the **REST / Web API** via CEL input, and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -12,7 +12,11 @@ The Trellix ePO On-Prem integration is compatible with **Trellix ePO On-Prem 5.1
 
 ### How it works
 
-This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST / Web API at configurable intervals. It retrieves audit log records from the `OrionAuditLog` table using keyset-based pagination with cursor timestamps, and web control event records from the `WP_EventInfo` table using a keyset cursor on the numeric `EventAutoID` field (because `WP_EventInfo` has no timestamp column). Each poll for web control requests events with `EventAutoID` greater than the last persisted value, orders results ascending by `EventAutoID`, and persists the highest `EventAutoID` returned for the next poll. Each event is mapped to Elastic Common Schema (ECS) for standardized field naming and ingested as an individual event for enrichment by the built-in ingest pipeline.
+This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST / Web API at configurable intervals. It retrieves audit log records from the `OrionAuditLog` table using keyset-based pagination with cursor timestamps, and web control event records from the `WP_EventInfo` table using a keyset cursor on the numeric `EventAutoID` field (because `WP_EventInfo` has no timestamp column). Each poll for web control requests events with `EventAutoID` greater than the last persisted value, orders results ascending by `EventAutoID`, and persists the highest `EventAutoID` returned for the next poll.
+
+It retrieves compliance history records from the `EpoComplianceHistory` table using an inclusive, ascending cursor on `TheTimestamp`, and managed system records from the `EPOLeafNode` table using an inclusive, ascending cursor on `LastUpdate`. Because ePO returns `LastUpdate` with the server's UTC offset while interpreting a bare timestamp in a query as UTC, the system cursor is adjusted by the configured **Timezone Offset** so records are not skipped or re-read on every poll. Overlapping records at each cursor boundary are deduplicated by the ingest pipeline.
+
+Each event is mapped to Elastic Common Schema (ECS) for standardized field naming and ingested as an individual event for enrichment by the built-in ingest pipeline.
 
 ## What data does this integration collect?
 
@@ -22,12 +26,18 @@ The Trellix ePO On-Prem integration collects the following types of data:
 |---|---|---|
 | `audit` | Trellix ePO audit log records, including system administration, policy changes, user activity, and security-related actions retrieved from the ePO REST API. | `/remote/core.executeQuery` API |
 | `web_control` | Trellix ePO web control event records, including browsed URLs, user names, content/category ratings (phishing, spam, download, exploit, bad-link, pop-up), overall rating, list/reason/action identifiers, and per-event counts, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
+| `compliance_history` | Trellix ePO compliance history records, including the originating chart and reporting task name, evaluated computer counts, compliant and noncompliant counts and percentages, and snapshot timestamp, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
+| `system` | Trellix ePO managed system (endpoint) records, including node name, path, and type; agent GUID and version; managed and communication state; and tenant, tag, and sequence metadata, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
 
 ### Supported use cases
 
 Integrating Trellix ePO with Elastic provides centralized visibility into system administration, user activity, and policy changes across your ePO deployment, enabling efficient audit trail monitoring, compliance reporting, and security investigation within Kibana dashboards.
 
 Integrating Trellix ePO Web Control with Elastic provides centralized visibility into user web browsing activity and the ratings/categories Web Control applies to that traffic, enabling web usage monitoring, threat and risk investigation (phishing, spam, exploit, malicious downloads), and policy-violation reporting within Kibana dashboards.
+
+Integrating Trellix ePO compliance history with Elastic provides centralized visibility into how endpoint policy compliance changes over time, enabling trend analysis of compliant and noncompliant computer counts, comparison of compliance percentages across reporting tasks, detection of gaps in compliance reporting, and compliance reporting and alerting within Kibana dashboards.
+
+Integrating Trellix ePO managed system records with Elastic provides centralized visibility into the endpoints under ePO management — agent version and communication health, managed state, node placement in the System Tree, and tag-based grouping — enabling asset inventory tracking, agent health and coverage monitoring, and investigation of unmanaged or stale endpoints within Kibana dashboards.
 
 ## What do I need to use this integration?
 
@@ -37,11 +47,12 @@ To collect data via the REST / Web API, you need the following:
 
 1. **Trellix ePO server**: Trellix ePO On-Prem 5.10.0 or above with REST API / Web API enabled.
 2. **User account**: A Trellix ePO user account with:
-   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments) and/or the `WP_EventInfo` table.
+   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments), the `WP_EventInfo` table, the `EpoComplianceHistory` table, and/or the `EPOLeafNode` table.
    - Sufficient role permissions to execute queries via the Web API.
 3. **API credentials**: Username and password for basic authentication.
-4. **Server URL**: Base URL of the Trellix ePO server (default port: 2400, for example `https://epo.example.com:2400`).
+4. **Server URL**: Base URL of the Trellix ePO server (default port: 8443, for example `https://epo.example.com:8443`).
 5. **Network access**: The Elastic Agent must have outbound HTTPS access to the ePO server.
+6. **Compliance history data**: To collect the `compliance_history` data stream, the Trellix ePO compliance history reporting task must be configured and producing records.
 
 For more information on configuring REST API access in Trellix ePO, refer to the [Trellix ePO Web API Scripting Reference Guide](https://docs.trellix.com/bundle/trellix-epolicy-orchestrator-on-prem-web-api-scripting-reference-guide/page/UUID-8df5c181-2be6-8b3e-f562-e5b292a385ca.html).
 
@@ -68,12 +79,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure the collection methods you need:
 
     * For **audit** logs:
-        * Set the **URL** to the base URL of your Trellix ePO server (for example `https://epo.example.com:2400`).
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
-        * **Initial Interval**: The lookback period for the first API request (default: `24h`).
-        * **Page Size**: Number of audit log records to retrieve per API call (default: `500`).
-        * Optionally adjust **Interval** and **HTTP Client Timeout** as needed.
+        * Set **Initial Interval** to the lookback period for the first API request. The default is `24h`.
+        * Set **Page Size** to the number of audit log records to retrieve per API request. The default is `500`.
+        * Optionally adjust **Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
     * For **web control** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set **Username** for the ePO user account with `WP_EventInfo` query permissions.
@@ -82,16 +93,35 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         * Set **Interval** to the polling frequency. The default is `24h`.
         * Set **Page Size** to the number of web control log records to retrieve per API request. The default is `500`.
         * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+    * For **compliance history** logs:
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set the **Username** for the ePO user account with `EpoComplianceHistory` query permissions.
+        * Set the **Password** for the ePO user account.
+        * Set **Initial Interval** to the historical lookback used on the first request. The default is `24h`.
+        * Set **Interval** to the polling frequency. The default is `24h`.
+        * Set **Page Size** to the number of compliance history records to retrieve per API request. The default is `500`.
+        * Optionally adjust **Maximum Pages Per Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
+    * For **system** logs:
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set **Username** for the ePO user account with `EPOLeafNode` query permissions.
+        * Set **Password** for the ePO user account.
+        * Set **Initial Interval** to how far back to pull managed system records on the first run. Subsequent collections resume from the last persisted `LastUpdate` timestamp (default: `24h`).
+        * Set **Interval** to the polling frequency. The default is `5m`.
+        * Set **Timezone Offset** to the UTC offset of the ePO server, for example `+05:30`, so cursor timestamps are interpreted correctly.
+        * Set **Page Size** to the number of system records to retrieve per API request. The default is `500`.
+        * Optionally adjust **Maximum Pages Per Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
 
 6. Select **Save and continue** to save the integration.
 
 ## Troubleshooting
 
-* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog` and/or `WP_EventInfo` tables.
+* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog`, `WP_EventInfo`, `EpoComplianceHistory`, and/or `EPOLeafNode` tables, and that the required data stream is enabled. For compliance history, use the local target `EpoComplianceHistory`; do not use the rollup target unless a rollup database is configured.
 * **Authentication failures**: Ensure the username and password are correct and the user account has not been locked or disabled in Trellix ePO. Verify the account has sufficient permissions to access the required tables.
 * **Incomplete or missing fields**: Confirm that the ePO user account has sufficient permissions to access all fields configured in the integration (select clause in the CEL template).
 * **Pagination issues (audit)**: If audit logs are not advancing beyond the initial set, verify that the `StartTime` field is present in all returned records and that pagination timestamps are being correctly updated.
 * **Pagination issues (web control)**: If web control logs are not advancing beyond the initial set, verify that `EventAutoID` values are strictly increasing in the source table and that the persisted `EventAutoID` cursor is being correctly updated between polls.
+* **Pagination issues (compliance history)**: If compliance history records are not advancing beyond the initial set, verify that every returned record includes `TheTimestamp` and that ePO permits filtering and ordering on this field.
+* **Pagination issues (system)**: If system records are not advancing beyond the initial set, verify that the `LastUpdate` field is present in all returned records, that `LastUpdate` values are increasing in the source table, and that the persisted timestamp cursor is being correctly updated between polls. Also confirm that **Timezone Offset** matches the ePO server's UTC offset — an incorrect offset can cause the cursor to skip past unread records or re-read the same window on every poll.
 * **SSL certificate errors**: If your Trellix ePO server uses a self-signed certificate, extract the certificate and configure it under the SSL settings of the integration, or add it to the Elastic Agent's trusted certificate store.
 * **Network connectivity issues**: Verify firewall rules allow outbound HTTPS traffic from the Elastic Agent host to the Trellix ePO server on the configured port.
 
@@ -105,6 +135,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 2. In the search bar, type **Trellix ePO On-Prem**, and verify the dashboard information is populated.
 3. Open the **[Logs Trellix ePO On-Prem] Audit** dashboard to verify audit event data is being collected.
 4. Open the **[Logs Trellix ePO On-Prem] Web Control** dashboard and verify that Web Control data is populated.
+5. Open the **[Logs Trellix ePO On-Prem] System** dashboard and verify that managed system data is populated.
 
 ## Scaling
 
@@ -327,6 +358,227 @@ An example event for `web_control` looks as following:
 }
 ```
 
+### Compliance history
+
+The `compliance_history` data stream provides Trellix ePO On-Prem compliance history logs collected from the Web API.
+
+#### Compliance history fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.chart_name | Name of the chart that generated the compliance history record. | keyword |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant | Number of computers recorded as compliant. | long |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers | Total number of computers evaluated by the compliance query. | long |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant | Number of computers recorded as noncompliant. | long |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant | Percentage of evaluated computers recorded as compliant. | double |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant | Percentage of evaluated computers recorded as noncompliant. | double |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.task_name | Name of the server task that generated the compliance history record. | keyword |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.tenant_id | Tenant identifier associated with the compliance history record. | keyword |
+
+
+### Example event
+
+#### Compliance history
+
+An example event for `compliance_history` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-01T19:30:20.000Z",
+    "agent": {
+        "ephemeral_id": "84b7a05d-35f0-48ca-9b35-875e6eac5f2e",
+        "id": "92824ee0-912e-4619-ab3f-aaed676cd6ee",
+        "name": "elastic-agent-53476",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "trellix_epo_on_prem.compliance_history",
+        "namespace": "82849",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "92824ee0-912e-4619-ab3f-aaed676cd6ee",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "trellix_epo_on_prem.compliance_history",
+        "id": "4",
+        "ingested": "2026-07-31T12:13:36Z",
+        "kind": "state",
+        "original": "{\"EpoComplianceHistory.AutoId\":4,\"EpoComplianceHistory.ChartName\":\"Trellix Agent Compliance Summary\",\"EpoComplianceHistory.CountCompliant\":4,\"EpoComplianceHistory.CountComputers\":5,\"EpoComplianceHistory.CountNonCompliant\":1,\"EpoComplianceHistory.PercentCompliant\":80,\"EpoComplianceHistory.PercentNonCompliant\":20,\"EpoComplianceHistory.TaskName\":\"Generate Records for Trellix Agent Compliance History Reporting\",\"EpoComplianceHistory.TenantId\":0,\"EpoComplianceHistory.TheTimestamp\":\"2026-08-02T01:00:20+05:30\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "trellix_epo_on_prem-compliance_history"
+    ],
+    "trellix_epo_on_prem": {
+        "compliance_history": {
+            "epo_compliance_history": {
+                "chart_name": "Trellix Agent Compliance Summary",
+                "count_compliant": 4,
+                "count_computers": 5,
+                "count_non_compliant": 1,
+                "percent_compliant": 80,
+                "percent_non_compliant": 20,
+                "task_name": "Generate Records for Trellix Agent Compliance History Reporting",
+                "tenant_id": "0"
+            }
+        }
+    }
+}
+```
+
+### System
+
+The `system` data stream provides Trellix ePO On-Prem managed system (endpoint) logs collected from the Web API.
+
+#### System fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date and time when the event occurred. | date |
+| data_stream.dataset | Dataset name associated with the data stream. | constant_keyword |
+| data_stream.namespace | Namespace used to group related data streams. | constant_keyword |
+| data_stream.type | Type of data stream, such as logs or metrics. | constant_keyword |
+| event.dataset | Event Dataset. | constant_keyword |
+| event.module | Module that generated the event. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | Product name of the observer that generated the event. | constant_keyword |
+| observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.agent_version | Version string of the managed Trellix agent installed on the system. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.excluded_tags | Comma-separated tags excluded from the managed system node.' | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.last_comm_secure | Source code indicating whether the system’s last communication was secure. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.managed_state | Numeric managed-state code associated with the system node. | long |
+| trellix_epo_on_prem.system.epo_leaf_node.node_path | Hierarchical path of the managed system node. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.parent_id | Numeric identifier of the parent object in the ePO system hierarchy. | long |
+| trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count | Number of sequence errors recorded for the managed system node. | long |
+| trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count_last_update | Date and time when the sequence-error count was last updated. | date |
+| trellix_epo_on_prem.system.epo_leaf_node.server_key_hash | Base64-encoded cryptographic hash associated with the ePO server key. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.tenant_id | Numeric tenant identifier associated with the system node. | long |
+| trellix_epo_on_prem.system.epo_leaf_node.transfer_site_lists_id | Boolean flag associated with transferring site-list identifiers for the system node. | boolean |
+| trellix_epo_on_prem.system.epo_leaf_node.type | Numeric type code assigned to the managed system node. | long |
+
+
+### Example event
+
+#### System
+
+An example event for `system` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-03T07:01:28.000Z",
+    "agent": {
+        "ephemeral_id": "79a9dd7e-9312-4418-b4f9-d9ca380af37e",
+        "id": "a55de640-a6c2-473f-8c11-f90c1fa451ff",
+        "name": "elastic-agent-88753",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "trellix_epo_on_prem.system",
+        "namespace": "18303",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "a55de640-a6c2-473f-8c11-f90c1fa451ff",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "entity": {
+        "id": "65E387D4-DD78-406F-9765-2A3AAC1DF958",
+        "name": "DESKTOP-B9TTHQE",
+        "type": [
+            "host"
+        ]
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "trellix_epo_on_prem.system",
+        "id": "3",
+        "ingested": "2026-09-02T05:26:09Z",
+        "kind": "asset",
+        "original": "{\"EPOLeafNode.AgentGUID\":\"65E387D4-DD78-406F-9765-2A3AAC1DF958\",\"EPOLeafNode.AgentVersion\":\"5.8.6.185\",\"EPOLeafNode.AutoID\":3,\"EPOLeafNode.ExcludedTags\":\"\",\"EPOLeafNode.LastCommSecure\":\"1\",\"EPOLeafNode.LastUpdate\":\"2026-08-03T12:31:28+05:30\",\"EPOLeafNode.ManagedState\":1,\"EPOLeafNode.NodeName\":\"DESKTOP-B9TTHQE\",\"EPOLeafNode.NodePath\":null,\"EPOLeafNode.ParentID\":2,\"EPOLeafNode.SequenceErrorCount\":0,\"EPOLeafNode.SequenceErrorCountLastUpdate\":null,\"EPOLeafNode.ServerKeyHash\":\"zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=\",\"EPOLeafNode.Tags\":\"Escalated, Workstation\",\"EPOLeafNode.TenantId\":1,\"EPOLeafNode.TransferSiteListsID\":false,\"EPOLeafNode.Type\":1}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "hostname": "DESKTOP-B9TTHQE",
+        "id": "65E387D4-DD78-406F-9765-2A3AAC1DF958",
+        "name": "DESKTOP-B9TTHQE"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hash": [
+            "zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao="
+        ],
+        "hosts": [
+            "65E387D4-DD78-406F-9765-2A3AAC1DF958",
+            "DESKTOP-B9TTHQE"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "trellix_epo_on_prem-system",
+        "Escalated, Workstation"
+    ],
+    "trellix_epo_on_prem": {
+        "system": {
+            "epo_leaf_node": {
+                "agent_version": "5.8.6.185",
+                "last_comm_secure": "1",
+                "managed_state": 1,
+                "parent_id": 2,
+                "sequence_error_count": 0,
+                "server_key_hash": "zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=",
+                "tenant_id": 1,
+                "transfer_site_lists_id": false,
+                "type": 1
+            }
+        }
+    }
+}
+```
+
 ### Inputs used
 
 These inputs are used in the integration:
@@ -339,3 +591,5 @@ This integration uses the following API:
 
 * **Audit**: Collects audit log records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `OrionAuditLog` table using keyset-based pagination with the `StartTime` field as a cursor to ensure efficient and non-duplicating retrieval.
 * **Web Control**: Collects web control event records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `WP_EventInfo` table using keyset-based pagination with the `EventAutoID` field as a cursor to ensure efficient and non-duplicating retrieval.
+* **Compliance history**: Collects compliance history records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EpoComplianceHistory` table using keyset-based pagination with the `TheTimestamp` field as a cursor to ensure efficient and non-duplicating retrieval.
+* **System**: Collects managed system (endpoint) records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EPOLeafNode` table using keyset-based pagination with the `LastUpdate` field as a cursor to ensure efficient and non-duplicating retrieval.
