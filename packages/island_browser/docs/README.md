@@ -265,6 +265,7 @@ For more information on architectures that can be used for scaling this integrat
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| routing.source | SIEM event source used for routing. | keyword |
 
 
 #### Compromised Credential
@@ -386,6 +387,7 @@ For more information on architectures that can be used for scaling this integrat
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| routing.source | SIEM event source used for routing. | keyword |
 
 
 #### User
