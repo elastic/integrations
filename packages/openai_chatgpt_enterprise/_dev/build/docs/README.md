@@ -2,7 +2,7 @@
 
 ## Overview
 
-[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including authentication activity such as user logins, token issuance, and logouts; application authentication activity such as connecting (linking) and disconnecting (unlinking) apps and connectors; application (connector) activity such as in-app requests and responses to connected apps; Codex agent activity such as tool calls, prompts and responses, plugins, environments, and access tokens; administrative audit activity such as role changes, invitations, and workspace policy updates; Custom Agents (Workspace Agents) activity such as agent lifecycle changes, runs, memory access, connector calls, and trigger management; and conversation messages exchanged between users and the assistant; and Codex security findings and scan-configuration activity.
+[OpenAI ChatGPT Enterprise](https://openai.com/enterprise) is the enterprise offering of ChatGPT, giving organizations administrative controls, security, and compliance capabilities for their use of ChatGPT and Codex. The OpenAI Compliance Logs Platform exposes an API that lets enterprises export compliance logs of activity across their workspace or organization, including Authentication Log activity such as user logins, token issuance, and logouts; Application Authentication Log activity such as connecting (linking) and disconnecting (unlinking) apps and connectors; Application Log activity such as in-app requests and responses to connected apps; Codex Log activity such as tool calls, prompts and responses, plugins, environments, and access tokens; Audit Log activity such as role changes, invitations, and workspace policy updates; Custom Agents Log (Workspace Agents) activity such as agent lifecycle changes, runs, memory access, connector calls, and trigger management; Conversation Messages exchanged between users and the assistant; and Codex Security Log findings and scan-configuration activity.
 
 This integration for Elastic allows you to collect ChatGPT Enterprise compliance logs using the OpenAI Compliance Logs Platform API, then visualize the data in Kibana.
 
@@ -12,7 +12,7 @@ This integration collects data from the [OpenAI Compliance Logs Platform API](ht
 
 ### How it works
 
-This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve authentication, application authentication, application, codex, codex security, audit, custom agents, and conversation message logs. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
+This integration periodically queries the OpenAI Compliance Logs Platform API to retrieve Authentication Log, Application Authentication Log, Application Log, Codex Log, Codex Security Log, Audit Log, Custom Agents Log, and Conversation Message. Collection can be scoped to a single **workspace** or an entire **organization**, and follows a two-step (chained) flow:
 
 1. The integration calls the list endpoint (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs`) with the `event_type`, and paginates forward using the `last_end_time` cursor and `has_more` flag returned by the API. This returns metadata for each available log file.
 2. For each listed file, the integration downloads its contents (`GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`). This endpoint redirects to a signed download URL that serves the log file as JSON Lines, and each line is ingested as a separate event.
@@ -29,16 +29,16 @@ This integration collects log messages of the following types:
 - `Application Authentication Log`: Collect ChatGPT Enterprise `APP_AUTH_LOG` events, covering application authentication activity such as linking and unlinking apps and connectors (endpoints: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=APP_AUTH_LOG` and `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 - `Application Log`: Collects ChatGPT Enterprise `APP_LOG` events — in-app connector requests and responses, including the app/connector identity and type, the acting user, the conversation, the request input, any returned result items, and client context such as user agent and source geolocation (endpoints: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=APP_LOG` and `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 - `Codex Log`: Collect ChatGPT Enterprise `CODEX_LOG` events, covering Codex activity such as tool calls, prompts and responses, plugins, environments, and access tokens (endpoints: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_LOG` and `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
-- `Codex Security Log`: Collects ChatGPT Enterprise `CODEX_SECURITY_LOG` events — Codex security findings and scan-configuration changes, including scan configuration create/update details (repository, environment, lookback window, notification rules), finding updates (status, criticality, resolution reason, assignee), and proposed patch pull requests, along with the acting user, Codex client, and workspace context (endpoints: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_SECURITY_LOG` and `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Codex Security Log`: Collects ChatGPT Enterprise `CODEX_SECURITY_LOG` events — Codex Security findings and scan-configuration changes, including scan configuration create/update details (repository, environment, lookback window, notification rules), finding updates (status, criticality, resolution reason, assignee), and proposed patch pull requests, along with the acting user, Codex client, and workspace context (endpoints: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CODEX_SECURITY_LOG` and `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 - `Audit Log`: Collect ChatGPT Enterprise `AUDIT_LOG` events, covering administrative and workspace audit activity such as role changes, application access grants, feature toggles, invitations, and workspace policy updates, along with request metadata such as client IP and user agent (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs` with `event_type=AUDIT_LOG`, followed by `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 - `Custom Agents Log`: Collect ChatGPT Enterprise `CUSTOM_AGENTS_LOG` events, covering Workspace Agents (Custom Agents) activity such as agent lifecycle changes, agent runs and messages, memory access, connector calls, skill usage, and trigger management, including the acting user or agent, agent metadata, and per-event details (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs` with `event_type=CUSTOM_AGENTS_LOG`, followed by `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
-- `Conversation Messages`: Collect ChatGPT Enterprise `CONVERSATION_MESSAGE` events — individual user and assistant messages exchanged in ChatGPT Enterprise conversations, including author, client surface, model, tools and skills used, message content, and conversation metadata (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs` with `event_type=CONVERSATION_MESSAGE`, followed by `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
+- `Conversation Message`: Collect ChatGPT Enterprise `CONVERSATION_MESSAGE` events — individual user and assistant messages exchanged in ChatGPT Enterprise conversations, including author, client surface, model, tools and skills used, message content, and conversation metadata (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs` with `event_type=CONVERSATION_MESSAGE`, followed by `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`).
 
 
 
 ### Supported use cases
 
-Bringing ChatGPT Enterprise authentication, application authentication, application, codex, codex security, audit, custom agents, and conversation activity into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, in-app connector, AI-assisted development, administrative, agent, conversation, and Codex security-scanning activity in one place instead of moving between separate tools.
+Bringing ChatGPT Enterprise Authentication Log, Application Authentication Log, Application Log, Codex Log, Codex Security Log, Audit Log, Custom Agents Log, and Conversation Message into Elastic lets security, compliance, and platform teams search, correlate, and investigate sign-in, app-connection, in-app connector, AI-assisted development, administrative, agent, conversation, and Codex Security scanning activity in one place instead of moving between separate tools.
 
 The **Authentication Log** data stream provides visibility into who signed in, when, from where, and with what client, including the action outcome and source geolocation. Use it to monitor login, token issuance, and logout activity, detect sign-ins from unexpected locations, and surface anomalous or high-risk authentication behavior to support security oversight and auditing.
 
@@ -54,7 +54,7 @@ The **Audit Log** data stream provides a searchable, correlatable record of admi
 
 The **Custom Agents Log** data stream supports monitoring how Workspace Agents are built, published, and operated: which users create, update, publish, or delete agents; how agents run and which models they use; which connectors, skills, and tools they invoke; how they read and write memory; and how triggers are configured. Actor, agent, and event details help track adoption, spot risky or failing activity, and add agent context to broader security investigations in Elastic Security and Kibana.
 
-The **Conversation Messages** data stream supports monitoring how users interact with ChatGPT Enterprise: which users and workspaces are most active, which models and client surfaces are used, how conversations flow between users and the assistant, and which tools, skills, and citations the assistant applies. Message and conversation metadata help track engagement, spot unusual activity, and add conversation context to broader security investigations in Elastic Security and Kibana.
+The **Conversation Message** data stream supports monitoring how users interact with ChatGPT Enterprise: which users and workspaces are most active, which models and client surfaces are used, how conversations flow between users and the assistant, and which tools, skills, and citations the assistant applies. Message and conversation metadata help track engagement, spot unusual activity, and add conversation context to broader security investigations in Elastic Security and Kibana.
 
 
 ## What do I need to use this integration?
@@ -124,45 +124,45 @@ For more information on architectures that can be used for scaling this integrat
 
 ## Reference
 
-### Auth Log
+### Authentication Log
 
 The `auth_log` data stream captures ChatGPT Enterprise `AUTH_LOG` events (user authentication activity such as logins, token issuance, and logouts, including client and request context).
 
-#### Auth Log fields
+#### Authentication Log fields
 
 {{ fields "auth_log" }}
 
 ### Example event
 
-#### Auth Log
+#### Authentication Log
 
 {{ event "auth_log" }}
 
-### App Auth Log
+### Application Authentication Log
 
 The `app_auth_log` data stream captures ChatGPT Enterprise `APP_AUTH_LOG` events (application authentication activity such as linking and unlinking apps and connectors).
 
-#### App Auth Log fields
+#### Application Authentication Log fields
 
 {{ fields "app_auth_log" }}
 
 ### Example event
 
-#### App Auth Log
+#### Application Authentication Log
 
 {{ event "app_auth_log" }}
 
-### App Log
+### Application Log
 
 The `app_log` data stream captures ChatGPT Enterprise `APP_LOG` events (in-app connector requests and responses).
 
-#### App Log fields
+#### Application Log fields
 
 {{ fields "app_log" }}
 
 ### Example event
 
-#### App Log
+#### Application Log
 
 {{ event "app_log" }}
 
@@ -180,9 +180,9 @@ The `codex_log` data stream captures ChatGPT Enterprise `CODEX_LOG` events.
 
 {{ event "codex_log" }}
 
-### Codex Security Logs
+### Codex Security Log
 
-The `codex_security_log` data stream captures ChatGPT Enterprise `CODEX_SECURITY_LOG` events (Codex security findings and scan-configuration changes).
+The `codex_security_log` data stream captures ChatGPT Enterprise `CODEX_SECURITY_LOG` events (Codex Security findings and scan-configuration changes).
 
 #### Codex Security Log fields
 
@@ -222,17 +222,17 @@ The `custom_agents_log` data stream provides Workspace Agents (Custom Agents) ac
 
 {{ event "custom_agents_log" }}
 
-### Conversation Messages
+### Conversation Message
 
 The `conversation_message` data stream provides conversation message events from the OpenAI ChatGPT Enterprise Compliance Logs Platform.
 
-#### Conversation Messages fields
+#### Conversation Message fields
 
 {{ fields "conversation_message" }}
 
 ### Example event
 
-#### Conversation Messages
+#### Conversation Message
 
 {{ event "conversation_message" }}
 
@@ -265,6 +265,6 @@ These APIs are used with this integration:
 * Custom Agents Log:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CUSTOM_AGENTS_LOG`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)
-* Conversation Messages:
+* Conversation Message:
     * List log files (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs?event_type=CONVERSATION_MESSAGE`)
     * Download log file (endpoint: `GET /v1/compliance/{workspaces|organizations}/{resource_id}/logs/{log_file_id}`)

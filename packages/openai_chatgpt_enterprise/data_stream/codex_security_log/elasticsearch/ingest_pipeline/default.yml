@@ -118,12 +118,8 @@ processors:
       if: ctx.event?.action != null && ctx.event.action != ''
       source: |-
         def a = ctx.event.action;
-        if (ctx.event.category == null) {
-          ctx.event.category = new ArrayList();
-        }
-        if (ctx.event.type == null) {
-          ctx.event.type = new ArrayList();
-        }
+        ctx.event.category = ctx.event.category ?: [];
+        ctx.event.type = ctx.event.type ?: [];
         if (a.contains('scan_configuration')) {
           ctx.event.category.add('configuration');
           if (a.contains('create')) {
