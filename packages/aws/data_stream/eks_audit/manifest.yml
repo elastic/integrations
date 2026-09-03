@@ -1,0 +1,127 @@
+title: Amazon EKS audit logs
+type: logs
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: false
+streams:
+  - input: aws-cloudwatch
+    template_path: aws-cloudwatch.yml.hbs
+    title: Amazon EKS audit logs via CloudWatch
+    description: Collect and parse Amazon EKS Kubernetes API audit logs from CloudWatch Logs.
+    vars:
+      - name: log_group_arn
+        type: text
+        title: Log Group ARN
+        multi: false
+        required: false
+        show_user: true
+        description: ARN of a single EKS control-plane log group. When set, this takes precedence over the log group name and prefix.
+      - name: log_group_name
+        type: text
+        title: Log Group Name
+        multi: false
+        required: false
+        show_user: false
+        description: Name of a single EKS control-plane log group. Used when no ARN is set and takes precedence over the prefix. Region is required.
+      - name: log_group_name_prefix
+        type: text
+        title: Log Group Name Prefix
+        multi: false
+        required: false
+        show_user: true
+        default: /aws/eks/
+        description: Prefix used to discover EKS control-plane log groups when neither an ARN nor a name is set.
+      - name: include_linked_accounts_with_prefix
+        type: bool
+        title: Include Linked Accounts with Prefix
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: Include matching log groups from linked source accounts when prefix mode is used.
+      - name: region_name
+        type: text
+        title: Region Name
+        multi: false
+        required: false
+        show_user: true
+        description: AWS Region containing the EKS control-plane log groups. Required when collection uses the log group name or the log group name prefix, including the default /aws/eks/ prefix. Not used when a log group ARN is set, because the ARN already carries the Region.
+      - name: number_of_workers
+        type: integer
+        title: Number of Workers
+        default: 1
+        required: false
+        show_user: false
+        description: Number of workers reading matching CloudWatch log groups.
+      - name: log_stream_prefix
+        type: text
+        title: Log Stream Prefix
+        multi: false
+        required: true
+        show_user: true
+        default: kube-apiserver-audit
+        description: Collect only kube-apiserver audit streams. Changing this value may send unsupported records to the audit parser.
+      - name: start_position
+        type: text
+        title: Start Position
+        multi: false
+        required: false
+        default: beginning
+        show_user: true
+        description: Start at the beginning, end, or lastSync position of each CloudWatch log stream.
+      - name: scan_frequency
+        type: text
+        title: Scan Frequency
+        multi: false
+        required: false
+        show_user: false
+        default: 1m
+        description: How often to check CloudWatch for new log events.
+      - name: api_timeout
+        type: text
+        title: API Timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 120s
+        description: Maximum duration of a CloudWatch API request.
+      - name: api_sleep
+        type: text
+        title: API Sleep
+        multi: false
+        required: false
+        show_user: false
+        default: 200ms
+        description: Delay between FilterLogEvents calls made during one collection period.
+      - name: latency
+        type: text
+        title: Latency
+        multi: false
+        required: false
+        show_user: false
+        description: CloudWatch Logs publication delay to include in query windows, for example 5m.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - aws-eks-audit
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Agent processors that run before the package ingest pipeline.
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Enabling this option populates event.original with the raw Kubernetes audit JSON of each record. It roughly doubles the storage each audit event needs, so it is disabled by default.
+        type: bool
+        multi: false
+        default: false
