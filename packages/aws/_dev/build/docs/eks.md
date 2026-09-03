@@ -22,6 +22,8 @@ Kubernetes audit request and response objects are retained in document `_source`
 
 Authorization decision, authorization reason, and Pod Security audit-violation annotations have explicit searchable mappings. Other string-valued Kubernetes audit annotations are dynamically indexed as keywords after dots in annotation keys are replaced by underscores.
 
+`event.outcome` is derived from the HTTP response status when `responseStatus.code` is present: codes below 400 are `success` and codes of 400 or above are `failure`. This takes precedence over the `authorization.k8s.io/decision` annotation, because an authorized request can still fail with a 404, 409, or 5xx response. The annotation is used only when no response status is recorded, such as `RequestReceived` stage events.
+
 Request and response objects are not dynamically mapped. Only the security-relevant `aws.eks.audit.requestObject.*` and `aws.eks.audit.responseObject.*` fields listed in the field reference are indexed and searchable; the rest of each API object is retained in `_source` but cannot be queried or aggregated. This keeps the field count bounded on clusters that use many custom resource definitions, where dynamically mapping arbitrary object bodies would otherwise exhaust the index field limit and cause indexing failures. To query an additional body field, add it to a `logs-aws.eks_audit@custom` component template.
 
 ## Logs reference
