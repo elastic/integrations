@@ -140,14 +140,6 @@ processors:
       ignore_empty_value: true
       override: false
       if: ctx.elasticsearch?.audit?.invalidate?.apikeys?.user?.name != null
-  # Backward compatible fallback: if the producer did not emit an actor, keep
-  # populating user.name from the target so existing dashboards keep working.
-  - set:
-      field: user.name
-      copy_from: destination.user.name
-      ignore_empty_value: true
-      override: false
-      if: ctx.destination?.user?.name != null
   - rename:
       field: elasticsearch.audit.invalidate.apikeys.user.realm
       target_field: elasticsearch.audit.user.realm
@@ -173,6 +165,14 @@ processors:
       field: elasticsearch.audit.user.name
       target_field: user.name
       ignore_missing: true
+  # If the producer did not emit an actor, keep populating user.name from the
+  # target so existing dashboards keep working. override:false preserves actor.
+  - set:
+      field: user.name
+      copy_from: destination.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.destination?.user?.name != null
   - dot_expander:
       field: user.email
       path: elasticsearch.audit

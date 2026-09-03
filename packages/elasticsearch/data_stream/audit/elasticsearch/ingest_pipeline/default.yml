@@ -23,19 +23,19 @@ processors:
       value: event
   - set:
       field: event.category
-      value: database
+      value: ["database"]
   - set:
       if: ctx.elasticsearch?.audit?.layer == 'security_config_change'
       field: event.category
-      value: iam
+      value: ["iam"]
   - set:
       if: ctx.elasticsearch?.audit?.layer != null && ctx.elasticsearch.audit.layer != 'security_config_change'
       field: event.type
-      value: access
+      value: ["access"]
   - set:
       if: ctx.elasticsearch?.audit?.layer == 'security_config_change'
       field: event.type
-      value: change
+      value: ["change"]
   # Elasticsearch does not emit event.outcome. Map it from event.action / audit
   # layer. Do not default to failure: unknown actions must stay unknown.
   # security_config_change is authorization-shaped success (the change was
