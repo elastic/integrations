@@ -150,7 +150,7 @@ Refer to the PingDirectory documentation for configuring SCIM 2.0 and authentica
 3. Open the **[Logs PingDirectory] HTTP Access** dashboard and verify that the visualizations are populated with HTTP access data, including request methods, response status categories, and accessed endpoints.
 4. Open the **[Logs PingDirectory] Audit** dashboard and verify that the visualizations are populated with audit data, including change types, requester identities, target entries, and client IP addresses.
 5. Open the **[Logs PingDirectory] LDAP Access** dashboard and verify that the visualizations are populated with LDAP access data, including connection events, requester identities, result codes, and client IP addresses.
-6. Open the **[CEL PingDirectory] User** dashboard and verify that the visualizations are populated with user identity data, including usernames, email addresses, and account types.
+6. Open the **[Logs PingDirectory] User** dashboard and verify that the visualizations are populated with user identity data, including usernames, email addresses, and account types.
 7. Open the **[Logs PingDirectory] Group** dashboard and verify that the visualizations are populated with group membership data, including group names, members, and membership counts.
 
 #### Transforms healthy

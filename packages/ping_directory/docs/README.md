@@ -150,7 +150,7 @@ Refer to the PingDirectory documentation for configuring SCIM 2.0 and authentica
 3. Open the **[Logs PingDirectory] HTTP Access** dashboard and verify that the visualizations are populated with HTTP access data, including request methods, response status categories, and accessed endpoints.
 4. Open the **[Logs PingDirectory] Audit** dashboard and verify that the visualizations are populated with audit data, including change types, requester identities, target entries, and client IP addresses.
 5. Open the **[Logs PingDirectory] LDAP Access** dashboard and verify that the visualizations are populated with LDAP access data, including connection events, requester identities, result codes, and client IP addresses.
-6. Open the **[CEL PingDirectory] User** dashboard and verify that the visualizations are populated with user identity data, including usernames, email addresses, and account types.
+6. Open the **[Logs PingDirectory] User** dashboard and verify that the visualizations are populated with user identity data, including usernames, email addresses, and account types.
 7. Open the **[Logs PingDirectory] Group** dashboard and verify that the visualizations are populated with group membership data, including group names, members, and membership counts.
 
 #### Transforms healthy
@@ -763,26 +763,26 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-17T11:10:47.618Z",
+    "@timestamp": "2026-09-02T10:47:18.592Z",
     "agent": {
-        "ephemeral_id": "c54df385-2d0f-45a9-a0db-7aedc6fc12b4",
-        "id": "7bd99e76-3220-4518-bec1-0284ece07762",
-        "name": "elastic-agent-62922",
+        "ephemeral_id": "3eaabb50-ad9b-47b2-82e1-e4cdeffcf659",
+        "id": "f0bf4a12-c54e-4301-b0e7-862a402d44bc",
+        "name": "elastic-agent-22681",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ping_directory.user",
-        "namespace": "19448",
+        "namespace": "74219",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "7bd99e76-3220-4518-bec1-0284ece07762",
+        "id": "f0bf4a12-c54e-4301-b0e7-862a402d44bc",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -790,8 +790,8 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.user",
-        "ingested": "2026-06-17T11:10:50Z",
-        "kind": "event",
+        "ingested": "2026-09-02T10:47:21Z",
+        "kind": "asset",
         "original": "{\"displayName\":\"John Doe\",\"emails\":[\"john.doe@example.com\"],\"id\":\"c9bbce6c-7d77-4d93-b674-42b1e8a00606\",\"meta\":{\"location\":\"https://10.50.15.29:2443/scim/v2/Users/c9bbce6c-7d77-4d93-b674-42b1e8a00606\",\"resourceType\":\"User\"},\"name\":{\"familyName\":\"Doe\",\"formatted\":\"John Doe\",\"givenName\":\"John\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"],\"title\":\"DevOps Engineer\",\"userName\":\"john.doe\",\"userType\":\"Full-Time\"}",
         "type": [
             "user"
@@ -826,7 +826,6 @@ An example event for `user` looks as following:
             "Doe",
             "John",
             "john.doe@example.com",
-            "example.com",
             "john.doe"
         ]
     },
@@ -874,26 +873,26 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-23T05:26:00.102Z",
+    "@timestamp": "2026-09-02T10:44:29.722Z",
     "agent": {
-        "ephemeral_id": "9deb4381-f13b-460f-a113-d50474f421d6",
-        "id": "b8e1b118-3146-4215-8504-c18df1838432",
-        "name": "elastic-agent-98118",
+        "ephemeral_id": "0fb8618c-37ce-4fba-beee-4e04fff42bc7",
+        "id": "c9f37863-7011-4ca9-8f0a-0daa194ef237",
+        "name": "elastic-agent-29290",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ping_directory.group",
-        "namespace": "73116",
+        "namespace": "64996",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b8e1b118-3146-4215-8504-c18df1838432",
+        "id": "c9f37863-7011-4ca9-8f0a-0daa194ef237",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -901,8 +900,8 @@ An example event for `group` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.group",
-        "ingested": "2026-06-23T05:26:03Z",
-        "kind": "event",
+        "ingested": "2026-09-02T10:44:32Z",
+        "kind": "asset",
         "original": "{\"displayName\":\"security\",\"id\":\"a7631f14-c7eb-490f-8b94-724b78241e13\",\"members\":[\"uid=alice.smith,ou=People,dc=example,dc=com\"],\"meta\":{\"location\":\"https://10.50.15.29:2443/scim/v2/Groups/a7631f14-c7eb-490f-8b94-724b78241e13\",\"resourceType\":\"Group\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:Group\"]}",
         "type": [
             "group"

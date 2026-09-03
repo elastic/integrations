@@ -69,7 +69,8 @@ program: |
               }],
               "want_more": false,
               "cursor": {
-                "need_reauth": true,        // First reauth, true
+                "need_reauth": true,
+                "retry_count": 0,
               },
               "bind_dn": state.bind_dn,
               "password": state.password,
@@ -94,7 +95,8 @@ program: |
                     "events": data.?Resources.orValue([]).map(u, {"message": u.encode_json()}),
                     "cursor": {
                       "access_token": tok.access,
-                      "need_reauth": false,   // ← all good
+                      "need_reauth": false,
+                      "retry_count": 0,
                     },
                     "want_more": next_idx <= int(data.totalResults),
                     "start_index": next_idx <= int(data.totalResults) ? next_idx : 1,
@@ -104,18 +106,45 @@ program: |
                   })
                 )
               : (resp.StatusCode == 401 || resp.StatusCode == 419) ?
-                {
-                  "events": [{
-                    "message": "retry"}],
-                  "cursor": {
-                    "need_reauth": true,     // Second reauth, true
-                  },
-                  "want_more": true,         // ← retry immediately
-                  "start_index": state.?start_index.orValue(1),
-                  "bind_dn": state.bind_dn,
-                  "password": state.password,
-                  "batch_size": state.batch_size,
-                }
+                (
+                  (int(state.?cursor.retry_count.orValue(0)) < 1) ?
+                    {
+                      "events": [],
+                      "cursor": {
+                        "need_reauth": true,
+                        "retry_count": int(state.?cursor.retry_count.orValue(0)) + 1,
+                      },
+                      "want_more": true,
+                      "start_index": state.?start_index.orValue(1),
+                      "bind_dn": state.bind_dn,
+                      "password": state.password,
+                      "batch_size": state.batch_size,
+                    }
+                  :
+                    {
+                      "events": [{
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + base + "/scim/v2/Groups: re-authentication did not clear " + string(resp.StatusCode) + ": " + (
+                            size(resp.Body) != 0 ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        }
+                      }],
+                      "want_more": false,
+                      "start_index": state.?start_index.orValue(1),
+                      "cursor": {
+                        "need_reauth": true,
+                        "retry_count": 0,
+                      },
+                      "bind_dn": state.bind_dn,
+                      "password": state.password,
+                      "batch_size": state.batch_size,
+                    }
+                )
               :
                 {
                   "events": [{
@@ -134,9 +163,11 @@ program: |
                   "start_index": state.?start_index.orValue(1),
                   "cursor": {
                     "access_token": tok.access,
-                    "need_reauth": false,    // ← third reauth, false
+                    "need_reauth": false,
+                    "retry_count": 0,
                   },
-
+                  "bind_dn": state.bind_dn,
+                  "password": state.password,
                   "batch_size": state.batch_size,
                 }
             )
