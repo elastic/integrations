@@ -93,37 +93,61 @@ processors:
   - rename:
       field: elasticsearch.audit.node
       target_field: elasticsearch.node
-  - rename:
-      field: elasticsearch.audit.change.disable.user.name
-      target_field: user.name
-      ignore_missing: true
-  - rename:
-      field: elasticsearch.audit.change.enable.user.name
-      target_field: user.name
-      ignore_missing: true
-  - rename:
-      field: elasticsearch.audit.delete.user.name
-      target_field: user.name
-      ignore_missing: true
-  - rename:
-      field: elasticsearch.audit.put.user.name
-      target_field: user.name
-      ignore_missing: true
-  - rename:
-      field: elasticsearch.audit.put.user.full_name
-      target_field: user.full_name
-      ignore_missing: true
-  - rename:
-      field: elasticsearch.audit.put.user.email
-      target_field: user.email
-      ignore_missing: true
-  - remove:
-      field: elasticsearch.audit.put
-      ignore_missing: true
-  - rename:
-      field: elasticsearch.audit.invalidate.apikeys.user.name
-      target_field: user.name
-      ignore_missing: true
+  # Target of a security_config_change (the user being created/updated/deleted).
+  # Actor attribution, when the producer emits it, is mapped to user.name below.
+  - set:
+      field: destination.user.name
+      copy_from: elasticsearch.audit.put.user.name
+      ignore_empty_value: true
+      if: ctx.elasticsearch?.audit?.put?.user?.name != null
+  - set:
+      field: destination.user.full_name
+      copy_from: elasticsearch.audit.put.user.full_name
+      ignore_empty_value: true
+      if: ctx.elasticsearch?.audit?.put?.user?.full_name != null
+  - set:
+      field: destination.user.email
+      copy_from: elasticsearch.audit.put.user.email
+      ignore_empty_value: true
+      if: ctx.elasticsearch?.audit?.put?.user?.email != null
+  - set:
+      field: destination.user.name
+      copy_from: elasticsearch.audit.delete.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.elasticsearch?.audit?.delete?.user?.name != null
+  - set:
+      field: destination.user.name
+      copy_from: elasticsearch.audit.change.enable.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.elasticsearch?.audit?.change?.enable?.user?.name != null
+  - set:
+      field: destination.user.name
+      copy_from: elasticsearch.audit.change.disable.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.elasticsearch?.audit?.change?.disable?.user?.name != null
+  - set:
+      field: destination.user.name
+      copy_from: elasticsearch.audit.change.password.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.elasticsearch?.audit?.change?.password?.user?.name != null
+  - set:
+      field: destination.user.name
+      copy_from: elasticsearch.audit.invalidate.apikeys.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.elasticsearch?.audit?.invalidate?.apikeys?.user?.name != null
+  # Backward compatible fallback: if the producer did not emit an actor, keep
+  # populating user.name from the target so existing dashboards keep working.
+  - set:
+      field: user.name
+      copy_from: destination.user.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.destination?.user?.name != null
   - rename:
       field: elasticsearch.audit.invalidate.apikeys.user.realm
       target_field: elasticsearch.audit.user.realm
